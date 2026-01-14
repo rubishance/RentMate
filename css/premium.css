@@ -1,0 +1,358 @@
+/* ============================================
+   PREMIUM UI ENHANCEMENTS
+   Enhanced styles for cards, buttons, and interactions
+   ============================================ */
+
+/* === ENHANCED CARD STYLES === */
+
+.card {
+    background-color: var(--color-surface);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--color-border);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), 0 4px 8px rgba(0, 0, 0, 0.04);
+    transform: translateY(-2px);
+}
+
+/* Stat Cards - Enhanced */
+.stat-card {
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(0, 122, 255, 0.03) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.stat-card:hover::before {
+    opacity: 1;
+}
+
+.stat-card:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* Card Icons - Enhanced with glow */
+.card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+}
+
+.stat-card:hover .card-icon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.card-icon.blue {
+    background: linear-gradient(135deg, rgba(0, 122, 255, 0.15) 0%, rgba(0, 122, 255, 0.05) 100%);
+    color: var(--color-primary);
+    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
+}
+
+.card-icon.green {
+    background: linear-gradient(135deg, rgba(52, 199, 89, 0.15) 0%, rgba(52, 199, 89, 0.05) 100%);
+    color: var(--color-success);
+    box-shadow: 0 4px 12px rgba(52, 199, 89, 0.2);
+}
+
+.card-icon.orange {
+    background: linear-gradient(135deg, rgba(255, 149, 0, 0.15) 0%, rgba(255, 149, 0, 0.05) 100%);
+    color: var(--color-warning);
+    box-shadow: 0 4px 12px rgba(255, 149, 0, 0.2);
+}
+
+/* === ENHANCED BUTTON STYLES === */
+
+.btn {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn:active::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #007AFF 0%, #0066d6 100%);
+    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+}
+
+.btn-primary:hover {
+    box-shadow: 0 6px 20px rgba(0, 122, 255, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-outline {
+    border: 2px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text-main);
+}
+
+.btn-outline:hover {
+    border-color: var(--color-primary);
+    background: rgba(0, 122, 255, 0.05);
+    color: var(--color-primary);
+}
+
+.btn-icon {
+    transition: all 0.2s ease;
+    border-radius: 8px;
+    padding: 8px;
+}
+
+.btn-icon:hover {
+    background: rgba(0, 0, 0, 0.05);
+    transform: scale(1.1);
+}
+
+.btn-icon:active {
+    transform: scale(0.95);
+}
+
+/* === PROPERTY CARDS - ENHANCED === */
+
+.property-card {
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+    position: relative;
+}
+
+.property-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: var(--border-radius);
+    box-shadow: 0 0 0 2px var(--color-primary);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.property-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+.property-card:hover::after {
+    opacity: 0.1;
+}
+
+.property-card .card-image {
+    transition: transform 0.3s ease;
+}
+
+.property-card:hover .card-image {
+    transform: scale(1.05);
+}
+
+/* === TENANT ITEMS - ENHANCED === */
+
+.tenant-item {
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.tenant-item:hover {
+    background: rgba(0, 122, 255, 0.03);
+    transform: translateX(-4px);
+    box-shadow: 4px 0 0 0 var(--color-primary);
+}
+
+.tenant-avatar {
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tenant-item:hover .tenant-avatar {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+}
+
+/* === MODAL ENHANCEMENTS === */
+
+.modal {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.modal.open {
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    position: relative;
+}
+
+.modal-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--color-border), transparent);
+}
+
+/* === INPUT ENHANCEMENTS === */
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+input,
+select,
+textarea {
+    transition: all 0.2s ease;
+}
+
+/* === TOAST NOTIFICATIONS - ENHANCED === */
+
+.toast {
+    animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
+}
+
+.toast.success {
+    background: linear-gradient(135deg, rgba(52, 199, 89, 0.95) 0%, rgba(52, 199, 89, 0.85) 100%);
+}
+
+.toast.error {
+    background: linear-gradient(135deg, rgba(255, 59, 48, 0.95) 0%, rgba(255, 59, 48, 0.85) 100%);
+    animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1), shake 0.5s ease 0.3s;
+}
+
+/* === TABLE ENHANCEMENTS === */
+
+table tr {
+    transition: all 0.2s ease;
+}
+
+table tr:hover {
+    background: rgba(0, 122, 255, 0.03);
+    transform: scale(1.01);
+}
+
+/* === BADGE ENHANCEMENTS === */
+
+.badge {
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.badge:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* === LOADING STATES === */
+
+.skeleton {
+    background: linear-gradient(90deg,
+            #f0f0f0 25%,
+            #e0e0e0 50%,
+            #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+/* === PAGE TRANSITIONS === */
+
+.content-area {
+    animation: fadeIn 0.4s ease-out;
+}
+
+.dashboard-grid>* {
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dashboard-grid>*:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.dashboard-grid>*:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.dashboard-grid>*:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.dashboard-grid>*:nth-child(4) {
+    animation-delay: 0.2s;
+}
+
+/* === SCROLL BEHAVIOR === */
+
+* {
+    scroll-behavior: smooth;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--color-bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 4px;
+    transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-secondary);
+}

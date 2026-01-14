@@ -1,0 +1,99 @@
+{
+    "common": {
+        "appName": "RentMate",
+        "welcome": "בוקר טוב",
+        "save": "שמרי",
+        "cancel": "ביטול",
+        "delete": "מחקי",
+        "edit": "ערכי",
+        "add": "הוסיפי",
+        "search": "חפשי",
+        "filter": "סנני",
+        "close": "סגרי",
+        "yes": "כן",
+        "no": "לא"
+    },
+    "nav": {
+        "dashboard": "לוח בקרה",
+        "properties": "נכסים",
+        "tenants": "דיירים",
+        "contracts": "חוזים",
+        "settings": "הגדרות"
+    },
+    "dashboard": {
+        "title": "לוח בקרה",
+        "greeting": "בוקר טוב, {name}",
+        "subtitle": "הנה סיכום מהיר של הנכסים שלך להיום.",
+        "totalProperties": "סה״כ נכסים",
+        "monthlyIncome": "הכנסה חודשית",
+        "openIssues": "בעיות פתוחות",
+        "recentActivity": "פעילות אחרונה",
+        "noActivity": "אין פעילות אחרונה להצגה."
+    },
+    "properties": {
+        "title": "הנכסים שלי",
+        "subtitle": "נהלי את תיק הנכסים שלך.",
+        "addProperty": "הוסיפי נכס",
+        "month": "/חודש",
+        "status": {
+            "rented": "מושכר",
+            "available": "פנוי",
+            "renovation": "בשיפוץ"
+        }
+    },
+    "tenants": {
+        "title": "דיירים",
+        "subtitle": "נהלי פרטי דיירים ותקשורת.",
+        "addTenant": "הוסיפי דייר",
+        "sendEmail": "שלחי מייל",
+        "call": "התקשרי",
+        "status": {
+            "paid": "שולם",
+            "late": "איחור"
+        }
+    },
+    "contracts": {
+        "title": "חוזים",
+        "subtitle": "נהלי ועקבי אחר חוזי שכירות.",
+        "newContract": "חוזה חדש",
+        "scanContract": "סרקי חוזה",
+        "dragDrop": "גררי ושחררי או לחצי להעלאת קובץ",
+        "autoFill": "מילוי אוטומטי מסריקה",
+        "property": "נכס",
+        "tenant": "דייר",
+        "dates": "תאריכים",
+        "status": {
+            "active": "פעיל",
+            "expiringSoon": "מסתיים בקרוב"
+        }
+    },
+    "settings": {
+        "title": "הגדרות מערכת",
+        "subtitle": "ניהול העדפות אישיות והגדרות אפליקציה",
+        "saveChanges": "שמרי שינויים",
+        "personalInfo": "פרטים אישיים",
+        "systemPreferences": "העדפות מערכת",
+        "notifications": "התראות",
+        "aiSettings": "הגדרות AI",
+        "language": "שפה",
+        "gender": "מגדר",
+        "male": "זכר",
+        "female": "נקבה",
+        "currency": "מטבע ברירת מחדל",
+        "emailNotifications": "התראות במייל",
+        "emailNotificationsDesc": "קבלי עדכונים שבועיים על סטטוס גבייה",
+        "contractReminders": "תזכורות חידוש חוזה",
+        "contractRemindersDesc": "התראה 60 יום לפני סיום חוזה",
+        "autoScan": "סריקה אוטומטית",
+        "autoScanDesc": "נתחי חוזים מיד בעת העלאה"
+    },
+    "form": {
+        "fullName": "שם מלא",
+        "email": "אימייל",
+        "phone": "טלפון",
+        "address": "כתובת",
+        "city": "עיר / אזור",
+        "price": "מחיר מבוקש (₪)",
+        "rooms": "מספר חדרים"
+    }
+}

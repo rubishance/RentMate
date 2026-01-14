@@ -1,0 +1,99 @@
+{
+    "common": {
+        "appName": "RentMate",
+        "welcome": "Good Morning",
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "edit": "Edit",
+        "add": "Add",
+        "search": "Search",
+        "filter": "Filter",
+        "close": "Close",
+        "yes": "Yes",
+        "no": "No"
+    },
+    "nav": {
+        "dashboard": "Dashboard",
+        "properties": "Properties",
+        "tenants": "Tenants",
+        "contracts": "Contracts",
+        "settings": "Settings"
+    },
+    "dashboard": {
+        "title": "Dashboard",
+        "greeting": "Good morning, {name}",
+        "subtitle": "Here's a quick summary of your properties for today.",
+        "totalProperties": "Total Properties",
+        "monthlyIncome": "Monthly Income",
+        "openIssues": "Open Issues",
+        "recentActivity": "Recent Activity",
+        "noActivity": "No recent activity to display."
+    },
+    "properties": {
+        "title": "My Properties",
+        "subtitle": "Manage your property portfolio.",
+        "addProperty": "Add Property",
+        "month": "/month",
+        "status": {
+            "rented": "Rented",
+            "available": "Available",
+            "renovation": "In Renovation"
+        }
+    },
+    "tenants": {
+        "title": "Tenants",
+        "subtitle": "Manage tenant details and communication.",
+        "addTenant": "Add Tenant",
+        "sendEmail": "Send Email",
+        "call": "Call",
+        "status": {
+            "paid": "Paid",
+            "late": "Late"
+        }
+    },
+    "contracts": {
+        "title": "Contracts",
+        "subtitle": "Manage and track rental contracts.",
+        "newContract": "New Contract",
+        "scanContract": "Scan Contract",
+        "dragDrop": "Drag and drop or click to upload file",
+        "autoFill": "Auto-fill from scan",
+        "property": "Property",
+        "tenant": "Tenant",
+        "dates": "Dates",
+        "status": {
+            "active": "Active",
+            "expiringSoon": "Expiring Soon"
+        }
+    },
+    "settings": {
+        "title": "System Settings",
+        "subtitle": "Manage personal preferences and app settings",
+        "saveChanges": "Save Changes",
+        "personalInfo": "Personal Information",
+        "systemPreferences": "System Preferences",
+        "notifications": "Notifications",
+        "aiSettings": "AI Settings",
+        "language": "Language",
+        "gender": "Gender",
+        "male": "Male",
+        "female": "Female",
+        "currency": "Default Currency",
+        "emailNotifications": "Email Notifications",
+        "emailNotificationsDesc": "Receive weekly updates on collection status",
+        "contractReminders": "Contract Renewal Reminders",
+        "contractRemindersDesc": "Notification 60 days before contract ends",
+        "autoScan": "Automatic Scanning",
+        "autoScanDesc": "Analyze contracts immediately upon upload"
+    },
+    "form": {
+        "fullName": "Full Name",
+        "email": "Email",
+        "phone": "Phone",
+        "address": "Address",
+        "city": "City / Area",
+        "price": "Asking Price (₪)",
+        "rooms": "Number of Rooms"
+    }
+}

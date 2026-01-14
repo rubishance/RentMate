@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0066ff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="RentMate">
+    <meta name="description" content="מערכת ניהול נכסים והשכרה חכמה עבור בעלי נכסים">
+    <title>הגדרות - RentMate</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/config.js"></script>
+</head>
+
+<body>
+
+    <div class="sidebar">
+        <div class="logo">
+            <h2>RentMate <i class="ph ph-house-line"></i></h2>
+        </div>
+        <nav>
+            <a href="index.html" class="nav-item">
+                <i class="ph ph-squares-four"></i>
+                <span>לוח בקרה</span>
+            </a>
+            <a href="properties.html" class="nav-item">
+                <i class="ph ph-house"></i>
+                <span>נכסים</span>
+            </a>
+            <a href="tenants.html" class="nav-item">
+                <i class="ph ph-users"></i>
+                <span>דיירים</span>
+            </a>
+            <a href="contracts.html" class="nav-item">
+                <i class="ph ph-scroll"></i>
+                <span>חוזים</span>
+            </a>
+            <a href="payments.html" class="nav-item">
+                <i class="ph ph-wallet"></i>
+                <span>תשלומים</span>
+            </a>
+            <a href="calculator.html" class="nav-item">
+                <i class="ph ph-calculator"></i>
+                <span>מחשבון מדד</span>
+            </a>
+
+            <!-- Admin Section -->
+            <div class="admin-nav" style="display: none;">
+                <div style="height: 1px; background-color: var(--color-border); margin: var(--spacing-sm) 0;"></div>
+                <div
+                    style="font-size: 0.75rem; color: var(--color-text-secondary); padding: var(--spacing-xs) var(--spacing-md); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">
+                    ניהול</div>
+            </div>
+            <a href="users.html" class="nav-item admin-nav" style="display: none;">
+                <i class="ph ph-user-gear"></i>
+                <span>ניהול משתמשים</span>
+            </a>
+            <a href="audit-logs.html" class="nav-item admin-nav" style="display: none;">
+                <i class="ph ph-clipboard-text"></i>
+                <span>יומני ביקורת</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="settings.html" class="nav-item active">
+                <i class="ph ph-gear"></i>
+                <span>הגדרות</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="overlay" id="sidebarOverlay"></div>
+
+    <div class="main-content">
+        <header>
+            <button class="btn-icon mobile-menu-toggle" id="mobileMenuToggle">
+                <i class="ph ph-list"></i>
+            </button>
+            <div class="header-title">
+                <div class="breadcrumbs">
+                    <span>RentMate</span> / <span class="current">הגדרות</span>
+                </div>
+            </div>
+            <div class="user-profile">
+                <div class="logo">
+                    <img src="images/logo-with-text.png" alt="RentMate" style="height: 32px;">
+                </div>
+                <div class="avatar">ר</div>
+                <span class="name">ראובן שאנס</span>
+                <span class="admin-badge" style="display: none; margin-right: 8px;">מנהל</span>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="page-header">
+                <div>
+                    <h1>הגדרות מערכת</h1>
+                    <p class="subtitle">ניהול העדפות אישיות והגדרות אפליקציה</p>
+                </div>
+                <button class="btn btn-primary" id="btnSaveSettings">
+                    <i class="ph ph-floppy-disk"></i> שמור שינויים
+                </button>
+            </div>
+
+            <div class="settings-grid">
+                <!-- User Profile -->
+                <div class="card settings-card">
+                    <div class="card-header">
+                        <h3><i class="ph ph-user"></i> פרטים אישיים</h3>
+                    </div>
+                    <div class="settings-form">
+                        <div class="form-group">
+                            <label>שם מלא</label>
+                            <input type="text" id="userName">
+                        </div>
+                        <div class="form-group">
+                            <label>אימייל</label>
+                            <input type="email" id="userEmail">
+                        </div>
+                        <div class="form-group">
+                            <label>טלפון</label>
+                            <input type="tel" id="userPhone">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- App Preferences -->
+                <div class="card settings-card">
+                    <div class="card-header">
+                        <h3><i class="ph ph-sliders"></i> העדפות מערכת</h3>
+                    </div>
+                    <div class="settings-form">
+                        <div class="form-group">
+                            <label>שפה</label>
+                            <select id="language" disabled>
+                                <option value="he" selected>עברית</option>
+                                <option value="en">English (בקרוב)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>מטבע ברירת מחדל</label>
+                            <select id="currency">
+                                <option value="ILS" selected>שקל חדש (₪)</option>
+                                <option value="USD">דולר ארה"ב ($)</option>
+                                <option value="EUR">אירו (€)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Appearance -->
+            <div class="card settings-card">
+                <div class="card-header">
+                    <h3><i class="ph ph-palette"></i> מראה</h3>
+                </div>
+                <div class="settings-list">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <strong>מצב כהה</strong>
+                            <small>החלף בין ערכת נושא בהירה וכהה</small>
+                        </div>
+                        <label class="switch theme-toggle">
+                            <input type="checkbox" onchange="window.toggleTheme()">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications -->
+            <div class="card settings-card">
+                <div class="card-header">
+                    <h3><i class="ph ph-bell"></i> התראות</h3>
+                </div>
+                <div class="settings-list">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <strong>התראות במייל</strong>
+                            <small>קבל עדכונים שבועיים על סטטוס גבייה</small>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="notifications" checked>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <strong>תזכורות חידוש חוזה</strong>
+                            <small>התראה 60 יום לפני סיום חוזה</small>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" checked>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Configuration -->
+            <div class="card settings-card">
+                <div class="card-header">
+                    <h3><i class="ph ph-robot"></i> הגדרות AI</h3>
+                </div>
+                <div class="settings-form">
+                    <div class="alert alert-info">
+                        <i class="ph ph-info"></i>
+                        מפתח ה-API מוגדר כעת בקובץ <code>server/.env</code>.
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <strong>סריקה אוטומטית</strong>
+                            <small>נתח חוזים מיד בעת העלאה</small>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" checked>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker registration failed:', err));
+            });
+        }
+    </script>
+    <script src="js/db.js"></script>
+    <!-- Supabase SDK -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>
+    <script src="js/config.js" defer></script>
+    <script src="js/supabase.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <script src="js/db.js" defer></script>
+    <script src="js/i18n.js" defer></script>
+    <script src="js/parallax.js" defer></script>
+    <script src="js/page-transitions.js" defer></script>
+    <script src="js/app.js" defer></script>
+    <script>
+        // Initialize DB and i18n
+        (async () => {
+            // First load local DB
+            await window.rentMateDB.init();
+
+            // Sync Dark Mode Toggle
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const toggle = document.querySelector('.theme-toggle input');
+            if (toggle && currentTheme === 'dark') {
+                toggle.checked = true;
+            }
+
+            // Initialize Supabase and auth
+            if (window.supabaseService) {
+                window.supabaseService.init();
+
+                // Initialize auth listener and update UI
+                initAuthListener();
+                const userData = await getCurrentUserData();
+                if (userData) {
+                    updateUserProfile(userData);
+                }
+            }
+
+            await window.i18n.init();
+
+            // Set language selector to current language
+            const langSelect = document.getElementById('languageSelect');
+            if (langSelect) {
+                langSelect.value = window.i18n.getCurrentLanguage();
+
+                // Language change handler
+                langSelect.addEventListener('change', async (e) => {
+                    await window.i18n.changeLanguage(e.target.value);
+                    // Reload page to apply language changes globally
+                    location.reload();
+                });
+            }
+        })();
+    </script>
+</body>
+
+</html>

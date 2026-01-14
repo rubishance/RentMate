@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0066ff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="RentMate">
+    <meta name="description" content="מעקב תשלומים וצפי הכנסות">
+    <title>RentMate - תשלומים</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="logo">
+                <img src="images/logo-with-text.png" alt="RentMate" style="height: 32px;">
+            </div>
+
+            <ul class="nav-links">
+                <li>
+                    <a href="index.html">
+                        <i class="ph ph-squares-four"></i>
+                        לוח בקרה
+                    </a>
+                </li>
+                <li>
+                    <a href="properties.html">
+                        <i class="ph ph-house"></i>
+                        נכסים
+                    </a>
+                </li>
+                <li>
+                    <a href="tenants.html">
+                        <i class="ph ph-users"></i>
+                        דיירים
+                    </a>
+                </li>
+                <li>
+                    <a href="contracts.html">
+                        <i class="ph ph-files"></i>
+                        חוזים
+                    </a>
+                </li>
+                <li class="active">
+                    <a href="payments.html">
+                        <i class="ph ph-wallet"></i>
+                        תשלומים
+                    </a>
+                </li>
+                <li>
+                    <a href="calculator.html">
+                        <i class="ph ph-calculator"></i>
+                        מחשבון מדד
+                    </a>
+                </li>
+                <li class="spacer"></li>
+
+                <!-- Admin Section -->
+                <li class="admin-nav">
+                    <div class="nav-divider"></div>
+                    <div class="nav-divider-label">ניהול</div>
+                </li>
+                <li class="admin-nav">
+                    <a href="users.html">
+                        <i class="ph ph-user-gear"></i>
+                        ניהול משתמשים
+                    </a>
+                </li>
+                <li class="admin-nav">
+                    <a href="audit-logs.html">
+                        <i class="ph ph-clipboard-text"></i>
+                        יומני ביקורת
+                    </a>
+                </li>
+
+                <li>
+                    <a href="settings.html">
+                        <i class="ph ph-gear"></i>
+                        הגדרות
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="תפריט">
+                    <i class="ph ph-list"></i>
+                </button>
+                <div class="breadcrumbs">
+                    <span>תשלומים</span>
+                </div>
+                <div class="user-profile">
+                    <span class="user-name">ראובן שאנס</span>
+                    <span class="admin-badge">מנהל</span>
+                    <div class="avatar">ר</div>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <div class="page-header">
+                    <div class="header-content">
+                        <h1>צפי תשלומים</h1>
+                        <p class="subtitle">מעקב אחר תשלומי שכירות עתידיים וסטטוס גבייה</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-outline">
+                            <i class="ph ph-sliders-horizontal"></i> סינון
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="dashboard-grid stats-grid" style="margin-bottom: 2rem;">
+                    <div class="card stat-card">
+                        <div class="card-icon blue"><i class="ph ph-calendar-check"></i></div>
+                        <div class="card-info">
+                            <span class="label">צפי חודשי</span>
+                            <span class="value" id="payStatMonthly">₪0</span>
+                        </div>
+                    </div>
+
+                    <div class="card stat-card">
+                        <div class="card-icon green"><i class="ph ph-clock-countdown"></i></div>
+                        <div class="card-info">
+                            <span class="label">יתרה לגבייה</span>
+                            <span class="value" id="payStatPending">₪0</span>
+                        </div>
+                    </div>
+
+                    <div class="card stat-card">
+                        <div class="card-icon orange"><i class="ph ph-warning-circle"></i></div>
+                        <div class="card-info">
+                            <span class="label">באיחור</span>
+                            <span class="value" id="payStatOverdue">₪0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payments Table -->
+                <div class="card wide-card">
+                    <div class="card-header">
+                        <h2 id="paymentHeaderTitle">תשלומים קרובים</h2>
+                    </div>
+                    <div class="table-container">
+                        <table class="contracts-table">
+                            <thead>
+                                <tr>
+                                    <th>נכס</th>
+                                    <th>דייר</th>
+                                    <th>תאריך לחיוב</th>
+                                    <th>סכום</th>
+                                    <th>סטטוס</th>
+                                    <th>פעולות</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paymentsTableBody">
+                                <!-- Dynamic Content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/db.js"></script>
+    <!-- Supabase SDK -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+
+    <script src="js/i18n.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/parallax.js"></script>
+    <script src="js/page-transitions.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        // Initialize systems
+        (async () => {
+            // First load local DB
+            await window.rentMateDB.init();
+
+            // Try initializing Supabase (will fail quietly if keys missing)
+            if (window.supabaseService) {
+                window.supabaseService.init();
+            }
+
+            await window.i18n.init();
+        })();
+    </script>
+</body>
+
+</html>

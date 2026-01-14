@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Test - Final</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .test-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .status {
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            direction: ltr;
+            text-align: left;
+            max-height: 400px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="test-card">
+        <h1>🎯 Supabase Test - Matched to Your Schema</h1>
+        <p>בדיקה עם השדות הנכונים: title, address, city</p>
+
+        <div id="status"></div>
+
+        <button onclick="testInsert()">➕ הוסף נכס</button>
+        <button onclick="testRead()">📖 קרא נתונים</button>
+        <button onclick="clearData()">🗑️ נקה נתוני בדיקה</button>
+
+        <div id="results"></div>
+    </div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+
+    <script>
+        const statusDiv = document.getElementById('status');
+        const resultsDiv = document.getElementById('results');
+        let supabaseClient = null;
+
+        function initSupabase() {
+            try {
+                supabaseClient = supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
+                return true;
+            } catch (error) {
+                showStatus('❌ Failed to initialize: ' + error.message, 'error');
+                return false;
+            }
+        }
+
+        function showStatus(message, type = 'info') {
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function showResults(title, data) {
+            resultsDiv.innerHTML = `
+                <h3>${title}</h3>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+        }
+
+        async function testInsert() {
+            showStatus('⏳ Inserting property with correct schema...', 'info');
+
+            if (!initSupabase()) return;
+
+            // Use the ACTUAL required fields from your schema
+            const testProperty = {
+                title: 'דירת בדיקה',
+                address: 'רחוב הבדיקה 123',
+                city: 'תל אביב',
+                type: 'apartment',
+                rooms: 3,
+                size_sqm: 80
+            };
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('properties')
+                    .insert(testProperty)
+                    .select();
+
+                if (error) {
+                    showStatus('❌ Insert failed: ' + error.message, 'error');
+                    showResults('Error Details', error);
+                } else {
+                    showStatus('✅ Property inserted successfully!', 'success');
+                    showResults('Inserted Property', data);
+                }
+            } catch (error) {
+                showStatus('❌ Error: ' + error.message, 'error');
+                showResults('Error', error);
+            }
+        }
+
+        async function testRead() {
+            showStatus('⏳ Reading properties...', 'info');
+
+            if (!initSupabase()) return;
+
+            try {
+                const { data, error, count } = await supabaseClient
+                    .from('properties')
+                    .select('*', { count: 'exact' });
+
+                if (error) {
+                    showStatus('❌ Read failed: ' + error.message, 'error');
+                    showResults('Error Details', error);
+                } else {
+                    showStatus(`✅ Found ${count} properties`, 'success');
+                    showResults('Properties Data', data);
+                }
+            } catch (error) {
+                showStatus('❌ Error: ' + error.message, 'error');
+                showResults('Error', error);
+            }
+        }
+
+        async function clearData() {
+            if (!confirm('Delete all test properties?')) return;
+
+            showStatus('⏳ Clearing test data...', 'info');
+
+            if (!initSupabase()) return;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('properties')
+                    .delete()
+                    .like('title', '%בדיקה%');
+
+                if (error) {
+                    showStatus('❌ Delete failed: ' + error.message, 'error');
+                } else {
+                    showStatus('✅ Test data cleared!', 'success');
+                    testRead();
+                }
+            } catch (error) {
+                showStatus('❌ Error: ' + error.message, 'error');
+            }
+        }
+
+        window.addEventListener('load', () => {
+            showStatus('✅ Ready! Schema matched: title, address, city are required.', 'success');
+        });
+    </script>
+</body>
+
+</html>
