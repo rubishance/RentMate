@@ -1,0 +1,9 @@
+_legacy_v1/
+_legacy_v2/
+ay-design/
+marketing/
+*.md
+*.txt
+*.sql
+email_templates/
+scripts/
