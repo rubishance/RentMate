@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import logoFinalCleanV2 from '../assets/logo-final-clean-v2.png';
-import { User, Bell, Shield, LogOut, ChevronRight, Languages, Check } from 'lucide-react';
+import { User, Bell, Shield, LogOut, ChevronRight, Languages, Check, Mail, Send } from 'lucide-react';
 import { useUserPreferences } from '../contexts/UserPreferencesContext';
 import type { Language, Gender } from '../types/database';
 import { EditProfileModal, NotificationsSettingsModal } from '../components/modals/EditProfileModal';
@@ -19,6 +19,9 @@ export function Settings() {
 
     const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+    const [contactMessage, setContactMessage] = useState('');
+    const [isSendingMessage, setIsSendingMessage] = useState(false);
+    const [messageSent, setMessageSent] = useState(false);
 
     useEffect(() => {
         fetchUserData();
@@ -71,6 +74,56 @@ export function Settings() {
             ]
         }
     ];
+
+    const handleSendMessage = async () => {
+        if (!contactMessage.trim()) return;
+
+        setIsSendingMessage(true);
+
+        try {
+            // Get current user
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error('Not authenticated');
+
+            // Save message to database
+            const { error: dbError } = await supabase
+                .from('contact_messages')
+                .insert({
+                    user_id: user.id,
+                    user_name: userData.full_name || 'RentMate User',
+                    user_email: userData.email || user.email,
+                    message: contactMessage,
+                    status: 'new'
+                });
+
+            if (dbError) throw dbError;
+
+            // Send email notification via Edge Function
+            const { error: emailError } = await supabase.functions.invoke('send-contact-email', {
+                body: {
+                    user_id: user.id,
+                    user_name: userData.full_name || 'RentMate User',
+                    user_email: userData.email || user.email,
+                    message: contactMessage
+                }
+            });
+
+            if (emailError) {
+                console.error('Email notification failed:', emailError);
+                // Don't throw - message is saved even if email fails
+            }
+
+            // Show success
+            setMessageSent(true);
+            setContactMessage('');
+            setTimeout(() => setMessageSent(false), 3000);
+        } catch (error) {
+            console.error('Error sending message:', error);
+            alert('Failed to send message. Please try again.');
+        } finally {
+            setIsSendingMessage(false);
+        }
+    };
 
     return (
         <div className="space-y-6 pb-20 px-4 pt-6">
@@ -214,6 +267,54 @@ export function Settings() {
                     </div>
                 </div>
             ))}
+
+            {/* Contact Support Section */}
+            <div className="space-y-3">
+                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide px-1">
+                    Support
+                </h2>
+                <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+                    <div className="flex items-center gap-2">
+                        <Mail className="w-5 h-5 text-foreground" />
+                        <label className="font-medium text-foreground">Contact Support</label>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                        Have a question or need help? Send us a message and we'll get back to you soon.
+                    </p>
+                    <textarea
+                        value={contactMessage}
+                        onChange={(e) => setContactMessage(e.target.value)}
+                        placeholder="Type your message here..."
+                        className="w-full min-h-[120px] p-4 border border-border rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                        disabled={isSendingMessage}
+                    />
+                    <button
+                        onClick={handleSendMessage}
+                        disabled={!contactMessage.trim() || isSendingMessage}
+                        className="w-full flex items-center justify-center gap-2 p-4 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isSendingMessage ? (
+                            <>
+                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                Sending...
+                            </>
+                        ) : messageSent ? (
+                            <>
+                                <Check className="w-5 h-5" />
+                                Message Sent!
+                            </>
+                        ) : (
+                            <>
+                                <Send className="w-5 h-5" />
+                                Send Message
+                            </>
+                        )}
+                    </button>
+                    <p className="text-xs text-muted-foreground text-center">
+                        Or email us directly at: <a href="mailto:support@rentmate.co.il" className="text-primary hover:underline">support@rentmate.co.il</a>
+                    </p>
+                </div>
+            </div>
 
             {/* Logout Button */}
             <button
