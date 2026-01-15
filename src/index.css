@@ -106,3 +106,81 @@ button,
 a {
   touch-action: manipulation;
 }
+
+/* RTL Layout Fixes for Hebrew */
+[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
+
+/* Fix flex layouts for RTL */
+[dir="rtl"] .flex {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .flex-row {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .flex-col {
+  flex-direction: column;
+}
+
+/* Fix grid layouts for RTL */
+[dir="rtl"] .grid {
+  direction: rtl;
+}
+
+/* Fix spacing utilities for RTL */
+[dir="rtl"] .ml-auto {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+[dir="rtl"] .mr-auto {
+  margin-right: 0;
+  margin-left: auto;
+}
+
+/* Fix text alignment for RTL */
+[dir="rtl"] .text-left {
+  text-align: right;
+}
+
+[dir="rtl"] .text-right {
+  text-align: left;
+}
+
+/* Fix positioning for RTL */
+[dir="rtl"] .left-0 {
+  left: auto;
+  right: 0;
+}
+
+[dir="rtl"] .right-0 {
+  right: auto;
+  left: 0;
+}
+
+/* Fix rounded corners for RTL */
+[dir="rtl"] .rounded-l {
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+[dir="rtl"] .rounded-r {
+  border-radius: 0.5rem 0 0 0.5rem;
+}
+
+/* Ensure inputs and forms work properly in RTL */
+[dir="rtl"] input,
+[dir="rtl"] textarea,
+[dir="rtl"] select {
+  text-align: right;
+  direction: rtl;
+}
+
+/* Fix navigation and menus */
+[dir="rtl"] nav,
+[dir="rtl"] .menu {
+  direction: rtl;
+}
