@@ -6,9 +6,11 @@ import { useUserPreferences } from '../contexts/UserPreferencesContext';
 import type { Language, Gender } from '../types/database';
 import { EditProfileModal, NotificationsSettingsModal } from '../components/modals/EditProfileModal';
 import { SubscriptionCard } from '../components/subscription/SubscriptionCard';
+import { useTranslation } from '../i18n/translations';
 
 export function Settings() {
     const { preferences, setLanguage, setGender } = useUserPreferences();
+    const { t } = useTranslation();
     const [isAdmin, setIsAdmin] = useState(false);
     const [userData, setUserData] = useState<{ full_name: string | null; email: string | null; first_name?: string; last_name?: string }>({
         full_name: '',
@@ -66,11 +68,11 @@ export function Settings() {
 
     const settingsSections = [
         {
-            title: 'Account',
+            title: t('account'),
             items: [
-                { icon: User, label: 'Profile', description: 'Manage your personal information', onClick: () => setIsEditProfileOpen(true) },
-                { icon: Bell, label: 'Notifications', description: 'Configure alerts and reminders', onClick: () => setIsNotificationsOpen(true) },
-                { icon: Shield, label: 'Privacy & Security', description: 'Control your data and access', onClick: () => { } },
+                { icon: User, label: t('profile'), description: t('managePersonalInfo'), onClick: () => setIsEditProfileOpen(true) },
+                { icon: Bell, label: t('notifications'), description: t('configureAlerts'), onClick: () => setIsNotificationsOpen(true) },
+                { icon: Shield, label: t('privacySecurity'), description: t('controlData'), onClick: () => { } },
             ]
         }
     ];
@@ -129,8 +131,8 @@ export function Settings() {
         <div className="space-y-6 pb-20 px-4 pt-6">
             <div className="flex items-center justify-between relative min-h-[4rem]">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-foreground">Settings</h1>
-                    <p className="text-sm text-muted-foreground mt-1">Manage your account and preferences</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('settings')}</h1>
+                    <p className="text-sm text-muted-foreground mt-1">{t('manageAccount')}</p>
                 </div>
                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
                     <img src={logoFinalCleanV2} alt="RentMate" className="h-16 w-auto object-contain drop-shadow-sm" />
@@ -152,7 +154,7 @@ export function Settings() {
                     <h3 className="font-bold text-lg">{userData.full_name || 'RentMate User'}</h3>
                     <p className="text-sm text-muted-foreground">{userData.email}</p>
                 </div>
-                <button className="text-sm text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">Edit</button>
+                <button className="text-sm text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">{t('edit')}</button>
             </div>
 
             {/* Admin Dashboard Link (Only visible to admins) */}
@@ -171,14 +173,14 @@ export function Settings() {
             {/* Language & Localization Section */}
             <div className="space-y-3">
                 <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide px-1">
-                    Language & Localization
+                    {t('languageLocalization')}
                 </h2>
                 <div className="bg-card border border-border rounded-2xl p-6 space-y-6">
                     {/* Language Selection */}
                     <div className="space-y-3">
                         <div className="flex items-center gap-2">
                             <Languages className="w-5 h-5 text-foreground" />
-                            <label className="font-medium text-foreground">Language</label>
+                            <label className="font-medium text-foreground">{t('language')}</label>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                             {languageOptions.map((option) => (
@@ -206,7 +208,7 @@ export function Settings() {
                         <div className="space-y-3 pt-3 border-t border-border">
                             <div className="flex items-center gap-2">
                                 <User className="w-5 h-5 text-foreground" />
-                                <label className="font-medium text-foreground">Gender (for Hebrew text)</label>
+                                <label className="font-medium text-foreground">{t('genderForHebrew')}</label>
                             </div>
                             <p className="text-sm text-muted-foreground">
                                 This helps us show you text with the correct grammatical gender in Hebrew
@@ -271,20 +273,20 @@ export function Settings() {
             {/* Contact Support Section */}
             <div className="space-y-3">
                 <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide px-1">
-                    Support
+                    {t('support')}
                 </h2>
                 <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
                     <div className="flex items-center gap-2">
                         <Mail className="w-5 h-5 text-foreground" />
-                        <label className="font-medium text-foreground">Contact Support</label>
+                        <label className="font-medium text-foreground">{t('contactSupport')}</label>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                        Have a question or need help? Send us a message and we'll get back to you soon.
+                        {t('contactSupportDesc')}
                     </p>
                     <textarea
                         value={contactMessage}
                         onChange={(e) => setContactMessage(e.target.value)}
-                        placeholder="Type your message here..."
+                        placeholder={t('typeMessageHere')}
                         className="w-full min-h-[120px] p-4 border border-border rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                         disabled={isSendingMessage}
                     />
@@ -296,22 +298,22 @@ export function Settings() {
                         {isSendingMessage ? (
                             <>
                                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                Sending...
+                                {t('sending')}
                             </>
                         ) : messageSent ? (
                             <>
                                 <Check className="w-5 h-5" />
-                                Message Sent!
+                                {t('messageSent')}
                             </>
                         ) : (
                             <>
                                 <Send className="w-5 h-5" />
-                                Send Message
+                                {t('sendMessage')}
                             </>
                         )}
                     </button>
                     <p className="text-xs text-muted-foreground text-center">
-                        Or email us directly at: <a href="mailto:support@rentmate.co.il" className="text-primary hover:underline">support@rentmate.co.il</a>
+                        {t('orEmailDirectly')} <a href="mailto:support@rentmate.co.il" className="text-primary hover:underline">support@rentmate.co.il</a>
                     </p>
                 </div>
             </div>
@@ -325,12 +327,12 @@ export function Settings() {
                 className="w-full flex items-center justify-center gap-2 p-4 bg-destructive/10 text-destructive rounded-2xl font-medium hover:bg-destructive/20 transition-colors"
             >
                 <LogOut className="w-5 h-5" />
-                Sign Out
+                {t('signOut')}
             </button>
 
             {/* App Version */}
             <div className="text-center text-xs text-muted-foreground pt-4">
-                RentMate v2.0 • Build 2026.01
+                {t('appVersion')}
             </div>
 
             <EditProfileModal
