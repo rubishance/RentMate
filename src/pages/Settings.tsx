@@ -26,6 +26,7 @@ export function Settings() {
     const [contactMessage, setContactMessage] = useState('');
     const [isSendingMessage, setIsSendingMessage] = useState(false);
     const [messageSent, setMessageSent] = useState(false);
+    const [isContactOpen, setIsContactOpen] = useState(false);
 
     useEffect(() => {
         fetchUserData();
@@ -129,7 +130,7 @@ export function Settings() {
     };
 
     return (
-        <div className="space-y-6 pb-28 px-4 pt-6">
+        <div className="space-y-6 pb-20 px-4 pt-6">
             {/* Header */}
             <div className="relative h-20 flex items-center justify-between mb-2">
                 <div>
@@ -280,46 +281,57 @@ export function Settings() {
                 <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide px-1">
                     {t('support')}
                 </h2>
-                <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
-                    <div className="flex items-center gap-2">
-                        <Mail className="w-5 h-5 text-foreground" />
-                        <label className="font-medium text-foreground">{t('contactSupport')}</label>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                        {t('contactSupportDesc')}
-                    </p>
-                    <textarea
-                        value={contactMessage}
-                        onChange={(e) => setContactMessage(e.target.value)}
-                        placeholder={t('typeMessageHere')}
-                        className="w-full min-h-[120px] p-4 border border-border rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                        disabled={isSendingMessage}
-                    />
+                <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
                     <button
-                        onClick={handleSendMessage}
-                        disabled={!contactMessage.trim() || isSendingMessage}
-                        className="w-full flex items-center justify-center gap-2 p-4 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={() => setIsContactOpen(!isContactOpen)}
+                        className="w-full flex items-center gap-4 p-4 hover:bg-secondary/50 transition-colors text-left"
                     >
-                        {isSendingMessage ? (
-                            <>
-                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                {t('sending')}
-                            </>
-                        ) : messageSent ? (
-                            <>
-                                <Check className="w-5 h-5" />
-                                {t('messageSent')}
-                            </>
-                        ) : (
-                            <>
-                                <Send className="w-5 h-5" />
-                                {t('sendMessage')}
-                            </>
-                        )}
+                        <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
+                            <Mail className="w-5 h-5 text-foreground" />
+                        </div>
+                        <div className="flex-1">
+                            <div className="font-medium text-foreground">{t('contactSupport')}</div>
+                            <div className="text-sm text-muted-foreground">{t('contactSupportDesc')}</div>
+                        </div>
+                        <ChevronRight className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${isContactOpen ? 'rotate-90' : ''}`} />
                     </button>
-                    <p className="text-xs text-muted-foreground text-center">
-                        {t('orEmailDirectly')} <a href="mailto:support@rentmate.co.il" className="text-primary hover:underline">support@rentmate.co.il</a>
-                    </p>
+
+                    {isContactOpen && (
+                        <div className="p-6 pt-0 border-t border-border mt-4">
+                            <textarea
+                                value={contactMessage}
+                                onChange={(e) => setContactMessage(e.target.value)}
+                                placeholder={t('typeMessageHere')}
+                                className="w-full min-h-[120px] p-4 border border-border rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all mt-4"
+                                disabled={isSendingMessage}
+                            />
+                            <button
+                                onClick={handleSendMessage}
+                                disabled={!contactMessage.trim() || isSendingMessage}
+                                className={`w-full mt-4 flex items-center justify-center gap-2 p-3 rounded-xl font-medium transition-all ${!contactMessage.trim() || isSendingMessage
+                                        ? 'bg-secondary text-muted-foreground cursor-not-allowed'
+                                        : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25'
+                                    }`}
+                            >
+                                {isSendingMessage ? (
+                                    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                ) : messageSent ? (
+                                    <>
+                                        <Check className="w-5 h-5" />
+                                        {t('sent')}
+                                    </>
+                                ) : (
+                                    <>
+                                        <Send className="w-5 h-5" />
+                                        {t('send')}
+                                    </>
+                                )}
+                            </button>
+                            <p className="text-xs text-muted-foreground text-center mt-4">
+                                {t('orEmailDirectly')} <a href="mailto:support@rentmate.co.il" className="text-primary hover:underline">support@rentmate.co.il</a>
+                            </p>
+                        </div>
+                    )}
                 </div>
             </div>
 
