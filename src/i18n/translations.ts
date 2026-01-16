@@ -32,7 +32,12 @@ export type TranslationKeys =
     | 'tenants'
     | 'contracts'
     | 'payments'
-    | 'calculator' // Added missing key
+    | 'calculator'
+    | 'apartment'
+    | 'penthouse'
+    | 'garden'
+    | 'house'
+    | 'other'
 
     // Table Headers
     | 'name'
@@ -113,6 +118,11 @@ export const translations: Record<Language, Record<TranslationKeys, string>> = {
         contracts: 'חוזים',
         payments: 'תשלומים',
         calculator: 'מחשבון',
+        apartment: 'דירה',
+        penthouse: 'פנטהאוז',
+        garden: 'דירת גן',
+        house: 'בית פרטי',
+        other: 'אחר',
 
         name: 'שם',
         address: 'כתובת',
@@ -188,13 +198,18 @@ export const translations: Record<Language, Record<TranslationKeys, string>> = {
         contracts: 'Contracts',
         payments: 'Payments',
         calculator: 'Calculator',
+        apartment: 'Apartment',
+        penthouse: 'Penthouse',
+        garden: 'Garden Apartment',
+        house: 'Private House',
+        other: 'Other',
 
-        name: 'שם',
-        address: 'כתובת',
-        city: 'עיר',
-        status: 'סטטוס',
-        amount: 'סכום',
-        date: 'תאריך',
+        name: 'Name',
+        address: 'Address',
+        city: 'City',
+        status: 'Status',
+        amount: 'Amount',
+        date: 'Date',
 
         settings: 'הגדרות',
         manageAccount: 'נהל את החשבון וההעדפות שלך',
