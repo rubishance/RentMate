@@ -46,7 +46,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, action,
 
             {/* Branding - Final Logo Image - Absolute Center */}
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
-                <img src={logoFinalCleanV2} alt="RentMate" className="h-14 w-auto object-contain drop-shadow-sm" />
+                <img src={logoFinalCleanV2} alt="RentMate" className="h-16 w-auto object-contain drop-shadow-sm" />
             </div>
 
             <div className={`flex items-center gap-2 min-w-[33%] ${isRtl ? 'justify-start' : 'justify-end'}`}>

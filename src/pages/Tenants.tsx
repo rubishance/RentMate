@@ -133,7 +133,6 @@ export function Tenants() {
             <PageHeader
                 title={lang === 'he' ? 'הדיירים שלי' : 'My Tenants'}
                 subtitle={lang === 'he' ? 'ניהול ספר טלפונים ודיירים' : 'Manage your tenants and contacts'}
-                icon={User}
                 action={
                     <button
                         onClick={handleAdd}

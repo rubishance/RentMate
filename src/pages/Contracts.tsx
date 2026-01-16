@@ -185,7 +185,6 @@ export function Contracts() {
             <PageHeader
                 title={lang === 'he' ? 'חוזי שכירות' : 'Contracts'}
                 subtitle={lang === 'he' ? 'ניהול חוזים ותקופות שכירות' : 'Manage lease agreements and terms'}
-                icon={FileText}
                 action={
                     <button
                         onClick={() => navigate('/contracts/new')}
