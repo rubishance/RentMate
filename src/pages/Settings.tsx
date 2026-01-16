@@ -64,8 +64,7 @@ export function Settings() {
 
     const genderOptions: { value: Gender; label: string; labelHe: string }[] = [
         { value: 'male', label: 'Male', labelHe: 'זכר' },
-        { value: 'female', label: 'Female', labelHe: 'נקבה' },
-        { value: 'unspecified', label: 'Rather Not Say', labelHe: 'מעדיף/ה לא לציין' },
+        { value: 'female', label: 'Female', labelHe: 'נקבה' }
     ];
 
     const settingsSections = [

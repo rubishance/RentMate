@@ -3,13 +3,17 @@ import { supabase } from '../lib/supabase';
 import logoFinalCleanV2 from '../assets/logo-final-clean-v2.png';
 import { useTranslation } from '../hooks/useTranslation';
 import { useNavigate } from 'react-router-dom';
+import { ActionMenu } from '../components/ui/ActionMenu';
 import {
     Activity, // Restored
     AlertTriangle, // Restored
     Clock, // Restored
     TrendingUp, // Restored
     Settings,
-    Home
+    Home,
+    Bell,
+    BellOff,
+    Trash2
 } from 'lucide-react';
 // import { NotificationCenter } from '../components/NotificationCenter';
 import { AddPropertyModal } from '../components/modals/AddPropertyModal';
@@ -25,6 +29,7 @@ interface FeedItem {
     date: string;
     actionLabel?: string;
     onAction?: () => void;
+    snoozedUntil?: string;
 }
 
 interface UserProfile {
@@ -56,6 +61,29 @@ export function Dashboard() {
     useEffect(() => {
         loadDashboardData();
     }, []);
+
+    const snoozeMessage = (messageId: string, days: number) => {
+        const snoozeUntil = new Date();
+        snoozeUntil.setDate(snoozeUntil.getDate() + days);
+
+        // Store in localStorage
+        const snoozedMessages = JSON.parse(localStorage.getItem('snoozedMessages') || '{}');
+        snoozedMessages[messageId] = snoozeUntil.toISOString();
+        localStorage.setItem('snoozedMessages', JSON.stringify(snoozedMessages));
+
+        // Reload to hide snoozed message
+        loadDashboardData();
+    };
+
+    const deleteMessage = (messageId: string) => {
+        // Store in localStorage as permanently dismissed
+        const dismissedMessages = JSON.parse(localStorage.getItem('dismissedMessages') || '[]');
+        dismissedMessages.push(messageId);
+        localStorage.setItem('dismissedMessages', JSON.stringify(dismissedMessages));
+
+        // Reload to hide deleted message
+        loadDashboardData();
+    };
 
     async function loadDashboardData() {
         try {
@@ -169,7 +197,26 @@ export function Dashboard() {
                 date: 'Now'
             });
         }
-        setFeedItems(items);
+
+        // Filter out snoozed and dismissed messages
+        const snoozedMessages = JSON.parse(localStorage.getItem('snoozedMessages') || '{}');
+        const dismissedMessages = JSON.parse(localStorage.getItem('dismissedMessages') || '[]');
+        const now = new Date();
+
+        const filteredItems = items.filter(item => {
+            // Check if dismissed
+            if (dismissedMessages.includes(item.id)) return false;
+
+            // Check if snoozed
+            if (snoozedMessages[item.id]) {
+                const snoozeUntil = new Date(snoozedMessages[item.id]);
+                if (now < snoozeUntil) return false;
+            }
+
+            return true;
+        });
+
+        setFeedItems(filteredItems);
     }
 
 
@@ -268,7 +315,7 @@ export function Dashboard() {
                 <h3 className="text-lg font-bold text-gray-900 mb-4">{t('recentActivity')}</h3>
                 <div className="space-y-3">
                     {feedItems.map(item => (
-                        <div key={item.id} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+                        <div key={item.id} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 relative">
                             <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${item.type === 'warning' ? 'bg-orange-50 text-orange-600' :
                                 item.type === 'success' ? 'bg-green-50 text-green-600' :
                                     'bg-blue-50 text-blue-600'
@@ -297,6 +344,15 @@ export function Dashboard() {
                                     }`}>
                                     {item.date}
                                 </span>
+                            </div>
+
+                            {/* 3-dot menu */}
+                            <div className="absolute top-2 left-2" onClick={(e) => e.stopPropagation()}>
+                                <ActionMenu
+                                    align="left"
+                                    onSnooze={(days) => snoozeMessage(item.id, days)}
+                                    onDelete={() => deleteMessage(item.id)}
+                                />
                             </div>
                         </div>
                     ))}

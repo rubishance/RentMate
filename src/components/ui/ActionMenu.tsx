@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { MoreVertical, Eye, Edit, Trash2, Calculator } from 'lucide-react';
+import { MoreVertical, Eye, Edit, Trash2, Calculator, Bell, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from '../../hooks/useTranslation';
 
@@ -8,11 +8,13 @@ interface ActionMenuProps {
     onEdit?: () => void;
     onDelete?: () => void;
     onCalculate?: () => void;
+    onSnooze?: (days: number) => void;
     align?: 'left' | 'right';
 }
 
-export function ActionMenu({ onView, onEdit, onDelete, onCalculate, align = 'right' }: ActionMenuProps) {
+export function ActionMenu({ onView, onEdit, onDelete, onCalculate, onSnooze, align = 'right' }: ActionMenuProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const [showSnoozeSubmenu, setShowSnoozeSubmenu] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
     const { t } = useTranslation();
 
@@ -29,7 +31,15 @@ export function ActionMenu({ onView, onEdit, onDelete, onCalculate, align = 'rig
     const handleAction = (action?: () => void, e?: React.MouseEvent) => {
         e?.stopPropagation(); // Prevent row click
         setIsOpen(false);
+        setShowSnoozeSubmenu(false);
         if (action) action();
+    };
+
+    const handleSnooze = (days: number, e?: React.MouseEvent) => {
+        e?.stopPropagation();
+        setIsOpen(false);
+        setShowSnoozeSubmenu(false);
+        if (onSnooze) onSnooze(days);
     };
 
     const textAlign = align === 'left' ? 'text-left' : 'text-right';
@@ -83,6 +93,47 @@ export function ActionMenu({ onView, onEdit, onDelete, onCalculate, align = 'rig
                                     <Calculator className="w-4 h-4 text-green-500" />
                                     {t('calculate_payments') || 'Calculate Payments'}
                                 </button>
+                            )}
+                            {onSnooze && (
+                                <div className="relative">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setShowSnoozeSubmenu(!showSnoozeSubmenu);
+                                        }}
+                                        className={`w-full flex items-center justify-between gap-2 px-3 py-2 text-sm text-foreground hover:bg-secondary rounded-lg transition-colors ${textAlign}`}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <Bell className="w-4 h-4 text-blue-500" />
+                                            {t('snooze') || 'Snooze'}
+                                        </div>
+                                        <ChevronRight className="w-4 h-4" />
+                                    </button>
+                                    {showSnoozeSubmenu && (
+                                        <div className={`absolute ${align === 'left' ? 'left-full' : 'right-full'} top-0 ml-1 w-32 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-border z-50`}>
+                                            <div className="p-1">
+                                                <button
+                                                    onClick={(e) => handleSnooze(1, e)}
+                                                    className="w-full px-3 py-2 text-sm text-foreground hover:bg-secondary rounded-lg transition-colors text-left"
+                                                >
+                                                    1 {t('day') || 'day'}
+                                                </button>
+                                                <button
+                                                    onClick={(e) => handleSnooze(3, e)}
+                                                    className="w-full px-3 py-2 text-sm text-foreground hover:bg-secondary rounded-lg transition-colors text-left"
+                                                >
+                                                    3 {t('days') || 'days'}
+                                                </button>
+                                                <button
+                                                    onClick={(e) => handleSnooze(7, e)}
+                                                    className="w-full px-3 py-2 text-sm text-foreground hover:bg-secondary rounded-lg transition-colors text-left"
+                                                >
+                                                    1 {t('week') || 'week'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             )}
                             {onDelete && (
                                 <button
