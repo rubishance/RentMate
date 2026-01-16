@@ -152,7 +152,6 @@ export function Analytics({ embedMode = false }: { embedMode?: boolean }) {
                 <PageHeader
                     title={t('analyticsTitle')}
                     subtitle={t('analyticsSubtitle')}
-                    icon={BarChart2}
                 />
             )}
 

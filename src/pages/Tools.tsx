@@ -15,7 +15,6 @@ export function Tools() {
             <PageHeader
                 title={lang === 'he' ? 'כלים' : 'Tools'}
                 subtitle={lang === 'he' ? 'מחשבון ואנליטיקה' : 'Calculator & Analytics'}
-                icon={activeTab === 'calculator' ? CalcIcon : BarChart2}
             />
 
             {/* Tab Switcher */}

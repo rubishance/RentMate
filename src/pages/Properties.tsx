@@ -192,7 +192,6 @@ export function Properties() {
             <PageHeader
                 title={lang === 'he' ? 'הנכסים שלי' : 'My Assets'}
                 subtitle={lang === 'he' ? 'ניהול פורטפוליו הנכסים שלך' : 'Manage your real estate portfolio'}
-                icon={Home}
                 action={
                     <button
                         onClick={() => setIsAddModalOpen(true)}
