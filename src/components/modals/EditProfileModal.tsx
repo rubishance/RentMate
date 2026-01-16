@@ -28,7 +28,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
 
     const handleSave = async () => {
         if (!firstName.trim() || !lastName.trim()) {
-            alert('Both First Name and Last Name are required.');
+            alert(lang === 'he' ? 'שם פרטי ושם משפחה הם שדות חובה' : 'Both First Name and Last Name are required.');
             return;
         }
 
@@ -62,7 +62,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
         } catch (error) {
             console.error('Error updating profile:', error);
             console.error('Error updating profile:', error);
-            alert(`Failed to update profile: ${(error as any).message || 'Unknown error'}`);
+            alert(lang === 'he' ? `שגיאה בעדכון פרופיל: ${(error as any).message || 'שגיאה לא ידועה'}` : `Failed to update profile: ${(error as any).message || 'Unknown error'}`);
         } finally {
             setIsLoading(false);
         }
@@ -76,7 +76,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
 
             <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
                 <div className="p-4 border-b flex items-center justify-between">
-                    <h2 className="text-lg font-bold">Edit Profile</h2>
+                    <h2 className="text-lg font-bold">{lang === 'he' ? 'עריכת פרופיל' : 'Edit Profile'}</h2>
                     <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
                         <X className="w-5 h-5" />
                     </button>
@@ -91,7 +91,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
 
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">First Name</label>
+                            <label className="text-sm font-medium text-gray-700">{lang === 'he' ? 'שם פרטי' : 'First Name'}</label>
                             <input
                                 type="text"
                                 value={firstName}
@@ -100,7 +100,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">Last Name</label>
+                            <label className="text-sm font-medium text-gray-700">{lang === 'he' ? 'שם משפחה' : 'Last Name'}</label>
                             <input
                                 type="text"
                                 value={lastName}
@@ -116,7 +116,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                         onClick={onClose}
                         className="flex-1 py-3 px-4 bg-white border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 active:scale-[0.98] transition-all"
                     >
-                        Cancel
+                        {lang === 'he' ? 'ביטול' : 'Cancel'}
                     </button>
                     <button
                         onClick={handleSave}
@@ -124,7 +124,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                         className="flex-1 py-3 px-4 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20"
                     >
                         {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-                        Save Changes
+                        {lang === 'he' ? 'שמור שינויים' : 'Save Changes'}
                     </button>
                 </div>
             </div>
@@ -134,15 +134,17 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
 
 // Simple Notification Modal (Stub)
 export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+    const { lang } = useTranslation();
+
     if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
             <div className="relative w-full max-w-md bg-white rounded-t-2xl sm:rounded-2xl shadow-xl overflow-hidden p-6 text-center">
-                <h2 className="text-lg font-bold mb-2">Notifications</h2>
-                <p className="text-gray-500 mb-6">Notification preferences are coming soon!</p>
-                <button onClick={onClose} className="w-full py-3 bg-blue-600 text-white rounded-xl font-medium">Close</button>
+                <h2 className="text-lg font-bold mb-2">{lang === 'he' ? 'התראות' : 'Notifications'}</h2>
+                <p className="text-gray-500 mb-6">{lang === 'he' ? 'העדפות התראות יגיעו בקרוב!' : 'Notification preferences are coming soon!'}</p>
+                <button onClick={onClose} className="w-full py-3 bg-blue-600 text-white rounded-xl font-medium">{lang === 'he' ? 'סגור' : 'Close'}</button>
             </div>
         </div>
     );
