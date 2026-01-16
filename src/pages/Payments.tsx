@@ -157,7 +157,7 @@ export function Payments() {
     return (
         <div className="space-y-6 pb-28 px-4 pt-6">
             {/* Header */}
-            <div className="flex items-center justify-between relative min-h-[4rem]">
+            <div className="flex items-center justify-between relative h-20">
                 <div className="flex gap-2">
                     <button
                         onClick={() => setIsAddModalOpen(true)}

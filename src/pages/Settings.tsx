@@ -130,14 +130,18 @@ export function Settings() {
 
     return (
         <div className="space-y-6 pb-28 px-4 pt-6">
-            <div className="flex items-center justify-between relative min-h-[4rem]">
+            {/* Header */}
+            <div className="relative h-20 flex items-center justify-between mb-2">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('settings')}</h1>
-                    <p className="text-sm text-muted-foreground mt-1">{t('language') === 'he' ? 'ניהול חשבון' : 'Account management'}</p>
+                    <p className="text-sm text-muted-foreground">{t('manageAccount')}</p>
                 </div>
+
                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
                     <img src={logoFinalCleanV2} alt="RentMate" className="h-16 w-auto object-contain drop-shadow-sm" />
                 </div>
+
+                <div className="w-8"></div> {/* Spacer for balance if needed, or remove if not */}
             </div>
 
             {/* Subscription Card */}

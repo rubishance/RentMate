@@ -16,7 +16,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, action,
     const isRtl = lang === 'he';
 
     return (
-        <div className={`relative flex items-center justify-between gap-4 mb-6 ${isRtl ? 'flex-row-reverse text-right' : 'flex-row text-left'}`}>
+        <div className="flex items-center justify-between relative h-20 mb-6 px-4 pt-6">
             <div className={`flex items-center gap-3 min-w-[33%] ${isRtl ? 'justify-end' : 'justify-start'}`}>
                 {Icon && (
                     <div className="p-2.5 bg-brand-navy/5 rounded-xl shrink-0">

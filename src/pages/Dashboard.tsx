@@ -235,131 +235,130 @@ export function Dashboard() {
     return (
         <div className="min-h-screen bg-gray-50/50 pb-24 font-sans text-gray-900">
             {/* Header Section */}
-            <div className="px-6 pt-8 pb-6 relative">
+            <div className="px-6 pt-6 pb-6 relative h-20 flex items-center justify-between">
                 {/* Branding - Final Logo Image - Absolute Center */}
-                <div className="absolute left-1/2 top-8 md:top-10 -translate-x-1/2 flex items-center justify-center pointer-events-none">
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none">
                     <img src={logoFinalCleanV2} alt="RentMate" className="h-16 w-auto object-contain drop-shadow-sm" />
                 </div>
 
-                <div className="flex justify-between items-start mb-6">
-                    <div>
-                        <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide">
-                            {t('welcomeBack')}
-                        </h2>
-                        <h1 className="text-3xl font-bold text-gray-900 mt-1">
-                            {profile?.first_name || profile?.full_name?.split(' ')[0] || 'משתמש'}
-                        </h1>
-                    </div>
-
-                    {/* Branding - Centered/Top */}
-
-
-                    <div className="flex items-center gap-2">
-                        {/* <NotificationCenter /> */}
-                        <button
-                            onClick={() => navigate('/settings')}
-                            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
-                            aria-label="Settings"
-                        >
-                            <Settings className="w-6 h-6" />
-                        </button>
-                    </div>
+                <div className="flex flex-col justify-center">
+                    <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide">
+                        {t('welcomeBack')}
+                    </h2>
+                    <h1 className="text-3xl font-bold text-gray-900 mt-1">
+                        {profile?.first_name || profile?.full_name?.split(' ')[0] || 'משתמש'}
+                    </h1>
                 </div>
 
-                {/* Main Stats Card - Navy Theme */}
-                <div className="bg-brand-navy text-white rounded-[2rem] p-6 shadow-xl shadow-brand-navy/20 relative overflow-hidden">
-                    {/* Decorative Background Elements */}
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
-                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/10 rounded-full blur-2xl -ml-10 -mb-10 pointer-events-none"></div>
+                {/* Branding - Centered/Top */}
 
-                    <div className="relative z-10">
-                        <div className="flex justify-between items-start mb-2">
-                            <span className="text-brand-navy-light text-blue-200/80 font-medium">
-                                {t('monthlyIncome')}
+
+                <div className="flex items-center gap-2">
+                    {/* <NotificationCenter /> */}
+                    <button
+                        onClick={() => navigate('/settings')}
+                        className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                        aria-label="Settings"
+                    >
+                        <Settings className="w-6 h-6" />
+                    </button>
+                </div>
+            </div>
+
+            {/* Main Stats Card - Navy Theme */}
+            <div className="bg-brand-navy text-white rounded-[2rem] p-6 shadow-xl shadow-brand-navy/20 relative overflow-hidden">
+                {/* Decorative Background Elements */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/10 rounded-full blur-2xl -ml-10 -mb-10 pointer-events-none"></div>
+
+                <div className="relative z-10">
+                    <div className="flex justify-between items-start mb-2">
+                        <span className="text-brand-navy-light text-blue-200/80 font-medium">
+                            {t('monthlyIncome')}
+                        </span>
+                        <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
+                            <TrendingUp className="w-5 h-5 text-white" />
+                        </div>
+                    </div>
+                    <div className="text-4xl font-bold mb-6 tracking-tight">
+                        ₪{stats.monthlyIncome.toLocaleString()}
+                    </div>
+
+                    {/* Mini Stats Row */}
+                    <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/10">
+                        <div>
+                            <span className="text-xs text-blue-200/60 block mb-1">{t('collected')}</span>
+                            <span className="text-lg font-semibold flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-green-400"></span>
+                                ₪{stats.collected.toLocaleString()}
                             </span>
-                            <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
-                                <TrendingUp className="w-5 h-5 text-white" />
-                            </div>
                         </div>
-                        <div className="text-4xl font-bold mb-6 tracking-tight">
-                            ₪{stats.monthlyIncome.toLocaleString()}
-                        </div>
-
-                        {/* Mini Stats Row */}
-                        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/10">
-                            <div>
-                                <span className="text-xs text-blue-200/60 block mb-1">{t('collected')}</span>
-                                <span className="text-lg font-semibold flex items-center gap-1.5">
-                                    <span className="w-2 h-2 rounded-full bg-green-400"></span>
-                                    ₪{stats.collected.toLocaleString()}
-                                </span>
-                            </div>
-                            <div>
-                                <span className="text-xs text-blue-200/60 block mb-1">{t('pending')}</span>
-                                <span className="text-lg font-semibold flex items-center gap-1.5">
-                                    <span className="w-2 h-2 rounded-full bg-orange-400"></span>
-                                    ₪{stats.pending.toLocaleString()}
-                                </span>
-                            </div>
+                        <div>
+                            <span className="text-xs text-blue-200/60 block mb-1">{t('pending')}</span>
+                            <span className="text-lg font-semibold flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-orange-400"></span>
+                                ₪{stats.pending.toLocaleString()}
+                            </span>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
 
 
 
 
-            {/* Recent Activity List */}
-            <div className="px-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">{t('recentActivity')}</h3>
-                <div className="space-y-3">
-                    {feedItems.map(item => (
-                        <div key={item.id} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 relative">
-                            <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${item.type === 'warning' ? 'bg-orange-50 text-orange-600' :
-                                item.type === 'success' ? 'bg-green-50 text-green-600' :
-                                    'bg-blue-50 text-blue-600'
-                                }`}>
-                                {item.type === 'warning' ? <AlertTriangle className="w-6 h-6" /> :
-                                    item.type === 'urgent' ? <Clock className="w-6 h-6" /> :
-                                        <Activity className="w-6 h-6" />}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <h4 className="font-bold text-gray-900 text-sm">{item.title}</h4>
-                                <p className="text-xs text-gray-500 truncate">{item.desc}</p>
-                                {item.actionLabel && item.onAction && (
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            item.onAction?.();
-                                        }}
-                                        className="mt-2 text-xs bg-gray-100 hover:bg-gray-200 text-gray-900 px-3 py-1.5 rounded-lg font-medium transition-colors"
-                                    >
-                                        {item.actionLabel}
-                                    </button>
-                                )}
-                            </div>
-                            <div className="text-right shrink-0 self-start">
-                                <span className={`text-xs font-bold ${item.title.includes('+') ? 'text-green-600' : 'text-gray-400'
-                                    }`}>
-                                    {item.date}
-                                </span>
-                            </div>
+            {/* Recent Activity List */ }
+    <div className="px-6">
+        <h3 className="text-lg font-bold text-gray-900 mb-4">{t('recentActivity')}</h3>
+        <div className="space-y-3">
+            {feedItems.map(item => (
+                <div key={item.id} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 relative">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${item.type === 'warning' ? 'bg-orange-50 text-orange-600' :
+                        item.type === 'success' ? 'bg-green-50 text-green-600' :
+                            'bg-blue-50 text-blue-600'
+                        }`}>
+                        {item.type === 'warning' ? <AlertTriangle className="w-6 h-6" /> :
+                            item.type === 'urgent' ? <Clock className="w-6 h-6" /> :
+                                <Activity className="w-6 h-6" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <h4 className="font-bold text-gray-900 text-sm">{item.title}</h4>
+                        <p className="text-xs text-gray-500 truncate">{item.desc}</p>
+                        {item.actionLabel && item.onAction && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    item.onAction?.();
+                                }}
+                                className="mt-2 text-xs bg-gray-100 hover:bg-gray-200 text-gray-900 px-3 py-1.5 rounded-lg font-medium transition-colors"
+                            >
+                                {item.actionLabel}
+                            </button>
+                        )}
+                    </div>
+                    <div className="text-right shrink-0 self-start">
+                        <span className={`text-xs font-bold ${item.title.includes('+') ? 'text-green-600' : 'text-gray-400'
+                            }`}>
+                            {item.date}
+                        </span>
+                    </div>
 
-                            {/* 3-dot menu */}
-                            <div className="absolute top-2 left-2" onClick={(e) => e.stopPropagation()}>
-                                <ActionMenu
-                                    align="left"
-                                    onSnooze={(days) => snoozeMessage(item.id, days)}
-                                    onDelete={() => deleteMessage(item.id)}
-                                />
-                            </div>
-                        </div>
-                    ))}
+                    {/* 3-dot menu */}
+                    <div className="absolute top-2 left-2" onClick={(e) => e.stopPropagation()}>
+                        <ActionMenu
+                            align="left"
+                            onSnooze={(days) => snoozeMessage(item.id, days)}
+                            onDelete={() => deleteMessage(item.id)}
+                        />
+                    </div>
                 </div>
-            </div>
+            ))}
+        </div>
+    </div>
 
-            {/* Modals */}
+    {/* Modals */ }
 
             <AddPropertyModal
                 isOpen={isPropertyModalOpen}
@@ -376,6 +375,6 @@ export function Dashboard() {
                 onClose={() => setIsPaymentModalOpen(false)}
                 onSuccess={() => { loadDashboardData(); setIsPaymentModalOpen(false); }}
             />
-        </div>
+        </div >
     );
 }
