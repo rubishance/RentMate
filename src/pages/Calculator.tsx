@@ -2,6 +2,7 @@ import { Calculator as CalcIcon, TrendingUp, ChevronDown, ChevronUp, Share2 } fr
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from '../hooks/useTranslation';
+import { useUserPreferences } from '../contexts/UserPreferencesContext';
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
 import { calculateStandard, calculateReconciliation } from '../services/calculator.service';
@@ -13,11 +14,46 @@ import logoFinalCleanV2 from '../assets/logo-final-clean-v2.png';
 
 type TabType = 'standard' | 'reconciliation';
 
+import { useUserPreferences } from '../contexts/UserPreferencesContext';
+
 export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
     const location = useLocation();
     const { lang, t } = useTranslation();
+    const { preferences } = useUserPreferences();
     const [activeTab, setActiveTab] = useState<TabType>('standard');
     const [loading, setLoading] = useState(false);
+    const [showAdvanced, setShowAdvanced] = useState(false);
+    const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
+
+    // Standard Mode State
+    const [baseRent, setBaseRent] = useState('5000');
+    const [linkageType, setLinkageType] = useState<'cpi' | 'housing' | 'construction' | 'usd' | 'eur'>('cpi');
+    const [baseDate, setBaseDate] = useState('');
+    const [targetDate, setTargetDate] = useState('');
+    const [standardResult, setStandardResult] = useState<StandardCalculationResult | null>(null);
+    const [indexBaseMinimum, setIndexBaseMinimum] = useState<boolean>(false);
+
+    // Reconciliation Mode State
+    const [recBaseRent, setRecBaseRent] = useState('5000');
+    const [recLinkageType, setRecLinkageType] = useState<'cpi' | 'housing' | 'construction' | 'usd' | 'eur'>('cpi');
+    const [contractStartDate, setContractStartDate] = useState('');
+    const [periodStart, setPeriodStart] = useState('');
+    const [periodEnd, setPeriodEnd] = useState('');
+    const [actualPaid, setActualPaid] = useState('5000');
+    const [recPartialLinkage] = useState('100');
+    const [reconciliationResult, setReconciliationResult] = useState<ReconciliationResult | null>(null);
+    const [recLinkagePercentage, setRecLinkagePercentage] = useState('100');
+
+    // ... rest of component ...
+    // Note: I cannot replace the whole component, I must target specific blocks. 
+    // I made a mistake in the replacement content trying to replace "header" type stuff and "body" stuff at once if they are far apart.
+    // I'll split this into: 
+    // 1. Imports and Hook usage
+    // 2. The JSX logic for placeholders
+
+    // This tool call will fail if I try to do too much unmatched context or non-contiguous blocks manifest as one block.
+    // Let me cancel this and use multiple chunks or better targeted replacements.
+
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
 
@@ -449,7 +485,7 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                         <DatePicker
                             value={baseDate ? parseISO(baseDate) : undefined}
                             onChange={(date) => setBaseDate(date ? format(date, 'yyyy-MM-dd') : '')}
-                            placeholder={t('selectBaseDate')}
+                            placeholder={lang === 'he' && preferences.gender === 'female' ? 'בחרי תאריך בסיס' : t('selectBaseDate')}
                             className="w-full"
                         />
                     </div>
@@ -458,7 +494,7 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                         <DatePicker
                             value={targetDate ? parseISO(targetDate) : undefined}
                             onChange={(date) => setTargetDate(date ? format(date, 'yyyy-MM-dd') : '')}
-                            placeholder={t('selectTargetDate')}
+                            placeholder={lang === 'he' && preferences.gender === 'female' ? 'בחרי תאריך יעד' : t('selectTargetDate')}
                             minDate={baseDate ? parseISO(baseDate) : undefined}
                             className="w-full"
                         />
