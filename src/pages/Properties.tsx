@@ -188,7 +188,7 @@ export function Properties() {
     }
 
     return (
-        <div className="space-y-6 pb-24 px-4 pt-6">
+        <div className="space-y-6 pb-28 px-4 pt-6">
             <PageHeader
                 title={lang === 'he' ? 'הנכסים שלי' : 'My Assets'}
                 subtitle={lang === 'he' ? 'ניהול פורטפוליו הנכסים שלך' : 'Manage your real estate portfolio'}

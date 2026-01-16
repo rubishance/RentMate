@@ -150,8 +150,9 @@ export function AppShell() {
             <CookieConsent />
 
             {/* Bottom Navigation Bar */}
-            <nav className="fixed bottom-0 left-0 right-0 bg-white/70 backdrop-blur-xl border-t border-white/50 pb-safe pt-2 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-                <div className="flex justify-around items-center h-16 overflow-x-auto px-2">
+            <nav className="fixed bottom-0 left-0 right-0 bg-white/70 backdrop-blur-xl border-t border-white/50 pb-safe pt-3 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+                <div className="flex justify-around items-center h-20 px-2">
+
 
 
                     {navItems.map((item, index) => {
