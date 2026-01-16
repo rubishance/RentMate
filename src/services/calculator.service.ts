@@ -33,7 +33,12 @@ export async function calculateStandard(
 
         // Apply partial linkage if specified
         const partialLinkage = input.partialLinkage ?? 100;
-        const effectiveChange = (linkageCoefficient / 100) * (partialLinkage / 100);
+        let effectiveChange = (linkageCoefficient / 100) * (partialLinkage / 100);
+
+        // Apply index floor if specified (base index is minimum)
+        if (input.isIndexBaseMinimum && effectiveChange < 0) {
+            effectiveChange = 0; // Prevent rent from dropping below base
+        }
 
         // Calculate new rent
         const newRent = input.baseRent * (1 + effectiveChange);

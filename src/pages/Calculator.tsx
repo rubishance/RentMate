@@ -66,7 +66,6 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                         if (data.input.linkageType) setLinkageType(data.input.linkageType);
                         if (data.input.baseDate) setBaseDate(data.input.baseDate);
                         if (data.input.targetDate) setTargetDate(data.input.targetDate);
-                        if (data.input.partialLinkage) setPartialLinkage(data.input.partialLinkage.toString());
 
                         // Set the result
                         setStandardResult(data.result);
@@ -551,8 +550,7 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                         baseRent,
                         linkageType,
                         baseDate,
-                        targetDate,
-                        partialLinkage
+                        targetDate
                     },
                     result: standardResult
                 }}

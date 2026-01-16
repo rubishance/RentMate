@@ -125,6 +125,7 @@ export interface StandardCalculationInput {
     partialLinkage?: number; // Default 100 (full linkage)
     manualBaseIndex?: number; // Override auto-fetch
     manualTargetIndex?: number; // Override auto-fetch
+    isIndexBaseMinimum?: boolean; // If true, rent cannot drop below base amount
 }
 
 export interface StandardCalculationResult {
