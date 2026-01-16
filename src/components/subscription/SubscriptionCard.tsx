@@ -3,10 +3,12 @@ import UpgradeRequestModal from '../modals/UpgradeRequestModal';
 import { Crown, AlertTriangle, ArrowRight } from 'lucide-react';
 import { useSubscription } from '../../hooks/useSubscription';
 import { UsageBar } from './UsageBar';
+import { useTranslation } from '../../i18n/translations';
 
 export const SubscriptionCard: FC = () => {
     const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
     const { plan, usage, loading } = useSubscription();
+    const { t } = useTranslation();
 
     if (loading) {
         return <div className="animate-pulse h-64 bg-gray-100 dark:bg-gray-800 rounded-2xl" />;
@@ -28,7 +30,7 @@ export const SubscriptionCard: FC = () => {
                     <div>
                         <div className="flex items-center gap-2 mb-1">
                             <span className="text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-full">
-                                Current Plan
+                                {t('currentPlan')}
                             </span>
                         </div>
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -37,7 +39,7 @@ export const SubscriptionCard: FC = () => {
                         </h2>
                         <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
                             {isFree
-                                ? "Great for getting started"
+                                ? t('greatForGettingStarted')
                                 : isEnterprise
                                     ? "Powerhouse for large portfolios"
                                     : "Advanced features for professionals"
@@ -49,17 +51,17 @@ export const SubscriptionCard: FC = () => {
                 {/* Usage Stats */}
                 <div className="space-y-4 mb-6">
                     <UsageBar
-                        label="Properties"
+                        label={t('properties')}
                         current={usage.properties}
                         max={plan.max_properties}
                     />
                     <UsageBar
-                        label="Tenants"
+                        label={t('tenants')}
                         current={usage.tenants}
                         max={plan.max_tenants}
                     />
                     <UsageBar
-                        label="Contracts"
+                        label={t('contracts')}
                         current={usage.contracts}
                         max={plan.max_contracts}
                     />
@@ -72,14 +74,14 @@ export const SubscriptionCard: FC = () => {
                             <div className="text-sm text-gray-600 dark:text-gray-400">
                                 <span className="flex items-center gap-1">
                                     <AlertTriangle className="w-4 h-4 text-orange-500" />
-                                    Unlock more limits
+                                    {t('unlockMoreLimits')}
                                 </span>
                             </div>
                             <button
                                 onClick={() => setIsUpgradeModalOpen(true)}
                                 className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-medium shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all active:scale-95 flex items-center gap-2"
                             >
-                                Upgrade to Pro
+                                {t('upgradeToPro')}
                                 <ArrowRight className="w-4 h-4" />
                             </button>
                         </div>

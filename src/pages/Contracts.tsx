@@ -232,13 +232,9 @@ export function Contracts() {
             {filteredContracts.length === 0 ? (
                 <div className="text-center py-12 bg-secondary/10 rounded-xl">
                     <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-50" />
-                    <h3 className="text-lg font-medium">No {filter === 'all' ? '' : filter} contracts found</h3>
+                    <h3 className="text-lg font-medium">{t('noActiveContracts')}</h3>
                     <p className="text-muted-foreground text-sm">
-                        {filter === 'active'
-                            ? 'You have no active contracts at the moment.'
-                            : filter === 'archived'
-                                ? 'No archived contracts found.'
-                                : 'Create your first contract to get started.'}
+                        {t('noActiveContractsDesc')}
                     </p>
                 </div>
             ) : (

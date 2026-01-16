@@ -283,7 +283,11 @@ export type TranslationKeys =
     | 'city'
     | 'status'
     | 'amount'
-    | 'date';
+    | 'date'
+
+    // Empty States
+    | 'noActiveContracts'
+    | 'noActiveContractsDesc';
 
 export const translations: Record<string, Record<TranslationKeys, string>> = {
     he: {
@@ -555,7 +559,10 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         city: 'עיר',
         status: 'סטטוס',
         amount: 'סכום',
-        date: 'תאריך'
+        date: 'תאריך',
+
+        noActiveContracts: 'לא נמצאו חוזים פעילים',
+        noActiveContractsDesc: 'אין לך חוזים פעילים כרגע'
     },
     en: {
         appName: 'RentMate',
@@ -825,7 +832,10 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         city: 'City',
         status: 'Status',
         amount: 'Amount',
-        date: 'Date'
+        date: 'Date',
+
+        noActiveContracts: 'No active contracts found',
+        noActiveContractsDesc: 'You have no active contracts at the moment'
     }
 };
 
