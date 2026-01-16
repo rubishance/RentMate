@@ -26,8 +26,8 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
     const [linkageType, setLinkageType] = useState<'cpi' | 'housing' | 'construction' | 'usd' | 'eur'>('cpi');
     const [baseDate, setBaseDate] = useState('');
     const [targetDate, setTargetDate] = useState('');
-    const [partialLinkage, setPartialLinkage] = useState('100');
     const [standardResult, setStandardResult] = useState<StandardCalculationResult | null>(null);
+    const [indexBaseMinimum, setIndexBaseMinimum] = useState<boolean>(false);
 
     // Reconciliation Mode State
     const [recBaseRent, setRecBaseRent] = useState('5000');
@@ -196,7 +196,8 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                 linkageType,
                 baseDate: baseDate.slice(0, 7),
                 targetDate: targetDate.slice(0, 7),
-                partialLinkage: parseFloat(partialLinkage)
+                partialLinkage: 100,
+                isIndexBaseMinimum: indexBaseMinimum
             });
             setStandardResult(result);
         } catch (error) {
@@ -472,18 +473,23 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                         </button>
 
                         {showAdvanced && (
-                            <div className="space-y-2 pt-2 border-t border-border">
-                                <label className="text-sm font-medium">{t('partialLinkage')}</label>
-                                <input
-                                    type="number"
-                                    value={partialLinkage}
-                                    onChange={(e) => setPartialLinkage(e.target.value)}
-                                    className="w-full p-3 bg-background border border-border rounded-xl"
-                                    placeholder="100"
-                                    min="0"
-                                    max="100"
-                                />
-                                <p className="text-xs text-muted-foreground">{t('partialLinkageHelp')}</p>
+                            <div className="space-y-3 pt-2 border-t border-border">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={indexBaseMinimum}
+                                        onChange={(e) => setIndexBaseMinimum(e.target.checked)}
+                                        className="w-4 h-4 text-primary rounded border-border focus:ring-primary"
+                                    />
+                                    <span className="text-sm font-medium">
+                                        {lang === 'he' ? 'מדד בסיס הוא מדד מינימום' : 'Base index is minimum'}
+                                    </span>
+                                </label>
+                                <p className="text-xs text-muted-foreground">
+                                    {lang === 'he'
+                                        ? 'כאשר מסומן, השכירות לא תרד מתחת לסכום הבסיס גם אם המדד ירד'
+                                        : 'When checked, rent will not drop below base amount even if index decreases'}
+                                </p>
                             </div>
                         )}
 

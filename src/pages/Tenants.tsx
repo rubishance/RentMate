@@ -6,7 +6,6 @@ import { supabase } from '../lib/supabase';
 import type { Tenant } from '../types/database';
 import { AddTenantModal } from '../components/modals/AddTenantModal';
 import { ConfirmDeleteModal } from '../components/modals/ConfirmDeleteModal';
-import { ActionMenu } from '../components/ui/ActionMenu';
 import { useTranslation } from '../hooks/useTranslation';
 import { PageHeader } from '../components/common/PageHeader';
 import { GlassCard } from '../components/common/GlassCard';
@@ -164,7 +163,7 @@ export function Tenants() {
                     {tenants.map((tenant) => (
                         <GlassCard
                             key={tenant.id}
-                            onClick={() => handleEdit(tenant)}
+                            onClick={() => handleView(tenant)}
                             hoverEffect
                             className="p-4 flex items-center justify-between cursor-pointer group"
                         >
@@ -202,14 +201,6 @@ export function Tenants() {
                                         <Mail className="w-4 h-4" />
                                     </a>
                                 )}
-                                <div onClick={(e) => e.stopPropagation()} className="mr-2 border-l pl-2 border-gray-100">
-                                    <ActionMenu
-                                        align={lang === 'he' ? 'left' : 'right'}
-                                        onView={() => handleView(tenant)}
-                                        onEdit={() => handleEdit(tenant)}
-                                        onDelete={() => handleDelete(tenant)}
-                                    />
-                                </div>
                             </div>
                         </GlassCard>
                     ))}
