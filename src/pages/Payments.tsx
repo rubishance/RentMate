@@ -158,15 +158,6 @@ export function Payments() {
         <div className="space-y-6 pb-28 px-4 pt-6">
             {/* Header */}
             <div className="flex items-center justify-between relative min-h-[4rem]">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('paymentsTitle')}</h1>
-                    <p className="text-sm text-muted-foreground">{t('trackFuturePayments')}</p>
-                </div>
-
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-                    <img src={logoFinalCleanV2} alt="RentMate" className="h-16 w-auto object-contain drop-shadow-sm" />
-                </div>
-
                 <div className="flex gap-2">
                     <button
                         onClick={() => setIsAddModalOpen(true)}
@@ -175,6 +166,15 @@ export function Payments() {
                     >
                         <Plus className="w-5 h-5" />
                     </button>
+                </div>
+
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+                    <img src={logoFinalCleanV2} alt="RentMate" className="h-16 w-auto object-contain drop-shadow-sm" />
+                </div>
+
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('paymentsTitle')}</h1>
+                    <p className="text-sm text-muted-foreground">{t('trackFuturePayments')}</p>
                 </div>
             </div>
 
