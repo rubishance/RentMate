@@ -128,7 +128,7 @@ export function Settings() {
     };
 
     return (
-        <div className="space-y-6 pb-20 px-4 pt-6">
+        <div className="space-y-6 pb-24 px-4 pt-6">
             <div className="flex items-center justify-between relative min-h-[4rem]">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('settings')}</h1>
