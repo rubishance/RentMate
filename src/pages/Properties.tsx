@@ -245,7 +245,7 @@ export function Properties() {
                                     <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/90 backdrop-blur-xl rounded-full shadow-sm">
                                         <PropertyIcon type={property.property_type} className="w-3.5 h-3.5 text-brand-navy" />
                                         <span className="text-xs font-bold text-brand-navy capitalize">
-                                            {property.property_type?.replace('_', ' ') || 'Apartment'}
+                                            {property.property_type ? t(property.property_type as any) : t('apartment')}
                                         </span>
                                     </div>
                                 </div>
