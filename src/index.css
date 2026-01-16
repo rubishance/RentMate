@@ -119,3 +119,53 @@ a {
   text-align: right;
   direction: rtl;
 }
+
+/* ============================================ */
+/* Page Transition Animations */
+/* ============================================ */
+
+/* Smooth fade-in for page content */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Apply fade-in to main content areas */
+main,
+.page-content,
+[class*="space-y-6"] {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Optimize rendering performance */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Hardware acceleration for smoother transitions */
+.transition,
+.transition-all,
+.transition-colors,
+.transition-transform {
+  will-change: transform, opacity;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

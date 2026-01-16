@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { UserPreferencesProvider } from './contexts/UserPreferencesContext';
+import { DataCacheProvider } from './contexts/DataCacheContext';
 import { AppShell } from './components/layout/AppShell';
 import { LandingPage } from './pages/LandingPage';
 import { Login } from './pages/Login';
@@ -36,51 +37,53 @@ import TermsOfService from './pages/legal/TermsOfService';
 function App() {
   return (
     <UserPreferencesProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
+      <DataCacheProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
-          <Route path="/calc/share/:id" element={<SharedCalculation />} />
+            <Route path="/calc/share/:id" element={<SharedCalculation />} />
 
-          {/* Legal Routes */}
-          <Route path="/legal/accessibility" element={<AccessibilityStatement />} />
-          <Route path="/legal/privacy" element={<PrivacyPolicy />} />
-          <Route path="/legal/terms" element={<TermsOfService />} />
+            {/* Legal Routes */}
+            <Route path="/legal/accessibility" element={<AccessibilityStatement />} />
+            <Route path="/legal/privacy" element={<PrivacyPolicy />} />
+            <Route path="/legal/terms" element={<TermsOfService />} />
 
-          {/* Main App Routes - Public Access except Payments */}
-          <Route element={<AppShell />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/properties" element={<Properties />} />
-            <Route path="/tenants" element={<Tenants />} />
-            <Route path="/contracts" element={<Contracts />} />
-            <Route path="/contracts/new" element={<AddContract />} />
-            <Route path="/calculator" element={<Calculator />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="/tools" element={<Tools />} />
+            {/* Main App Routes - Public Access except Payments */}
+            <Route element={<AppShell />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/properties" element={<Properties />} />
+              <Route path="/tenants" element={<Tenants />} />
+              <Route path="/contracts" element={<Contracts />} />
+              <Route path="/contracts/new" element={<AddContract />} />
+              <Route path="/calculator" element={<Calculator />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/tools" element={<Tools />} />
 
-            {/* Protected Payment Route */}
-            <Route element={<AuthGuard />}>
-              <Route path="/payments" element={<Payments />} />
+              {/* Protected Payment Route */}
+              <Route element={<AuthGuard />}>
+                <Route path="/payments" element={<Payments />} />
+              </Route>
             </Route>
-          </Route>
 
-          {/* Admin Routes */}
-          <Route element={<AdminGuard />}>
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<AdminDashboard />} />
-              <Route path="notifications" element={<AdminNotifications />} />
-              <Route path="users" element={<UserManagement />} />
-              <Route path="plans" element={<PlanManagement />} />
-              <Route path="invoices" element={<AdminInvoices />} />
-              <Route path="audit-logs" element={<AuditLogs />} />
+            {/* Admin Routes */}
+            <Route element={<AdminGuard />}>
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="notifications" element={<AdminNotifications />} />
+                <Route path="users" element={<UserManagement />} />
+                <Route path="plans" element={<PlanManagement />} />
+                <Route path="invoices" element={<AdminInvoices />} />
+                <Route path="audit-logs" element={<AuditLogs />} />
+              </Route>
             </Route>
-          </Route>
-        </Routes>
-      </BrowserRouter>
+          </Routes>
+        </BrowserRouter>
+      </DataCacheProvider>
     </UserPreferencesProvider>
   );
 }
