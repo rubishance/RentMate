@@ -184,7 +184,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                         </h2>
                         <div className="flex items-center gap-2 mt-1">
                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                                {contract.properties.address}, {contract.properties.city}
+                                {contract.properties?.address || 'N/A'}, {contract.properties?.city || 'N/A'}
                             </p>
                             {contract.contract_file_url && (
                                 <a
@@ -228,7 +228,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                             </div>
                             <div>
                                 <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Tenant</p>
-                                <p className="font-medium text-gray-900 dark:text-gray-100">{contract.tenants.name}</p>
+                                <p className="font-medium text-gray-900 dark:text-gray-100">{contract.tenants?.name || 'N/A'}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
@@ -237,7 +237,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                             </div>
                             <div>
                                 <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Property</p>
-                                <p className="font-medium text-gray-900 dark:text-gray-100">{contract.properties.address}</p>
+                                <p className="font-medium text-gray-900 dark:text-gray-100">{contract.properties?.address || 'N/A'}</p>
                             </div>
                         </div>
                     </div >
