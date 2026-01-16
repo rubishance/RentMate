@@ -188,7 +188,7 @@ export function Properties() {
     }
 
     return (
-        <div className="space-y-6 pb-28 px-4 pt-6">
+        <div className="space-y-6 pb-20 px-4 pt-6">
             <PageHeader
                 title={lang === 'he' ? 'הנכסים שלי' : 'My Assets'}
                 subtitle={lang === 'he' ? 'ניהול פורטפוליו הנכסים שלך' : 'Manage your real estate portfolio'}
@@ -209,9 +209,15 @@ export function Properties() {
                         <Home className="w-8 h-8 text-brand-navy/40" />
                     </div>
                     <h3 className="text-lg font-bold text-gray-900">{lang === 'he' ? 'אין נכסים עדיין' : 'No Assets Found'}</h3>
-                    <p className="text-gray-500 text-sm mb-6">{lang === 'he' ? 'הוסף את הנכס הראשון שלך כדי להתחיל' : 'Add your first property to get started'}</p>
+                    <p className="text-gray-500 text-sm mb-6">
+                        {lang === 'he'
+                            ? (preferences.gender === 'female' ? 'הוסיפי את הנכס הראשון שלך כדי להתחיל' : 'הוסף את הנכס הראשון שלך כדי להתחיל')
+                            : 'Add your first property to get started'}
+                    </p>
                     <button onClick={handleAdd} className="text-brand-navy font-bold hover:underline text-sm">
-                        {lang === 'he' ? '+ צור נכס חדש' : '+ Create New Asset'}
+                        {lang === 'he'
+                            ? (preferences.gender === 'female' ? '+ צרי נכס חדש' : '+ צור נכס חדש')
+                            : '+ Create New Asset'}
                     </button>
                 </GlassCard>
             ) : (

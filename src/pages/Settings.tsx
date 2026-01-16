@@ -72,9 +72,24 @@ export function Settings() {
         {
             title: t('account'),
             items: [
-                { icon: User, label: t('profile'), description: t('managePersonalInfo'), onClick: () => setIsEditProfileOpen(true) },
-                { icon: Bell, label: t('notifications'), description: t('configureAlerts'), onClick: () => setIsNotificationsOpen(true) },
-                { icon: Shield, label: t('privacySecurity'), description: t('controlData'), onClick: () => setIsPrivacySecurityOpen(true) },
+                {
+                    icon: User,
+                    label: t('profile'),
+                    description: preferences.language === 'he' && preferences.gender === 'female' ? 'נהלי את המידע האישי שלך' : t('managePersonalInfo'),
+                    onClick: () => setIsEditProfileOpen(true)
+                },
+                {
+                    icon: Bell,
+                    label: t('notifications'),
+                    description: preferences.language === 'he' && preferences.gender === 'female' ? 'הגדירי התראות ותזכורות' : t('configureAlerts'),
+                    onClick: () => setIsNotificationsOpen(true)
+                },
+                {
+                    icon: Shield,
+                    label: t('privacySecurity'),
+                    description: preferences.language === 'he' && preferences.gender === 'female' ? 'שלטי במידע ובגישה שלך' : t('controlData'),
+                    onClick: () => setIsPrivacySecurityOpen(true)
+                },
             ]
         }
     ];
@@ -291,7 +306,11 @@ export function Settings() {
                         </div>
                         <div className="flex-1">
                             <div className="font-medium text-foreground">{t('contactSupport')}</div>
-                            <div className="text-sm text-muted-foreground">{t('contactSupportDesc')}</div>
+                            <div className="text-sm text-muted-foreground">
+                                {preferences.language === 'he' && preferences.gender === 'female'
+                                    ? 'יש לך שאלה או את צריכה עזרה? שלחי לנו הודעה ונחזור אלייך בהקדם.'
+                                    : t('contactSupportDesc')}
+                            </div>
                         </div>
                         <ChevronRight className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${isContactOpen ? 'rotate-90' : ''}`} />
                     </button>
@@ -309,8 +328,8 @@ export function Settings() {
                                 onClick={handleSendMessage}
                                 disabled={!contactMessage.trim() || isSendingMessage}
                                 className={`w-full mt-4 flex items-center justify-center gap-2 p-3 rounded-xl font-medium transition-all ${!contactMessage.trim() || isSendingMessage
-                                        ? 'bg-secondary text-muted-foreground cursor-not-allowed'
-                                        : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25'
+                                    ? 'bg-secondary text-muted-foreground cursor-not-allowed'
+                                    : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25'
                                     }`}
                             >
                                 {isSendingMessage ? (
@@ -344,7 +363,7 @@ export function Settings() {
                 className="w-full flex items-center justify-center gap-2 p-4 bg-destructive/10 text-destructive rounded-2xl font-medium hover:bg-destructive/20 transition-colors"
             >
                 <LogOut className="w-5 h-5" />
-                {t('signOut')}
+                {preferences.language === 'he' && preferences.gender === 'female' ? 'התנתקי' : t('signOut')}
             </button>
 
             {/* App Version */}
