@@ -213,7 +213,7 @@ export function Settings() {
                                 <label className="font-medium text-foreground">{t('genderForHebrew')}</label>
                             </div>
                             <p className="text-sm text-muted-foreground">
-                                This helps us show you text with the correct grammatical gender in Hebrew
+                                {preferences.language === 'he' ? 'זה עוזר לנו להציג לך טקסט עם המגדר הדקדוקי הנכון בעברית' : 'This helps us show you text with the correct grammatical gender in Hebrew'}
                             </p>
                             <div className="grid grid-cols-1 gap-3">
                                 {genderOptions.map((option) => (
