@@ -7,6 +7,7 @@ import type { Language, Gender } from '../types/database';
 import { EditProfileModal, NotificationsSettingsModal } from '../components/modals/EditProfileModal';
 import { SubscriptionCard } from '../components/subscription/SubscriptionCard';
 import { useTranslation } from '../i18n/translations';
+import { PrivacySecurityModal } from '../components/modals/PrivacySecurityModal';
 
 export function Settings() {
     const { preferences, setLanguage, setGender } = useUserPreferences();
@@ -21,6 +22,7 @@ export function Settings() {
 
     const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+    const [isPrivacySecurityOpen, setIsPrivacySecurityOpen] = useState(false);
     const [contactMessage, setContactMessage] = useState('');
     const [isSendingMessage, setIsSendingMessage] = useState(false);
     const [messageSent, setMessageSent] = useState(false);
@@ -72,7 +74,7 @@ export function Settings() {
             items: [
                 { icon: User, label: t('profile'), description: t('managePersonalInfo'), onClick: () => setIsEditProfileOpen(true) },
                 { icon: Bell, label: t('notifications'), description: t('configureAlerts'), onClick: () => setIsNotificationsOpen(true) },
-                { icon: Shield, label: t('privacySecurity'), description: t('controlData'), onClick: () => { } },
+                { icon: Shield, label: t('privacySecurity'), description: t('controlData'), onClick: () => setIsPrivacySecurityOpen(true) },
             ]
         }
     ];
@@ -132,7 +134,7 @@ export function Settings() {
             <div className="flex items-center justify-between relative min-h-[4rem]">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('settings')}</h1>
-                    <p className="text-sm text-muted-foreground mt-1">{t('manageAccount')}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{t('language') === 'he' ? 'ניהול חשבון' : 'Account management'}</p>
                 </div>
                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
                     <img src={logoFinalCleanV2} alt="RentMate" className="h-16 w-auto object-contain drop-shadow-sm" />
@@ -348,6 +350,11 @@ export function Settings() {
             <NotificationsSettingsModal
                 isOpen={isNotificationsOpen}
                 onClose={() => setIsNotificationsOpen(false)}
+            />
+
+            <PrivacySecurityModal
+                isOpen={isPrivacySecurityOpen}
+                onClose={() => setIsPrivacySecurityOpen(false)}
             />
         </div>
     );
