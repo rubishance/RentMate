@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import logoFinalCleanV2 from '../assets/logo-final-clean-v2.png';
 import { useTranslation } from '../hooks/useTranslation';
-import { ActionMenu } from '../components/ui/ActionMenu';
 import { useNavigate } from 'react-router-dom';
 import {
     Activity, // Restored
@@ -305,13 +304,6 @@ export function Dashboard() {
             </div>
 
             {/* Modals */}
-            <ActionMenu
-                // Hidden trigger, but logic kept if needed for floating action button in future
-                align="right"
-                onView={() => { }}
-                onEdit={() => { }}
-                onDelete={() => { }}
-            />
 
             <AddPropertyModal
                 isOpen={isPropertyModalOpen}
