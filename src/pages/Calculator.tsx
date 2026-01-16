@@ -974,8 +974,7 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                         baseRent,
                         linkageType,
                         baseDate,
-                        targetDate,
-                        partialLinkage
+                        targetDate
                     } : {
                         type: 'reconciliation',
                         baseRent: expectedHistory[0]?.amount || '', // Use first month as base or just the list
