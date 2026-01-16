@@ -290,7 +290,7 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
             {!embedMode && (
                 <div className="flex flex-col items-center space-y-2">
                     <div className="flex items-center gap-2 mb-1">
-                        <img src={logoFinalCleanV2} alt="RentMate" className="h-20 w-auto object-contain" />
+                        <img src={logoFinalCleanV2} alt="RentMate" className="h-16 w-auto object-contain drop-shadow-sm" />
                     </div>
                     <h1 className="text-xl font-bold tracking-tight text-foreground flex items-center justify-center gap-2">
                         <CalcIcon className="w-5 h-5 text-primary" />
