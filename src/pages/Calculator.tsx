@@ -607,7 +607,7 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                                             <div className="max-h-60 overflow-y-auto">
                                                 <div className="divide-y divide-border">
                                                     {expectedHistory.map((payment) => (
-                                                        <div key={payment.id} className="flex justify-between items-center p-2 text-sm hover:bg-secondary/10 transition-colors group">
+                                                        <div key={payment.id} className="flex justify-between items-center py-1.5 px-2 text-sm hover:bg-secondary/10 transition-colors group">
                                                             <div className="flex gap-2 items-center flex-1">
                                                                 <div className="w-32">
                                                                     <DatePicker
