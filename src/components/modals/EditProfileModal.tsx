@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Save, User as UserIcon, Loader2 } from 'lucide-react';
+import { X, Save, User as UserIcon, Loader2, Edit } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useTranslation } from '../../hooks/useTranslation';
 
@@ -18,11 +18,13 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isReadOnly, setIsReadOnly] = useState(true);
 
     useEffect(() => {
         if (isOpen) {
             setFirstName(initialData.first_name || '');
             setLastName(initialData.last_name || '');
+            setIsReadOnly(true); // Always start in view mode
         }
     }, [isOpen, initialData]);
 
@@ -76,7 +78,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
 
             <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
                 <div className="p-4 border-b flex items-center justify-between">
-                    <h2 className="text-lg font-bold">{lang === 'he' ? 'עריכת פרופיל' : 'Edit Profile'}</h2>
+                    <h2 className="text-lg font-bold">{isReadOnly ? (lang === 'he' ? 'פרופיל' : 'Profile') : (lang === 'he' ? 'עריכת פרופיל' : 'Edit Profile')}</h2>
                     <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
                         <X className="w-5 h-5" />
                     </button>
@@ -96,7 +98,11 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                                 type="text"
                                 value={firstName}
                                 onChange={(e) => setFirstName(e.target.value)}
-                                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                readOnly={isReadOnly}
+                                className={`w-full p-3 border rounded-xl outline-none transition-all ${isReadOnly
+                                        ? 'bg-gray-100 border-gray-200 cursor-default'
+                                        : 'bg-gray-50 border-gray-200 focus:ring-2 focus:ring-blue-500'
+                                    }`}
                             />
                         </div>
                         <div className="space-y-2">
@@ -105,27 +111,55 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                                 type="text"
                                 value={lastName}
                                 onChange={(e) => setLastName(e.target.value)}
-                                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                readOnly={isReadOnly}
+                                className={`w-full p-3 border rounded-xl outline-none transition-all ${isReadOnly
+                                        ? 'bg-gray-100 border-gray-200 cursor-default'
+                                        : 'bg-gray-50 border-gray-200 focus:ring-2 focus:ring-blue-500'
+                                    }`}
                             />
                         </div>
                     </div>
                 </div>
 
                 <div className="p-4 border-t bg-gray-50 flex gap-3">
-                    <button
-                        onClick={onClose}
-                        className="flex-1 py-3 px-4 bg-white border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 active:scale-[0.98] transition-all"
-                    >
-                        {lang === 'he' ? 'ביטול' : 'Cancel'}
-                    </button>
-                    <button
-                        onClick={handleSave}
-                        disabled={isLoading}
-                        className="flex-1 py-3 px-4 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20"
-                    >
-                        {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-                        {lang === 'he' ? 'שמור שינויים' : 'Save Changes'}
-                    </button>
+                    {isReadOnly ? (
+                        <>
+                            <button
+                                onClick={onClose}
+                                className="flex-1 py-3 px-4 bg-white border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 active:scale-[0.98] transition-all"
+                            >
+                                {lang === 'he' ? 'סגור' : 'Close'}
+                            </button>
+                            <button
+                                onClick={() => setIsReadOnly(false)}
+                                className="flex-1 py-3 px-4 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20"
+                            >
+                                <Edit className="w-5 h-5" />
+                                {lang === 'he' ? 'ערוך' : 'Edit'}
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <button
+                                onClick={() => {
+                                    setIsReadOnly(true);
+                                    setFirstName(initialData.first_name || '');
+                                    setLastName(initialData.last_name || '');
+                                }}
+                                className="flex-1 py-3 px-4 bg-white border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 active:scale-[0.98] transition-all"
+                            >
+                                {lang === 'he' ? 'ביטול' : 'Cancel'}
+                            </button>
+                            <button
+                                onClick={handleSave}
+                                disabled={isLoading}
+                                className="flex-1 py-3 px-4 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20"
+                            >
+                                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+                                {lang === 'he' ? 'שמור שינויים' : 'Save Changes'}
+                            </button>
+                        </>
+                    )}
                 </div>
             </div>
         </div>
