@@ -100,8 +100,8 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                                 onChange={(e) => setFirstName(e.target.value)}
                                 readOnly={isReadOnly}
                                 className={`w-full p-3 border rounded-xl outline-none transition-all ${isReadOnly
-                                        ? 'bg-gray-100 border-gray-200 cursor-default'
-                                        : 'bg-gray-50 border-gray-200 focus:ring-2 focus:ring-blue-500'
+                                    ? 'bg-gray-100 border-gray-200 cursor-default'
+                                    : 'bg-gray-50 border-gray-200 focus:ring-2 focus:ring-blue-500'
                                     }`}
                             />
                         </div>
@@ -113,8 +113,8 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                                 onChange={(e) => setLastName(e.target.value)}
                                 readOnly={isReadOnly}
                                 className={`w-full p-3 border rounded-xl outline-none transition-all ${isReadOnly
-                                        ? 'bg-gray-100 border-gray-200 cursor-default'
-                                        : 'bg-gray-50 border-gray-200 focus:ring-2 focus:ring-blue-500'
+                                    ? 'bg-gray-100 border-gray-200 cursor-default'
+                                    : 'bg-gray-50 border-gray-200 focus:ring-2 focus:ring-blue-500'
                                     }`}
                             />
                         </div>
@@ -166,20 +166,23 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
     );
 }
 
+import { createPortal } from 'react-dom';
+
 // Simple Notification Modal (Stub)
 export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
     const { lang } = useTranslation();
 
     if (!isOpen) return null;
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+    return createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4">
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-            <div className="relative w-full max-w-md bg-white rounded-t-2xl sm:rounded-2xl shadow-xl overflow-hidden p-6 text-center">
+            <div className="relative w-full max-w-md bg-white rounded-t-2xl sm:rounded-2xl shadow-xl overflow-hidden p-6 text-center animate-in fade-in zoom-in duration-200">
                 <h2 className="text-lg font-bold mb-2">{lang === 'he' ? 'התראות' : 'Notifications'}</h2>
                 <p className="text-gray-500 mb-6">{lang === 'he' ? 'העדפות התראות יגיעו בקרוב!' : 'Notification preferences are coming soon!'}</p>
-                <button onClick={onClose} className="w-full py-3 bg-blue-600 text-white rounded-xl font-medium">{lang === 'he' ? 'סגור' : 'Close'}</button>
+                <button onClick={onClose} className="w-full py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors">{lang === 'he' ? 'סגור' : 'Close'}</button>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }

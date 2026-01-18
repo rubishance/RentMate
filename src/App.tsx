@@ -7,6 +7,7 @@ import { AppShell } from './components/layout/AppShell';
 import { Loader2 } from 'lucide-react';
 import { FeedbackWidget } from './components/common/FeedbackWidget';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
+import GoogleDriveCallback from './pages/auth/GoogleDriveCallback';
 
 const PageLoader = () => (
   <div className="flex h-screen w-full items-center justify-center bg-gray-50 dark:bg-gray-900">
@@ -69,6 +70,7 @@ function App() {
                   <Route path="/pricing" element={<Pricing />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/auth/google/callback" element={<GoogleDriveCallback />} />
 
                   {/* MFA Routes - Accessible only if logged in */}
                   <Route element={<AuthGuard />}>
