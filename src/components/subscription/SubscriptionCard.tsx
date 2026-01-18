@@ -3,7 +3,7 @@ import UpgradeRequestModal from '../modals/UpgradeRequestModal';
 import { Crown, AlertTriangle, ArrowRight } from 'lucide-react';
 import { useSubscription } from '../../hooks/useSubscription';
 import { UsageBar } from './UsageBar';
-import { useTranslation } from '../../i18n/translations';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export const SubscriptionCard: FC = () => {
     const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);

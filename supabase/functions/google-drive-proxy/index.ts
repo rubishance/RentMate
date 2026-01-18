@@ -150,7 +150,7 @@ async function uploadFile(userId: string, fileData: any, folderId: string, supab
     form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
     form.append('file', new Blob([fileData.content], { type: fileData.mimeType }));
 
-    const uploadResponse = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+    const uploadResponse = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${accessToken}` },
         body: form,
@@ -159,7 +159,7 @@ async function uploadFile(userId: string, fileData: any, folderId: string, supab
     const file = await uploadResponse.json();
 
     return new Response(
-        JSON.stringify({ fileId: file.id, name: file.name }),
+        JSON.stringify({ fileId: file.id, name: file.name, webViewLink: file.webViewLink }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 }

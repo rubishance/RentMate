@@ -1,0 +1,103 @@
+/* Glass Bionic Theme - Dark Mode Priority */
+:root {
+    --bg-navy: #0f172a;
+    --bg-dark-accent: #1e293b;
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-surface: rgba(30, 41, 59, 0.7);
+    --neon-purple: #a855f7;
+    --neon-blue: #3b82f6;
+    --neon-pink: #ec4899;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+}
+
+body {
+    background-color: var(--bg-navy);
+    color: var(--text-primary);
+    font-family: 'Heebo', 'Assistant', sans-serif;
+    overflow-x: hidden;
+}
+
+/* Background Gradients */
+.bionic-bg-glow {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(15, 23, 42, 0) 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    animation: float-slow 10s infinite ease-in-out;
+}
+
+.bionic-bg-glow.purple {
+    background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, rgba(15, 23, 42, 0) 70%);
+    animation-delay: -5s;
+}
+
+/* Glass Card */
+.glass-bionic-card {
+    background: var(--glass-surface);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-bionic-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 40px rgba(59, 130, 246, 0.1);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Typography Effects */
+.text-glow-title {
+    text-shadow: 0 0 30px rgba(59, 130, 246, 0.2);
+    letter-spacing: -0.02em;
+}
+
+.text-gradient-bionic {
+    background: linear-gradient(135deg, #60a5fa 0%, #c084fc 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+/* 3D Hero Container */
+.hero-3d-stage {
+    perspective: 1000px;
+    transform-style: preserve-3d;
+    height: 100%;
+}
+
+.hero-dashboard-preview {
+    transform: rotateX(10deg) rotateY(-5deg) rotateZ(2deg);
+    transition: transform 0.1s ease-out;
+    box-shadow: -20px 20px 60px rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
+    border: 1px solid var(--glass-border);
+    overflow: hidden;
+}
+
+/* Animations */
+@keyframes float-slow {
+
+    0%,
+    100% {
+        transform: translate(0, 0);
+    }
+
+    50% {
+        transform: translate(20px, -20px);
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-dashboard-preview {
+        transform: none !important;
+        /* Disable heavy generic tilts on mobile for performance */
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+}

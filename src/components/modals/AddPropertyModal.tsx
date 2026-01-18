@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
-import { X, Building2, MapPin, Ruler, BedDouble, Image as ImageIcon, Loader2, Upload, Car, Box, FileText, Pen, Trash2 } from 'lucide-react';
+import { X, Building2, MapPin, Ruler, BedDouble, Image as ImageIcon, Loader2, Upload, Car, Box, FileText, Pen, Trash2, Check } from 'lucide-react';
 import apartmentIcon from '../../assets/property-types/apartment.png';
 import penthouseIcon from '../../assets/property-types/penthouse.png';
 import gardenIcon from '../../assets/property-types/garden.png';
@@ -15,6 +15,7 @@ import { AddTenantModal } from './AddTenantModal';
 import { ContractDetailsModal } from './ContractDetailsModal';
 import { useSubscription } from '../../hooks/useSubscription';
 import type { Property, Contract, Tenant } from '../../types/database';
+import { googleDriveService } from '../../services/google-drive.service';
 
 // Extend Contract type to include joined tenants data
 type ExtendedContract = Contract & { tenants: { name: string } | null };
@@ -138,6 +139,15 @@ export function AddPropertyModal({ isOpen, onClose, onSuccess, propertyToEdit, r
     const [uploadMode, setUploadMode] = useState<'url' | 'upload'>('upload');
     const [isUploading, setIsUploading] = useState(false);
 
+    // Google Drive Integration
+    const [saveToDrive, setSaveToDrive] = useState(false);
+    const [isDriveConnected, setIsDriveConnected] = useState(false);
+
+    useEffect(() => {
+        // Check if connected
+        googleDriveService.isConnected().then(setIsDriveConnected);
+    }, []);
+
     // Subscription Check
     const { canAddProperty, loading: subLoading, plan } = useSubscription();
 
@@ -151,6 +161,7 @@ export function AddPropertyModal({ isOpen, onClose, onSuccess, propertyToEdit, r
         const filePath = `${fileName}`;
 
         try {
+            // 1. Always upload to Supabase for App Performance
             const { error: uploadError } = await supabase.storage
                 .from('property-images')
                 .upload(filePath, file);
@@ -162,6 +173,27 @@ export function AddPropertyModal({ isOpen, onClose, onSuccess, propertyToEdit, r
                 .getPublicUrl(filePath);
 
             setFormData(prev => ({ ...prev, image_url: data.publicUrl }));
+
+            // 2. Optional: Backup to Google Drive
+            if (saveToDrive && isDriveConnected) {
+                try {
+                    // Create Properties folder if needed (or just root of RentMate)
+                    // For now, simpler to just upload to root RentMate folder or let service handle it.
+                    // The service.uploadFile logic creates 'RentMate' folder automatically if missing.
+                    // We might want a subfolder "Properties".
+                    // But for now, let's just upload.
+                    await googleDriveService.uploadFile(file);
+                    // We don't necessarily need to store the Drive ID unless we want to link it.
+                    // For backup purposes, success is enough.
+                } catch (driveErr) {
+                    console.error('Drive backup failed:', driveErr);
+                    // Don't fail the whole process, just warn
+                    setError('Property image saved, but Google Drive backup failed.');
+                    // Clear error after 3 seconds
+                    setTimeout(() => setError(null), 3000);
+                }
+            }
+
         } catch (err: any) {
             console.error('Error uploading image:', err);
             setError('Failed to upload image: ' + err.message);
@@ -585,6 +617,22 @@ export function AddPropertyModal({ isOpen, onClose, onSuccess, propertyToEdit, r
                                                 Google / URL
                                             </button>
                                         </div>
+
+                                        {/* Google Drive Checkbox */}
+                                        {isDriveConnected && (
+                                            <label className="flex items-center gap-2 cursor-pointer select-none">
+                                                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${saveToDrive ? 'bg-blue-600 border-blue-600' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800'}`}>
+                                                    {saveToDrive && <Check className="w-3 h-3 text-white" />}
+                                                </div>
+                                                <input
+                                                    type="checkbox"
+                                                    className="hidden"
+                                                    checked={saveToDrive}
+                                                    onChange={(e) => setSaveToDrive(e.target.checked)}
+                                                />
+                                                <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Save copy to Google Drive</span>
+                                            </label>
+                                        )}
 
                                         {uploadMode === 'url' ? (
                                             <div className="space-y-2">

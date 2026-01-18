@@ -11,7 +11,7 @@ export function Tools() {
     const [activeTab, setActiveTab] = useState<'calculator' | 'analytics'>('calculator');
 
     return (
-        <div className="space-y-6 pb-20 px-4 pt-6">
+        <div className="space-y-6 px-4 pt-6">
             <PageHeader
                 title={lang === 'he' ? 'כלים' : 'Tools'}
                 subtitle={lang === 'he' ? 'מחשבון ואנליטיקה' : 'Calculator & Analytics'}

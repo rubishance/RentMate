@@ -233,7 +233,7 @@ export function Dashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans text-gray-900">
+        <div className="bg-gray-50/50 font-sans text-gray-900">
             {/* Header Section */}
             <div className="px-6 pt-6 pb-6 relative h-20 flex items-center justify-between">
                 {/* Branding - Final Logo Image - Absolute Center */}
@@ -309,8 +309,8 @@ export function Dashboard() {
                     {feedItems.map(item => (
                         <div key={item.id} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 relative">
                             <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${item.type === 'warning' ? 'bg-orange-50 text-orange-600' :
-                                    item.type === 'success' ? 'bg-green-50 text-green-600' :
-                                        'bg-blue-50 text-blue-600'
+                                item.type === 'success' ? 'bg-green-50 text-green-600' :
+                                    'bg-blue-50 text-blue-600'
                                 }`}>
                                 {item.type === 'warning' ? <AlertTriangle className="w-6 h-6" /> :
                                     item.type === 'urgent' ? <Clock className="w-6 h-6" /> :

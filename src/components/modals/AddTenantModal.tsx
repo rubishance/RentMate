@@ -17,7 +17,7 @@ interface AddTenantModalProps {
 }
 
 export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readOnly, onDelete }: AddTenantModalProps) {
-    const { lang } = useTranslation();
+    const { t, lang } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [properties, setProperties] = useState<Property[]>([]);
     const [isLoadingProperties, setIsLoadingProperties] = useState(false);
@@ -169,8 +169,21 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
     };
 
     const isEditMode = !!tenantToEdit;
-    const title = isReadOnly ? (lang === 'he' ? 'פרטי דייר' : 'View Tenant Details') : (isEditMode ? (lang === 'he' ? 'ערוך דייר' : 'Edit Tenant') : (lang === 'he' ? 'הוסף דייר' : 'Add New Tenant'));
-    const subtitle = isReadOnly ? (lang === 'he' ? 'צפה בפרטי הקשר' : 'View contact information') : (isEditMode ? (lang === 'he' ? 'עדכן פרטי דייר' : 'Update tenant details') : (lang === 'he' ? 'הוסף דייר חדש לאנשי הקשר' : 'Add a new tenant to your contacts'));
+
+    const getTitle = () => {
+        if (isReadOnly) return t('viewTenantDetails');
+        if (isEditMode) return t('editTenant');
+        return t('addTenant'); // "Add New Tenant" in English, "Add Tenant" in Hebrew
+    };
+
+    const getSubtitle = () => {
+        if (isReadOnly) return t('viewContactInfo');
+        if (isEditMode) return t('updateTenantDetails');
+        return t('addTenantToContacts');
+    };
+
+    const title = getTitle();
+    const subtitle = getSubtitle();
 
     if (!isOpen) return null;
 
@@ -195,13 +208,13 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
                                 className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-colors flex items-center gap-2 px-3 bg-blue-50/50"
                             >
                                 <Pen className="w-4 h-4" />
-                                <span className="text-sm font-medium">{lang === 'he' ? 'ערוך' : 'Edit'}</span>
+                                <span className="text-sm font-medium">{t('edit')}</span>
                             </button>
                         )}
                         <button
                             onClick={onClose}
                             className="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-                            aria-label={lang === 'he' ? 'סגור' : 'Close'}
+                            aria-label={t('close')}
                         >
                             <X className="w-5 h-5" />
                         </button>
@@ -216,10 +229,9 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
                                 <User className="w-5 h-5 text-orange-600" />
                             </div>
                             <div>
-                                <h4 className="font-semibold text-sm">Plan Limit Reached</h4>
+                                <h4 className="font-semibold text-sm">{t('planLimitReached')}</h4>
                                 <p className="text-xs mt-1">
-                                    You have reached the maximum number of tenants for your <b>{plan?.name}</b> plan.
-                                    Please upgrade your subscription.
+                                    {t('planLimitReachedTenantDesc', { planName: plan?.name || '' })}
                                 </p>
                             </div>
                         </div>
@@ -233,7 +245,7 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
                     <div className="space-y-4">
                         {/* Property Selection */}
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Assigned Asset (Optional)</label>
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('assignedAsset')} ({t('optional') || 'Optional'})</label>
                             {properties.length > 0 ? (
                                 <div className="relative">
                                     <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -242,9 +254,9 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
                                         value={formData.property_id}
                                         onChange={(e) => setFormData({ ...formData, property_id: e.target.value })}
                                         className="w-full pl-9 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed appearance-none"
-                                        aria-label={lang === 'he' ? 'נכס משויך' : 'Assigned Asset'}
+                                        aria-label={t('assignedAsset')}
                                     >
-                                        <option value="">Select Property</option>
+                                        <option value="">{t('selectProperty')}</option>
                                         {properties.map(p => (
                                             <option key={p.id} value={p.id}>
                                                 {p.address}, {p.city}
@@ -254,10 +266,10 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
                                 </div>
                             ) : (
                                 <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200 rounded-lg text-sm flex flex-col gap-2">
-                                    <p>No assets found. You must create an asset before adding a tenant.</p>
+                                    <p>{t('noAssetsFoundDesc')}</p>
                                     {!readOnly && (
                                         <a href="/properties" className="font-medium underline hover:text-yellow-900 dark:hover:text-yellow-100 w-fit">
-                                            Go to Assets Page
+                                            {t('goToAssetsPage')}
                                         </a>
                                     )}
                                 </div>
@@ -265,7 +277,7 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
                         </div>
                         {/* Name */}
                         <div className="space-y-2">
-                            <FormLabel label="Full Name" required readOnly={isReadOnly} />
+                            <FormLabel label={t('fullName')} required readOnly={isReadOnly} />
                             <div className="relative">
                                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                 <input
@@ -281,7 +293,7 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
 
                         {/* ID Number */}
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">ID Number</label>
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('idNumber')}</label>
                             <div className="relative">
                                 <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                 <input
@@ -296,7 +308,7 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
 
                         {/* Email */}
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Email Address</label>
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('email')}</label>
                             <div className="relative">
                                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                 <input
@@ -311,7 +323,7 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
 
                         {/* Phone */}
                         <div className="space-y-2">
-                            <FormLabel label="Phone Number" required readOnly={isReadOnly} />
+                            <FormLabel label={t('phone')} required readOnly={isReadOnly} />
                             <div className="relative">
                                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                 <input
@@ -339,7 +351,7 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
                                         className="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl font-medium transition-colors flex items-center gap-2"
                                     >
                                         <Trash2 className="w-4 h-4" />
-                                        {lang === 'he' ? 'מחק' : 'Delete'}
+                                        {t('delete')}
                                     </button>
                                 )}
                                 <div className="flex-1" />
@@ -349,14 +361,14 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
                                     className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-xl font-medium transition-colors shadow-lg shadow-blue-500/30 flex items-center gap-2"
                                 >
                                     <Pen className="w-4 h-4" />
-                                    {lang === 'he' ? 'ערוך' : 'Edit'}
+                                    {t('edit')}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={onClose}
                                     className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl font-medium transition-colors"
                                 >
-                                    {lang === 'he' ? 'סגור' : 'Close'}
+                                    {t('close')}
                                 </button>
                             </>
                         ) : (
@@ -366,7 +378,7 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
                                     onClick={onClose}
                                     className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 rounded-xl font-medium transition-colors"
                                 >
-                                    {lang === 'he' ? 'ביטול' : 'Cancel'}
+                                    {t('cancel')}
                                 </button>
                                 <button
                                     type="submit"
@@ -374,7 +386,10 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
                                     className="flex-1 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-xl font-medium transition-colors shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                                    {loading ? (isEditMode ? (lang === 'he' ? 'שומר...' : 'Saving...') : (lang === 'he' ? 'מוסיף...' : 'Adding...')) : (isEditMode ? (lang === 'he' ? 'שמור שינויים' : 'Save Changes') : (lang === 'he' ? 'הוסף דייר' : 'Add Tenant'))}
+                                    {loading
+                                        ? (isEditMode ? t('saving') : t('adding'))
+                                        : (isEditMode ? t('saveChanges') : t('addTenant'))
+                                    }
                                 </button>
                             </>
                         )}

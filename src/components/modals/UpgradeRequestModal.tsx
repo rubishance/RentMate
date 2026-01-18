@@ -1,7 +1,8 @@
 import { Fragment, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { X, Check, Star, Shield, Zap, ArrowRight, Loader2 } from 'lucide-react';
+import { X, Check, Star, Loader2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { useTranslation } from '../../hooks/useTranslation';
 
 interface UpgradeRequestModalProps {
     isOpen: boolean;
@@ -10,6 +11,7 @@ interface UpgradeRequestModalProps {
 }
 
 export default function UpgradeRequestModal({ isOpen, onClose, source }: UpgradeRequestModalProps) {
+    const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
 
@@ -35,7 +37,7 @@ export default function UpgradeRequestModal({ isOpen, onClose, source }: Upgrade
             setSuccess(true);
         } catch (error) {
             console.error('Error requesting upgrade:', error);
-            alert('Failed to send request. Please try again.');
+            alert(t('error'));
         } finally {
             setLoading(false);
         }
@@ -75,16 +77,16 @@ export default function UpgradeRequestModal({ isOpen, onClose, source }: Upgrade
                                             <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
                                         </div>
                                         <Dialog.Title as="h3" className="text-2xl font-bold leading-6 text-gray-900 dark:text-white mb-2">
-                                            Request Sent!
+                                            {t('requestSent')}
                                         </Dialog.Title>
                                         <p className="text-gray-500 dark:text-gray-400 mb-8">
-                                            We've received your request to upgrade. Our team will contact you shortly to activate your Pro plan.
+                                            {t('requestSentDesc')}
                                         </p>
                                         <button
                                             onClick={onClose}
                                             className="inline-flex justify-center rounded-xl border border-transparent bg-blue-600 px-8 py-3 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                                         >
-                                            Got it, thanks
+                                            {t('gotItThanks')}
                                         </button>
                                     </div>
                                 ) : (
@@ -92,10 +94,10 @@ export default function UpgradeRequestModal({ isOpen, onClose, source }: Upgrade
                                         <div className="flex justify-between items-start mb-6">
                                             <div>
                                                 <Dialog.Title as="h3" className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                                    Upgrade to Pro <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+                                                    {t('upgradeToPro')} <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
                                                 </Dialog.Title>
                                                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                                    Unlock the full potential of RentMate
+                                                    {t('unlockPotential')}
                                                 </p>
                                             </div>
                                             <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
@@ -105,34 +107,34 @@ export default function UpgradeRequestModal({ isOpen, onClose, source }: Upgrade
 
                                         <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 mb-6 border border-slate-200 dark:border-slate-700">
                                             <div className="grid grid-cols-3 gap-4 text-sm mb-3 font-semibold text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700 pb-2">
-                                                <div>Feature</div>
-                                                <div className="text-center">Free</div>
-                                                <div className="text-center text-blue-600 dark:text-blue-400">Pro</div>
+                                                <div>{t('feature')}</div>
+                                                <div className="text-center">{t('free')}</div>
+                                                <div className="text-center text-blue-600 dark:text-blue-400">{t('pro')}</div>
                                             </div>
 
                                             <div className="space-y-3">
                                                 <div className="grid grid-cols-3 gap-4 text-sm items-center">
-                                                    <div className="font-medium">Properties</div>
+                                                    <div className="font-medium">{t('properties')}</div>
                                                     <div className="text-center text-gray-600 dark:text-gray-300">2</div>
-                                                    <div className="text-center font-bold text-blue-600 dark:text-blue-400">Unlimited</div>
+                                                    <div className="text-center font-bold text-blue-600 dark:text-blue-400">{t('unlimited')}</div>
                                                 </div>
                                                 <div className="grid grid-cols-3 gap-4 text-sm items-center">
-                                                    <div className="font-medium">Tenants</div>
+                                                    <div className="font-medium">{t('tenants')}</div>
                                                     <div className="text-center text-gray-600 dark:text-gray-300">5</div>
-                                                    <div className="text-center font-bold text-blue-600 dark:text-blue-400">Unlimited</div>
+                                                    <div className="text-center font-bold text-blue-600 dark:text-blue-400">{t('unlimited')}</div>
                                                 </div>
                                                 <div className="grid grid-cols-3 gap-4 text-sm items-center">
-                                                    <div className="font-medium">Contracts</div>
+                                                    <div className="font-medium">{t('contracts')}</div>
                                                     <div className="text-center text-gray-600 dark:text-gray-300">2</div>
-                                                    <div className="text-center font-bold text-blue-600 dark:text-blue-400">Unlimited</div>
+                                                    <div className="text-center font-bold text-blue-600 dark:text-blue-400">{t('unlimited')}</div>
                                                 </div>
                                                 <div className="grid grid-cols-3 gap-4 text-sm items-center">
-                                                    <div className="font-medium">Data Export</div>
+                                                    <div className="font-medium">{t('dataExport')}</div>
                                                     <div className="text-center text-gray-400"><X className="w-4 h-4 mx-auto" /></div>
                                                     <div className="text-center text-blue-600 dark:text-blue-400"><Check className="w-4 h-4 mx-auto" /></div>
                                                 </div>
                                                 <div className="grid grid-cols-3 gap-4 text-sm items-center">
-                                                    <div className="font-medium">Priority Support</div>
+                                                    <div className="font-medium">{t('prioritySupport')}</div>
                                                     <div className="text-center text-gray-400"><X className="w-4 h-4 mx-auto" /></div>
                                                     <div className="text-center text-blue-600 dark:text-blue-400"><Check className="w-4 h-4 mx-auto" /></div>
                                                 </div>
@@ -145,7 +147,7 @@ export default function UpgradeRequestModal({ isOpen, onClose, source }: Upgrade
                                                 className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                                                 onClick={onClose}
                                             >
-                                                Maybe Later
+                                                {t('maybeLater')}
                                             </button>
                                             <button
                                                 type="button"
@@ -156,11 +158,11 @@ export default function UpgradeRequestModal({ isOpen, onClose, source }: Upgrade
                                                 {loading ? (
                                                     <>
                                                         <Loader2 className="w-4 h-4 animate-spin" />
-                                                        Sending...
+                                                        {t('sending')}
                                                     </>
                                                 ) : (
                                                     <>
-                                                        Request Upgrade <ArrowRight className="w-4 h-4" />
+                                                        {t('requestUpgrade')} <Star className="w-4 h-4 fill-current" />
                                                     </>
                                                 )}
                                             </button>

@@ -115,7 +115,7 @@ export function Contracts() {
 
             if (contract.tenants?.name) {
                 items.push({
-                    label: lang === 'he' ? 'דייר ינותק מחוזה זה' : 'Tenant will be disconnected from this contract',
+                    label: t('tenantDisconnectedWarning'),
                     items: [contract.tenants.name],
                     type: 'info'
                 });
@@ -123,7 +123,7 @@ export function Contracts() {
 
             if (paymentCount && paymentCount > 0) {
                 items.push({
-                    label: lang === 'he' ? 'תשלומים ימחקו לצמיתות' : 'Payments will be permanently deleted',
+                    label: t('paymentsDeletedWarning'),
                     count: paymentCount,
                     type: 'critical'
                 });
@@ -181,17 +181,17 @@ export function Contracts() {
     }
 
     return (
-        <div className="space-y-6 pb-20 px-4 pt-6">
+        <div className="space-y-6 px-4 pt-6">
             <PageHeader
-                title={lang === 'he' ? 'חוזי שכירות' : 'Contracts'}
-                subtitle={lang === 'he' ? 'ניהול חוזים ותקופות שכירות' : 'Manage lease agreements and terms'}
+                title={t('contractsTitle')}
+                subtitle={t('contractsSubtitle')}
                 action={
                     <button
                         onClick={() => navigate('/contracts/new')}
                         className="flex items-center gap-2 bg-brand-navy text-white px-5 py-2.5 rounded-xl hover:bg-brand-navy-light transition-all shadow-lg shadow-brand-navy/20 active:scale-95"
                     >
                         <Plus className="w-5 h-5" />
-                        <span className="hidden sm:inline">{lang === 'he' ? 'חוזה חדש' : 'New Contract'}</span>
+                        <span className="hidden sm:inline">{t('newContract')}</span>
                     </button>
                 }
             />
@@ -202,7 +202,7 @@ export function Contracts() {
                     onClick={() => setFilter('all')}
                     className={`pb-2.5 text-sm font-semibold transition-all relative whitespace-nowrap ${filter === 'all' ? 'text-brand-navy' : 'text-gray-400 hover:text-gray-600'}`}
                 >
-                    {lang === 'he' ? 'הכל' : 'All'}
+                    {t('all')}
                     {filter === 'all' && (
                         <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-navy rounded-t-full shadow-[0_-2px_6px_rgba(15,23,42,0.2)]" />
                     )}
@@ -211,7 +211,7 @@ export function Contracts() {
                     onClick={() => setFilter('active')}
                     className={`pb-2.5 text-sm font-semibold transition-all relative whitespace-nowrap ${filter === 'active' ? 'text-brand-navy' : 'text-gray-400 hover:text-gray-600'}`}
                 >
-                    {lang === 'he' ? 'פעילים' : 'Active'}
+                    {t('active')}
                     {filter === 'active' && (
                         <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-navy rounded-t-full shadow-[0_-2px_6px_rgba(15,23,42,0.2)]" />
                     )}
@@ -220,7 +220,7 @@ export function Contracts() {
                     onClick={() => setFilter('archived')}
                     className={`pb-2.5 text-sm font-semibold transition-all relative whitespace-nowrap ${filter === 'archived' ? 'text-brand-navy' : 'text-gray-400 hover:text-gray-600'}`}
                 >
-                    {lang === 'he' ? 'ארכיון' : 'Archive'}
+                    {t('archived')}
                     {filter === 'archived' && (
                         <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-navy rounded-t-full shadow-[0_-2px_6px_rgba(15,23,42,0.2)]" />
                     )}
@@ -282,7 +282,7 @@ export function Contracts() {
                                     ? 'bg-green-50 text-green-700 border-green-100'
                                     : 'bg-gray-100 text-gray-500 border-gray-200'
                                     }`}>
-                                    {contract.status === 'active' ? (lang === 'he' ? 'פעיל' : 'Active') : (lang === 'he' ? 'ארכיון' : 'Archived')}
+                                    {contract.status === 'active' ? t('active') : t('archived')}
                                 </span>
                                 <div onClick={(e) => e.stopPropagation()} className="border-l pl-3 border-gray-100">
                                     <ActionMenu
@@ -311,10 +311,8 @@ export function Contracts() {
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={confirmDelete}
-                title={lang === 'he' ? 'מחיקת חוזה' : 'Delete Contract'}
-                message={lang === 'he'
-                    ? 'האם את/ה בטוח/ה שברצונך למחוק חוזה זה?'
-                    : 'Are you sure you want to delete this contract?'}
+                title={t('deleteContractTitle')}
+                message={t('deleteContractMessage')}
                 isDeleting={isDeleting}
                 affectedItems={affectedItems}
                 requireDoubleConfirm={affectedItems.length > 0}

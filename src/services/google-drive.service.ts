@@ -44,7 +44,7 @@ class GoogleDriveService {
     /**
      * Upload file to Google Drive
      */
-    async uploadFile(file: File, folderId?: string): Promise<{ fileId: string; name: string }> {
+    async uploadFile(file: File, folderId?: string): Promise<{ fileId: string; name: string; webViewLink?: string }> {
         // Convert file to base64
         const reader = new FileReader();
         const fileData = await new Promise<string>((resolve) => {

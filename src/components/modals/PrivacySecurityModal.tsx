@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { X, Shield, Eye, EyeOff, Trash2, Lock, AlertTriangle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-import { useTranslation } from '../../i18n/translations';
+import { useTranslation } from '../../hooks/useTranslation';
 
 interface PrivacySecurityModalProps {
     isOpen: boolean;

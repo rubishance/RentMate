@@ -64,9 +64,7 @@ export function Tenants() {
         } catch (error: any) {
             console.error('Error deleting tenant:', error);
             if (error.code === '23503') {
-                alert(lang === 'he'
-                    ? 'לא ניתן למחוק דייר שיש לו חוזים או תשלומים מקושרים. יש למחוק אותם תחילה.'
-                    : 'Cannot delete tenant associated with contracts or payments. Please delete them first.');
+                alert(t('deleteTenantError'));
             } else {
                 alert(`${t('error')}: ${error.message || 'Unknown error'}`);
             }
@@ -129,17 +127,17 @@ export function Tenants() {
     };
 
     return (
-        <div className="space-y-6 pb-20 px-4 pt-6">
+        <div className="space-y-6 px-4 pt-6">
             <PageHeader
-                title={lang === 'he' ? 'הדיירים שלי' : 'My Tenants'}
-                subtitle={lang === 'he' ? 'ניהול ספר טלפונים ודיירים' : 'Manage your tenants and contacts'}
+                title={t('myTenants')}
+                subtitle={t('manageTenantsDesc')}
                 action={
                     <button
                         onClick={handleAdd}
                         className="flex items-center gap-2 bg-brand-navy text-white px-5 py-2.5 rounded-xl hover:bg-brand-navy-light transition-all shadow-lg shadow-brand-navy/20 active:scale-95"
                     >
                         <Plus className="w-5 h-5" />
-                        <span className="hidden sm:inline">{lang === 'he' ? 'הוסף דייר' : 'Add Tenant'}</span>
+                        <span className="hidden sm:inline">{t('addTenant')}</span>
                     </button>
                 }
             />
@@ -149,12 +147,12 @@ export function Tenants() {
                     <div className="p-4 bg-brand-navy/5 rounded-full mb-4">
                         <User className="w-8 h-8 text-brand-navy/40" />
                     </div>
-                    <h3 className="text-lg font-bold text-gray-900">{lang === 'he' ? 'אין דיירים ברשימה' : 'No Tenants Found'}</h3>
-                    <p className="text-gray-500 text-sm mb-6">{lang === 'he' ? 'הוסף דיירים כדי לנהל אותם בקלות' : 'Add your first tenant to get started'}</p>
+                    <h3 className="text-lg font-bold text-gray-900">{t('noTenantsFound')}</h3>
+                    <p className="text-gray-500 text-sm mb-6">{t('addFirstTenantDesc')}</p>
                     <button
                         onClick={handleAdd}
                         className="text-brand-navy font-bold hover:underline text-sm">
-                        {lang === 'he' ? '+ הוסף דייר חדש' : '+ Add New Tenant'}
+                        {t('addNewTenant')}
                     </button>
                 </GlassCard>
             ) : (
@@ -176,7 +174,7 @@ export function Tenants() {
                                 <div>
                                     <h3 className="font-bold text-gray-900 text-lg">{tenant.name}</h3>
                                     <p className="text-sm text-gray-500 flex items-center gap-2">
-                                        {tenant.phone || (lang === 'he' ? 'ללא טלפון' : 'No phone')}
+                                        {tenant.phone || t('noPhone')}
                                     </p>
                                 </div>
                             </div>

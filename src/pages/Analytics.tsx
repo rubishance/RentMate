@@ -147,7 +147,7 @@ export function Analytics({ embedMode = false }: { embedMode?: boolean }) {
     }
 
     return (
-        <div className={`space-y-6 ${embedMode ? '' : 'pb-20 px-4 pt-6'}`}>
+        <div className={`space-y-6 ${embedMode ? '' : 'px-4 pt-6'}`}>
             {!embedMode && (
                 <PageHeader
                     title={t('analyticsTitle')}

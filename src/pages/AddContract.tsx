@@ -12,6 +12,7 @@ import type { ExtractedField, Tenant, Property } from '../types/database';
 
 import { supabase } from '../lib/supabase';
 import { useTranslation } from '../hooks/useTranslation';
+import { googleDriveService } from '../services/google-drive.service';
 import { generatePaymentSchedule } from '../utils/payment-generator';
 import { useSubscription } from '../hooks/useSubscription';
 
@@ -105,7 +106,12 @@ export function AddContract() {
     const [existingProperties, setExistingProperties] = useState<Property[]>([]);
     const [isExistingProperty, setIsExistingProperty] = useState(false);
     const [selectedPropertyId, setSelectedPropertyId] = useState<string>(''); // For existing selection
-    const [storagePreference, setStoragePreference] = useState<'cloud' | 'device' | 'both'>('device');
+    const [storagePreference, setStoragePreference] = useState<'cloud' | 'device' | 'both' | 'drive'>('device');
+    const [isDriveConnected, setIsDriveConnected] = useState(false);
+
+    useEffect(() => {
+        googleDriveService.isConnected().then(setIsDriveConnected);
+    }, []);
     const [saveContractFile, setSaveContractFile] = useState(false);
     const [hasOverlap, setHasOverlap] = useState(false);
     const [blockedIntervals, setBlockedIntervals] = useState<{ from: Date; to: Date }[]>([]);
@@ -422,7 +428,7 @@ export function AddContract() {
                 if (contractFile && saveContractFile) {
 
 
-                    // Cloud Upload
+                    // Cloud Upload (RentMate)
                     if (storagePreference === 'cloud' || storagePreference === 'both') {
                         const fileExt = contractFile.name.split('.').pop();
                         const fileName = `${tenantId}_${Date.now()}.${fileExt}`;
@@ -434,19 +440,33 @@ export function AddContract() {
 
                         if (uploadError) {
                             console.error('Upload failed:', uploadError);
-                            // Don't fail the whole process, just alert or log
                             alert("החוזה נוצר אך העלאת הקובץ נכשלה.");
                         } else {
                             const { data: { publicUrl } } = supabase.storage
                                 .from('contracts')
                                 .getPublicUrl(filePath);
 
-
-
                             // Update contract with file URL
                             await supabase.from('contracts')
                                 .update({ contract_file_url: publicUrl })
                                 .eq('id', newContract.id);
+                        }
+                    }
+
+                    // Google Drive Upload
+                    if ((storagePreference === 'drive' || storagePreference === 'both') && isDriveConnected) {
+                        try {
+                            const driveFile = await googleDriveService.uploadFile(contractFile);
+                            // If ONLY Drive is selected, use Drive link as the main URL.
+                            // If Both, we prefer RentMate link (above) for faster loading, but Drive is backup.
+                            if (storagePreference === 'drive' && driveFile.webViewLink) {
+                                await supabase.from('contracts')
+                                    .update({ contract_file_url: driveFile.webViewLink })
+                                    .eq('id', newContract.id);
+                            }
+                        } catch (driveErr) {
+                            console.error('Google Drive upload failed:', driveErr);
+                            alert('Contract saved, but Google Drive upload failed.');
                         }
                     }
 
@@ -601,8 +621,7 @@ export function AddContract() {
                     break;
 
                 // Correct cases based on Scanner mapping:
-                case 'rooms': newFormData.rooms = val; break;
-                case 'size': newFormData.size = val; break;
+                // Duplicates removed
 
                 // Tenant
                 case 'tenantName': newFormData.tenantName = val; break;

@@ -7,7 +7,7 @@ import { useUserPreferences } from '../contexts/UserPreferencesContext';
 import type { Language, Gender } from '../types/database';
 import { EditProfileModal, NotificationsSettingsModal } from '../components/modals/EditProfileModal';
 import { SubscriptionCard } from '../components/subscription/SubscriptionCard';
-import { useTranslation } from '../i18n/translations';
+import { useTranslation } from '../hooks/useTranslation';
 import { PrivacySecurityModal } from '../components/modals/PrivacySecurityModal';
 import { googleDriveService } from '../services/google-drive.service';
 
@@ -108,24 +108,24 @@ export function Settings() {
 
     const settingsSections = [
         {
-            title: t('account'),
+            title: t('manageAccount'),
             items: [
                 {
                     icon: User,
                     label: t('profile'),
-                    description: preferences.language === 'he' && preferences.gender === 'female' ? 'נהלי את המידע האישי שלך' : t('managePersonalInfo'),
+                    description: t('managePersonalInfo'),
                     onClick: () => setIsEditProfileOpen(true)
                 },
                 {
                     icon: Bell,
                     label: t('notifications'),
-                    description: preferences.language === 'he' && preferences.gender === 'female' ? 'הגדירי התראות ותזכורות' : t('configureAlerts'),
+                    description: t('configureAlerts'),
                     onClick: () => setIsNotificationsOpen(true)
                 },
                 {
                     icon: Shield,
                     label: t('privacySecurity'),
-                    description: preferences.language === 'he' && preferences.gender === 'female' ? 'שלטי במידע ובגישה שלך' : t('controlData'),
+                    description: t('controlData'),
                     onClick: () => setIsPrivacySecurityOpen(true)
                 },
             ]
@@ -177,7 +177,10 @@ export function Settings() {
                 body: { user_id: user.id, user_name: userData.full_name, user_email: userData.email, message: contactMessage }
             });
 
-            if (emailError) console.error('Email notification failed:', emailError);
+            if (emailError) {
+                console.error('Email notification failed:', emailError);
+                throw new Error(emailError.message || 'Email sending failed');
+            }
 
             // Show success
             setMessageSent(true);
@@ -185,14 +188,14 @@ export function Settings() {
             setTimeout(() => setMessageSent(false), 3000);
         } catch (error) {
             console.error('Error sending message:', error);
-            alert('Failed to send message. Please try again.');
+            alert(`Failed to send message: ${error instanceof Error ? error.message : 'Unknown error'}`);
         } finally {
             setIsSendingMessage(false);
         }
     };
 
     return (
-        <div className="space-y-6 pb-20 px-4 pt-6">
+        <div className="space-y-6 px-4 pt-6">
             {/* Header */}
             <div className="relative h-20 flex items-center justify-between mb-2">
                 <div>
@@ -357,9 +360,7 @@ export function Settings() {
                         <div className="flex-1">
                             <div className="font-medium text-foreground">{t('contactSupport')}</div>
                             <div className="text-sm text-muted-foreground">
-                                {preferences.language === 'he' && preferences.gender === 'female'
-                                    ? 'יש לך שאלה או את צריכה עזרה? שלחי לנו הודעה ונחזור אלייך בהקדם.'
-                                    : t('contactSupportDesc')}
+                                {t('contactSupportDesc')}
                             </div>
                         </div>
                         <ChevronRight className={`w - 5 h - 5 text - muted - foreground transition - transform duration - 200 ${isContactOpen ? 'rotate-90' : ''} `} />
@@ -413,7 +414,7 @@ export function Settings() {
                 className="w-full flex items-center justify-center gap-2 p-4 bg-destructive/10 text-destructive rounded-2xl font-medium hover:bg-destructive/20 transition-colors"
             >
                 <LogOut className="w-5 h-5" />
-                {preferences.language === 'he' && preferences.gender === 'female' ? 'התנתקי' : t('signOut')}
+                {t('logout')}
             </button>
 
             {/* App Version */}
@@ -423,7 +424,7 @@ export function Settings() {
                     onClick={() => navigate('/accessibility')}
                     className="text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary rounded px-2"
                 >
-                    {preferences.language === 'he' ? 'הצהרת נגישות' : 'Accessibility Statement'}
+                    {t('accessibilityStatement')}
                 </button>
             </div>
 

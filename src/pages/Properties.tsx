@@ -84,16 +84,16 @@ export function Properties() {
 
             if (tenants && tenants.length > 0) {
                 items.push({
-                    label: lang === 'he' ? 'דיירים ינותקו מהנכס' : 'Tenants to be disconnected',
+                    label: t('tenantsToBeDisconnected'),
                     count: tenants.length,
-                    items: tenants.map(t => t.name || (lang === 'he' ? 'ללא שם' : 'Unnamed')),
+                    items: tenants.map(tenant => tenant.name || t('unnamed')),
                     type: 'info'
                 });
             }
 
             if (contracts && contracts.length > 0) {
                 const contractItems = contracts.map((c: any) => {
-                    const tenantName = c.tenants?.name || (lang === 'he' ? 'לא ידוע' : 'Unknown');
+                    const tenantName = c.tenants?.name || t('unknown');
                     const startDate = new Date(c.start_date).toLocaleDateString();
                     const endDate = new Date(c.end_date).toLocaleDateString();
                     return `${tenantName} (${startDate} - ${endDate})`;
@@ -190,7 +190,7 @@ export function Properties() {
     }
 
     return (
-        <div className="space-y-6 pb-20 px-4 pt-6">
+        <div className="space-y-6 px-4 pt-6">
             <PageHeader
                 title={lang === 'he' ? 'הנכסים שלי' : 'My Assets'}
                 subtitle={lang === 'he' ? 'ניהול פורטפוליו הנכסים שלך' : 'Manage your real estate portfolio'}
@@ -200,7 +200,7 @@ export function Properties() {
                         className="flex items-center gap-2 bg-brand-navy text-white px-5 py-2.5 rounded-xl hover:bg-brand-navy-light transition-all shadow-lg shadow-brand-navy/20 active:scale-95"
                     >
                         <Plus className="w-5 h-5" />
-                        <span className="hidden sm:inline">{lang === 'he' ? 'הוסף נכס' : 'Add Property'}</span>
+                        <span className="hidden sm:inline">{t('addProperty')}</span>
                     </button>
                 }
             />
@@ -210,16 +210,12 @@ export function Properties() {
                     <div className="p-4 bg-brand-navy/5 rounded-full mb-4">
                         <Home className="w-8 h-8 text-brand-navy/40" />
                     </div>
-                    <h3 className="text-lg font-bold text-gray-900">{lang === 'he' ? 'אין נכסים עדיין' : 'No Assets Found'}</h3>
+                    <h3 className="text-lg font-bold text-gray-900">{t('noAssetsFound')}</h3>
                     <p className="text-gray-500 text-sm mb-6">
-                        {lang === 'he'
-                            ? (preferences.gender === 'female' ? 'הוסיפי את הנכס הראשון שלך כדי להתחיל' : 'הוסף את הנכס הראשון שלך כדי להתחיל')
-                            : 'Add your first property to get started'}
+                        {t('addFirstPropertyDesc')}
                     </p>
                     <button onClick={handleAdd} className="text-brand-navy font-bold hover:underline text-sm">
-                        {lang === 'he'
-                            ? (preferences.gender === 'female' ? '+ צרי נכס חדש' : '+ צור נכס חדש')
-                            : '+ Create New Asset'}
+                        {t('createFirstAsset')}
                     </button>
                 </GlassCard>
             ) : (
@@ -245,7 +241,7 @@ export function Properties() {
                                         ? 'bg-white/90 text-green-700 border-green-200/50'
                                         : 'bg-white/90 text-amber-700 border-amber-200/50'
                                         }`}>
-                                        {property.status === 'Occupied' ? (lang === 'he' ? 'מושכר' : 'Occupied') : (lang === 'he' ? 'פנוי' : 'Vacant')}
+                                        {property.status === 'Occupied' ? t('occupied') : t('vacant')}
                                     </span>
                                 </div>
                                 <div className={`absolute bottom-3 ${lang === 'he' ? 'right-3' : 'left-3'}`}>
@@ -271,19 +267,19 @@ export function Properties() {
                                     <div className="flex items-center gap-1.5 text-sm text-gray-600">
                                         <BedDouble className="w-4 h-4 text-brand-navy/60" />
                                         <span className="font-bold text-gray-900">{property.rooms}</span>
-                                        <span className="text-xs">{lang === 'he' ? 'חדרים' : 'Rooms'}</span>
+                                        <span className="text-xs">{t('rooms')}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5 text-sm text-gray-600">
                                         <Ruler className="w-4 h-4 text-brand-navy/60" />
                                         <span className="font-bold text-gray-900">{property.size_sqm}</span>
-                                        <span className="text-xs">{lang === 'he' ? 'מ״ר' : 'm²'}</span>
+                                        <span className="text-xs">{t('sqm')}</span>
                                     </div>
                                 </div>
 
                                 <div className="flex items-center justify-between pt-1 mt-auto">
                                     <div onClick={(e) => e.stopPropagation()} className="relative">
                                         <span className="text-[10px] uppercase tracking-wider font-semibold text-gray-400 block mb-0.5">
-                                            {lang === 'he' ? 'שכר דירה' : 'Monthly Rent'}
+                                            {t('monthlyRentLabel')}
                                         </span>
                                         <div className="flex items-baseline gap-2">
                                             <span
