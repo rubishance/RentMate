@@ -9,7 +9,8 @@ const FIELD_TRANSLATIONS: Record<string, string> = {
     signingDate: 'תאריך חתימה', startDate: 'תאריך התחלה', endDate: 'תאריך סיום', optionPeriod: 'תקופת אופציה',
     linkageType: 'סוג הצמדה', baseIndexDate: 'תאריך מדד בסיס', baseIndexValue: 'מדד בסיס',
     securityDeposit: 'סכום פיקדון', guarantees: 'ערבויות',
-    petsAllowed: 'חיות מחמד', parking: 'חניה', furniture: 'ריהוט'
+    petsAllowed: 'חיות מחמד', parking: 'חניה', furniture: 'ריהוט',
+    guarantorsInfo: 'פרטי ערבים', specialClauses: 'סעיפים מיוחדים'
 };
 
 interface Props {
@@ -133,12 +134,21 @@ export function ContractReviewModal({ extractedFields, contractFileUrl, onConfir
                                         </div>
 
                                         <div className="flex gap-2">
-                                            <input
-                                                type="text"
-                                                value={field.extractedValue?.toString() || ''}
-                                                onChange={(e) => handleFieldChange(index, e.target.value)}
-                                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                                            />
+                                            {field.fieldName === 'guarantorsInfo' || field.fieldName === 'specialClauses' ? (
+                                                <textarea
+                                                    value={field.extractedValue?.toString() || ''}
+                                                    onChange={(e) => handleFieldChange(index, e.target.value)}
+                                                    rows={4}
+                                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm w-full"
+                                                />
+                                            ) : (
+                                                <input
+                                                    type="text"
+                                                    value={field.extractedValue?.toString() || ''}
+                                                    onChange={(e) => handleFieldChange(index, e.target.value)}
+                                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                                />
+                                            )}
                                             {!field.userConfirmed && (
                                                 <button
                                                     onClick={() => handleConfirmField(index)}

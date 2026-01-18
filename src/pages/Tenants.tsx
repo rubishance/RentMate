@@ -129,7 +129,7 @@ export function Tenants() {
     };
 
     return (
-        <div className="space-y-6 pb-28 px-4 pt-6">
+        <div className="space-y-6 pb-20 px-4 pt-6">
             <PageHeader
                 title={lang === 'he' ? 'הדיירים שלי' : 'My Tenants'}
                 subtitle={lang === 'he' ? 'ניהול ספר טלפונים ודיירים' : 'Manage your tenants and contacts'}
@@ -212,6 +212,7 @@ export function Tenants() {
                 onSuccess={fetchTenants}
                 tenantToEdit={editingTenant}
                 readOnly={isReadOnly}
+                onDelete={() => editingTenant && handleDelete(editingTenant)}
             />
 
             <ConfirmDeleteModal

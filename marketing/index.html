@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl" data-lang="he">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#007AFF">
+    <meta name="description"
+        content="מערכת ניהול נכסים חכמה לבעלי דירות - ניהול שכירויות, גביית שכר דירה, וסריקת חוזים בעזרת AI">
+    <title>RentMate - ניהול נכסים חכם</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+
+<body>
+    <!-- Language Toggle -->
+    <div class="language-toggle">
+        <button class="lang-btn" data-lang="he" aria-label="עברית">עב</button>
+        <button class="lang-btn" data-lang="en" aria-label="English">EN</button>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <div class="hero-background"></div>
+
+        <!-- Floating Shapes -->
+        <div class="floating-shapes">
+            <div class="shape shape-1 parallax-mouse" data-speed="0.05"></div>
+            <div class="shape shape-2 parallax-mouse" data-speed="-0.08"></div>
+            <div class="shape shape-3 parallax-mouse" data-speed="0.03"></div>
+        </div>
+
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title" data-he="נהל את הנכסים שלך בקלות ובביטחון"
+                    data-en="Manage Your Properties with Ease and Confidence">
+                    נהל את הנכסים שלך בקלות ובביטחון
+                </h1>
+                <p class="hero-subtitle"
+                    data-he="מערכת ניהול נכסים חכמה המשלבת AI לסריקת חוזים, חישוב מדד אוטומטי, וניהול דיירים - הכל במקום אחד"
+                    data-en="Smart property management system with AI contract scanning, automatic index calculation, and tenant management - all in one place">
+                    מערכת ניהול נכסים חכמה המשלבת AI לסריקת חוזים, חישוב מדד אוטומטי, וניהול דיירים - הכל במקום אחד
+                </p>
+                <div class="hero-cta">
+                    <button class="btn btn-primary btn-large" onclick="scrollToSection('trial')">
+                        <span data-he="התחל תקופת ניסיון חינם" data-en="Start Free Trial">התחל תקופת ניסיון חינם</span>
+                        <i class="ph ph-arrow-left"></i>
+                    </button>
+                    <p class="trust-badge" data-he="ללא כרטיס אשראי • 14 ימי ניסיון חינם"
+                        data-en="No credit card required • 14-day free trial">
+                        ללא כרטיס אשראי • 14 ימי ניסיון חינם
+                    </p>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="images/hero-dashboard.png" alt="RentMate Dashboard" class="dashboard-mockup">
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem/Solution Section -->
+    <section class="problem-solution" id="why">
+        <div class="container">
+            <h2 class="section-title" data-he="למה RentMate?" data-en="Why RentMate?">למה RentMate?</h2>
+            <div class="solutions-grid">
+                <div class="solution-card">
+                    <div class="solution-icon blue">
+                        <i class="ph ph-warning-circle"></i>
+                    </div>
+                    <h3 data-he="הבעיה" data-en="The Problem">הבעיה</h3>
+                    <p data-he="ניהול נכסים ידני מסורבל, חישובי מדד מורכבים, וטפסים אינסופיים"
+                        data-en="Manual property management is cumbersome, index calculations are complex, and endless paperwork">
+                        ניהול נכסים ידני מסורבל, חישובי מדד מורכבים, וטפסים אינסופיים
+                    </p>
+                </div>
+                <div class="solution-card">
+                    <div class="solution-icon green">
+                        <i class="ph ph-check-circle"></i>
+                    </div>
+                    <h3 data-he="הפתרון" data-en="The Solution">הפתרון</h3>
+                    <p data-he="RentMate מאחד הכל: סריקת חוזים חכמה, חישוב מדד אוטומטי, וניהול דיירים פשוט"
+                        data-en="RentMate unifies everything: smart contract scanning, automatic index calculation, and simple tenant management">
+                        RentMate מאחד הכל: סריקת חוזים חכמה, חישוב מדד אוטומטי, וניהול דיירים פשוט
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="container">
+            <h2 class="section-title" data-he="תכונות מתקדמות" data-en="Advanced Features">תכונות מתקדמות</h2>
+            <div class="features-grid">
+                <!-- Feature 1: Index Calculation -->
+                <div class="feature-card">
+                    <div class="feature-icon blue">
+                        <i class="ph ph-calculator"></i>
+                    </div>
+                    <h3 data-he="חישוב מדד אוטומטי" data-en="Automatic Index Calculation">חישוב מדד אוטומטי</h3>
+                    <p data-he="חישוב מדד מדויק לפי נתוני הלמ&quot;ס, עם עדכון אוטומטי של שכר הדירה"
+                        data-en="Accurate index calculation based on CBS data, with automatic rent updates">
+                        חישוב מדד מדויק לפי נתוני הלמ"ס, עם עדכון אוטומטי של שכר הדירה
+                    </p>
+                </div>
+
+                <!-- Feature 2: AI Contract Scanning -->
+                <div class="feature-card">
+                    <div class="feature-icon purple">
+                        <i class="ph ph-scan"></i>
+                    </div>
+                    <h3 data-he="סריקת חוזים בעזרת AI" data-en="AI Contract Scanning">סריקת חוזים בעזרת AI</h3>
+                    <p data-he="העלה חוזה והמערכת תמלא אוטומטית את כל הפרטים - תאריכים, סכומים, ותנאים"
+                        data-en="Upload a contract and the system automatically fills in all details - dates, amounts, and terms">
+                        העלה חוזה והמערכת תמלא אוטומטית את כל הפרטים - תאריכים, סכומים, ותנאים
+                    </p>
+                </div>
+
+                <!-- Feature 3: AI Text Generator -->
+                <div class="feature-card">
+                    <div class="feature-icon orange">
+                        <i class="ph ph-magic-wand"></i>
+                    </div>
+                    <h3 data-he="מחולל טקסטים חכם" data-en="Smart Text Generator">מחולל טקסטים חכם</h3>
+                    <p data-he="צור הודעות מקצועיות לדיירים בקליק - התראות תשלום, עדכונים, ובקשות תחזוקה"
+                        data-en="Create professional tenant messages with one click - payment reminders, updates, and maintenance requests">
+                        צור הודעות מקצועיות לדיירים בקליק - התראות תשלום, עדכונים, ובקשות תחזוקה
+                    </p>
+                </div>
+
+                <!-- Feature 4: Tenant Management -->
+                <div class="feature-card">
+                    <div class="feature-icon green">
+                        <i class="ph ph-users"></i>
+                    </div>
+                    <h3 data-he="ניהול דיירים מרכזי" data-en="Centralized Tenant Management">ניהול דיירים מרכזי</h3>
+                    <p data-he="כל המידע על הדיירים שלך במקום אחד - פרטי קשר, חוזים, ותשלומים"
+                        data-en="All your tenant information in one place - contact details, contracts, and payments">
+                        כל המידע על הדיירים שלך במקום אחד - פרטי קשר, חוזים, ותשלומים
+                    </p>
+                </div>
+
+                <!-- Feature 5: Mobile-First -->
+                <div class="feature-card">
+                    <div class="feature-icon teal">
+                        <i class="ph ph-device-mobile"></i>
+                    </div>
+                    <h3 data-he="מותאם למובייל" data-en="Mobile-First Design">מותאם למובייל</h3>
+                    <p data-he="נהל את הנכסים שלך מכל מקום - ממשק מותאם לנייד עם כל התכונות"
+                        data-en="Manage your properties from anywhere - mobile-optimized interface with all features">
+                        נהל את הנכסים שלך מכל מקום - ממשק מותאם לנייד עם כל התכונות
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works" id="how">
+        <div class="container">
+            <h2 class="section-title" data-he="איך זה עובד?" data-en="How It Works?">איך זה עובד?</h2>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <div class="step-icon">
+                        <i class="ph ph-user-plus"></i>
+                    </div>
+                    <h3 data-he="הרשמה מהירה" data-en="Quick Signup">הרשמה מהירה</h3>
+                    <p data-he="הרשמה ב-30 שניות בלבד, ללא צורך בכרטיס אשראי"
+                        data-en="Sign up in just 30 seconds, no credit card required">
+                        הרשמה ב-30 שניות בלבד, ללא צורך בכרטיס אשראי
+                    </p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <div class="step-icon">
+                        <i class="ph ph-upload"></i>
+                    </div>
+                    <h3 data-he="הוסף נכסים ודיירים" data-en="Add Properties & Tenants">הוסף נכסים ודיירים</h3>
+                    <p data-he="העלה חוזים והמערכת תמלא את הפרטים אוטומטית"
+                        data-en="Upload contracts and the system fills in details automatically">
+                        העלה חוזים והמערכת תמלא את הפרטים אוטומטית
+                    </p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <div class="step-icon">
+                        <i class="ph ph-rocket"></i>
+                    </div>
+                    <h3 data-he="התחל לנהל" data-en="Start Managing">התחל לנהל</h3>
+                    <p data-he="עקוב אחר תשלומים, חשב מדד, ושלח הודעות - הכל אוטומטי"
+                        data-en="Track payments, calculate index, and send messages - all automatic">
+                        עקוב אחר תשלומים, חשב מדד, ושלח הודעות - הכל אוטומטי
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Index Calculator Tool -->
+    <section class="calculator-section" id="calculator">
+        <div class="container">
+            <h2 class="section-title" data-he="מחשבון מדד" data-en="Index Calculator">מחשבון מדד</h2>
+            <p class="section-subtitle" data-he="נסה את מחשבון המדד שלנו - חשב כמה שכר הדירה שלך צריך להיות היום"
+                data-en="Try our index calculator - calculate what your rent should be today">
+                נסה את מחשבון המדד שלנו - חשב כמה שכר הדירה שלך צריך להיות היום
+            </p>
+            <div class="calculator-widget">
+                <div class="calculator-inputs">
+                    <div class="input-group">
+                        <label data-he="תאריך בסיס" data-en="Base Date">תאריך בסיס</label>
+                        <input type="date" id="baseDate" class="calc-input">
+                    </div>
+                    <div class="input-group">
+                        <label data-he="סכום בסיס (₪)" data-en="Base Amount (₪)">סכום בסיס (₪)</label>
+                        <input type="number" id="baseAmount" class="calc-input" placeholder="5000">
+                    </div>
+                </div>
+                <div class="calculator-result">
+                    <div class="result-label" data-he="סכום מעודכן להיום:" data-en="Updated Amount Today:">סכום מעודכן
+                        להיום:</div>
+                    <div class="result-value" id="indexedAmount">₪0</div>
+                    <div class="result-note" data-he="* חישוב משוער לפי נתוני הלמ&quot;ס"
+                        data-en="* Estimated calculation based on CBS data">* חישוב משוער לפי נתוני הלמ"ס</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Social Proof Section -->
+    <section class="testimonials" id="testimonials">
+        <div class="container">
+            <h2 class="section-title" data-he="מה אומרים עלינו" data-en="What People Say">מה אומרים עלינו</h2>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">★★★★★</div>
+                    <p class="testimonial-text"
+                        data-he="&quot;RentMate חסך לי שעות של עבודה כל חודש. סריקת החוזים החכמה פשוט מדהימה!&quot;"
+                        data-en="&quot;RentMate saves me hours of work every month. The smart contract scanning is simply amazing!&quot;">
+                        "RentMate חסך לי שעות של עבודה כל חודש. סריקת החוזים החכמה פשוט מדהימה!"
+                    </p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">ד</div>
+                        <div class="author-info">
+                            <div class="author-name" data-he="דני כהן" data-en="Danny Cohen">דני כהן</div>
+                            <div class="author-role" data-he="בעל 8 נכסים" data-en="Owner of 8 properties">בעל 8 נכסים
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">★★★★★</div>
+                    <p class="testimonial-text"
+                        data-he="&quot;סוף סוף מערכת שמבינה את הצרכים של בעלי נכסים בישראל. חישוב המדד האוטומטי מושלם.&quot;"
+                        data-en="&quot;Finally a system that understands the needs of property owners in Israel. The automatic index calculation is perfect.&quot;">
+                        "סוף סוף מערכת שמבינה את הצרכים של בעלי נכסים בישראל. חישוב המדד האוטומטי מושלם."
+                    </p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">ש</div>
+                        <div class="author-info">
+                            <div class="author-name" data-he="שרה לוי" data-en="Sarah Levi">שרה לוי</div>
+                            <div class="author-role" data-he="משקיעה בנדל&quot;ן" data-en="Real Estate Investor">משקיעה
+                                בנדל"ן</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">★★★★★</div>
+                    <p class="testimonial-text"
+                        data-he="&quot;הממשק הפשוט והנוח, יחד עם התכונות המתקדמות - שילוב מנצח!&quot;"
+                        data-en="&quot;The simple and convenient interface, together with advanced features - a winning combination!&quot;">
+                        "הממשק הפשוט והנוח, יחד עם התכונות המתקדמות - שילוב מנצח!"
+                    </p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">מ</div>
+                        <div class="author-info">
+                            <div class="author-name" data-he="מיכאל אברהם" data-en="Michael Abraham">מיכאל אברהם</div>
+                            <div class="author-role" data-he="מנהל נכסים" data-en="Property Manager">מנהל נכסים</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="stats-row">
+                <div class="stat-item">
+                    <div class="stat-number">500+</div>
+                    <div class="stat-label" data-he="בעלי נכסים" data-en="Property Owners">בעלי נכסים</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">2,000+</div>
+                    <div class="stat-label" data-he="נכסים מנוהלים" data-en="Properties Managed">נכסים מנוהלים</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">98%</div>
+                    <div class="stat-label" data-he="שביעות רצון" data-en="Satisfaction Rate">שביעות רצון</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Security Section -->
+    <section class="security" id="security">
+        <div class="container">
+            <h2 class="section-title" data-he="אבטחה ופרטיות" data-en="Security & Privacy">אבטחה ופרטיות</h2>
+            <div class="security-grid">
+                <div class="security-card">
+                    <div class="security-icon">
+                        <i class="ph ph-lock"></i>
+                    </div>
+                    <h3 data-he="הצפנה מלאה" data-en="Full Encryption">הצפנה מלאה</h3>
+                    <p data-he="כל הנתונים שלך מוצפנים ב-256-bit SSL"
+                        data-en="All your data is encrypted with 256-bit SSL">
+                        כל הנתונים שלך מוצפנים ב-256-bit SSL
+                    </p>
+                </div>
+                <div class="security-card">
+                    <div class="security-icon">
+                        <i class="ph ph-shield-check"></i>
+                    </div>
+                    <h3 data-he="תאימות לתקנות" data-en="Regulatory Compliance">תאימות לתקנות</h3>
+                    <p data-he="עומדים בתקני GDPR ותקנות הגנת הפרטיות"
+                        data-en="Compliant with GDPR and privacy protection regulations">
+                        עומדים בתקני GDPR ותקנות הגנת הפרטיות
+                    </p>
+                </div>
+                <div class="security-card">
+                    <div class="security-icon">
+                        <i class="ph ph-database"></i>
+                    </div>
+                    <h3 data-he="גיבוי אוטומטי" data-en="Automatic Backup">גיבוי אוטומטי</h3>
+                    <p data-he="גיבוי יומי של כל המידע בשרתים מאובטחים"
+                        data-en="Daily backup of all information on secure servers">
+                        גיבוי יומי של כל המידע בשרתים מאובטחים
+                    </p>
+                </div>
+                <div class="security-card">
+                    <div class="security-icon">
+                        <i class="ph ph-user-circle-check"></i>
+                    </div>
+                    <h3 data-he="בקרת גישה" data-en="Access Control">בקרת גישה</h3>
+                    <p data-he="אימות דו-שלבי והרשאות מותאמות אישית"
+                        data-en="Two-factor authentication and custom permissions">
+                        אימות דו-שלבי והרשאות מותאמות אישית
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download Section -->
+    <section class="download" id="download">
+        <div class="container">
+            <div class="download-content">
+                <div class="download-text">
+                    <h2 data-he="הורד את האפליקציה" data-en="Download the App">הורד את האפליקציה</h2>
+                    <p data-he="נהל את הנכסים שלך בדרכים - האפליקציה זמינה לאנדרואיד ו-iOS"
+                        data-en="Manage your properties on the go - app available for Android and iOS">
+                        נהל את הנכסים שלך בדרכים - האפליקציה זמינה לאנדרואיד ו-iOS
+                    </p>
+                    <div class="download-buttons">
+                        <a href="#" class="store-button">
+                            <i class="ph ph-apple-logo"></i>
+                            <div>
+                                <div class="store-text" data-he="הורד ב-" data-en="Download on">הורד ב-</div>
+                                <div class="store-name">App Store</div>
+                            </div>
+                        </a>
+                        <a href="#" class="store-button">
+                            <i class="ph ph-google-play-logo"></i>
+                            <div>
+                                <div class="store-text" data-he="קבל ב-" data-en="Get it on">קבל ב-</div>
+                                <div class="store-name">Google Play</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="download-qr">
+                    <div class="qr-code">
+                        <i class="ph ph-qr-code" style="font-size: 120px;"></i>
+                    </div>
+                    <p data-he="סרוק להורדה מהירה" data-en="Scan for quick download">סרוק להורדה מהירה</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trial Section -->
+    <section class="trial" id="trial">
+        <div class="container">
+            <div class="trial-card">
+                <h2 data-he="התחל את תקופת הניסיון החינמית שלך" data-en="Start Your Free Trial">התחל את תקופת הניסיון
+                    החינמית שלך</h2>
+                <p data-he="14 ימים חינם, ללא צורך בכרטיס אשראי. בטל בכל עת."
+                    data-en="14 days free, no credit card required. Cancel anytime.">
+                    14 ימים חינם, ללא צורך בכרטיס אשראי. בטל בכל עת.
+                </p>
+                <div class="trial-features">
+                    <div class="trial-feature">
+                        <i class="ph ph-check-circle"></i>
+                        <span data-he="גישה מלאה לכל התכונות" data-en="Full access to all features">גישה מלאה לכל
+                            התכונות</span>
+                    </div>
+                    <div class="trial-feature">
+                        <i class="ph ph-check-circle"></i>
+                        <span data-he="ללא מגבלה על מספר נכסים" data-en="Unlimited properties">ללא מגבלה על מספר
+                            נכסים</span>
+                    </div>
+                    <div class="trial-feature">
+                        <i class="ph ph-check-circle"></i>
+                        <span data-he="תמיכה טכנית מלאה" data-en="Full technical support">תמיכה טכנית מלאה</span>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-large" onclick="window.location.href='../index.html'">
+                    <span data-he="התחל עכשיו" data-en="Start Now">התחל עכשיו</span>
+                    <i class="ph ph-arrow-left"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq" id="faq">
+        <div class="container">
+            <h2 class="section-title" data-he="שאלות נפוצות" data-en="Frequently Asked Questions">שאלות נפוצות</h2>
+            <div class="faq-list">
+                <div class="faq-item">
+                    <button class="faq-question">
+                        <span data-he="האם צריך כרטיס אשראי לתקופת הניסיון?"
+                            data-en="Do I need a credit card for the trial?">האם צריך כרטיס אשראי לתקופת הניסיון?</span>
+                        <i class="ph ph-caret-down"></i>
+                    </button>
+                    <div class="faq-answer">
+                        <p data-he="לא! תקופת הניסיון של 14 ימים היא חינמית לחלוטין וללא צורך בכרטיס אשראי. תוכל לבטל בכל עת."
+                            data-en="No! The 14-day trial is completely free with no credit card required. You can cancel anytime.">
+                            לא! תקופת הניסיון של 14 ימים היא חינמית לחלוטין וללא צורך בכרטיס אשראי. תוכל לבטל בכל עת.
+                        </p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">
+                        <span data-he="איך עובדת סריקת החוזים?" data-en="How does contract scanning work?">איך עובדת
+                            סריקת החוזים?</span>
+                        <i class="ph ph-caret-down"></i>
+                    </button>
+                    <div class="faq-answer">
+                        <p data-he="פשוט העלה תמונה או PDF של החוזה, והמערכת שלנו תשתמש ב-AI כדי לזהות ולמלא אוטומטית את כל הפרטים החשובים - תאריכים, סכומים, שמות, ותנאים."
+                            data-en="Simply upload a photo or PDF of the contract, and our system uses AI to automatically identify and fill in all important details - dates, amounts, names, and terms.">
+                            פשוט העלה תמונה או PDF של החוזה, והמערכת שלנו תשתמש ב-AI כדי לזהות ולמלא אוטומטית את כל
+                            הפרטים החשובים - תאריכים, סכומים, שמות, ותנאים.
+                        </p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">
+                        <span data-he="האם המערכת מתאימה לבעלי נכס אחד בלבד?"
+                            data-en="Is the system suitable for single property owners?">האם המערכת מתאימה לבעלי נכס אחד
+                            בלבד?</span>
+                        <i class="ph ph-caret-down"></i>
+                    </button>
+                    <div class="faq-answer">
+                        <p data-he="בהחלט! RentMate מתאים לכל סוגי בעלי הנכסים - מבעלי דירה אחת ועד מנהלי תיקי נכסים גדולים. המערכת מתאימה את עצמה לצרכים שלך."
+                            data-en="Absolutely! RentMate is suitable for all types of property owners - from single apartment owners to large portfolio managers. The system adapts to your needs.">
+                            בהחלט! RentMate מתאים לכל סוגי בעלי הנכסים - מבעלי דירה אחת ועד מנהלי תיקי נכסים גדולים.
+                            המערכת מתאימה את עצמה לצרכים שלך.
+                        </p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">
+                        <span data-he="האם הנתונים שלי מאובטחים?" data-en="Is my data secure?">האם הנתונים שלי
+                            מאובטחים?</span>
+                        <i class="ph ph-caret-down"></i>
+                    </button>
+                    <div class="faq-answer">
+                        <p data-he="כן! אנחנו משתמשים בהצפנת 256-bit SSL, גיבוי יומי, ועומדים בכל תקני האבטחה והפרטיות. הנתונים שלך מאוחסנים בשרתים מאובטחים ומוגנים."
+                            data-en="Yes! We use 256-bit SSL encryption, daily backups, and comply with all security and privacy standards. Your data is stored on secure and protected servers.">
+                            כן! אנחנו משתמשים בהצפנת 256-bit SSL, גיבוי יומי, ועומדים בכל תקני האבטחה והפרטיות. הנתונים
+                            שלך מאוחסנים בשרתים מאובטחים ומוגנים.
+                        </p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">
+                        <span data-he="מה קורה אחרי תקופת הניסיון?" data-en="What happens after the trial period?">מה
+                            קורה אחרי תקופת הניסיון?</span>
+                        <i class="ph ph-caret-down"></i>
+                    </button>
+                    <div class="faq-answer">
+                        <p data-he="אחרי 14 ימים, תוכל לבחור אם להמשיך עם מנוי חודשי או שנתי. אם תחליט שלא להמשיך, הנתונים שלך יישמרו למשך 30 יום נוספים."
+                            data-en="After 14 days, you can choose to continue with a monthly or annual subscription. If you decide not to continue, your data will be saved for an additional 30 days.">
+                            אחרי 14 ימים, תוכל לבחור אם להמשיך עם מנוי חודשי או שנתי. אם תחליט שלא להמשיך, הנתונים שלך
+                            יישמרו למשך 30 יום נוספים.
+                        </p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">
+                        <span data-he="האם יש תמיכה בעברית?" data-en="Is there Hebrew support?">האם יש תמיכה
+                            בעברית?</span>
+                        <i class="ph ph-caret-down"></i>
+                    </button>
+                    <div class="faq-answer">
+                        <p data-he="כן! המערכת כולה בעברית, כולל תמיכה טכנית מלאה בעברית. אנחנו כאן כדי לעזור לך בכל שאלה."
+                            data-en="Yes! The entire system is in Hebrew, including full technical support in Hebrew. We're here to help you with any question.">
+                            כן! המערכת כולה בעברית, כולל תמיכה טכנית מלאה בעברית. אנחנו כאן כדי לעזור לך בכל שאלה.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>RentMate</h3>
+                    <p data-he="מערכת ניהול נכסים חכמה לבעלי דירות"
+                        data-en="Smart property management system for landlords">
+                        מערכת ניהול נכסים חכמה לבעלי דירות
+                    </p>
+                </div>
+                <div class="footer-section">
+                    <h4 data-he="קישורים" data-en="Links">קישורים</h4>
+                    <ul>
+                        <li><a href="../index.html" data-he="התחבר למערכת" data-en="Login to System">התחבר למערכת</a>
+                        </li>
+                        <li><a href="#features" data-he="תכונות" data-en="Features">תכונות</a></li>
+                        <li><a href="#calculator" data-he="מחשבון מדד" data-en="Index Calculator">מחשבון מדד</a></li>
+                        <li><a href="#faq" data-he="שאלות נפוצות" data-en="FAQ">שאלות נפוצות</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4 data-he="משפטי" data-en="Legal">משפטי</h4>
+                    <ul>
+                        <li><a href="#" data-he="תנאי שימוש" data-en="Terms of Service">תנאי שימוש</a></li>
+                        <li><a href="#" data-he="מדיניות פרטיות" data-en="Privacy Policy">מדיניות פרטיות</a></li>
+                        <li><a href="#" data-he="צור קשר" data-en="Contact">צור קשר</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 RentMate. <span data-he="כל הזכויות שמורות" data-en="All rights reserved">כל הזכויות
+                        שמורות</span>.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/script.js"></script>
+</body>
+
+</html>

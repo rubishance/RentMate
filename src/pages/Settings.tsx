@@ -1,7 +1,9 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import logoFinalCleanV2 from '../assets/logo-final-clean-v2.png';
-import { User, Bell, Shield, LogOut, ChevronRight, Languages, Check, Mail, Send } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { User, Bell, Shield, Wallet, CreditCard, ChevronRight, Mail, Send, Check, LogOut, Receipt, Languages } from 'lucide-react';
 import { useUserPreferences } from '../contexts/UserPreferencesContext';
 import type { Language, Gender } from '../types/database';
 import { EditProfileModal, NotificationsSettingsModal } from '../components/modals/EditProfileModal';
@@ -12,6 +14,7 @@ import { PrivacySecurityModal } from '../components/modals/PrivacySecurityModal'
 export function Settings() {
     const { preferences, setLanguage, setGender } = useUserPreferences();
     const { t } = useTranslation();
+    const navigate = useNavigate();
     const [isAdmin, setIsAdmin] = useState(false);
     const [userData, setUserData] = useState<{ full_name: string | null; email: string | null; first_name?: string; last_name?: string }>({
         full_name: '',
@@ -208,10 +211,10 @@ export function Settings() {
                                 <button
                                     key={option.value}
                                     onClick={() => setLanguage(option.value)}
-                                    className={`p-4 rounded-xl border-2 transition-all ${preferences.language === option.value
+                                    className={`p - 4 rounded - xl border - 2 transition - all ${preferences.language === option.value
                                         ? 'border-primary bg-primary/5'
                                         : 'border-border hover:border-primary/50'
-                                        }`}
+                                        } `}
                                 >
                                     <div className="flex items-center justify-between">
                                         <span className="font-medium">{option.label}</span>
@@ -239,10 +242,10 @@ export function Settings() {
                                     <button
                                         key={option.value}
                                         onClick={() => setGender(option.value)}
-                                        className={`p-4 rounded-xl border-2 transition-all ${preferences.gender === option.value
+                                        className={`p - 4 rounded - xl border - 2 transition - all ${preferences.gender === option.value
                                             ? 'border-primary bg-primary/5'
                                             : 'border-border hover:border-primary/50'
-                                            }`}
+                                            } `}
                                     >
                                         <div className="flex items-center justify-between">
                                             <div className="text-left">
@@ -312,7 +315,7 @@ export function Settings() {
                                     : t('contactSupportDesc')}
                             </div>
                         </div>
-                        <ChevronRight className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${isContactOpen ? 'rotate-90' : ''}`} />
+                        <ChevronRight className={`w - 5 h - 5 text - muted - foreground transition - transform duration - 200 ${isContactOpen ? 'rotate-90' : ''} `} />
                     </button>
 
                     {isContactOpen && (
@@ -327,22 +330,22 @@ export function Settings() {
                             <button
                                 onClick={handleSendMessage}
                                 disabled={!contactMessage.trim() || isSendingMessage}
-                                className={`w-full mt-4 flex items-center justify-center gap-2 p-3 rounded-xl font-medium transition-all ${!contactMessage.trim() || isSendingMessage
+                                className={`w - full mt - 4 flex items - center justify - center gap - 2 p - 3 rounded - xl font - medium transition - all ${!contactMessage.trim() || isSendingMessage
                                     ? 'bg-secondary text-muted-foreground cursor-not-allowed'
                                     : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25'
-                                    }`}
+                                    } `}
                             >
                                 {isSendingMessage ? (
                                     <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
                                 ) : messageSent ? (
                                     <>
                                         <Check className="w-5 h-5" />
-                                        {t('sent')}
+                                        Sent
                                     </>
                                 ) : (
                                     <>
                                         <Send className="w-5 h-5" />
-                                        {t('send')}
+                                        Send
                                     </>
                                 )}
                             </button>
@@ -367,8 +370,14 @@ export function Settings() {
             </button>
 
             {/* App Version */}
-            <div className="text-center text-xs text-muted-foreground pt-4">
-                {t('appVersion')}
+            <div className="text-center text-xs text-muted-foreground pt-4 space-y-2">
+                <div>{t('appVersion')}</div>
+                <button
+                    onClick={() => navigate('/accessibility')}
+                    className="text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary rounded px-2"
+                >
+                    {preferences.language === 'he' ? 'הצהרת נגישות' : 'Accessibility Statement'}
+                </button>
             </div>
 
             <EditProfileModal

@@ -3,9 +3,10 @@ import type {
     StandardCalculationResult,
     ReconciliationInput,
     ReconciliationResult,
-    MonthlyPayment
+    MonthlyPayment,
+    IndexBase
 } from '../types/database';
-import { getIndexValue, getIndexRange, getMonthsBetween, getAvailableRange } from './index-data.service';
+import { getIndexValue, getIndexRange, getMonthsBetween, getAvailableRange, getIndexBases } from './index-data.service';
 
 /**
  * Calculator Service
@@ -28,8 +29,42 @@ export async function calculateStandard(
             return null;
         }
 
-        // Calculate מקדם קישור (linkage coefficient)
-        const linkageCoefficient = ((targetIndexValue / baseIndexValue) - 1) * 100;
+        // Calculate Chaining Factor
+        // -------------------------
+        // We need to check if we crossed any index base periods.
+        // Formula: NewIndex * ChainFactors / BaseIndex
+        let chainFactor = 1.0;
+
+        // Fetch bases only if not manual indices (manual implies specific known values)
+        // Actually, even with manual indices, if the dates span bases, we might need chaining, 
+        // but typically manual entry users handle that or it's a simple ratio.
+        // We'll proceed assuming if it's auto-fetch, we check bases.
+        if (!input.manualBaseIndex && !input.manualTargetIndex) {
+            const bases = await getIndexBases(input.linkageType);
+
+            // Sort bases descending (newest first)
+            // Iterate to find bases that started AFTER baseDate and BEFORE/ON targetDate
+            const bDate = new Date(input.baseDate + '-01'); // Ensure day is set
+            const tDate = new Date(input.targetDate + '-01');
+
+            bases.forEach((base: IndexBase) => {
+                const baseStart = new Date(base.base_period_start);
+                // logic: if a new base period started between baseDate and targetDate
+                if (baseStart > bDate && baseStart <= tDate) {
+                    if (base.chain_factor && base.chain_factor > 0) {
+                        chainFactor *= Number(base.chain_factor);
+                    }
+                }
+            });
+        }
+
+        // Calculate Linkage Ratio with Chain Factor
+        // Ratio = (Target * Chain) / Base
+        const rawRatio = (targetIndexValue * chainFactor) / baseIndexValue;
+
+        // Calculate מקדם קישור (linkage coefficient) in percentage change
+        // e.g. 1.05 -> 5%
+        const linkageCoefficient = (rawRatio - 1) * 100;
 
         // Apply partial linkage if specified
         const partialLinkage = input.partialLinkage ?? 100;
@@ -48,9 +83,17 @@ export async function calculateStandard(
         const percentageChange = (absoluteChange / input.baseRent) * 100;
 
         // Generate formula string
-        const formula = partialLinkage === 100
-            ? `New Rent = ₪${input.baseRent.toLocaleString()} × (${targetIndexValue} / ${baseIndexValue}) = ₪${Math.round(newRent).toLocaleString()}`
-            : `New Rent = ₪${input.baseRent.toLocaleString()} × (1 + (${linkageCoefficient.toFixed(2)}% × ${partialLinkage}%)) = ₪${Math.round(newRent).toLocaleString()}`;
+        let formula = '';
+        if (partialLinkage === 100) {
+            if (chainFactor !== 1.0) {
+                formula = `New Rent = ₪${input.baseRent.toLocaleString()} × ((${targetIndexValue} × ${chainFactor.toFixed(4)}) / ${baseIndexValue}) = ₪${Math.round(newRent).toLocaleString()}`;
+            } else {
+                formula = `New Rent = ₪${input.baseRent.toLocaleString()} × (${targetIndexValue} / ${baseIndexValue}) = ₪${Math.round(newRent).toLocaleString()}`;
+            }
+        } else {
+            // Partial Linkage
+            formula = `New Rent = ₪${input.baseRent.toLocaleString()} × (1 + (${linkageCoefficient.toFixed(2)}% × ${partialLinkage}%)) = ₪${Math.round(newRent).toLocaleString()}`;
+        }
 
         const indexSource = input.manualBaseIndex
             ? 'Manual Entry'

@@ -18,6 +18,26 @@ interface RedactionStudioProps {
     onCancel: () => void;
 }
 
+const ThumbnailImage = ({ file }: { file: File }) => {
+    const [url, setUrl] = useState<string | null>(null);
+
+    useEffect(() => {
+        const objectUrl = URL.createObjectURL(file);
+        setUrl(objectUrl);
+        return () => URL.revokeObjectURL(objectUrl);
+    }, [file]);
+
+    if (!url) return <div className="w-full h-full bg-gray-800 animate-pulse" />;
+
+    return (
+        <img
+            src={url}
+            alt="Page thumbnail"
+            className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+        />
+    );
+};
+
 export function RedactionStudio({ images, onConfirm, onCancel }: RedactionStudioProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [redactions, setRedactions] = useState<PageRedactions>({});
@@ -297,23 +317,91 @@ export function RedactionStudio({ images, onConfirm, onCancel }: RedactionStudio
                 </button>
             </div>
 
-            {/* Canvas Area */}
-            <div className="flex-1 overflow-hidden flex items-center justify-center p-8 bg-neutral-900/50 relative">
-                {/* Hint Overlay */}
-                {(!redactions[currentIndex] || redactions[currentIndex].length === 0) && !isDrawing && (
-                    <div className="absolute top-10 pointer-events-none bg-black/80 px-4 py-2 rounded-full text-sm text-white/70 animate-pulse border border-white/10">
-                        לחץ וגרור כדי להשחיר מידע
-                    </div>
-                )}
+            {/* Main Content Area */}
+            <div className="flex-1 flex overflow-hidden relative">
 
-                <canvas
-                    ref={canvasRef}
-                    onMouseDown={handleMouseDown}
-                    onMouseMove={handleMouseMove}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseUp}
-                    className="cursor-crosshair shadow-2xl border border-white/10 bg-white"
-                />
+                {/* Thumbnails Sidebar (RTL: Right side) */}
+                <div className="w-32 lg:w-48 bg-neutral-900 border-l border-white/10 flex flex-col overflow-hidden shrink-0">
+                    <div className="p-3 border-b border-white/10 bg-white/5">
+                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">עמודים ({images.length})</h3>
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar">
+                        {images.map((file, idx) => {
+                            const hasRedactions = redactions[idx] && redactions[idx].length > 0;
+                            const isCurrent = idx === currentIndex;
+
+                            // We need a preview URL for each image. 
+                            // Creating objects URLs inside map is bad for memory if we don't revoke.
+                            // But for a list of <50 images it might contain, let's try a simpler approach 
+                            // or assume we can create them. 
+                            // Better: use a ref to store URLs or just create them on the fly if React handles it well enough 
+                            // (it might flicker). 
+                            // Optimization: Just show page number if image is heavy, BUT thumbnails are requested.
+                            // Let's rely on browser cache for the URL creation if possible or just use the same URL.
+
+                            // NOTE: URL.createObjectURL(img) is fast. Component lifecycle handles it? 
+                            // We should really store these URLs in a state once on load.
+                            // For now, I'll inline it but it's not ideal. 
+                            // Actually, let's just use a preview effect in the component if we wanted perfection.
+                            // Given the task constraints, I will use a simple text representation if images are too heavy, 
+                            // OR I can try to generate a tiny thumbnail.
+
+                            // Let's stick to a simple placeholder + Page Number first to avoid memory leaks with 50 blobs.
+                            // Wait, the USER specifically asked for "Sidebar Thumbnails for navigation".
+                            // So I MUST show images.
+                            // accepted strategy: Create a memoized list of URLs.
+
+                            return (
+                                <button
+                                    key={idx}
+                                    onClick={() => setCurrentIndex(idx)}
+                                    className={`w-full aspect-[3/4] rounded-lg border-2 relative group overflow-hidden transition-all ${isCurrent
+                                        ? 'border-green-500 shadow-[0_0_0_2px_rgba(34,197,94,0.3)]'
+                                        : 'border-white/10 hover:border-white/30'
+                                        }`}
+                                >
+                                    <ThumbnailImage file={file} />
+
+                                    {/* Page Number Overlay */}
+                                    <div className="absolute top-1 right-1 w-6 h-6 bg-black/70 backdrop-blur rounded flex items-center justify-center text-xs font-mono">
+                                        {idx + 1}
+                                    </div>
+
+                                    {/* Redaction Badge */}
+                                    {hasRedactions && (
+                                        <div className="absolute bottom-1 right-1 top-auto w-5 h-5 bg-red-500 rounded-full flex items-center justify-center shadow-sm">
+                                            <Shield size={10} className="fill-current text-white" />
+                                        </div>
+                                    )}
+
+                                    {/* Current Indicator */}
+                                    {isCurrent && (
+                                        <div className="absolute inset-0 bg-green-500/10 pointer-events-none" />
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Canvas Area */}
+                <div className="flex-1 overflow-hidden flex items-center justify-center p-8 bg-neutral-900/50 relative">
+                    {/* Hint Overlay */}
+                    {(!redactions[currentIndex] || redactions[currentIndex].length === 0) && !isDrawing && (
+                        <div className="absolute top-10 pointer-events-none bg-black/80 px-4 py-2 rounded-full text-sm text-white/70 animate-pulse border border-white/10 z-10">
+                            לחץ וגרור כדי להשחיר מידע
+                        </div>
+                    )}
+
+                    <canvas
+                        ref={canvasRef}
+                        onMouseDown={handleMouseDown}
+                        onMouseMove={handleMouseMove}
+                        onMouseUp={handleMouseUp}
+                        onMouseLeave={handleMouseUp}
+                        className="cursor-crosshair shadow-2xl border border-white/10 bg-white"
+                    />
+                </div>
             </div>
 
             {/* Footer */}

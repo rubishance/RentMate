@@ -1,0 +1,18 @@
+/* EMERGENCY FIX FOR GREY SCREEN */
+#page-transition-overlay {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    z-index: -1 !important;
+}
+
+.modal-overlay:not(.open) {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Ensure body is scrollable */
+body {
+    overflow: auto !important;
+}

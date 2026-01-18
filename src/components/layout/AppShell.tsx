@@ -122,9 +122,18 @@ export function AppShell() {
     return (
         <div className="min-h-screen bg-slate-50 text-foreground flex flex-col font-sans overflow-hidden relative">
 
+            {/* Accessibility: Skip to Content */}
+            <a
+                href="#main-content"
+                className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-[999] px-4 py-2 bg-blue-600 text-white font-bold rounded-lg shadow-lg"
+            >
+                {preferences.language === 'he' ? 'דלג לתוכן המרכזי' : 'Skip to main content'}
+            </a>
+
             {/* Main Content Area (With Swipe) - Adjusted padding for top header */}
             <motion.main
-                className="flex-1 overflow-y-auto overflow-x-hidden pt-6 pb-24 scroll-smooth relative z-10"
+                id="main-content"
+                className="flex-1 overflow-y-auto overflow-x-hidden pt-6 pb-20 scroll-smooth relative z-10"
                 drag="x"
                 dragConstraints={{ left: 0, right: 0 }}
                 dragElastic={0.2}
@@ -150,7 +159,7 @@ export function AppShell() {
             <CookieConsent />
 
             {/* Bottom Navigation Bar */}
-            <nav className="fixed bottom-0 left-0 right-0 bg-white/70 backdrop-blur-xl border-t border-white/50 pb-safe pt-3 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+            <nav className="fixed bottom-0 left-0 right-0 bg-white/70 backdrop-blur-xl border-t border-white/50 pb-safe pt-3 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]" role="navigation" aria-label="Main Navigation">
                 <div className="flex justify-around items-center h-20 px-2">
 
 
@@ -162,6 +171,8 @@ export function AppShell() {
                             <button
                                 key={item.path}
                                 onClick={() => handleNavClick(item.path, index)}
+                                aria-label={item.label}
+                                aria-current={isActive ? 'page' : undefined}
                                 className={cn(
                                     "flex flex-col items-center justify-center min-w-[3.5rem] h-full gap-1 transition-all duration-300",
                                     isActive ? "text-blue-600 scale-110" : "text-slate-400 hover:text-slate-600"

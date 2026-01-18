@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0066ff">
+    <meta name="description" content="הוספת נכס חדש - RentMate">
+    <title>הוספת נכס - RentMate</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/premium.css">
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        .form-container {
+            background-color: var(--color-surface);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+            border: 1px solid var(--color-border);
+            padding: var(--spacing-xl);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-lg);
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .form-group label {
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--color-text-secondary);
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-xl);
+            padding-top: var(--spacing-lg);
+            border-top: 1px solid var(--color-border);
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="ph ph-house-line logo-icon"></i>
+                <span>RentMate</span>
+            </div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html"><i class="ph ph-squares-four"></i> דשבורד</a></li>
+                    <li class="active"><a href="properties.html"><i class="ph ph-buildings"></i> נכסים</a></li>
+                    <li><a href="tenants.html"><i class="ph ph-users"></i> דיירים</a></li>
+                    <li><a href="contracts.html"><i class="ph ph-files"></i> חוזים</a></li>
+                    <li><a href="payments.html"><i class="ph ph-money"></i> תשלומים</a></li>
+                    <li><a href="reports.html"><i class="ph ph-chart-line-up"></i> דוחות</a></li>
+                    <div class="spacer"></div>
+                    <li><a href="settings.html"><i class="ph ph-gear"></i> הגדרות</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <i class="ph ph-list"></i>
+                </button>
+                <div class="breadcrumbs">
+                    <span id="pageTitle">הוספת נכס</span>
+                </div>
+                <div class="user-profile">
+                    <div class="avatar">א</div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <div class="form-container">
+                    <form id="propertyForm" class="form-grid">
+                        <input type="hidden" id="propId">
+
+                        <div class="form-group full-width">
+                            <h2>פרטי הנכס</h2>
+                            <p style="color: var(--color-text-secondary); margin-bottom: 1rem;">מלא את פרטי הנכס החדש,
+                                שדות המסומנים ב-* הם חובה.</p>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label>עיר / אזור *</label>
+                            <input type="text" id="propCity" autocomplete="address-level2" list="citySuggestions"
+                                placeholder="לדוגמה: תל אביב">
+                            <datalist id="citySuggestions">
+                                <option value="תל אביב">
+                                <option value="ירושלים">
+                                <option value="חיפה">
+                                <option value="ראשון לציון">
+                                <option value="פתח תקווה">
+                                <option value="אשדוד">
+                                <option value="נתניה">
+                                <option value="באר שבע">
+                                <option value="בני ברק">
+                                <option value="חולון">
+                                <option value="רמת גן">
+                                <option value="אשקלון">
+                                <option value="רחובות">
+                                <option value="בת ים">
+                                <option value="כפר סבא">
+                                <option value="הרצליה">
+                                <option value="חדרה">
+                                <option value="מודיעין-מכבים-רעות">
+                                <option value="רעננה">
+                                <option value="רמלה">
+                                <option value="גבעתיים">
+                            </datalist>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label>כתובת הנכס *</label>
+                            <input type="text" id="propAddress" required autocomplete="street-address"
+                                placeholder="רחוב ומספר בית">
+                        </div>
+
+                        <div class="form-group">
+                            <label>סטטוס</label>
+                            <select id="propStatus">
+                                <option value="מושכר">מושכר</option>
+                                <option value="פנוי" selected>פנוי</option>
+                                <option value="בשיפוץ">בשיפוץ</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>מספר חדרים</label>
+                            <input type="number" id="propRooms" min="1" max="10" placeholder="לדוגמה: 3">
+                        </div>
+
+                        <div class="form-group">
+                            <label>מחיר מבוקש (₪) - אופציונלי</label>
+                            <input type="number" id="propPrice" min="0" placeholder="0.00">
+                        </div>
+
+                        <div class="form-actions full-width">
+                            <button type="button" class="btn btn-outline" onclick="history.back()">ביטול</button>
+                            <button type="submit" class="btn btn-primary" id="btnSaveProperty">
+                                <i class="ph ph-floppy-disk"></i> שמור נכס
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>
+    <script src="js/config.js" defer></script>
+    <script src="js/supabase.js" defer></script>
+    <script src="js/auth.js" defer></script>
+    <script src="js/db.js" defer></script>
+
+    <!-- Google Places API -->
+    <script src="js/google-places-config.js" defer></script>
+    <script src="js/property-autocomplete.js" defer></script>
+
+    <!-- App Logic for this page -->
+    <script defer>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // 1. Initialize Supabase Service FIRST
+                if (window.supabaseService) {
+                    window.supabaseService.init();
+                }
+
+                // Auth Check First
+                if (window.isAuthenticated) {
+                    const isAuth = await window.isAuthenticated();
+                    if (!isAuth) {
+                        // User is NOT authenticated - Clear Content & Show Message
+                        const appContainer = document.querySelector('.app-container');
+                        if (appContainer) appContainer.innerHTML = `
+                            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; text-align:center; padding:20px;">
+                                <i class="ph ph-lock-key" style="font-size: 48px; color: var(--color-primary); margin-bottom: 20px;"></i>
+                                <h2>גישה מוגבלת</h2>
+                                <p style="margin-bottom: 20px; font-size: 1.1rem;">אנא התחבר למערכת כדי לצפות במידע זה.</p>
+                                <a href="login.html" class="btn btn-primary">התחברות</a>
+                            </div>
+                        `;
+                        document.body.style.backgroundColor = '#f8f9fa';
+                        return; // Stop loading
+                    } else {
+                        // Update user profile
+                        const user = await window.getCurrentUserData();
+                        if (window.updateUserProfile) window.updateUserProfile(user);
+                    }
+                }
+
+                // Initialize DB
+                if (window.rentMateDB) {
+                    await window.rentMateDB.init();
+                } else {
+                    console.error('RentMateDB not loaded!');
+                    // Retry mechanism?
+                }
+
+                const form = document.getElementById('propertyForm');
+                const btnSave = document.getElementById('btnSaveProperty');
+
+                if (!form) {
+                    console.error('Form not found!');
+                    return;
+                }
+
+                // Handle URL params for Edit Mode
+                const urlParams = new URLSearchParams(window.location.search);
+                const editId = urlParams.get('id');
+
+                if (editId) {
+                    document.getElementById('pageTitle').textContent = 'עריכת נכס';
+                    document.title = 'עריכת נכס - RentMate';
+                    btnSave.innerHTML = '<i class="ph ph-floppy-disk"></i> עדכן נכס';
+
+                    // Load data
+                    setTimeout(async () => {
+                        if (!window.rentMateDB) {
+                            console.error('DB not ready for edit load');
+                            return;
+                        }
+                        try {
+                            const idKey = isNaN(Number(editId)) ? editId : Number(editId);
+                            const prop = await window.rentMateDB.get('properties', idKey);
+                            if (prop) {
+                                document.getElementById('propId').value = prop.id;
+                                document.getElementById('propCity').value = prop.city || '';
+                                document.getElementById('propAddress').value = prop.address || '';
+                                document.getElementById('propStatus').value = prop.status || 'פנוי';
+                                document.getElementById('propRooms').value = prop.rooms || '';
+                                document.getElementById('propPrice').value = prop.price || '';
+                            }
+                        } catch (err) {
+                            console.error('Error loading property:', err);
+                            alert('שגיאה בטעינת הנכס');
+                        }
+                    }, 500); // Small delay for DB init
+                }
+
+                // Save Handler
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    console.log('Form submission started');
+
+                    const id = document.getElementById('propId').value;
+                    const address = document.getElementById('propAddress').value;
+                    const city = document.getElementById('propCity').value;
+                    const status = document.getElementById('propStatus').value;
+                    const price = document.getElementById('propPrice').value;
+                    const rooms = document.getElementById('propRooms').value;
+
+                    if (!address || !city) {
+                        alert('אנא מלא כתובת ועיר');
+                        return;
+                    }
+
+                    btnSave.disabled = true;
+                    const originalText = btnSave.innerHTML;
+                    btnSave.innerHTML = '<i class="ph ph-spinner ph-spin"></i> שומר...';
+
+                    try {
+                        const propertyData = {
+                            title: address,
+                            address,
+                            city,
+                            status,
+                            price: price || 0,
+                            rooms: rooms || 0,
+                            type: 'apartment',
+                            created_at: id ? undefined : new Date().toISOString(),
+                            updated_at: new Date().toISOString()
+                        };
+
+                        if (!window.rentMateDB) {
+                            throw new Error('Database connection failed');
+                        }
+
+                        if (id) {
+                            await window.rentMateDB.updateProperty(isNaN(Number(id)) ? id : Number(id), propertyData);
+                        } else {
+                            await window.rentMateDB.add('properties', propertyData);
+                        }
+
+                        console.log('Save successful, redirecting...');
+
+                        // Redirect back to properties list
+                        window.location.href = 'properties.html';
+                    } catch (err) {
+                        console.error('Error saving:', err);
+                        alert('שגיאה בשמירת הנכס: ' + err.message);
+                        btnSave.disabled = false;
+                        btnSave.innerHTML = originalText;
+                    }
+                });
+            } catch (globalErr) {
+                console.error('Critical Error in Add Property Init:', globalErr);
+                alert('שגיאה בטעינת הדף. אנא רענן ונסה שוב.');
+            }
+        });
+
+        // Mobile Menu Logic (Inline for simplicity on new page)
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', () => {
+                sidebar.classList.add('open');
+                sidebarOverlay.classList.add('active');
+            });
+        }
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', () => {
+                sidebar.classList.remove('open');
+                sidebarOverlay.classList.remove('active');
+            });
+        }
+    </script>
+</body>
+
+</html>

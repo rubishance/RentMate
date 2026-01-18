@@ -26,9 +26,9 @@ export interface Property {
 export type ConfidenceLevel = 'high' | 'medium' | 'low';
 
 export interface ExtractedField {
-    fieldName: string;
-    extractedValue: string | number | null;
-    sourceText: string; // Actual excerpt from contract
+    fieldName: keyof Omit<Contract, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'status' | 'contract_file_url' | 'contract_file_name' | 'ai_extracted' | 'ai_extraction_data'> | 'buildingNum' | 'aptNum' | 'paymentFrequency' | 'tenantName' | 'tenantId' | 'tenantEmail' | 'tenantPhone' | 'landlordName' | 'landlordId' | 'landlordPhone' | 'address' | 'city' | 'street' | 'rooms' | 'floor' | 'hasParking' | 'hasStorage' | 'size' | 'rent' | 'paymentDay' | 'securityDeposit' | 'guaranteeType' | 'startDate' | 'endDate' | 'signingDate' | 'linkageType' | 'indexCalculationMethod' | 'baseIndexDate' | 'baseIndexValue' | 'indexLimitType' | 'renewalOption' | 'petsAllowed' | 'guarantorsInfo' | 'specialClauses';
+    extractedValue: string | number | null | boolean | any;
+    sourceText?: string; // Actual excerpt from contract
     confidence: ConfidenceLevel;
     pageNumber?: number;
     userConfirmed: boolean;
@@ -115,6 +115,15 @@ export interface IndexData {
     value: number;
     source: 'cbs' | 'exchange-api' | 'manual';
     created_at?: string;
+}
+
+export interface IndexBase {
+    id: string;
+    index_type: 'cpi' | 'housing' | 'construction' | 'usd' | 'eur';
+    base_period_start: string; // 'YYYY-MM-DD'
+    base_value: number; // Usually 100.0 or something
+    chain_factor: number; // The factor to multiply when crossing INTO this base from previous
+    description?: string; // e.g., "Basis 2022"
 }
 
 export interface StandardCalculationInput {

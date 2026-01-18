@@ -6,6 +6,7 @@ import { ConfirmDeleteModal } from '../components/modals/ConfirmDeleteModal';
 import { IndexedRentModal } from '../components/modals/IndexedRentModal';
 import type { Property } from '../types/database';
 import { useTranslation } from '../hooks/useTranslation';
+import { useUserPreferences } from '../contexts/UserPreferencesContext';
 import { PropertyIcon } from '../components/common/PropertyIcon';
 import placeholderImage from '../assets/property-placeholder-clean.png';
 import { PageHeader } from '../components/common/PageHeader';
@@ -29,6 +30,7 @@ type ExtendedProperty = Property & {
 
 export function Properties() {
     const { t, lang } = useTranslation();
+    const { preferences } = useUserPreferences();
     const [properties, setProperties] = useState<ExtendedProperty[]>([]);
     const [loading, setLoading] = useState(true);
 

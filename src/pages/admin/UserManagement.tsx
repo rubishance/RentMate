@@ -6,7 +6,8 @@ import {
     MagnifyingGlassIcon,
     FunnelIcon,
     PencilSquareIcon,
-    XMarkIcon
+    XMarkIcon,
+    KeyIcon
 } from '@heroicons/react/24/outline';
 import { Loader2 } from 'lucide-react';
 
@@ -148,6 +149,34 @@ const UserManagement = () => {
         }
     };
 
+    const handleImpersonate = async (user: any) => {
+        if (!confirm(`Generate a secure login link for ${user.email}? You can use this to access their account.`)) return;
+
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) throw new Error('No session');
+
+            const res = await fetch('https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/admin-generate-link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`
+                },
+                body: JSON.stringify({ targetUserId: user.id })
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to generate link');
+
+            // Copy to clipboard
+            await navigator.clipboard.writeText(data.url);
+            alert(`Login Link generated and copied to clipboard!\n\nUser: ${data.email}\n\nPaste this in an Incognito/Private window to access their account.`);
+        } catch (error: any) {
+            console.error('Impersonation error:', error);
+            alert(`Error: ${error.message}`);
+        }
+    };
+
     const getPlanName = (planId: string) => {
         return plans.find(p => p.id === planId)?.name || planId;
     };
@@ -269,6 +298,13 @@ const UserManagement = () => {
                                                 <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-left text-sm font-medium sm:pr-6">
                                                     <button onClick={() => openEditModal(user)} className="text-brand-600 hover:text-brand-900 dark:hover:text-brand-400 ml-4 flex items-center gap-1">
                                                         <PencilSquareIcon className="w-4 h-4" /> Edit
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleImpersonate(user)}
+                                                        className="text-amber-600 hover:text-amber-900 dark:hover:text-amber-400 ml-4 flex items-center gap-1"
+                                                        title="Generate Login Link"
+                                                    >
+                                                        <KeyIcon className="w-4 h-4" /> Login
                                                     </button>
                                                 </td>
                                             </tr>

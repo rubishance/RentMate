@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0066ff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="RentMate">
+    <meta name="description" content="יומני ביקורת ופעילות מערכת">
+    <title>יומני ביקורת - RentMate</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="logo">
+                <span class="logo-icon">▢</span> RentMate
+            </div>
+
+            <ul class="nav-links">
+                <li>
+                    <a href="index.html">
+                        <i class="ph ph-squares-four"></i>
+                        לוח בקרה
+                    </a>
+                </li>
+                <li>
+                    <a href="properties.html">
+                        <i class="ph ph-house"></i>
+                        נכסים
+                    </a>
+                </li>
+                <li>
+                    <a href="tenants.html">
+                        <i class="ph ph-users"></i>
+                        דיירים
+                    </a>
+                </li>
+                <li>
+                    <a href="contracts.html">
+                        <i class="ph ph-files"></i>
+                        חוזים
+                    </a>
+                </li>
+                <li>
+                    <a href="payments.html">
+                        <i class="ph ph-wallet"></i>
+                        תשלומים
+                    </a>
+                </li>
+                <li>
+                    <a href="calculator.html">
+                        <i class="ph ph-calculator"></i>
+                        מחשבון מדד
+                    </a>
+                </li>
+                <li class="spacer"></li>
+
+                <!-- Admin Section -->
+                <li class="admin-nav">
+                    <div class="nav-divider"></div>
+                    <div class="nav-divider-label">ניהול</div>
+                </li>
+                <li class="admin-nav">
+                    <a href="users.html">
+                        <i class="ph ph-user-gear"></i>
+                        ניהול משתמשים
+                    </a>
+                </li>
+                <li class="admin-nav active">
+                    <a href="audit-logs.html">
+                        <i class="ph ph-clipboard-text"></i>
+                        יומני ביקורת
+                    </a>
+                </li>
+
+                <li>
+                    <a href="settings.html">
+                        <i class="ph ph-gear"></i>
+                        הגדרות
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="logout(); return false;">
+                        <i class="ph ph-sign-out"></i>
+                        התנתק
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="תפריט">
+                    <i class="ph ph-list"></i>
+                </button>
+                <div class="breadcrumbs">
+                    <span>יומני ביקורת</span>
+                </div>
+                <div class="user-profile">
+                    <span class="user-name">ראובן שאנס</span>
+                    <span class="admin-badge">מנהל</span>
+                    <div class="avatar">ר</div>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <div class="page-header">
+                    <div class="header-content">
+                        <h1>יומני ביקורת</h1>
+                        <p>מעקב אחר פעולות מנהלים ושינויים במערכת</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-outline" id="btnExportLogs">
+                            <i class="ph ph-download"></i> ייצא ל-CSV
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="card" style="margin-bottom: 1.5rem;">
+                    <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                        <div class="form-group">
+                            <label>תאריך התחלה</label>
+                            <input type="date" id="filterStartDate">
+                        </div>
+                        <div class="form-group">
+                            <label>תאריך סיום</label>
+                            <input type="date" id="filterEndDate">
+                        </div>
+                        <div class="form-group">
+                            <label>סוג פעולה</label>
+                            <select id="filterAction">
+                                <option value="">הכל</option>
+                                <option value="user_role_changed">שינוי תפקיד</option>
+                                <option value="user_status_changed">שינוי סטטוס</option>
+                                <option value="user_created">משתמש נוצר</option>
+                                <option value="user_deleted">משתמש נמחק</option>
+                                <option value="login">התחברות</option>
+                                <option value="logout">התנתקות</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>משתמש</label>
+                            <select id="filterUser">
+                                <option value="">הכל</option>
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                        <button class="btn btn-primary" id="btnApplyFilters">
+                            <i class="ph ph-funnel"></i> החל סינון
+                        </button>
+                        <button class="btn btn-outline" id="btnClearFilters">
+                            <i class="ph ph-x"></i> נקה
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Audit Logs Table -->
+                <div class="card wide-card">
+                    <div class="table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>תאריך ושעה</th>
+                                    <th>משתמש</th>
+                                    <th>פעולה</th>
+                                    <th>פרטים</th>
+                                    <th>כתובת IP</th>
+                                </tr>
+                            </thead>
+                            <tbody id="auditLogsTableBody">
+                                <!-- Dynamic content loaded by JavaScript -->
+                                <tr>
+                                    <td colspan="5" style="text-align: center; padding: 2rem;">
+                                        <i class="ph ph-spinner ph-spin" style="font-size: 2rem;"></i>
+                                        <p>טוען יומני ביקורת...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div id="pagination"
+                        style="display: none; padding: 1rem; border-top: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <span id="paginationInfo">מציג 1-50 מתוך 0</span>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-outline btn-sm" id="btnPrevPage" disabled>
+                                <i class="ph ph-caret-right"></i> הקודם
+                            </button>
+                            <button class="btn btn-outline btn-sm" id="btnNextPage">
+                                הבא <i class="ph ph-caret-left"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker registration failed:', err));
+            });
+        }
+    </script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/audit-logs-admin.js"></script>
+    <script>
+        // Initialize and require admin access
+        (async () => {
+            if (window.supabaseService) {
+                window.supabaseService.init();
+
+                // Auth Check First (Visual Guard)
+                if (window.isAuthenticated) {
+                    const isAuth = await window.isAuthenticated();
+                    if (!isAuth) {
+                        const appContainer = document.querySelector('.app-container');
+                        if (appContainer) appContainer.innerHTML = `
+                            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; text-align:center; padding:20px;">
+                                <i class="ph ph-lock-key" style="font-size: 48px; color: var(--color-primary); margin-bottom: 20px;"></i>
+                                <h2>גישה מוגבלת</h2>
+                                <p style="margin-bottom: 20px; font-size: 1.1rem;">אנא התחבר למערכת כדי לצפות במידע זה.</p>
+                                <a href="login.html" class="btn btn-primary">התחברות</a>
+                            </div>
+                        `;
+                        document.body.style.backgroundColor = '#f8f9fa';
+                        return;
+                    }
+                }
+
+                // Require admin authentication (Role Check)
+                const hasAccess = await requireAdmin();
+                if (!hasAccess) return;
+
+                // Initialize auth listener and update UI
+                initAuthListener();
+                const userData = await getCurrentUserData();
+                if (userData) {
+                    updateUserProfile(userData);
+                }
+
+                // Load audit logs
+                if (window.loadAuditLogs) {
+                    await window.loadAuditLogs();
+                }
+            }
+        })();
+    </script>
+</body>
+
+</html>

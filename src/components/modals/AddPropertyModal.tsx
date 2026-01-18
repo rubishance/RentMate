@@ -68,6 +68,18 @@ export function AddPropertyModal({ isOpen, onClose, onSuccess, propertyToEdit, r
         setIsReadOnly(readOnly);
     }, [readOnly]);
 
+    // Body scroll lock
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen]);
+
     useEffect(() => {
         if (isOpen && propertyToEdit) {
             setFormData({
@@ -175,24 +187,28 @@ export function AddPropertyModal({ isOpen, onClose, onSuccess, propertyToEdit, r
         setError(null);
 
         try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error('You must be logged in to add a property');
+
+            // Check Limit Check
+            if (!propertyToEdit && !canAddProperty) {
+                setError(`You have reached the maximum number of properties for your current plan (${plan?.name}). Please upgrade to add more.`);
+                return;
+            }
+
             // Validation
             if (!formData.address || !formData.city) {
                 throw new Error('Please fill in required fields');
             }
 
             // Check for duplicates
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
+            if (!propertyToEdit) {
                 let query = supabase
                     .from('properties')
                     .select('id')
                     .eq('address', formData.address)
                     .eq('city', formData.city)
                     .eq('user_id', user.id);
-
-                if (propertyToEdit) {
-                    query = query.neq('id', propertyToEdit.id);
-                }
 
                 const { data: existing } = await query;
                 if (existing && existing.length > 0) {
@@ -205,22 +221,25 @@ export function AddPropertyModal({ isOpen, onClose, onSuccess, propertyToEdit, r
                 city: formData.city,
                 rooms: Number(formData.rooms) || 0,
                 size_sqm: Number(formData.size_sqm) || 0,
-
+                rent_price: Number(formData.rent_price) || 0, // Ensure rent_price is a number
                 image_url: formData.image_url || null,
                 has_parking: formData.has_parking,
                 has_storage: formData.has_storage,
                 property_type: formData.property_type,
                 status: propertyToEdit ? propertyToEdit.status : 'Vacant', // Preserve status on edit
-                title: `${formData.address}, ${formData.city}` // Auto-generate title for DB constraint
+                title: `${formData.address}, ${formData.city}`, // Auto-generate title for DB constraint
+                user_id: user.id // Fix: Include user_id for RLS
             };
 
             let error;
 
             if (propertyToEdit) {
                 // Update existing property
+                // Remove user_id from update payload just in case RLS complains about updating it (though it's same)
+                const { user_id, ...updatePayload } = payload;
                 const { error: updateError } = await supabase
                     .from('properties')
-                    .update(payload)
+                    .update(updatePayload)
                     .eq('id', propertyToEdit.id);
                 error = updateError;
             } else {
@@ -345,6 +364,7 @@ export function AddPropertyModal({ isOpen, onClose, onSuccess, propertyToEdit, r
                         <button
                             onClick={onClose}
                             className="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                            aria-label={lang === 'he' ? 'סגור' : 'Close'}
                         >
                             <X className="w-5 h-5" />
                         </button>
@@ -440,6 +460,7 @@ export function AddPropertyModal({ isOpen, onClose, onSuccess, propertyToEdit, r
                                     value={formData.city}
                                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                                     className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
+                                    aria-label={lang === 'he' ? 'עיר' : 'City'}
                                 />
                             </div>
 
@@ -455,6 +476,7 @@ export function AddPropertyModal({ isOpen, onClose, onSuccess, propertyToEdit, r
                                         value={formData.address}
                                         onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                                         className="w-full pl-9 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
+                                        aria-label={lang === 'he' ? 'כתובת' : 'Address'}
                                     />
                                 </div>
                             </div>
@@ -474,6 +496,7 @@ export function AddPropertyModal({ isOpen, onClose, onSuccess, propertyToEdit, r
                                             value={formData.rooms}
                                             onChange={(e) => setFormData({ ...formData, rooms: e.target.value })}
                                             className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
+                                            aria-label={lang === 'he' ? 'חדרים' : 'Rooms'}
                                         />
                                     </div>
                                 </div>
@@ -490,6 +513,7 @@ export function AddPropertyModal({ isOpen, onClose, onSuccess, propertyToEdit, r
                                             value={formData.size_sqm}
                                             onChange={(e) => setFormData({ ...formData, size_sqm: e.target.value })}
                                             className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
+                                            aria-label={lang === 'he' ? 'גודל במטר רבוע' : 'Size in square meters'}
                                         />
                                     </div>
                                 </div>
@@ -536,8 +560,8 @@ export function AddPropertyModal({ isOpen, onClose, onSuccess, propertyToEdit, r
                                     {lang === 'he' ? 'תמונת הנכס' : 'Property Image'}
                                 </label>
 
-                                {/* Toggle Tabs - Only show in Add Mode */}
-                                {!isEditMode && !readOnly && (
+                                {/* Toggle Tabs - Show in Edit Mode too */}
+                                {!readOnly && (
                                     <>
                                         <div className="flex p-1 bg-gray-100 dark:bg-gray-700/50 rounded-lg w-fit">
                                             <button
@@ -574,6 +598,7 @@ export function AddPropertyModal({ isOpen, onClose, onSuccess, propertyToEdit, r
                                                             onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
                                                             className="w-full pl-9 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
                                                             placeholder="https://..."
+                                                            aria-label={lang === 'he' ? 'כתובת תמונה' : 'Image URL'}
                                                         />
                                                     </div>
                                                     {!readOnly && (
@@ -638,6 +663,7 @@ export function AddPropertyModal({ isOpen, onClose, onSuccess, propertyToEdit, r
                                             alt="Preview"
                                             className="w-full h-full object-cover"
                                             onError={(e) => {
+                                                console.error('Failed to load property image:', formData.image_url);
                                                 (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=2070&auto=format&fit=crop';
                                             }}
                                         />

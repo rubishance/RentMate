@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl" data-lang="he">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#007AFF">
+    <title>RentMate Academy - מדריכי וידאו</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/animations.css">
+
+    <style>
+        .video-hero {
+            padding: var(--spacing-3xl) 0;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        }
+
+        .video-container {
+            max-width: 900px;
+            margin: 0 auto;
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            background: #000;
+            aspect-ratio: 16/9;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .play-button {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .play-button:hover {
+            transform: scale(1.1);
+            background: var(--color-primary);
+            border-color: var(--color-primary);
+        }
+
+        .guide-steps {
+            max-width: 800px;
+            margin: var(--spacing-3xl) auto;
+        }
+
+        .guide-step {
+            display: flex;
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+            padding: var(--spacing-lg);
+            background: var(--color-surface);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--color-border);
+            align-items: flex-start;
+        }
+
+        .step-badge {
+            background: var(--color-primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        .back-nav {
+            padding: var(--spacing-lg);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Language Toggle -->
+    <div class="language-toggle">
+        <button class="lang-btn" data-lang="he" aria-label="עברית">עב</button>
+        <button class="lang-btn" data-lang="en" aria-label="English">EN</button>
+    </div>
+
+    <!-- Back Navigation -->
+    <nav class="back-nav container">
+        <a href="index.html" class="btn" style="padding-right: 0; color: var(--color-text-secondary);">
+            <i class="ph ph-arrow-right"></i>
+            <span data-he="חזרה לדף הבית" data-en="Back to Home">חזרה לדף הבית</span>
+        </a>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="video-hero">
+        <div class="container">
+            <h1 class="hero-title" data-he="איך משתמשים ב-RentMate?" data-en="How to use RentMate?">איך משתמשים
+                ב-RentMate?</h1>
+            <p class="hero-subtitle" data-he="מדריך וידאו קצר שיעזור לך להתחיל לנהל את הנכסים שלך בחוכמה"
+                data-en="A short video guide to help you start managing your properties smartly">
+                מדריך וידאו קצר שיעזור לך להתחיל לנהל את הנכסים שלך בחוכמה
+            </p>
+
+            <div class="video-container reveal-on-scroll">
+                <!-- Placeholder for actual video embed (e.g. YouTube/Vimeo) -->
+                <div class="play-button">
+                    <i class="ph ph-play"></i>
+                </div>
+                <img src="images/hero-dashboard.png"
+                    style="position: absolute; top:0; left:0; width:100%; height:100%; object-fit: cover; opacity: 0.5; z-index: -1;"
+                    alt="Video Thumbnail">
+            </div>
+        </div>
+    </section>
+
+    <!-- Guide Steps -->
+    <section class="guide-steps container reveal-stagger">
+        <h2 class="section-title" data-he="צעדים ראשונים" data-en="First Steps">צעדים ראשונים</h2>
+
+        <div class="guide-step">
+            <span class="step-badge" data-he="צעד 1" data-en="Step 1">צעד 1</span>
+            <div>
+                <h3 data-he="הרשמה למערכת" data-en="System Signup">הרשמה למערכת</h3>
+                <p data-he="הכנס את המייל שלך וצור סיסמה. ההרשמה היא חינמית ולוקחת פחות מ-30 שניות."
+                    data-en="Enter your email and create a password. Signup is free and takes less than 30 seconds.">
+                    הכנס את המייל שלך וצור סיסמה. ההרשמה היא חינמית ולוקחת פחות מ-30 שניות.
+                </p>
+            </div>
+        </div>
+
+        <div class="guide-step">
+            <span class="step-badge" data-he="צעד 2" data-en="Step 2">צעד 2</span>
+            <div>
+                <h3 data-he="הוספת נכס ראשון" data-en="Adding First Property">הוספת נכס ראשון</h3>
+                <p data-he="לחץ על 'הוסף נכס', הזן את הכתובת, והעלה תמונות. המערכת תשמור את כל הפרטים בצורה מסודרת."
+                    data-en="Click 'Add Property', enter the address, and upload photos. The system saves all details elegantly.">
+                    לחץ על 'הוסף נכס', הזן את הכתובת, והעלה תמונות. המערכת תשמור את כל הפרטים בצורה מסודרת.
+                </p>
+            </div>
+        </div>
+
+        <div class="guide-step">
+            <span class="step-badge" data-he="צעד 3" data-en="Step 3">צעד 3</span>
+            <div>
+                <h3 data-he="סריקת חוזה" data-en="Scanning a Contract">סריקת חוזה</h3>
+                <p data-he="צלם את חוזה השכירות או העלה קובץ PDF. ה-AI שלנו יחלץ אוטומטית את התאריכים והסכומים."
+                    data-en="Take a picture of the lease agreement or upload a PDF. Our AI will automatically extract dates and amounts.">
+                    צלם את חוזה השכירות או העלה קובץ PDF. ה-AI שלנו יחלץ אוטומטית את התאריכים והסכומים.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2026 RentMate. <span data-he="כל הזכויות שמורות" data-en="All rights reserved">כל הזכויות
+                        שמורות</span>.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/script.js"></script>
+</body>
+
+</html>

@@ -92,6 +92,12 @@
     /* Safe Mobile Fix: Prevent pull-to-refresh which can feel native-app like */
     overscroll-behavior-y: none;
   }
+
+  /* Accessibility: High Contrast Focus Indicator */
+  :focus-visible {
+    outline: 2px solid theme('colors.blue.600');
+    outline-offset: 2px;
+  }
 }
 
 /* Safe Mobile Fix: Prevent iOS zoom on inputs */

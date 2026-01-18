@@ -84,9 +84,11 @@ export function AddContract() {
         // Security
         securityDeposit: '',
         guarantees: '',
+        guarantorsInfo: '',
 
         // Specs
         petsAllowed: 'true',
+        specialClauses: '',
 
         // UI State
         hasLinkage: false,
@@ -375,7 +377,9 @@ export function AddContract() {
                     })),
                     contract_file_url: null as string | null,
                     user_id: user.id,
-                    needs_painting: formData.needsPainting
+                    needs_painting: formData.needsPainting,
+                    guarantors_info: formData.guarantorsInfo || null,
+                    special_clauses: formData.specialClauses || null
                 }).select().single();
 
                 if (contractError) throw new Error(`Contract Error: ${contractError.message} `);
@@ -629,7 +633,9 @@ export function AddContract() {
                 // Security
                 case 'securityDeposit': newFormData.securityDeposit = val; break;
                 case 'guaranteeType': newFormData.guarantees = val; break;
+                case 'guarantorsInfo': newFormData.guarantorsInfo = val; break;
                 case 'petsAllowed': newFormData.petsAllowed = val; break;
+                case 'specialClauses': newFormData.specialClauses = val; break;
             }
 
             // Also preserve original logic if needed, but the switch above covers most.

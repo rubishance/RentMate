@@ -9,41 +9,53 @@ const AuthGuard = () => {
         let mounted = true;
 
         const checkAuth = async () => {
-            // 1. Initial Session Check
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                await verifyProfile(session.user.id, mounted);
-                return;
-            }
+            try {
+                // 1. Initial Session Check with refresh
+                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-            // 2. Setup Listener for Auth Changes (Login, OAuth Redirects)
-            const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+                if (sessionError) {
+                    console.error('Session error:', sessionError);
+                    if (mounted) setIsAuthenticated(false);
+                    return;
+                }
+
                 if (session) {
                     await verifyProfile(session.user.id, mounted);
-                } else {
-                    // If no session, check if we are in the middle of an OAuth flow
-                    if (isOAuthCallback()) {
-                        // Let Supabase process the code/token.
-                        // If it fails or takes too long, the timeout below will eventually catch it
-                        // (or the user will remain on the loading spinner until they refresh/timeout).
-                    } else {
-                        if (mounted) setIsAuthenticated(false);
-                    }
+                    return;
                 }
-            });
 
-            // 3. Fallback Timeout for OAuth hanging
-            if (isOAuthCallback()) {
-                setTimeout(() => {
-                    if (mounted && isAuthenticated === null) {
-                        setIsAuthenticated(false);
+                // 2. Setup Listener for Auth Changes (Login, OAuth Redirects)
+                const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+                    if (session) {
+                        await verifyProfile(session.user.id, mounted);
+                    } else {
+                        // If no session, check if we are in the middle of an OAuth flow
+                        if (isOAuthCallback()) {
+                            // Let Supabase process the code/token.
+                            // If it fails or takes too long, the timeout below will eventually catch it
+                            // (or the user will remain on the loading spinner until they refresh/timeout).
+                        } else {
+                            if (mounted) setIsAuthenticated(false);
+                        }
                     }
-                }, 10000); // 10s timeout
-            } else if (!session) {
+                });
+
+                // 3. Fallback Timeout for OAuth hanging
+                if (isOAuthCallback()) {
+                    setTimeout(() => {
+                        if (mounted && isAuthenticated === null) {
+                            setIsAuthenticated(false);
+                        }
+                    }, 10000); // 10s timeout
+                } else if (!session) {
+                    if (mounted) setIsAuthenticated(false);
+                }
+
+                return () => subscription.unsubscribe();
+            } catch (error) {
+                console.error('Auth check error:', error);
                 if (mounted) setIsAuthenticated(false);
             }
-
-            return () => subscription.unsubscribe();
         };
 
         checkAuth();

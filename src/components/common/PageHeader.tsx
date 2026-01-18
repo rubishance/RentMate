@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Home } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
-import logoFinalCleanV2 from '../../assets/logo-final-clean-v2.png';
+
 
 interface PageHeaderProps {
     title: string;
@@ -44,10 +44,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, action,
                 </div>
             </div>
 
-            {/* Branding - Final Logo Image - Absolute Center */}
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
-                <img src={logoFinalCleanV2} alt="RentMate" className="h-16 w-auto object-contain drop-shadow-sm" />
-            </div>
+
 
             <div className={`flex items-center gap-2 min-w-[33%] ${isRtl ? 'justify-start' : 'justify-end'}`}>
                 {action && (

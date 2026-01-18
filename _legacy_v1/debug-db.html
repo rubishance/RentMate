@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>RentMate DB Debugger</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+        }
+
+        .log {
+            background: #eee;
+            padding: 10px;
+            border: 1px solid #ccc;
+            height: 300px;
+            overflow-y: scroll;
+            white-space: pre-wrap;
+        }
+
+        .status {
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+
+        button {
+            padding: 10px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>DB Debugger</h1>
+    <div class="actions">
+        <button onclick="runTest()">Run Full Test</button>
+        <button onclick="clearLogs()">Clear Logs</button>
+    </div>
+    <div id="status" class="status">Ready</div>
+    <div id="log" class="log"></div>
+
+    <!-- Dependencies -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/auth.js"></script> <!-- Required for window.isAuthenticated checks sometimes -->
+
+    <script>
+        function log(msg, type = 'info') {
+            const el = document.getElementById('log');
+            const color = type === 'error' ? 'red' : (type === 'success' ? 'green' : 'black');
+            el.innerHTML += `<div style="color:${color}">[${new Date().toLocaleTimeString()}] ${msg}</div>`;
+            el.scrollTop = el.scrollHeight;
+            console.log(msg);
+        }
+
+        function setStatus(msg, className) {
+            const el = document.getElementById('status');
+            el.textContent = msg;
+            el.className = 'status ' + className;
+        }
+
+        function clearLogs() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        async function runTest() {
+            try {
+                clearLogs();
+                setStatus('Running Test...', 'warning');
+                log('Starting DB Test...', 'info');
+
+                // 1. Check Dependencies
+                if (!window.rentMateDB) throw new Error('RentMateDB not initialized');
+                log('RentMateDB found.', 'success');
+
+                // 2. Initialize
+                await window.rentMateDB.init();
+                log('DB Initialized.', 'success');
+
+                // 3. Create Test Data
+                const testProp = {
+                    address: 'Test Str ' + Math.floor(Math.random() * 1000),
+                    city: 'Debug City',
+                    status: 'vacant',
+                    price: 5000,
+                    created_at: new Date().toISOString()
+                };
+
+                // 4. Test ADD
+                log('Attempting to ADD property...', 'info');
+                const id = await window.rentMateDB.add('properties', testProp);
+                log(`ADD success. Returned ID: ${id}`, 'success');
+
+                // 5. Test GET ALL
+                log('Attempting to GET ALL properties...', 'info');
+                const allProps = await window.rentMateDB.getAll('properties');
+
+                log(`GET ALL returned ${allProps.length} items.`, 'info');
+
+                const found = allProps.find(p => p.address === testProp.address);
+
+                if (found) {
+                    log(`SUCCESS! Found newly added property: ${found.address} (ID: ${found.id})`, 'success');
+                    setStatus('TEST PASSED', 'success');
+                } else {
+                    log('FAILURE! Could not find the property we just added.', 'error');
+                    log('Dump of returned items: ' + JSON.stringify(allProps, null, 2));
+                    setStatus('TEST FAILED', 'error');
+                }
+
+            } catch (e) {
+                log('CRITICAL ERROR: ' + e.message, 'error');
+                log(e.stack, 'error');
+                setStatus('TEST CRASHED', 'error');
+            }
+        }
+    </script>
+</body>
+
+</html>

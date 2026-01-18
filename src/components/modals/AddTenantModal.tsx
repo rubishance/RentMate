@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, User, Mail, Phone, Loader2, Building2, CreditCard, Pen } from 'lucide-react';
+import { X, User, Mail, Phone, Loader2, Building2, CreditCard, Pen, Trash2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useSubscription } from '../../hooks/useSubscription';
@@ -13,9 +13,10 @@ interface AddTenantModalProps {
     onSuccess: () => void;
     tenantToEdit?: Tenant | null;
     readOnly?: boolean;
+    onDelete?: () => void;
 }
 
-export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readOnly }: AddTenantModalProps) {
+export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readOnly, onDelete }: AddTenantModalProps) {
     const { lang } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [properties, setProperties] = useState<Property[]>([]);
@@ -39,6 +40,18 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
     useEffect(() => {
         setIsReadOnly(readOnly);
     }, [readOnly]);
+
+    // Body scroll lock
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen]);
 
     useEffect(() => {
         if (isOpen) {
@@ -188,6 +201,7 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
                         <button
                             onClick={onClose}
                             className="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                            aria-label={lang === 'he' ? 'סגור' : 'Close'}
                         >
                             <X className="w-5 h-5" />
                         </button>
@@ -228,6 +242,7 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
                                         value={formData.property_id}
                                         onChange={(e) => setFormData({ ...formData, property_id: e.target.value })}
                                         className="w-full pl-9 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed appearance-none"
+                                        aria-label={lang === 'he' ? 'נכס משויך' : 'Assigned Asset'}
                                     >
                                         <option value="">Select Property</option>
                                         {properties.map(p => (
@@ -313,13 +328,37 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
 
                     <div className="sticky bottom-0 bg-white dark:bg-gray-800 z-10 pt-4 flex gap-3 border-t border-gray-100 dark:border-gray-700 -mx-6 px-6 -mb-6 pb-6 mt-6">
                         {isReadOnly ? (
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                className="w-full px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-xl font-medium transition-colors shadow-lg shadow-blue-500/30"
-                            >
-                                {lang === 'he' ? 'סגור' : 'Close'}
-                            </button>
+                            <>
+                                {onDelete && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            onClose();
+                                            onDelete();
+                                        }}
+                                        className="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl font-medium transition-colors flex items-center gap-2"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                        {lang === 'he' ? 'מחק' : 'Delete'}
+                                    </button>
+                                )}
+                                <div className="flex-1" />
+                                <button
+                                    type="button"
+                                    onClick={() => setIsReadOnly(false)}
+                                    className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-xl font-medium transition-colors shadow-lg shadow-blue-500/30 flex items-center gap-2"
+                                >
+                                    <Pen className="w-4 h-4" />
+                                    {lang === 'he' ? 'ערוך' : 'Edit'}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={onClose}
+                                    className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl font-medium transition-colors"
+                                >
+                                    {lang === 'he' ? 'סגור' : 'Close'}
+                                </button>
+                            </>
                         ) : (
                             <>
                                 <button

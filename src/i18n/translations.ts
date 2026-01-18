@@ -244,8 +244,8 @@ export const translations: Record<Language, Record<TranslationKeys, string>> = {
         upgradeToPro: 'שדרג ל-Pro',
         unlockMoreLimits: 'פתח יותר אפשרויות',
 
-        noActiveContracts: 'לא נמצאו חוזים פעילים',
-        noActiveContractsDesc: 'אין לך חוזים פעילים כרגע',
+        noActiveContracts: 'No Active Contracts Found',
+        noActiveContractsDesc: 'You have no active contracts at the moment',
         expectedBaseRent: 'דמי שכירות בסיס צפויים',
         generateList: 'צור רשימה'
     }

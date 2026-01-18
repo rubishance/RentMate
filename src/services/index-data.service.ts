@@ -200,3 +200,28 @@ export async function seedIndexData() {
     }
     console.log('Seeding complete.');
 }
+
+/**
+ * Get index bases for chaining calculations
+ */
+export async function getIndexBases(
+    type: 'cpi' | 'housing' | 'construction' | 'usd' | 'eur'
+): Promise<any[]> {
+    try {
+        const { data, error } = await supabase
+            .from('index_bases')
+            .select('*')
+            .eq('index_type', type)
+            .order('base_period_start', { ascending: false });
+
+        if (error) {
+            console.error('Error fetching index bases:', error);
+            return [];
+        }
+
+        return data || [];
+    } catch (error) {
+        console.error('Error in getIndexBases:', error);
+        return [];
+    }
+}

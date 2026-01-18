@@ -15,7 +15,7 @@ import {
     BellOff,
     Trash2
 } from 'lucide-react';
-// import { NotificationCenter } from '../components/NotificationCenter';
+import { NotificationCenter } from '../components/common/NotificationCenter';
 import { AddPropertyModal } from '../components/modals/AddPropertyModal';
 import { AddTenantModal } from '../components/modals/AddTenantModal';
 import { AddPaymentModal } from '../components/modals/AddPaymentModal';
@@ -233,7 +233,7 @@ export function Dashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-24 font-sans text-gray-900">
+        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans text-gray-900">
             {/* Header Section */}
             <div className="px-6 pt-6 pb-6 relative h-20 flex items-center justify-between">
                 {/* Branding - Final Logo Image - Absolute Center */}
@@ -252,9 +252,8 @@ export function Dashboard() {
 
                 {/* Branding - Centered/Top */}
 
-
                 <div className="flex items-center gap-2">
-                    {/* <NotificationCenter /> */}
+                    <NotificationCenter />
                     <button
                         onClick={() => navigate('/settings')}
                         className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
@@ -303,62 +302,56 @@ export function Dashboard() {
                     </div>
                 </div>
             </div>
-        </div>
+            {/* Recent Activity List */}
+            <div className="px-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">{t('recentActivity')}</h3>
+                <div className="space-y-3">
+                    {feedItems.map(item => (
+                        <div key={item.id} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 relative">
+                            <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${item.type === 'warning' ? 'bg-orange-50 text-orange-600' :
+                                    item.type === 'success' ? 'bg-green-50 text-green-600' :
+                                        'bg-blue-50 text-blue-600'
+                                }`}>
+                                {item.type === 'warning' ? <AlertTriangle className="w-6 h-6" /> :
+                                    item.type === 'urgent' ? <Clock className="w-6 h-6" /> :
+                                        <Activity className="w-6 h-6" />}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <h4 className="font-bold text-gray-900 text-sm">{item.title}</h4>
+                                <p className="text-xs text-gray-500 truncate">{item.desc}</p>
+                                {item.actionLabel && item.onAction && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            item.onAction?.();
+                                        }}
+                                        className="mt-2 text-xs bg-gray-100 hover:bg-gray-200 text-gray-900 px-3 py-1.5 rounded-lg font-medium transition-colors"
+                                    >
+                                        {item.actionLabel}
+                                    </button>
+                                )}
+                            </div>
+                            <div className="text-right shrink-0 self-start">
+                                <span className={`text-xs font-bold ${item.title.includes('+') ? 'text-green-600' : 'text-gray-400'
+                                    }`}>
+                                    {item.date}
+                                </span>
+                            </div>
 
-
-
-
-
-            {/* Recent Activity List */ }
-    <div className="px-6">
-        <h3 className="text-lg font-bold text-gray-900 mb-4">{t('recentActivity')}</h3>
-        <div className="space-y-3">
-            {feedItems.map(item => (
-                <div key={item.id} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 relative">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${item.type === 'warning' ? 'bg-orange-50 text-orange-600' :
-                        item.type === 'success' ? 'bg-green-50 text-green-600' :
-                            'bg-blue-50 text-blue-600'
-                        }`}>
-                        {item.type === 'warning' ? <AlertTriangle className="w-6 h-6" /> :
-                            item.type === 'urgent' ? <Clock className="w-6 h-6" /> :
-                                <Activity className="w-6 h-6" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <h4 className="font-bold text-gray-900 text-sm">{item.title}</h4>
-                        <p className="text-xs text-gray-500 truncate">{item.desc}</p>
-                        {item.actionLabel && item.onAction && (
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    item.onAction?.();
-                                }}
-                                className="mt-2 text-xs bg-gray-100 hover:bg-gray-200 text-gray-900 px-3 py-1.5 rounded-lg font-medium transition-colors"
-                            >
-                                {item.actionLabel}
-                            </button>
-                        )}
-                    </div>
-                    <div className="text-right shrink-0 self-start">
-                        <span className={`text-xs font-bold ${item.title.includes('+') ? 'text-green-600' : 'text-gray-400'
-                            }`}>
-                            {item.date}
-                        </span>
-                    </div>
-
-                    {/* 3-dot menu */}
-                    <div className="absolute top-2 left-2" onClick={(e) => e.stopPropagation()}>
-                        <ActionMenu
-                            align="left"
-                            onSnooze={(days) => snoozeMessage(item.id, days)}
-                            onDelete={() => deleteMessage(item.id)}
-                        />
-                    </div>
+                            {/* 3-dot menu */}
+                            <div className="absolute top-2 left-2" onClick={(e) => e.stopPropagation()}>
+                                <ActionMenu
+                                    align="left"
+                                    onSnooze={(days) => snoozeMessage(item.id, days)}
+                                    onDelete={() => deleteMessage(item.id)}
+                                />
+                            </div>
+                        </div>
+                    ))}
                 </div>
-            ))}
-        </div>
-    </div>
+            </div>
 
-    {/* Modals */ }
+            {/* Modals */}
 
             <AddPropertyModal
                 isOpen={isPropertyModalOpen}

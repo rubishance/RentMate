@@ -8,8 +8,11 @@ import {
     Bars3Icon,
     XMarkIcon,
     BellIcon,
-    TagIcon
+    TagIcon,
+    Cog6ToothIcon,
+    ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
+
 import { supabase } from '../../lib/supabase';
 
 // IMPORTANT: Requires AuthContext to expose user info
@@ -29,10 +32,12 @@ const AdminLayout = () => {
     const navigation = [
         { name: 'Dashboard', href: '/admin', icon: Squares2X2Icon },
         { name: 'Notifications', href: '/admin/notifications', icon: BellIcon },
+        { name: 'Feedback', href: '/admin/feedback', icon: ChatBubbleLeftRightIcon },
         { name: 'Users & CRM', href: '/admin/users', icon: UsersIcon },
         { name: 'Plans', href: '/admin/plans', icon: TagIcon },
         { name: 'Invoices', href: '/admin/invoices', icon: DocumentTextIcon },
         { name: 'Audit Logs', href: '/admin/audit-logs', icon: ClipboardDocumentListIcon },
+        { name: 'System Settings', href: '/admin/settings', icon: Cog6ToothIcon },
     ];
 
     return (

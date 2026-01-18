@@ -99,6 +99,18 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
         }
     }, [isOpen, contract, initialReadOnly]);
 
+    // Body scroll lock
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen]);
+
     if (!isOpen || !contract) return null;
 
     // Add navigation
@@ -173,7 +185,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
     };
 
     return createPortal(
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" dir="ltr">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" dir={lang === 'he' ? 'rtl' : 'ltr'}>
             <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-4xl shadow-2xl scale-100 animate-in zoom-in-95 duration-200 overflow-hidden flex flex-col max-h-[90vh]">
                 {/* Header */}
                 <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between shrink-0 bg-gray-50/50 dark:bg-gray-800/50">
@@ -211,6 +223,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                         <button
                             onClick={onClose}
                             className="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                            aria-label={lang === 'he' ? 'סגור' : 'Close'}
                         >
                             <X className="w-5 h-5" />
                         </button>

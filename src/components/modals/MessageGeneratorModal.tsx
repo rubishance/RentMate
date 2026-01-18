@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Share2, Copy, MessageCircle, Check, X } from 'lucide-react';
+import { Share2, Copy, MessageCircle, Check, X, Loader2 } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
+import { supabase } from '../../lib/supabase';
 
 interface MessageGeneratorModalProps {
     isOpen: boolean;
@@ -14,39 +15,48 @@ interface MessageGeneratorModalProps {
 
 type Tone = 'friendly' | 'formal';
 
-// Encode calculation data to base64 for URL
-function encodeCalculationData(data: { input: any; result: any }): string {
-    try {
-        const json = JSON.stringify(data);
-        return btoa(encodeURIComponent(json)); // base64 encode with URI encoding for special chars
-    } catch (error) {
-        console.error('Error encoding calculation data:', error);
-        return '';
-    }
-}
-
 export function MessageGeneratorModal({ isOpen, onClose, calculationData }: MessageGeneratorModalProps) {
-    const { lang } = useTranslation(); // 'he' or 'en'
+    const { lang } = useTranslation();
     const [tone, setTone] = useState<Tone>('friendly');
     const [shareUrl, setShareUrl] = useState('');
+    const [loadingUrl, setLoadingUrl] = useState(false);
     const [copied, setCopied] = useState(false);
 
-    // Generate share URL on mount/open
+    // Generate short URL on open
     useEffect(() => {
-        if (isOpen && calculationData) {
-            generateShareUrl();
+        if (isOpen && calculationData && !shareUrl) {
+            generateShortUrl();
         }
     }, [isOpen, calculationData]);
 
-    const generateShareUrl = () => {
+    const generateShortUrl = async () => {
+        setLoadingUrl(true);
         try {
-            const encoded = encodeCalculationData(calculationData);
-            if (encoded) {
-                const url = `${window.location.origin}/calculator?share=${encoded}`;
+            // Check if user is logged in (optional, but good for tracking)
+            const { data: { user } } = await supabase.auth.getUser();
+
+            const { data, error } = await supabase
+                .from('saved_calculations')
+                .insert({
+                    user_id: user?.id || null, // Allow anonymous saves if policy permits, else might need logic check
+                    input_data: calculationData.input,
+                    result_data: calculationData.result
+                })
+                .select('id')
+                .single();
+
+            if (error) throw error;
+
+            if (data) {
+                const url = `${window.location.origin}/calc/share/${data.id}`;
                 setShareUrl(url);
             }
         } catch (err) {
-            console.error('Error generating share URL:', err);
+            console.error('Error saving calculation:', err);
+            // Fallback to error or maybe base64 if really needed, but for now just error
+            setShareUrl('Error generating link');
+        } finally {
+            setLoadingUrl(false);
         }
     };
 
@@ -60,7 +70,7 @@ export function MessageGeneratorModal({ isOpen, onClose, calculationData }: Mess
 
         if (isReco) {
             amount = calculationData.result.totalBackPayOwed?.toLocaleString();
-            change = calculationData.result.averageUnderpayment?.toLocaleString(); // borrowing 'change' var for avg
+            change = calculationData.result.averageUnderpayment?.toLocaleString();
             percent = calculationData.result.percentageOwed?.toFixed(2);
         } else {
             amount = calculationData.result.newRent?.toLocaleString();
@@ -68,20 +78,22 @@ export function MessageGeneratorModal({ isOpen, onClose, calculationData }: Mess
             percent = calculationData.result.percentageChange?.toFixed(2);
         }
 
+        const urlToUse = loadingUrl ? '...' : shareUrl;
+
         // Standard Templates
         const stdTemplatesHe = {
             friendly: `היי! 👋
 עשיתי בדיקה לגבי עדכון שכר הדירה לפי המדד 📈.
 לפי החישוב, השכירות החדשה היא ₪${amount} (שינוי של ₪${change}, או ${percent}%).
 אפשר לראות את החישוב המלא כאן:
-${shareUrl}
+${urlToUse}
 דברו איתי אם יש שאלות! 🏠`,
             formal: `שלום רב,
 בהתאם לחוזה השכירות, בוצע תחשיב עדכון דמי השכירות לפי הצמדה למדד 📈.
 סכום השכירות המעודכן הינו ₪${amount}.
 הפרשי הצמדה: ₪${change} (${percent}%).
 לצפייה בפירוט התחשיב המלא:
-${shareUrl}
+${urlToUse}
 בברכה,
 RentMate 🏠`
         };
@@ -91,14 +103,14 @@ RentMate 🏠`
 Just checked the rent adjustment based on the index 📈.
 The new rent comes out to be ₪${amount} (a change of ₪${change}, or ${percent}%).
 You can see the full calculation here:
-${shareUrl}
+${urlToUse}
 Let me know if you have any questions! 🏠`,
             formal: `Dear Tenant,
 In accordance with our lease agreement, the rent has been adjusted based on index linkage 📈.
 The updated rent amount is ₪${amount}.
 Adjustment difference: ₪${change} (${percent}%).
 Please find the detailed calculation attached:
-${shareUrl}
+${urlToUse}
 Best regards,
 RentMate 🏠`
         };
@@ -109,13 +121,13 @@ RentMate 🏠`
 עשיתי חישובי הפרשים (Back-pay) לגבי השכירות 💰.
 סך הכל ההפרש לתשלום הוא ₪${amount} (בממוצע ₪${change} לחודש).
 אפשר לראות את הפירוט המלא של כל החודשים כאן:
-${shareUrl}
+${urlToUse}
 דברו איתי ונסדר את זה! 🏠`,
             formal: `שלום רב,
 בהתאם להסכם השכירות, בוצע תחשיב הפרשי הצמדה רטרואקטיביים 💰.
 סך חוב ההפרשים לתשלום הינו ₪${amount}.
 לצפייה בפירוט התחשיב המלא לכל חודש:
-${shareUrl}
+${urlToUse}
 בברכה,
 RentMate 🏠`
         };
@@ -125,13 +137,13 @@ RentMate 🏠`
 I calculated the rent payment differences (back-pay) 💰.
 The total owed difference is ₪${amount} (avg ₪${change}/mo).
 You can see the full monthly breakdown here:
-${shareUrl}
+${urlToUse}
 Let's catch up to settle this! 🏠`,
             formal: `Dear Tenant,
 A retroactive index linkage calculation has been performed in accordance with the lease 💰.
 The total back-pay amount due is ₪${amount}.
 Please find the detailed monthly breakdown attached:
-${shareUrl}
+${urlToUse}
 Best regards,
 RentMate 🏠`
         };
@@ -206,6 +218,11 @@ RentMate 🏠`
 
                         {/* Preview Area */}
                         <div className="relative">
+                            {loadingUrl && (
+                                <div className="absolute inset-0 bg-white/50 dark:bg-black/50 backdrop-blur-[1px] flex items-center justify-center rounded-xl z-20">
+                                    <Loader2 className="w-8 h-8 animate-spin text-brand-600" />
+                                </div>
+                            )}
                             <textarea
                                 readOnly
                                 value={generateMessage()}
@@ -213,7 +230,8 @@ RentMate 🏠`
                             />
                             <button
                                 onClick={() => handleCopyObj(generateMessage())}
-                                className="absolute top-2 left-2 p-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                disabled={loadingUrl}
+                                className="absolute top-2 left-2 p-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
                                 title="Copy Text"
                             >
                                 {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4 text-gray-400" />}
@@ -224,7 +242,8 @@ RentMate 🏠`
                         <div className="flex gap-3 pt-2">
                             <button
                                 onClick={handleWhatsApp}
-                                className="flex-1 bg-[#25D366] hover:bg-[#20bd5a] text-white py-2.5 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors shadow-lg shadow-green-500/20"
+                                disabled={loadingUrl}
+                                className="flex-1 bg-[#25D366] hover:bg-[#20bd5a] text-white py-2.5 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors shadow-lg shadow-green-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <MessageCircle className="w-5 h-5" />
                                 WhatsApp
