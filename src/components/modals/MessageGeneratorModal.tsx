@@ -32,28 +32,22 @@ export function MessageGeneratorModal({ isOpen, onClose, calculationData }: Mess
     const generateShortUrl = async () => {
         setLoadingUrl(true);
         try {
-            // Check if user is logged in (optional, but good for tracking)
-            const { data: { user } } = await supabase.auth.getUser();
+            // Use stateless Base64 URL to avoid database permissions issues
+            const dataToShare = {
+                input: calculationData.input,
+                result: calculationData.result
+            };
 
-            const { data, error } = await supabase
-                .from('saved_calculations')
-                .insert({
-                    user_id: user?.id || null, // Allow anonymous saves if policy permits, else might need logic check
-                    input_data: calculationData.input,
-                    result_data: calculationData.result
-                })
-                .select('id')
-                .single();
+            // Encode: JSON -> URL Encode (for unicode) -> Base64
+            const jsonStr = JSON.stringify(dataToShare);
+            const base64 = btoa(encodeURIComponent(jsonStr));
 
-            if (error) throw error;
+            // Link directly to calculator page which handles the ?share= param
+            const url = `${window.location.origin}/calculator?share=${base64}`;
 
-            if (data) {
-                const url = `${window.location.origin}/calc/share/${data.id}`;
-                setShareUrl(url);
-            }
+            setShareUrl(url);
         } catch (err) {
-            console.error('Error saving calculation:', err);
-            // Fallback to error or maybe base64 if really needed, but for now just error
+            console.error('Error generating link:', err);
             setShareUrl('Error generating link');
         } finally {
             setLoadingUrl(false);

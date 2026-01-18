@@ -325,7 +325,7 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('calculator')}</h1>
                         <p className="text-sm text-muted-foreground">{t('calculateLinkageAndMore')}</p>
-                        <p className="text-xs text-primary font-bold mt-1">v2.2 Ledger Logic (Running Balance)</p>
+                        <p className="text-xs text-primary font-bold mt-1">v2.3 Fixed Layouts & Links</p>
                     </div>
 
                     <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
@@ -631,40 +631,41 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                                     </div>
                                     {expectedHistory.length > 0 ? (
                                         <div className="border border-border rounded-xl overflow-hidden bg-background">
-                                            <div className="bg-secondary/30 p-2 text-xs font-medium text-muted-foreground flex justify-between px-4 sticky top-0 z-10">
-                                                <span>Date & Base Amount</span>
-                                                <span>Actions</span>
+                                            <div className="bg-secondary/30 p-2 text-xs font-medium text-muted-foreground grid grid-cols-12 gap-2 px-4 sticky top-0 z-10">
+                                                <span className="col-span-7">{t('date')}</span>
+                                                <span className="col-span-4 text-center">{t('amount')}</span>
+                                                <span className="col-span-1"></span>
                                             </div>
                                             <div className="max-h-60 overflow-y-auto">
                                                 <div className="divide-y divide-border">
                                                     {expectedHistory.map((payment) => (
-                                                        <div key={payment.id} className="flex justify-between items-center py-1.5 px-2 text-sm hover:bg-secondary/10 transition-colors group">
-                                                            <div className="flex gap-2 items-center flex-1">
-                                                                <div className="w-32">
-                                                                    <DatePicker
-                                                                        value={payment.due_date ? parseISO(payment.due_date) : undefined}
-                                                                        onChange={(date) => handleExpectedChange(payment.id, 'due_date', date ? format(date, 'yyyy-MM-dd') : '')}
-                                                                        placeholder={t('date')}
-                                                                        className="w-full"
-                                                                    />
-                                                                </div>
-                                                                <div className="relative">
-                                                                    <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">₪</span>
-                                                                    <input
-                                                                        type="number"
-                                                                        value={payment.amount}
-                                                                        onChange={(e) => handleExpectedChange(payment.id, 'amount', e.target.value)}
-                                                                        className="w-20 p-1 pl-4 bg-transparent border border-transparent hover:border-border focus:border-primary rounded text-right font-medium outline-none transition-colors"
-                                                                    />
-                                                                </div>
+                                                        <div key={payment.id} className="grid grid-cols-12 gap-2 items-center py-1.5 px-2 text-sm hover:bg-secondary/10 transition-colors group">
+                                                            <div className="col-span-7">
+                                                                <DatePicker
+                                                                    value={payment.due_date ? parseISO(payment.due_date) : undefined}
+                                                                    onChange={(date) => handleExpectedChange(payment.id, 'due_date', date ? format(date, 'yyyy-MM-dd') : '')}
+                                                                    placeholder={t('date')}
+                                                                    className="w-full"
+                                                                />
                                                             </div>
-                                                            <button
-                                                                onClick={() => handleRemoveExpected(payment.id)}
-                                                                className="text-muted-foreground hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all p-1"
-                                                                title="Remove"
-                                                            >
-                                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
-                                                            </button>
+                                                            <div className="col-span-4 relative">
+                                                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">₪</span>
+                                                                <input
+                                                                    type="number"
+                                                                    value={payment.amount}
+                                                                    onChange={(e) => handleExpectedChange(payment.id, 'amount', e.target.value)}
+                                                                    className="w-full p-1 pl-4 bg-transparent border border-transparent hover:border-border focus:border-primary rounded text-center font-medium outline-none transition-colors"
+                                                                />
+                                                            </div>
+                                                            <div className="col-span-1 flex justify-end">
+                                                                <button
+                                                                    onClick={() => handleRemoveExpected(payment.id)}
+                                                                    className="text-muted-foreground hover:text-red-500 transition-all p-1"
+                                                                    title="Remove"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -674,7 +675,7 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                                                     onClick={handleAddExpected}
                                                     className="text-xs font-medium text-primary hover:underline flex items-center gap-1 px-2"
                                                 >
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="M12 5v14" /></svg>
+                                                    <Plus className="w-3 h-3" />
                                                     {t('addItem')}
                                                 </button>
                                                 <div className="text-xs font-bold px-4">
@@ -725,9 +726,10 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                                     <label className="text-sm font-medium">{t('actualPayments')}</label>
                                     {monthlyActuals ? (
                                         <div className="border border-border rounded-xl overflow-hidden bg-background">
-                                            <div className="bg-secondary/30 p-2 text-xs font-medium text-muted-foreground flex justify-between px-4 sticky top-0 z-10">
-                                                <span>{t('dateAndBaseAmount')}</span>
-                                                <span>{t('actions')}</span>
+                                            <div className="bg-secondary/30 p-2 text-xs font-medium text-muted-foreground grid grid-cols-12 gap-2 px-4 sticky top-0 z-10">
+                                                <span className="col-span-7">{t('date')}</span>
+                                                <span className="col-span-4 text-center">{t('amount')}</span>
+                                                <span className="col-span-1"></span>
                                             </div>
                                             <div className="max-h-60 overflow-y-auto">
                                                 {paymentHistory.length === 0 ? (
@@ -743,33 +745,33 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                                                 ) : (
                                                     <div className="divide-y divide-border">
                                                         {paymentHistory.map((payment) => (
-                                                            <div key={payment.id} className="flex justify-between items-center p-2 text-sm hover:bg-secondary/10 transition-colors group">
-                                                                <div className="flex gap-2 items-center flex-1">
-                                                                    <div className="w-32">
-                                                                        <DatePicker
-                                                                            value={payment.due_date ? parseISO(payment.due_date) : undefined}
-                                                                            onChange={(date) => handlePaymentChange(payment.id, 'due_date', date ? format(date, 'yyyy-MM-dd') : '')}
-                                                                            placeholder={t('date')}
-                                                                            className="w-full"
-                                                                        />
-                                                                    </div>
-                                                                    <div className="relative">
-                                                                        <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">₪</span>
-                                                                        <input
-                                                                            type="number"
-                                                                            value={payment.amount}
-                                                                            onChange={(e) => handlePaymentChange(payment.id, 'amount', e.target.value)}
-                                                                            className="w-20 p-1 pl-4 bg-transparent border border-transparent hover:border-border focus:border-primary rounded text-right font-medium outline-none transition-colors"
-                                                                        />
-                                                                    </div>
+                                                            <div key={payment.id} className="grid grid-cols-12 gap-2 items-center py-1.5 px-2 text-sm hover:bg-secondary/10 transition-colors group">
+                                                                <div className="col-span-7">
+                                                                    <DatePicker
+                                                                        value={payment.due_date ? parseISO(payment.due_date) : undefined}
+                                                                        onChange={(date) => handlePaymentChange(payment.id, 'due_date', date ? format(date, 'yyyy-MM-dd') : '')}
+                                                                        placeholder={t('date')}
+                                                                        className="w-full"
+                                                                    />
                                                                 </div>
-                                                                <button
-                                                                    onClick={() => handleRemovePayment(payment.id)}
-                                                                    className="text-muted-foreground hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all p-1"
-                                                                    title="Remove from calculation"
-                                                                >
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
-                                                                </button>
+                                                                <div className="col-span-4 relative">
+                                                                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">₪</span>
+                                                                    <input
+                                                                        type="number"
+                                                                        value={payment.amount}
+                                                                        onChange={(e) => handlePaymentChange(payment.id, 'amount', e.target.value)}
+                                                                        className="w-full p-1 pl-4 bg-transparent border border-transparent hover:border-border focus:border-primary rounded text-center font-medium outline-none transition-colors"
+                                                                    />
+                                                                </div>
+                                                                <div className="col-span-1 flex justify-end">
+                                                                    <button
+                                                                        onClick={() => handleRemovePayment(payment.id)}
+                                                                        className="text-muted-foreground hover:text-red-500 transition-all p-1"
+                                                                        title="Remove"
+                                                                    >
+                                                                        <Trash2 className="w-4 h-4" />
+                                                                    </button>
+                                                                </div>
                                                             </div>
                                                         ))}
                                                     </div>
