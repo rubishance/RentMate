@@ -214,7 +214,7 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
     };
 
     const handleRemovePayment = (id: string) => {
-        if (!confirm('Are you sure you want to delete this payment?')) return;
+        if (!confirm(t('deletePaymentConfirmation'))) return;
         const updatedHistory = paymentHistory.filter(p => p.id !== id);
         setPaymentHistory(updatedHistory);
         updateMonthlyActuals(updatedHistory);
@@ -234,7 +234,7 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
             setStandardResult(result);
         } catch (error) {
             console.error('Calculation error:', error);
-            alert('Calculation failed. Please check your inputs.');
+            alert(t('calculationFailed'));
         } finally {
             setLoading(false);
         }
@@ -260,7 +260,7 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
     };
 
     const handleRemoveExpected = (id: string) => {
-        if (!confirm('Are you sure you want to delete this expected item?')) return;
+        if (!confirm(t('deleteExpectedConfirmation'))) return;
         setExpectedHistory(prev => prev.filter(p => p.id !== id));
     };
 
@@ -296,14 +296,14 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
             setReconciliationResult(result);
         } catch (error) {
             console.error('Calculation error:', error);
-            alert(error instanceof Error ? error.message : 'Calculation failed. Please check your inputs.');
+            alert(error instanceof Error ? error.message : t('calculationFailed'));
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className={`max-w-3xl mx-auto space-y-6 ${embedMode ? '' : 'pb-20'}`}>
+        <div className="max-w-3xl mx-auto space-y-6">
             {/* Shared Calculation Banner */}
             {isSharedCalculation && (
                 <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl p-4 flex items-center gap-3">
@@ -324,7 +324,8 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                 <div className="flex items-center justify-between relative h-20 mb-6">
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('calculator')}</h1>
-                        <p className="text-sm text-muted-foreground">{t('calculateLinkageAndMore') || 'Calculate linkage and more'}</p>
+                        <p className="text-sm text-muted-foreground">{t('calculateLinkageAndMore')}</p>
+                        <p className="text-xs text-primary font-bold mt-1">v2.2 Ledger Logic (Running Balance)</p>
                     </div>
 
                     <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
@@ -515,13 +516,11 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                                             className="w-4 h-4 text-primary rounded border-border focus:ring-primary"
                                         />
                                         <span className="text-sm font-medium">
-                                            {lang === 'he' ? 'מדד בסיס הוא מדד מינימום' : 'Base index is minimum'}
+                                            {t('indexBaseMin')}
                                         </span>
                                     </label>
                                     <p className="text-xs text-muted-foreground">
-                                        {lang === 'he'
-                                            ? 'כאשר מסומן, השכירות לא תרד מתחת לסכום הבסיס גם אם המדד ירד'
-                                            : 'When checked, rent will not drop below base amount even if index decreases'}
+                                        {t('indexBaseMinHelp')}
                                     </p>
                                 </div>
                             )}
@@ -963,7 +962,7 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                                                     <th className="p-3 text-left">{t('month')}</th>
                                                     <th className="p-3 text-right">{t('shouldPay')}</th>
                                                     <th className="p-3 text-right">{t('paid')}</th>
-                                                    <th className="p-3 text-right">{t('diff')}</th>
+                                                    <th className="p-3 text-right">{t('runningBalance')}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>

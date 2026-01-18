@@ -24,6 +24,147 @@ export type TranslationKeys =
     | 'yes'
     | 'no'
 
+    // Properties Page
+    | 'addProperty'
+    | 'noAssetsFound'
+    | 'addFirstPropertyDesc'
+    | 'createFirstAsset'
+    | 'occupied'
+    | 'vacant'
+    | 'sqm'
+    | 'monthlyRentLabel'
+    | 'tenantsToBeDisconnected'
+    | 'unnamed'
+    | 'unknown'
+    | 'addProperty_female'
+    | 'addFirstPropertyDesc_female'
+    | 'createFirstAsset_female'
+    | 'archiveAndCalculate_female'
+
+    // Tenants Page
+    | 'myTenants'
+    | 'manageTenantsDesc'
+    | 'addTenant'
+    | 'addTenant_female'
+    | 'noTenantsFound'
+    | 'addFirstTenantDesc'
+    | 'addFirstTenantDesc_female'
+    | 'addNewTenant'
+    | 'addNewTenant_female'
+    | 'deleteTenantError'
+    | 'noPhone'
+
+    // Contracts Page
+    | 'contractsTitle'
+    | 'contractsSubtitle'
+    | 'all'
+    | 'active'
+    | 'archived'
+    | 'tenantDisconnectedWarning'
+    | 'paymentsDeletedWarning'
+    | 'deleteContractTitle'
+    | 'deleteContractMessage'
+    | 'deleteContractMessage_female'
+    | 'calculationFailed'
+    | 'deletePaymentConfirmation'
+    | 'deleteExpectedConfirmation'
+    | 'calculateLinkageAndMore'
+
+    // Settings Page
+    | 'settings'
+    | 'manageAccount'
+    | 'managePersonalInfo'
+    | 'managePersonalInfo_female'
+    | 'configureAlerts'
+    | 'configureAlerts_female'
+    | 'controlData'
+    | 'controlData_female'
+    | 'contactSupportDesc'
+    | 'contactSupportDesc_female'
+    | 'logout_female'
+    | 'accessibilityStatement'
+    | 'languageLocalization'
+    | 'language'
+    | 'genderForHebrew'
+    | 'support'
+    | 'contactSupport'
+    | 'typeMessageHere'
+    | 'orEmailDirectly'
+    | 'appVersion'
+    | 'profile'
+    | 'notifications'
+    | 'privacySecurity'
+
+    // Legacy / Migrated from i18n
+    | 'sendMessage'
+    | 'sending'
+    | 'messageSent'
+    | 'unspecified'
+    | 'gender'
+    | 'male'
+    | 'female'
+    | 'currentPlan'
+    | 'freeForever'
+    | 'greatForGettingStarted'
+    | 'upgradeToPro'
+    | 'unlockMoreLimits'
+    | 'noActiveContracts'
+    | 'noActiveContractsDesc'
+    | 'unlockPotential'
+    | 'unlockPotential_female'
+    | 'requestUpgrade'
+    | 'requestUpgrade_female'
+    | 'maybeLater'
+    | 'requestSent'
+    | 'requestSentDesc'
+    | 'requestSentDesc_female'
+    | 'gotItThanks'
+    | 'feature'
+    | 'free'
+    | 'pro'
+    | 'unlimited'
+    | 'prioritySupport'
+    | 'dataExport'
+    | 'contactSupport_female'
+    | 'typeMessageHere_female'
+    | 'orEmailDirectly_female'
+    | 'upgradeToPro_female'
+    | 'unlockMoreLimits_female'
+    | 'properties_female'
+    | 'tenants_female'
+    | 'contracts_female'
+
+    // Female Variants
+    | 'loading_female'
+    | 'save_female'
+    | 'edit_female'
+    | 'delete_female'
+    | 'add_female'
+    | 'view_female'
+    | 'deleteConfirmation_female'
+    | 'clear_female'
+    | 'generate_female'
+    | 'share_female'
+    | 'print_female'
+    | 'reset_female'
+    | 'download_female'
+    | 'remove_female'
+    | 'welcomeBack_female'
+    | 'welcome_female'
+    | 'addPayment_female'
+    | 'selectBaseDate_female'
+    | 'selectTargetDate_female'
+    | 'chooseProperty_female'
+    | 'selectProperty_female'
+    | 'chooseTenant_female'
+    | 'addPeriod_female'
+    | 'addStep_female'
+    | 'addGuarantor_female'
+    | 'createContract_female'
+    | 'addItem_female'
+    | 'addFirstPayment_female'
+    | 'generateList_female'
+
     // Auth
     | 'login'
     | 'logout'
@@ -287,7 +428,32 @@ export type TranslationKeys =
 
     // Empty States
     | 'noActiveContracts'
-    | 'noActiveContractsDesc';
+    | 'noActiveContractsDesc'
+
+    // AddTenantModal
+    | 'viewTenantDetails'
+    | 'editTenant'
+    | 'viewContactInfo'
+    | 'updateTenantDetails'
+    | 'addTenantToContacts'
+    | 'assignedAsset'
+    | 'noAssetsFoundDesc'
+    | 'goToAssetsPage'
+    | 'planLimitReached'
+    | 'planLimitReachedTenantDesc'
+    | 'saving'
+    | 'adding'
+    | 'saveChanges'
+    | 'close'
+    | 'editTenant_female'
+    | 'viewContactInfo_female'
+    | 'updateTenantDetails_female'
+    | 'addTenantToContacts_female'
+    | 'goToAssetsPage_female'
+    | 'saving_female'
+    | 'adding_female'
+    | 'saveChanges_female'
+    | 'runningBalance';
 
 export const translations: Record<string, Record<TranslationKeys, string>> = {
     he: {
@@ -562,7 +728,190 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         date: 'תאריך',
 
         noActiveContracts: 'לא נמצאו חוזים פעילים',
-        noActiveContractsDesc: 'אין לך חוזים פעילים כרגע'
+        noActiveContractsDesc: 'אין לך חוזים פעילים כרגע',
+
+        // Gender Variants (Female)
+        loading_female: 'טוענת...',
+        save_female: 'שמרי',
+        edit_female: 'ערכי',
+        delete_female: 'מחקי',
+        add_female: 'הוסיפי',
+        view_female: 'צפי',
+        deleteConfirmation_female: 'האם את בטוחה שברצונך למחוק? פעולה זו אינה הפיכה.',
+        clear_female: 'נקי',
+        generate_female: 'צרי',
+        share_female: 'שתפי',
+        print_female: 'הדפיסי',
+        reset_female: 'אפסי',
+        download_female: 'הורידי',
+        remove_female: 'הסירי',
+
+        welcomeBack_female: 'ברוכה השבה',
+        welcome_female: 'ברוכה הבאה',
+
+        addPayment_female: 'הוסיפי תשלום',
+        selectBaseDate_female: 'בחרי תאריך בסיס',
+        selectTargetDate_female: 'בחרי תאריך יעד',
+
+        chooseProperty_female: 'בחרי נכס מהרשימה',
+        selectProperty_female: 'בחרי נכס...',
+
+        chooseTenant_female: 'בחרי דייר מהרשימה',
+
+        addPeriod_female: 'הוסיפי תקופה',
+        addStep_female: 'הוסיפי שינוי',
+        addGuarantor_female: 'הוסיפי ערב',
+
+        createContract_female: 'צרי חוזה',
+        addItem_female: 'הוסיפי פריט',
+        addFirstPayment_female: 'הוסיפי תשלום ראשון',
+
+        generateList_female: 'צרי רשימה',
+
+        // Properties Page & Others
+        addProperty: 'הוסף נכס',
+        addProperty_female: 'הוסיפי נכס',
+        noAssetsFound: 'אין נכסים עדיין',
+        addFirstPropertyDesc: 'הוסף את הנכס הראשון שלך כדי להתחיל',
+        addFirstPropertyDesc_female: 'הוסיפי את הנכס הראשון שלך כדי להתחיל',
+        createFirstAsset: '+ צור נכס חדש',
+        createFirstAsset_female: '+ צרי נכס חדש',
+        occupied: 'מושכר',
+        vacant: 'פנוי',
+        sqm: 'מ״ר',
+        monthlyRentLabel: 'שכר דירה',
+        tenantsToBeDisconnected: 'דיירים ינותקו מהנכס',
+        unnamed: 'ללא שם',
+        unknown: 'לא ידוע',
+        archiveAndCalculate_female: 'ארכבי וחשבי',
+
+        // Tenants Page
+        myTenants: 'הדיירים שלי',
+        manageTenantsDesc: 'ניהול ספר טלפונים ודיירים',
+        addTenant: 'הוסף דייר',
+        addTenant_female: 'הוסיפי דייר',
+        noTenantsFound: 'אין דיירים ברשימה',
+        addFirstTenantDesc: 'הוסף דיירים כדי לנהל אותם בקלות',
+        addFirstTenantDesc_female: 'הוסיפי דיירים כדי לנהל אותם בקלות',
+        addNewTenant: '+ הוסף דייר חדש',
+        addNewTenant_female: '+ הוסיפי דייר חדש',
+        deleteTenantError: 'לא ניתן למחוק דייר שיש לו חוזים או תשלומים מקושרים. יש למחוק אותם תחילה.',
+        noPhone: 'ללא טלפון',
+
+        // Contracts Page
+        contractsTitle: 'חוזי שכירות',
+        contractsSubtitle: 'ניהול חוזים ותקופות שכירות',
+        all: 'הכל',
+        active: 'פעיל',
+        archived: 'ארכיון',
+        tenantDisconnectedWarning: 'דייר ינותק מחוזה זה',
+        paymentsDeletedWarning: 'תשלומים ימחקו לצמיתות',
+        deleteContractTitle: 'מחיקת חוזה',
+        deleteContractMessage: 'האם את/ה בטוח/ה שברצונך למחוק חוזה זה?',
+        deleteContractMessage_female: 'האם את בטוחה שברצונך למחוק חוזה זה?',
+        calculationFailed: 'החישוב נכשל. נא לבדוק את הנתונים.',
+        deletePaymentConfirmation: 'האם את/ה בטוח/ה שברצונך למחוק תשלום זה?',
+        deleteExpectedConfirmation: 'האם את/ה בטוח/ה שברצונך למחוק שורה זו?',
+        calculateLinkageAndMore: 'חישוב הפרשי הצמדה ועוד',
+
+        // Settings
+        settings: 'הגדרות',
+        manageAccount: 'ניהול חשבון',
+        managePersonalInfo: 'ניהול מידע אישי',
+        managePersonalInfo_female: 'נהלי את המידע האישי שלך',
+        configureAlerts: 'הגדרת התראות',
+        configureAlerts_female: 'הגדירי התראות ותזכורות',
+        controlData: 'שליטה במידע',
+        controlData_female: 'שלטי במידע ובגישה שלך',
+        contactSupportDesc: 'יש לך שאלה? נשמח לעזור.',
+        contactSupportDesc_female: 'יש לך שאלה או את צריכה עזרה? שלחי לנו הודעה ונחזור אלייך בהקדם.',
+        logout_female: 'התנתקי',
+        accessibilityStatement: 'הצהרת נגישות',
+        languageLocalization: 'שפה ואזור',
+        language: 'שפה',
+        genderForHebrew: 'מגדר (עבור עברית)',
+        support: 'תמיכה',
+        contactSupport: 'צור קשר',
+        contactSupport_female: 'צרי קשר',
+        typeMessageHere: 'כתוב את ההודעה כאן...',
+        typeMessageHere_female: 'כתבי את ההודעה כאן...',
+        orEmailDirectly: 'או שלח מייל ישירות ל-',
+        orEmailDirectly_female: 'או שלחי מייל ישירות ל-',
+        appVersion: 'גרסת אפליקציה',
+        profile: 'פרופיל',
+        notifications: 'התראות',
+        privacySecurity: 'פרטיות ואבטחה',
+
+        // Upgrade / Pricing
+        unlockPotential: 'ממש את הפוטנציאל המלא של RentMate',
+        unlockPotential_female: 'ממשי את הפוטנציאל המלא של RentMate',
+
+        requestUpgrade: 'בקש שדרוג',
+        requestUpgrade_female: 'בקשי שדרוג',
+        maybeLater: 'אולי אחר כך',
+        requestSent: 'הבקשה נשלחה!',
+        requestSentDesc: 'קיבלנו את בקשת השדרוג שלך. הצוות שלנו יצור איתך קשר בהקדם.',
+        requestSentDesc_female: 'קיבלנו את בקשת השדרוג שלך. הצוות שלנו יצור איתך קשר בהקדם.', // Neutral enough? "Itach" is female. "Ittcha" is male.
+        // "יצור איתך קשר" - itcha (M) / itach (F). Spelling is same! 
+        // But let's be safe.
+        gotItThanks: 'הבנתי, תודה',
+
+        feature: 'תכונה',
+        free: 'חינם',
+        pro: 'Pro',
+        unlimited: 'ללא הגבלה',
+        prioritySupport: 'תמיכה בעדיפות',
+        dataExport: 'ייצוא נתונים',
+        sending: 'שולח...',
+        messageSent: 'ההודעה נשלחה!',
+        unspecified: 'מעדיף/ה לא לציין',
+        gender: 'מגדר',
+        male: 'זכר',
+        female: 'נקבה',
+        currentPlan: 'תוכנית נוכחית',
+        freeForever: 'חינם לתמיד',
+        greatForGettingStarted: 'מעולה להתחלה',
+        upgradeToPro: 'שדרג ל-Pro',
+        upgradeToPro_female: 'שדרגי ל-Pro',
+        unlockMoreLimits: 'פתח יותר אפשרויות',
+        unlockMoreLimits_female: 'פתחי יותר אפשרויות',
+        properties_female: 'נכסים', // Plural usually neutral, but if context is imperative "Manage Properties"?
+        // "Properties" (Title) is Noun. "Hanechasim".
+        // Keep neutral if noun.
+        tenants_female: 'דיירים',
+        contracts_female: 'חוזים',
+
+        // AddTenantModal
+        viewTenantDetails: 'פרטי דייר',
+        editTenant: 'ערוך דייר',
+        editTenant_female: 'ערכי דייר',
+        viewContactInfo: 'צפה בפרטי הקשר',
+        viewContactInfo_female: 'צפי בפרטי הקשר',
+        updateTenantDetails: 'עדכן פרטי דייר',
+        updateTenantDetails_female: 'עדכני פרטי דייר',
+        addTenantToContacts: 'הוסף דייר חדש לאנשי הקשר',
+        addTenantToContacts_female: 'הוסיפי דייר חדש לאנשי הקשר',
+        assignedAsset: 'נכס משויך',
+        noAssetsFoundDesc: 'לא נמצאו נכסים. יש ליצור נכס לפני הוספת דייר.',
+        goToAssetsPage: 'עבור לעמוד הנכסים',
+        goToAssetsPage_female: 'עברי לעמוד הנכסים',
+        planLimitReached: 'הגעת למכסה',
+        planLimitReachedTenantDesc: 'הגעת לכמות הדיירים המקסימלית בתוכנית {planName}. שדרג/י כדי להוסיף עוד.',
+        saving: 'שומר...',
+        saving_female: 'שומרת...',
+        adding: 'מוסיף...',
+        adding_female: 'מוסיפה...',
+        saveChanges: 'שמור שינויים',
+        saveChanges_female: 'שמרי שינויים',
+        close: 'סגור',
+
+        runningBalance: 'יתרה מצטברת',
+
+        // Missing keys to satisfy Record<TranslationKeys, string>
+        sendMessage: 'שלח הודעה',
+        // sendMessage is missing from earlier, so we keep it. 
+        // noActiveContractsDesc is at line 706, so we remove it here.
+        sendMessage: 'שלח הודעה',
     },
     en: {
         appName: 'RentMate',
@@ -835,7 +1184,184 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         date: 'Date',
 
         noActiveContracts: 'No active contracts found',
-        noActiveContractsDesc: 'You have no active contracts at the moment'
+        noActiveContractsDesc: 'You have no active contracts at the moment',
+
+        // Gender Support (Mapped to neutral English)
+        loading_female: 'Loading...',
+        save_female: 'Save',
+        edit_female: 'Edit',
+        delete_female: 'Delete',
+        add_female: 'Add',
+        view_female: 'View',
+        deleteConfirmation_female: 'Are you sure you want to delete this item? This action cannot be undone.',
+        clear_female: 'Clear',
+        generate_female: 'Generate',
+        share_female: 'Share',
+        print_female: 'Print',
+        reset_female: 'Reset',
+        download_female: 'Download',
+        remove_female: 'Remove',
+
+        welcomeBack_female: 'Welcome Back',
+        welcome_female: 'Welcome',
+
+        addPayment_female: 'Add Payment',
+        selectBaseDate_female: 'Select base date',
+        selectTargetDate_female: 'Select target date',
+
+        chooseProperty_female: 'Choose Property',
+        selectProperty_female: 'Select Property...',
+
+        chooseTenant_female: 'Choose Tenant',
+
+        addPeriod_female: 'Add Period',
+        addStep_female: 'Add Step',
+        addGuarantor_female: 'Add Guarantor',
+
+        createContract_female: 'Create Contract',
+        addItem_female: 'Add Item',
+        addFirstPayment_female: 'Add your first payment',
+
+        generateList_female: 'Generate List',
+
+        // Properties Page & Others
+        addProperty: 'Add Property',
+        addProperty_female: 'Add Property',
+        noAssetsFound: 'No Assets Found',
+        addFirstPropertyDesc: 'Add your first property to get started',
+        addFirstPropertyDesc_female: 'Add your first property to get started',
+        createFirstAsset: '+ Create New Asset',
+        createFirstAsset_female: '+ Create New Asset',
+        occupied: 'Occupied',
+        vacant: 'Vacant',
+        sqm: 'm²',
+        monthlyRentLabel: 'Monthly Rent',
+        tenantsToBeDisconnected: 'Tenants to be disconnected',
+        unnamed: 'Unnamed',
+        unknown: 'Unknown',
+        archiveAndCalculate_female: 'Archive & Calculate',
+
+        // Tenants Page
+        myTenants: 'My Tenants',
+        manageTenantsDesc: 'Manage your tenants and contacts',
+        addTenant: 'Add Tenant',
+        addTenant_female: 'Add Tenant',
+        noTenantsFound: 'No Tenants Found',
+        addFirstTenantDesc: 'Add your first tenant to get started',
+        addFirstTenantDesc_female: 'Add your first tenant to get started',
+        addNewTenant: '+ Add New Tenant',
+        addNewTenant_female: '+ Add New Tenant',
+        deleteTenantError: 'Cannot delete tenant associated with contracts or payments. Please delete them first.',
+        noPhone: 'No phone',
+
+        // Contracts Page
+        contractsTitle: 'Contracts',
+        contractsSubtitle: 'Manage lease agreements and terms',
+        all: 'All',
+        active: 'Active',
+        archived: 'Archived',
+        tenantDisconnectedWarning: 'Tenant will be disconnected from this contract',
+        paymentsDeletedWarning: 'Payments will be permanently deleted',
+        deleteContractTitle: 'Delete Contract',
+        deleteContractMessage: 'Are you sure you want to delete this contract?',
+        deleteContractMessage_female: 'Are you sure you want to delete this contract?',
+        calculationFailed: 'Calculation failed. Please check your inputs.',
+        deletePaymentConfirmation: 'Are you sure you want to delete this payment?',
+        deleteExpectedConfirmation: 'Are you sure you want to delete this expected item?',
+        calculateLinkageAndMore: 'Calculate linkage and more',
+
+        // Settings
+        settings: 'Settings',
+        manageAccount: 'Manage Account',
+        managePersonalInfo: 'Manage personal info',
+        managePersonalInfo_female: 'Manage personal info',
+        configureAlerts: 'Configure alerts and reminders',
+        configureAlerts_female: 'Configure alerts and reminders',
+        controlData: 'Control specific data points',
+        controlData_female: 'Control specific data points',
+        contactSupportDesc: 'Have a question? We are here to help.',
+        contactSupportDesc_female: 'Have a question? We are here to help.',
+        logout_female: 'Logout',
+        accessibilityStatement: 'Accessibility Statement',
+        languageLocalization: 'Language & Localization',
+        language: 'Language',
+        genderForHebrew: 'Gender (for Hebrew)',
+        support: 'Support',
+        contactSupport: 'Contact Support',
+        typeMessageHere: 'Type your message here...',
+        orEmailDirectly: 'Or email us directly at',
+        appVersion: 'App Version',
+        profile: 'Profile',
+        notifications: 'Notifications',
+        privacySecurity: 'Privacy & Security',
+
+        // Legacy Migrated
+        sendMessage: 'Send Message',
+        sending: 'Sending...',
+        messageSent: 'Message sent!',
+        unspecified: 'Unspecified',
+        gender: 'Gender',
+        male: 'Male',
+        female: 'Female',
+        currentPlan: 'Current Plan',
+        freeForever: 'Free Forever',
+        greatForGettingStarted: 'Great for getting started',
+        upgradeToPro: 'Upgrade to Pro',
+        unlockMoreLimits: 'Unlock more limits',
+
+        // Missing keys added to match type definition
+        noActiveContractsDesc: 'You have no active contracts',
+        unlockPotential: 'Unlock the full potential of RentMate',
+        unlockPotential_female: 'Unlock the full potential of RentMate',
+        requestUpgrade: 'Request Upgrade',
+        requestUpgrade_female: 'Request Upgrade',
+        maybeLater: 'Maybe Later',
+        requestSent: 'Request Sent!',
+        requestSentDesc: 'We have received your upgrade request. Our team will contact you shortly.',
+        requestSentDesc_female: 'We have received your upgrade request. Our team will contact you shortly.',
+        gotItThanks: 'Got it, thanks',
+        feature: 'Feature',
+        free: 'Free',
+        pro: 'Pro',
+        unlimited: 'Unlimited',
+        prioritySupport: 'Priority Support',
+        dataExport: 'Data Export',
+        contactSupport_female: 'Contact Support',
+        typeMessageHere_female: 'Type your message here...',
+        orEmailDirectly_female: 'Or email us directly at',
+        upgradeToPro_female: 'Upgrade to Pro',
+        unlockMoreLimits_female: 'Unlock more limits',
+        properties_female: 'Properties',
+        tenants_female: 'Tenants',
+        contracts_female: 'Contracts',
+
+        // AddTenantModal
+        viewTenantDetails: 'View Tenant Details',
+        editTenant: 'Edit Tenant',
+        viewContactInfo: 'View contact information',
+        updateTenantDetails: 'Update tenant details',
+        addTenantToContacts: 'Add a new tenant to your contacts',
+        assignedAsset: 'Assigned Asset',
+        noAssetsFoundDesc: 'No assets found. You must create an asset before adding a tenant.',
+        goToAssetsPage: 'Go to Assets Page',
+        planLimitReached: 'Plan Limit Reached',
+        planLimitReachedTenantDesc: 'You have reached the maximum number of tenants for your {planName} plan. Please upgrade your subscription.',
+        saving: 'Saving...',
+        adding: 'Adding...',
+        saveChanges: 'Save Changes',
+        close: 'Close',
+
+        // Gender mappings (neutral for English)
+        editTenant_female: 'Edit Tenant',
+        viewContactInfo_female: 'View contact information',
+        updateTenantDetails_female: 'Update tenant details',
+        addTenantToContacts_female: 'Add a new tenant to your contacts',
+        goToAssetsPage_female: 'Go to Assets Page',
+        saving_female: 'Saving...',
+        adding_female: 'Adding...',
+        saveChanges_female: 'Save Changes',
+
+        runningBalance: 'Running Balance',
     }
 };
 
@@ -853,7 +1379,19 @@ export function useTranslation() {
     const t = (key: TranslationKey | string, params?: Record<string, string | number>) => {
         // Cast as any because dynamic keys might not match strictly if passed as string
         const dict = translations[lang] || translations.en;
-        let text = (dict as any)[key] || (translations.en as any)[key] || key;
+
+        // Automatic gender handling for Hebrew
+        let effectiveKey = key;
+        const gender = preferences.gender;
+        if (lang === 'he' && gender === 'female') {
+            const femaleKey = `${key}_female`;
+            // Check if female variant exists in the dictionary
+            if ((dict as any)[femaleKey]) {
+                effectiveKey = femaleKey;
+            }
+        }
+
+        let text = (dict as any)[effectiveKey] || (dict as any)[key] || (translations.en as any)[key] || key;
 
         if (params) {
             Object.entries(params).forEach(([k, v]) => {
