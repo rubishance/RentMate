@@ -12,6 +12,12 @@ export type TranslationKeys =
     | 'add'
     | 'search'
     | 'actions'
+    | 'addItem'
+    | 'expectedBaseRent'
+    | 'actualPayments'
+    | 'totalBase'
+    | 'totalActual'
+    | 'advancedReconciliationOptions'
 
     // Auth
     | 'login'
@@ -40,7 +46,9 @@ export type TranslationKeys =
     | 'city'
     | 'status'
     | 'amount'
-    | 'date';
+    | 'date'
+    | 'avgUnderpayment'
+    | 'percentageOwed';
 
 export const translations: Record<string, Record<TranslationKeys, string>> = {
     he: {
@@ -78,7 +86,16 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         city: 'עיר',
         status: 'סטטוס',
         amount: 'סכום',
-        date: 'תאריך'
+        date: 'תאריך',
+
+        addItem: 'הוסף פריט',
+        expectedBaseRent: 'חיובים לפי החוזה',
+        actualPayments: 'תשלומים בפועל',
+        totalBase: 'סה"כ בסיס',
+        totalActual: 'סה"כ שולם בפועל',
+        advancedReconciliationOptions: 'אפשרויות התחשבנות מתקדמות',
+        avgUnderpayment: 'ממוצע חסר לחודש',
+        percentageOwed: 'אחוז חוב'
     },
     en: {
         appName: 'RentMate',
@@ -115,6 +132,15 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         city: 'City',
         status: 'Status',
         amount: 'Amount',
-        date: 'Date'
+        date: 'Date',
+
+        addItem: 'Add Item',
+        expectedBaseRent: 'Expected Charges',
+        actualPayments: 'Actual Payments',
+        totalBase: 'Total Base',
+        totalActual: 'Total Paid',
+        advancedReconciliationOptions: 'Advanced Reconciliation',
+        avgUnderpayment: 'Avg Underpayment',
+        percentageOwed: 'Debt %'
     }
 };

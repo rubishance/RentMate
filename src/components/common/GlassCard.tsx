@@ -4,29 +4,29 @@ import { motion } from 'framer-motion';
 
 interface GlassCardProps extends React.HTMLAttributes<HTMLDivElement> {
     hoverEffect?: boolean;
-    gradient?: boolean;
+    minimal?: boolean;
 }
 
 export const GlassCard: React.FC<GlassCardProps> = ({
     children,
     className,
     hoverEffect = false,
-    gradient = false,
+    minimal = false,
     ...props
 }) => {
-    const baseClasses = "relative bg-white/80 backdrop-blur-xl border border-white/20 shadow-sm rounded-2xl overflow-hidden";
-    const hoverClasses = hoverEffect ? "transition-all duration-300 hover:shadow-lg hover:shadow-brand-navy/5 hover:-translate-y-1 hover:bg-white/90" : "";
-    const gradientClasses = gradient ? "bg-gradient-to-br from-white/90 to-white/50" : "";
+    const baseClasses = "relative bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 rounded-lg overflow-hidden";
+    const hoverClasses = hoverEffect ? "transition-all duration-200 hover:shadow-md hover:border-gray-200 dark:hover:border-neutral-700" : "shadow-sm dark:shadow-none";
+    const minimalClasses = minimal ? "border-0 shadow-none" : "";
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className={cn(baseClasses, hoverClasses, gradientClasses, className)}
+            transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            className={cn(baseClasses, hoverClasses, minimalClasses, className)}
             {...props as any}
         >
-            {/* Subtle noise or sheen effect overlay could go here */}
             {children}
         </motion.div>
     );

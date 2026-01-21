@@ -7,6 +7,8 @@ import type { ExtractedField } from '../types/database';
 import { Loader2, FileText, Upload, Shield, AlertTriangle, CheckCircle2, ScanLine } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ScannerAnimation } from './ScannerAnimation';
+import { BillAnalysisService } from '../services/bill-analysis.service';
+import UpgradeRequestModal from './modals/UpgradeRequestModal';
 
 interface ContractScannerProps {
     onScanComplete: (extractedData: ExtractedField[], contractFileUrl: string, contractFile?: File) => void;
@@ -24,6 +26,7 @@ export function ContractScanner({ onScanComplete, onCancel, mode = 'modal', skip
     const [progress, setProgress] = useState('');
     const [confirmedFields, setConfirmedFields] = useState<ExtractedField[]>([]);
     const [generatedPdf, setGeneratedPdf] = useState<File | null>(null);
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
     const handleDisclaimerAccept = () => {
         setStep('upload');
@@ -56,9 +59,17 @@ export function ContractScanner({ onScanComplete, onCancel, mode = 'modal', skip
         setScannedImages(redactedImages);
 
         setStep('processing');
-        setProgress('מעלה קבצים לענן המאובטח...');
+        setProgress('בודק מכסת שימוש...');
 
         try {
+            // Check usage limits
+            const usage = await BillAnalysisService.checkAndLogUsage(1, 'contract_scan');
+            if (!usage.allowed) {
+                setShowUpgradeModal(true);
+                setStep('upload');
+                return;
+            }
+
             setProgress('מעלה קבצים לענן המאובטח...');
 
             // 1. Convert images to Base64 to avoid OpenAI timeouts downloading from Storage
@@ -290,10 +301,8 @@ export function ContractScanner({ onScanComplete, onCancel, mode = 'modal', skip
             transition={{ type: "spring", duration: 0.5 }}
             className={containerClasses}
         >
-            {/* Header */}
-            <div className="bg-slate-900 p-6 text-white text-center relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
-
+            {/* Header - Modern Minimal */}
+            <div className="bg-white p-6 text-center border-b border-border">
                 <div className="relative z-10">
                     {step === 'processing' ? (
                         <ScannerAnimation />
@@ -301,30 +310,25 @@ export function ContractScanner({ onScanComplete, onCancel, mode = 'modal', skip
                         <motion.div
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
-                            className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-green-500/30"
+                            className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-100"
                         >
-                            <CheckCircle2 className="w-10 h-10 text-white" />
+                            <CheckCircle2 className="w-8 h-8 text-emerald-600" />
                         </motion.div>
                     ) : (
-                        <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-900/50">
-                            <Upload className="w-8 h-8 text-white" />
+                        <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-100">
+                            <Upload className="w-8 h-8 text-blue-600" />
                         </div>
                     )}
 
-                    <h2 className="text-2xl font-bold mb-2">
+                    <h2 className="text-xl font-bold mb-2 text-foreground">
                         {step === 'success' ? 'החוזה עובד בהצלחה!' : 'העלאת חוזה'}
                     </h2>
-                    <p className="text-blue-200 text-sm">
+                    <p className="text-muted-foreground text-sm">
                         {step === 'success'
                             ? 'הנתונים הועברו לטופס החוזה'
                             : 'המערכת תנתח את החוזה ותחלץ את הנתונים החשובים באופן מאובטח'
                         }
                     </p>
-                </div>
-
-                {/* Background decoration */}
-                <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-                    <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[radial-gradient(circle,white,transparent)] animate-[spin_20s_linear_infinite]"></div>
                 </div>
             </div>
 
@@ -360,7 +364,7 @@ export function ContractScanner({ onScanComplete, onCancel, mode = 'modal', skip
                         {/* Animated AI Progress bar */}
                         <div className="relative w-full h-3 bg-slate-100 rounded-full mt-8 overflow-hidden">
                             <motion.div
-                                className="absolute inset-0 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"
+                                className="absolute inset-0 bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-500"
                                 animate={{ x: ["-100%", "100%"] }}
                                 transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
                             />
@@ -386,33 +390,35 @@ export function ContractScanner({ onScanComplete, onCancel, mode = 'modal', skip
                 ) : (
                     <div className="space-y-6">
                         <div className="relative group">
+                            <label htmlFor="contract-file-upload" className="sr-only">העלאת חוזה</label>
                             <input
+                                id="contract-file-upload"
                                 type="file"
                                 accept="application/pdf,.pdf,image/png,image/jpeg,image/jpg"
                                 onChange={handleFileSelect}
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
                             />
-                            <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center transition-all duration-300 group-hover:border-blue-500 group-hover:bg-blue-50">
+                            <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center transition-all duration-300 group-hover:border-primary group-hover:bg-primary/10">
                                 <motion.div
                                     animate={{ y: [0, -8, 0] }}
                                     transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
                                     className="w-12 h-12 mx-auto mb-4"
                                 >
-                                    <FileText className="w-full h-full text-slate-400 group-hover:text-blue-500 transition-colors" />
+                                    <FileText className="w-full h-full text-slate-400 group-hover:text-primary transition-colors" />
                                 </motion.div>
                                 <h3 className="text-lg font-bold text-slate-700 mb-1">בחר קובץ להעלאה</h3>
                                 <p className="text-sm text-slate-500 mb-4">
                                     PDF או תמונה (JPG, PNG)
                                 </p>
-                                <div className="inline-flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white rounded-lg text-sm font-bold shadow-lg shadow-slate-900/20 group-hover:bg-blue-600 group-hover:shadow-blue-600/30 transition-all">
+                                <div className="inline-flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white rounded-lg text-sm font-bold shadow-lg shadow-slate-900/20 group-hover:bg-primary group-hover:shadow-blue-600/30 transition-all">
                                     <Upload className="w-4 h-4" />
                                     בחר קובץ מהמחשב
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-blue-50/50 rounded-xl p-4 flex items-start gap-3">
-                            <Shield className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+                        <div className="bg-primary/10/50 rounded-xl p-4 flex items-start gap-3">
+                            <Shield className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                             <div className="text-right">
                                 <h4 className="font-bold text-blue-900 text-sm">הפרטיות שלך מוגנת</h4>
                                 <p className="text-blue-700/80 text-xs mt-1">
@@ -448,6 +454,11 @@ export function ContractScanner({ onScanComplete, onCancel, mode = 'modal', skip
             >
                 {content}
             </motion.div>
+            <UpgradeRequestModal
+                isOpen={showUpgradeModal}
+                onClose={() => setShowUpgradeModal(false)}
+                source="contract_scan_limit"
+            />
         </AnimatePresence>
     );
 }

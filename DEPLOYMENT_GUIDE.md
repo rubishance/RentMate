@@ -1,11 +1,39 @@
-# Production Deployment Guide: Index Updates
+# RentMate Deployment & Verification Protocol
 
-## Prerequisites
+> 🚨 **CRITICAL RULE**: Every deployment (whether code push or manual deploy) **MUST** be followed by immediate verification and a status update to the user.
+
+## 1. Frontend / General Deployment (Netlify)
+
+The frontend deploys automatically via Git Push to `main`.
+
+### Protocol
+1.  **Push Changes**: `git push origin main`
+2.  **Wait**: Allow 3-5 minutes for Netlify to build.
+3.  **VERIFY (Mandatory)**:
+    - **Step A**: Check Build Version
+        - Visit: `https://rentmate.co.il/version.json`
+        - Action: Compare `timestamp` and `shortVersion` with your latest local commit.
+        - *If dates don't match, the deploy hasn't happened yet.*
+    - **Step B**: Visual Check
+        - Visit: `https://rentmate.co.il`
+        - Action: Confirm the specific features (e.g., new buttons, bug fixes) are visible.
+        - Action: Check Console for errors.
+4.  **NOTIFY USER (Mandatory)**:
+    - Send a message confirming:
+        - ✅ Deployment Status (Success/Fail)
+        - 📌 Version Hash
+        - 🔍 Verified Features
+
+---
+
+## 2. Backend: Edge Functions & Cron Jobs (Index Updates)
+
+### Prerequisites
 - [ ] Supabase CLI installed (`npm install -g supabase`)
 - [ ] Authenticated with Supabase (`supabase login`)
 - [ ] Project linked (`supabase link --project-ref YOUR_PROJECT_REF`)
 
-## Step 1: Deploy Edge Function
+### Step 1: Deploy Edge Function
 
 ```bash
 # Deploy the fetch-index-data function to production
@@ -15,7 +43,7 @@ supabase functions deploy fetch-index-data
 supabase functions list
 ```
 
-## Step 2: Test the Edge Function
+### Step 2: Test the Edge Function
 
 ```bash
 # Test the function manually (replace with your project URL)
@@ -34,7 +62,7 @@ Expected response:
 }
 ```
 
-## Step 3: Configure Database Settings (Required for Cron)
+### Step 3: Configure Database Settings (Required for Cron)
 
 Run these SQL commands in your Supabase SQL Editor:
 
@@ -46,7 +74,7 @@ ALTER DATABASE postgres SET app.settings.supabase_url = 'https://YOUR_PROJECT_RE
 ALTER DATABASE postgres SET app.settings.service_role_key = 'YOUR_SERVICE_ROLE_KEY';
 ```
 
-## Step 4: Apply Cron Job Migration
+### Step 4: Apply Cron Job Migration
 
 ```bash
 # Push the migration to production
@@ -56,7 +84,7 @@ supabase db push
 supabase migration up --db-url YOUR_DATABASE_URL
 ```
 
-## Step 5: Verify Cron Job
+### Step 5: Verify Cron Job
 
 Run in SQL Editor:
 
@@ -71,7 +99,7 @@ ORDER BY start_time DESC
 LIMIT 10;
 ```
 
-## Step 6: Manual Test (Optional)
+### Step 6: Manual Test (Optional)
 
 Trigger the job manually to test:
 

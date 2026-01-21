@@ -28,8 +28,8 @@ export const UsageOverviewWidget: FC = () => {
                     <AlertTriangle className="w-5 h-5 text-orange-500" />
                 </div>
                 <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 dark:text-white">Approaching Plan Limits</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    <h3 className="font-semibold text-foreground dark:text-white">Approaching Plan Limits</h3>
+                    <p className="text-sm text-muted-foreground dark:text-muted-foreground mt-1">
                         You are nearing the limits for your <b>{plan.name}</b> plan.
                         Consider upgrading to add more {propWarning ? 'properties' : ''}
                         {(propWarning && (tenantWarning || contractWarning)) ? ', ' : ''}

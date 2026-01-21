@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { X, Loader2, DollarSign, FileText } from 'lucide-react';
+import { DollarSignIcon as DollarSign, ContractsIcon as FileText } from '../icons/NavIcons';
+import { CloseIcon as X, LoaderIcon as Loader2 } from '../icons/MessageIcons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import { DatePicker } from '../ui/DatePicker';
@@ -23,7 +24,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess }: AddPaymentModalP
         due_date: new Date().toISOString().split('T')[0],
         status: 'pending' as 'pending' | 'paid' | 'overdue',
         payment_method: 'bank_transfer',
-        cancel_date: '', // For paid date if status is paid
+        paid_date: '', // For paid date if status is paid
     });
 
     useEffect(() => {
@@ -82,7 +83,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess }: AddPaymentModalP
                     due_date: formData.due_date,
                     status: formData.status,
                     payment_method: formData.payment_method,
-                    paid_date: formData.status === 'paid' ? (formData.cancel_date || new Date().toISOString()) : null,
+                    paid_date: formData.status === 'paid' ? (formData.paid_date || new Date().toISOString()) : null,
                 });
 
             if (error) throw error;
@@ -104,7 +105,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess }: AddPaymentModalP
                     due_date: new Date().toISOString().split('T')[0],
                     status: 'pending',
                     payment_method: 'bank_transfer',
-                    cancel_date: ''
+                    paid_date: ''
                 });
             } else {
                 // Prepare for next payment
@@ -154,11 +155,11 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess }: AddPaymentModalP
                             className="bg-white rounded-2xl shadow-xl w-full max-w-md pointer-events-auto overflow-hidden flex flex-col max-h-[90vh]"
                         >
                             {/* Header */}
-                            <div className="flex items-center justify-between p-4 border-b border-gray-100">
-                                <h2 className="text-lg font-bold text-gray-900">Add Payment</h2>
+                            <div className="flex items-center justify-between p-4 border-b border-border">
+                                <h2 className="text-lg font-bold text-foreground">Add Payment</h2>
                                 <button
                                     onClick={onClose}
-                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500"
+                                    className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground"
                                 >
                                     <X className="w-5 h-5" />
                                 </button>
@@ -171,15 +172,15 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess }: AddPaymentModalP
                                 <div className="space-y-1.5">
                                     <label className="text-sm font-semibold text-gray-700 ml-1">Contract</label>
                                     {fetchingContracts ? (
-                                        <div className="h-10 bg-gray-100 rounded-xl animate-pulse" />
+                                        <div className="h-10 bg-muted rounded-xl animate-pulse" />
                                     ) : (
                                         <div className="relative">
-                                            <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                            <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                             <select
                                                 required
                                                 value={formData.contract_id}
                                                 onChange={(e) => setFormData(prev => ({ ...prev, contract_id: e.target.value }))}
-                                                className="w-full pl-9 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none"
+                                                className="w-full pl-9 pr-4 py-3 bg-secondary border border-border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none appearance-none"
                                             >
                                                 <option value="">Select a contract...</option>
                                                 {contracts.map(c => (
@@ -196,14 +197,14 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess }: AddPaymentModalP
                                 <div className="space-y-1.5">
                                     <label className="text-sm font-semibold text-gray-700 ml-1">Amount</label>
                                     <div className="relative">
-                                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                         <input
                                             type="number"
                                             required
                                             placeholder="0.00"
                                             value={formData.amount}
                                             onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
-                                            className="w-full pl-9 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                            className="w-full pl-9 pr-4 py-3 bg-secondary border border-border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
                                         />
                                     </div>
                                 </div>
@@ -239,7 +240,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess }: AddPaymentModalP
                                                 onClick={() => setFormData(prev => ({ ...prev, payment_method: method.value }))}
                                                 className={`py-2 px-1 rounded-xl text-xs font-medium capitalize transition-all border ${formData.payment_method === method.value
                                                     ? 'bg-primary/10 border-primary text-primary'
-                                                    : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                                                    : 'bg-white border-border text-muted-foreground hover:bg-secondary'
                                                     }`}
                                             >
                                                 {method.label}
@@ -262,8 +263,8 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess }: AddPaymentModalP
                                                         ? 'bg-green-100 border-green-200 text-green-700'
                                                         : status === 'overdue'
                                                             ? 'bg-red-100 border-red-200 text-red-700'
-                                                            : 'bg-blue-100 border-blue-200 text-blue-700'
-                                                    : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                                                            : 'bg-primary/10 border-blue-200 text-blue-700'
+                                                    : 'bg-white border-border text-muted-foreground hover:bg-secondary'
                                                     }`}
                                             >
                                                 {status}
@@ -275,12 +276,12 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess }: AddPaymentModalP
                             </form>
 
                             {/* Footer */}
-                            <div className="p-4 border-t border-gray-100 bg-gray-50/50 flex">
+                            <div className="p-4 border-t border-border bg-gray-50/50 flex">
                                 <button
                                     type="button"
                                     onClick={() => handleSave(false)}
                                     disabled={loading}
-                                    className="flex-1 py-3.5 px-4 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-bold rounded-xl transform transition-all active:scale-[0.98] disabled:opacity-70 mr-3"
+                                    className="flex-1 py-3.5 px-4 bg-white border border-border hover:bg-secondary text-gray-700 font-bold rounded-xl transform transition-all active:scale-[0.98] disabled:opacity-70 mr-3"
                                 >
                                     Save & Add Another
                                 </button>
@@ -291,7 +292,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess }: AddPaymentModalP
                                     // Let's make this one submit the form.
                                     onClick={() => handleSave(true)}
                                     disabled={loading}
-                                    className="flex-1 flex items-center justify-center py-3.5 px-4 bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-xl shadow-lg shadow-gray-900/10 transform transition-all active:scale-[0.98] disabled:opacity-70"
+                                    className="flex-1 flex items-center justify-center py-3.5 px-4 bg-foreground hover:bg-gray-800 text-white font-bold rounded-xl shadow-lg shadow-gray-900/10 transform transition-all active:scale-[0.98] disabled:opacity-70"
                                 >
                                     {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Create & Close'}
                                 </button>

@@ -111,8 +111,8 @@ serve(async (req) => {
                 Authorization: `Bearer ${RESEND_API_KEY}`,
             },
             body: JSON.stringify({
-                from: "RentMate Admin <onboarding@resend.dev>",
-                to: "reuvensh1@gmail.com",
+                from: "RentMate Admin <admin@rentmate.co.il>",
+                to: "support@rentmate.co.il",
                 subject: subject,
                 html: htmlBody,
             }),

@@ -62,7 +62,7 @@ export function ContractReviewModal({ extractedFields, contractFileUrl, onConfir
             case 'high': return 'text-green-600 bg-green-100';
             case 'medium': return 'text-yellow-600 bg-yellow-100';
             case 'low': return 'text-red-600 bg-red-100';
-            default: return 'text-gray-600 bg-gray-100';
+            default: return 'text-muted-foreground bg-muted';
         }
     };
 
@@ -72,14 +72,14 @@ export function ContractReviewModal({ extractedFields, contractFileUrl, onConfir
         <div className="fixed inset-0 bg-black/50 z-[9999] flex items-end lg:items-center justify-center p-0 lg:p-4" dir="rtl">
             <div className="bg-white dark:bg-gray-800 rounded-t-2xl lg:rounded-xl w-full max-w-7xl h-full lg:h-[90vh] overflow-hidden flex flex-col shadow-2xl relative">
                 {/* Header */}
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex justify-between items-center shrink-0">
+                <div className="p-4 border-b border-border dark:border-gray-700 bg-white dark:bg-gray-800 flex justify-between items-center shrink-0">
                     <div>
                         <h2 className="text-xl font-bold">בדיקת נתונים שחולצו</h2>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
+                        <p className="text-sm text-muted-foreground dark:text-muted-foreground hidden sm:block">
                             אנא אמת את הנתונים מול החוזה (דף ראשון)
                         </p>
                     </div>
-                    <button onClick={onCancel} className="p-2 hover:bg-gray-100 rounded-full">
+                    <button onClick={onCancel} className="p-2 hover:bg-muted rounded-full">
                         <X size={24} />
                     </button>
                 </div>
@@ -88,11 +88,11 @@ export function ContractReviewModal({ extractedFields, contractFileUrl, onConfir
                 <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative pb-[80px] lg:pb-0">
 
                     {/* Right Side (Desktop) / Top (Mobile): Fields Form */}
-                    <div className="flex-1 w-full lg:w-1/2 flex flex-col border-b lg:border-b-0 lg:border-l border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 lg:h-auto min-h-0">
+                    <div className="flex-1 w-full lg:w-1/2 flex flex-col border-b lg:border-b-0 lg:border-l border-border dark:border-gray-700 bg-secondary dark:bg-foreground/50 lg:h-auto min-h-0">
                         <div className="overflow-y-auto p-4 lg:p-6 flex-1">
-                            <div className="bg-blue-50 dark:bg-blue-900/20 border-r-4 border-blue-400 p-4 mb-4 lg:mb-6 rounded-r">
+                            <div className="bg-primary/10 dark:bg-blue-900/20 border-r-4 border-blue-400 p-4 mb-4 lg:mb-6 rounded-r">
                                 <div className="flex items-start gap-2">
-                                    <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                                    <AlertCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
                                     <div className="text-sm">
                                         <p className="font-semibold mb-1">שים לב!</p>
                                         <p>ה-AI עשוי לטעות. בדוק את השדות מול התמונה.</p>
@@ -123,7 +123,7 @@ export function ContractReviewModal({ extractedFields, contractFileUrl, onConfir
                                                     </span>
                                                 </div>
                                                 {field.sourceText && (
-                                                    <p className="text-xs text-gray-500 italic mb-2 bg-gray-100 p-1 rounded inline-block max-w-full truncate">
+                                                    <p className="text-xs text-muted-foreground italic mb-2 bg-muted p-1 rounded inline-block max-w-full truncate">
                                                         "{field.sourceText}"
                                                     </p>
                                                 )}
@@ -136,6 +136,7 @@ export function ContractReviewModal({ extractedFields, contractFileUrl, onConfir
                                         <div className="flex gap-2">
                                             {field.fieldName === 'guarantorsInfo' || field.fieldName === 'specialClauses' ? (
                                                 <textarea
+                                                    id={`field-${index}`}
                                                     value={field.extractedValue?.toString() || ''}
                                                     onChange={(e) => handleFieldChange(index, e.target.value)}
                                                     rows={4}
@@ -143,6 +144,7 @@ export function ContractReviewModal({ extractedFields, contractFileUrl, onConfir
                                                 />
                                             ) : (
                                                 <input
+                                                    id={`field-${index}`}
                                                     type="text"
                                                     value={field.extractedValue?.toString() || ''}
                                                     onChange={(e) => handleFieldChange(index, e.target.value)}
@@ -166,7 +168,7 @@ export function ContractReviewModal({ extractedFields, contractFileUrl, onConfir
                                 <div className="mt-8 space-y-3 lg:hidden pb-4">
                                     <button
                                         onClick={handleConfirmAll}
-                                        className="w-full py-4 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-900/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                                        className="w-full py-4 bg-primary text-white rounded-xl font-bold shadow-lg shadow-blue-900/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                                     >
                                         <Check className="w-5 h-5" />
                                         {allConfirmed ? 'שמור והמשך' : `אשר את הכל (${fields.filter(f => f.userConfirmed).length}/${fields.length})`}
@@ -194,7 +196,7 @@ export function ContractReviewModal({ extractedFields, contractFileUrl, onConfir
                             </button>
                         </div>
 
-                        <div className="flex-1 overflow-auto p-2 lg:p-4 flex items-center justify-center bg-gray-900/50">
+                        <div className="flex-1 overflow-auto p-2 lg:p-4 flex items-center justify-center bg-foreground/50">
                             {contractFileUrl ? (
                                 <img
                                     src={contractFileUrl}
@@ -214,10 +216,10 @@ export function ContractReviewModal({ extractedFields, contractFileUrl, onConfir
                 </div>
 
                 {/* Footer - Desktop Only */}
-                <div className="hidden lg:flex p-4 border-t border-gray-200 dark:border-gray-700 gap-4 bg-white dark:bg-gray-800 shrink-0 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+                <div className="hidden lg:flex p-4 border-t border-border dark:border-gray-700 gap-4 bg-white dark:bg-gray-800 shrink-0 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
                     <button
                         onClick={onCancel}
-                        className="px-4 lg:px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center justify-center gap-2 text-gray-700 font-medium whitespace-nowrap"
+                        className="px-4 lg:px-6 py-2 border border-gray-300 rounded-lg hover:bg-secondary flex items-center justify-center gap-2 text-gray-700 font-medium whitespace-nowrap"
                     >
                         <X className="w-4 h-4" />
                         <span className="hidden sm:inline">ביטול</span>
@@ -225,7 +227,7 @@ export function ContractReviewModal({ extractedFields, contractFileUrl, onConfir
                     <button
                         onClick={handleConfirmAll}
                         disabled={!allConfirmed}
-                        className="flex-1 px-4 lg:px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-bold shadow-lg shadow-blue-900/20 transition-all"
+                        className="flex-1 px-4 lg:px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-bold shadow-lg shadow-blue-900/20 transition-all"
                     >
                         <Check className="w-5 h-5" />
                         {allConfirmed ? 'שמור והמשך' : `אשר את כל השדות (${fields.filter(f => f.userConfirmed).length}/${fields.length})`}

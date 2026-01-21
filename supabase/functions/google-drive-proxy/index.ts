@@ -4,26 +4,41 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT, DELETE',
 };
 
 serve(async (req) => {
+    // 1. Handle CORS
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders });
     }
 
     try {
+        // 2. Log that we received a request
+        console.log("DEBUG: Received request!", req.method);
+
+        console.log("DEBUG: Initializing Supabase Client...");
+
+        // Initialize Supabase Client
+        // Note: When using --no-verify-jwt, we must manually verify the user if we want security.
+        // But for now, we will trust the Authorization header passed from the client.
         const supabaseClient = createClient(
             Deno.env.get('SUPABASE_URL') ?? '',
             Deno.env.get('SUPABASE_ANON_KEY') ?? '',
             { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
         );
 
-        const { data: { user } } = await supabaseClient.auth.getUser();
-        if (!user) {
-            throw new Error('Unauthorized');
+        console.log("DEBUG: Getting User...");
+        const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+
+        if (userError || !user) {
+            console.error("DEBUG: User Auth Failed:", userError);
+            throw new Error('Unauthorized: User not found or token invalid');
         }
+        console.log("DEBUG: User Authenticated:", user.id);
 
         const { action, ...params } = await req.json();
+        console.log("DEBUG: Action:", action);
 
         switch (action) {
             case 'exchange_code':
@@ -41,10 +56,18 @@ serve(async (req) => {
             case 'create_folder':
                 return await createFolder(user.id, params.name, params.parentId, supabaseClient);
 
+            case 'find_folder':
+                return await findFolder(user.id, params.name, params.parentId, supabaseClient);
+
+            case 'init_resumable_upload':
+                return await initResumableUpload(user.id, params.name, params.mimeType, params.folderId, supabaseClient);
+
             default:
                 throw new Error('Invalid action');
         }
+
     } catch (error: any) {
+        console.error("DEBUG: Error in function:", error.message);
         return new Response(
             JSON.stringify({ error: error.message }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -52,7 +75,44 @@ serve(async (req) => {
     }
 });
 
+async function initResumableUpload(userId: string, name: string, mimeType: string, folderId: string, supabase: any) {
+    const accessToken = await getAccessToken(userId, supabase);
+
+    // 1. Initiate Resumable Upload
+    const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+            'X-Upload-Content-Type': mimeType,
+            'X-Upload-Content-Length': '0', // Optional, but good practice if known
+        },
+        body: JSON.stringify({
+            name,
+            mimeType,
+            parents: [folderId],
+        }),
+    });
+
+    if (!response.ok) {
+        const err = await response.text();
+        throw new Error(`Failed to initiate upload: ${err}`);
+    }
+
+    const uploadUrl = response.headers.get('Location');
+    if (!uploadUrl) {
+        throw new Error('No upload URL received from Google');
+    }
+
+    return new Response(
+        JSON.stringify({ uploadUrl }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+}
+
 async function exchangeCodeForTokens(userId: string, code: string, supabase: any) {
+    console.log("DEBUG: Exchanging code for tokens...");
+
     // Exchange authorization code for tokens
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
@@ -61,16 +121,28 @@ async function exchangeCodeForTokens(userId: string, code: string, supabase: any
             code,
             client_id: Deno.env.get('GOOGLE_CLIENT_ID')!,
             client_secret: Deno.env.get('GOOGLE_CLIENT_SECRET')!,
-            redirect_uri: `${Deno.env.get('APP_URL')}/auth/google/callback`,
+            // Fix: remove trailing slash from APP_URL if present to avoid double slash
+            redirect_uri: `${Deno.env.get('APP_URL')!.replace(/\/$/, '')}/auth/google/callback`,
             grant_type: 'authorization_code',
         }),
     });
 
-    const tokens = await tokenResponse.json();
+    // Log the raw response for debugging
+    const rawText = await tokenResponse.text();
+    console.log("DEBUG: Token Exchange Response:", rawText);
+
+    let tokens;
+    try {
+        tokens = JSON.parse(rawText);
+    } catch (e) {
+        throw new Error("Failed to parse token response: " + rawText);
+    }
 
     if (tokens.error) {
-        throw new Error(tokens.error_description || 'Failed to exchange code');
+        throw new Error(tokens.error_description || 'Failed to exchange code: ' + JSON.stringify(tokens));
     }
+
+    console.log("DEBUG: Token exchange success. Creating root folder...");
 
     // Create RentMate folder in user's Drive
     const folderResponse = await fetch('https://www.googleapis.com/drive/v3/files', {
@@ -86,6 +158,7 @@ async function exchangeCodeForTokens(userId: string, code: string, supabase: any
     });
 
     const folder = await folderResponse.json();
+    console.log("DEBUG: Folder created:", folder.id);
 
     // Store refresh token (encrypted) and folder ID
     await supabase
@@ -214,6 +287,24 @@ async function createFolder(userId: string, name: string, parentId: string, supa
 
     return new Response(
         JSON.stringify({ folderId: folder.id, name: folder.name }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+}
+
+async function findFolder(userId: string, name: string, parentId: string, supabase: any) {
+    const accessToken = await getAccessToken(userId, supabase);
+
+    const q = `'${parentId}' in parents and name = '${name}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`;
+    const response = await fetch(
+        `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name)`,
+        { headers: { 'Authorization': `Bearer ${accessToken}` } }
+    );
+
+    const data = await response.json();
+    const folder = data.files?.[0];
+
+    return new Response(
+        JSON.stringify({ folderId: folder?.id || null }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 }

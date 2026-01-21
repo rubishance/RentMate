@@ -1,4 +1,4 @@
-import { FileText, Plus } from 'lucide-react';
+import { ContractsIcon as FileText, PlusIcon as Plus } from '../components/icons/NavIcons';
 
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
@@ -181,58 +181,60 @@ export function Contracts() {
     }
 
     return (
-        <div className="space-y-6 px-4 pt-6">
+        <div className="space-y-6 px-2 pt-6">
             <PageHeader
                 title={t('contractsTitle')}
                 subtitle={t('contractsSubtitle')}
                 action={
                     <button
                         onClick={() => navigate('/contracts/new')}
-                        className="flex items-center gap-2 bg-brand-navy text-white px-5 py-2.5 rounded-xl hover:bg-brand-navy-light transition-all shadow-lg shadow-brand-navy/20 active:scale-95"
+                        className="bg-black dark:bg-white text-white dark:text-black p-3.5 rounded-2xl hover:opacity-90 transition-all shadow-xl active:scale-95 flex items-center justify-center"
+                        aria-label={t('newContract')}
                     >
-                        <Plus className="w-5 h-5" />
-                        <span className="hidden sm:inline">{t('newContract')}</span>
+                        <Plus className="w-6 h-6" />
                     </button>
                 }
             />
 
             {/* Tabs - Scrollable on mobile */}
-            <div className="flex border-b border-gray-200 gap-6 overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0 md:pb-0 scrollbar-hide">
+            <div className="flex border-b border-gray-100 dark:border-neutral-800 gap-8 overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0 md:pb-0 scrollbar-hide">
                 <button
                     onClick={() => setFilter('all')}
-                    className={`pb-2.5 text-sm font-semibold transition-all relative whitespace-nowrap ${filter === 'all' ? 'text-brand-navy' : 'text-gray-400 hover:text-gray-600'}`}
+                    className={`pb-4 text-[10px] font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${filter === 'all' ? 'text-black dark:text-white' : 'text-gray-400 dark:text-gray-500 hover:text-black dark:hover:text-white'}`}
                 >
                     {t('all')}
                     {filter === 'all' && (
-                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-navy rounded-t-full shadow-[0_-2px_6px_rgba(15,23,42,0.2)]" />
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black dark:bg-white rounded-t-full" />
                     )}
                 </button>
                 <button
                     onClick={() => setFilter('active')}
-                    className={`pb-2.5 text-sm font-semibold transition-all relative whitespace-nowrap ${filter === 'active' ? 'text-brand-navy' : 'text-gray-400 hover:text-gray-600'}`}
+                    className={`pb-4 text-[10px] font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${filter === 'active' ? 'text-black dark:text-white' : 'text-gray-400 dark:text-gray-500 hover:text-black dark:hover:text-white'}`}
                 >
                     {t('active')}
                     {filter === 'active' && (
-                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-navy rounded-t-full shadow-[0_-2px_6px_rgba(15,23,42,0.2)]" />
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black dark:bg-white rounded-t-full" />
                     )}
                 </button>
                 <button
                     onClick={() => setFilter('archived')}
-                    className={`pb-2.5 text-sm font-semibold transition-all relative whitespace-nowrap ${filter === 'archived' ? 'text-brand-navy' : 'text-gray-400 hover:text-gray-600'}`}
+                    className={`pb-4 text-[10px] font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${filter === 'archived' ? 'text-black dark:text-white' : 'text-gray-400 dark:text-gray-500 hover:text-black dark:hover:text-white'}`}
                 >
                     {t('archived')}
                     {filter === 'archived' && (
-                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-navy rounded-t-full shadow-[0_-2px_6px_rgba(15,23,42,0.2)]" />
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black dark:bg-white rounded-t-full" />
                     )}
                 </button>
             </div>
 
             {/* List */}
             {filteredContracts.length === 0 ? (
-                <div className="text-center py-12 bg-secondary/10 rounded-xl">
-                    <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-50" />
-                    <h3 className="text-lg font-medium">{t('noActiveContracts')}</h3>
-                    <p className="text-muted-foreground text-sm">
+                <div className="text-center py-16 bg-gray-50 dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 rounded-[2rem]">
+                    <div className="w-20 h-20 bg-white dark:bg-neutral-800 rounded-[1.5rem] flex items-center justify-center mx-auto mb-6 shadow-sm">
+                        <FileText className="w-10 h-10 text-gray-400 dark:text-gray-500" />
+                    </div>
+                    <h3 className="text-xl font-black text-black dark:text-white mb-2">{t('noActiveContracts')}</h3>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm max-w-xs mx-auto font-medium">
                         {t('noActiveContractsDesc')}
                     </p>
                 </div>
@@ -245,18 +247,18 @@ export function Contracts() {
                             hoverEffect
                             className="bg-white/60 p-4 flex flex-col md:flex-row items-start md:items-center justify-between cursor-pointer group gap-4 md:gap-0"
                         >
-                            <div className="flex items-center gap-4 w-full md:w-auto">
-                                <div className="w-12 h-12 rounded-xl bg-blue-50 text-brand-navy flex items-center justify-center border border-blue-100 shadow-sm group-hover:scale-105 transition-transform shrink-0">
-                                    <FileText className="w-6 h-6" />
+                            <div className="flex items-center gap-6 w-full md:w-auto">
+                                <div className="w-14 h-14 rounded-[1.25rem] bg-gray-50 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center border border-gray-100 dark:border-neutral-700 shadow-sm group-hover:scale-105 transition-transform shrink-0">
+                                    <FileText className="w-7 h-7" />
                                 </div>
-                                <div className="min-w-0 flex-1">
-                                    <h3 className="font-bold text-gray-900 text-lg truncate">
+                                <div className="min-w-0 flex-1 space-y-1">
+                                    <h3 className="font-black text-black dark:text-white text-lg tracking-tight truncate">
                                         {contract.properties?.city}{contract.properties?.address ? `, ${contract.properties.address}` : ''}
                                     </h3>
-                                    <div className="text-sm text-gray-500 flex flex-wrap gap-2 items-center mt-1">
-                                        <span className="font-medium text-brand-navy truncate max-w-[150px]">{contract.tenants?.name}</span>
-                                        <span className="hidden md:inline w-1 h-1 rounded-full bg-gray-300"></span>
-                                        <span className="font-mono text-xs whitespace-nowrap">
+                                    <div className="flex flex-wrap gap-2 items-center">
+                                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400 truncate max-w-[150px]">{contract.tenants?.name}</span>
+                                        <span className="hidden md:inline w-1 h-1 rounded-full bg-gray-300 dark:bg-neutral-700"></span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500">
                                             {(() => {
                                                 const start = new Date(contract.start_date);
                                                 const end = new Date(contract.end_date);
@@ -277,14 +279,14 @@ export function Contracts() {
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex items-center justify-between w-full md:w-auto gap-4 pl-16 md:pl-0">
-                                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border shadow-sm ${contract.status === 'active'
-                                    ? 'bg-green-50 text-green-700 border-green-100'
-                                    : 'bg-gray-100 text-gray-500 border-gray-200'
+                            <div className="flex items-center justify-between w-full md:w-auto gap-6 pl-20 md:pl-0">
+                                <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border shadow-sm ${contract.status === 'active'
+                                    ? 'bg-green-50 dark:bg-green-900/20 text-green-600 border-green-100 dark:border-green-900/40'
+                                    : 'bg-gray-50 dark:bg-neutral-800 text-gray-400 dark:text-gray-500 border-gray-100 dark:border-neutral-700'
                                     }`}>
                                     {contract.status === 'active' ? t('active') : t('archived')}
                                 </span>
-                                <div onClick={(e) => e.stopPropagation()} className="border-l pl-3 border-gray-100">
+                                <div onClick={(e) => e.stopPropagation()} className="border-l pl-4 border-gray-100 dark:border-neutral-800">
                                     <ActionMenu
                                         align={lang === 'he' ? 'left' : 'right'}
                                         onView={() => handleView(contract)}

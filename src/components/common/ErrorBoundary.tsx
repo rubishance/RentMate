@@ -31,12 +31,12 @@ export class ErrorBoundary extends Component<Props, State> {
             }
 
             return (
-                <div className="flex h-screen w-full flex-col items-center justify-center bg-gray-50 p-4 text-center dark:bg-gray-900">
+                <div className="flex h-screen w-full flex-col items-center justify-center bg-secondary p-4 text-center dark:bg-foreground">
                     <div className="mb-4 rounded-full bg-red-100 p-3 text-red-600 dark:bg-red-900/20 dark:text-red-400">
                         <AlertTriangle className="h-8 w-8" />
                     </div>
-                    <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">Something went wrong</h2>
-                    <p className="mb-6 max-w-md text-gray-600 dark:text-gray-400">
+                    <h2 className="mb-2 text-2xl font-bold text-foreground dark:text-white">Something went wrong</h2>
+                    <p className="mb-6 max-w-md text-muted-foreground dark:text-muted-foreground">
                         An unexpected error occurred. Please try reloading the page.
                     </p>
                     <button

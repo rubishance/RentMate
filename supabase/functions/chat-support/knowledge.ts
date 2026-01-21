@@ -1,0 +1,480 @@
+// Comprehensive Knowledge Base for RentMate Chatbot
+// Auto-generated from knowledge markdown files
+
+export const KNOWLEDGE_HE = `
+# התחלת עבודה עם RentMate
+
+## הרשמה והתחברות
+- להירשם, לחץ על "התחברות" ואז "הרשמה"
+- הזן כתובת אימייל וסיסמה חזקה
+- אמת את האימייל שלך דרך הקישור שנשלח אליך
+
+## הוספת נכס ראשון
+1. לחץ על "נכסים" בתפריט התחתון
+2. לחץ על כפתור "+" או "הוסף נכס"
+3. מלא את פרטי הנכס: כתובת מלאה, סוג נכס, גודל במ"ר, מספר חדרים
+4. העלה תמונות ומסמכים (אופציונלי)
+5. שמור
+
+## יצירת חוזה שכירות
+1. לך ל"חוזים" → "חוזה חדש"
+2. בחר נכס מהרשימה
+3. הוסף פרטי שוכר (שם, טלפון, אימייל)
+4. הגדר: תאריך התחלה וסיום, שכירות חודשית, הצמדה למדד, תדירות תשלום
+5. סרוק או העלה חוזה חתום (אופציונלי)
+
+## סריקת חוזה באמצעות AI
+- במקום למלא ידנית, לחץ על "סרוק חוזה"
+- צלם או העלה תמונה של החוזה
+- המערכת תחלץ אוטומטית: שמות, תאריכים, סכומים, כתובות
+- בדוק ואשר את הפרטים
+
+## תכונות מרכזיות
+- **לוח בקרה**: סקירה כללית של כל הנכסים והחוזים
+- **תשלומים**: מעקב אחר תשלומי שכירות ותזכורות אוטומטיות
+- **מחשבון הצמדה**: חישוב עליית שכירות לפי מדד המחירים לצרכן
+- **מסמכים**: אחסון מאובטח של שטרות בעלות, תיעוד תחזוקה וקבלות
+- **דיווחים**: ייצוא דוחות למס הכנסה
+
+---
+
+# תכונות RentMate
+
+## הצמדה למדד (CPI Linkage)
+**מה זה?** הצמדה למדד היא מנגנון שמעדכן את שכר הדירה בהתאם לעליית מדד המחירים לצרכן.
+
+**איך זה עובד ב-RentMate:**
+- המערכת מושכת אוטומטית את נתוני המדד מהלשכה המרכזית לסטטיסטיקה
+- מחשבת את אחוז השינוי בין תאריך הבסיס לתאריך הנוכחי
+- מציגה את השכירות המעודכנת
+- יוצרת הודעות תשלום מוכנות לשליחה לשוכר
+
+**סוגי מדדים נתמכים:** מדד המחירים לצרכן (כללי), מדד יסוד, מדד ממוצע
+
+## מרכז מסמכים (Documents Hub)
+**מה אפשר לאחסן:** שטרות בעלות, חוזי שכירות, תיעוד תחזוקה, ביטוחים, היתרי בנייה, חשבונות ארנונה/מים/חשמל
+
+**אבטחה:** כל הקבצים מוצפנים, גישה רק למשתמש המורשה, גיבוי אוטומטי
+
+## ניהול שוכרים
+- **פרופילים מלאים**: שם, טלפון, אימייל, תעודת זהות
+- **היסטוריית תשלומים**: מעקב אחר תשלומים שבוצעו ותשלומים חסרים
+- **תקשורת**: שליחת הודעות ישירות דרך WhatsApp או SMS
+
+## מחשבון מתקדם
+**מצבי חישוב:** 1) חישוב פשוט (הצמדה בסיסית), 2) התחשבנות מלאה (חובות, תשלומי יתר), 3) פירוט חודשי
+
+**תכונות:** ייצוא ל-PDF, שליחה ישירה לשוכר, שמירת היסטוריה
+
+## תזכורות ותשלומים
+- **תזכורות אוטומטיות**: 7 ימים לפני מועד תשלום
+- **התראות SMS/Email**: ניתן להגדיר בהגדרות
+- **מעקב סטטוס**: שולם / ממתין / באיחור
+
+## דוחות ומיסוי
+- **דוח שנתי**: סיכום הכנסות והוצאות
+- **ייצוא לרו"ח**: פורמט Excel תואם
+- **מסלול 10%**: חישוב אוטומטי של מס לפי מסלול 10%
+- **ניכוי הוצאות**: תיעוד הוצאות מוכרות
+
+---
+
+# פתרון בעיות נפוצות
+
+## בעיות התחברות
+**לא מצליח להתחבר:** ודא שהאינטרנט פעיל, רענן את הדף (F5), נקה מטמון, נסה דפדפן אחר
+
+**שכחתי סיסמה:** לחץ על "שכחתי סיסמה", הזן אימייל, בדוק תיבת דואר (גם ספאם), לחץ על קישור איפוס
+
+## מצב דמו (Demo Mode)
+**מה זה?** מצב דמו מופעל כאשר המערכת לא מחוברת למסד הנתונים.
+**איך לצאת:** המערכת צריכה להיות מוגדרת עם מפתחות Supabase. אם אתה משתמש רגיל - צור קשר עם התמיכה.
+
+## בעיות העלאת קבצים
+**הקובץ לא עולה:** גודל מקסימלי 5MB, פורמטים נתמכים: PDF/JPG/PNG/DOCX, ודא חיבור אינטרנט יציב
+
+## בעיות סריקת חוזה (AI Scanner)
+**הסריקה לא מזהה טקסט:** ודא שהתמונה ברורה, הימנע מצללים, צלם ישר (לא בזווית)
+**פרטים לא נכונים:** בדוק ותקן ידנית - המערכת משתמשת ב-AI עם דיוק של ~95%
+
+## בעיות חישוב הצמדה
+**המדד לא מתעדכן:** המערכת מושכת נתונים מהלמ"ס פעם ביום. אם המדד החדש פורסם היום - המתן עד מחר.
+
+## בעיות ביצועים
+**האפליקציה איטית:** נקה מטמון דפדפן, סגור טאבים אחרים, בדוק מהירות אינטרנט
+
+## צור קשר עם תמיכה
+- **אימייל**: support@rentmate.co.il
+- **WhatsApp**: 050-123-4567
+- **שעות פעילות**: א'-ה' 9:00-18:00
+- **זמן תגובה**: עד 24 שעות
+
+---
+
+# שאלות משפטיות ופיננסיות - ישראל
+
+## מיסוי על הכנסה משכירות
+
+### מסלול 10% (מסלול קבוע)
+**מי זכאי?** בעלי דירות שמשכירים לדיור, הכנסה שנתית מעל ~67,000 ₪ (2024)
+
+**יתרונות:** מס קבוע של 10% על ההכנסה ברוטו, לא צריך לדווח על הוצאות, פשוט וברור
+
+**חסרונות:** לא ניתן לנכות הוצאות (ארנונה, ועד בית, תיקונים), לא משתלם אם יש הוצאות גבוהות
+
+### מסלול רגיל (מדרגות מס)
+**איך זה עובד:** מדווחים על הכנסה ברוטו, מנכים הוצאות מוכרות, משלמים מס לפי מדרגות (עד 50%)
+
+**הוצאות מוכרות לניכוי:** ארנונה, ועד בית, ביטוח מבנה, תיקונים ושיפוצים (עד 15%), פחת על הנכס (2% לשנה), ריבית על משכנתא
+
+**מתי כדאי:** כאשר ההוצאות גבוהות (מעל 30% מההכנסה), כאשר יש משכנתא עם ריבית גבוהה
+
+## פינוי דיירים
+
+### מה מותר?
+- **תביעה לפינוי מושכר**: הליך משפטי חוקי דרך בית משפט
+- **הסכם פינוי בהסכמה**: משא ומתן עם השוכר
+- **פיצוי פינוי**: תשלום לשוכר תמורת עזיבה מרצון
+
+### מה אסור?
+- ❌ **החלפת מנעולים** ללא צו בית משפט
+- ❌ **ניתוק מים/חשמל** כדי לאלץ פינוי
+- ❌ **איומים** או הפחדה
+- ❌ **כניסה לדירה** ללא הסכמת השוכר
+
+**עונש על פינוי בלתי חוקי:** קנס כספי, תביעה אזרחית לפיצויים, אפשרות למאסר (במקרים קיצוניים)
+
+### תהליך פינוי חוקי:
+1. **התראה בכתב**: שלח התראה 30 יום מראש
+2. **הגשת תביעה**: הגש תביעה לפינוי מושכר בבית משפט
+3. **דיון**: השתתף בדיונים
+4. **צו פינוי**: קבל צו מבית המשפט
+5. **הוצאה לפועל**: רק ההוצל"פ יכול לפנות פיזית
+
+## ערבויות לשכירות
+
+### סוגי ערבויות נפוצות:
+1. **ערבות בנקאית**: הבנק ערב לתשלום (הכי מאובטח)
+2. **המחאות**: צ'קים פוסט-דייטד
+3. **שטר חוב**: מסמך משפטי מחייב
+4. **פיקדון מזומן**: נדיר, לא מומלץ
+
+### כמה ערבות סטנדרטית?
+- **רגיל**: 1-2 חודשי שכירות
+- **שוכר חדש בארץ**: 3-6 חודשים
+- **שוכר עם היסטוריה טובה**: 1 חודש
+
+### מתי אפשר לממש ערבות?
+- אי תשלום שכירות
+- נזקים לנכס מעבר לבלאי סביר
+- הפרת חוזה (למשל: השכרת משנה ללא אישור)
+
+**חשוב:** יש לתעד נזקים עם תמונות ולשלוח התראה לשוכר לפני מימוש.
+
+## זכויות ושוכרים
+
+### זכויות השוכר:
+- ✅ דירה ראויה למגורים (תקינה, בטוחה)
+- ✅ פרטיות (בעל הבית לא יכול להיכנס בלי אישור)
+- ✅ תיקונים דחופים על חשבון בעל הבית
+- ✅ הודעה מוקדמת על עליית שכירות (30 יום)
+
+### חובות השוכר:
+- ❌ לשלם שכירות בזמן
+- ❌ לשמור על הנכס במצב טוב
+- ❌ לא לבצע שינויים מבניים ללא אישור
+- ❌ לא להשכיר משנה ללא אישור
+
+### זכויות בעל הבית:
+- ✅ לקבל שכירות בזמן
+- ✅ לבדוק את הנכס (בתיאום מראש)
+- ✅ לעדכן שכירות לפי הסכם (הצמדה למדד)
+- ✅ לדרוש ערבות
+
+### חובות בעל הבית:
+- ❌ לתקן תקלות מבניות (אינסטלציה, חשמל, מבנה)
+- ❌ לשמור על פרטיות השוכר
+- ❌ לא להעלות שכירות שלא לפי החוזה
+- ❌ לתת הודעה מוקדמת על כניסה לנכס
+
+## חוזה שכירות
+
+### מה חייב להיות בחוזה?
+- שמות המשכיר והשוכר
+- כתובת הנכס המדויקת
+- תאריך התחלה וסיום
+- שכירות חודשית
+- תדירות תשלום
+- הצמדה למדד (כן/לא)
+- סוג ערבות וסכום
+- חלוקת תשלומי ארנונה, מים, חשמל
+- תנאים מיוחדים (חיות מחמד, עישון)
+
+### האם חוזה בעל פה תקף?
+- **משפטית**: כן, אבל קשה מאוד להוכיח
+- **מומלץ**: תמיד לחתום על חוזה בכתב
+
+### תוקף החוזה:
+- חוזה רגיל: שנה (ניתן להארכה)
+- חוזה קצר טווח: 3-6 חודשים
+- חוזה ארוך טווח: 2-5 שנים
+
+## ביטוח
+
+### ביטוח מבנה (חובה על בעל הבית):
+- מכסה נזקי אש, מים, רעידת אדמה
+- לא מכסה תכולה של השוכר
+
+### ביטוח תכולה (מומלץ לשוכר):
+- מכסה רכוש אישי של השוכר
+- מומלץ מאוד - בעל הבית לא אחראי לתכולה
+
+### ביטוח אובדן דמי שכירות (אופציונלי):
+- מכסה הפסד הכנסה אם הנכס לא ניתן להשכרה (שריפה, נזק מים)
+- מומלץ לבעלי נכסים יקרים
+`;
+
+export const KNOWLEDGE_EN = `
+# Getting Started with RentMate
+
+## Sign Up and Login
+- To sign up, click "Login" then "Sign Up"
+- Enter your email and a strong password
+- Verify your email through the link sent to you
+
+## Adding Your First Property
+1. Click "Properties" in the bottom menu
+2. Click the "+" button or "Add Property"
+3. Fill in property details: Full address, property type, size in sqm, number of rooms
+4. Upload photos and documents (optional)
+5. Save
+
+## Creating a Rental Contract
+1. Go to "Contracts" → "New Contract"
+2. Select a property from the list
+3. Add tenant details (name, phone, email)
+4. Configure: Start and end dates, monthly rent, CPI linkage, payment frequency
+5. Scan or upload signed contract (optional)
+6. Save
+
+## Scanning Contracts with AI
+- Instead of manual entry, click "Scan Contract"
+- Take a photo or upload an image of the contract
+- The system will automatically extract: names, dates, amounts, addresses
+- Review and confirm the details
+
+## Key Features
+- **Dashboard**: Overview of all properties and contracts
+- **Payments**: Track rent payments and automatic reminders
+- **Linkage Calculator**: Calculate rent increases based on CPI
+- **Documents**: Secure storage of deeds, maintenance records, and receipts
+- **Reports**: Export reports for tax purposes
+
+---
+
+# RentMate Features
+
+## CPI Linkage (Index Linkage)
+**What is it?** CPI linkage is a mechanism that updates rent according to changes in the Consumer Price Index.
+
+**How it works in RentMate:**
+- The system automatically pulls index data from the Central Bureau of Statistics
+- Calculates the percentage change between the base date and current date
+- Displays the updated rent
+- Creates ready-to-send payment messages for tenants
+
+**Supported index types:** Consumer Price Index (general), Base index, Average index
+
+## Documents Hub
+**What you can store:** Property deeds, signed rental contracts, maintenance documentation, insurance policies, building permits, municipal tax/water/electricity bills
+
+**Security:** All files are encrypted, access only for authorized users, automatic backup
+
+## Tenant Management
+- **Full profiles**: Name, phone, email, ID number
+- **Payment history**: Track completed and missing payments
+- **Communication**: Send messages directly via WhatsApp or SMS
+
+## Advanced Calculator
+**Calculation modes:** 1) Simple calculation (basic linkage), 2) Full settlement (debts, overpayments), 3) Monthly breakdown
+
+**Features:** Export to PDF, send directly to tenant, save history
+
+## Reminders and Payments
+- **Automatic reminders**: 7 days before payment due date
+- **SMS/Email alerts**: Configurable in settings
+- **Status tracking**: Paid / Pending / Overdue
+
+## Reports and Taxation
+- **Annual report**: Summary of income and expenses
+- **Export for accountant**: Compatible Excel format
+- **10% track**: Automatic tax calculation for 10% track
+- **Expense deduction**: Documentation of recognized expenses
+
+---
+
+# Common Troubleshooting
+
+## Login Issues
+**Can't log in:** Ensure internet is active, try refreshing the page (F5), clear browser cache, try another browser
+
+**Forgot password:** Click "Forgot Password", enter email, check inbox (also spam folder), click password reset link
+
+## Demo Mode
+**What is it?** Demo mode activates when the system is not connected to the database.
+**How to exit:** The system needs to be configured with Supabase keys. If you're a regular user - contact support.
+
+## File Upload Issues
+**File won't upload:** Maximum size: 5MB, supported formats: PDF/JPG/PNG/DOCX, ensure stable internet connection
+
+## Contract Scanning Issues (AI Scanner)
+**Scan doesn't recognize text:** Ensure image is clear and not blurry, avoid shadows, photograph straight (not at an angle)
+**Incorrect details:** Manually check and correct fields - system uses AI with ~95% accuracy
+
+## Linkage Calculation Issues
+**Index not updating:** System pulls data from CBS once daily. If new index published today - wait until tomorrow.
+
+## Performance Issues
+**App is slow:** Clear browser cache, close other tabs, check internet speed
+
+## Contact Support
+- **Email**: support@rentmate.co.il
+- **WhatsApp**: 050-123-4567
+- **Hours**: Sun-Thu 9:00-18:00
+- **Response time**: Up to 24 hours
+
+---
+
+# Legal and Financial FAQ - Israel
+
+## Rental Income Taxation
+
+### 10% Track (Fixed Rate)
+**Who is eligible?** Property owners renting for residential purposes, annual income above ~₪67,000 (2024)
+
+**Advantages:** Fixed 10% tax on gross income, no need to report expenses, simple and clear
+
+**Disadvantages:** Cannot deduct expenses (municipal tax, building committee, repairs), not worthwhile if you have high expenses
+
+### Regular Track (Progressive Tax Brackets)
+**How it works:** Report gross income, deduct recognized expenses, pay tax according to brackets (up to 50%)
+
+**Recognized deductible expenses:** Municipal tax, building committee fees, building insurance, repairs and renovations (up to 15%), property depreciation (2% per year), mortgage interest
+
+**When is it worthwhile:** When expenses are high (over 30% of income), when there's a mortgage with high interest
+
+## Tenant Eviction
+
+### What is allowed?
+- **Eviction lawsuit**: Legal process through court
+- **Consensual eviction agreement**: Negotiation with tenant
+- **Eviction compensation**: Payment to tenant for voluntary departure
+
+### What is prohibited?
+- ❌ **Changing locks** without court order
+- ❌ **Disconnecting water/electricity** to force eviction
+- ❌ **Threats** or intimidation
+- ❌ **Entering the apartment** without tenant consent
+
+**Penalty for illegal eviction:** Financial fine, civil lawsuit for damages, possible imprisonment (in extreme cases)
+
+### Legal eviction process:
+1. **Written notice**: Send 30-day advance notice
+2. **File lawsuit**: Submit eviction lawsuit to court
+3. **Hearing**: Participate in hearings
+4. **Eviction order**: Receive court order
+5. **Execution**: Only bailiff can physically evict
+
+## Rental Guarantees
+
+### Common types of guarantees:
+1. **Bank guarantee**: Bank guarantees payment (most secure)
+2. **Checks**: Post-dated checks
+3. **Promissory note**: Legally binding document
+4. **Cash deposit**: Rare, not recommended
+
+### How much is standard guarantee?
+- **Regular**: 1-2 months rent
+- **New immigrant tenant**: 3-6 months
+- **Tenant with good history**: 1 month
+
+### When can guarantee be executed?
+- Non-payment of rent
+- Damage to property beyond reasonable wear
+- Contract breach (e.g., subletting without permission)
+
+**Important:** Must document damages with photos and send notice to tenant before execution.
+
+## Landlord and Tenant Rights
+
+### Tenant rights:
+- ✅ Habitable apartment (functional, safe)
+- ✅ Privacy (landlord cannot enter without permission)
+- ✅ Urgent repairs at landlord's expense
+- ✅ Advance notice of rent increase (30 days)
+
+### Tenant obligations:
+- ❌ Pay rent on time
+- ❌ Maintain property in good condition
+- ❌ No structural changes without permission
+- ❌ No subletting without permission
+
+### Landlord rights:
+- ✅ Receive rent on time
+- ✅ Inspect property (with advance coordination)
+- ✅ Update rent per agreement (CPI linkage)
+- ✅ Require guarantee
+
+### Landlord obligations:
+- ❌ Fix structural issues (plumbing, electricity, structure)
+- ❌ Respect tenant privacy
+- ❌ Not raise rent outside contract terms
+- ❌ Give advance notice before entering property
+
+## Rental Contract
+
+### What must be in the contract?
+- Names of landlord and tenant
+- Exact property address
+- Start and end dates
+- Monthly rent
+- Payment frequency
+- CPI linkage (yes/no)
+- Type and amount of guarantee
+- Division of municipal tax, water, electricity payments
+- Special conditions (pets, smoking, etc.)
+
+### Is verbal contract valid?
+- **Legally**: Yes, but very difficult to prove
+- **Recommended**: Always sign written contract
+
+### Contract validity:
+- Regular contract: One year (renewable)
+- Short-term contract: 3-6 months
+- Long-term contract: 2-5 years
+
+## Insurance
+
+### Building insurance (landlord's obligation):
+- Covers fire, water, earthquake damage
+- Does not cover tenant's contents
+
+### Contents insurance (recommended for tenant):
+- Covers tenant's personal property
+- Highly recommended - landlord not responsible for contents
+
+### Loss of rent insurance (optional):
+- Covers income loss if property cannot be rented (fire, water damage)
+- Recommended for expensive property owners
+`;
+
+// Language detection helper
+export function detectLanguage(message: string): 'he' | 'en' {
+    const hebrewPattern = /[\u0590-\u05FF]/;
+    return hebrewPattern.test(message) ? 'he' : 'en';
+}
+
+// Get knowledge base for language
+export function getKnowledgeBase(language: 'he' | 'en' = 'he'): string {
+    return language === 'he' ? KNOWLEDGE_HE : KNOWLEDGE_EN;
+}

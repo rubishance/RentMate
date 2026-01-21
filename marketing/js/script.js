@@ -183,21 +183,36 @@ const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
             entry.target.classList.add('animated');
+            // If it's a staggered container, animate children
+            if (entry.target.classList.contains('reveal-stagger')) {
+                const children = entry.target.querySelectorAll('.bento-item, .step-card, .testimonial-card');
+                children.forEach((child, index) => {
+                    setTimeout(() => {
+                        child.classList.add('animated');
+                    }, index * 100);
+                });
+            }
         }
     });
 }, observerOptions);
 
-// Observe all feature cards
-document.querySelectorAll('.feature-card').forEach(card => {
-    observer.observe(card);
+// Observe elements
+document.addEventListener('DOMContentLoaded', () => {
+    // Reveal single elements
+    document.querySelectorAll('.reveal-on-scroll, .hero-content, .hero-image, .section-title, .section-subtitle').forEach(el => {
+        el.classList.add('reveal-on-scroll');
+        observer.observe(el);
+    });
+
+    // Reveal stagger containers
+    document.querySelectorAll('.bento-grid, .steps-grid, .testimonials-grid').forEach(el => {
+        el.classList.add('reveal-stagger');
+        observer.observe(el);
+    });
 });
 
-// Observe other animated elements
-document.querySelectorAll('.solution-card, .step-card, .testimonial-card, .security-card').forEach(el => {
-    observer.observe(el);
-});
 
-// Parallax Effect (simple version)
+// Parallax Effect (simple scroll version)
 let ticking = false;
 
 window.addEventListener('scroll', () => {
@@ -218,37 +233,33 @@ window.addEventListener('scroll', () => {
     }
 });
 
-// Scroll Reveal Observer
-const revealObserverOptions = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
-};
+// Mouse Parallax Effect
+document.addEventListener('mousemove', (e) => {
+    const { clientX, clientY } = e;
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
 
-const revealObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible');
-            // Stop observing once revealed
-            revealObserver.unobserve(entry.target);
-        }
+    const moveX = (clientX - centerX) / centerX;
+    const moveY = (clientY - centerY) / centerY;
+
+    document.querySelectorAll('.parallax-mouse').forEach(el => {
+        const speed = el.dataset.speed || 0.05;
+        const x = moveX * speed * 100;
+        const y = moveY * speed * 100;
+        el.style.transform = `translate(${x}px, ${y}px)`;
     });
-}, revealObserverOptions);
-
-// Observe all sections and staggered lists
-document.querySelectorAll('section, .reveal-on-scroll, .reveal-stagger').forEach(el => {
-    el.classList.add('reveal-on-scroll'); // Ensure base class is present
-    revealObserver.observe(el);
 });
+
 
 // Typing Effect
 function typeWriter(element, text, speed = 50) {
     let i = 0;
-    element.innerHTML = '';
+    element.textContent = '';
     element.classList.add('typing-effect');
 
     function type() {
         if (i < text.length) {
-            element.innerHTML += text.charAt(i);
+            element.textContent += text.charAt(i);
             i++;
             setTimeout(type, speed);
         } else {

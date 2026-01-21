@@ -4,58 +4,66 @@
 
 @layer base {
   :root {
-    /* Clean Fintech Palette */
+    /* Minimal Black & White Theme - Matching Landing Page */
 
-    /* Background: Soft Off-White */
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11%;
-    /* Deep Navy Text */
+    /* Background: Pure White */
+    --background: 0 0% 100%;
+    /* Foreground: Pure Black */
+    --foreground: 0 0% 0%;
 
     /* Card: Pure White */
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 0 0% 0%;
 
     /* Popover: White */
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 0 0% 0%;
 
-    /* Primary: Royal Blue (#0F172A - converted to HSL) */
-    --primary: 222 47% 11%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary: Black */
+    --primary: 0 0% 0%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Secondary: Ice Blue (Visible, not just gray) */
-    --secondary: 210 70% 96%;
-    --secondary-foreground: 222 47% 11%;
+    /* Secondary: Light Gray */
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 0%;
 
-    /* Muted: Soft Blue-Gray */
-    --muted: 215 30% 90%;
-    --muted-foreground: 215 16% 47%;
+    /* Muted: Soft Gray */
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 40%;
 
-    /* Accent: Ice Blue Selection */
-    --accent: 210 70% 96%;
-    --accent-foreground: 222 47% 11%;
+    /* Accent: Slightly darker gray for hover states */
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 0%;
 
-    /* Destructive: Soft Red */
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Destructive: Dark gray (not red, staying monochrome) */
+    --destructive: 0 0% 20%;
+    --destructive-foreground: 0 0% 100%;
 
-    /* Borders */
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 222 84% 4.9%;
+    /* Borders: Very Light Gray */
+    --border: 0 0% 90%;
+    --input: 0 0% 95%;
+    --ring: 0 0% 0%;
 
-    --radius: 0.5rem;
+    /* Radius: Subtle rounded corners */
+    --radius: 0.75rem;
   }
 
   .dark {
-    /* Optional: Dark Mode Logic (Not focus for Fintech clean look initially but prepared) */
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 11%;
-    --card-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222 47% 11%;
-    /* ... rest inverted */
+    /* Dark mode: Inverted black and white */
+    --background: 0 0% 10%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 5%;
+    --card-foreground: 0 0% 100%;
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 0 0% 15%;
+    --accent-foreground: 0 0% 100%;
+    --border: 0 0% 20%;
+    --ring: 0 0% 100%;
   }
 
   .hide-scrollbar::-webkit-scrollbar {
@@ -87,16 +95,133 @@
     @apply border-border;
   }
 
+  html,
+  body,
+  #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
   body {
     @apply bg-background text-foreground;
-    /* Safe Mobile Fix: Prevent pull-to-refresh which can feel native-app like */
-    overscroll-behavior-y: none;
+    font-family: 'Inter', 'Assistant', sans-serif;
+  }
+
+  /* Language-specific fonts */
+  [dir="rtl"],
+  [lang="he"] {
+    font-family: 'Assistant', 'Rubik', sans-serif;
+  }
+
+  [dir="ltr"],
+  [lang="en"] {
+    font-family: 'Inter', 'Outfit', sans-serif;
+  }
+
+  /* Dark mode text color fixes */
+  .dark h1,
+  .dark h2,
+  .dark h3,
+  .dark h4,
+  .dark h5,
+  .dark h6 {
+    color: white;
+  }
+
+  .dark p {
+    color: theme('colors.gray.100');
+  }
+
+  /* Only apply global dark text colors to elements that don't have explicit color classes */
+  .dark span:not([class*="text-"]):not(.badge) {
+    color: theme('colors.gray.100');
+  }
+
+  /* Selective apply to prevent overriding Tailwind utility classes */
+
+  .dark label:not([style*="color"]) {
+    color: theme('colors.gray.300');
   }
 
   /* Accessibility: High Contrast Focus Indicator */
   :focus-visible {
-    outline: 2px solid theme('colors.blue.600');
+    outline: 2px solid #000;
     outline-offset: 2px;
+  }
+
+  .dark :focus-visible {
+    outline: 2px solid #fff;
+  }
+
+  /* Force gray checkboxes instead of blue */
+  input[type="checkbox"] {
+    accent-color: #6b7280;
+  }
+
+  .dark input[type="checkbox"] {
+    accent-color: #9ca3af;
+  }
+
+  /* Ensure button text is always visible - prevent dark mode override */
+  button span,
+  button div {
+    color: inherit;
+  }
+
+  /* Admin panel labels - force pure black/white color */
+  .admin-label {
+    color: #000000 !important;
+    font-weight: 700 !important;
+  }
+
+  .dark .admin-label {
+    color: #ffffff !important;
+  }
+
+  /* Table row fixes for dark mode */
+  .dark tr:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+  }
+
+  /* Generic text contrast fix for dark mode */
+  .dark .text-muted-foreground {
+    color: #94a3b8 !important;
+    /* Slate 400 */
+  }
+}
+
+/* View Transitions API - Beautiful theme change animation */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.5s;
+}
+
+::view-transition-old(root) {
+  animation-name: fade-out;
+}
+
+::view-transition-new(root) {
+  animation-name: fade-in;
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
   }
 }
 
@@ -174,4 +299,82 @@ main,
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ============================================ */
+/* Modern Minimal UI Utility Classes */
+/* ============================================ */
+
+/* Button Styles */
+.btn-primary {
+  @apply bg-primary hover:bg-primary/90 text-white rounded-lg px-4 py-2 font-medium transition-colors shadow-sm;
+}
+
+.btn-secondary {
+  @apply bg-secondary hover:bg-secondary/80 text-foreground rounded-lg px-4 py-2 font-medium transition-colors;
+}
+
+.btn-danger {
+  @apply bg-red-600 hover:bg-red-700 text-white rounded-lg px-4 py-2 font-medium transition-colors shadow-sm;
+}
+
+.btn-ghost {
+  @apply bg-transparent hover:bg-secondary text-foreground rounded-lg px-4 py-2 font-medium transition-colors;
+}
+
+/* Card Styles */
+.card-standard {
+  @apply bg-card border border-border rounded-xl shadow-sm;
+}
+
+.card-hover {
+  @apply bg-card border border-border rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300;
+}
+
+/* Input Styles */
+.input-standard {
+  @apply bg-white border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors;
+}
+
+.input-error {
+  @apply bg-white border border-red-500 rounded-lg px-3 py-2 text-foreground focus:ring-2 focus:ring-red-500 focus:border-transparent;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  @apply fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm;
+}
+
+.modal-content {
+  @apply bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden;
+}
+
+/* Text Styles */
+.text-heading {
+  @apply text-foreground font-bold;
+}
+
+.text-body {
+  @apply text-foreground;
+}
+
+.text-muted {
+  @apply text-muted-foreground;
+}
+
+/* Badge Styles */
+.badge-primary {
+  @apply bg-primary/10 text-primary px-2 py-1 rounded-lg text-xs font-medium;
+}
+
+.badge-success {
+  @apply bg-emerald-50 text-emerald-600 px-2 py-1 rounded-lg text-xs font-medium;
+}
+
+.badge-warning {
+  @apply bg-amber-50 text-amber-600 px-2 py-1 rounded-lg text-xs font-medium;
+}
+
+.badge-danger {
+  @apply bg-red-50 text-red-600 px-2 py-1 rounded-lg text-xs font-medium;
 }

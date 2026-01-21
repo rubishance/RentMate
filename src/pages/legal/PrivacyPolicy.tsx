@@ -14,7 +14,7 @@ export default function PrivacyPolicy() {
                 <GlassCard className="p-6 md:p-8">
                     <div className="prose prose-slate dark:prose-invert max-w-none space-y-6" dir="rtl">
                         <h2 className="text-2xl font-bold">מדיניות פרטיות</h2>
-                        <p className="text-gray-500">עודכן לאחרונה: {new Date().toLocaleDateString('he-IL')}</p>
+                        <p className="text-muted-foreground">עודכן לאחרונה: {new Date().toLocaleDateString('he-IL')}</p>
 
                         <p>
                             אנו ב-RentMate מכבדים את פרטיותך ומחויבים להגן על המידע האישי שלך.

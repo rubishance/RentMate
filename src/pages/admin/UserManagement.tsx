@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-// import type { UserProfile } from '../../types/database'; // We use custom shape from RPC now
 import { AddUserModal } from '../../components/modals/AddUserModal';
 import {
     MagnifyingGlassIcon,
     FunnelIcon,
     PencilSquareIcon,
     XMarkIcon,
-    KeyIcon
+    KeyIcon,
+    ArrowPathIcon,
+    UserIcon,
+    ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 import { Loader2 } from 'lucide-react';
 
@@ -17,6 +19,7 @@ const UserManagement = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterRole, setFilterRole] = useState<'all' | 'user' | 'admin'>('all');
+    const [error, setError] = useState<string | null>(null);
 
     // Edit Modal State
     const [selectedUser, setSelectedUser] = useState<any | null>(null);
@@ -32,35 +35,22 @@ const UserManagement = () => {
 
     const fetchData = async () => {
         setLoading(true);
+        setError(null);
         try {
             // Fetch Plans
             const { data: plansData } = await supabase.from('subscription_plans').select('*');
             setPlans(plansData || []);
 
-            // Fetch Users with Stats
-            const { data, error } = await supabase.rpc('get_users_with_stats');
+            // Fetch Users with Stats via RPC
+            const { data, error: rpcError } = await supabase.rpc('get_users_with_stats');
 
-            if (error) throw error;
+            if (rpcError) throw rpcError;
 
-            let filteredData = (data as any[]) || [];
-
-            // Apply Filters
-            if (filterRole !== 'all') {
-                filteredData = filteredData.filter(user => user.role === filterRole);
-            }
-
-            // Client-side search
-            if (searchTerm) {
-                const term = searchTerm.toLowerCase();
-                filteredData = filteredData.filter(user =>
-                    user.email?.toLowerCase().includes(term) ||
-                    user.full_name?.toLowerCase().includes(term)
-                );
-            }
-
-            setUsers(filteredData);
-        } catch (error) {
-            console.error('Error fetching users:', error);
+            let fetchedUsers = (data as any[]) || [];
+            setUsers(fetchedUsers);
+        } catch (err: any) {
+            console.error('Error fetching users:', err);
+            setError(err.message || 'Failed to connect to user database. Check permissions.');
         } finally {
             setLoading(false);
         }
@@ -68,12 +58,18 @@ const UserManagement = () => {
 
     useEffect(() => {
         fetchData();
-    }, [filterRole]);
+    }, []);
 
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        fetchData(); // In client-side filter simpler to just trigger re-render or useEffect, but here we reuse
-    };
+    const filteredUsers = users.filter(user => {
+        const term = searchTerm.toLowerCase();
+        const matchesSearch = !searchTerm ||
+            user.email?.toLowerCase().includes(term) ||
+            user.full_name?.toLowerCase().includes(term);
+
+        const matchesRole = filterRole === 'all' || user.role === filterRole;
+
+        return matchesSearch && matchesRole;
+    });
 
     const openEditModal = (user: any) => {
         setSelectedUser(user);
@@ -102,7 +98,7 @@ const UserManagement = () => {
             if (error) throw error;
 
             setModalMessage({ type: 'success', text: 'User updated successfully!' });
-            fetchData(); // Refresh list
+            fetchData();
             setTimeout(() => setIsEditModalOpen(false), 1500);
         } catch (err: any) {
             setModalMessage({ type: 'error', text: err.message });
@@ -156,6 +152,7 @@ const UserManagement = () => {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) throw new Error('No session');
 
+            // Admin generate link edge function
             const res = await fetch('https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/admin-generate-link', {
                 method: 'POST',
                 headers: {
@@ -168,7 +165,6 @@ const UserManagement = () => {
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Failed to generate link');
 
-            // Copy to clipboard
             await navigator.clipboard.writeText(data.url);
             alert(`Login Link generated and copied to clipboard!\n\nUser: ${data.email}\n\nPaste this in an Incognito/Private window to access their account.`);
         } catch (error: any) {
@@ -178,50 +174,73 @@ const UserManagement = () => {
     };
 
     const getPlanName = (planId: string) => {
-        return plans.find(p => p.id === planId)?.name || planId;
+        return plans.find(p => p.id === planId)?.name || (planId === 'free' ? 'Free Forever' : planId);
     };
 
+    if (loading) return (
+        <div className="flex h-96 items-center justify-center">
+            <Loader2 className="w-10 h-10 animate-spin text-brand-600" />
+        </div>
+    );
+
     return (
-        <div className="space-y-6 relative">
+        <div className="space-y-8 pb-20">
             {/* Header */}
-            <div className="sm:flex sm:items-center sm:justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">User Management</h1>
-                    <p className="mt-2 text-sm text-gray-700 dark:text-gray-400">
-                        View and manage system users, plans, and resource limits.
+                    <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+                        <UserIcon className="w-8 h-8 text-brand-600" />
+                        User Management
+                    </h1>
+                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mt-1">
+                        View and manage system users, their subscription plans, and resource limits.
                     </p>
                 </div>
-                <div className="mt-4 sm:mt-0 sm:mr-16 sm:flex-none">
+                <div className="flex items-center gap-3">
                     <button
-                        type="button"
-                        onClick={() => setIsAddModalOpen(true)}
-                        className="inline-flex items-center justify-center rounded-md border border-transparent bg-brand-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 sm:w-auto"
+                        onClick={fetchData}
+                        className="p-2.5 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm"
+                        title="Refresh List"
                     >
-                        Add User
+                        <ArrowPathIcon className="w-6 h-6" />
+                    </button>
+                    <button
+                        onClick={() => setIsAddModalOpen(true)}
+                        className="inline-flex items-center justify-center rounded-xl bg-brand-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-brand-600/20 hover:bg-brand-700 transition-all font-bold"
+                    >
+                        Add New User
                     </button>
                 </div>
             </div>
 
-            {/* Filters & Search */}
-            <div className="flex flex-col sm:flex-row gap-4 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                <form onSubmit={handleSearch} className="flex-1 relative">
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                        <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+            {error && (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-2xl flex items-center gap-3 text-red-700 dark:text-red-400 font-bold text-sm">
+                    <ExclamationTriangleIcon className="w-6 h-6 flex-shrink-0" />
+                    <div>
+                        <p>Database Connectivity Issue</p>
+                        <p className="font-medium opacity-80 mt-1">{error}</p>
                     </div>
+                </div>
+            )}
+
+            {/* Filters & Search */}
+            <div className="flex flex-col sm:flex-row gap-4 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+                <div className="flex-1 relative">
+                    <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <input
                         type="text"
-                        className="block w-full rounded-md border-gray-300 dark:border-gray-600 pr-10 focus:border-brand-500 focus:ring-brand-500 sm:text-sm bg-transparent dark:text-white"
+                        className="block w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 pl-10 pr-4 py-2.5 focus:border-brand-500 focus:ring-brand-500 sm:text-sm font-medium text-gray-900 dark:text-white"
                         placeholder="Search by email or name..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
-                </form>
-                <div className="flex items-center gap-2">
+                </div>
+                <div className="flex items-center gap-3">
                     <FunnelIcon className="h-5 w-5 text-gray-400" />
                     <select
                         value={filterRole}
                         onChange={(e) => setFilterRole(e.target.value as any)}
-                        className="block rounded-md border-gray-300 dark:border-gray-600 focus:border-brand-500 focus:ring-brand-500 sm:text-sm bg-transparent dark:text-white"
+                        className="rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 py-2.5 pl-3 pr-10 text-sm font-bold text-gray-900 dark:text-white focus:border-brand-500 focus:ring-brand-500 capitalize"
                     >
                         <option value="all">All Roles</option>
                         <option value="user">User</option>
@@ -231,212 +250,170 @@ const UserManagement = () => {
             </div>
 
             {/* Table */}
-            <div className="flex flex-col">
-                <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                    <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-                        <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-                            <table className="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-                                <thead className="bg-gray-50 dark:bg-gray-800">
-                                    <tr>
-                                        <th scope="col" className="py-3.5 pl-4 pr-3 text-right text-sm font-semibold text-gray-900 dark:text-gray-200 sm:pl-6">Name / Email</th>
-                                        <th scope="col" className="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-gray-200">Role</th>
-                                        <th scope="col" className="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-gray-200">Plan</th>
-                                        <th scope="col" className="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-gray-200">Stats (Prop/Ten/Con)</th>
-                                        <th scope="col" className="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-gray-200">Status</th>
-                                        <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6"><span className="sr-only">Actions</span></th>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-right" dir="rtl">
+                        <thead className="bg-gray-50 dark:bg-gray-900/50">
+                            <tr>
+                                <th scope="col" className="py-4 pl-4 pr-6 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Name / Email</th>
+                                <th scope="col" className="px-3 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Role</th>
+                                <th scope="col" className="px-3 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Plan</th>
+                                <th scope="col" className="px-3 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Stats</th>
+                                <th scope="col" className="px-3 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
+                                <th scope="col" className="relative py-4 pr-3 pl-6"><span className="sr-only">Actions</span></th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                            {filteredUsers.length === 0 ? (
+                                <tr>
+                                    <td colSpan={6} className="py-20 text-center text-sm font-bold text-gray-400 uppercase tracking-widest">No users found.</td>
+                                </tr>
+                            ) : (
+                                filteredUsers.map((user) => (
+                                    <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                        <td className="whitespace-nowrap py-5 pr-6 pl-3 text-sm">
+                                            <div className="flex items-center gap-4">
+                                                <div className="h-10 w-10 flex-shrink-0 rounded-xl bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-800 flex items-center justify-center text-brand-600 dark:text-brand-400 font-black">
+                                                    {user.full_name?.charAt(0) || user.email?.charAt(0).toUpperCase()}
+                                                </div>
+                                                <div>
+                                                    <div className="font-bold text-gray-900 dark:text-white">{user.full_name || 'No Name'}</div>
+                                                    <div className="text-xs font-medium text-gray-500 tracking-tight">{user.email}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-5">
+                                            <span className={`inline-flex rounded-lg px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ${user.role === 'admin' ? 'bg-purple-50 text-purple-700 border border-purple-100 dark:bg-purple-900/20 dark:border-purple-800' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'}`}>
+                                                {user.role}
+                                            </span>
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-5">
+                                            <span className="inline-flex rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-800 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest">
+                                                {getPlanName(user.plan_id)}
+                                            </span>
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-5 text-right">
+                                            <div className="flex justify-end gap-x-4 text-[10px] font-bold">
+                                                <div className="text-gray-500 uppercase tracking-tighter">Assets: <span className="text-gray-900 dark:text-white">{user.properties_count}</span></div>
+                                                <div className="text-gray-500 uppercase tracking-tighter">Contracts: <span className="text-gray-900 dark:text-white">{user.contracts_count}</span></div>
+                                                <div className="text-gray-500 uppercase tracking-tighter">Tenants: <span className="text-gray-900 dark:text-white">{user.tenants_count}</span></div>
+                                            </div>
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-5">
+                                            {user.subscription_status === 'active' ? (
+                                                <span className="inline-flex rounded-lg bg-emerald-50 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest text-emerald-700 border border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800">Active</span>
+                                            ) : (
+                                                <span className="inline-flex rounded-lg bg-red-50 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest text-red-700 border border-red-100 dark:bg-red-900/20 dark:border-red-800">{user.subscription_status || 'Suspended'}</span>
+                                            )}
+                                        </td>
+                                        <td className="whitespace-nowrap py-5 pl-6 pr-3 text-left">
+                                            <div className="flex items-center justify-end gap-1">
+                                                <button onClick={() => openEditModal(user)} className="p-2 text-gray-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 rounded-xl transition-all" title="Edit User">
+                                                    <PencilSquareIcon className="w-5 h-5" />
+                                                </button>
+                                                <button onClick={() => handleImpersonate(user)} className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-xl transition-all" title="Login as User">
+                                                    <KeyIcon className="w-5 h-5" />
+                                                </button>
+                                            </div>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
-                                    {loading ? (
-                                        <tr>
-                                            <td colSpan={6} className="py-12 text-center text-sm text-gray-500">
-                                                <div className="flex justify-center"><Loader2 className="animate-spin h-6 w-6" /></div>
-                                            </td>
-                                        </tr>
-                                    ) : users.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={6} className="py-4 text-center text-sm text-gray-500">No users found.</td>
-                                        </tr>
-                                    ) : (
-                                        users.map((user) => (
-                                            <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                                                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
-                                                    <div className="flex items-center">
-                                                        <div className="h-10 w-10 flex-shrink-0 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 font-bold select-none">
-                                                            {user.full_name?.charAt(0) || user.email?.charAt(0).toUpperCase()}
-                                                        </div>
-                                                        <div className="mr-4">
-                                                            <div className="font-medium text-gray-900 dark:text-white">{user.full_name || 'No Name'}</div>
-                                                            <div className="text-gray-500 dark:text-gray-400">{user.email}</div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                                                    <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}`}>
-                                                        {user.role}
-                                                    </span>
-                                                </td>
-                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                                                    <span className="inline-flex rounded-full bg-blue-100 text-blue-800 px-2 text-xs font-semibold">
-                                                        {getPlanName(user.plan_id)}
-                                                    </span>
-                                                </td>
-                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                                                    <div className="flex flex-col text-xs space-y-1">
-                                                        <span className="flex justify-between w-24"><span>Properties:</span> <span className="font-bold">{user.properties_count}</span></span>
-                                                        <span className="flex justify-between w-24"><span>Tenants:</span> <span className="font-bold">{user.tenants_count}</span></span>
-                                                        <span className="flex justify-between w-24"><span>Contracts:</span> <span className="font-bold">{user.contracts_count}</span></span>
-                                                    </div>
-                                                </td>
-                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                                                    {user.subscription_status === 'active' ? (
-                                                        <span className="inline-flex rounded-full bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800">Active</span>
-                                                    ) : (
-                                                        <span className="inline-flex rounded-full bg-red-100 px-2 text-xs font-semibold leading-5 text-red-800">{user.subscription_status || 'Suspended'}</span>
-                                                    )}
-                                                </td>
-                                                <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-left text-sm font-medium sm:pr-6">
-                                                    <button onClick={() => openEditModal(user)} className="text-brand-600 hover:text-brand-900 dark:hover:text-brand-400 ml-4 flex items-center gap-1">
-                                                        <PencilSquareIcon className="w-4 h-4" /> Edit
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleImpersonate(user)}
-                                                        className="text-amber-600 hover:text-amber-900 dark:hover:text-amber-400 ml-4 flex items-center gap-1"
-                                                        title="Generate Login Link"
-                                                    >
-                                                        <KeyIcon className="w-4 h-4" /> Login
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
             {/* EDIT MODAL */}
             {isEditModalOpen && selectedUser && (
-                <div className="fixed inset-0 z-[100] overflow-y-auto">
-                    <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-                        {/* Backdrop */}
-                        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => setIsEditModalOpen(false)}></div>
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+                    <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm transition-opacity" onClick={() => setIsEditModalOpen(false)}></div>
 
-                        {/* Modal Panel */}
-                        <div className="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6" dir="ltr">
-                            <div className="absolute top-0 right-0 hidden pt-4 pr-4 sm:block">
-                                <button type="button" className="rounded-md bg-white dark:bg-gray-800 text-gray-400 hover:text-gray-500 focus:outline-none" onClick={() => setIsEditModalOpen(false)}>
-                                    <XMarkIcon className="h-6 w-6" aria-hidden="true" />
-                                </button>
+                    <div className="relative w-full max-w-lg transform overflow-hidden rounded-3xl bg-white dark:bg-gray-800 p-8 shadow-2xl transition-all border border-gray-100 dark:border-gray-700" dir="ltr">
+                        <button onClick={() => setIsEditModalOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                            <XMarkIcon className="h-6 w-6" />
+                        </button>
+
+                        <div className="mb-8">
+                            <h3 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">
+                                Edit Account
+                            </h3>
+                            <p className="text-sm font-medium text-gray-500 mt-1">{selectedUser.email}</p>
+                        </div>
+
+                        {modalMessage && (
+                            <div className={`mb-6 p-4 rounded-2xl text-sm font-bold ${modalMessage.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-700 border border-red-100'}`}>
+                                {modalMessage.text}
                             </div>
+                        )}
 
-                            <div className="sm:flex sm:items-start">
-                                <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                                    <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white">
-                                        Edit User: {selectedUser.email}
-                                    </h3>
-
-                                    {modalMessage && (
-                                        <div className={`mt-2 p-2 rounded text-sm ${modalMessage.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                            {modalMessage.text}
-                                        </div>
-                                    )}
-
-                                    <div className="mt-4 space-y-4">
-                                        {/* Status */}
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
-                                            <select
-                                                value={editStatus}
-                                                onChange={(e) => setEditStatus(e.target.value)}
-                                                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm dark:bg-gray-700 dark:text-white"
-                                            >
-                                                <option value="active">Active</option>
-                                                <option value="suspended">Suspended</option>
-                                            </select>
-                                        </div>
-
-                                        {/* Role */}
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Role</label>
-                                            <select
-                                                value={editRole}
-                                                onChange={(e) => setEditRole(e.target.value)}
-                                                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm dark:bg-gray-700 dark:text-white"
-                                            >
-                                                <option value="user">User</option>
-                                                <option value="admin">Admin</option>
-                                            </select>
-                                        </div>
-
-                                        {/* Plan */}
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Subscription Plan</label>
-                                            <select
-                                                value={editPlan}
-                                                onChange={(e) => setEditPlan(e.target.value)}
-                                                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm dark:bg-gray-700 dark:text-white"
-                                            >
-                                                {plans.map(p => (
-                                                    <option key={p.id} value={p.id}>{p.name} ({p.max_properties} Props, {p.max_tenants} Tenants)</option>
-                                                ))}
-                                            </select>
-                                        </div>
-
-                                        {/* Statistics Display */}
-                                        <div className="bg-gray-50 dark:bg-gray-900/50 p-3 rounded-md text-sm border border-gray-200 dark:border-gray-700">
-                                            <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-2">Current Usage</h4>
-                                            <div className="grid grid-cols-2 gap-2 text-gray-600 dark:text-gray-400">
-                                                <div>Properties: <span className="font-mono text-gray-900 dark:text-white">{selectedUser.properties_count}</span></div>
-                                                <div>Tenants: <span className="font-mono text-gray-900 dark:text-white">{selectedUser.tenants_count}</span></div>
-                                                <div>Contracts: <span className="font-mono text-gray-900 dark:text-white">{selectedUser.contracts_count}</span></div>
-                                            </div>
-                                        </div>
-
-                                        {/* Actions */}
-                                        <div className="pt-4 border-t border-gray-200 dark:border-gray-700 bg-red-50 dark:bg-red-900/10 p-4 rounded-md">
-                                            <h4 className="text-sm font-medium text-red-900 dark:text-red-300 mb-2">Danger Zone</h4>
-                                            <div className="space-y-2">
-                                                <button
-                                                    type="button"
-                                                    onClick={handleResetPassword}
-                                                    disabled={actionLoading}
-                                                    className="inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 sm:text-sm disabled:opacity-50"
-                                                >
-                                                    {actionLoading ? 'Processing...' : 'Send Password Reset Email'}
-                                                </button>
-
-                                                <button
-                                                    type="button"
-                                                    onClick={handleDeleteUser}
-                                                    disabled={actionLoading}
-                                                    className="inline-flex w-full justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:text-sm disabled:opacity-50"
-                                                >
-                                                    {actionLoading ? 'Deleting...' : 'Delete User & All Data'}
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Account Role</label>
+                                    <select
+                                        value={editRole}
+                                        onChange={(e) => setEditRole(e.target.value)}
+                                        className="block w-full rounded-2xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 text-sm font-bold text-gray-900 dark:text-white focus:border-brand-500 focus:ring-brand-500"
+                                    >
+                                        <option value="user">Standard User</option>
+                                        <option value="manager">Manager</option>
+                                        <option value="admin">Administrator</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Account Status</label>
+                                    <select
+                                        value={editStatus}
+                                        onChange={(e) => setEditStatus(e.target.value)}
+                                        className="block w-full rounded-2xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 text-sm font-bold text-gray-900 dark:text-white focus:border-brand-500 focus:ring-brand-500"
+                                    >
+                                        <option value="active">Active</option>
+                                        <option value="suspended">Suspended / Banned</option>
+                                    </select>
                                 </div>
                             </div>
 
-                            <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                            <div>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Subscription Plan</label>
+                                <select
+                                    value={editPlan}
+                                    onChange={(e) => setEditPlan(e.target.value)}
+                                    className="block w-full rounded-2xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 text-sm font-bold text-gray-900 dark:text-white focus:border-brand-500 focus:ring-brand-500"
+                                >
+                                    {plans.map(p => (
+                                        <option key={p.id} value={p.id}>{p.name} ({p.max_properties === -1 ? 'Unlimited' : p.max_properties} Assets)</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-700">
+                                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Danger Zone</h4>
+                                <div className="space-y-3">
+                                    <button
+                                        onClick={handleResetPassword}
+                                        disabled={actionLoading}
+                                        className="w-full flex items-center justify-center rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-2.5 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 transition-all disabled:opacity-50 shadow-sm"
+                                    >
+                                        Send Password Reset Email
+                                    </button>
+                                    <button
+                                        onClick={handleDeleteUser}
+                                        disabled={actionLoading}
+                                        className="w-full flex items-center justify-center rounded-xl bg-red-50 text-red-600 border border-red-100 px-4 py-2.5 text-xs font-bold hover:bg-red-100 transition-all disabled:opacity-50"
+                                    >
+                                        {actionLoading ? 'Deleting...' : 'Delete User & All Linked Data'}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-3 mt-8">
                                 <button
-                                    type="button"
                                     onClick={handleSaveChanges}
                                     disabled={actionLoading}
-                                    className="inline-flex w-full justify-center rounded-md border border-transparent bg-brand-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+                                    className="flex-1 flex items-center justify-center rounded-2xl bg-brand-600 px-6 py-4 text-sm font-black text-white shadow-xl shadow-brand-600/20 hover:bg-brand-700 transition-all disabled:opacity-50 uppercase tracking-widest"
                                 >
                                     {actionLoading ? 'Saving...' : 'Save Changes'}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setIsEditModalOpen(false)}
-                                    className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white dark:bg-gray-700 dark:text-gray-200 px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 sm:mt-0 sm:w-auto sm:text-sm"
-                                >
-                                    Cancel
                                 </button>
                             </div>
                         </div>

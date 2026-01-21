@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../../lib/supabase';
 
 const AuthGuard = () => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -9,6 +9,11 @@ const AuthGuard = () => {
         let mounted = true;
 
         const checkAuth = async () => {
+            if (!isSupabaseConfigured) {
+                if (mounted) setIsAuthenticated(true);
+                return;
+            }
+
             try {
                 // 1. Initial Session Check with refresh
                 const { data: { session }, error: sessionError } = await supabase.auth.getSession();

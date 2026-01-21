@@ -3,176 +3,83 @@ import { useUserPreferences } from '../contexts/UserPreferencesContext';
 export type TranslationKeys =
     // Common
     | 'appName'
-    | 'loading'
+    | 'loading' | 'loading_female'
     | 'error'
-    | 'save'
+    | 'save' | 'save_female'
     | 'cancel'
-    | 'edit'
-    | 'delete'
-    | 'add'
+    | 'edit' | 'edit_female'
+    | 'delete' | 'delete_female'
+    | 'add' | 'add_female'
     | 'search'
     | 'actions'
-    | 'view'
-    | 'deleteConfirmation'
-    | 'clear'
-    | 'generate'
-    | 'share'
-    | 'print'
-    | 'reset'
-    | 'download'
-    | 'remove'
+    | 'view' | 'view_female'
+    | 'deleteConfirmation' | 'deleteConfirmation_female'
+    | 'clear' | 'clear_female'
+    | 'generate' | 'generate_female'
+    | 'share' | 'share_female'
+    | 'print' | 'print_female'
+    | 'reset' | 'reset_female'
+    | 'download' | 'download_female'
+    | 'remove' | 'remove_female'
     | 'yes'
     | 'no'
+    | 'close'
+    | 'saving' | 'saving_female'
+    | 'adding' | 'adding_female'
+    | 'saveChanges' | 'saveChanges_female'
+    | 'addItem' | 'addItem_female'
+    | 'name'
+    | 'address'
+    | 'city'
+    | 'status'
+    | 'amount'
+    | 'date'
+    | 'period'
+    | 'from'
+    | 'to'
+    | 'to'
+    | 'month'
+    | 'note'
+    | 'vendorName'
+    | 'optionalFolderNote'
+    | 'eg_january_bill'
+    | 'eg_electric_corp'
 
-    // Properties Page
-    | 'addProperty'
-    | 'noAssetsFound'
-    | 'addFirstPropertyDesc'
-    | 'createFirstAsset'
-    | 'occupied'
-    | 'vacant'
-    | 'sqm'
-    | 'monthlyRentLabel'
-    | 'tenantsToBeDisconnected'
-    | 'unnamed'
-    | 'unknown'
-    | 'addProperty_female'
-    | 'addFirstPropertyDesc_female'
-    | 'createFirstAsset_female'
-    | 'archiveAndCalculate_female'
-
-    // Tenants Page
-    | 'myTenants'
-    | 'manageTenantsDesc'
-    | 'addTenant'
-    | 'addTenant_female'
-    | 'noTenantsFound'
-    | 'addFirstTenantDesc'
-    | 'addFirstTenantDesc_female'
-    | 'addNewTenant'
-    | 'addNewTenant_female'
-    | 'deleteTenantError'
-    | 'noPhone'
-
-    // Contracts Page
-    | 'contractsTitle'
-    | 'contractsSubtitle'
-    | 'all'
-    | 'active'
-    | 'archived'
-    | 'tenantDisconnectedWarning'
-    | 'paymentsDeletedWarning'
-    | 'deleteContractTitle'
-    | 'deleteContractMessage'
-    | 'deleteContractMessage_female'
-    | 'calculationFailed'
-    | 'deletePaymentConfirmation'
-    | 'deleteExpectedConfirmation'
-    | 'calculateLinkageAndMore'
-
-    // Settings Page
+    // Auth & Navigation
+    | 'login'
+    | 'logout' | 'logout_female'
+    | 'welcomeBack' | 'welcomeBack_female'
+    | 'welcome' | 'welcome_female'
+    | 'dashboardTitle'
+    | 'properties' | 'properties_female'
+    | 'tenants' | 'tenants_female'
+    | 'contracts' | 'contracts_female'
+    | 'payments'
+    | 'calculator'
     | 'settings'
-    | 'manageAccount'
-    | 'managePersonalInfo'
-    | 'managePersonalInfo_female'
-    | 'configureAlerts'
-    | 'configureAlerts_female'
-    | 'controlData'
-    | 'controlData_female'
-    | 'contactSupportDesc'
-    | 'contactSupportDesc_female'
-    | 'logout_female'
-    | 'accessibilityStatement'
-    | 'languageLocalization'
-    | 'language'
-    | 'genderForHebrew'
-    | 'support'
-    | 'contactSupport'
-    | 'typeMessageHere'
-    | 'orEmailDirectly'
-    | 'appVersion'
     | 'profile'
     | 'notifications'
+    | 'notificationsTitle'
+    | 'markAllRead'
+    | 'noNotifications'
+    | 'enablePush'
     | 'privacySecurity'
-
-    // Legacy / Migrated from i18n
-    | 'sendMessage'
-    | 'sending'
-    | 'messageSent'
-    | 'unspecified'
-    | 'gender'
-    | 'male'
-    | 'female'
-    | 'currentPlan'
-    | 'freeForever'
-    | 'greatForGettingStarted'
-    | 'upgradeToPro'
-    | 'unlockMoreLimits'
-    | 'noActiveContracts'
-    | 'noActiveContractsDesc'
-    | 'unlockPotential'
-    | 'unlockPotential_female'
-    | 'requestUpgrade'
-    | 'requestUpgrade_female'
-    | 'maybeLater'
-    | 'requestSent'
-    | 'requestSentDesc'
-    | 'requestSentDesc_female'
-    | 'gotItThanks'
-    | 'feature'
-    | 'free'
-    | 'pro'
-    | 'unlimited'
-    | 'prioritySupport'
-    | 'dataExport'
-    | 'contactSupport_female'
-    | 'typeMessageHere_female'
-    | 'orEmailDirectly_female'
-    | 'upgradeToPro_female'
-    | 'unlockMoreLimits_female'
-    | 'properties_female'
-    | 'tenants_female'
-    | 'contracts_female'
-
-    // Female Variants
-    | 'loading_female'
-    | 'save_female'
-    | 'edit_female'
-    | 'delete_female'
-    | 'add_female'
-    | 'view_female'
-    | 'deleteConfirmation_female'
-    | 'clear_female'
-    | 'generate_female'
-    | 'share_female'
-    | 'print_female'
-    | 'reset_female'
-    | 'download_female'
-    | 'remove_female'
-    | 'welcomeBack_female'
-    | 'welcome_female'
-    | 'addPayment_female'
-    | 'selectBaseDate_female'
-    | 'selectTargetDate_female'
-    | 'chooseProperty_female'
-    | 'selectProperty_female'
-    | 'chooseTenant_female'
-    | 'addPeriod_female'
-    | 'addStep_female'
-    | 'addGuarantor_female'
-    | 'createContract_female'
-    | 'addItem_female'
-    | 'addFirstPayment_female'
-    | 'generateList_female'
-
-    // Auth
-    | 'login'
-    | 'logout'
-    | 'welcomeBack'
-    | 'welcome'
+    | 'cookieConsentTitle'
+    | 'cookieConsentDesc'
+    | 'cookieConsentPrivacyPolicy'
+    | 'cookieConsentClose'
+    | 'cookieConsentAccept'
+    | 'manageAccount'
+    | 'managePersonalInfo' | 'managePersonalInfo_female'
+    | 'configureAlerts' | 'configureAlerts_female'
+    | 'controlData' | 'controlData_female'
+    | 'agreeToTerms'
+    | 'marketingConsent'
+    | 'legalDocs'
+    | 'privacyPolicy'
+    | 'termsOfService'
 
     // Dashboard
-    | 'dashboardTitle'
     | 'totalProperties'
     | 'activeTenants'
     | 'monthlyRevenue'
@@ -184,7 +91,7 @@ export type TranslationKeys =
     | 'pending'
     | 'contractEnded'
     | 'contractEndedDesc'
-    | 'archiveAndCalculate'
+    | 'archiveAndCalculate' | 'archiveAndCalculate_female'
     | 'welcomeMessage'
     | 'allLooksQuiet'
 
@@ -198,17 +105,10 @@ export type TranslationKeys =
     | 'last12Months'
     | 'vsLastYear'
 
-    // Entities
-    | 'properties'
-    | 'tenants'
-    | 'contracts'
-    | 'payments'
-    | 'calculator'
-
     // Payments Page
     | 'paymentsTitle'
     | 'trackFuturePayments'
-    | 'addPayment'
+    | 'addPayment' | 'addPayment_female'
     | 'monthlyExpected'
     | 'pendingCollection'
     | 'upcomingPayments'
@@ -216,7 +116,7 @@ export type TranslationKeys =
     | 'totalExpected'
     | 'totalActual'
     | 'collectionRate'
-    | 'exp' // Expected
+    | 'exp'
     | 'base'
     | 'last3Months'
     | 'last6Months'
@@ -230,16 +130,15 @@ export type TranslationKeys =
     | 'method'
     | 'allMethods'
     | 'transfer'
+    | 'bankTransfer'
     | 'bit'
     | 'paybox'
     | 'check'
     | 'cash'
     | 'creditCard'
     | 'other'
-    | 'period'
-    | 'from'
-    | 'to'
 
+    // Calculator & Reconciliation
     | 'indexCalculator'
     | 'calculatorDesc'
     | 'standardCalculation'
@@ -252,9 +151,10 @@ export type TranslationKeys =
     | 'usdRate'
     | 'eurRate'
     | 'baseDate'
+    | 'baseIndexDate'
     | 'targetDate'
-    | 'selectBaseDate'
-    | 'selectTargetDate'
+    | 'selectBaseDate' | 'selectBaseDate_female'
+    | 'selectTargetDate' | 'selectTargetDate_female'
     | 'advancedOptions'
     | 'partialLinkage'
     | 'partialLinkageHelp'
@@ -267,133 +167,32 @@ export type TranslationKeys =
     | 'percentage'
     | 'formula'
     | 'shareResult'
-
-    // Calculator - Reconciliation
     | 'viewingSharedCalculation'
     | 'sharedCalculationDesc'
     | 'loadFromContract'
     | 'selectContractPlaceholder'
     | 'expectedBaseRent'
     | 'clearList'
-    | 'generateList'
+    | 'generateList' | 'generateList_female'
     | 'dateAndBaseAmount'
     | 'actualPayments'
     | 'paymentDate'
     | 'paidAmount'
     | 'reconciliationTable'
-    | 'month'
     | 'expected'
     | 'index'
     | 'due'
     | 'gap'
     | 'overdue'
     | 'revenue'
-    // Wizard Keys
-    | 'newContract'
-    | 'newContractDesc'
-    | 'hideContract'
-    | 'showContract'
-    | 'aiScanTitle'
-    | 'aiScanDesc'
-    | 'scanNow'
-    | 'contractScannedSuccess'
-    | 'propertyDetails'
-    | 'chooseProperty'
-    | 'selectProperty'
-    | 'newProperty'
-    | 'existingProperty'
-    | 'propertyType'
-    | 'apartment'
-    | 'penthouse'
-    | 'gardenApartment'
-    | 'house'
-    | 'other'
-    | 'rooms'
-    | 'sizeSqm'
-    | 'parking'
-    | 'storage'
-    | 'propertyImage'
-    | 'uploadFile'
-    | 'importFromGoogle'
-    | 'clickToUpload'
-    | 'uploading'
-    | 'tenantDetails'
-    | 'newTenant'
-    | 'existingTenant'
-    | 'chooseTenant'
-    | 'fullName'
-    | 'idNumber'
-    | 'phone'
-    | 'email'
-    | 'signingDate'
-    | 'optionPeriods'
-    | 'addPeriod'
-    | 'noOptionPeriods'
-    | 'months'
-    | 'years'
-    | 'optionRent'
-    | 'startDate'
-    | 'endDate'
-    | 'contractDuration'
-    | 'paymentDetails'
-    | 'monthlyRent'
-    | 'rentSteps'
-    | 'addStep'
-    | 'stepDate'
-    | 'newAmount'
-    | 'linkageAndIndices'
-    | 'notLinked'
-    | 'linkedToCpi'
-    | 'linkedToUsd'
-    | 'indexType'
-    | 'baseDate'
-    | 'ceiling'
-    | 'floorIndex'
-    | 'paymentFrequency'
-    | 'bimonthly'
-    | 'monthly'
-    | 'paymentMethod'
-    | 'bankTransfer'
-    | 'check'
-    | 'cash'
-    | 'bit'
-    | 'paybox'
-    | 'creditCard'
-    | 'securityAndAppendices'
-    | 'securityDeposit'
-    | 'guarantors'
-    | 'guarantorName'
-    | 'addGuarantor'
-    | 'noGuarantors'
-    | 'pets'
-    | 'allowed'
-    | 'forbidden'
-    | 'contractFile'
-    | 'savePreferences'
-    | 'saveToCloud'
-    | 'saveToDevice'
-    | 'summary'
-    | 'createContract'
-    | 'stepTenantProperty'
-    | 'stepPeriods'
-    | 'stepPayments'
-    | 'stepSecurity'
-    | 'stepSummary'
-    | 'limitReached'
-    | 'limitReachedDesc'
-    | 'backToContracts'
-
-    | 'addItem'
-    | 'totalBase'
-    | 'globalBaseRentHelp'
-    | 'baseIndexDate'
-    | 'noPaymentsListed'
-    | 'addFirstPayment'
-    | 'manualPaymentHelp'
-    | 'periodStart'
-    | 'periodEnd'
-    | 'advancedLinkageOptions'
-    | 'indexSubType'
+    | 'calculateBackPay'
+    | 'advancedReconciliationOptions'
+    | 'paymentReconciliationResults'
+    | 'totalBackPayOwed'
+    | 'monthlyBreakdown'
+    | 'shouldPay'
+    | 'paid'
+    | 'diff'
     | 'knownIndex'
     | 'inRespectOf'
     | 'knownIndexHelp'
@@ -408,52 +207,408 @@ export type TranslationKeys =
     | 'indexBaseMinHelp'
     | 'maxIncrease'
     | 'capCeiling'
-    | 'calculateBackPay'
-    | 'paymentReconciliationResults'
-    | 'totalBackPayOwed'
+    | 'periodStart'
+    | 'periodEnd'
     | 'avgUnderpayment'
     | 'percentageOwed'
-    | 'monthlyBreakdown'
-    | 'shouldPay'
-    | 'paid'
-    | 'diff'
+    | 'globalBaseRentHelp'
+    | 'noPaymentsListed'
+    | 'addFirstPayment' | 'addFirstPayment_female'
+    | 'manualPaymentHelp'
+    | 'totalBase'
+    | 'runningBalance'
+    | 'linkageCalculationMethod'
+    | 'advancedLinkageOptions'
+    | 'indexSubType'
 
-    // Table Headers
-    | 'name'
-    | 'address'
-    | 'city'
-    | 'status'
-    | 'amount'
-    | 'date'
+    // Property & Contract Wizards
+    | 'newContract'
+    | 'newContractDesc'
+    | 'hideContract'
+    | 'showContract'
+    | 'aiScanTitle'
+    | 'aiScanDesc'
+    | 'scanNow'
+    | 'contractScannedSuccess'
+    | 'propertyDetails'
+    | 'chooseProperty' | 'chooseProperty_female'
+    | 'selectProperty' | 'selectProperty_female'
+    | 'newProperty'
+    | 'existingProperty'
+    | 'propertyType'
+    | 'apartment'
+    | 'penthouse'
+    | 'gardenApartment'
+    | 'house'
+    | 'rooms'
+    | 'sizeSqm'
+    | 'parking'
+    | 'storage'
+    | 'propertyImage'
+    | 'uploadFile'
+    | 'importFromGoogle'
+    | 'clickToUpload'
+    | 'uploading'
+    | 'tenantDetails'
+    | 'newTenant'
+    | 'existingTenant'
+    | 'chooseTenant' | 'chooseTenant_female'
+    | 'fullName'
+    | 'idNumber'
+    | 'phone'
+    | 'email'
+    | 'signingDate'
+    | 'optionPeriods'
+    | 'addPeriod' | 'addPeriod_female'
+    | 'noOptionPeriods'
+    | 'months'
+    | 'years'
+    | 'optionRent'
+    | 'startDate'
+    | 'endDate'
+    | 'contractDuration'
+    | 'paymentDetails'
+    | 'monthlyRent'
+    | 'rentSteps'
+    | 'addStep' | 'addStep_female'
+    | 'stepDate'
+    | 'newAmount'
+    | 'linkageAndIndices'
+    | 'notLinked'
+    | 'linkedToCpi'
+    | 'linkedToUsd'
+    | 'indexType'
+    | 'ceiling'
+    | 'floorIndex'
+    | 'paymentFrequency'
+    | 'bimonthly'
+    | 'monthly'
+    | 'paymentMethod'
+    | 'securityAndAppendices'
+    | 'securityDeposit'
+    | 'guarantors'
+    | 'guarantorName'
+    | 'addGuarantor' | 'addGuarantor_female'
+    | 'noGuarantors'
+    | 'pets'
+    | 'allowed'
+    | 'forbidden'
+    | 'contractFile'
+    | 'savePreferences'
+    | 'saveToCloud'
+    | 'saveToDevice'
+    | 'summary'
+    | 'createContract' | 'createContract_female'
+    | 'stepTenantProperty'
+    | 'stepPeriods'
+    | 'stepPayments'
+    | 'stepSecurity'
+    | 'stepSummary'
+    | 'limitReached'
+    | 'limitReachedDesc'
+    | 'backToContracts'
 
-    // Empty States
-    | 'noActiveContracts'
-    | 'noActiveContractsDesc'
-
-    // AddTenantModal
+    // Tenant Modal & Limits
     | 'viewTenantDetails'
-    | 'editTenant'
-    | 'viewContactInfo'
-    | 'updateTenantDetails'
-    | 'addTenantToContacts'
+    | 'editTenant' | 'editTenant_female'
+    | 'viewContactInfo' | 'viewContactInfo_female'
+    | 'updateTenantDetails' | 'updateTenantDetails_female'
+    | 'addTenantToContacts' | 'addTenantToContacts_female'
     | 'assignedAsset'
     | 'noAssetsFoundDesc'
-    | 'goToAssetsPage'
+    | 'goToAssetsPage' | 'goToAssetsPage_female'
     | 'planLimitReached'
     | 'planLimitReachedTenantDesc'
-    | 'saving'
-    | 'adding'
-    | 'saveChanges'
-    | 'close'
-    | 'editTenant_female'
-    | 'viewContactInfo_female'
-    | 'updateTenantDetails_female'
-    | 'addTenantToContacts_female'
-    | 'goToAssetsPage_female'
-    | 'saving_female'
-    | 'adding_female'
-    | 'saveChanges_female'
-    | 'runningBalance';
+    | 'planName'
+
+    // Subscription & Plan
+    | 'unlockPotential' | 'unlockPotential_female'
+    | 'requestUpgrade' | 'requestUpgrade_female'
+    | 'maybeLater'
+    | 'requestSent'
+    | 'requestSentDesc' | 'requestSentDesc_female'
+    | 'gotItThanks'
+    | 'feature'
+    | 'free'
+    | 'pro'
+    | 'unlimited'
+    | 'prioritySupport'
+    | 'dataExport'
+    | 'contactSupport' | 'contactSupport_female'
+    | 'contactSupportDesc' | 'contactSupportDesc_female'
+    | 'typeMessageHere' | 'typeMessageHere_female'
+    | 'orEmailDirectly' | 'orEmailDirectly_female'
+    | 'upgradeToPro' | 'upgradeToPro_female'
+    | 'unlockMoreLimits' | 'unlockMoreLimits_female'
+    | 'currentPlan'
+    | 'freeForever'
+    | 'greatForGettingStarted'
+
+    // Misc
+    | 'noActiveContracts'
+    | 'noActiveContractsDesc'
+    | 'sendMessage' | 'sendMessage_female'
+    | 'sending'
+    | 'messageSent'
+    | 'unspecified'
+    | 'gender'
+    | 'male'
+    | 'female'
+    | 'appVersion'
+    | 'accessibilityStatement'
+    | 'languageLocalization'
+    | 'language'
+    | 'genderForHebrew'
+    | 'support'
+    | 'calculationFailed'
+    | 'deletePaymentConfirmation'
+    | 'deleteExpectedConfirmation'
+    | 'calculateLinkageAndMore'
+    | 'tenantDisconnectedWarning'
+    | 'paymentsDeletedWarning'
+    | 'deleteContractTitle'
+    | 'deleteContractMessage' | 'deleteContractMessage_female'
+    | 'noPhone'
+    | 'deleteTenantError'
+    | 'addNewTenant' | 'addNewTenant_female'
+    | 'myTenants'
+    | 'manageTenantsDesc'
+    | 'addProperty' | 'addProperty_female'
+    | 'noAssetsFound'
+    | 'addFirstPropertyDesc' | 'addFirstPropertyDesc_female'
+    | 'createFirstAsset' | 'createFirstAsset_female'
+    | 'occupied'
+    | 'vacant'
+    | 'sqm'
+    | 'monthlyRentLabel'
+    | 'tenantsToBeDisconnected'
+    | 'unnamed'
+    | 'unknown'
+    | 'addTenant' | 'addTenant_female'
+    | 'addFirstTenantDesc' | 'addFirstTenantDesc_female'
+    | 'noTenantsFound'
+    | 'contractsTitle'
+    | 'contractsSubtitle'
+    | 'all'
+    | 'active'
+    | 'archived'
+    | 'storageUsage'
+    | 'totalStorage'
+    | 'usedStorage'
+    | 'mediaStorage'
+    | 'utilitiesStorage'
+    | 'maintenanceStorage'
+    | 'documentsStorage'
+    | 'storageLimitReached'
+    | 'storageLimitReachedDesc'
+    | 'storageNearLimit'
+    | 'storageNearLimitDesc'
+    | 'maxStorage'
+    | 'maxMediaStorage'
+    | 'maxUtilitiesStorage'
+    | 'maxMaintenanceStorage'
+    | 'maxDocumentsStorage'
+    | 'maxFileSize'
+    | 'unlimitedSymbol'
+    | 'photosAndVideos'
+    | 'mediaGalleryDesc'
+    | 'uploadingMedia'
+    | 'uploadMedia' | 'uploadMedia_female'
+    | 'noMediaYet'
+    | 'uploadMediaDesc'
+    | 'deleteFileConfirmation' | 'deleteFileConfirmation_female'
+    | 'utilityWater'
+    | 'utilityElectric'
+    | 'utilityGas'
+    | 'utilityMunicipality'
+    | 'utilityManagement'
+    | 'totalBills'
+    | 'unpaid'
+    | 'uploadNewBill' | 'uploadNewBill_female'
+    | 'uploadBillTitle'
+    | 'billDate'
+    | 'markAsPaid' | 'markAsPaid_female'
+    | 'markAsUnpaid' | 'markAsUnpaid_female'
+    | 'deleteBillConfirmation' | 'deleteBillConfirmation_female'
+    | 'noBillsYet'
+    | 'maintenanceDesc'
+    | 'totalSpent'
+    | 'addMaintenanceRecord' | 'addMaintenanceRecord_female'
+    | 'newMaintenanceRecord'
+    | 'fileInvoiceReceipt'
+    | 'description'
+    | 'issueType'
+    | 'selectType'
+    | 'vendor'
+    | 'cost'
+    | 'noMaintenanceRecordsYet'
+    | 'deleteMaintenanceRecordConfirmation' | 'deleteMaintenanceRecordConfirmation_female'
+    | 'issuePlumbing'
+    | 'issueElectrical'
+    | 'issueHVAC'
+    | 'issuePainting'
+    | 'issueCarpentry'
+    | 'issueAppliance'
+    | 'issueOther'
+    | 'addRecord' | 'addRecord_female'
+    | 'documentsDesc'
+    | 'documentsCount'
+    | 'uploadDocument' | 'uploadDocument_female'
+    | 'newDocument'
+    | 'category'
+    | 'catInsurance'
+    | 'catWarranty'
+    | 'catLegal'
+    | 'catInvoice'
+    | 'catReceipt'
+    | 'catOther'
+    | 'noDocumentsYet'
+    | 'deleteDocumentConfirmation' | 'deleteDocumentConfirmation_female'
+    | 'storageQuotaExceeded'
+    | 'storageLow'
+    | 'storageQuotaExceededDesc'
+    | 'storageLowDesc'
+    | 'breakdownMedia'
+    | 'breakdownUtilities'
+    | 'breakdownMaintenance'
+    | 'breakdownDocuments'
+    | 'newAlbum'
+    | 'createAlbumDesc'
+    | 'albumName'
+    | 'optionalAlbumNote'
+    | 'mediaFiles'
+    | 'saveAlbum'
+    | 'deleteAlbum'
+    | 'unsortedMedia'
+    | 'createNewAlbum'
+    | 'createBillFolder'
+    | 'newBillEntry'
+    | 'subject'
+    | 'saveBillEntry'
+    | 'createMaintenanceFolder'
+    | 'newMaintenanceEntry'
+    | 'saveRecord'
+    | 'clickToUploadDrag'
+    | 'unsortedRecords'
+    | 'unsortedFiles'
+    | 'deleteFolder'
+    | 'averageMonthly' | 'averageMonthly_female'
+    | 'trend' | 'trend_female'
+    | 'increasing' | 'increasing_female'
+    | 'decreasing' | 'decreasing_female' | 'decreasing_male'
+    | 'stable' | 'stable_female' | 'stable_male'
+    | 'enablePush'
+    | 'knowledgeBase'
+    | 'lp_new_scan'
+    | 'lp_hero_title_1'
+    | 'lp_hero_title_2'
+    | 'lp_hero_subtitle'
+    | 'lp_btn_start'
+    | 'lp_btn_features'
+    | 'lp_trusted_by'
+    | 'lp_annual_yield'
+    | 'lp_nav_features'
+    | 'lp_nav_pricing'
+    | 'lp_nav_about'
+    | 'lp_footer_product'
+    | 'lp_footer_company'
+    | 'lp_footer_legal'
+    | 'lp_all_rights'
+    | 'lp_systems_operational'
+    | 'lp_fe_features_title'
+    | 'lp_fe_features_subtitle'
+    | 'lp_fe_cpi_title'
+    | 'lp_fe_cpi_desc'
+    | 'lp_fe_ai_title'
+    | 'lp_fe_ai_desc'
+    | 'lp_fe_tenants_title'
+    | 'lp_fe_alerts_title'
+    | 'lp_fe_alerts_desc'
+    | 'lp_cta_title_1'
+    | 'lp_cta_title_2'
+    | 'lp_cta_subtitle'
+    | 'lp_cta_btn'
+    | 'auth_welcome_back'
+    | 'auth_join'
+    | 'auth_email'
+    | 'auth_password'
+    | 'auth_forgot_password'
+    | 'auth_sign_in'
+    | 'auth_create_account'
+    | 'auth_or_continue'
+    | 'auth_no_account'
+    | 'auth_have_account'
+    | 'auth_check_inbox'
+    | 'auth_confirmation_sent'
+    | 'user_generic'
+    | 'passwordRequirementLength'
+    | 'passwordRequirementUppercase'
+    | 'passwordRequirementLowercase'
+    | 'passwordRequirementNumber'
+    | 'passwordRequirementSpecial'
+    | 'passwordStrength'
+    | 'passwordWeak'
+    | 'passwordMedium'
+    | 'passwordStrong'
+    | 'passwordVeryStrong'
+    | 'shared_calc_loading'
+    | 'shared_calc_not_found'
+    | 'shared_calc_not_found_desc'
+    | 'shared_calc_go_home'
+    | 'shared_calc_official_reconciliation'
+    | 'shared_calc_official_index'
+    | 'shared_calc_updated_rent'
+    | 'shared_calc_base_rent'
+    | 'shared_calc_linkage'
+    | 'shared_calc_base_date'
+    | 'shared_calc_target_date'
+    | 'shared_calc_index_change'
+    | 'shared_calc_amount_added'
+    | 'shared_calc_total_backpay'
+    | 'shared_calc_months'
+    | 'shared_calc_avg_month'
+    | 'shared_calc_monthly_breakdown'
+    | 'shared_calc_month'
+    | 'shared_calc_diff'
+    | 'shared_calc_disclaimer'
+    | 'shared_calc_cta'
+    | 'shared_calc_cta_link'
+    | 'pricing_title'
+    | 'pricing_subtitle'
+    | 'pricing_monthly'
+    | 'pricing_yearly'
+    | 'pricing_save'
+    | 'pricing_most_popular'
+    | 'pricing_per_month'
+    | 'pricing_billed_yearly'
+    | 'pricing_properties'
+    | 'pricing_tenants'
+    | 'pricing_data_export'
+    | 'pricing_priority_support'
+    | 'pricing_api_access'
+    | 'pricing_get_started'
+    | 'pricing_contact_sales'
+    | 'pricing_custom_plan'
+    | 'settings_help_resources'
+    | 'settings_admin_dashboard'
+    | 'settings_admin_desc'
+    | 'settings_sent'
+    | 'lp_footer_careers'
+    | 'lp_footer_contact'
+    | 'lp_footer_security'
+    | 'contractExpiringSoon'
+    | 'viewContract'
+    | 'paymentOverdue'
+    | 'paymentDueSoon'
+    | 'viewPayments'
+    | 'scanningBill'
+    | 'autoFilledByGemini'
+    | 'organizeDocsTitle'
+    | 'organizeDocsDesc'
+    | 'uploadNow'
+    | 'smartRecommendation'
+    | 'knowledgeBaseDesc'
+    ;
 
 export const translations: Record<string, Record<TranslationKeys, string>> = {
     he: {
@@ -478,6 +633,17 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         remove: 'הסר',
         yes: 'כן',
         no: 'לא',
+        cookieConsentTitle: 'אנחנו משתמשים ב-Cookies',
+        cookieConsentDesc: 'אנחנו משתמשים בקבצי עוגיות כדי לשפר את החוויה שלך באתר. בגלישה באתר הנך מסכים ל',
+        cookieConsentPrivacyPolicy: 'מדיניות הפרטיות',
+        cookieConsentClose: 'סגור',
+        cookieConsentAccept: 'אני מסכים',
+
+        agreeToTerms: 'אני מסכים ל{terms} ול{privacy}',
+        marketingConsent: 'אני מאשר קבלת עדכונים ותכנים שיווקיים (ניתן לבטל בכל עת)',
+        legalDocs: 'מסמכים משפטיים',
+        privacyPolicy: 'מדיניות פרטיות',
+        termsOfService: 'תנאי שימוש',
 
         login: 'התחברות',
         logout: 'התנתק',
@@ -686,7 +852,6 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         limitReachedDesc: 'הגעת למכסת החוזים המקסימלית בתוכנית שלך.',
         backToContracts: 'חזור לחוזים',
         addItem: 'הוסף פריט',
-        totalBase: 'סה"כ בסיס',
         globalBaseRentHelp: 'שכירות בסיס חודשית קבועה (אלא אם הוגדר אחרת ברשימה).',
         baseIndexDate: 'תאריך בסיס למדד',
         noPaymentsListed: 'אין תשלומים ברשימה.',
@@ -694,8 +859,18 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         manualPaymentHelp: 'הזן את הסכום החודשי הממוצע ששולם.',
         periodStart: 'תחילת תקופה',
         periodEnd: 'סיום תקופה',
-        advancedLinkageOptions: 'אפשרויות הצמדה מתקדמות',
-        indexSubType: 'שיטת חישוב מדד',
+        vendorName: 'שם הספק',
+        optionalFolderNote: 'הערה אופציונלית',
+        eg_january_bill: 'לדוגמה: חשבון ינואר',
+        eg_electric_corp: 'לדוגמה: חברת החשמל',
+        calculateBackPay: 'חשב הפרשים',
+        advancedReconciliationOptions: 'אפשרויות התחשבנות מתקדמות',
+        paymentReconciliationResults: 'תוצאות התחשבנות',
+        totalBackPayOwed: 'סה"כ חוב הפרשים',
+        monthlyBreakdown: 'פירוט התחשבנות',
+        shouldPay: 'היה צריך לשלם',
+        paid: 'שולם',
+        diff: 'הפרש',
         knownIndex: 'מדד ידוע',
         inRespectOf: 'מדד בגין',
         knownIndexHelp: '"מדד ידוע": פורסם לפני התשלום. "מדד בגין": לפי חודש התשלום.',
@@ -706,19 +881,15 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         annually: 'שנתי',
         updateFrequencyHelp: 'כל כמה זמן מתעדכנת ההצמדה.',
         linkageFloor: 'רצפת הצמדה',
-        indexBaseMin: 'בסיס המדד הוא המינימום',
+        indexBaseMin: 'מדד בסיס הוא מדד מינימום',
         indexBaseMinHelp: 'אם מסומן, השכירות לא תרד מתחת לבסיס גם במדד שלילי.',
         maxIncrease: 'תקרת עלייה (%)',
         capCeiling: 'תקרה לעלייה',
-        calculateBackPay: 'חשב הפרשים',
-        paymentReconciliationResults: 'תוצאות התחשבנות',
-        totalBackPayOwed: 'סה"כ חוב הפרשים',
+        linkageCalculationMethod: 'שיטת חישוב הצמדה',
+        advancedLinkageOptions: 'אפשרויות הצמדה מתקדמות',
+        indexSubType: 'סוג מדד הצמדה',
         avgUnderpayment: 'ממוצע חסר לחודש',
         percentageOwed: 'אחוז חוב',
-        monthlyBreakdown: 'פירוט חודשי',
-        shouldPay: 'היה צריך לשלם',
-        paid: 'שולם',
-        diff: 'הפרש',
 
         name: 'שם',
         address: 'כתובת',
@@ -727,6 +898,7 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         amount: 'סכום',
         date: 'תאריך',
 
+        note: 'הערה',
         noActiveContracts: 'לא נמצאו חוזים פעילים',
         noActiveContractsDesc: 'אין לך חוזים פעילים כרגע',
 
@@ -831,8 +1003,8 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         language: 'שפה',
         genderForHebrew: 'מגדר (עבור עברית)',
         support: 'תמיכה',
-        contactSupport: 'צור קשר',
-        contactSupport_female: 'צרי קשר',
+        contactSupport: 'צור קשר עם התמיכה',
+        contactSupport_female: 'צרי קשר עם התמיכה',
         typeMessageHere: 'כתוב את ההודעה כאן...',
         typeMessageHere_female: 'כתבי את ההודעה כאן...',
         orEmailDirectly: 'או שלח מייל ישירות ל-',
@@ -906,13 +1078,258 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         close: 'סגור',
 
         runningBalance: 'יתרה מצטברת',
+        totalBase: 'בסיס סה"כ',
+        planName: 'תוכנית',
+        sendMessage: 'שלח הודעה',
+        sendMessage_female: 'שלחי הודעה',
+        // Storage
+        storageUsage: 'שימוש באחסון',
+        totalStorage: 'סה"כ אחסון',
+        usedStorage: 'אחסון בשימוש',
+        mediaStorage: 'מדיה (תמונות/וידאו)',
+        utilitiesStorage: 'חשבונות ותשלומים',
+        maintenanceStorage: 'תחזוקה',
+        documentsStorage: 'מסמכים כלליים',
+        storageLimitReached: 'מכסת האחסון הסתיימה',
+        storageLimitReachedDesc: 'הגעת למכסת האחסון שלך. יש למחוק קבצים או לשדרג תוכנית כדי להמשיך להעלות.',
+        storageNearLimit: 'שטח האחסון עומד להסתיים',
+        storageNearLimitDesc: 'ניצלת את {percent}% מנפח האחסון הזמין שלך.',
+        maxStorage: 'אחסון סה"כ',
+        maxMediaStorage: 'מכסת מדיה',
+        maxUtilitiesStorage: 'מכסת חשבונות',
+        maxMaintenanceStorage: 'מכסת תחזוקה',
+        maxDocumentsStorage: 'מכסת מסמכים',
+        maxFileSize: 'גודל קובץ מקסימלי',
+        unlimitedSymbol: '∞',
+        photosAndVideos: 'תמונות וסרטונים',
+        mediaGalleryDesc: 'תיעוד ומדיה של הנכס',
+        uploadingMedia: 'מעלה {current}/{total}',
+        uploadMedia: 'העלה מדיה',
+        uploadMedia_female: 'הוסיפי מדיה',
+        noMediaYet: 'אין מדיה עדיין',
+        uploadMediaDesc: 'העלה תמונות וסרטונים של הנכס',
+        deleteFileConfirmation: 'האם אתה בטוח שברצונך למחוק קובץ זה?',
+        deleteFileConfirmation_female: 'האם את בטוחה שברצונך למחוק קובץ זה?',
+        utilityWater: 'מים',
+        utilityElectric: 'חשמל',
+        utilityGas: 'גז',
+        utilityMunicipality: 'ארנונה',
+        utilityManagement: 'דמי ניהול',
+        totalBills: 'סה"כ חשבונות',
+        unpaid: 'לא שולם',
+        uploadNewBill: 'העלה חשבון חדש',
+        uploadNewBill_female: 'העלי חשבון חדש',
+        uploadBillTitle: 'העלאת חשבון {type}',
+        billDate: 'תאריך החשבון',
+        markAsPaid: 'סמן כשולם',
+        markAsPaid_female: 'סמני כשולם',
+        markAsUnpaid: 'סמן כלא שולם',
+        markAsUnpaid_female: 'סמני כלא שולם',
+        deleteBillConfirmation: 'למחוק את החשבון הזה?',
+        deleteBillConfirmation_female: 'למחוק את החשבון הזה?',
+        noBillsYet: 'אין חשבונות {type} עדיין',
+        maintenanceDesc: 'תיקונים, חשבוניות ורישומי שירות',
+        totalSpent: 'סה"כ הוצאות',
+        addMaintenanceRecord: 'הוסף רישום תחזוקה',
+        addMaintenanceRecord_female: 'הוסיפי רישום תחזוקה',
+        newMaintenanceRecord: 'רישום תחזוקה חדש',
+        fileInvoiceReceipt: 'קובץ (חשבונית/קבלה)',
+        description: 'תיאור',
+        issueType: 'סוג תקלה',
+        selectType: 'בחר סוג',
+        vendor: 'ספק שירות',
+        cost: 'עלות',
+        noMaintenanceRecordsYet: 'אין רישומי תחזוקה עדיין',
+        deleteMaintenanceRecordConfirmation: 'למחוק את רישום התחזוקה הזה?',
+        deleteMaintenanceRecordConfirmation_female: 'למחוק את רישום התחזוקה הזה?',
+        issuePlumbing: 'אינסטלציה',
+        issueElectrical: 'חשמל',
+        issueHVAC: 'מיזוג אוויר',
+        issuePainting: 'צבע',
+        issueCarpentry: 'נגרות',
+        issueAppliance: 'מכשירי חשמל',
+        issueOther: 'אחר',
+        addRecord: 'הוסף רישום',
+        addRecord_female: 'הוסיפי רישום',
+        documentsDesc: 'ביטוח, אחריות, מסמכים משפטיים ועוד',
+        documentsCount: '{count} מסמכים',
+        uploadDocument: 'העלה מסמך',
+        uploadDocument_female: 'העלי מסמך',
+        newDocument: 'מסמך חדש',
+        category: 'קטגוריה',
+        catInsurance: 'ביטוח',
+        catWarranty: 'אחריות',
+        catLegal: 'משפטי',
+        catInvoice: 'חשבונית',
+        catReceipt: 'קבלה',
+        catOther: 'אחר',
+        noDocumentsYet: 'אין מסמכים עדיין',
+        deleteDocumentConfirmation: 'למחוק את המסמך הזה?',
+        deleteDocumentConfirmation_female: 'למחוק את המסמך הזה?',
+        storageQuotaExceeded: 'חריגה ממכסת האחסון',
+        storageLow: 'שטח האחסון אוזל',
+        storageQuotaExceededDesc: 'הגעת למגבלת האחסון שלך. מחק קבצים או שדרג את התוכנית כדי להמשיך להעלות.',
+        storageLowDesc: 'ניצלת {percent}% משטח האחסון הפנוי שלך.',
+        breakdownMedia: 'מדיה',
+        breakdownUtilities: 'חשבונות',
+        breakdownMaintenance: 'תחזוקה',
+        breakdownDocuments: 'מסמכים',
 
-        // Missing keys to satisfy Record<TranslationKeys, string>
-        sendMessage: 'שלח הודעה',
-        // sendMessage is missing from earlier, so we keep it. 
-        // noActiveContractsDesc is at line 706, so we remove it here.
-        sendMessage: 'שלח הודעה',
+        // Media Gallery
+        newAlbum: 'אלבום חדש',
+        createAlbumDesc: 'צור אלבום חדש לתמונות וסרטונים',
+        albumName: 'שם אלבום',
+        optionalAlbumNote: 'הערת אלבום (אופציונלי)',
+        mediaFiles: 'קבצי מדיה',
+        saveAlbum: 'שמור אלבום',
+        deleteAlbum: 'מחק אלבום',
+        unsortedMedia: 'מדיה לא ממוינת',
+        createNewAlbum: '+ צור אלבום חדש',
+
+        // Utilities & Maintenance
+        createBillFolder: '+ צור תיקיית חשבונות',
+        newBillEntry: 'רשומת חשבונים חדשה',
+        subject: 'נושא',
+        saveBillEntry: 'שמור תיקייה',
+        createMaintenanceFolder: '+ צור תיקיית תחזוקה',
+        newMaintenanceEntry: 'רשומת תחזוקה חדשה',
+        saveRecord: 'שמור רשומה',
+        clickToUploadDrag: 'לחץ להעלאה או גרור קבצים לכאן',
+        unsortedRecords: 'רשומות לא ממוינות',
+        unsortedFiles: 'קבצים לא ממוינים',
+        deleteFolder: 'מחק תיקייה',
+        averageMonthly: 'ממוצע חודשי',
+        averageMonthly_female: 'ממוצעת חודשית',
+        trend: 'מגמה',
+        trend_female: 'מגמה',
+        increasing: 'עולה',
+        increasing_female: 'עולה',
+        decreasing: 'יורד',
+        decreasing_female: 'יורדת',
+        decreasing_male: 'יורד',
+        stable: 'יציב',
+        stable_female: 'יציבה',
+        stable_male: 'יציב',
+        knowledgeBase: 'מרכז מידע',
+        notificationsTitle: 'התראות',
+        markAllRead: 'סמן הכל כנקרא',
+        noNotifications: 'אין התראות עדיין',
+        enablePush: 'הפעל התראות פוש',
+        lp_new_scan: 'חדש: סריקת חוזים ב-AI ✨',
+        lp_hero_title_1: 'ניהול נכסים,',
+        lp_hero_title_2: 'פשוט וחכם.',
+        lp_hero_subtitle: 'הפלטפורמה המובילה לניהול שכירות. חישוב הצמדות אוטומטי, יצירת חוזים, ומעקב תשלומים - הכל במקום אחד, בטוח ומאובטח.',
+        lp_btn_start: 'התחילו ניסיון חינם',
+        lp_btn_features: 'גלו את הפיצ\'רים',
+        lp_trusted_by: 'בשימוש חברות הניהול המובילות',
+        lp_annual_yield: 'תשואה שנתית',
+        lp_nav_features: 'פיצ\'רים',
+        lp_nav_pricing: 'מחירים',
+        lp_nav_about: 'אודות',
+        lp_footer_product: 'המוצר',
+        lp_footer_company: 'חברה',
+        lp_footer_legal: 'משפטי',
+        lp_all_rights: 'כל הזכויות שמורות.',
+        lp_systems_operational: 'מערכות פועלות כסדרן',
+        lp_fe_features_title: 'הכלים שאתם צריכים',
+        lp_fe_features_subtitle: 'במעטפת אחת פשוטה וחכמה. ללא סיבוכים, ללא בירוקרטיה.',
+        lp_fe_cpi_title: 'מדד המחירים לצרכן',
+        lp_fe_cpi_desc: 'חישוב הצמדות אוטומטי בזמן אמת. המערכת שואבת נתונים ישירות מהלמ"ס ומעדכנת את שכר הדירה.',
+        lp_fe_ai_title: 'סורק חוזים AI',
+        lp_fe_ai_desc: 'העלו קובץ PDF והמערכת תחלץ אוטומטית את כל נתוני החוזה, התשלומים והמועדים.',
+        lp_fe_tenants_title: 'ניהול דיירים',
+        lp_fe_alerts_title: 'התראות חכמות',
+        lp_fe_alerts_desc: 'רנט-מייט תזכיר לך כשצריך לחדש חוזה או לגבות צ\'ק.',
+        lp_cta_title_1: 'מוכנים לנהל את הנכסים שלכם',
+        lp_cta_title_2: 'כמו מקצוענים?',
+        lp_cta_subtitle: 'הצטרפו למאות משכירים שכבר נהנים משקט נפשי, חוזים חכמים, וניהול פיננסי אוטומטי. ההרשמה חינם וללא התחייבות.',
+        lp_cta_btn: 'התחילו עכשיו בחינם',
+        auth_welcome_back: 'ברוכים השבים',
+        auth_join: 'הצטרפו ל-RentMate',
+        auth_email: 'כתובת אימייל',
+        auth_password: 'סיסמה',
+        auth_forgot_password: 'שכחת סיסמה?',
+        auth_sign_in: 'התחברות',
+        auth_create_account: 'יצירת חשבון',
+        auth_or_continue: 'או המשך עם',
+        auth_no_account: 'אין לך חשבון? הרשמה',
+        auth_have_account: 'כבר יש לך חשבון? התחברות',
+        auth_check_inbox: 'בדוק את תיבת הדואר שלך',
+        auth_confirmation_sent: 'שלחנו קישור אישור ל-{email}. אנא אשר את המייל כדי לפתוח את החשבון.',
+
+        // Dashboard Extras
+        user_generic: 'משתמש',
+        passwordRequirementLength: 'לפחות 8 תווים',
+        passwordRequirementUppercase: 'אות גדולה (A-Z)',
+        passwordRequirementLowercase: 'אות קטנה (a-z)',
+        passwordRequirementNumber: 'מספר (0-9)',
+        passwordRequirementSpecial: 'תו מיוחד (!@#$%)',
+        passwordStrength: 'חוזק סיסמה',
+        passwordWeak: 'חלשה',
+        passwordMedium: 'בינונית',
+        passwordStrong: 'חזקה',
+        passwordVeryStrong: 'חזקה מאוד',
+
+        // Shared Calculation
+        shared_calc_loading: 'טוען חישוב...',
+        shared_calc_not_found: 'חישוב לא נמצא',
+        shared_calc_not_found_desc: 'החישוב המבוקש לא נמצא. ייתכן שהוא נמחק או שהקישור אינו תקין.',
+        shared_calc_go_home: 'חזרה לדף הבית',
+        shared_calc_official_reconciliation: 'דו״ח התחשבנות רשמי',
+        shared_calc_official_index: 'חישוב הצמדה למדד רשמי',
+        shared_calc_updated_rent: 'סכום שכירות מעודכן',
+        shared_calc_base_rent: 'שכירות בסיס',
+        shared_calc_linkage: 'סוג הצמדה',
+        shared_calc_base_date: 'מדד בסיס',
+        shared_calc_target_date: 'מדד יעד',
+        shared_calc_index_change: 'שינוי במדד',
+        shared_calc_amount_added: 'סכום שנוסף',
+        shared_calc_total_backpay: 'סך חוב רטרואקטיבי',
+        shared_calc_months: 'חודשים',
+        shared_calc_avg_month: 'ממוצע לחודש',
+        shared_calc_monthly_breakdown: 'פירוט חודשי',
+        shared_calc_month: 'חודש',
+        shared_calc_diff: 'הפרש',
+        shared_calc_disclaimer: 'חישוב זה הופק באופן אוטומטי בהתבסס על נתוני מדד המחירים לצרכן כפי שפורסמו על ידי הלשכה המרכזית לסטטיסטיקה.',
+        shared_calc_cta: 'משכירים ב-RentMate?',
+        shared_calc_cta_link: 'צרו חישוב משלכם',
+        pricing_title: 'חבילות ומחירים',
+        pricing_subtitle: 'בחרו את התוכנית המתאימה לצרכי ניהול הנכסים שלכם. התחילו בחינם, שדרגו בכל עת.',
+        pricing_monthly: 'חודשי',
+        pricing_yearly: 'שנתי',
+        pricing_save: 'חסכון של 20%',
+        pricing_most_popular: 'הכי פופולרי',
+        pricing_per_month: '/חודש',
+        pricing_billed_yearly: 'מחויב ${price}/שנה',
+        pricing_properties: 'נכסים',
+        pricing_tenants: 'דיירים',
+        pricing_data_export: 'ייצוא נתונים (CSV/PDF)',
+        pricing_priority_support: 'תמיכה בעדיפות',
+        pricing_api_access: 'גישת API',
+        pricing_get_started: 'התחילו עכשיו',
+        pricing_contact_sales: 'צרו קשר עם מחלקת המכירות',
+        pricing_custom_plan: 'זקוקים לתוכנית מותאמת אישית?',
+        settings_help_resources: 'עזרה ומשאבים',
+        settings_admin_dashboard: 'לוח בקרה למנהל',
+        settings_admin_desc: 'ניהול משתמשים, חשבוניות והגדרות מערכת',
+        settings_sent: 'נשלח',
+        lp_footer_careers: 'קריירה',
+        lp_footer_contact: 'צור קשר',
+        lp_footer_security: 'אבטחת מידע',
+        contractExpiringSoon: 'חוזה מסתיים בקרוב',
+        viewContract: 'צפה בחוזה',
+        paymentOverdue: 'תשלום באיחור',
+        paymentDueSoon: 'תשלום בקרוב',
+        viewPayments: 'צפה בתשלומים',
+        scanningBill: 'Gemini מנתח את המסמך...',
+        autoFilledByGemini: 'מולא אוטומטית על ידי AI',
+        organizeDocsTitle: 'נעשה סדר במסמכים?',
+        organizeDocsDesc: 'העלו את חשבונות החשמל והמים האחרונים שלכם כדי לשמור על סדר ולעקוב אחרי הוצאות הנכס.',
+        uploadNow: 'להעלאה עכשיו',
+        smartRecommendation: 'המלצה חכמה',
+        knowledgeBaseDesc: 'מדריכים ומאמרים מקצועיים שיעזרו לכם לנהל את הנכסים שלכם בצורה חכמה ויעילה יותר.',
     },
+
     en: {
         appName: 'RentMate',
         loading: 'Loading...',
@@ -935,6 +1352,17 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         remove: 'Remove',
         yes: 'Yes',
         no: 'No',
+        cookieConsentTitle: 'We use Cookies',
+        cookieConsentDesc: 'We use cookies to improve your experience. By browsing, you agree to our',
+        cookieConsentPrivacyPolicy: 'Privacy Policy',
+        cookieConsentClose: 'Close',
+        cookieConsentAccept: 'I Agree',
+
+        agreeToTerms: 'I agree to the {terms} and {privacy}',
+        marketingConsent: 'I agree to receive updates and marketing content (unsubscribe anytime)',
+        legalDocs: 'Legal Documents',
+        privacyPolicy: 'Privacy Policy',
+        termsOfService: 'Terms of Service',
 
         login: 'Login',
         logout: 'Logout',
@@ -1150,7 +1578,13 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         manualPaymentHelp: 'Enter the average amount paid per month manually.',
         periodStart: 'Period Start',
         periodEnd: 'Period End',
+        vendorName: 'Vendor Name',
+        optionalFolderNote: 'Optional note',
+        eg_january_bill: 'e.g. January Bill',
+        eg_electric_corp: 'e.g. Electric Corp',
         advancedLinkageOptions: 'Advanced Linkage Options',
+        advancedReconciliationOptions: 'Advanced Reconciliation Options',
+        linkageCalculationMethod: 'Linkage Calculation Method',
         indexSubType: 'Index Sub-Type',
         knownIndex: 'Known Index (מדד ידוע)',
         inRespectOf: 'In Respect Of (מדד בגין)',
@@ -1182,6 +1616,7 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         status: 'Status',
         amount: 'Amount',
         date: 'Date',
+        note: 'Note',
 
         noActiveContracts: 'No active contracts found',
         noActiveContractsDesc: 'You have no active contracts at the moment',
@@ -1297,6 +1732,7 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
 
         // Legacy Migrated
         sendMessage: 'Send Message',
+        sendMessage_female: 'Send Message',
         sending: 'Sending...',
         messageSent: 'Message sent!',
         unspecified: 'Unspecified',
@@ -1310,7 +1746,6 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         unlockMoreLimits: 'Unlock more limits',
 
         // Missing keys added to match type definition
-        noActiveContractsDesc: 'You have no active contracts',
         unlockPotential: 'Unlock the full potential of RentMate',
         unlockPotential_female: 'Unlock the full potential of RentMate',
         requestUpgrade: 'Request Upgrade',
@@ -1338,31 +1773,276 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         // AddTenantModal
         viewTenantDetails: 'View Tenant Details',
         editTenant: 'Edit Tenant',
+        editTenant_female: 'Edit Tenant',
         viewContactInfo: 'View contact information',
+        viewContactInfo_female: 'View contact information',
         updateTenantDetails: 'Update tenant details',
+        updateTenantDetails_female: 'Update tenant details',
         addTenantToContacts: 'Add a new tenant to your contacts',
+        addTenantToContacts_female: 'Add a new tenant to your contacts',
         assignedAsset: 'Assigned Asset',
         noAssetsFoundDesc: 'No assets found. You must create an asset before adding a tenant.',
         goToAssetsPage: 'Go to Assets Page',
+        goToAssetsPage_female: 'Go to Assets Page',
         planLimitReached: 'Plan Limit Reached',
         planLimitReachedTenantDesc: 'You have reached the maximum number of tenants for your {planName} plan. Please upgrade your subscription.',
-        saving: 'Saving...',
-        adding: 'Adding...',
-        saveChanges: 'Save Changes',
         close: 'Close',
-
-        // Gender mappings (neutral for English)
-        editTenant_female: 'Edit Tenant',
-        viewContactInfo_female: 'View contact information',
-        updateTenantDetails_female: 'Update tenant details',
-        addTenantToContacts_female: 'Add a new tenant to your contacts',
-        goToAssetsPage_female: 'Go to Assets Page',
+        saving: 'Saving...',
         saving_female: 'Saving...',
+        adding: 'Adding...',
         adding_female: 'Adding...',
+        saveChanges: 'Save Changes',
         saveChanges_female: 'Save Changes',
-
+        planName: 'Plan Name',
         runningBalance: 'Running Balance',
-    }
+
+        // Storage
+        storageUsage: 'Storage Usage',
+        totalStorage: 'Total Storage',
+        usedStorage: 'Used Storage',
+        mediaStorage: 'Photos & Videos',
+        utilitiesStorage: 'Bills',
+        maintenanceStorage: 'Maintenance',
+        documentsStorage: 'Documents',
+        storageLimitReached: 'Storage Quota Exceeded',
+        storageLimitReachedDesc: 'You have reached your storage limit. Delete some files or upgrade your plan to continue uploading.',
+        storageNearLimit: 'Storage Space Running Low',
+        storageNearLimitDesc: 'You\'ve used {percent}% of your available storage.',
+        maxStorage: 'Total Storage',
+        maxMediaStorage: 'Media Limit',
+        maxUtilitiesStorage: 'Utilities Limit',
+        maxMaintenanceStorage: 'Maintenance Limit',
+        maxDocumentsStorage: 'Documents Limit',
+        maxFileSize: 'Max File Size',
+        unlimitedSymbol: '∞',
+        photosAndVideos: 'Photos & Videos',
+        mediaGalleryDesc: 'Property documentation and media',
+        uploadingMedia: 'Uploading {current}/{total}',
+        uploadMedia: 'Upload Media',
+        uploadMedia_female: 'Upload Media',
+        noMediaYet: 'No media yet',
+        uploadMediaDesc: 'Upload photos and videos of the property',
+        deleteFileConfirmation: 'Are you sure you want to delete this file?',
+        deleteFileConfirmation_female: 'Are you sure you want to delete this file?',
+        utilityWater: 'Water',
+        utilityElectric: 'Electric',
+        utilityGas: 'Gas',
+        utilityMunicipality: 'Municipality',
+        utilityManagement: 'Management Fee',
+        totalBills: 'Total Bills',
+        unpaid: 'Unpaid',
+        uploadNewBill: 'Upload New Bill',
+        uploadNewBill_female: 'Upload New Bill',
+        uploadBillTitle: 'Upload {type} Bill',
+        billDate: 'Bill Date',
+        markAsPaid: 'Mark as Paid',
+        markAsPaid_female: 'Mark as Paid',
+        markAsUnpaid: 'Mark as Unpaid',
+        markAsUnpaid_female: 'Mark as Unpaid',
+        deleteBillConfirmation: 'Delete this bill?',
+        deleteBillConfirmation_female: 'Delete this bill?',
+        noBillsYet: 'No {type} bills yet',
+        maintenanceDesc: 'Repairs, invoices, and service records',
+        totalSpent: 'Total Spent',
+        addMaintenanceRecord: 'Add Maintenance Record',
+        addMaintenanceRecord_female: 'Add Maintenance Record',
+        newMaintenanceRecord: 'New Maintenance Record',
+        fileInvoiceReceipt: 'File (Invoice/Receipt)',
+        description: 'Description',
+        issueType: 'Issue Type',
+        selectType: 'Select type',
+        vendor: 'Vendor',
+        cost: 'Cost',
+        noMaintenanceRecordsYet: 'No maintenance records yet',
+        deleteMaintenanceRecordConfirmation: 'Delete this maintenance record?',
+        deleteMaintenanceRecordConfirmation_female: 'Delete this maintenance record?',
+        issuePlumbing: 'Plumbing',
+        issueElectrical: 'Electrical',
+        issueHVAC: 'HVAC',
+        issuePainting: 'Painting',
+        issueCarpentry: 'Carpentry',
+        issueAppliance: 'Appliance',
+        issueOther: 'Other',
+        addRecord: 'Add Record',
+        addRecord_female: 'Add Record',
+        documentsDesc: 'Insurance, warranties, legal documents, and more',
+        documentsCount: '{count} document(s)',
+        uploadDocument: 'Upload Document',
+        uploadDocument_female: 'Upload Document',
+        newDocument: 'New Document',
+        category: 'Category',
+        catInsurance: 'Insurance',
+        catWarranty: 'Warranty',
+        catLegal: 'Legal',
+        catInvoice: 'Invoice',
+        catReceipt: 'Receipt',
+        catOther: 'Other',
+        noDocumentsYet: 'No documents yet',
+        deleteDocumentConfirmation: 'Delete this document?',
+        deleteDocumentConfirmation_female: 'Delete this document?',
+        storageQuotaExceeded: 'Storage Quota Exceeded',
+        storageLow: 'Storage Space Running Low',
+        storageQuotaExceededDesc: 'You have reached your storage limit. Delete some files or upgrade your plan to continue uploading.',
+        storageLowDesc: 'You\'ve used {percent}% of your available storage.',
+        breakdownMedia: 'Media',
+        breakdownUtilities: 'Utilities',
+        breakdownMaintenance: 'Maintenance',
+        breakdownDocuments: 'Documents',
+
+        // Media Gallery
+        newAlbum: 'New Album',
+        createAlbumDesc: 'Create a new album for photos and videos',
+        albumName: 'Album Name',
+        optionalAlbumNote: 'Album Note (Optional)',
+        mediaFiles: 'Media Files',
+        saveAlbum: 'Save Album',
+        deleteAlbum: 'Delete Album',
+        unsortedMedia: 'Unsorted Media',
+        createNewAlbum: '+ Create New Album',
+
+        // Utilities & Maintenance
+        createBillFolder: '+ Create Bill Folder',
+        newBillEntry: 'New Bill Entry',
+        subject: 'Subject',
+        saveBillEntry: 'Save Folder',
+        createMaintenanceFolder: '+ Create Maintenance Folder',
+        newMaintenanceEntry: 'New Maintenance Entry',
+        saveRecord: 'Save Record',
+        clickToUploadDrag: 'Click to upload or drag files here',
+        unsortedRecords: 'Unsorted Records',
+        unsortedFiles: 'Unsorted Files',
+        deleteFolder: 'Delete Folder',
+        averageMonthly: 'Average Monthly',
+        averageMonthly_female: 'Average Monthly',
+        trend: 'Trend',
+        trend_female: 'Trend',
+        increasing: 'Increasing',
+        increasing_female: 'Increasing',
+        decreasing: 'Decreasing',
+        decreasing_female: 'Decreasing',
+        decreasing_male: 'Decreasing',
+        stable: 'Stable',
+        stable_female: 'Stable',
+        stable_male: 'Stable',
+        knowledgeBase: 'Knowledge Base',
+        notificationsTitle: 'Notifications',
+        markAllRead: 'Mark all as read',
+        noNotifications: 'No notifications yet',
+        enablePush: 'Enable Push Notifications',
+        lp_new_scan: 'NEW: AI Contract Scan ✨',
+        lp_hero_title_1: 'Property Management,',
+        lp_hero_title_2: 'Simple & Smart.',
+        lp_hero_subtitle: 'The leading platform for rental management. Automatic index calculations, contract generation, and payment tracking - all in one secure place.',
+        lp_btn_start: 'Start Free Trial',
+        lp_btn_features: 'Explore Features',
+        lp_trusted_by: 'Trusted by Leading Management Companies',
+        lp_annual_yield: 'Annual Yield',
+        lp_nav_features: 'Features',
+        lp_nav_pricing: 'Pricing',
+        lp_nav_about: 'About',
+        lp_footer_product: 'Product',
+        lp_footer_company: 'Company',
+        lp_footer_legal: 'Legal',
+        lp_all_rights: 'All rights reserved.',
+        lp_systems_operational: 'All Systems Operational',
+        lp_fe_features_title: 'The Tools You Need',
+        lp_fe_features_subtitle: 'In one simple, smart package. No complications, no bureaucracy.',
+        lp_fe_cpi_title: 'Consumer Price Index',
+        lp_fe_cpi_desc: 'Automatic real-time index calculations. The system fetches data directly from the CBS and updates the rent.',
+        lp_fe_ai_title: 'AI Contract Scanner',
+        lp_fe_ai_desc: 'Upload a PDF and the system automatically extracts all contract data, payments, and deadlines.',
+        lp_fe_tenants_title: 'Tenant Management',
+        lp_fe_alerts_title: 'Smart Alerts',
+        lp_fe_alerts_desc: 'RentMate reminds you when to renew contracts or collect checks.',
+        lp_cta_title_1: 'Ready to manage your properties',
+        lp_cta_title_2: 'like a pro?',
+        lp_cta_subtitle: 'Join hundreds of landlords enjoying peace of mind, smart contracts, and automation. Sign up for free, no obligation.',
+        lp_cta_btn: 'Start Now for Free',
+        auth_welcome_back: 'Welcome Back',
+        auth_join: 'Join RentMate',
+        auth_email: 'Email Address',
+        auth_password: 'Password',
+        auth_forgot_password: 'Forgot Password?',
+        auth_sign_in: 'Sign In',
+        auth_create_account: 'Create Account',
+        auth_or_continue: 'Or continue with',
+        auth_no_account: "Don't have an account? Sign up",
+        auth_have_account: 'Already have an account? Sign in',
+        auth_check_inbox: 'Check your inbox',
+        auth_confirmation_sent: "We've sent a confirmation link to {email}. Please verify your email to unlock your account.",
+
+        // Dashboard Extras
+        user_generic: 'User',
+        passwordRequirementLength: 'At least 8 characters',
+        passwordRequirementUppercase: 'One uppercase letter (A-Z)',
+        passwordRequirementLowercase: 'One lowercase letter (a-z)',
+        passwordRequirementNumber: 'One number (0-9)',
+        passwordRequirementSpecial: 'One special character (!@#$%)',
+        passwordStrength: 'Password Strength',
+        passwordWeak: 'Weak',
+        passwordMedium: 'Medium',
+        passwordStrong: 'Strong',
+        passwordVeryStrong: 'Very Strong',
+
+        // Shared Calculation
+        shared_calc_loading: 'Loading calculation...',
+        shared_calc_not_found: 'Calculation Not Found',
+        shared_calc_not_found_desc: 'The requested calculation could not be found. It may have been deleted or the link is invalid.',
+        shared_calc_go_home: 'Go Home',
+        shared_calc_official_reconciliation: 'Official Reconciliation Statement',
+        shared_calc_official_index: 'Official Index Calculation',
+        shared_calc_updated_rent: 'Updated Rent Amount',
+        shared_calc_base_rent: 'Base Rent',
+        shared_calc_linkage: 'Linkage',
+        shared_calc_base_date: 'Base Date',
+        shared_calc_target_date: 'Target Date',
+        shared_calc_index_change: 'Index Change',
+        shared_calc_amount_added: 'Amount Added',
+        shared_calc_total_backpay: 'Total Back-Pay Owed',
+        shared_calc_months: 'Months',
+        shared_calc_avg_month: 'Avg / Month',
+        shared_calc_monthly_breakdown: 'Monthly Breakdown',
+        shared_calc_month: 'Month',
+        shared_calc_diff: 'Diff',
+        shared_calc_disclaimer: 'This calculation was generated automatically based on the Consumer Price Index (CPI) as published by the Central Bureau of Statistics.',
+        shared_calc_cta: 'Landlord using RentMate?',
+        shared_calc_cta_link: 'Create your own calculation',
+        pricing_title: 'Simple, Transparent Pricing',
+        pricing_subtitle: 'Choose the perfect plan for your property management needs. Start free, upgrade anytime.',
+        pricing_monthly: 'Monthly',
+        pricing_yearly: 'Yearly',
+        pricing_save: 'Save 20%',
+        pricing_most_popular: 'Most Popular',
+        pricing_per_month: '/month',
+        pricing_billed_yearly: 'Billed ${price}/year',
+        pricing_properties: 'Properties',
+        pricing_tenants: 'Tenants',
+        pricing_data_export: 'Data Export (CSV/PDF)',
+        pricing_priority_support: 'Priority Support',
+        pricing_api_access: 'API Access',
+        pricing_get_started: 'Get Started',
+        pricing_contact_sales: 'Contact Sales',
+        pricing_custom_plan: 'Need a custom plan?',
+        settings_help_resources: 'Help & Resources',
+        settings_admin_dashboard: 'Admin Dashboard',
+        settings_admin_desc: 'Manage users, invoices, and system settings',
+        settings_sent: 'Sent',
+        lp_footer_careers: 'Careers',
+        lp_footer_contact: 'Contact Us',
+        lp_footer_security: 'Security',
+        contractExpiringSoon: 'Contract Expiring Soon',
+        viewContract: 'View Contract',
+        paymentOverdue: 'Payment Overdue',
+        paymentDueSoon: 'Payment Due Soon',
+        viewPayments: 'View Payments',
+        scanningBill: 'Gemini is analyzing the document...',
+        autoFilledByGemini: 'Auto-filled by AI',
+        organizeDocsTitle: 'Organize your documents?',
+        organizeDocsDesc: 'Upload your latest utility bills and maintenance records to keep everything organized and track property expenses.',
+        uploadNow: 'Upload Now',
+        smartRecommendation: 'Smart Recommendation',
+        knowledgeBaseDesc: 'Professional guides and articles to help you manage your properties smarter and more efficiently.',
+    },
 };
 
 type TranslationKey = TranslationKeys;

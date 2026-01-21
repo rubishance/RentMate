@@ -295,7 +295,7 @@ export function RedactionStudio({ images, onConfirm, onCancel }: RedactionStudio
                     </div>
                     <div>
                         <h2 className="font-bold text-xl">סטודיו להשחרת פרטים</h2>
-                        <p className="text-sm text-gray-400">סמן בתיבות שחורות מידע רגיש (ת.ז, שמות, טלפונים)</p>
+                        <p className="text-sm text-muted-foreground">סמן בתיבות שחורות מידע רגיש (ת.ז, שמות, טלפונים)</p>
                     </div>
                 </div>
 
@@ -323,7 +323,7 @@ export function RedactionStudio({ images, onConfirm, onCancel }: RedactionStudio
                 {/* Thumbnails Sidebar (RTL: Right side) */}
                 <div className="w-32 lg:w-48 bg-neutral-900 border-l border-white/10 flex flex-col overflow-hidden shrink-0">
                     <div className="p-3 border-b border-white/10 bg-white/5">
-                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">עמודים ({images.length})</h3>
+                        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">עמודים ({images.length})</h3>
                     </div>
                     <div className="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar">
                         {images.map((file, idx) => {

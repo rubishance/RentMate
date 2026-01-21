@@ -1,0 +1,34 @@
+MAINTENANCE INVOICE
+
+CleanFix Ltd.
+Professional Plumbing Services
+Tel: 03-1234567
+
+Date: January 20, 2026
+Invoice #: CF-2026-0120
+
+Service Location:
+Test Property 123
+Tel Aviv
+
+Work Performed:
+- Emergency plumbing repair
+- Fixed leaking pipe in bathroom
+- Replaced worn valve
+- Tested water pressure
+
+Parts Used:
+Valve Assembly: ₪80.00
+Pipe Fittings: ₪35.00
+
+Labor:
+Service Call: ₪150.00
+Repair Work (2 hours): ₪200.00
+
+Subtotal: ₪465.00
+VAT (17%): ₪79.05
+-------------------
+Total: ₪544.05
+
+Payment Terms: Net 30 Days
+Thank you for your business!

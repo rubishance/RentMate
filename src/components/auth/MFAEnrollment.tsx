@@ -69,31 +69,31 @@ export default function MFAEnrollment() {
     };
 
     if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="min-h-screen flex items-center justify-center bg-secondary">
             <Loader2 className="w-8 h-8 animate-spin text-brand-600" />
         </div>
     );
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+        <div className="min-h-screen flex items-center justify-center bg-secondary py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg border border-border">
                 <div className="text-center">
                     <ShieldCheck className="mx-auto h-12 w-12 text-brand-600" />
-                    <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+                    <h2 className="mt-6 text-3xl font-extrabold text-foreground">
                         Secure Your Account
                     </h2>
-                    <p className="mt-2 text-sm text-gray-600">
+                    <p className="mt-2 text-sm text-muted-foreground">
                         To access the admin panel, you must enable Two-Factor Authentication (2FA).
                     </p>
                 </div>
 
                 <div className="space-y-6">
                     {/* QR Code Section */}
-                    <div className="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex flex-col items-center justify-center p-4 bg-secondary rounded-lg border border-border">
                         {qrCodeUrl && (
                             <img src={qrCodeUrl} alt="MFA QR Code" className="w-48 h-48 mb-4" />
                         )}
-                        <p className="text-xs text-gray-500 text-center mb-2">
+                        <p className="text-xs text-muted-foreground text-center mb-2">
                             Scan this with Google Authenticator or Authy
                         </p>
                         <div className="flex items-center gap-2 text-sm text-gray-700 font-mono bg-white px-3 py-1 rounded border">
@@ -117,7 +117,7 @@ export default function MFAEnrollment() {
                                     name="code"
                                     type="text"
                                     required
-                                    className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-brand-500 focus:border-brand-500 focus:z-10 sm:text-sm text-center tracking-widest text-2xl font-mono"
+                                    className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-foreground focus:outline-none focus:ring-brand-500 focus:border-brand-500 focus:z-10 sm:text-sm text-center tracking-widest text-2xl font-mono"
                                     placeholder="000 000"
                                     value={verifyCode}
                                     onChange={(e) => setVerifyCode(e.target.value.replace(/\D/g, '').slice(0, 6))}

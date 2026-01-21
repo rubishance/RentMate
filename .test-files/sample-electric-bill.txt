@@ -1,0 +1,24 @@
+ELECTRIC COMPANY - INVOICE
+
+Invoice #: 2026-01-001
+Account: 123456789
+Period: January 2026
+
+Service Address:
+Test Property 123
+Tel Aviv, Israel
+
+Billing Details:
+Previous Reading: 1000 kWh
+Current Reading: 1450 kWh
+Usage: 450 kWh
+
+Charges:
+Energy Consumption: ₪380.00
+Fixed Charge: ₪45.00
+VAT (17%): ₪72.25
+-------------------
+Total Due: ₪497.25
+
+Due Date: February 15, 2026
+Payment Reference: ELEC-2026-01-001

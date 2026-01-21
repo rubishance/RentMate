@@ -1,18 +1,37 @@
 import { Fragment } from 'react';
 import { Popover, Transition } from '@headlessui/react';
-import { Bell, Check, Info, AlertTriangle, XCircle, CheckCircle2 } from 'lucide-react';
+import { Bell, CheckIcon } from 'lucide-react';
+import { CheckIcon as MsgCheckIcon } from '../icons/MessageIcons';
+import { NotificationSuccessIcon, NotificationWarningIcon, NotificationErrorIcon, NotificationInfoIcon } from '../icons/NotificationIcons';
 import { useNotifications } from '../../contexts/NotificationsContext';
 import { formatDistanceToNow } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export function NotificationCenter() {
     const { notifications, unreadCount, markAsRead, markAllAsRead, requestPermission, permission } = useNotifications();
+    const { t, lang } = useTranslation();
+    const navigate = useNavigate();
 
     const getIcon = (type: string) => {
         switch (type) {
-            case 'success': return <CheckCircle2 className="w-5 h-5 text-green-500" />;
-            case 'warning': return <AlertTriangle className="w-5 h-5 text-orange-500" />;
-            case 'error': return <XCircle className="w-5 h-5 text-red-500" />;
-            default: return <Info className="w-5 h-5 text-blue-500" />;
+            case 'success': return <NotificationSuccessIcon className="w-5 h-5 text-green-500" />;
+            case 'warning': return <NotificationWarningIcon className="w-5 h-5 text-orange-500" />;
+            case 'error': return <NotificationErrorIcon className="w-5 h-5 text-red-500" />;
+            default: return <NotificationInfoIcon className="w-5 h-5 text-primary" />;
+        }
+    };
+
+    const handleNotificationClick = (notification: any) => {
+        markAsRead(notification.id);
+
+        // Navigate based on metadata
+        if (notification.metadata) {
+            if (notification.metadata.contract_id) {
+                navigate('/contracts');
+            } else if (notification.metadata.payment_id) {
+                navigate('/payments');
+            }
         }
     };
 
@@ -21,7 +40,9 @@ export function NotificationCenter() {
             {({ open }) => (
                 <>
                     <Popover.Button
-                        className={`p-2 rounded-full transition-colors relative outline-none ring-0 ${open ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100' : 'text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                        className={`p-2 rounded-full transition-colors relative outline-none ring-0 ${open
+                            ? 'bg-muted dark:bg-gray-700 text-foreground dark:text-gray-100'
+                            : 'text-muted-foreground hover:text-muted-foreground dark:text-muted-foreground dark:hover:text-gray-200 hover:bg-muted dark:hover:bg-gray-800'
                             }`}
                     >
                         <Bell className="w-6 h-6" />
@@ -39,24 +60,24 @@ export function NotificationCenter() {
                         leaveFrom="opacity-100 translate-y-0"
                         leaveTo="opacity-0 translate-y-1"
                     >
-                        <Popover.Panel className="absolute right-0 z-50 mt-2 w-80 sm:w-96 origin-top-right rounded-2xl bg-white dark:bg-gray-900 shadow-xl ring-1 ring-black/5 dark:ring-white/10 focus:outline-none overflow-hidden">
-                            <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
-                                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Notifications</h3>
+                        <Popover.Panel className={`absolute z-50 mt-2 w-[calc(100vw-2rem)] max-w-sm sm:w-96 rounded-2xl bg-white dark:bg-foreground shadow-xl ring-1 ring-black/5 dark:ring-white/10 focus:outline-none overflow-hidden ${lang === 'he' ? 'left-0 sm:left-auto sm:right-0 origin-top-left' : 'right-0 origin-top-right'}`}>
+                            <div className="p-4 border-b border-border dark:border-gray-800 flex items-center justify-between">
+                                <h3 className="text-sm font-semibold text-foreground dark:text-white">{t('notificationsTitle')}</h3>
                                 <div className="flex items-center gap-4">
                                     {permission === 'default' && (
                                         <button
                                             onClick={requestPermission}
                                             className="text-xs text-brand-600 hover:text-brand-700 font-medium"
                                         >
-                                            Enable Push
+                                            {t('enablePush')}
                                         </button>
                                     )}
                                     {unreadCount > 0 && (
                                         <button
                                             onClick={markAllAsRead}
-                                            className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 flex items-center gap-1"
+                                            className="text-xs text-muted-foreground hover:text-gray-700 dark:text-muted-foreground flex items-center gap-1"
                                         >
-                                            <Check className="w-3 h-3" /> Mark all read
+                                            <MsgCheckIcon className="w-3 h-3" /> {t('markAllRead')}
                                         </button>
                                     )}
                                 </div>
@@ -64,38 +85,42 @@ export function NotificationCenter() {
 
                             <div className="max-h-[60vh] overflow-y-auto">
                                 {notifications.length === 0 ? (
-                                    <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+                                    <div className="p-8 text-center text-muted-foreground dark:text-muted-foreground">
                                         <div className="flex justify-center mb-3">
                                             <Bell className="w-8 h-8 opacity-20" />
                                         </div>
-                                        <p className="text-sm">No notifications yet</p>
+                                        <p className="text-sm">{t('noNotifications')}</p>
                                     </div>
                                 ) : (
                                     <div className="divide-y divide-gray-100 dark:divide-gray-800">
                                         {notifications.map((notification) => (
                                             <div
                                                 key={notification.id}
-                                                className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer ${!notification.read_at ? 'bg-blue-50/50 dark:bg-blue-900/10' : ''}`}
-                                                onClick={() => markAsRead(notification.id)}
+                                                className={`p-4 hover:bg-secondary dark:hover:bg-gray-800/50 transition-colors cursor-pointer ${!notification.read_at ? 'bg-primary/5 dark:bg-primary/10' : ''
+                                                    }`}
+                                                onClick={() => handleNotificationClick(notification)}
                                             >
                                                 <div className="flex gap-3">
                                                     <div className="mt-1 shrink-0">
                                                         {getIcon(notification.type)}
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <p className={`text-sm ${!notification.read_at ? 'font-semibold text-gray-900 dark:text-white' : 'font-medium text-gray-700 dark:text-gray-300'}`}>
+                                                        <p className={`text-sm ${!notification.read_at
+                                                            ? 'font-semibold text-foreground dark:text-white'
+                                                            : 'font-medium text-gray-700 dark:text-gray-300'
+                                                            }`}>
                                                             {notification.title}
                                                         </p>
-                                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+                                                        <p className="text-sm text-muted-foreground dark:text-muted-foreground mt-1 line-clamp-2">
                                                             {notification.message}
                                                         </p>
-                                                        <p className="text-xs text-gray-400 mt-2">
+                                                        <p className="text-xs text-muted-foreground mt-2">
                                                             {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                                                         </p>
                                                     </div>
                                                     {!notification.read_at && (
                                                         <div className="shrink-0 self-center">
-                                                            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                                                            <div className="w-2 h-2 rounded-full bg-primary"></div>
                                                         </div>
                                                     )}
                                                 </div>

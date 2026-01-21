@@ -29,6 +29,13 @@
 - Design for non-technical users
 - When in doubt, choose simplicity over features
 
+### 4. Operational Verify & Update ✅
+- **Mandatory Deployment Protocol**:
+    - Every push/deployment must be verified immediately.
+    - Check `version.json` and key features on production.
+    - **Update the user** with success/failure status immediately after verification.
+    - Never assume a deployment succeeded without proof.
+
 ---
 
 *These guidelines ensure RentMate remains secure, accessible, and user-friendly for Israeli landlords managing their properties on the go.*

@@ -172,8 +172,8 @@ export function Analytics({ embedMode = false }: { embedMode?: boolean }) {
 
                 <div className="bg-card border border-border rounded-2xl p-6">
                     <div className="flex items-center justify-between mb-4">
-                        <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                            <DollarSign className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        <div className="p-2 bg-primary/10 dark:bg-blue-900/20 rounded-lg">
+                            <DollarSign className="w-5 h-5 text-primary dark:text-blue-400" />
                         </div>
                     </div>
                     <p className="text-sm text-muted-foreground">{t('avgRentPerProperty')}</p>
@@ -184,8 +184,8 @@ export function Analytics({ embedMode = false }: { embedMode?: boolean }) {
 
                 <div className="bg-card border border-border rounded-2xl p-6">
                     <div className="flex items-center justify-between mb-4">
-                        <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                            <Home className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                        <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+                            <Home className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                         </div>
                     </div>
                     <p className="text-sm text-muted-foreground">{t('occupancyRate')}</p>
@@ -253,6 +253,53 @@ export function Analytics({ embedMode = false }: { embedMode?: boolean }) {
                     </div>
                 </div>
 
+                {/* Utility Costs Chart */}
+                <div className="bg-card border border-border rounded-2xl p-6">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="font-bold text-lg">Utility Expenses</h3>
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">Rolling 12mo</span>
+                        </div>
+                    </div>
+                    <div className="h-[300px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={revenueData}> {/* Placeholder using revenueData for now, but should fetch utility data */}
+                                <defs>
+                                    <linearGradient id="colorUtility" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.1} />
+                                        <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                                <XAxis
+                                    dataKey="name"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: '#6B7280', fontSize: 12 }}
+                                    dy={10}
+                                />
+                                <YAxis
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: '#6B7280', fontSize: 12 }}
+                                    tickFormatter={(value) => `₪${value}`}
+                                />
+                                <Tooltip
+                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                />
+                                <Area
+                                    type="monotone"
+                                    dataKey="expense"
+                                    stroke="#f59e0b"
+                                    strokeWidth={3}
+                                    fillOpacity={1}
+                                    fill="url(#colorUtility)"
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
                 {/* Payment Status */}
                 <div className="bg-card border border-border rounded-2xl p-6">
                     <h3 className="font-bold text-lg mb-6">{t('paymentStatus')}</h3>
@@ -277,6 +324,7 @@ export function Analytics({ embedMode = false }: { embedMode?: boolean }) {
                     </div>
                 </div>
             </div>
+
         </div>
     );
 }

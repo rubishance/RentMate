@@ -1,24 +1,22 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import logoFinalCleanV2 from '../assets/logo-final-clean-v2.png';
+import logoIconOnly from '../assets/rentmate-icon-only.png';
+import logoIconDark from '../assets/rentmate-icon-only-dark.png';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { User, Bell, Shield, Wallet, CreditCard, ChevronRight, Mail, Send, Check, LogOut, Receipt, Languages, Cloud } from 'lucide-react';
+import { User, Bell, Shield, Wallet, CreditCard, ChevronRight, Mail, Send, Check, LogOut, Receipt, Languages, Cloud, Book } from 'lucide-react';
 import { useUserPreferences } from '../contexts/UserPreferencesContext';
 import type { Language, Gender } from '../types/database';
 import { EditProfileModal, NotificationsSettingsModal } from '../components/modals/EditProfileModal';
 import { SubscriptionCard } from '../components/subscription/SubscriptionCard';
 import { useTranslation } from '../hooks/useTranslation';
 import { PrivacySecurityModal } from '../components/modals/PrivacySecurityModal';
-import { googleDriveService } from '../services/google-drive.service';
 
 export function Settings() {
-    const { preferences, setLanguage, setGender } = useUserPreferences();
+    const { preferences, setLanguage, setGender, effectiveTheme } = useUserPreferences();
     const { t } = useTranslation();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const [isAdmin, setIsAdmin] = useState(false);
-    const [isGoogleDriveConnected, setIsGoogleDriveConnected] = useState(false);
-    const [checkingDrive, setCheckingDrive] = useState(true);
 
     const [userData, setUserData] = useState<{ full_name: string | null; email: string | null; first_name?: string; last_name?: string }>({
         full_name: '',
@@ -37,38 +35,8 @@ export function Settings() {
 
     useEffect(() => {
         fetchUserData();
-        checkGoogleDrive();
     }, []);
 
-    const checkGoogleDrive = async () => {
-        try {
-            const connected = await googleDriveService.isConnected();
-            setIsGoogleDriveConnected(connected);
-        } catch (error) {
-            console.error('Failed to check Google Drive status:', error);
-        } finally {
-            setCheckingDrive(false);
-        }
-    };
-
-    const handleGoogleDriveConnect = async () => {
-        try {
-            await googleDriveService.connectGoogleDrive();
-        } catch (error) {
-            console.error('Failed to initiate Google Drive connection:', error);
-        }
-    };
-
-    const handleGoogleDriveDisconnect = async () => {
-        if (window.confirm('Are you sure you want to disconnect Google Drive?')) {
-            try {
-                await googleDriveService.disconnect();
-                setIsGoogleDriveConnected(false);
-            } catch (error) {
-                console.error('Failed to disconnect Google Drive:', error);
-            }
-        }
-    };
 
     const fetchUserData = async () => {
         const { data: { user } } = await supabase.auth.getUser();
@@ -88,7 +56,7 @@ export function Settings() {
             }
 
             setUserData({
-                full_name: name || 'User',
+                full_name: name || t('user_generic'),
                 email: email || '',
                 first_name: data?.first_name || (name ? name.split(' ')[0] : ''),
                 last_name: data?.last_name || (name ? name.split(' ').slice(1).join(' ') : '')
@@ -131,22 +99,16 @@ export function Settings() {
             ]
         },
         {
-            title: 'Storage & Integrations',
+            title: t('settings_help_resources'),
             items: [
                 {
-                    icon: Cloud,
-                    label: 'Google Drive',
-                    description: isGoogleDriveConnected ? 'Connected' : 'Connect your Google Drive',
-                    onClick: isGoogleDriveConnected ? handleGoogleDriveDisconnect : handleGoogleDriveConnect,
-                    badge: isGoogleDriveConnected ? (
-                        <div className="flex items-center gap-1 text-green-600">
-                            <Check className="w-3 h-3" />
-                            <span className="text-xs font-medium">Connected</span>
-                        </div>
-                    ) : null
+                    icon: Book,
+                    label: t('knowledgeBase'),
+                    description: t('knowledgeBaseDesc') || (preferences.language === 'he' ? 'מדריכים ומאמרים מקצועיים' : 'Professional guides and articles'),
+                    onClick: () => navigate('/knowledge-base')
                 }
             ]
-        }
+        },
     ];
 
     const handleSendMessage = async () => {
@@ -204,7 +166,11 @@ export function Settings() {
                 </div>
 
                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-                    <img src={logoFinalCleanV2} alt="RentMate" className="h-16 w-auto object-contain drop-shadow-sm" />
+                    <img
+                        src={effectiveTheme === 'dark' ? logoIconDark : logoIconOnly}
+                        alt="RentMate"
+                        className="h-16 w-auto object-contain drop-shadow-sm transition-all duration-500"
+                    />
                 </div>
 
                 <div className="w-8"></div> {/* Spacer for balance */}
@@ -215,7 +181,7 @@ export function Settings() {
 
             {/* User Profile Card - Clickable */}
             <div
-                className="bg-card border border-border rounded-2xl p-6 flex items-center gap-4 cursor-pointer hover:bg-gray-50 transition-colors group relative"
+                className="bg-card border border-border rounded-2xl p-6 flex items-center gap-4 cursor-pointer hover:bg-secondary transition-colors group relative"
             >
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl group-hover:scale-110 transition-transform">
                     {userData.full_name?.charAt(0) || userData.email?.charAt(0).toUpperCase()}
@@ -233,8 +199,8 @@ export function Settings() {
                     <div className="bg-gradient-to-r from-brand-600 to-purple-600 rounded-2xl p-6 text-white shadow-lg cursor-pointer" onClick={() => window.location.href = '/admin'}>
                         <div className="flex items-center justify-between">
                             <div>
-                                <h3 className="font-bold text-lg">Admin Dashboard</h3>
-                                <p className="text-sm opacity-90">Manage users, invoices, and system settings</p>
+                                <h3 className="font-bold text-lg">{t('settings_admin_dashboard')}</h3>
+                                <p className="text-sm opacity-90">{t('settings_admin_desc')}</p>
                             </div>
                             <Shield className="w-8 h-8 opacity-80" />
                         </div>
@@ -242,75 +208,6 @@ export function Settings() {
                 )
             }
 
-            {/* Language & Localization Section */}
-            <div className="space-y-3">
-                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide px-1">
-                    {t('languageLocalization')}
-                </h2>
-                <div className="bg-card border border-border rounded-2xl p-6 space-y-6">
-                    {/* Language Selection */}
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-2">
-                            <Languages className="w-5 h-5 text-foreground" />
-                            <label className="font-medium text-foreground">{t('language')}</label>
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                            {languageOptions.map((option) => (
-                                <button
-                                    key={option.value}
-                                    onClick={() => setLanguage(option.value)}
-                                    className={`p - 4 rounded - xl border - 2 transition - all ${preferences.language === option.value
-                                        ? 'border-primary bg-primary/5'
-                                        : 'border-border hover:border-primary/50'
-                                        } `}
-                                >
-                                    <div className="flex items-center justify-between">
-                                        <span className="font-medium">{option.label}</span>
-                                        {preferences.language === option.value && (
-                                            <Check className="w-5 h-5 text-primary" />
-                                        )}
-                                    </div>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Gender Selection (only shown for Hebrew) */}
-                    {preferences.language === 'he' && (
-                        <div className="space-y-3 pt-3 border-t border-border">
-                            <div className="flex items-center gap-2">
-                                <User className="w-5 h-5 text-foreground" />
-                                <label className="font-medium text-foreground">{t('genderForHebrew')}</label>
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                                {preferences.language === 'he' ? 'זה עוזר לנו להציג לך טקסט עם המגדר הדקדוקי הנכון בעברית' : 'This helps us show you text with the correct grammatical gender in Hebrew'}
-                            </p>
-                            <div className="grid grid-cols-1 gap-3">
-                                {genderOptions.map((option) => (
-                                    <button
-                                        key={option.value}
-                                        onClick={() => setGender(option.value)}
-                                        className={`p - 4 rounded - xl border - 2 transition - all ${preferences.gender === option.value
-                                            ? 'border-primary bg-primary/5'
-                                            : 'border-border hover:border-primary/50'
-                                            } `}
-                                    >
-                                        <div className="flex items-center justify-between">
-                                            <div className="text-left">
-                                                <div className="font-medium">{option.labelHe}</div>
-                                                <div className="text-sm text-muted-foreground">{option.label}</div>
-                                            </div>
-                                            {preferences.gender === option.value && (
-                                                <Check className="w-5 h-5 text-primary" />
-                                            )}
-                                        </div>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
 
             {/* Settings Sections */}
             {
@@ -326,7 +223,7 @@ export function Settings() {
                                     <button
                                         key={item.label}
                                         onClick={item.onClick}
-                                        className="w-full flex items-center gap-4 p-4 hover:bg-secondary/50 transition-colors text-left"
+                                        className="w-full flex items-center gap-4 p-4 hover:bg-secondary transition-colors text-left"
                                     >
                                         <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
                                             <Icon className="w-5 h-5 text-foreground" />
@@ -363,7 +260,7 @@ export function Settings() {
                                 {t('contactSupportDesc')}
                             </div>
                         </div>
-                        <ChevronRight className={`w - 5 h - 5 text - muted - foreground transition - transform duration - 200 ${isContactOpen ? 'rotate-90' : ''} `} />
+                        <ChevronRight className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${isContactOpen ? 'rotate-90' : ''}`} />
                     </button>
 
                     {isContactOpen && (
@@ -378,22 +275,22 @@ export function Settings() {
                             <button
                                 onClick={handleSendMessage}
                                 disabled={!contactMessage.trim() || isSendingMessage}
-                                className={`w - full mt - 4 flex items - center justify - center gap - 2 p - 3 rounded - xl font - medium transition - all ${!contactMessage.trim() || isSendingMessage
+                                className={`w-full mt-4 flex items-center justify-center gap-2 p-3 rounded-xl font-medium transition-all ${!contactMessage.trim() || isSendingMessage
                                     ? 'bg-secondary text-muted-foreground cursor-not-allowed'
                                     : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25'
-                                    } `}
+                                    }`}
                             >
                                 {isSendingMessage ? (
                                     <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
                                 ) : messageSent ? (
                                     <>
                                         <Check className="w-5 h-5" />
-                                        Sent
+                                        {t('settings_sent')}
                                     </>
                                 ) : (
                                     <>
                                         <Send className="w-5 h-5" />
-                                        Send
+                                        {t('sendMessage')}
                                     </>
                                 )}
                             </button>

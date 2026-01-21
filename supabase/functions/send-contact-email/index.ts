@@ -3,8 +3,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const ADMIN_EMAIL = 'support@rentmate.co.il'
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
@@ -23,8 +23,14 @@ serve(async (req) => {
   }
 
   try {
+    // 0. Validate Environment Variables
+    if (!RESEND_API_KEY) {
+      console.error('CRITICAL: RESEND_API_KEY is not set in Supabase secrets.')
+      throw new Error('Server configuration error: Missing API Key.')
+    }
+
     // 1. Rate Limiting Check
-    const ip = req.headers.get('x-forwarded-for') || 'unknown'
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'unknown'
     const endpoint = 'send-contact-email'
 
     // Check current usage
@@ -33,39 +39,51 @@ serve(async (req) => {
       .select('request_count, last_request_at')
       .eq('ip_address', ip)
       .eq('endpoint', endpoint)
-      .single()
+      .maybeSingle()
 
-    const LIMIT = 5 // Max 5 emails per hour per IP
+    if (usageError) {
+      console.warn('Rate limit check skipped due to DB error:', usageError.message)
+    }
+
+    const LIMIT = 10 // Increased limit for testing
     const ONE_HOUR = 60 * 60 * 1000
 
     if (usage) {
       const timeDiff = new Date().getTime() - new Date(usage.last_request_at).getTime()
 
-      if (timeDiff < ONE_HOUR) {
-        if (usage.request_count >= LIMIT) {
-          return new Response(JSON.stringify({ error: 'Rate limit exceeded. Try again later.' }), {
-            status: 429,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          })
-        }
-        // Increment count
-        await supabase.from('rate_limits').update({
-          request_count: usage.request_count + 1,
-          last_request_at: new Date().toISOString() // Update time to slide window? Or keep strict hour? Let's just update count. Actually better to reset if old? Simplified: strict window from first request or sliding? Simplest: Delete old records periodically (via cron) or check logic here. 
-          // Let's stick to simple: if < 1 hour and count >= limit, block. Else update.
-        }).eq('ip_address', ip).eq('endpoint', endpoint)
-      } else {
-        // Reset if older than hour
-        await supabase.from('rate_limits').update({ request_count: 1, last_request_at: new Date().toISOString() }).eq('ip_address', ip).eq('endpoint', endpoint)
+      if (timeDiff < ONE_HOUR && usage.request_count >= LIMIT) {
+        return new Response(JSON.stringify({ error: 'Rate limit exceeded. Try again later.' }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
       }
+
+      // Update usage
+      await supabase.from('rate_limits')
+        .update({
+          request_count: timeDiff < ONE_HOUR ? usage.request_count + 1 : 1,
+          last_request_at: new Date().toISOString()
+        })
+        .eq('ip_address', ip)
+        .eq('endpoint', endpoint)
     } else {
       // Create new record
       await supabase.from('rate_limits').insert({ ip_address: ip, endpoint, request_count: 1 })
     }
 
-    const { user_id, user_name, user_email, message } = await req.json()
+    const body = await req.json().catch(() => ({}))
+    const { user_id = 'guest', user_name = 'Anonymous', user_email, message } = body
+
+    if (!user_email || !message) {
+      return new Response(JSON.stringify({ error: 'Missing email or message.' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
 
     // Send email notification using Resend
+    console.log(`Attempting to send contact email to ${ADMIN_EMAIL} from ${user_email}`)
+
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -75,76 +93,85 @@ serve(async (req) => {
       body: JSON.stringify({
         from: 'RentMate <noreply@rentmate.co.il>',
         to: [ADMIN_EMAIL],
+        reply_to: user_email,
         subject: `New Support Request from ${user_name}`,
         html: `
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <style>
-    body { background-color: #F8FAFC; font-family: sans-serif; color: #0F172A; }
+    body { background-color: #F8FAFC; font-family: sans-serif; color: #0F172A; line-height: 1.6; }
     .wrapper { background-color: #F8FAFC; padding: 40px 0; }
-    .main { background-color: #ffffff; margin: 0 auto; width: 100%; max-width: 600px; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-    .header { background-color: #ffffff; padding: 30px; text-align: center; border-bottom: 3px solid #0F172A; }
-    .logo { font-size: 28px; font-weight: 800; color: #0F172A; }
+    .main { background-color: #ffffff; margin: 0 auto; width: 100%; max-width: 600px; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 1px solid #E2E8F0; }
+    .header { background-color: #ffffff; padding: 30px; text-align: center; border-bottom: 2px solid #F1F5F9; }
     .content { padding: 40px 30px; }
-    .footer { background-color: #F1F5F9; padding: 20px; text-align: center; font-size: 12px; color: #64748B; }
-    .field { margin-bottom: 10px; }
-    .label { font-weight: bold; color: #64748B; font-size: 12px; text-transform: uppercase; }
-    .value { font-size: 16px; }
-    .message-box { background-color: #F1F5F9; padding: 20px; border-radius: 8px; border-left: 4px solid #0F172A; margin-top: 20px; }
+    .footer { background-color: #F8FAFC; padding: 20px; text-align: center; font-size: 12px; color: #94A3B8; border-top: 1px solid #F1F5F9; }
+    .field { margin-bottom: 20px; }
+    .label { font-weight: bold; color: #64748B; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+    .value { font-size: 16px; color: #1E293B; }
+    .message-box { background-color: #F1F5F9; padding: 24px; border-radius: 12px; border-right: 4px solid #000; margin-top: 8px; font-style: italic; }
   </style>
 </head>
 <body>
   <div class="wrapper">
     <div class="main">
       <div class="header">
-        <img src="https://qfvrekvugdjnwhnaucmz.supabase.co/storage/v1/object/public/assets/logo.png" alt="RentMate" width="150" style="display: block; margin: 0 auto;">
+        <h1 style="margin: 0; font-weight: 800; font-size: 24px;">RentMate <span style="font-weight: 400;">Support</span></h1>
       </div>
       <div class="content">
-        <h2>New Support Request</h2>
+        <h2 style="margin-top: 0; font-size: 20px; color: #000;">קבלת פנייה חדשה</h2>
         
         <div class="field">
-          <div class="label">From</div>
-          <div class="value">${user_name} (<a href="mailto:${user_email}">${user_email}</a>)</div>
-        </div>
-        
-        <div class="field">
-          <div class="label">User ID</div>
-          <div class="value">${user_id}</div>
+          <div class="label">שם השולח</div>
+          <div class="value">${user_name}</div>
         </div>
 
         <div class="field">
-           <div class="label">Message</div>
+          <div class="label">אימייל לחזרה</div>
+          <div class="value"><a href="mailto:${user_email}" style="color: #000; font-weight: 600;">${user_email}</a></div>
+        </div>
+        
+        <div class="field">
+          <div class="label">מזהה משתמש</div>
+          <div class="value"><code style="background: #F1F5F9; padding: 2px 6px; border-radius: 4px;">${user_id}</code></div>
+        </div>
+
+        <div class="field">
+           <div class="label">הודעה</div>
            <div class="message-box">
              ${message.replace(/\n/g, '<br>')}
            </div>
         </div>
       </div>
       <div class="footer">
-        Sent via RentMate Contact Form
+        נשלח אוטומטית באמצעות מערכת הפניות של RentMate
       </div>
     </div>
   </div>
 </body>
 </html>
-                `,
+        `,
       }),
     })
 
     const data = await res.json()
 
     if (!res.ok) {
-      throw new Error(`Resend API error: ${JSON.stringify(data)}`)
+      console.error('Resend API Error:', data)
+      throw new Error(`Email provider error: ${data.message || 'Unknown error'}`)
     }
 
+    console.log('Email sent successfully:', data.id)
+
     return new Response(
-      JSON.stringify({ success: true, email_id: data.id }),
+      JSON.stringify({ success: true, id: data.id }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )
   } catch (error) {
+    console.error('Edge Function Request Error:', error.message)
     return new Response(
       JSON.stringify({ error: error.message }),
       {

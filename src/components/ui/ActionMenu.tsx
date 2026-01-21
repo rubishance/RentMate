@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { MoreVertical, Eye, Edit, Trash2, Calculator, Bell, ChevronRight } from 'lucide-react';
+import { MoreVerticalIcon as MoreVertical, EyeIcon as Eye, EditIcon as Edit, TrashIcon as Trash2, ToolsIcon as Calculator, BellIcon as Bell, ArrowRightIcon as ChevronRight } from '../icons/NavIcons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from '../../hooks/useTranslation';
 
@@ -72,7 +72,7 @@ export function ActionMenu({ onView, onEdit, onDelete, onCalculate, onSnooze, al
                                     onClick={(e) => handleAction(onView, e)}
                                     className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-secondary rounded-lg transition-colors ${textAlign}`}
                                 >
-                                    <Eye className="w-4 h-4 text-blue-500" />
+                                    <Eye className="w-4 h-4 text-primary" />
                                     {t('view')}
                                 </button>
                             )}
@@ -104,7 +104,7 @@ export function ActionMenu({ onView, onEdit, onDelete, onCalculate, onSnooze, al
                                         className={`w-full flex items-center justify-between gap-2 px-3 py-2 text-sm text-foreground hover:bg-secondary rounded-lg transition-colors ${textAlign}`}
                                     >
                                         <div className="flex items-center gap-2">
-                                            <Bell className="w-4 h-4 text-blue-500" />
+                                            <Bell className="w-4 h-4 text-primary" />
                                             {t('snooze') || 'Snooze'}
                                         </div>
                                         <ChevronRight className="w-4 h-4" />

@@ -1,0 +1,45 @@
+{
+    "HomePage": {
+        "title": "מעצבים את העתיד עם בינה מלאכותית",
+        "subtitle": "מעצב גרפי ואמן AI",
+        "cta": "צפה בתיק העבודות"
+    },
+    "Portfolio": {
+        "title": "תיק העבודות שלי",
+        "all": "הכל",
+        "ai": "אמנות AI",
+        "graphic": "עיצוב גרפי",
+        "web": "עיצוב ווב",
+        "viewProject": "צפה בפרויקט"
+    },
+    "Navigation": {
+        "work": "עבודות",
+        "blog": "בלוג",
+        "about": "אודות",
+        "contact": "צור קשר"
+    },
+    "Footer": {
+        "copyright": "© 2024 AYDesign. כל הזכויות שמורות."
+    },
+    "Accessibility": {
+        "skipToContent": "דלג לתוכן",
+        "toggleMenu": "תפריט נגישות",
+        "increaseText": "הגדל טקסט",
+        "decreaseText": "הקטן טקסט",
+        "highContrast": "ניגודיות גבוהה"
+    },
+    "Contact": {
+        "title": "צור קשר",
+        "subtitle": "יש לך פרויקט בראש? בוא ניצור משהו מדהים ביחד.",
+        "email": "שלח לי אימייל",
+        "emailText": "לשאלות, שיתופי פעולה, או סתם להגיד היי.",
+        "sendEmail": "שלח אימייל",
+        "instagram": "אינסטגרם",
+        "instagramText": "עקבו אחר יצירות ה-AI והטיפים האחרונים שלי.",
+        "follow": "עקוב אחריי",
+        "linkedin": "לינקדאין",
+        "linkedinText": "התחבר להזדמנויות מקצועיות.",
+        "connect": "התחבר",
+        "followHeader": "עקבו אחריי באינסטגרם"
+    }
+}

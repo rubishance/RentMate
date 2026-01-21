@@ -1,0 +1,55 @@
+.button {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.primary {
+    background: var(--primary);
+    color: var(--background);
+}
+
+.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+}
+
+.secondary {
+    background: var(--accent);
+    color: var(--accent-foreground);
+}
+
+.outline {
+    background: transparent;
+    border: 1px solid var(--foreground);
+    color: var(--foreground);
+}
+
+.outline:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: var(--glass-shadow);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+    border-color: rgba(0, 0, 0, 0.1);
+}

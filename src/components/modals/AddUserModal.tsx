@@ -44,19 +44,19 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md shadow-2xl scale-100 animate-in zoom-in-95 duration-200 overflow-hidden">
                 {/* Header */}
-                <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                <div className="p-6 border-b border-border dark:border-gray-700 flex items-center justify-between">
                     <div>
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <h2 className="text-xl font-bold text-foreground dark:text-white flex items-center gap-2">
                             <User className="w-5 h-5 text-brand-600" />
                             Invite New User
                         </h2>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        <p className="text-sm text-muted-foreground dark:text-muted-foreground mt-1">
                             Send an invitation email to a new team member
                         </p>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                        className="p-2 text-muted-foreground hover:text-muted-foreground hover:bg-muted dark:hover:bg-gray-700 rounded-full transition-colors"
                     >
                         <X className="w-5 h-5" />
                     </button>
@@ -69,13 +69,13 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Full Name</label>
                             <div className="relative">
-                                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                 <input
                                     type="text"
                                     required
                                     value={formData.fullName}
                                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                                    className="w-full pl-9 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent dark:bg-gray-900 dark:text-white"
+                                    className="w-full pl-9 pr-4 py-2 border border-border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent dark:bg-foreground dark:text-white"
                                 />
                             </div>
                         </div>
@@ -84,13 +84,13 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Email Address</label>
                             <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                 <input
                                     type="email"
                                     required
                                     value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                    className="w-full pl-9 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent dark:bg-gray-900 dark:text-white"
+                                    className="w-full pl-9 pr-4 py-2 border border-border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent dark:bg-foreground dark:text-white"
                                 />
                             </div>
                         </div>
@@ -99,11 +99,11 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Role</label>
                             <div className="relative">
-                                <Shield className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                <Shield className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                 <select
                                     value={formData.role}
                                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                                    className="w-full pl-9 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent dark:bg-gray-900 dark:text-white appearance-none"
+                                    className="w-full pl-9 pr-4 py-2 border border-border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent dark:bg-foreground dark:text-white appearance-none"
                                 >
                                     <option value="user">User</option>
                                     <option value="admin">Admin</option>
@@ -117,7 +117,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 rounded-xl font-medium transition-colors"
+                            className="flex-1 px-4 py-2 text-gray-700 bg-muted hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 rounded-xl font-medium transition-colors"
                         >
                             Cancel
                         </button>

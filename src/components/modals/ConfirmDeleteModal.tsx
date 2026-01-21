@@ -64,14 +64,14 @@ export function ConfirmDeleteModal({
                             <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center shrink-0">
                                 <AlertTriangle className="w-6 h-6" />
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                            <h3 className="text-xl font-bold text-foreground dark:text-white">
                                 {step === 1 ? title : (lang === 'he' ? 'אישור סופי' : 'Final Confirmation')}
                             </h3>
                         </div>
 
                         {step === 1 ? (
                             <div className="space-y-4">
-                                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                                <p className="text-muted-foreground dark:text-gray-300 leading-relaxed">
                                     {message}
                                 </p>
 
@@ -100,7 +100,7 @@ export function ConfirmDeleteModal({
                                     </div>
                                 )}
 
-                                <div className="p-3 text-sm text-gray-500 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                                <div className="p-3 text-sm text-muted-foreground bg-secondary dark:bg-gray-700/50 rounded-lg">
                                     {lang === 'he'
                                         ? 'פעולה זו אינה הפיכה. המידע ימחק לצמיתות ולא ניתן יהיה לשחזר אותו.'
                                         : 'This action cannot be undone. The data will be deleted permanently and cannot be restored.'}
@@ -113,7 +113,7 @@ export function ConfirmDeleteModal({
                                         ? 'האם את/ה בטוח/ה לגמרי?'
                                         : 'Are you absolutely sure?'}
                                 </p>
-                                <p className="text-gray-500 dark:text-gray-400 text-sm">
+                                <p className="text-muted-foreground dark:text-muted-foreground text-sm">
                                     {lang === 'he'
                                         ? 'את/ה עומד/ת למחוק מידע זה לצמיתות. נא אשר/י פעולה זו.'
                                         : 'You are about to permanently delete this data. Please confirm this action.'}
@@ -125,7 +125,7 @@ export function ConfirmDeleteModal({
                             <button
                                 onClick={onClose}
                                 disabled={isDeleting}
-                                className="flex-1 px-4 py-2.5 text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 rounded-xl font-medium transition-colors"
+                                className="flex-1 px-4 py-2.5 text-gray-700 bg-muted hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 rounded-xl font-medium transition-colors"
                             >
                                 {t('cancel')}
                             </button>

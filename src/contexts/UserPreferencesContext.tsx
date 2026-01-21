@@ -1,12 +1,14 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import type { UserPreferences, Language, Gender } from '../types/database';
+import type { UserPreferences, Language, Gender, Theme } from '../types/database';
 import { userPreferencesService } from '../services/user-preferences.service';
 
 interface UserPreferencesContextType {
     preferences: UserPreferences;
     setLanguage: (language: Language) => void;
     setGender: (gender: Gender | null) => void;
+    setTheme: (theme: Theme) => void;
+    effectiveTheme: 'light' | 'dark';
     isLoading: boolean;
 }
 
@@ -19,6 +21,9 @@ interface UserPreferencesProviderProps {
 export function UserPreferencesProvider({ children }: UserPreferencesProviderProps) {
     const [preferences, setPreferences] = useState<UserPreferences>(() =>
         userPreferencesService.getUserPreferences()
+    );
+    const [effectiveTheme, setEffectiveTheme] = useState<'light' | 'dark'>(() =>
+        userPreferencesService.getEffectiveTheme()
     );
     const [isLoading, setIsLoading] = useState(false);
 
@@ -49,12 +54,72 @@ export function UserPreferencesProvider({ children }: UserPreferencesProviderPro
         setIsLoading(false);
     };
 
+    const handleSetTheme = (theme: Theme) => {
+        setIsLoading(true);
+        const updated = userPreferencesService.setTheme(theme);
+        setPreferences(updated);
+        setEffectiveTheme(userPreferencesService.getEffectiveTheme());
+        setIsLoading(false);
+    };
+
+    // Sync language with DOM
+    useEffect(() => {
+        document.documentElement.dir = preferences.language === 'he' ? 'rtl' : 'ltr';
+        document.documentElement.lang = preferences.language;
+    }, [preferences.language]);
+
+    // Sync theme with DOM using View Transitions API for smooth animation
+    useEffect(() => {
+        const theme = userPreferencesService.getEffectiveTheme();
+        setEffectiveTheme(theme);
+
+        // Use View Transitions API if supported for smooth theme change
+        const updateTheme = () => {
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        };
+
+        // Check if browser supports View Transitions API
+        if ('startViewTransition' in document && (document as any).startViewTransition) {
+            (document as any).startViewTransition(() => {
+                updateTheme();
+            });
+        } else {
+            // Fallback for browsers that don't support View Transitions
+            updateTheme();
+        }
+    }, [preferences.theme]);
+
+    // Listen for system theme changes when using 'system' preference
+    useEffect(() => {
+        if (preferences.theme !== 'system') return;
+
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        const handleChange = (e: MediaQueryListEvent) => {
+            const newTheme = e.matches ? 'dark' : 'light';
+            setEffectiveTheme(newTheme);
+            if (newTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        };
+
+        mediaQuery.addEventListener('change', handleChange);
+        return () => mediaQuery.removeEventListener('change', handleChange);
+    }, [preferences.theme]);
+
     return (
         <UserPreferencesContext.Provider
             value={{
                 preferences,
                 setLanguage: handleSetLanguage,
                 setGender: handleSetGender,
+                setTheme: handleSetTheme,
+                effectiveTheme,
                 isLoading,
             }}
         >
@@ -70,3 +135,4 @@ export function useUserPreferences(): UserPreferencesContextType {
     }
     return context;
 }
+

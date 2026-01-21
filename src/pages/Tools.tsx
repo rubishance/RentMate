@@ -18,12 +18,12 @@ export function Tools() {
             />
 
             {/* Tab Switcher */}
-            <div className="flex p-1 bg-gray-100 rounded-xl mb-6">
+            <div className="flex p-1 bg-muted rounded-xl mb-6">
                 <button
                     onClick={() => setActiveTab('calculator')}
                     className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === 'calculator'
                         ? 'bg-white text-brand-navy shadow-sm'
-                        : 'text-gray-500 hover:text-gray-900'
+                        : 'text-muted-foreground hover:text-foreground'
                         }`}
                 >
                     <CalcIcon className="w-4 h-4" />
@@ -33,7 +33,7 @@ export function Tools() {
                     onClick={() => setActiveTab('analytics')}
                     className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === 'analytics'
                         ? 'bg-white text-brand-navy shadow-sm'
-                        : 'text-gray-500 hover:text-gray-900'
+                        : 'text-muted-foreground hover:text-foreground'
                         }`}
                 >
                     <BarChart2 className="w-4 h-4" />

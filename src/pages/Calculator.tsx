@@ -1,4 +1,4 @@
-import { Calculator as CalcIcon, TrendingUp, ChevronDown, ChevronUp, Share2 } from 'lucide-react';
+import { Calculator as CalcIcon, TrendingUp, ChevronDown, ChevronUp, Share2, Trash2, Plus } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from '../hooks/useTranslation';
@@ -10,7 +10,8 @@ import { format, parseISO } from 'date-fns';
 import { DatePicker } from '../components/ui/DatePicker';
 import type { StandardCalculationResult, ReconciliationResult } from '../types/database';
 import { MessageGeneratorModal } from '../components/modals/MessageGeneratorModal';
-import logoFinalCleanV2 from '../assets/logo-final-clean-v2.png';
+import logoFinalCleanV2 from '../assets/rentmate-icon-only.png';
+import { UrlCompression } from '../lib/url-compression';
 
 type TabType = 'standard' | 'reconciliation';
 
@@ -44,6 +45,7 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
 
     const [showBreakdown, setShowBreakdown] = useState(false);
     const [isSharedCalculation, setIsSharedCalculation] = useState(false);
+    const [shouldAutoCalculate, setShouldAutoCalculate] = useState(false);
 
     // Decode shared calculation from URL
     useEffect(() => {
@@ -51,47 +53,69 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
         const shareParam = params.get('share');
 
         if (shareParam) {
-            try {
-                // Decode base64 and parse JSON
-                const json = decodeURIComponent(atob(shareParam));
-                const data = JSON.parse(json);
+            const data = UrlCompression.decompress(shareParam);
 
-                if (data.input && data.result) {
-                    setIsSharedCalculation(true);
+            if (data) {
+                setIsSharedCalculation(true);
 
-                    // Determine which tab based on calculation type
-                    const calcType = data.input.type || 'standard';
-                    setActiveTab(calcType);
+                // Determine which tab based on calculation type
+                const calcType = data.input.type || 'standard';
+                setActiveTab(calcType);
 
-                    if (calcType === 'standard') {
-                        // Pre-fill standard calculation
-                        if (data.input.baseRent) setBaseRent(data.input.baseRent.toString());
-                        if (data.input.linkageType) setLinkageType(data.input.linkageType);
-                        if (data.input.baseDate) setBaseDate(data.input.baseDate);
-                        if (data.input.targetDate) setTargetDate(data.input.targetDate);
+                if (calcType === 'standard') {
+                    // Pre-fill standard calculation
+                    if (data.input.baseRent) setBaseRent(data.input.baseRent.toString());
+                    if (data.input.linkageType) setLinkageType(data.input.linkageType);
+                    if (data.input.baseDate) setBaseDate(data.input.baseDate);
+                    if (data.input.targetDate) setTargetDate(data.input.targetDate);
+                    if (data.input.isIndexBaseMinimum !== undefined) setIndexBaseMinimum(data.input.isIndexBaseMinimum);
 
-                        // Set the result
+                    if (data.result) {
                         setStandardResult(data.result);
-                    } else if (calcType === 'reconciliation') {
-                        // Pre-fill reconciliation calculation
-                        if (data.input.baseRent) setRecBaseRent(data.input.baseRent.toString());
-                        if (data.input.linkageType) setRecLinkageType(data.input.linkageType);
-                        if (data.input.contractStartDate) setContractStartDate(data.input.contractStartDate);
-                        if (data.input.periodStart) setPeriodStart(data.input.periodStart);
-                        if (data.input.periodEnd) setPeriodEnd(data.input.periodEnd);
-                        if (data.input.actualPaid) setActualPaid(data.input.actualPaid.toString());
+                    } else {
+                        setShouldAutoCalculate(true);
+                    }
+                } else if (calcType === 'reconciliation') {
+                    // Pre-fill reconciliation calculation
+                    if (data.input.baseRent) setRecBaseRent(data.input.baseRent.toString());
+                    if (data.input.linkageType) setRecLinkageType(data.input.linkageType);
+                    if (data.input.contractStartDate) setContractStartDate(data.input.contractStartDate);
+                    if (data.input.periodStart) setPeriodStart(data.input.periodStart);
+                    if (data.input.periodEnd) setPeriodEnd(data.input.periodEnd);
+                    if (data.input.actualPaid) setActualPaid(data.input.actualPaid.toString());
 
-                        // Set the result
+                    // Restore Advanced Options
+                    if (data.input.linkageSubType) setRecLinkageSubType(data.input.linkageSubType);
+                    if (data.input.updateFrequency) setRecUpdateFrequency(data.input.updateFrequency);
+                    if (data.input.recIndexBaseMinimum !== undefined) setRecIndexBaseMinimum(data.input.recIndexBaseMinimum);
+                    if (data.input.maxIncreasePercentage) setRecMaxIncrease(data.input.maxIncreasePercentage.toString());
+
+                    if (data.result) {
                         setReconciliationResult(data.result);
                         setShowBreakdown(true);
+                    } else {
+                        setShouldAutoCalculate(true);
                     }
                 }
-            } catch (error) {
-                console.error('Error decoding shared calculation:', error);
-                // Invalid share link - just ignore it
             }
         }
     }, [location.search]);
+
+    // Auto-Calculate Effect (for shared links without results)
+    useEffect(() => {
+        if (shouldAutoCalculate) {
+            const timer = setTimeout(() => {
+                if (activeTab === 'standard') {
+                    handleStandardCalculate();
+                } else {
+                    handleReconciliationCalculate();
+                    setShowBreakdown(true);
+                }
+                setShouldAutoCalculate(false);
+            }, 500); // Small delay to ensure state updates propagate
+            return () => clearTimeout(timer);
+        }
+    }, [shouldAutoCalculate, activeTab]);
 
     // Initial load from navigation state
     useEffect(() => {
@@ -126,6 +150,9 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
     const [recIndexBaseMinimum, setRecIndexBaseMinimum] = useState<boolean>(true);
     const [recMaxIncrease, setRecMaxIncrease] = useState<string>('');
     const [showRecAdvanced, setShowRecAdvanced] = useState(false);
+    // Draft states for manual additions
+    const [draftExpected, setDraftExpected] = useState<{ due_date: string; amount: string }>({ due_date: '', amount: '' });
+    const [draftPayment, setDraftPayment] = useState<{ due_date: string; amount: string }>({ due_date: '', amount: '' });
 
     // Fetch contracts for dropdown
     useEffect(() => {
@@ -172,45 +199,18 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
     };
 
     const handleAddPayment = () => {
-        // Find the last payment to determine defaults
-        const lastPayment = paymentHistory.length > 0 ? paymentHistory[paymentHistory.length - 1] : null;
-
-        let nextDate = periodStart || new Date().toISOString().split('T')[0];
-        let nextAmount = 0;
-
-        if (lastPayment && lastPayment.due_date) {
-            // Logic: Same amount, next month, same day (or closest valid day)
-            nextAmount = lastPayment.amount;
-
-            const currentDate = new Date(lastPayment.due_date);
-            const targetMonth = currentDate.getMonth() + 1; // Next month
-            const year = currentDate.getFullYear();
-            const day = currentDate.getDate();
-
-            // Handle date rollover (e.g., Jan 30 -> Feb 28)
-            // We set the date to the 1st of next month, then try to set the day.
-            // If the day is invalid for that month, Date object auto-rolls over?
-            // Actually, `setMonth` handles rollover correctly relative to standard JS date behavior,
-            // but we want "closest date" (e.g. Jan 31 -> Feb 28, not Mar 3).
-
-            // robust way:
-            const nextMonthDate = new Date(year, targetMonth, 1);
-            const daysInNextMonth = new Date(year, targetMonth + 1, 0).getDate();
-            const safeDay = Math.min(day, daysInNextMonth);
-            nextMonthDate.setDate(safeDay);
-
-            nextDate = format(nextMonthDate, 'yyyy-MM-dd');
-        }
+        if (!draftPayment.due_date || !draftPayment.amount) return;
 
         const newPayment = {
             id: `manual-${Date.now()}`,
-            due_date: nextDate,
-            amount: nextAmount,
+            due_date: draftPayment.due_date,
+            amount: parseFloat(draftPayment.amount) || 0,
             status: 'manual'
         };
         const updatedHistory = [...paymentHistory, newPayment];
         setPaymentHistory(updatedHistory);
         updateMonthlyActuals(updatedHistory);
+        setDraftPayment({ due_date: '', amount: '' });
     };
 
     const handleRemovePayment = (id: string) => {
@@ -251,12 +251,15 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
     };
 
     const handleAddExpected = () => {
+        if (!draftExpected.due_date || !draftExpected.amount) return;
+
         const newPayment = {
             id: `manual-exp-${Date.now()}`,
-            due_date: periodStart || new Date().toISOString().split('T')[0],
-            amount: parseFloat(recBaseRent) || 0
+            due_date: draftExpected.due_date,
+            amount: parseFloat(draftExpected.amount) || 0
         };
         setExpectedHistory(prev => [...prev, newPayment]);
+        setDraftExpected({ due_date: '', amount: '' });
     };
 
     const handleRemoveExpected = (id: string) => {
@@ -306,8 +309,8 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
         <div className="max-w-3xl mx-auto space-y-6">
             {/* Shared Calculation Banner */}
             {isSharedCalculation && (
-                <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl p-4 flex items-center gap-3">
-                    <Share2 className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                <div className="bg-primary/10 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl p-4 flex items-center gap-3">
+                    <Share2 className="w-5 h-5 text-primary dark:text-blue-400 flex-shrink-0" />
                     <div className="flex-1">
                         <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
                             {t('viewingSharedCalculation')}
@@ -321,28 +324,27 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
 
             {/* Header - Only check if NOT in embed mode */}
             {!embedMode && (
-                <div className="flex items-center justify-between relative h-20 mb-6">
+                <div className="flex items-center justify-between relative h-24 mb-8">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('calculator')}</h1>
-                        <p className="text-sm text-muted-foreground">{t('calculateLinkageAndMore')}</p>
-                        <p className="text-xs text-primary font-bold mt-1">v2.3 Fixed Layouts & Links</p>
+                        <h1 className="text-4xl font-black tracking-tighter text-black dark:text-white uppercase">{t('calculator')}</h1>
+                        <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mt-1">{t('calculateLinkageAndMore')}</p>
                     </div>
 
-                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-                        <img src={logoFinalCleanV2} alt="RentMate" className="h-16 w-auto object-contain drop-shadow-sm" />
+                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-10 dark:opacity-20">
+                        <img src={logoFinalCleanV2} alt="RentMate" className="h-16 w-auto object-contain" />
                     </div>
                 </div>
             )}
 
             {/* Tabs */}
-            <div className="flex gap-2 bg-secondary/30 p-1 rounded-xl">
+            <div className="flex gap-2 bg-gray-50 dark:bg-neutral-800 p-1.5 rounded-[1.25rem] border border-gray-100 dark:border-neutral-800">
                 <button
                     onClick={() => setActiveTab('standard')}
                     className={cn(
-                        "flex-1 py-2.5 px-4 rounded-lg font-medium text-sm transition-all",
+                        "flex-1 py-3 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95",
                         activeTab === 'standard'
-                            ? "bg-card text-foreground shadow-sm"
-                            : "text-muted-foreground hover:text-foreground"
+                            ? "bg-black dark:bg-white text-white dark:text-black shadow-lg"
+                            : "text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white"
                     )}
                 >
                     {t('standardCalculation')}
@@ -350,10 +352,10 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                 <button
                     onClick={() => setActiveTab('reconciliation')}
                     className={cn(
-                        "flex-1 py-2.5 px-4 rounded-lg font-medium text-sm transition-all",
+                        "flex-1 py-3 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95",
                         activeTab === 'reconciliation'
-                            ? "bg-card text-foreground shadow-sm"
-                            : "text-muted-foreground hover:text-foreground"
+                            ? "bg-black dark:bg-white text-white dark:text-black shadow-lg"
+                            : "text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white"
                     )}
                 >
                     {t('paymentReconciliation')}
@@ -363,13 +365,14 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
             {/* Contract Selection (Global for Reco) */}
             {
                 activeTab === 'reconciliation' && (
-                    <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-xl border border-blue-100 dark:border-blue-900/50">
-                        <label className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2 block">
+                    <div className="bg-gray-50 dark:bg-neutral-800/50 p-6 rounded-[2rem] border border-gray-100 dark:border-neutral-800">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3 block">
                             {t('loadFromContract')}
                         </label>
                         <select
-                            className="w-full p-2.5 bg-white dark:bg-black/20 border border-blue-200 dark:border-blue-800 rounded-lg text-sm"
+                            className="w-full p-4 bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-700 rounded-2xl text-sm font-bold text-black dark:text-white outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all appearance-none"
                             onChange={async (e) => {
+                                // ... existing logic remains same ...
                                 if (!e.target.value) return;
                                 setLoading(true);
                                 try {
@@ -449,25 +452,25 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
             {/* Standard Calculation Tab */}
             {
                 activeTab === 'standard' && (
-                    <div className="space-y-6">
-                        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">{t('baseRent')}</label>
+                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 rounded-[2.5rem] p-8 md:p-12 shadow-2xl space-y-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block ml-1">{t('baseRent')}</label>
                                     <input
                                         type="number"
                                         value={baseRent}
                                         onChange={(e) => setBaseRent(e.target.value)}
-                                        className="w-full p-3 bg-background border border-border rounded-xl"
+                                        className="w-full p-4 bg-gray-50 dark:bg-neutral-800 border-transparent focus:bg-white dark:focus:bg-neutral-700 border focus:border-black dark:focus:border-white rounded-2xl font-black text-xl text-black dark:text-white transition-all outline-none"
                                         placeholder="5000"
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">{t('linkageType')}</label>
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block ml-1">{t('linkageType')}</label>
                                     <select
                                         value={linkageType}
                                         onChange={(e) => setLinkageType(e.target.value as any)}
-                                        className="w-full p-3 bg-background border border-border rounded-xl"
+                                        className="w-full p-4 bg-gray-50 dark:bg-neutral-800 border-transparent focus:bg-white dark:focus:bg-neutral-700 border focus:border-black dark:focus:border-white rounded-2xl font-bold text-black dark:text-white transition-all outline-none appearance-none"
                                     >
                                         <option value="cpi">{t('cpi')}</option>
                                         <option value="housing">{t('housingServices')}</option>
@@ -476,8 +479,8 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                                         <option value="eur">{t('eurRate')}</option>
                                     </select>
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">{t('baseDate')}</label>
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block ml-1">{t('baseDate')}</label>
                                     <DatePicker
                                         value={baseDate ? parseISO(baseDate) : undefined}
                                         onChange={(date) => setBaseDate(date ? format(date, 'yyyy-MM-dd') : '')}
@@ -485,8 +488,8 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                                         className="w-full"
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">{t('targetDate')}</label>
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block ml-1">{t('targetDate')}</label>
                                     <DatePicker
                                         value={targetDate ? parseISO(targetDate) : undefined}
                                         onChange={(date) => setTargetDate(date ? format(date, 'yyyy-MM-dd') : '')}
@@ -500,9 +503,9 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                             {/* Advanced Options */}
                             <button
                                 onClick={() => setShowAdvanced(!showAdvanced)}
-                                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                                className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 hover:text-black dark:hover:text-white transition-all"
                             >
-                                {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                {showAdvanced ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                                 {t('advancedOptions')}
                             </button>
 
@@ -528,43 +531,43 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                             <button
                                 onClick={handleStandardCalculate}
                                 disabled={loading || !baseRent || !baseDate || !targetDate}
-                                className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                className="w-full bg-black dark:bg-white text-white dark:text-black py-5 rounded-[1.5rem] font-black text-lg hover:opacity-90 transition-all active:scale-[0.98] shadow-2xl disabled:opacity-50 flex items-center justify-center gap-3 group"
                             >
                                 {loading ? t('calculating') : t('calculate')}
-                                <TrendingUp className="w-4 h-4" />
+                                <TrendingUp className="w-5 h-5 group-hover:translate-y-[-2px] transition-transform" />
                             </button>
                         </div>
 
                         {/* Standard Results */}
                         {standardResult && (
-                            <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
-                                <h3 className="font-bold text-lg">{t('results')}</h3>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="bg-secondary/30 p-4 rounded-xl">
-                                        <span className="text-xs text-muted-foreground block mb-1">{t('newRent')}</span>
-                                        <span className="text-2xl font-bold text-primary">₪{standardResult.newRent.toLocaleString()}</span>
+                            <div className="bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 rounded-[2.5rem] p-8 md:p-12 shadow-2xl space-y-8 animate-in zoom-in-95 duration-500">
+                                <h3 className="font-black text-xs uppercase tracking-widest text-gray-400 dark:text-gray-500">{t('results')}</h3>
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div className="bg-gray-50 dark:bg-neutral-800 p-6 rounded-[2rem]">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block mb-2">{t('newRent')}</span>
+                                        <span className="text-3xl font-black text-black dark:text-white">₪{standardResult.newRent.toLocaleString()}</span>
                                     </div>
-                                    <div className="bg-secondary/30 p-4 rounded-xl">
-                                        <span className="text-xs text-muted-foreground block mb-1">{t('linkageCoefficient')}</span>
-                                        <span className="text-2xl font-bold">{standardResult.linkageCoefficient.toFixed(2)}%</span>
+                                    <div className="bg-gray-50 dark:bg-neutral-800 p-6 rounded-[2rem]">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block mb-2">{t('linkageCoefficient')}</span>
+                                        <span className="text-3xl font-black text-black dark:text-white">{standardResult.linkageCoefficient.toFixed(2)}%</span>
                                     </div>
-                                    <div className="bg-secondary/30 p-4 rounded-xl">
-                                        <span className="text-xs text-muted-foreground block mb-1">{t('change')}</span>
-                                        <span className="text-xl font-bold">₪{Math.round(standardResult.absoluteChange).toLocaleString()}</span>
+                                    <div className="bg-gray-50 dark:bg-neutral-800 p-6 rounded-[2rem]">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block mb-2">{t('change')}</span>
+                                        <span className="text-2xl font-black text-black dark:text-white">₪{Math.round(standardResult.absoluteChange).toLocaleString()}</span>
                                     </div>
-                                    <div className="bg-secondary/30 p-4 rounded-xl">
-                                        <span className="text-xs text-muted-foreground block mb-1">{t('percentage')}</span>
-                                        <span className="text-xl font-bold">{standardResult.percentageChange.toFixed(2)}%</span>
+                                    <div className="bg-gray-50 dark:bg-neutral-800 p-6 rounded-[2rem]">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block mb-2">{t('percentage')}</span>
+                                        <span className="text-2xl font-black text-black dark:text-white">{standardResult.percentageChange.toFixed(2)}%</span>
                                     </div>
                                 </div>
-                                <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-xl text-sm">
-                                    <p className="font-medium mb-1">{t('formula')}</p>
-                                    <p className="text-muted-foreground">{standardResult.formula}</p>
+                                <div className="bg-black dark:bg-white p-6 rounded-[2rem] text-sm group transition-all hover:scale-[1.01]">
+                                    <p className="font-black text-[10px] uppercase tracking-widest text-white/50 dark:text-black/50 mb-2">{t('formula')}</p>
+                                    <p className="text-white dark:text-black font-medium leading-relaxed">{standardResult.formula}</p>
                                 </div>
 
                                 <button
                                     onClick={() => setIsGeneratorOpen(true)}
-                                    className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-bold transition-all hover:opacity-90 flex items-center justify-center gap-2 mt-4 shadow-lg"
+                                    className="w-full bg-white dark:bg-neutral-800 border border-gray-100 dark:border-neutral-700 text-black dark:text-white py-5 rounded-[1.5rem] font-black text-sm uppercase tracking-widest transition-all hover:bg-gray-50 dark:hover:bg-neutral-700 flex items-center justify-center gap-3 shadow-xl"
                                 >
                                     <Share2 className="w-5 h-5" />
                                     {t('shareResult')}
@@ -592,55 +595,56 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
             {/* Payment Reconciliation Tab */}
             {
                 activeTab === 'reconciliation' && (
-                    <div className="space-y-6">
-                        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <div className="flex justify-between items-center">
-                                        <label className="text-sm font-medium">Expected Base Rent</label>
-                                        <button
-                                            onClick={() => {
-                                                if (expectedHistory.length === 0 && periodStart && periodEnd) {
-                                                    // Generate 
-                                                    const months = [];
-                                                    const startDate = new Date(periodStart);
-                                                    const endDate = new Date(periodEnd);
-                                                    const tempDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
-                                                    const lastDate = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
+                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 rounded-[2.5rem] p-8 md:p-12 shadow-2xl space-y-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                                {/* Left Column: Payments History */}
+                                <div className="space-y-8">
+                                    {/* Expected Base Rent */}
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block ml-1">{t('expectedBaseRent')}</label>
+                                            <button
+                                                onClick={() => {
+                                                    if (expectedHistory.length === 0 && periodStart && periodEnd) {
+                                                        const months = [];
+                                                        const startDate = new Date(periodStart);
+                                                        const endDate = new Date(periodEnd);
+                                                        const tempDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+                                                        const lastDate = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
 
-                                                    while (tempDate <= lastDate) {
-                                                        const year = tempDate.getFullYear();
-                                                        const month = String(tempDate.getMonth() + 1).padStart(2, '0');
-                                                        months.push(`${year}-${month}`);
-                                                        tempDate.setMonth(tempDate.getMonth() + 1);
+                                                        while (tempDate <= lastDate) {
+                                                            const year = tempDate.getFullYear();
+                                                            const month = String(tempDate.getMonth() + 1).padStart(2, '0');
+                                                            months.push(`${year}-${month}`);
+                                                            tempDate.setMonth(tempDate.getMonth() + 1);
+                                                        }
+                                                        const expected = months.map((m, i) => ({
+                                                            id: `gen-${i}`,
+                                                            due_date: `${m}-${String(startDate.getDate()).padStart(2, '0')}`,
+                                                            amount: parseFloat(recBaseRent) || 0
+                                                        }));
+                                                        setExpectedHistory(expected);
+                                                    } else if (expectedHistory.length > 0) {
+                                                        if (confirm('Clear expected payment list?')) setExpectedHistory([]);
                                                     }
-                                                    const expected = months.map((m, i) => ({
-                                                        id: `gen-${i}`,
-                                                        due_date: `${m}-${String(startDate.getDate()).padStart(2, '0')}`,
-                                                        amount: parseFloat(recBaseRent) || 0
-                                                    }));
-                                                    setExpectedHistory(expected);
-                                                } else if (expectedHistory.length > 0) {
-                                                    if (confirm('Clear expected payment list?')) setExpectedHistory([]);
-                                                }
-                                            }}
-                                            className="text-xs text-primary hover:underline"
-                                        >
-                                            {expectedHistory.length > 0 ? 'Clear List' : 'Generate List'}
-                                        </button>
-                                    </div>
-                                    {expectedHistory.length > 0 ? (
+                                                }}
+                                                className="text-xs text-primary hover:underline"
+                                            >
+                                                {expectedHistory.length > 0 ? 'Clear List' : 'Generate List'}
+                                            </button>
+                                        </div>
                                         <div className="border border-border rounded-xl overflow-hidden bg-background">
                                             <div className="bg-secondary/30 p-2 text-xs font-medium text-muted-foreground grid grid-cols-12 gap-2 px-4 sticky top-0 z-10">
                                                 <span className="col-span-7">{t('date')}</span>
                                                 <span className="col-span-4 text-center">{t('amount')}</span>
                                                 <span className="col-span-1"></span>
                                             </div>
-                                            <div className="max-h-60 overflow-y-auto">
-                                                <div className="divide-y divide-border">
+                                            <div className="max-h-72 overflow-y-auto">
+                                                <div className="divide-y divide-gray-50 dark:divide-neutral-800">
                                                     {expectedHistory.map((payment) => (
-                                                        <div key={payment.id} className="grid grid-cols-12 gap-2 items-center py-1.5 px-2 text-sm hover:bg-secondary/10 transition-colors group">
-                                                            <div className="col-span-7">
+                                                        <div key={payment.id} className="grid grid-cols-12 gap-2 items-center py-2 px-4 text-sm hover:bg-gray-50 dark:hover:bg-neutral-800/50 transition-colors group">
+                                                            <div className="col-span-6">
                                                                 <DatePicker
                                                                     value={payment.due_date ? parseISO(payment.due_date) : undefined}
                                                                     onChange={(date) => handleExpectedChange(payment.id, 'due_date', date ? format(date, 'yyyy-MM-dd') : '')}
@@ -648,180 +652,287 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                                                                     className="w-full"
                                                                 />
                                                             </div>
-                                                            <div className="col-span-4 relative">
-                                                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">₪</span>
+                                                            <div className="col-span-5 relative">
+                                                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-xs font-bold">₪</span>
                                                                 <input
                                                                     type="number"
                                                                     value={payment.amount}
                                                                     onChange={(e) => handleExpectedChange(payment.id, 'amount', e.target.value)}
-                                                                    className="w-full p-1 pl-4 bg-transparent border border-transparent hover:border-border focus:border-primary rounded text-center font-medium outline-none transition-colors"
+                                                                    className="w-full p-2 pl-6 bg-transparent border-transparent hover:border-gray-100 dark:hover:border-neutral-700 focus:border-black dark:focus:border-white border rounded-xl text-center font-black text-black dark:text-white outline-none transition-all"
                                                                 />
                                                             </div>
                                                             <div className="col-span-1 flex justify-end">
                                                                 <button
                                                                     onClick={() => handleRemoveExpected(payment.id)}
-                                                                    className="text-muted-foreground hover:text-red-500 transition-all p-1"
-                                                                    title="Remove"
+                                                                    className="text-gray-300 hover:text-red-500 transition-all p-2"
                                                                 >
                                                                     <Trash2 className="w-4 h-4" />
                                                                 </button>
                                                             </div>
                                                         </div>
                                                     ))}
+                                                    {/* Draft Row */}
+                                                    <div className="grid grid-cols-12 gap-2 items-center py-3 px-4 text-sm bg-gray-50/50 dark:bg-neutral-800/30">
+                                                        <div className="col-span-6">
+                                                            <DatePicker
+                                                                value={draftExpected.due_date ? parseISO(draftExpected.due_date) : undefined}
+                                                                onChange={(date) => setDraftExpected({ ...draftExpected, due_date: date ? format(date, 'yyyy-MM-dd') : '' })}
+                                                                placeholder={t('date')}
+                                                                className="w-full"
+                                                            />
+                                                        </div>
+                                                        <div className="col-span-5 relative">
+                                                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-[10px] font-bold">₪</span>
+                                                            <input
+                                                                type="number"
+                                                                value={draftExpected.amount}
+                                                                onChange={(e) => setDraftExpected({ ...draftExpected, amount: e.target.value })}
+                                                                placeholder="0"
+                                                                className="w-full p-2 pl-5 bg-white dark:bg-neutral-800 border border-gray-100 dark:border-neutral-700 rounded-xl text-center font-bold text-black dark:text-white outline-none"
+                                                            />
+                                                        </div>
+                                                        <div className="col-span-1 flex justify-end">
+                                                            <button
+                                                                onClick={handleAddExpected}
+                                                                disabled={!draftExpected.due_date || !draftExpected.amount}
+                                                                className="text-black dark:text-white hover:opacity-70 disabled:opacity-20 transition-all p-2"
+                                                                title="Add"
+                                                            >
+                                                                <Plus className="w-5 h-5" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="bg-secondary/30 p-2 border-t border-border flex justify-between items-center">
-                                                <button
-                                                    onClick={handleAddExpected}
-                                                    className="text-xs font-medium text-primary hover:underline flex items-center gap-1 px-2"
-                                                >
-                                                    <Plus className="w-3 h-3" />
-                                                    {t('addItem')}
-                                                </button>
-                                                <div className="text-xs font-bold px-4">
-                                                    {t('totalBase')}: ₪{expectedHistory.reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
+                                            <div className="bg-gray-50 dark:bg-neutral-800 p-4 border-t border-gray-100 dark:border-neutral-800 flex justify-end items-center">
+                                                <div className="text-xs font-black uppercase tracking-widest text-black dark:text-white">
+                                                    {t('totalBase')}: <span className="text-lg ml-2">₪{expectedHistory.reduce((sum, p) => sum + p.amount, 0).toLocaleString()}</span>
                                                 </div>
                                             </div>
                                         </div>
-                                    ) : (
-                                        <div className="space-y-1">
-                                            <input
-                                                type="number"
-                                                value={recBaseRent}
-                                                onChange={(e) => setRecBaseRent(e.target.value)}
-                                                className="w-full p-3 bg-background border border-border rounded-xl"
-                                                placeholder="5000"
-                                            />
-                                            <p className="text-xs text-muted-foreground">
-                                                {t('globalBaseRentHelp')}
-                                            </p>
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">{t('linkageType')}</label>
-                                    <select
-                                        value={recLinkageType}
-                                        onChange={(e) => setRecLinkageType(e.target.value as any)}
-                                        className="w-full p-3 bg-background border border-border rounded-xl"
-                                    >
+                                    </div>
 
-                                        <option value="cpi">{t('cpi')}</option>
-                                        <option value="housing">{t('housingServices')}</option>
-                                        <option value="construction">{t('constructionInputs')}</option>
-                                        <option value="usd">{t('usdRate')}</option>
-                                        <option value="eur">{t('eurRate')}</option>
-                                    </select>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">{t('baseIndexDate')}</label>
-                                    <DatePicker
-                                        value={contractStartDate ? parseISO(contractStartDate) : undefined}
-                                        onChange={(date) => setContractStartDate(date ? format(date, 'yyyy-MM-dd') : '')}
-                                        placeholder={t('baseIndexDate')}
-                                        className="w-full"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">{t('actualPayments')}</label>
-                                    {monthlyActuals ? (
-                                        <div className="border border-border rounded-xl overflow-hidden bg-background">
-                                            <div className="bg-secondary/30 p-2 text-xs font-medium text-muted-foreground grid grid-cols-12 gap-2 px-4 sticky top-0 z-10">
-                                                <span className="col-span-7">{t('date')}</span>
-                                                <span className="col-span-4 text-center">{t('amount')}</span>
+                                    {/* Actual Payments */}
+                                    <div className="space-y-4">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block ml-1">{t('actualPayments')}</label>
+                                        <div className="border border-gray-100 dark:border-neutral-800 rounded-2xl overflow-hidden bg-white dark:bg-neutral-900">
+                                            <div className="bg-gray-50 dark:bg-neutral-800 p-3 text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 grid grid-cols-12 gap-2 px-6 sticky top-0 z-10">
+                                                <span className="col-span-6">{t('date')}</span>
+                                                <span className="col-span-5 text-center">{t('amount')}</span>
                                                 <span className="col-span-1"></span>
                                             </div>
-                                            <div className="max-h-60 overflow-y-auto">
-                                                {paymentHistory.length === 0 ? (
-                                                    <div className="p-8 text-center space-y-2">
-                                                        <p className="text-sm text-muted-foreground">{t('noPaymentsListed')}</p>
-                                                        <button
-                                                            onClick={handleAddPayment}
-                                                            className="text-primary text-sm hover:underline"
-                                                        >
-                                                            {t('addFirstPayment')}
-                                                        </button>
-                                                    </div>
-                                                ) : (
-                                                    <div className="divide-y divide-border">
-                                                        {paymentHistory.map((payment) => (
-                                                            <div key={payment.id} className="grid grid-cols-12 gap-2 items-center py-1.5 px-2 text-sm hover:bg-secondary/10 transition-colors group">
-                                                                <div className="col-span-7">
-                                                                    <DatePicker
-                                                                        value={payment.due_date ? parseISO(payment.due_date) : undefined}
-                                                                        onChange={(date) => handlePaymentChange(payment.id, 'due_date', date ? format(date, 'yyyy-MM-dd') : '')}
-                                                                        placeholder={t('date')}
-                                                                        className="w-full"
-                                                                    />
-                                                                </div>
-                                                                <div className="col-span-4 relative">
-                                                                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">₪</span>
-                                                                    <input
-                                                                        type="number"
-                                                                        value={payment.amount}
-                                                                        onChange={(e) => handlePaymentChange(payment.id, 'amount', e.target.value)}
-                                                                        className="w-full p-1 pl-4 bg-transparent border border-transparent hover:border-border focus:border-primary rounded text-center font-medium outline-none transition-colors"
-                                                                    />
-                                                                </div>
-                                                                <div className="col-span-1 flex justify-end">
-                                                                    <button
-                                                                        onClick={() => handleRemovePayment(payment.id)}
-                                                                        className="text-muted-foreground hover:text-red-500 transition-all p-1"
-                                                                        title="Remove"
-                                                                    >
-                                                                        <Trash2 className="w-4 h-4" />
-                                                                    </button>
-                                                                </div>
+                                            <div className="max-h-72 overflow-y-auto">
+                                                <div className="divide-y divide-gray-50 dark:divide-neutral-800">
+                                                    {paymentHistory.map((payment) => (
+                                                        <div key={payment.id} className="grid grid-cols-12 gap-2 items-center py-2 px-4 text-sm hover:bg-gray-50 dark:hover:bg-neutral-800/50 transition-colors group">
+                                                            <div className="col-span-6">
+                                                                <DatePicker
+                                                                    value={payment.due_date ? parseISO(payment.due_date) : undefined}
+                                                                    onChange={(date) => handlePaymentChange(payment.id, 'due_date', date ? format(date, 'yyyy-MM-dd') : '')}
+                                                                    placeholder={t('date')}
+                                                                    className="w-full"
+                                                                />
                                                             </div>
-                                                        ))}
+                                                            <div className="col-span-5 relative">
+                                                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-xs font-bold">₪</span>
+                                                                <input
+                                                                    type="number"
+                                                                    value={payment.amount}
+                                                                    onChange={(e) => handlePaymentChange(payment.id, 'amount', e.target.value)}
+                                                                    className="w-full p-2 pl-6 bg-transparent border-transparent hover:border-gray-100 dark:hover:border-neutral-700 focus:border-black dark:focus:border-white border rounded-xl text-center font-black text-black dark:text-white outline-none transition-all"
+                                                                />
+                                                            </div>
+                                                            <div className="col-span-1 flex justify-end">
+                                                                <button
+                                                                    onClick={() => handleRemovePayment(payment.id)}
+                                                                    className="text-gray-300 hover:text-red-500 transition-all p-2"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                    {/* Draft Row */}
+                                                    <div className="grid grid-cols-12 gap-2 items-center py-3 px-4 text-sm bg-gray-50/50 dark:bg-neutral-800/30">
+                                                        <div className="col-span-6">
+                                                            <DatePicker
+                                                                value={draftPayment.due_date ? parseISO(draftPayment.due_date) : undefined}
+                                                                onChange={(date) => setDraftPayment({ ...draftPayment, due_date: date ? format(date, 'yyyy-MM-dd') : '' })}
+                                                                placeholder={t('date')}
+                                                                className="w-full"
+                                                            />
+                                                        </div>
+                                                        <div className="col-span-5 relative">
+                                                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-[10px] font-bold">₪</span>
+                                                            <input
+                                                                type="number"
+                                                                value={draftPayment.amount}
+                                                                onChange={(e) => setDraftPayment({ ...draftPayment, amount: e.target.value })}
+                                                                placeholder="0"
+                                                                className="w-full p-2 pl-5 bg-white dark:bg-neutral-800 border border-gray-100 dark:border-neutral-700 rounded-xl text-center font-bold text-black dark:text-white outline-none"
+                                                            />
+                                                        </div>
+                                                        <div className="col-span-1 flex justify-end">
+                                                            <button
+                                                                onClick={handleAddPayment}
+                                                                disabled={!draftPayment.due_date || !draftPayment.amount}
+                                                                className="text-black dark:text-white hover:opacity-70 disabled:opacity-20 transition-all p-2"
+                                                                title="Add"
+                                                            >
+                                                                <Plus className="w-5 h-5" />
+                                                            </button>
+                                                        </div>
                                                     </div>
-                                                )}
+                                                </div>
                                             </div>
-                                            <div className="bg-secondary/30 p-2 border-t border-border flex justify-between items-center">
-                                                <button
-                                                    onClick={handleAddPayment}
-                                                    className="text-xs font-medium text-primary hover:underline flex items-center gap-1 px-2"
-                                                >
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="M12 5v14" /></svg>
-                                                    {t('addPayment')}
-                                                </button>
-                                                <div className="text-xs font-bold px-4">
-                                                    {t('totalActual')}: ₪{paymentHistory.reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
+                                            <div className="bg-gray-50 dark:bg-neutral-800 p-4 border-t border-gray-100 dark:border-neutral-800 flex justify-end items-center">
+                                                <div className="text-xs font-black uppercase tracking-widest text-black dark:text-white">
+                                                    {t('totalActual')}: <span className="text-lg ml-2">₪{paymentHistory.reduce((sum, p) => sum + p.amount, 0).toLocaleString()}</span>
                                                 </div>
                                             </div>
                                         </div>
-                                    ) : (
-                                        <div className="space-y-1">
-                                            <input
-                                                type="number"
-                                                value={actualPaid}
-                                                onChange={(e) => setActualPaid(e.target.value)}
-                                                className="w-full p-3 bg-background border border-border rounded-xl"
-                                                placeholder="5000"
-                                            />
-                                            <p className="text-xs text-muted-foreground">
-                                                {t('manualPaymentHelp')}
-                                            </p>
+                                    </div>
+                                </div>
+
+                                {/* Right Column: Configuration */}
+                                <div className="space-y-6">
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block ml-1">{t('linkageType')}</label>
+                                        <select
+                                            value={recLinkageType}
+                                            onChange={(e) => setRecLinkageType(e.target.value as any)}
+                                            className="w-full p-4 bg-gray-50 dark:bg-neutral-800 border-transparent focus:bg-white dark:focus:bg-neutral-700 border focus:border-black dark:focus:border-white rounded-2xl font-bold text-black dark:text-white transition-all outline-none appearance-none"
+                                        >
+                                            <option value="cpi">{t('cpi')}</option>
+                                            <option value="housing">{t('housingServices')}</option>
+                                            <option value="construction">{t('constructionInputs')}</option>
+                                            <option value="usd">{t('usdRate')}</option>
+                                            <option value="eur">{t('eurRate')}</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium">{t('baseIndexDate')}</label>
+                                        <DatePicker
+                                            value={contractStartDate ? parseISO(contractStartDate) : undefined}
+                                            onChange={(date) => setContractStartDate(date ? format(date, 'yyyy-MM-dd') : '')}
+                                            placeholder={t('baseIndexDate')}
+                                            className="w-full"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium">{t('periodStart')}</label>
+                                        <DatePicker
+                                            value={periodStart ? parseISO(periodStart) : undefined}
+                                            onChange={(date) => setPeriodStart(date ? format(date, 'yyyy-MM-dd') : '')}
+                                            placeholder={t('periodStart')}
+                                            className="w-full"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium">{t('periodEnd')}</label>
+                                        <DatePicker
+                                            value={periodEnd ? parseISO(periodEnd) : undefined}
+                                            onChange={(date) => setPeriodEnd(date ? format(date, 'yyyy-MM-dd') : '')}
+                                            placeholder={t('periodEnd')}
+                                            className="w-full"
+                                        />
+                                    </div>
+
+                                    {/* Link to advanced options toggle or similar */}
+                                    <button
+                                        onClick={() => setShowRecAdvanced(!showRecAdvanced)}
+                                        className="flex items-center gap-2 text-sm text-primary hover:underline pt-4"
+                                    >
+                                        {showRecAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                        {t('advancedReconciliationOptions')}
+                                    </button>
+
+                                    {showRecAdvanced && (
+                                        <div className="space-y-4 pt-4 border-t border-border mt-4">
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium">{t('linkageCalculationMethod')}</label>
+                                                <div className="flex gap-4">
+                                                    <label className="flex items-center gap-2 text-sm cursor-pointer">
+                                                        <input
+                                                            type="radio"
+                                                            name="linkageSubType"
+                                                            value="known"
+                                                            checked={recLinkageSubType === 'known'}
+                                                            onChange={() => setRecLinkageSubType('known')}
+                                                            className="w-4 h-4 text-primary"
+                                                        />
+                                                        {t('knownIndex')}
+                                                    </label>
+                                                    <label className="flex items-center gap-2 text-sm cursor-pointer">
+                                                        <input
+                                                            type="radio"
+                                                            name="linkageSubType"
+                                                            value="respect_of"
+                                                            checked={recLinkageSubType === 'respect_of'}
+                                                            onChange={() => setRecLinkageSubType('respect_of')}
+                                                            className="w-4 h-4 text-primary"
+                                                        />
+                                                        {t('inRespectOf')}
+                                                    </label>
+                                                </div>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {t('knownIndexHelp')}
+                                                </p>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium">{t('updateFrequency')}</label>
+                                                <select
+                                                    value={recUpdateFrequency}
+                                                    onChange={(e) => setRecUpdateFrequency(e.target.value as any)}
+                                                    className="w-full p-3 bg-background border border-border rounded-xl"
+                                                >
+                                                    <option value="monthly">{t('everyMonth')}</option>
+                                                    <option value="quarterly">{t('quarterly')}</option>
+                                                    <option value="semiannually">{t('semiannually')}</option>
+                                                    <option value="annually">{t('annually')}</option>
+                                                </select>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {t('updateFrequencyHelp')}
+                                                </p>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <label className="text-sm font-medium">{t('linkageFloor')}</label>
+                                                    <div className="flex items-center gap-2 mt-2">
+                                                        <input
+                                                            type="checkbox"
+                                                            id="baseFloor"
+                                                            checked={recIndexBaseMinimum}
+                                                            onChange={(e) => setRecIndexBaseMinimum(e.target.checked)}
+                                                            className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary"
+                                                        />
+                                                        <label htmlFor="baseFloor" className="text-sm cursor-pointer select-none">
+                                                            {t('indexBaseMin')}
+                                                        </label>
+                                                    </div>
+                                                    <p className="text-xs text-muted-foreground mt-1">
+                                                        {t('indexBaseMinHelp')}
+                                                    </p>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-sm font-medium">{t('maxIncrease')}</label>
+                                                    <input
+                                                        type="number"
+                                                        value={recMaxIncrease}
+                                                        onChange={(e) => setRecMaxIncrease(e.target.value)}
+                                                        className="w-full p-3 bg-background border border-border rounded-xl"
+                                                        placeholder="5"
+                                                    />
+                                                    <p className="text-xs text-muted-foreground">{t('capCeiling')}</p>
+                                                </div>
+                                            </div>
                                         </div>
                                     )}
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">{t('periodStart')}</label>
-                                    <DatePicker
-                                        value={periodStart ? parseISO(periodStart) : undefined}
-                                        onChange={(date) => setPeriodStart(date ? format(date, 'yyyy-MM-dd') : '')}
-                                        placeholder={t('periodStart')}
-                                        className="w-full"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">{t('periodEnd')}</label>
-                                    <DatePicker
-                                        value={periodEnd ? parseISO(periodEnd) : undefined}
-                                        onChange={(date) => setPeriodEnd(date ? format(date, 'yyyy-MM-dd') : '')}
-                                        placeholder={t('periodEnd')}
-                                        className="w-full"
-                                    />
                                 </div>
                             </div>
 
@@ -935,17 +1046,6 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                                     <span className="text-xs text-muted-foreground block mb-1">{t('totalBackPayOwed')}</span>
                                     <span className="text-3xl font-bold text-red-600 dark:text-red-400">₪{reconciliationResult.totalBackPayOwed.toLocaleString()}</span>
                                     <p className="text-sm text-muted-foreground mt-2">{t('periodEnd')} {reconciliationResult.totalMonths} {t('month')}</p>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="bg-secondary/30 p-4 rounded-xl">
-                                        <span className="text-xs text-muted-foreground block mb-1">{t('avgUnderpayment')}</span>
-                                        <span className="text-xl font-bold">₪{reconciliationResult.averageUnderpayment.toLocaleString()}/{t('month')}</span>
-                                    </div>
-                                    <div className="bg-secondary/30 p-4 rounded-xl">
-                                        <span className="text-xs text-muted-foreground block mb-1">{t('percentageOwed')}</span>
-                                        <span className="text-xl font-bold">{reconciliationResult.percentageOwed.toFixed(2)}%</span>
-                                    </div>
                                 </div>
 
                                 <button

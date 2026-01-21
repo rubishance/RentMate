@@ -101,11 +101,11 @@ export function FeedbackWidget() {
             <div
                 id="feedback-widget"
                 ref={widgetRef}
-                className="fixed bottom-20 md:bottom-4 left-4 z-50 animate-in slide-in-from-bottom-5 fade-in duration-300"
+                className="fixed bottom-[100px] md:bottom-10 left-4 z-50 animate-in slide-in-from-bottom-5 fade-in duration-300"
             >
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="bg-brand-navy hover:bg-brand-navy-light text-white p-3 rounded-full shadow-lg transition-all hover:scale-110 active:scale-95 flex items-center gap-2 group"
+                    className="bg-black hover:bg-gray-800 text-white p-3 rounded-full shadow-2xl transition-all hover:scale-110 active:scale-95 flex items-center gap-2 group"
                 >
                     <MessageSquare className="w-6 h-6" />
                     <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap opacity-0 group-hover:opacity-100 pr-1">
@@ -120,10 +120,10 @@ export function FeedbackWidget() {
         <div
             id="feedback-widget"
             ref={widgetRef}
-            className="fixed bottom-20 md:bottom-4 left-4 z-50 w-80 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 animate-in zoom-in-95 slide-in-from-bottom-5 duration-200 overflow-hidden"
+            className="fixed bottom-[100px] md:bottom-10 left-4 z-50 w-80 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-border dark:border-gray-700 animate-in zoom-in-95 slide-in-from-bottom-5 duration-200 overflow-hidden"
         >
             {/* Header */}
-            <div className="bg-brand-navy p-4 flex items-center justify-between text-white">
+            <div className="bg-black p-4 flex items-center justify-between text-white">
                 <h3 className="font-bold flex items-center gap-2">
                     <MessageSquare className="w-5 h-5" />
                     Send Feedback
@@ -140,15 +140,15 @@ export function FeedbackWidget() {
             <form onSubmit={handleSubmit} className="p-4 space-y-4">
 
                 {/* Type Selection */}
-                <div className="flex bg-gray-100 dark:bg-gray-900 rounded-lg p-1">
+                <div className="flex bg-muted dark:bg-gray-700 rounded-lg p-1">
                     {(['bug', 'feature', 'other'] as const).map((t) => (
                         <button
                             key={t}
                             type="button"
                             onClick={() => setType(t)}
                             className={`flex-1 py-1.5 text-xs font-medium rounded-md capitalize transition-all ${type === t
-                                ? 'bg-white dark:bg-gray-700 shadow text-brand-navy dark:text-white'
-                                : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
+                                ? 'bg-white dark:bg-gray-600 shadow text-black dark:text-white'
+                                : 'text-muted-foreground hover:text-gray-700 dark:text-muted-foreground'
                                 }`}
                         >
                             {t}
@@ -162,7 +162,7 @@ export function FeedbackWidget() {
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder="Describe the issue or idea..."
-                    className="w-full h-24 resize-none p-3 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-brand-navy/20 outline-none transition-all"
+                    className="w-full h-24 resize-none p-3 text-sm rounded-xl border border-border dark:border-gray-700 bg-secondary dark:bg-gray-900 focus:ring-2 focus:ring-black/10 outline-none transition-all text-foreground"
                 />
 
                 {/* Manual File Upload */}
@@ -180,7 +180,7 @@ export function FeedbackWidget() {
                                 setIncludeScreenshot(false); // Disable auto-capture if manual file is selected
                             }
                         }}
-                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-brand-navy file:text-white hover:file:bg-brand-navy-light cursor-pointer"
+                        className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800 cursor-pointer"
                     />
                     {manualFile && (
                         <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 p-2 rounded-lg">
@@ -201,13 +201,13 @@ export function FeedbackWidget() {
                 </div>
 
                 {/* Screenshot Toggle */}
-                <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 cursor-pointer select-none">
+                <label className="flex items-center gap-2 text-sm text-muted-foreground dark:text-gray-300 cursor-pointer select-none">
                     <input
                         type="checkbox"
                         checked={includeScreenshot && !manualFile}
                         disabled={!!manualFile}
                         onChange={(e) => setIncludeScreenshot(e.target.checked)}
-                        className="rounded text-brand-navy focus:ring-brand-navy disabled:opacity-50"
+                        className="rounded text-black focus:ring-black disabled:opacity-50"
                     />
                     <Camera className="w-4 h-4" />
                     Auto-capture Page Screenshot
@@ -217,7 +217,7 @@ export function FeedbackWidget() {
                 <button
                     type="submit"
                     disabled={loading || !message.trim()}
-                    className="w-full bg-brand-navy hover:bg-brand-navy-light text-white py-2.5 rounded-xl font-medium shadow-lg shadow-brand-navy/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all active:scale-95"
+                    className="w-full bg-black hover:bg-gray-800 text-white py-2.5 rounded-xl font-medium shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all active:scale-95"
                 >
                     {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                     Send Report

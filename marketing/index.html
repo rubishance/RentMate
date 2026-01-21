@@ -20,9 +20,123 @@
     <!-- Styles -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/bionic.css">
 </head>
 
+
 <body>
+    <!-- Bionic Background -->
+    <div class="noise-overlay"></div>
+    <div class="aurora-bg">
+        <div class="aurora-blob blob-1"></div>
+        <div class="aurora-blob blob-2"></div>
+        <div class="aurora-blob blob-3"></div>
+    </div>
+
+    <!-- SVG Icon Sprite -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+        <symbol id="icon-assets" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect width="16" height="20" x="4" y="2" rx="2" ry="2" />
+            <path d="M9 22v-4h6v4" />
+            <path d="M8 6h.01" />
+            <path d="M16 6h.01" />
+            <path d="M12 6h.01" />
+            <path d="M12 10h.01" />
+            <path d="M12 14h.01" />
+            <path d="M16 10h.01" />
+            <path d="M16 14h.01" />
+            <path d="M8 10h.01" />
+            <path d="M8 14h.01" />
+        </symbol>
+        <symbol id="icon-calculator" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+            <path d="m9 16 2 2 4-4" />
+        </symbol>
+        <symbol id="icon-sparkles" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path
+                d="m12 3 1.912 5.813a2 2 0 0 0 1.275 1.275l5.813 1.912-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275z" />
+            <path d="M5 3v4" />
+            <path d="M19 17v4" />
+            <path d="M3 5h4" />
+            <path d="M17 19h4" />
+        </symbol>
+        <symbol id="icon-message" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z" />
+        </symbol>
+        <symbol id="icon-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </symbol>
+        <symbol id="icon-mobile" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect width="14" height="20" x="5" y="2" rx="2" ry="2" />
+            <path d="M12 18h.01" />
+        </symbol>
+        <symbol id="icon-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="m9 12 2 2 4-4" />
+        </symbol>
+        <symbol id="icon-arrow-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12" />
+            <polyline points="12 19 5 12 12 5" />
+        </symbol>
+        <symbol id="icon-caret-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9" />
+        </symbol>
+        <symbol id="icon-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+        </symbol>
+        <symbol id="icon-apple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path
+                d="M12 20.94c1.88 0 3.05-1.04 4.14-2.5 1.09-1.46 1.12-3.32 1.13-3.41l.01-.1a.11.11 0 0 0-.11-.1c-.01 0-1.87-.1-3.21-1.32-1.34-1.22-1.63-3.08-1.63-3.15a.12.12 0 0 0-.08-.11.12.12 0 0 0-.14.04c-.08.1-1.12 1.4-1.12 3.1 0 1.7 1.04 3 1.12 3.1a.12.12 0 0 0 .1.06h.02c.01 0 1.42.01 2.45.86.32.26.54.59.66.9.31.8.27 1.64.08 2.37a4.97 4.97 0 0 1-3.32 3.26c-.46.12-.91.13-1.43.13-.52 0-.97-.01-1.43-.13a5 5 0 0 1-3.32-3.26 5.56 5.56 0 0 1 .08-2.37c.12-.31.34-.64.66-.9 1.03-.85 2.44-.86 2.45-.86h.02a.12.12 0 0 0 .1-.06c.08-.1 1.12-1.4 1.12-3.1 0-1.7-1.04-3-1.12-3.1a.12.12 0 0 0-.14-.04.12.12 0 0 0-.08.11c0 .07-.29 1.93-1.63 3.15-1.34 1.22-3.2 1.32-3.21 1.32a.11.11 0 0 0-.11.1l.01.1c.01.09.04 1.95 1.13 3.41 1.09 1.46 2.26 2.5 4.14 2.5zM12 2c0 .07.29 1.93 1.63 3.15C14.97 6.37 16.83 6.47 16.84 6.47a.11.11 0 0 1 .11.1l-.01.1c-.01.09-.04 1.95-1.13 3.41-1.09 1.46-2.26 2.5-4.14 2.5-1.88 0-3.05-1.04-4.14-2.5-1.09-1.46-1.12-3.32-1.13-3.41l.01-.1a.11.11 0 0 1 .11-.1c.01 0 1.87.1 3.21 1.32C11.03 3.93 10.74 2.07 10.74 2a.12.12 0 0 1 .08-.11.12.12 0 0 1 .14.04c.08.1 1.12 1.4 1.12 3.1 0 1.7-1.04 3-1.12 3.1a.12.12 0 0 1-.1-.06h-.02c-.01 0-1.42-.01-2.45-.86a1.9 1.9 0 0 1-.66-.9c-.31-.8-.27-1.64-.08-2.37a4.97 4.97 0 0 1 3.32-3.26c.46-.12.91-.13 1.43-.13z" />
+        </symbol>
+        <symbol id="icon-google-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path
+                d="M5 2c-.3 0-.6.1-.8.4l-.1.1v19c0 .1 0 .3.1.4l.1.1c.2.3.5.4.8.4.2 0 .4-.1.6-.2l14-7.5c.5-.3.8-.8.8-1.3s-.3-1-0.8-1.3l-14-7.5c-.2-.1-.4-.2-.6-.2z" />
+            <line x1="5" y1="2" x2="19" y2="12" />
+            <line x1="5" y1="22" x2="19" y2="12" />
+        </symbol>
+        <symbol id="icon-qr-code" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect width="5" height="5" x="3" y="3" rx="1" />
+            <rect width="5" height="5" x="16" y="3" rx="1" />
+            <rect width="5" height="5" x="3" y="16" rx="1" />
+            <path d="M21 16h-3a2 2 0 0 0-2 2v3" />
+            <path d="M21 21v.01" />
+            <path d="M12 7v3a2 2 0 0 1-2 2H7" />
+            <path d="M3 12h.01" />
+            <path d="M12 3h.01" />
+            <path d="M12 16h.01" />
+            <path d="M16 12h1" />
+            <path d="M21 12v.01" />
+            <path d="M12 21v-1" />
+        </symbol>
+        <symbol id="icon-check-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+            <polyline points="22 4 12 14.01 9 11.01" />
+        </symbol>
+    </svg>
+
+
     <!-- Language Toggle -->
     <div class="language-toggle">
         <button class="lang-btn" data-lang="he" aria-label="עברית">עב</button>
@@ -52,19 +166,23 @@
                     מערכת ניהול נכסים חכמה המשלבת AI לסריקת חוזים, חישוב מדד אוטומטי, וניהול דיירים - הכל במקום אחד
                 </p>
                 <div class="hero-cta">
-                    <button class="btn btn-primary btn-large" onclick="scrollToSection('trial')">
+                    <button class="btn btn-premium btn-large" onclick="scrollToSection('trial')">
                         <span data-he="התחל תקופת ניסיון חינם" data-en="Start Free Trial">התחל תקופת ניסיון חינם</span>
-                        <i class="ph ph-arrow-left"></i>
+                        <svg class="w-5 h-5">
+                            <use href="#icon-arrow-left"></use>
+                        </svg>
                     </button>
                     <p class="trust-badge" data-he="ללא כרטיס אשראי • 14 ימי ניסיון חינם"
                         data-en="No credit card required • 14-day free trial">
                         ללא כרטיס אשראי • 14 ימי ניסיון חינם
                     </p>
                 </div>
+
             </div>
-            <div class="hero-image">
-                <img src="images/hero-dashboard.png" alt="RentMate Dashboard" class="dashboard-mockup">
+            <div class="hero-image reveal-on-scroll">
+                <img src="images/hero-dashboard.png" alt="RentMate Dashboard" class="dashboard-mockup animate-float">
             </div>
+
         </div>
     </section>
 
@@ -72,11 +190,14 @@
     <section class="problem-solution" id="why">
         <div class="container">
             <h2 class="section-title" data-he="למה RentMate?" data-en="Why RentMate?">למה RentMate?</h2>
-            <div class="solutions-grid">
+            <div class="solutions-grid reveal-stagger">
                 <div class="solution-card">
                     <div class="solution-icon blue">
-                        <i class="ph ph-warning-circle"></i>
+                        <svg class="w-8 h-8">
+                            <use href="#icon-shield"></use>
+                        </svg>
                     </div>
+
                     <h3 data-he="הבעיה" data-en="The Problem">הבעיה</h3>
                     <p data-he="ניהול נכסים ידני מסורבל, חישובי מדד מורכבים, וטפסים אינסופיים"
                         data-en="Manual property management is cumbersome, index calculations are complex, and endless paperwork">
@@ -85,8 +206,11 @@
                 </div>
                 <div class="solution-card">
                     <div class="solution-icon green">
-                        <i class="ph ph-check-circle"></i>
+                        <svg class="w-8 h-8">
+                            <use href="#icon-shield"></use>
+                        </svg>
                     </div>
+
                     <h3 data-he="הפתרון" data-en="The Solution">הפתרון</h3>
                     <p data-he="RentMate מאחד הכל: סריקת חוזים חכמה, חישוב מדד אוטומטי, וניהול דיירים פשוט"
                         data-en="RentMate unifies everything: smart contract scanning, automatic index calculation, and simple tenant management">
@@ -101,67 +225,98 @@
     <section class="features" id="features">
         <div class="container">
             <h2 class="section-title" data-he="תכונות מתקדמות" data-en="Advanced Features">תכונות מתקדמות</h2>
-            <div class="features-grid">
+            <div class="bento-grid">
                 <!-- Feature 1: Index Calculation -->
-                <div class="feature-card">
-                    <div class="feature-icon blue">
-                        <i class="ph ph-calculator"></i>
+                <div class="bento-item large">
+                    <div class="bento-info">
+                        <div class="bento-icon">
+                            <svg class="w-8 h-8">
+                                <use href="#icon-calculator"></use>
+                            </svg>
+                        </div>
+                        <h3 class="bento-title" data-he="חישוב מדד אוטומטי" data-en="Automatic Index Calculation">חישוב
+                            מדד אוטומטי</h3>
+                        <p class="bento-desc"
+                            data-he="חישוב מדד מדויק לפי נתוני הלמ&quot;ס, עם עדכון אוטומטי של שכר הדירה בזמן אמת"
+                            data-en="Accurate index calculation based on CBS data, with real-time automatic rent updates">
+                            חישוב מדד מדויק לפי נתוני הלמ"ס, עם עדכון אוטומטי של שכר הדירה בזמן אמת
+                        </p>
                     </div>
-                    <h3 data-he="חישוב מדד אוטומטי" data-en="Automatic Index Calculation">חישוב מדד אוטומטי</h3>
-                    <p data-he="חישוב מדד מדויק לפי נתוני הלמ&quot;ס, עם עדכון אוטומטי של שכר הדירה"
-                        data-en="Accurate index calculation based on CBS data, with automatic rent updates">
-                        חישוב מדד מדויק לפי נתוני הלמ"ס, עם עדכון אוטומטי של שכר הדירה
-                    </p>
+                    <div class="bento-visual">
+                        <!-- Visual mockup for calculator -->
+                        <div class="glass p-4 rounded-xl border border-blue-100 shadow-sm">
+                            <div class="h-2 w-20 bg-blue-100 rounded mb-2"></div>
+                            <div class="h-8 w-32 bg-blue-500 rounded"></div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Feature 2: AI Contract Scanning -->
-                <div class="feature-card">
-                    <div class="feature-icon purple">
-                        <i class="ph ph-scan"></i>
+                <div class="bento-item tall">
+                    <div class="bento-info">
+                        <div class="bento-icon">
+                            <svg class="w-8 h-8">
+                                <use href="#icon-sparkles"></use>
+                            </svg>
+                        </div>
+                        <h3 class="bento-title" data-he="סריקת AI" data-en="AI Scanning">סריקת AI</h3>
+                        <p class="bento-desc" data-he="העלה חוזה והמערכת תמלא אוטומטית את כל הפרטים"
+                            data-en="Upload a contract and the system automatically fills in everything">
+                            העלה חוזה והמערכת תמלא אוטומטית את כל הפרטים
+                        </p>
                     </div>
-                    <h3 data-he="סריקת חוזים בעזרת AI" data-en="AI Contract Scanning">סריקת חוזים בעזרת AI</h3>
-                    <p data-he="העלה חוזה והמערכת תמלא אוטומטית את כל הפרטים - תאריכים, סכומים, ותנאים"
-                        data-en="Upload a contract and the system automatically fills in all details - dates, amounts, and terms">
-                        העלה חוזה והמערכת תמלא אוטומטית את כל הפרטים - תאריכים, סכומים, ותנאים
-                    </p>
                 </div>
 
                 <!-- Feature 3: AI Text Generator -->
-                <div class="feature-card">
-                    <div class="feature-icon orange">
-                        <i class="ph ph-magic-wand"></i>
+                <div class="bento-item">
+                    <div class="bento-info">
+                        <div class="bento-icon">
+                            <svg class="w-8 h-8">
+                                <use href="#icon-message"></use>
+                            </svg>
+                        </div>
+                        <h3 class="bento-title" data-he="מחולל טקסטים" data-en="Smart Text">מחולל טקסטים</h3>
+                        <p class="bento-desc" data-he="צור הודעות מקצועיות לדיירים בקליק"
+                            data-en="Create professional tenant messages with one click">
+                            צור הודעות מקצועיות לדיירים בקליק
+                        </p>
                     </div>
-                    <h3 data-he="מחולל טקסטים חכם" data-en="Smart Text Generator">מחולל טקסטים חכם</h3>
-                    <p data-he="צור הודעות מקצועיות לדיירים בקליק - התראות תשלום, עדכונים, ובקשות תחזוקה"
-                        data-en="Create professional tenant messages with one click - payment reminders, updates, and maintenance requests">
-                        צור הודעות מקצועיות לדיירים בקליק - התראות תשלום, עדכונים, ובקשות תחזוקה
-                    </p>
                 </div>
 
                 <!-- Feature 4: Tenant Management -->
-                <div class="feature-card">
-                    <div class="feature-icon green">
-                        <i class="ph ph-users"></i>
+                <div class="bento-item wide">
+                    <div class="bento-info">
+                        <div class="bento-icon">
+                            <svg class="w-8 h-8">
+                                <use href="#icon-users"></use>
+                            </svg>
+                        </div>
+                        <h3 class="bento-title" data-he="ניהול דיירים מרכזי" data-en="Tenant Management">ניהול דיירים
+                            מרכזי</h3>
+                        <p class="bento-desc" data-he="כל המידע על הדיירים שלך במקום אחד מסודר ונגיש"
+                            data-en="All your tenant information in one organized and accessible place">
+                            כל המידע על הדיירים שלך במקום אחד מסודר ונגיש
+                        </p>
                     </div>
-                    <h3 data-he="ניהול דיירים מרכזי" data-en="Centralized Tenant Management">ניהול דיירים מרכזי</h3>
-                    <p data-he="כל המידע על הדיירים שלך במקום אחד - פרטי קשר, חוזים, ותשלומים"
-                        data-en="All your tenant information in one place - contact details, contracts, and payments">
-                        כל המידע על הדיירים שלך במקום אחד - פרטי קשר, חוזים, ותשלומים
-                    </p>
                 </div>
 
                 <!-- Feature 5: Mobile-First -->
-                <div class="feature-card">
-                    <div class="feature-icon teal">
-                        <i class="ph ph-device-mobile"></i>
+                <div class="bento-item">
+                    <div class="bento-info">
+                        <div class="bento-icon">
+                            <svg class="w-8 h-8">
+                                <use href="#icon-mobile"></use>
+                            </svg>
+                        </div>
+                        <h3 class="bento-title" data-he="מותאם לנייד" data-en="Mobile Ready">מותאם לנייד</h3>
+                        <p class="bento-desc" data-he="נהל את הנכסים שלך מכל מקום בעולם"
+                            data-en="Manage your properties from anywhere in the world">
+                            נהל את הנכסים שלך מכל מקום בעולם
+                        </p>
                     </div>
-                    <h3 data-he="מותאם למובייל" data-en="Mobile-First Design">מותאם למובייל</h3>
-                    <p data-he="נהל את הנכסים שלך מכל מקום - ממשק מותאם לנייד עם כל התכונות"
-                        data-en="Manage your properties from anywhere - mobile-optimized interface with all features">
-                        נהל את הנכסים שלך מכל מקום - ממשק מותאם לנייד עם כל התכונות
-                    </p>
                 </div>
             </div>
+
         </div>
     </section>
 
@@ -173,8 +328,11 @@
                 <div class="step-card">
                     <div class="step-number">1</div>
                     <div class="step-icon">
-                        <i class="ph ph-user-plus"></i>
+                        <svg class="w-12 h-12">
+                            <use href="#icon-users"></use>
+                        </svg>
                     </div>
+
                     <h3 data-he="הרשמה מהירה" data-en="Quick Signup">הרשמה מהירה</h3>
                     <p data-he="הרשמה ב-30 שניות בלבד, ללא צורך בכרטיס אשראי"
                         data-en="Sign up in just 30 seconds, no credit card required">
@@ -184,8 +342,11 @@
                 <div class="step-card">
                     <div class="step-number">2</div>
                     <div class="step-icon">
-                        <i class="ph ph-upload"></i>
+                        <svg class="w-12 h-12">
+                            <use href="#icon-sparkles"></use>
+                        </svg>
                     </div>
+
                     <h3 data-he="הוסף נכסים ודיירים" data-en="Add Properties & Tenants">הוסף נכסים ודיירים</h3>
                     <p data-he="העלה חוזים והמערכת תמלא את הפרטים אוטומטית"
                         data-en="Upload contracts and the system fills in details automatically">
@@ -195,8 +356,11 @@
                 <div class="step-card">
                     <div class="step-number">3</div>
                     <div class="step-icon">
-                        <i class="ph ph-rocket"></i>
+                        <svg class="w-12 h-12">
+                            <use href="#icon-assets"></use>
+                        </svg>
                     </div>
+
                     <h3 data-he="התחל לנהל" data-en="Start Managing">התחל לנהל</h3>
                     <p data-he="עקוב אחר תשלומים, חשב מדד, ושלח הודעות - הכל אוטומטי"
                         data-en="Track payments, calculate index, and send messages - all automatic">
@@ -313,43 +477,55 @@
             <h2 class="section-title" data-he="אבטחה ופרטיות" data-en="Security & Privacy">אבטחה ופרטיות</h2>
             <div class="security-grid">
                 <div class="security-card">
-                    <div class="security-icon">
-                        <i class="ph ph-lock"></i>
+                    <div class="security-icon mt-4">
+                        <svg class="w-8 h-8">
+                            <use href="#icon-shield"></use>
+                        </svg>
                     </div>
-                    <h3 data-he="הצפנה מלאה" data-en="Full Encryption">הצפנה מלאה</h3>
-                    <p data-he="כל הנתונים שלך מוצפנים ב-256-bit SSL"
-                        data-en="All your data is encrypted with 256-bit SSL">
-                        כל הנתונים שלך מוצפנים ב-256-bit SSL
+
+                    <h3 data-he="Supabase Auth" data-en="Supabase Auth">Supabase Auth</h3>
+                    <p data-he="אימות זהות מאובטח עם תמיכה ב-MFA והצפנה מקצה לקצה."
+                        data-en="Secure authentication with MFA support and end-to-end encryption.">
+                        אימות זהות מאובטח עם תמיכה ב-MFA והצפנה מקצה לקצה.
                     </p>
                 </div>
                 <div class="security-card">
-                    <div class="security-icon">
-                        <i class="ph ph-shield-check"></i>
+                    <div class="security-icon mt-4">
+                        <svg class="w-8 h-8">
+                            <use href="#icon-shield"></use>
+                        </svg>
                     </div>
-                    <h3 data-he="תאימות לתקנות" data-en="Regulatory Compliance">תאימות לתקנות</h3>
-                    <p data-he="עומדים בתקני GDPR ותקנות הגנת הפרטיות"
-                        data-en="Compliant with GDPR and privacy protection regulations">
-                        עומדים בתקני GDPR ותקנות הגנת הפרטיות
+
+                    <h3 data-he="הצפנת AES-256" data-en="AES-256 Encryption">הצפנת AES-256</h3>
+                    <p data-he="הצפנת מסמכים ברמה צבאית השומרת על פרטיות החוזים שלך."
+                        data-en="Military-grade document encryption keeping your contracts private.">
+                        הצפנת מסמכים ברמה צבאית השומרת על פרטיות החוזים שלך.
                     </p>
                 </div>
                 <div class="security-card">
-                    <div class="security-icon">
-                        <i class="ph ph-database"></i>
+                    <div class="security-icon mt-4">
+                        <svg class="w-8 h-8">
+                            <use href="#icon-shield"></use>
+                        </svg>
                     </div>
-                    <h3 data-he="גיבוי אוטומטי" data-en="Automatic Backup">גיבוי אוטומטי</h3>
-                    <p data-he="גיבוי יומי של כל המידע בשרתים מאובטחים"
-                        data-en="Daily backup of all information on secure servers">
-                        גיבוי יומי של כל המידע בשרתים מאובטחים
+
+                    <h3 data-he="אבטחת נתונים (RLS)" data-en="Data Security (RLS)">אבטחת נתונים (RLS)</h3>
+                    <p data-he="הפרדה מוחלטת של נתונים ברמת מסד הנתונים - המידע שלך שייך רק לך."
+                        data-en="Complete data isolation at the database level - your info belongs only to you.">
+                        הפרדה מוחלטת של נתונים ברמת מסד הנתונים - המידע שלך שייך רק לך.
                     </p>
                 </div>
                 <div class="security-card">
-                    <div class="security-icon">
-                        <i class="ph ph-user-circle-check"></i>
+                    <div class="security-icon mt-4">
+                        <svg class="w-8 h-8">
+                            <use href="#icon-shield"></use>
+                        </svg>
                     </div>
-                    <h3 data-he="בקרת גישה" data-en="Access Control">בקרת גישה</h3>
-                    <p data-he="אימות דו-שלבי והרשאות מותאמות אישית"
-                        data-en="Two-factor authentication and custom permissions">
-                        אימות דו-שלבי והרשאות מותאמות אישית
+
+                    <h3 data-he="תקשורת SSL/TLS" data-en="SSL/TLS Communication">תקשורת SSL/TLS</h3>
+                    <p data-he="תקשורת מוצפנת ומאובטחת בכל רגע נתון מול השרתים שלנו."
+                        data-en="Encrypted and secure communication at all times with our servers.">
+                        תקשורת מוצפנת ומאובטחת בכל רגע נתון מול השרתים שלנו.
                     </p>
                 </div>
             </div>
@@ -366,16 +542,20 @@
                         data-en="Manage your properties on the go - app available for Android and iOS">
                         נהל את הנכסים שלך בדרכים - האפליקציה זמינה לאנדרואיד ו-iOS
                     </p>
-                    <div class="download-buttons">
+                    <div class="store-buttons">
                         <a href="#" class="store-button">
-                            <i class="ph ph-apple-logo"></i>
+                            <svg class="w-8 h-8">
+                                <use href="#icon-apple"></use>
+                            </svg>
                             <div>
                                 <div class="store-text" data-he="הורד ב-" data-en="Download on">הורד ב-</div>
                                 <div class="store-name">App Store</div>
                             </div>
                         </a>
                         <a href="#" class="store-button">
-                            <i class="ph ph-google-play-logo"></i>
+                            <svg class="w-8 h-8">
+                                <use href="#icon-google-play"></use>
+                            </svg>
                             <div>
                                 <div class="store-text" data-he="קבל ב-" data-en="Get it on">קבל ב-</div>
                                 <div class="store-name">Google Play</div>
@@ -385,47 +565,38 @@
                 </div>
                 <div class="download-qr">
                     <div class="qr-code">
-                        <i class="ph ph-qr-code" style="font-size: 120px;"></i>
+                        <svg class="w-24 h-24 text-bionic-primary opacity-80">
+                            <use href="#icon-qr-code"></use>
+                        </svg>
                     </div>
                     <p data-he="סרוק להורדה מהירה" data-en="Scan for quick download">סרוק להורדה מהירה</p>
                 </div>
+
             </div>
         </div>
     </section>
 
-    <!-- Trial Section -->
-    <section class="trial" id="trial">
-        <div class="container">
-            <div class="trial-card">
-                <h2 data-he="התחל את תקופת הניסיון החינמית שלך" data-en="Start Your Free Trial">התחל את תקופת הניסיון
-                    החינמית שלך</h2>
-                <p data-he="14 ימים חינם, ללא צורך בכרטיס אשראי. בטל בכל עת."
-                    data-en="14 days free, no credit card required. Cancel anytime.">
-                    14 ימים חינם, ללא צורך בכרטיס אשראי. בטל בכל עת.
-                </p>
-                <div class="trial-features">
-                    <div class="trial-feature">
-                        <i class="ph ph-check-circle"></i>
-                        <span data-he="גישה מלאה לכל התכונות" data-en="Full access to all features">גישה מלאה לכל
-                            התכונות</span>
-                    </div>
-                    <div class="trial-feature">
-                        <i class="ph ph-check-circle"></i>
-                        <span data-he="ללא מגבלה על מספר נכסים" data-en="Unlimited properties">ללא מגבלה על מספר
-                            נכסים</span>
-                    </div>
-                    <div class="trial-feature">
-                        <i class="ph ph-check-circle"></i>
-                        <span data-he="תמיכה טכנית מלאה" data-en="Full technical support">תמיכה טכנית מלאה</span>
-                    </div>
-                </div>
-                <button class="btn btn-primary btn-large" onclick="window.location.href='../index.html'">
-                    <span data-he="התחל עכשיו" data-en="Start Now">התחל עכשיו</span>
-                    <i class="ph ph-arrow-left"></i>
+    <!-- Pre-Footer CTA -->
+    <section class="container" id="trial">
+        <div class="pre-footer-cta reveal-on-scroll">
+
+            <h2 data-he="מוכן לשדרג את ניהול הנכסים שלך?" data-en="Ready to Upgrade Your Property Management?">מוכן
+                לשדרג את ניהול הנכסים שלך?</h2>
+            <p data-he="הצטרף למאות בעלי נכסים שכבר מנהלים את הדירות שלהם בצורה חכמה, יעילה ובטוחה יותר."
+                data-en="Join hundreds of property owners already managing their apartments smarter, more efficiently, and more securely.">
+                הצטרף למאות בעלי נכסים שכבר מנהלים את הדירות שלהם בצורה חכמה, יעילה ובטוחה יותר.
+            </p>
+            <div class="flex justify-center gap-4">
+                <button class="btn btn-premium btn-large" onclick="window.location.href='../index.html'">
+                    <span data-he="התחל עכשיו בחינם" data-en="Start Now for Free">התחל עכשיו בחינם</span>
+                    <svg class="w-5 h-5">
+                        <use href="#icon-arrow-left"></use>
+                    </svg>
                 </button>
             </div>
         </div>
     </section>
+
 
     <!-- FAQ Section -->
     <section class="faq" id="faq">
@@ -436,8 +607,11 @@
                     <button class="faq-question">
                         <span data-he="האם צריך כרטיס אשראי לתקופת הניסיון?"
                             data-en="Do I need a credit card for the trial?">האם צריך כרטיס אשראי לתקופת הניסיון?</span>
-                        <i class="ph ph-caret-down"></i>
+                        <svg class="w-5 h-5 transition-transform duration-300">
+                            <use href="#icon-caret-down"></use>
+                        </svg>
                     </button>
+
                     <div class="faq-answer">
                         <p data-he="לא! תקופת הניסיון של 14 ימים היא חינמית לחלוטין וללא צורך בכרטיס אשראי. תוכל לבטל בכל עת."
                             data-en="No! The 14-day trial is completely free with no credit card required. You can cancel anytime.">
@@ -449,7 +623,10 @@
                     <button class="faq-question">
                         <span data-he="איך עובדת סריקת החוזים?" data-en="How does contract scanning work?">איך עובדת
                             סריקת החוזים?</span>
-                        <i class="ph ph-caret-down"></i>
+                        <svg class="w-5 h-5 transition-transform duration-300">
+                            <use href="#icon-caret-down"></use>
+                        </svg>
+
                     </button>
                     <div class="faq-answer">
                         <p data-he="פשוט העלה תמונה או PDF של החוזה, והמערכת שלנו תשתמש ב-AI כדי לזהות ולמלא אוטומטית את כל הפרטים החשובים - תאריכים, סכומים, שמות, ותנאים."
@@ -464,7 +641,10 @@
                         <span data-he="האם המערכת מתאימה לבעלי נכס אחד בלבד?"
                             data-en="Is the system suitable for single property owners?">האם המערכת מתאימה לבעלי נכס אחד
                             בלבד?</span>
-                        <i class="ph ph-caret-down"></i>
+                        <svg class="w-5 h-5 transition-transform duration-300">
+                            <use href="#icon-caret-down"></use>
+                        </svg>
+
                     </button>
                     <div class="faq-answer">
                         <p data-he="בהחלט! RentMate מתאים לכל סוגי בעלי הנכסים - מבעלי דירה אחת ועד מנהלי תיקי נכסים גדולים. המערכת מתאימה את עצמה לצרכים שלך."
@@ -478,7 +658,10 @@
                     <button class="faq-question">
                         <span data-he="האם הנתונים שלי מאובטחים?" data-en="Is my data secure?">האם הנתונים שלי
                             מאובטחים?</span>
-                        <i class="ph ph-caret-down"></i>
+                        <svg class="w-5 h-5 transition-transform duration-300">
+                            <use href="#icon-caret-down"></use>
+                        </svg>
+
                     </button>
                     <div class="faq-answer">
                         <p data-he="כן! אנחנו משתמשים בהצפנת 256-bit SSL, גיבוי יומי, ועומדים בכל תקני האבטחה והפרטיות. הנתונים שלך מאוחסנים בשרתים מאובטחים ומוגנים."
@@ -492,7 +675,10 @@
                     <button class="faq-question">
                         <span data-he="מה קורה אחרי תקופת הניסיון?" data-en="What happens after the trial period?">מה
                             קורה אחרי תקופת הניסיון?</span>
-                        <i class="ph ph-caret-down"></i>
+                        <svg class="w-5 h-5 transition-transform duration-300">
+                            <use href="#icon-caret-down"></use>
+                        </svg>
+
                     </button>
                     <div class="faq-answer">
                         <p data-he="אחרי 14 ימים, תוכל לבחור אם להמשיך עם מנוי חודשי או שנתי. אם תחליט שלא להמשיך, הנתונים שלך יישמרו למשך 30 יום נוספים."
@@ -506,7 +692,10 @@
                     <button class="faq-question">
                         <span data-he="האם יש תמיכה בעברית?" data-en="Is there Hebrew support?">האם יש תמיכה
                             בעברית?</span>
-                        <i class="ph ph-caret-down"></i>
+                        <svg class="w-5 h-5 transition-transform duration-300">
+                            <use href="#icon-caret-down"></use>
+                        </svg>
+
                     </button>
                     <div class="faq-answer">
                         <p data-he="כן! המערכת כולה בעברית, כולל תמיכה טכנית מלאה בעברית. אנחנו כאן כדי לעזור לך בכל שאלה."
@@ -520,41 +709,52 @@
     </section>
 
     <!-- Footer -->
-    <footer class="footer">
+    <footer class="footer glass py-12 border-t border-white/20 mt-20">
         <div class="container">
-            <div class="footer-content">
+            <div class="footer-content grid grid-cols-1 md:grid-cols-3 gap-12">
                 <div class="footer-section">
-                    <h3>RentMate</h3>
-                    <p data-he="מערכת ניהול נכסים חכמה לבעלי דירות"
-                        data-en="Smart property management system for landlords">
-                        מערכת ניהול נכסים חכמה לבעלי דירות
+                    <div class="flex items-center gap-2 mb-4">
+                        <img src="images/rentmate-logo.png" alt="RentMate" class="h-10 w-auto object-contain">
+                    </div>
+                    <p class="text-gray-500"
+                        data-he="מערכת ניהול נכסים חכמה המשלבת AI לסריקת חוזים, חישוב מדד אוטומטי, וניהול דיירים - הכל במקום אחד"
+                        data-en="Smart property management system combining AI for contract scanning, automatic index calculation, and tenant management - all in one place">
+                        מערכת ניהול נכסים חכמה המשלבת AI לסריקת חוזים, חישוב מדד אוטומטי, וניהול דיירים - הכל במקום אחד
                     </p>
                 </div>
                 <div class="footer-section">
-                    <h4 data-he="קישורים" data-en="Links">קישורים</h4>
-                    <ul>
-                        <li><a href="../index.html" data-he="התחבר למערכת" data-en="Login to System">התחבר למערכת</a>
-                        </li>
-                        <li><a href="#features" data-he="תכונות" data-en="Features">תכונות</a></li>
-                        <li><a href="#calculator" data-he="מחשבון מדד" data-en="Index Calculator">מחשבון מדד</a></li>
-                        <li><a href="#faq" data-he="שאלות נפוצות" data-en="FAQ">שאלות נפוצות</a></li>
+                    <h4 class="text-lg font-bold mb-4" data-he="קישורים מהירים" data-en="Quick Links">קישורים מהירים
+                    </h4>
+                    <ul class="space-y-2">
+                        <li><a href="../index.html" class="text-gray-600 hover:text-bionic-primary transition-colors"
+                                data-he="התחבר למערכת" data-en="Login to System">התחבר למערכת</a></li>
+                        <li><a href="#features" class="text-gray-600 hover:text-bionic-primary transition-colors"
+                                data-he="תכונות" data-en="Features">תכונות</a></li>
+                        <li><a href="#calculator" class="text-gray-600 hover:text-bionic-primary transition-colors"
+                                data-he="מחשבון מדד" data-en="Index Calculator">מחשבון מדד</a></li>
+                        <li><a href="#faq" class="text-gray-600 hover:text-bionic-primary transition-colors"
+                                data-he="שאלות נפוצות" data-en="FAQ">שאלות נפוצות</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h4 data-he="משפטי" data-en="Legal">משפטי</h4>
-                    <ul>
-                        <li><a href="#" data-he="תנאי שימוש" data-en="Terms of Service">תנאי שימוש</a></li>
-                        <li><a href="#" data-he="מדיניות פרטיות" data-en="Privacy Policy">מדיניות פרטיות</a></li>
-                        <li><a href="#" data-he="צור קשר" data-en="Contact">צור קשר</a></li>
+                    <h4 class="text-lg font-bold mb-4" data-he="משפטי" data-en="Legal">משפטי</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-600 hover:text-bionic-primary transition-colors"
+                                data-he="תנאי שימוש" data-en="Terms of Service">תנאי שימוש</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-bionic-primary transition-colors"
+                                data-he="מדיניות פרטיות" data-en="Privacy Policy">מדיניות פרטיות</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-bionic-primary transition-colors"
+                                data-he="צור קשר" data-en="Contact">צור קשר</a></li>
                     </ul>
                 </div>
             </div>
-            <div class="footer-bottom">
+            <div class="footer-bottom border-t border-gray-100 mt-12 pt-8 text-center text-gray-400 text-sm">
                 <p>&copy; 2026 RentMate. <span data-he="כל הזכויות שמורות" data-en="All rights reserved">כל הזכויות
                         שמורות</span>.</p>
             </div>
         </div>
     </footer>
+
 
     <!-- Scripts -->
     <script src="js/script.js"></script>

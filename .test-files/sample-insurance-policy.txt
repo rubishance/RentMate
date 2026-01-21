@@ -1,0 +1,33 @@
+HOME INSURANCE POLICY
+
+Policy Number: HI-2026-123456
+Policyholder: Property Owner
+Effective Date: January 1, 2026
+Expiration Date: December 31, 2026
+
+Property Address:
+Test Property 123
+Tel Aviv, Israel
+
+Coverage Details:
+Building Coverage: ₪2,000,000
+Contents Coverage: ₪500,000
+Liability Coverage: ₪1,000,000
+
+Premium:
+Annual Premium: ₪4,800
+Payment Plan: Monthly (₪400/month)
+
+Deductible: ₪5,000
+
+Additional Coverage:
+- Water Damage
+- Fire & Smoke
+- Theft & Vandalism
+- Natural Disasters
+
+Agent: Insurance Agency Ltd.
+Contact: 03-9876543
+Email: info@insurance.co.il
+
+This is a sample insurance document for testing purposes.

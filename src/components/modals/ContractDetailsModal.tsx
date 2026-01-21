@@ -185,17 +185,17 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
     };
 
     return createPortal(
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" dir={lang === 'he' ? 'rtl' : 'ltr'}>
-            <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-4xl shadow-2xl scale-100 animate-in zoom-in-95 duration-200 overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="modal-overlay animate-in fade-in duration-200" dir={lang === 'he' ? 'rtl' : 'ltr'}>
+            <div className="bg-card rounded-2xl w-full max-w-4xl shadow-2xl scale-100 animate-in zoom-in-95 duration-200 overflow-hidden flex flex-col max-h-[90vh]">
                 {/* Header */}
-                <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between shrink-0 bg-gray-50/50 dark:bg-gray-800/50">
+                <div className="p-6 border-b border-border flex items-center justify-between shrink-0 bg-background/50">
                     <div>
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                            <FileText className="w-5 h-5 text-blue-600" />
+                        <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+                            <FileText className="w-5 h-5 text-primary" />
                             {readOnly ? 'Contract Details' : 'Edit Contract'}
                         </h2>
                         <div className="flex items-center gap-2 mt-1">
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                            <p className="text-sm text-muted-foreground">
                                 {contract.properties?.address || 'N/A'}, {contract.properties?.city || 'N/A'}
                             </p>
                             {contract.contract_file_url && (
@@ -203,7 +203,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                     href={contract.contract_file_url}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium px-2 py-0.5 bg-blue-50 hover:bg-blue-100 rounded-full transition-colors"
+                                    className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary font-medium px-2 py-0.5 bg-primary/10 hover:bg-primary/10 rounded-full transition-colors"
                                 >
                                     <ExternalLink className="w-3 h-3" /> View PDF
                                 </a>
@@ -214,7 +214,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                         {readOnly && (
                             <button
                                 onClick={() => setReadOnly(false)}
-                                className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-colors flex items-center gap-2 px-3 bg-blue-50/50"
+                                className="p-2 text-primary hover:text-primary hover:bg-primary/10 dark:hover:bg-blue-900/20 rounded-full transition-colors flex items-center gap-2 px-3 bg-primary/10/50"
                             >
                                 <Pen className="w-4 h-4" />
                                 <span className="text-sm font-medium">{lang === 'he' ? 'ערוך' : 'Edit'}</span>
@@ -222,7 +222,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                         )}
                         <button
                             onClick={onClose}
-                            className="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                            className="p-2 text-muted-foreground hover:text-muted-foreground hover:bg-muted dark:hover:bg-gray-700 rounded-full transition-colors"
                             aria-label={lang === 'he' ? 'סגור' : 'Close'}
                         >
                             <X className="w-5 h-5" />
@@ -234,14 +234,14 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                 < form onSubmit={handleSave} className="flex-1 overflow-y-auto p-6 space-y-8" >
 
                     {/* General Section */}
-                    < div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-blue-50/50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-800/30" >
+                    < div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-primary/10/50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-800/30" >
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 text-blue-600 shadow-sm flex items-center justify-center shrink-0">
+                            <div className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 text-primary shadow-sm flex items-center justify-center shrink-0">
                                 <User className="w-5 h-5" />
                             </div>
                             <div>
-                                <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Tenant</p>
-                                <p className="font-medium text-gray-900 dark:text-gray-100">{contract.tenants?.name || 'N/A'}</p>
+                                <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Tenant</p>
+                                <p className="font-medium text-foreground dark:text-gray-100">{contract.tenants?.name || 'N/A'}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
@@ -249,8 +249,8 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                 <Building2 className="w-5 h-5" />
                             </div>
                             <div>
-                                <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Property</p>
-                                <p className="font-medium text-gray-900 dark:text-gray-100">{contract.properties?.address || 'N/A'}</p>
+                                <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Property</p>
+                                <p className="font-medium text-foreground dark:text-gray-100">{contract.properties?.address || 'N/A'}</p>
                             </div>
                         </div>
                     </div >
@@ -261,24 +261,24 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                         <div className="space-y-8">
                             {/* Dates & Status */}
                             <section className="space-y-4">
-                                <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 pb-2 border-b border-gray-100 dark:border-gray-700">
-                                    <Calendar className="w-4 h-4 text-blue-500" /> Contract Period & Status
+                                <h3 className="font-semibold text-foreground dark:text-white flex items-center gap-2 pb-2 border-b border-border dark:border-gray-700">
+                                    <Calendar className="w-4 h-4 text-primary" /> Contract Period & Status
                                 </h3>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-medium text-gray-500 uppercase">Status</label>
+                                        <label className="text-xs font-medium text-muted-foreground uppercase">Status</label>
                                         <select
                                             disabled={readOnly}
                                             value={formData.status}
                                             onChange={e => setFormData({ ...formData, status: e.target.value })}
-                                            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 disabled:bg-gray-50 disabled:text-gray-500"
+                                            className="w-full px-3 py-2 text-sm border border-border dark:border-gray-700 rounded-lg bg-white dark:bg-foreground disabled:bg-secondary disabled:text-muted-foreground"
                                         >
                                             <option value="active">Active</option>
                                             <option value="archived">Archived</option>
                                         </select>
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-medium text-gray-500 uppercase">Signing Date</label>
+                                        <label className="text-xs font-medium text-muted-foreground uppercase">Signing Date</label>
                                         <DatePicker
                                             value={formData.signing_date ? parseISO(formData.signing_date) : undefined}
                                             onChange={(date) => setFormData({ ...formData, signing_date: date ? format(date, 'yyyy-MM-dd') : '' })}
@@ -286,7 +286,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-medium text-gray-500 uppercase">Start Date</label>
+                                        <label className="text-xs font-medium text-muted-foreground uppercase">Start Date</label>
                                         <DatePicker
                                             value={formData.start_date ? parseISO(formData.start_date) : undefined}
                                             onChange={(date) => setFormData({ ...formData, start_date: date ? format(date, 'yyyy-MM-dd') : '' })}
@@ -294,7 +294,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-medium text-gray-500 uppercase">End Date</label>
+                                        <label className="text-xs font-medium text-muted-foreground uppercase">End Date</label>
                                         <DatePicker
                                             value={formData.end_date ? parseISO(formData.end_date) : undefined}
                                             onChange={(date) => setFormData({ ...formData, end_date: date ? format(date, 'yyyy-MM-dd') : '' })}
@@ -302,11 +302,11 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                         />
                                     </div>
                                     {formData.start_date && formData.end_date && (
-                                        <div className="col-span-2 text-xs text-gray-500 bg-gray-50 dark:bg-gray-800/50 p-2 rounded-lg flex items-center justify-center gap-2">
+                                        <div className="col-span-2 text-xs text-muted-foreground bg-secondary dark:bg-gray-800/50 p-2 rounded-lg flex items-center justify-center gap-2">
                                             <Clock className="w-3 h-3" />
                                             <span>
                                                 Duration:
-                                                <span className="font-bold text-gray-900 dark:text-white">
+                                                <span className="font-bold text-foreground dark:text-white">
                                                     {(() => {
                                                         const start = new Date(formData.start_date);
                                                         const end = new Date(formData.end_date);
@@ -330,32 +330,32 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
 
                             {/* Financials */}
                             <section className="space-y-4">
-                                <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 pb-2 border-b border-gray-100 dark:border-gray-700">
+                                <h3 className="font-semibold text-foreground dark:text-white flex items-center gap-2 pb-2 border-b border-border dark:border-gray-700">
                                     <DollarSign className="w-4 h-4 text-green-500" /> Financial Details
                                 </h3>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-medium text-gray-500 uppercase">Base Rent</label>
+                                        <label className="text-xs font-medium text-muted-foreground uppercase">Base Rent</label>
                                         <div className="relative">
                                             <input
                                                 type="number"
                                                 disabled={readOnly}
                                                 value={formData.base_rent}
                                                 onChange={e => setFormData({ ...formData, base_rent: Number(e.target.value) })}
-                                                className="w-full pl-3 pr-12 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 disabled:bg-gray-50 disabled:text-gray-500"
+                                                className="w-full pl-3 pr-12 py-2 text-sm border border-border dark:border-gray-700 rounded-lg bg-white dark:bg-foreground disabled:bg-secondary disabled:text-muted-foreground"
                                             />
-                                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400 text-sm">
+                                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-muted-foreground text-sm">
                                                 {formData.currency}
                                             </div>
                                         </div>
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-medium text-gray-500 uppercase">Currency</label>
+                                        <label className="text-xs font-medium text-muted-foreground uppercase">Currency</label>
                                         <select
                                             disabled={readOnly}
                                             value={formData.currency}
                                             onChange={e => setFormData({ ...formData, currency: e.target.value })}
-                                            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 disabled:bg-gray-50 disabled:text-gray-500"
+                                            className="w-full px-3 py-2 text-sm border border-border dark:border-gray-700 rounded-lg bg-white dark:bg-foreground disabled:bg-secondary disabled:text-muted-foreground"
                                         >
                                             <option value="ILS">ILS (₪)</option>
                                             <option value="USD">USD ($)</option>
@@ -363,12 +363,12 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                         </select>
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-medium text-gray-500 uppercase">Payment Freq.</label>
+                                        <label className="text-xs font-medium text-muted-foreground uppercase">Payment Freq.</label>
                                         <select
                                             disabled={readOnly}
                                             value={formData.payment_frequency}
                                             onChange={e => setFormData({ ...formData, payment_frequency: e.target.value })}
-                                            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 disabled:bg-gray-50 disabled:text-gray-500"
+                                            className="w-full px-3 py-2 text-sm border border-border dark:border-gray-700 rounded-lg bg-white dark:bg-foreground disabled:bg-secondary disabled:text-muted-foreground"
                                         >
                                             <option value="monthly">Monthly</option>
                                             <option value="quarterly">Quarterly</option>
@@ -376,7 +376,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                         </select>
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-medium text-gray-500 uppercase">Payment Day</label>
+                                        <label className="text-xs font-medium text-muted-foreground uppercase">Payment Day</label>
                                         <div className="relative">
                                             <input
                                                 type="number"
@@ -390,17 +390,17 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                         setFormData({ ...formData, payment_day: val });
                                                     }
                                                 }}
-                                                className="w-full pl-3 pr-8 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 disabled:bg-gray-50 disabled:text-gray-500"
+                                                className="w-full pl-3 pr-8 py-2 text-sm border border-border dark:border-gray-700 rounded-lg bg-white dark:bg-foreground disabled:bg-secondary disabled:text-muted-foreground"
                                             />
-                                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400 text-xs">
+                                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-muted-foreground text-xs">
                                                 Day
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 {/* Variable Rent Steps */}
-                                <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
-                                    <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Rent Steps (Variable Rent)</h4>
+                                <div className="pt-4 border-t border-border dark:border-gray-700">
+                                    <h4 className="text-sm font-medium text-foreground dark:text-white mb-3">Rent Steps (Variable Rent)</h4>
                                     <div className="space-y-2">
                                         {formData.rent_periods.map((period, idx) => (
                                             <div key={idx} className="flex items-center gap-2">
@@ -424,7 +424,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                         newPeriods[idx].amount = Number(e.target.value);
                                                         setFormData({ ...formData, rent_periods: newPeriods });
                                                     }}
-                                                    className="flex-1 px-2 py-1.5 text-xs border border-gray-200 rounded-lg"
+                                                    className="flex-1 px-2 py-1.5 text-xs border border-border rounded-lg"
                                                 />
                                                 <select
                                                     disabled={readOnly}
@@ -434,7 +434,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                         newPeriods[idx].currency = e.target.value as any;
                                                         setFormData({ ...formData, rent_periods: newPeriods });
                                                     }}
-                                                    className="w-20 px-2 py-1.5 text-xs border border-gray-200 rounded-lg"
+                                                    className="w-20 px-2 py-1.5 text-xs border border-border rounded-lg"
                                                 >
                                                     <option value="ILS">ILS</option>
                                                     <option value="USD">USD</option>
@@ -461,7 +461,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                     ...formData,
                                                     rent_periods: [...formData.rent_periods, { startDate: '', amount: 0, currency: 'ILS' }]
                                                 })}
-                                                className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                                                className="text-xs text-primary hover:text-primary font-medium flex items-center gap-1"
                                             >
                                                 + Add Rent Step
                                             </button>
@@ -475,19 +475,19 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                         <div className="space-y-8">
                             {/* Linkage */}
                             <section className="space-y-4">
-                                <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 pb-2 border-b border-gray-100 dark:border-gray-700">
+                                <h3 className="font-semibold text-foreground dark:text-white flex items-center gap-2 pb-2 border-b border-border dark:border-gray-700">
                                     <TrendingUp className="w-4 h-4 text-purple-500" /> Linkage & Adjustments
                                 </h3>
 
                                 <div className="space-y-4">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-1.5">
-                                            <label className="text-xs font-medium text-gray-500 uppercase">Linkage Type</label>
+                                            <label className="text-xs font-medium text-muted-foreground uppercase">Linkage Type</label>
                                             <select
                                                 disabled={readOnly}
                                                 value={formData.linkage_type}
                                                 onChange={e => setFormData({ ...formData, linkage_type: e.target.value })}
-                                                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 disabled:bg-gray-50 disabled:text-gray-500"
+                                                className="w-full px-3 py-2 text-sm border border-border dark:border-gray-700 rounded-lg bg-white dark:bg-foreground disabled:bg-secondary disabled:text-muted-foreground"
                                             >
                                                 <option value="none">None</option>
                                                 <option value="cpi">CPI (Madad)</option>
@@ -497,12 +497,12 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                         </div>
                                         {formData.linkage_type !== 'none' && (
                                             <div className="space-y-1.5">
-                                                <label className="text-xs font-medium text-gray-500 uppercase">Sub-Type</label>
+                                                <label className="text-xs font-medium text-muted-foreground uppercase">Sub-Type</label>
                                                 <select
                                                     disabled={readOnly}
                                                     value={formData.linkage_sub_type}
                                                     onChange={e => setFormData({ ...formData, linkage_sub_type: e.target.value })}
-                                                    className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 disabled:bg-gray-50 disabled:text-gray-500"
+                                                    className="w-full px-3 py-2 text-sm border border-border dark:border-gray-700 rounded-lg bg-white dark:bg-foreground disabled:bg-secondary disabled:text-muted-foreground"
                                                 >
                                                     <option value="known">Known Index</option>
                                                     <option value="respect_of">In Respect Of</option>
@@ -512,10 +512,10 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                     </div>
 
                                     {formData.linkage_type !== 'none' && (
-                                        <div className="bg-gray-50 dark:bg-gray-900/50 p-3 rounded-lg space-y-3">
+                                        <div className="bg-secondary dark:bg-foreground/50 p-3 rounded-lg space-y-3">
                                             <div className="grid grid-cols-1 gap-3">
                                                 <div className="space-y-1">
-                                                    <label className="text-xs text-gray-500">Base Index Date</label>
+                                                    <label className="text-xs text-muted-foreground">Base Index Date</label>
                                                     <DatePicker
                                                         value={formData.base_index_date ? parseISO(formData.base_index_date) : undefined}
                                                         onChange={(date) => setFormData({ ...formData, base_index_date: date ? format(date, 'yyyy-MM-dd') : '' })}
@@ -523,7 +523,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                     />
                                                 </div>
                                             </div>
-                                            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+                                            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border dark:border-gray-700">
                                                 <div className="space-y-1 flex flex-col justify-end">
                                                     <label className="flex items-center gap-2 cursor-pointer">
                                                         <input
@@ -534,19 +534,19 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                                 ...formData,
                                                                 linkage_floor: e.target.checked ? '0' : ''
                                                             })}
-                                                            className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                                            className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-indigo-500"
                                                         />
                                                         <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Base Index is Minimum</span>
                                                     </label>
                                                 </div>
                                                 <div className="space-y-1">
-                                                    <label className="text-xs text-gray-500">Ceiling (Max %)</label>
+                                                    <label className="text-xs text-muted-foreground">Ceiling (Max %)</label>
                                                     <input
                                                         type="number"
                                                         disabled={readOnly}
                                                         value={formData.linkage_ceiling}
                                                         onChange={e => setFormData({ ...formData, linkage_ceiling: e.target.value })}
-                                                        className="w-full px-2 py-1 text-sm border border-gray-200 rounded"
+                                                        className="w-full px-2 py-1 text-sm border border-border rounded"
                                                     />
                                                 </div>
                                             </div>
@@ -557,14 +557,14 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
 
                             {/* Option Periods */}
                             <section className="space-y-4">
-                                <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 pb-2 border-b border-gray-100 dark:border-gray-700">
+                                <h3 className="font-semibold text-foreground dark:text-white flex items-center gap-2 pb-2 border-b border-border dark:border-gray-700">
                                     <Clock className="w-4 h-4 text-orange-500" /> Option Periods
                                 </h3>
                                 <div className="space-y-3">
                                     {formData.option_periods.map((opt, idx) => (
-                                        <div key={idx} className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg space-y-3">
+                                        <div key={idx} className="bg-secondary dark:bg-gray-800 p-3 rounded-lg space-y-3">
                                             <div className="flex items-center justify-between">
-                                                <span className="text-xs font-medium text-gray-500 uppercase">Option {idx + 1}</span>
+                                                <span className="text-xs font-medium text-muted-foreground uppercase">Option {idx + 1}</span>
                                                 {!readOnly && (
                                                     <button
                                                         type="button"
@@ -589,7 +589,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                             newOpts[idx].length = Number(e.target.value);
                                                             setFormData({ ...formData, option_periods: newOpts });
                                                         }}
-                                                        className="w-full pl-2 pr-12 py-1.5 text-xs border border-gray-200 rounded-lg"
+                                                        className="w-full pl-2 pr-12 py-1.5 text-xs border border-border rounded-lg"
                                                     />
                                                     <select
                                                         disabled={readOnly}
@@ -599,7 +599,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                             newOpts[idx].unit = e.target.value as any;
                                                             setFormData({ ...formData, option_periods: newOpts });
                                                         }}
-                                                        className="absolute inset-y-0 right-0 text-xs bg-transparent border-0 px-1 text-gray-500 focus:ring-0"
+                                                        className="absolute inset-y-0 right-0 text-xs bg-transparent border-0 px-1 text-muted-foreground focus:ring-0"
                                                     >
                                                         <option value="months">Mos</option>
                                                         <option value="years">Yrs</option>
@@ -615,7 +615,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                             newOpts[idx].rentAmount = Number(e.target.value);
                                                             setFormData({ ...formData, option_periods: newOpts });
                                                         }}
-                                                        className="flex-1 px-2 py-1.5 text-xs border border-gray-200 rounded-lg"
+                                                        className="flex-1 px-2 py-1.5 text-xs border border-border rounded-lg"
                                                     />
                                                     <select
                                                         disabled={readOnly}
@@ -625,7 +625,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                             newOpts[idx].currency = e.target.value as any;
                                                             setFormData({ ...formData, option_periods: newOpts });
                                                         }}
-                                                        className="w-16 px-1 py-1.5 text-xs border border-gray-200 rounded-lg"
+                                                        className="w-16 px-1 py-1.5 text-xs border border-border rounded-lg"
                                                     >
                                                         <option value="ILS">ILS</option>
                                                         <option value="USD">USD</option>
@@ -642,7 +642,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                 ...formData,
                                                 option_periods: [...formData.option_periods, { length: 1, unit: 'years', rentAmount: 0, currency: 'ILS' }]
                                             })}
-                                            className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                                            className="text-xs text-primary hover:text-primary font-medium flex items-center gap-1"
                                         >
                                             + Add Option Period
                                         </button>
@@ -652,17 +652,17 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
 
                             {/* Security Deposit */}
                             <section className="space-y-4">
-                                <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 pb-2 border-b border-gray-100 dark:border-gray-700">
-                                    <Shield className="w-4 h-4 text-gray-400" /> Security
+                                <h3 className="font-semibold text-foreground dark:text-white flex items-center gap-2 pb-2 border-b border-border dark:border-gray-700">
+                                    <Shield className="w-4 h-4 text-muted-foreground" /> Security
                                 </h3>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-medium text-gray-500 uppercase">Deposit Amount</label>
+                                    <label className="text-xs font-medium text-muted-foreground uppercase">Deposit Amount</label>
                                     <input
                                         type="number"
                                         disabled={readOnly}
                                         value={formData.security_deposit_amount}
                                         onChange={e => setFormData({ ...formData, security_deposit_amount: Number(e.target.value) })}
-                                        className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 disabled:bg-gray-50 disabled:text-gray-500"
+                                        className="w-full px-3 py-2 text-sm border border-border dark:border-gray-700 rounded-lg bg-white dark:bg-foreground disabled:bg-secondary disabled:text-muted-foreground"
                                     />
                                 </div>
                             </section>
@@ -671,13 +671,13 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                 </form >
 
                 {/* Footer */}
-                < div className="p-6 border-t border-gray-100 dark:border-gray-700 flex justify-end gap-3 shrink-0 bg-white dark:bg-gray-800 z-10" >
+                < div className="p-6 border-t border-border dark:border-gray-700 flex justify-end gap-3 shrink-0 bg-white dark:bg-gray-800 z-10" >
                     {
                         readOnly ? (
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="px-6 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-xl font-medium transition-colors"
+                                className="px-6 py-2 bg-muted hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-foreground dark:text-white rounded-xl font-medium transition-colors"
                             >
                                 {lang === 'he' ? 'סגור' : 'Close'}
                             </button>
@@ -686,14 +686,14 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                 <button
                                     type="button"
                                     onClick={onClose}
-                                    className="px-4 py-2 text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 rounded-xl font-medium transition-colors"
+                                    className="px-4 py-2 text-gray-700 bg-white border border-border hover:bg-secondary dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 rounded-xl font-medium transition-colors"
                                 >
                                     {lang === 'he' ? 'ביטול' : 'Cancel'}
                                 </button>
                                 <button
                                     onClick={handleSave}
                                     disabled={loading}
-                                    className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-xl font-medium transition-colors shadow-lg shadow-blue-500/30 flex items-center gap-2"
+                                    className="px-6 py-2 bg-primary text-white hover:bg-primary/90 rounded-xl font-medium transition-colors shadow-lg shadow-blue-500/30 flex items-center gap-2"
                                 >
                                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                                     Save Changes

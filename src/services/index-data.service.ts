@@ -141,64 +141,61 @@ export async function getAvailableRange(
  * populates 2024-2025 with sample/real data for development/testing
  */
 export async function seedIndexData() {
-    // Generate historical data from 1999 up to CURRENT MONTH only
     const now = new Date();
     const currentRealYear = now.getFullYear();
     const currentRealMonth = now.getMonth() + 1;
 
-    console.log(`Seeding data from 1999 up to ${currentRealMonth}/${currentRealYear}...`);
+    console.log(`Seeding all index types up to ${currentRealMonth}/${currentRealYear}...`);
 
-    const seedData: IndexData[] = [];
-    const minCpi = 70.0; // Approx CPI in 1999
+    const indexTypes = [
+        { type: 'cpi', startVal: 70.0, targetVal: 112.0 },
+        { type: 'housing', startVal: 65.0, targetVal: 125.0 },
+        { type: 'construction', startVal: 60.0, targetVal: 130.0 },
+        { type: 'usd', startVal: 4.2, targetVal: 3.7 },
+        { type: 'eur', startVal: 4.5, targetVal: 4.0 }
+    ];
 
-    // Start date: Nov 1999
-    let currentYear = 1999;
-    let currentMonth = 11;
-    let currentValue = minCpi;
-    const endYear = currentRealYear;
+    for (const { type, startVal, targetVal } of indexTypes) {
+        const seedData: IndexData[] = [];
+        let currentYear = 1999;
+        let currentMonth = 1;
+        let currentValue = startVal;
+        const endYear = currentRealYear;
 
-    // Total steps roughly
-    const totalMonths = (endYear - currentYear) * 12 + (currentRealMonth - currentMonth);
-    // Adjusted maxCpi based on time passed to keep realistic scale (approx 110-112 today)
-    const targetCpiNow = 112.0;
-    const avgIncrement = (targetCpiNow - minCpi) / (Math.max(1, totalMonths));
+        const totalMonths = (endYear - currentYear) * 12 + (currentRealMonth - currentMonth);
+        const avgIncrement = (targetVal - startVal) / (Math.max(1, totalMonths));
 
-    while (currentYear < endYear || (currentYear === endYear && currentMonth <= currentRealMonth)) {
-        const monthStr = currentMonth.toString().padStart(2, '0');
-        const dateStr = `${currentYear}-${monthStr}`;
+        while (currentYear < endYear || (currentYear === endYear && currentMonth <= currentRealMonth)) {
+            const monthStr = currentMonth.toString().padStart(2, '0');
+            const dateStr = `${currentYear}-${monthStr}`;
 
-        // Add some random simulated fluctuation around the average increment
-        const fluctuation = (Math.random() * 0.4 - 0.1); // -0.1 to +0.3
-        currentValue += avgIncrement + (fluctuation * 0.1); // Dampened fluctuation
+            const fluctuation = (Math.random() * 0.4 - 0.2);
+            currentValue += avgIncrement + (fluctuation * (type === 'usd' || type === 'eur' ? 0.05 : 0.1));
 
-        seedData.push({
-            index_type: 'cpi',
-            date: dateStr,
-            value: Number(currentValue.toFixed(2)),
-            source: 'manual'
-        });
+            seedData.push({
+                index_type: type as any,
+                date: dateStr,
+                value: Number(currentValue.toFixed(4)),
+                source: 'manual'
+            });
 
-        currentMonth++;
-        if (currentMonth > 12) {
-            currentMonth = 1;
-            currentYear++;
+            currentMonth++;
+            if (currentMonth > 12) {
+                currentMonth = 1;
+                currentYear++;
+            }
+        }
+
+        console.log(`Upserting ${seedData.length} records for ${type}...`);
+        const { error } = await supabase
+            .from('index_data')
+            .upsert(seedData, { onConflict: 'index_type,date' });
+
+        if (error) {
+            console.error(`Seeding failed for ${type}:`, error);
         }
     }
-
-    // Explicitly set some known recent values for accuracy (approximate) if desired
-    // For now, the simulated smooth curve is sufficient for testing logic.
-
-    console.log(`Generated ${seedData.length} historical index records.`);
-
-    const { error } = await supabase
-        .from('index_data')
-        .upsert(seedData, { onConflict: 'index_type,date' });
-
-    if (error) {
-        console.error('Seeding failed:', error);
-        throw error;
-    }
-    console.log('Seeding complete.');
+    console.log('Seeding complete for all indices.');
 }
 
 /**

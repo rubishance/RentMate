@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Home, BedDouble, Ruler } from 'lucide-react';
+import { PlusIcon as Plus, HomeIcon as Home, BedIcon as BedDouble, RulerIcon as Ruler } from '../components/icons/NavIcons';
 import { supabase } from '../lib/supabase';
 import { AddPropertyModal } from '../components/modals/AddPropertyModal';
 import { ConfirmDeleteModal } from '../components/modals/ConfirmDeleteModal';
@@ -190,17 +190,17 @@ export function Properties() {
     }
 
     return (
-        <div className="space-y-6 px-4 pt-6">
+        <div className="space-y-6 px-2 pt-6">
             <PageHeader
                 title={lang === 'he' ? 'הנכסים שלי' : 'My Assets'}
                 subtitle={lang === 'he' ? 'ניהול פורטפוליו הנכסים שלך' : 'Manage your real estate portfolio'}
                 action={
                     <button
                         onClick={() => setIsAddModalOpen(true)}
-                        className="flex items-center gap-2 bg-brand-navy text-white px-5 py-2.5 rounded-xl hover:bg-brand-navy-light transition-all shadow-lg shadow-brand-navy/20 active:scale-95"
+                        className="bg-black dark:bg-white text-white dark:text-black p-3.5 rounded-2xl hover:opacity-90 transition-all shadow-xl active:scale-95 flex items-center justify-center"
+                        aria-label={t('addProperty')}
                     >
-                        <Plus className="w-5 h-5" />
-                        <span className="hidden sm:inline">{t('addProperty')}</span>
+                        <Plus className="w-6 h-6" />
                     </button>
                 }
             />
@@ -210,8 +210,8 @@ export function Properties() {
                     <div className="p-4 bg-brand-navy/5 rounded-full mb-4">
                         <Home className="w-8 h-8 text-brand-navy/40" />
                     </div>
-                    <h3 className="text-lg font-bold text-gray-900">{t('noAssetsFound')}</h3>
-                    <p className="text-gray-500 text-sm mb-6">
+                    <h3 className="text-lg font-bold text-foreground">{t('noAssetsFound')}</h3>
+                    <p className="text-muted-foreground text-sm mb-6">
                         {t('addFirstPropertyDesc')}
                     </p>
                     <button onClick={handleAdd} className="text-brand-navy font-bold hover:underline text-sm">
@@ -228,26 +228,26 @@ export function Properties() {
                             className="cursor-pointer group flex flex-col h-full"
                         >
                             {/* Image Section */}
-                            <div className="relative h-48 bg-gray-100 overflow-hidden">
+                            <div className="relative h-56 bg-gray-100 dark:bg-neutral-800 overflow-hidden">
                                 <img
                                     src={property.image_url || placeholderImage}
                                     alt={`${property.address}, ${property.city}`}
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
 
-                                <div className={`absolute top-3 ${lang === 'he' ? 'left-3' : 'right-3'} flex gap-2`}>
-                                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide backdrop-blur-md shadow-sm border ${property.status === 'Occupied'
-                                        ? 'bg-white/90 text-green-700 border-green-200/50'
-                                        : 'bg-white/90 text-amber-700 border-amber-200/50'
+                                <div className={`absolute top-4 ${lang === 'he' ? 'left-4' : 'right-4'} flex gap-2`}>
+                                    <span className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-xl shadow-lg border ${property.status === 'Occupied'
+                                        ? 'bg-white/90 dark:bg-neutral-900/90 text-green-600 border-green-200/50 dark:border-green-900/40'
+                                        : 'bg-white/90 dark:bg-neutral-900/90 text-orange-500 border-orange-200/50 dark:border-orange-900/40'
                                         }`}>
                                         {property.status === 'Occupied' ? t('occupied') : t('vacant')}
                                     </span>
                                 </div>
-                                <div className={`absolute bottom-3 ${lang === 'he' ? 'right-3' : 'left-3'}`}>
-                                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/90 backdrop-blur-xl rounded-full shadow-sm">
-                                        <PropertyIcon type={property.property_type} className="w-3.5 h-3.5 text-brand-navy" />
-                                        <span className="text-xs font-bold text-brand-navy capitalize">
+                                <div className={`absolute bottom-4 ${lang === 'he' ? 'right-4' : 'left-4'}`}>
+                                    <div className="flex items-center gap-2 px-3 py-1.5 bg-black/50 dark:bg-neutral-900/50 backdrop-blur-xl rounded-2xl border border-white/10">
+                                        <PropertyIcon type={property.property_type} className="w-4 h-4 text-white" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-white">
                                             {property.property_type ? t(property.property_type as any) : t('apartment')}
                                         </span>
                                     </div>
@@ -257,28 +257,28 @@ export function Properties() {
                             {/* Content */}
                             <div className="p-5 space-y-4 flex-1 flex flex-col">
                                 <div>
-                                    <h3 className="text-lg font-bold text-gray-900 leading-tight group-hover:text-brand-navy transition-colors">
+                                    <h3 className="text-lg font-bold text-foreground leading-tight group-hover:text-brand-navy transition-colors">
                                         {[property.address, property.city].filter(Boolean).join(', ')}
                                     </h3>
                                 </div>
 
                                 {/* Specs */}
-                                <div className="flex items-center gap-4 py-3 border-y border-gray-100">
-                                    <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                                        <BedDouble className="w-4 h-4 text-brand-navy/60" />
-                                        <span className="font-bold text-gray-900">{property.rooms}</span>
-                                        <span className="text-xs">{t('rooms')}</span>
+                                <div className="flex items-center gap-6 py-4 border-y border-gray-100 dark:border-neutral-800">
+                                    <div className="flex items-center gap-2">
+                                        <BedDouble className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                                        <span className="text-sm font-black text-black dark:text-white">{property.rooms}</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{t('rooms')}</span>
                                     </div>
-                                    <div className="flex items-center gap-1.5 text-sm text-gray-600">
-                                        <Ruler className="w-4 h-4 text-brand-navy/60" />
-                                        <span className="font-bold text-gray-900">{property.size_sqm}</span>
-                                        <span className="text-xs">{t('sqm')}</span>
+                                    <div className="flex items-center gap-2">
+                                        <Ruler className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                                        <span className="text-sm font-black text-black dark:text-white">{property.size_sqm}</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{t('sqm')}</span>
                                     </div>
                                 </div>
 
                                 <div className="flex items-center justify-between pt-1 mt-auto">
                                     <div onClick={(e) => e.stopPropagation()} className="relative">
-                                        <span className="text-[10px] uppercase tracking-wider font-semibold text-gray-400 block mb-0.5">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block mb-1">
                                             {t('monthlyRentLabel')}
                                         </span>
                                         <div className="flex items-baseline gap-2">
@@ -289,8 +289,8 @@ export function Properties() {
                                                         setIndexedRentContract(active);
                                                     }
                                                 }}
-                                                className={`text-xl font-black font-mono text-brand-navy ${property.contracts?.some(c => c.status === 'active' && c.linkage_type && c.linkage_type !== 'none')
-                                                    ? 'cursor-pointer hover:text-blue-600 border-b border-dashed border-blue-300'
+                                                className={`text-2xl font-black text-black dark:text-white ${property.contracts?.some(c => c.status === 'active' && c.linkage_type && c.linkage_type !== 'none')
+                                                    ? 'cursor-pointer hover:underline decoration-dotted'
                                                     : ''
                                                     }`}
                                             >
@@ -321,15 +321,15 @@ export function Properties() {
 
                                         return (
                                             <div className="text-right">
-                                                <span className="text-[10px] uppercase tracking-wider font-semibold text-gray-400 block mb-0.5">
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block mb-1">
                                                     {lang === 'he' ? 'סיום חוזה' : 'Ends'} {hasOptions && '(+Opt)'}
                                                 </span>
-                                                <div className="flex items-center gap-1 justify-end">
-                                                    <span className="text-sm font-bold text-gray-700 bg-gray-50 px-2 py-1 rounded-md border border-gray-100">
+                                                <div className="flex items-center gap-2 justify-end">
+                                                    <span className="text-[10px] font-black bg-gray-50 dark:bg-neutral-800 text-black dark:text-white px-2.5 py-1.5 rounded-xl border border-gray-100 dark:border-neutral-700 shadow-sm">
                                                         {endDate.toLocaleDateString()}
                                                     </span>
                                                     {hasOptions && (
-                                                        <span className="text-xs font-bold text-brand-navy bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">
+                                                        <span className="text-[10px] font-black bg-black dark:bg-white text-white dark:text-black px-2.5 py-1.5 rounded-xl shadow-lg">
                                                             {finalDate.toLocaleDateString()}
                                                         </span>
                                                     )}

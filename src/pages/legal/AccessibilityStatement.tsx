@@ -52,7 +52,7 @@ export default function AccessibilityStatement() {
                             </ul>
                         </div>
 
-                        <p className="text-sm text-gray-500 mt-4">
+                        <p className="text-sm text-muted-foreground mt-4">
                             הצהרה זו עודכנה לאחרונה בתאריך: {new Date().toLocaleDateString('he-IL')}
                         </p>
                     </div>

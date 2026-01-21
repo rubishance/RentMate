@@ -7,7 +7,7 @@ import { AppShell } from './components/layout/AppShell';
 import { Loader2 } from 'lucide-react';
 import { FeedbackWidget } from './components/common/FeedbackWidget';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
-import GoogleDriveCallback from './pages/auth/GoogleDriveCallback';
+import { ChatWidget } from './components/chat/ChatWidget';
 
 const PageLoader = () => (
   <div className="flex h-screen w-full items-center justify-center bg-gray-50 dark:bg-gray-900">
@@ -16,7 +16,7 @@ const PageLoader = () => (
 );
 
 // Eager load critical pages
-import { LandingPage } from './pages/LandingPage';
+import { WelcomeLanding } from './pages/WelcomeLanding';
 import { Login } from './pages/Login';
 
 // Lazy load Main Pages (Named Exports)
@@ -33,15 +33,23 @@ const Analytics = lazy(() => import('./pages/Analytics').then(module => ({ defau
 const Tools = lazy(() => import('./pages/Tools').then(module => ({ default: module.Tools })));
 const ResetPassword = lazy(() => import('./pages/ResetPassword').then(module => ({ default: module.ResetPassword })));
 const AccessibilityStatement = lazy(() => import('./pages/AccessibilityStatement').then(module => ({ default: module.AccessibilityStatement })));
+const KnowledgeBase = lazy(() => import('./pages/KnowledgeBase').then(module => ({ default: module.KnowledgeBase })));
+const ArticleViewer = lazy(() => import('./pages/ArticleViewer').then(module => ({ default: module.ArticleViewer })));
 
 // Lazy load Admin Pages & Less Critical (Default Exports)
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const MaintenancePage = lazy(() => import('./pages/MaintenancePage'));
+const OwnerDashboard = lazy(() => import('./pages/admin/OwnerDashboard'));
+const BroadcastManager = lazy(() => import('./pages/admin/BroadcastManager'));
+import { ShortLinkRedirect } from './pages/ShortLinkRedirect';
 const UserManagement = lazy(() => import('./pages/admin/UserManagement'));
 const AdminInvoices = lazy(() => import('./pages/admin/AdminInvoices'));
 const AuditLogs = lazy(() => import('./pages/admin/AuditLogs'));
 const AdminFeedback = lazy(() => import('./pages/admin/AdminFeedback'));
 const AdminNotifications = lazy(() => import('./pages/admin/AdminNotifications'));
 const SystemSettings = lazy(() => import('./pages/admin/SystemSettings'));
+const StorageManagement = lazy(() => import('./pages/admin/StorageManagement'));
+const AIUsageManagement = lazy(() => import('./pages/admin/AIUsageManagement'));
 
 const PlanManagement = lazy(() => import('./pages/admin/PlanManagement'));
 const Pricing = lazy(() => import('./pages/Pricing'));
@@ -54,6 +62,7 @@ const AdminGuard = lazy(() => import('./components/guards/AdminGuard'));
 const AdminLayout = lazy(() => import('./components/layout/AdminLayout'));
 const MFAEnrollment = lazy(() => import('./components/auth/MFAEnrollment'));
 const MFAChallenge = lazy(() => import('./components/auth/MFAChallenge'));
+const SuperAdminGuard = lazy(() => import('./components/guards/SuperAdminGuard'));
 
 
 
@@ -66,11 +75,12 @@ function App() {
             <BrowserRouter>
               <Suspense fallback={<PageLoader />}>
                 <Routes>
-                  <Route path="/" element={<LandingPage />} />
+                  <Route path="/" element={<WelcomeLanding />} />
                   <Route path="/pricing" element={<Pricing />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
-                  <Route path="/auth/google/callback" element={<GoogleDriveCallback />} />
+                  <Route path="/s/:slug" element={<ShortLinkRedirect />} />
+                  <Route path="/maintenance" element={<MaintenancePage />} />
 
                   {/* MFA Routes - Accessible only if logged in */}
                   <Route element={<AuthGuard />}>
@@ -78,27 +88,28 @@ function App() {
                     <Route path="/auth/mfa/challenge" element={<MFAChallenge />} />
                   </Route>
 
-                  <Route path="/calc/share/:id" element={<SharedCalculation />} />
+                  <Route path="/calc/:id" element={<SharedCalculation />} />
 
                   {/* Legal Routes */}
                   <Route path="/accessibility" element={<AccessibilityStatement />} />
                   <Route path="/legal/privacy" element={<PrivacyPolicy />} />
                   <Route path="/legal/terms" element={<TermsOfService />} />
+                  <Route path="/knowledge-base" element={<KnowledgeBase />} />
+                  <Route path="/knowledge-base/:slug" element={<ArticleViewer />} />
 
-                  {/* Main App Routes - Public Access except Payments */}
-                  <Route element={<AppShell />}>
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/properties" element={<Properties />} />
-                    <Route path="/tenants" element={<Tenants />} />
-                    <Route path="/contracts" element={<Contracts />} />
-                    <Route path="/contracts/new" element={<AddContract />} />
-                    <Route path="/calculator" element={<Calculator />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="/analytics" element={<Analytics />} />
-                    <Route path="/tools" element={<Tools />} />
+                  {/* Main App Routes - Protected by AuthGuard */}
+                  <Route element={<AuthGuard />}>
+                    <Route element={<AppShell />}>
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/properties" element={<Properties />} />
+                      <Route path="/tenants" element={<Tenants />} />
+                      <Route path="/contracts" element={<Contracts />} />
+                      <Route path="/contracts/new" element={<AddContract />} />
+                      <Route path="/calculator" element={<Calculator />} />
+                      <Route path="/settings" element={<Settings />} />
+                      <Route path="/analytics" element={<Analytics />} />
+                      <Route path="/tools" element={<Tools />} />
 
-                    {/* Protected Payment Route */}
-                    <Route element={<AuthGuard />}>
                       <Route path="/payments" element={<Payments />} />
                     </Route>
                   </Route>
@@ -106,14 +117,21 @@ function App() {
                   {/* Admin Routes */}
                   <Route element={<AdminGuard />}>
                     <Route path="/admin" element={<AdminLayout />}>
+                      <Route element={<SuperAdminGuard />}>
+                        <Route path="owner" element={<OwnerDashboard />} />
+                        <Route path="broadcasts" element={<BroadcastManager />} />
+                      </Route>
                       <Route index element={<AdminDashboard />} />
                       <Route path="notifications" element={<AdminNotifications />} />
                       <Route path="settings" element={<SystemSettings />} />
                       <Route path="users" element={<UserManagement />} />
 
                       <Route path="plans" element={<PlanManagement />} />
+                      <Route path="storage" element={<StorageManagement />} />
                       <Route path="invoices" element={<AdminInvoices />} />
+                      <Route path="feedback" element={<AdminFeedback />} />
                       <Route path="audit-logs" element={<AuditLogs />} />
+                      <Route path="ai-usage" element={<AIUsageManagement />} />
                     </Route>
                   </Route>
                 </Routes>
@@ -121,6 +139,7 @@ function App() {
             </BrowserRouter>
             {/* Global Widgets */}
             <FeedbackWidget />
+            <ChatWidget />
           </ErrorBoundary>
         </DataCacheProvider>
       </NotificationsProvider>

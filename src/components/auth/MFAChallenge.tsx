@@ -67,20 +67,20 @@ export default function MFAChallenge() {
     };
 
     if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="min-h-screen flex items-center justify-center bg-secondary">
             <Loader2 className="w-8 h-8 animate-spin text-brand-600" />
         </div>
     );
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+        <div className="min-h-screen flex items-center justify-center bg-secondary py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg border border-border">
                 <div className="text-center">
                     <ShieldCheck className="mx-auto h-12 w-12 text-brand-600" />
-                    <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+                    <h2 className="mt-6 text-3xl font-extrabold text-foreground">
                         Admin Access
                     </h2>
-                    <p className="mt-2 text-sm text-gray-600">
+                    <p className="mt-2 text-sm text-muted-foreground">
                         Enter your 2FA code to confirm your identity.
                     </p>
                 </div>
@@ -91,14 +91,14 @@ export default function MFAChallenge() {
                             <label htmlFor="code" className="sr-only">Authentication Code</label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <Lock className="h-5 w-5 text-gray-400" />
+                                    <Lock className="h-5 w-5 text-muted-foreground" />
                                 </div>
                                 <input
                                     id="code"
                                     name="code"
                                     type="text"
                                     required
-                                    className="appearance-none rounded-md relative block w-full pl-10 px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-brand-500 focus:border-brand-500 focus:z-10 sm:text-sm text-center tracking-widest text-2xl font-mono"
+                                    className="appearance-none rounded-md relative block w-full pl-10 px-3 py-2 border border-gray-300 placeholder-gray-500 text-foreground focus:outline-none focus:ring-brand-500 focus:border-brand-500 focus:z-10 sm:text-sm text-center tracking-widest text-2xl font-mono"
                                     placeholder="000 000"
                                     value={code}
                                     onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
@@ -132,7 +132,7 @@ export default function MFAChallenge() {
                         <button
                             type="button"
                             onClick={() => supabase.auth.signOut().then(() => navigate('/login'))}
-                            className="text-sm text-gray-500 hover:text-gray-900"
+                            className="text-sm text-muted-foreground hover:text-foreground"
                         >
                             Cancel and Logout
                         </button>

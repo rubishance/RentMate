@@ -78,29 +78,29 @@ export function IndexedRentModal({ isOpen, onClose, contract }: IndexedRentModal
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700">
+                <div className="flex items-center justify-between p-4 border-b border-border dark:border-gray-700">
                     <h3 className="text-lg font-bold flex items-center gap-2">
-                        <TrendingUp className="w-5 h-5 text-blue-600" />
+                        <TrendingUp className="w-5 h-5 text-primary" />
                         Indexed Rent Calculator
                     </h3>
-                    <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
-                        <X className="w-5 h-5 text-gray-400" />
+                    <button onClick={onClose} className="p-1 hover:bg-muted dark:hover:bg-gray-700 rounded-full transition-colors">
+                        <X className="w-5 h-5 text-muted-foreground" />
                     </button>
                 </div>
 
                 <div className="p-6 space-y-6">
                     {/* Base Details */}
-                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-700">
+                    <div className="flex items-center justify-between p-4 bg-secondary dark:bg-foreground/50 rounded-xl border border-border dark:border-gray-700">
                         <div>
-                            <p className="text-xs text-gray-500 uppercase font-medium mb-1">Base Rent</p>
+                            <p className="text-xs text-muted-foreground uppercase font-medium mb-1">Base Rent</p>
                             <p className="text-xl font-mono font-bold">₪{contract?.base_rent.toLocaleString()}</p>
                         </div>
                         <div className="text-right">
-                            <p className="text-xs text-gray-500 uppercase font-medium mb-1">Base Index</p>
+                            <p className="text-xs text-muted-foreground uppercase font-medium mb-1">Base Index</p>
                             <p className="font-mono text-gray-700 dark:text-gray-300">
                                 {contract?.base_index_value?.toFixed(2) || 'N/A'}
                             </p>
-                            <p className="text-[10px] text-gray-400">
+                            <p className="text-[10px] text-muted-foreground">
                                 {contract?.base_index_date || '-'}
                             </p>
                         </div>
@@ -108,8 +108,8 @@ export function IndexedRentModal({ isOpen, onClose, contract }: IndexedRentModal
 
                     {loading ? (
                         <div className="py-8 text-center space-y-3">
-                            <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto" />
-                            <p className="text-sm text-gray-500">Retrieving latest index data...</p>
+                            <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto" />
+                            <p className="text-sm text-muted-foreground">Retrieving latest index data...</p>
                         </div>
                     ) : calculation ? (
                         <div className="space-y-6">
@@ -129,19 +129,19 @@ export function IndexedRentModal({ isOpen, onClose, contract }: IndexedRentModal
                             {/* Calculation Breakdown */}
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between text-sm">
-                                    <span className="text-gray-500 flex items-center gap-2">
+                                    <span className="text-muted-foreground flex items-center gap-2">
                                         <Calendar className="w-4 h-4" />
                                         Latest Known Index ({calculation.currentIndexDate})
                                     </span>
                                     <span className="font-mono font-medium">{calculation.currentIndex.toFixed(2)}</span>
                                 </div>
-                                <div className="text-xs text-gray-400 text-center pt-2">
+                                <div className="text-xs text-muted-foreground text-center pt-2">
                                     Calculated based on {contract?.linkage_type?.toUpperCase()} linkage
                                 </div>
                             </div>
                         </div>
                     ) : (
-                        <div className="text-center py-6 text-gray-500">
+                        <div className="text-center py-6 text-muted-foreground">
                             <Calculator className="w-12 h-12 mx-auto text-gray-300 mb-2" />
                             <p>No linkage defined for this contract.</p>
                             <p className="text-xs mt-1">Rent remains fixed at ₪{contract?.base_rent.toLocaleString()}</p>

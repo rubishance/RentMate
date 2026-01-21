@@ -12,9 +12,9 @@ import type { ExtractedField, Tenant, Property } from '../types/database';
 
 import { supabase } from '../lib/supabase';
 import { useTranslation } from '../hooks/useTranslation';
-import { googleDriveService } from '../services/google-drive.service';
 import { generatePaymentSchedule } from '../utils/payment-generator';
 import { useSubscription } from '../hooks/useSubscription';
+import { CompressionService } from '../services/compression.service';
 
 const STEPS = [
     { id: 1, labelKey: 'stepTenantProperty', icon: Building },
@@ -106,12 +106,7 @@ export function AddContract() {
     const [existingProperties, setExistingProperties] = useState<Property[]>([]);
     const [isExistingProperty, setIsExistingProperty] = useState(false);
     const [selectedPropertyId, setSelectedPropertyId] = useState<string>(''); // For existing selection
-    const [storagePreference, setStoragePreference] = useState<'cloud' | 'device' | 'both' | 'drive'>('device');
-    const [isDriveConnected, setIsDriveConnected] = useState(false);
-
-    useEffect(() => {
-        googleDriveService.isConnected().then(setIsDriveConnected);
-    }, []);
+    const [storagePreference, setStoragePreference] = useState<'cloud' | 'device' | 'both'>('device');
     const [saveContractFile, setSaveContractFile] = useState(false);
     const [hasOverlap, setHasOverlap] = useState(false);
     const [blockedIntervals, setBlockedIntervals] = useState<{ from: Date; to: Date }[]>([]);
@@ -215,20 +210,20 @@ export function AddContract() {
     // Block access if limit reached
     if (!subLoading && !canAddContract) {
         return (
-            <div className="h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-900">
+            <div className="h-screen flex items-center justify-center p-4 bg-secondary dark:bg-foreground">
                 <div className="max-w-md w-full bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl text-center space-y-4">
                     <div className="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
                         <AlertTriangle className="w-8 h-8" />
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <h2 className="text-2xl font-bold text-foreground dark:text-white">
                         {t('limitReached')}
                     </h2>
-                    <p className="text-gray-600 dark:text-gray-400">
+                    <p className="text-muted-foreground dark:text-muted-foreground">
                         {t('limitReachedDesc', { plan: plan?.name || 'Free' })}
                     </p>
                     <button
                         onClick={() => navigate('/contracts')}
-                        className="w-full py-2.5 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors"
+                        className="w-full py-2.5 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-colors"
                     >
                         {t('backToContracts')}
                     </button>
@@ -242,7 +237,17 @@ export function AddContract() {
         if (!e.target.files || e.target.files.length === 0) return;
 
         setIsUploading(true);
-        const file = e.target.files[0];
+        let file = e.target.files[0];
+
+        // Compress if image
+        try {
+            if (CompressionService.isImage(file)) {
+                file = await CompressionService.compressImage(file);
+            }
+        } catch (error) {
+            console.error('Compression failed:', error);
+        }
+
         const fileExt = file.name.split('.').pop();
         const fileName = `prop_${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
         const filePath = `${fileName}`;
@@ -426,17 +431,24 @@ export function AddContract() {
 
                 // 4. Handle File Storage
                 if (contractFile && saveContractFile) {
-
+                    let fileToUpload = contractFile;
+                    if (CompressionService.isImage(fileToUpload)) {
+                        try {
+                            fileToUpload = await CompressionService.compressImage(fileToUpload);
+                        } catch (e) {
+                            console.warn('Compression failed', e);
+                        }
+                    }
 
                     // Cloud Upload (RentMate)
                     if (storagePreference === 'cloud' || storagePreference === 'both') {
-                        const fileExt = contractFile.name.split('.').pop();
+                        const fileExt = fileToUpload.name.split('.').pop();
                         const fileName = `${tenantId}_${Date.now()}.${fileExt}`;
                         const filePath = `${propertyId}/${fileName}`;
 
                         const { error: uploadError } = await supabase.storage
                             .from('contracts')
-                            .upload(filePath, contractFile);
+                            .upload(filePath, fileToUpload);
 
                         if (uploadError) {
                             console.error('Upload failed:', uploadError);
@@ -453,22 +465,6 @@ export function AddContract() {
                         }
                     }
 
-                    // Google Drive Upload
-                    if ((storagePreference === 'drive' || storagePreference === 'both') && isDriveConnected) {
-                        try {
-                            const driveFile = await googleDriveService.uploadFile(contractFile);
-                            // If ONLY Drive is selected, use Drive link as the main URL.
-                            // If Both, we prefer RentMate link (above) for faster loading, but Drive is backup.
-                            if (storagePreference === 'drive' && driveFile.webViewLink) {
-                                await supabase.from('contracts')
-                                    .update({ contract_file_url: driveFile.webViewLink })
-                                    .eq('id', newContract.id);
-                            }
-                        } catch (driveErr) {
-                            console.error('Google Drive upload failed:', driveErr);
-                            alert('Contract saved, but Google Drive upload failed.');
-                        }
-                    }
 
                     // Device Download
                     if (storagePreference === 'device' || storagePreference === 'both') {
@@ -746,8 +742,8 @@ export function AddContract() {
                             <ArrowLeft className="w-5 h-5" />
                         </button>
                         <div>
-                            <h1 className="text-2xl font-bold tracking-tight text-foreground">New Contract</h1>
-                            <p className="text-sm text-muted-foreground">Drafting a new lease agreement</p>
+                            <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('newContract')}</h1>
+                            <p className="text-sm text-muted-foreground">{t('newContractDesc')}</p>
                         </div>
                     </div>
 
@@ -799,7 +795,7 @@ export function AddContract() {
                                                 </div>
                                                 <button
                                                     onClick={() => setIsScanning(true)}
-                                                    className="bg-white text-blue-600 px-4 py-2 rounded-lg font-bold text-sm hover:bg-blue-50 transition-colors shadow-sm"
+                                                    className="bg-white text-primary px-4 py-2 rounded-lg font-bold text-sm hover:bg-primary/10 transition-colors shadow-sm"
                                                 >
                                                     סרוק עכשיו
                                                 </button>
@@ -1013,7 +1009,7 @@ export function AddContract() {
 
                                                                             setFormData(prev => ({ ...prev, image_url: imageUrl }));
                                                                         }}
-                                                                        className="px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-sm font-medium transition-colors flex-shrink-0"
+                                                                        className="px-4 py-2 bg-primary/10 text-primary hover:bg-primary/10 rounded-lg text-sm font-medium transition-colors flex-shrink-0"
                                                                     >
                                                                         ייבא מ-Google
                                                                     </button>
@@ -1198,14 +1194,14 @@ export function AddContract() {
                                                         ...prev,
                                                         optionPeriods: [...prev.optionPeriods, { length: '12', unit: 'months', rentAmount: '', currency: 'ILS' }]
                                                     }))}
-                                                    className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                                                    className="text-xs text-primary hover:text-primary font-medium flex items-center gap-1"
                                                 >
                                                     <Plus className="w-3 h-3" /> {t('addPeriod')}
                                                 </button>
                                             </div>
 
                                             {formData.optionPeriods.length === 0 && (
-                                                <div className="text-sm text-gray-500 italic p-3 bg-gray-50 rounded-xl text-center border border-dashed border-gray-200">
+                                                <div className="text-sm text-muted-foreground italic p-3 bg-secondary rounded-xl text-center border border-dashed border-border">
                                                     {t('noOptionPeriods')}
                                                 </div>
                                             )}
@@ -1387,7 +1383,7 @@ export function AddContract() {
                                                             ...prev,
                                                             rentSteps: [...prev.rentSteps, { startDate: '', amount: '', currency: 'ILS' }]
                                                         }))}
-                                                        className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                                                        className="text-xs text-primary hover:text-primary font-medium flex items-center gap-1"
                                                     >
                                                         <Plus className="w-3 h-3" /> {t('addStep')}
                                                     </button>
@@ -1748,13 +1744,13 @@ export function AddContract() {
 
 
                                         {contractFile && (
-                                            <div className="bg-blue-50/50 rounded-xl p-4 border border-blue-100">
+                                            <div className="bg-primary/10/50 rounded-xl p-4 border border-blue-100">
                                                 <label className="flex items-center gap-2 cursor-pointer mb-2">
                                                     <input
                                                         type="checkbox"
                                                         checked={saveContractFile}
                                                         onChange={e => setSaveContractFile(e.target.checked)}
-                                                        className="w-5 h-5 rounded border-blue-300 text-blue-600 focus:ring-blue-500"
+                                                        className="w-5 h-5 rounded border-blue-300 text-primary focus:ring-indigo-500"
                                                     />
                                                     <h4 className="font-bold text-sm text-blue-900 flex items-center gap-2 m-0">
                                                         <Shield className="w-4 h-4" /> לשמור את קובץ החוזה?
@@ -1784,14 +1780,14 @@ export function AddContract() {
                                                                             className={cn(
                                                                                 "flex-1 relative p-3 rounded-xl border-2 transition-all text-right",
                                                                                 isSelected
-                                                                                    ? "border-blue-500 bg-white shadow-md z-10"
+                                                                                    ? "border-primary bg-white shadow-md z-10"
                                                                                     : "border-transparent bg-slate-50 hover:bg-white hover:border-blue-200"
                                                                             )}
                                                                         >
                                                                             <div className="flex flex-col items-center gap-2 text-center">
                                                                                 <div className={cn(
                                                                                     "w-8 h-8 rounded-full flex items-center justify-center transition-colors",
-                                                                                    isSelected ? "bg-blue-100 text-blue-600" : "bg-slate-200 text-slate-500"
+                                                                                    isSelected ? "bg-primary/10 text-primary" : "bg-slate-200 text-slate-500"
                                                                                 )}>
                                                                                     <Icon className="w-4 h-4" />
                                                                                 </div>
@@ -1857,7 +1853,7 @@ export function AddContract() {
                                             href={scannedContractUrl}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="p-1.5 hover:bg-slate-50 text-blue-600 rounded-lg transition-colors flex items-center gap-1"
+                                            className="p-1.5 hover:bg-slate-50 text-primary rounded-lg transition-colors flex items-center gap-1"
                                             title="פתח בחלון חדש"
                                         >
                                             <Download className="w-4 h-4" />
@@ -1955,6 +1951,6 @@ export function AddContract() {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div >
+        </div>
     );
 }

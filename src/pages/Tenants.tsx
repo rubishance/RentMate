@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 
 import { useSearchParams } from 'react-router-dom';
-import { Phone, MessageCircle, Mail, User, Plus } from 'lucide-react';
+import { PhoneIcon as Phone, MailIcon as Mail, UserIcon as User, PlusIcon as Plus } from '../components/icons/NavIcons';
+import { MessageIcon as MessageCircle } from '../components/icons/MessageIcons';
 import { supabase } from '../lib/supabase';
 import type { Tenant } from '../types/database';
 import { AddTenantModal } from '../components/modals/AddTenantModal';
@@ -127,17 +128,17 @@ export function Tenants() {
     };
 
     return (
-        <div className="space-y-6 px-4 pt-6">
+        <div className="space-y-6 px-2 pt-6">
             <PageHeader
                 title={t('myTenants')}
                 subtitle={t('manageTenantsDesc')}
                 action={
                     <button
                         onClick={handleAdd}
-                        className="flex items-center gap-2 bg-brand-navy text-white px-5 py-2.5 rounded-xl hover:bg-brand-navy-light transition-all shadow-lg shadow-brand-navy/20 active:scale-95"
+                        className="bg-black dark:bg-white text-white dark:text-black p-3.5 rounded-2xl hover:opacity-90 transition-all shadow-xl active:scale-95 flex items-center justify-center"
+                        aria-label={t('addTenant')}
                     >
-                        <Plus className="w-5 h-5" />
-                        <span className="hidden sm:inline">{t('addTenant')}</span>
+                        <Plus className="w-6 h-6" />
                     </button>
                 }
             />
@@ -147,8 +148,8 @@ export function Tenants() {
                     <div className="p-4 bg-brand-navy/5 rounded-full mb-4">
                         <User className="w-8 h-8 text-brand-navy/40" />
                     </div>
-                    <h3 className="text-lg font-bold text-gray-900">{t('noTenantsFound')}</h3>
-                    <p className="text-gray-500 text-sm mb-6">{t('addFirstTenantDesc')}</p>
+                    <h3 className="text-lg font-bold text-foreground">{t('noTenantsFound')}</h3>
+                    <p className="text-muted-foreground text-sm mb-6">{t('addFirstTenantDesc')}</p>
                     <button
                         onClick={handleAdd}
                         className="text-brand-navy font-bold hover:underline text-sm">
@@ -164,38 +165,38 @@ export function Tenants() {
                             hoverEffect
                             className="p-4 flex items-center justify-between cursor-pointer group"
                         >
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-6">
                                 {/* Avatar */}
-                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-indigo-50 text-brand-navy flex items-center justify-center font-bold text-sm shrink-0 border border-white shadow-sm">
+                                <div className="w-14 h-14 rounded-full bg-gray-50 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center font-black text-sm shrink-0 border border-gray-100 dark:border-neutral-700 shadow-sm transition-all group-hover:scale-105">
                                     {getInitials(tenant.name)}
                                 </div>
 
                                 {/* Info */}
-                                <div>
-                                    <h3 className="font-bold text-gray-900 text-lg">{tenant.name}</h3>
-                                    <p className="text-sm text-gray-500 flex items-center gap-2">
+                                <div className="space-y-1">
+                                    <h3 className="font-black text-black dark:text-white text-lg tracking-tight">{tenant.name}</h3>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 flex items-center gap-2">
                                         {tenant.phone || t('noPhone')}
                                     </p>
                                 </div>
                             </div>
 
                             {/* Actions */}
-                            <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex items-center gap-4" onClick={(e) => e.stopPropagation()}>
                                 {tenant.phone && (
                                     <>
-                                        <a href={`tel:${tenant.phone}`} className="p-2 rounded-full hover:bg-blue-50 text-blue-600 transition-colors" title="Call">
-                                            <Phone className="w-4 h-4" />
+                                        <a href={`tel:${tenant.phone}`} className="p-3 rounded-2xl bg-gray-50 dark:bg-neutral-800 text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all shadow-sm" title="Call">
+                                            <Phone className="w-5 h-5" />
                                         </a>
                                         <a href={`https://wa.me/${tenant.phone.replace(/[^0-9]/g, '')}`}
                                             target="_blank" rel="noopener noreferrer"
-                                            className="p-2 rounded-full hover:bg-green-50 text-green-600 transition-colors" title="WhatsApp">
-                                            <MessageCircle className="w-4 h-4" />
+                                            className="p-3 rounded-2xl bg-green-50 dark:bg-green-900/20 text-green-600 hover:bg-green-600 hover:text-white transition-all shadow-sm font-bold flex items-center justify-center" title="WhatsApp">
+                                            <MessageCircle className="w-5 h-5" />
                                         </a>
                                     </>
                                 )}
                                 {tenant.email && (
-                                    <a href={`mailto:${tenant.email}`} className="p-2 rounded-full hover:bg-orange-50 text-orange-600 transition-colors" title="Email">
-                                        <Mail className="w-4 h-4" />
+                                    <a href={`mailto:${tenant.email}`} className="p-3 rounded-2xl bg-orange-50 dark:bg-orange-900/20 text-orange-600 hover:bg-orange-600 hover:text-white transition-all shadow-sm font-bold flex items-center justify-center" title="Email">
+                                        <Mail className="w-5 h-5" />
                                     </a>
                                 )}
                             </div>

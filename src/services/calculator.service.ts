@@ -297,8 +297,6 @@ export async function calculateReconciliation(
 
     return {
         totalBackPayOwed: Math.round(-runningBalance),
-        averageUnderpayment: 0, // Not relevant in ledger
-        percentageOwed: 0, // Not relevant
         monthlyBreakdown,
         totalMonths: months.length
     };

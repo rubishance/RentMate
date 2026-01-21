@@ -1,0 +1,45 @@
+{
+    "HomePage": {
+        "title": "Designing the Future with AI",
+        "subtitle": "Graphic Web Designer & AI Artist",
+        "cta": "View Portfolio"
+    },
+    "Portfolio": {
+        "title": "My Portfolio",
+        "all": "All",
+        "ai": "AI Art",
+        "graphic": "Graphic Design",
+        "web": "Web Design",
+        "viewProject": "View Project"
+    },
+    "Navigation": {
+        "work": "Work",
+        "blog": "Blog",
+        "about": "About",
+        "contact": "Contact"
+    },
+    "Footer": {
+        "copyright": "© 2024 AYDesign. All rights reserved."
+    },
+    "Accessibility": {
+        "skipToContent": "Skip to content",
+        "toggleMenu": "Accessibility Menu",
+        "increaseText": "Increase Text",
+        "decreaseText": "Decrease Text",
+        "highContrast": "High Contrast"
+    },
+    "Contact": {
+        "title": "Get In Touch",
+        "subtitle": "Have a project in mind? Let's create something amazing together.",
+        "email": "Email Me",
+        "emailText": "For inquiries, collaborations, or just to say hi.",
+        "sendEmail": "Send Email",
+        "instagram": "Instagram",
+        "instagramText": "Follow my latest AI art creations and design tips.",
+        "follow": "Follow Me",
+        "linkedin": "LinkedIn",
+        "linkedinText": "Connect for professional opportunities.",
+        "connect": "Connect",
+        "followHeader": "Follow Me on Instagram"
+    }
+}

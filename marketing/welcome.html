@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl" data-lang="he">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1E3A5F">
+    <meta name="description" content="RentMate - מערכת ניהול נכסים מקצועית לבעלי דירות">
+    <title>RentMate - ברוכים הבאים</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --navy: #1E3A5F;
+            --gold: #C9A961;
+            --cream: #F8F6F3;
+            --white: #FFFFFF;
+            --charcoal: #2C3E50;
+            --gray: #6B7280;
+            --light-gray: #E5E7EB;
+            --success: #10B981;
+            --shadow: rgba(0, 0, 0, 0.08);
+            --gold-glow: rgba(201, 169, 97, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Heebo', sans-serif;
+            background: linear-gradient(135deg, var(--cream) 0%, #FDFCFB 100%);
+            min-height: 100vh;
+            color: var(--charcoal);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background Pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(30, 58, 95, 0.02) 35px, rgba(30, 58, 95, 0.02) 70px);
+            pointer-events: none;
+            z-index: 0;
+            animation: patternShift 20s linear infinite;
+        }
+
+        @keyframes patternShift {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            100% {
+                transform: translate(70px, 70px);
+            }
+        }
+
+        /* Floating Accent Elements */
+        .accent-circle {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.1;
+        }
+
+        .accent-1 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, var(--gold), transparent);
+            top: 10%;
+            right: 5%;
+            animation: float1 15s ease-in-out infinite;
+        }
+
+        .accent-2 {
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, var(--navy), transparent);
+            bottom: 15%;
+            left: 10%;
+            animation: float2 12s ease-in-out infinite;
+        }
+
+        @keyframes float1 {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(-30px, 40px) scale(1.1);
+            }
+        }
+
+        @keyframes float2 {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(40px, -30px) scale(1.15);
+            }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header with Stunning Animation */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 0;
+            margin-bottom: 4rem;
+            animation: slideDown 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .logo-container:hover {
+            transform: scale(1.05);
+        }
+
+        .logo {
+            width: 55px;
+            height: 55px;
+            filter: drop-shadow(0 4px 8px var(--shadow));
+            animation: logoFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-5px) rotate(2deg);
+            }
+        }
+
+        .brand-name {
+            font-size: 1.85rem;
+            font-weight: 800;
+            color: var(--navy);
+            letter-spacing: -0.5px;
+            position: relative;
+        }
+
+        .brand-name::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--gold), transparent);
+            transition: width 0.5s ease;
+        }
+
+        .logo-container:hover .brand-name::after {
+            width: 100%;
+        }
+
+        /* Language Toggle with Animation */
+        .lang-toggle {
+            display: flex;
+            gap: 0.5rem;
+            background: white;
+            padding: 0.25rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .lang-btn {
+            padding: 0.5rem 1.25rem;
+            background: transparent;
+            border: none;
+            color: var(--gray);
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            font-size: 0.9rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .lang-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, transparent, rgba(201, 169, 97, 0.2), transparent);
+            transition: 0.6s;
+        }
+
+        .lang-btn:hover::before {
+            left: 100%;
+        }
+
+        .lang-btn:hover {
+            color: var(--navy);
+            transform: scale(1.05);
+        }
+
+        .lang-btn.active {
+            background: var(--navy);
+            color: white;
+            box-shadow: 0 4px 12px rgba(30, 58, 95, 0.3);
+        }
+
+        /* Main Content with Stagger Animation */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 3rem;
+        }
+
+        .hero-text {
+            max-width: 900px;
+            animation: heroReveal 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes heroReveal {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--navy);
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+            position: relative;
+            display: inline-block;
+        }
+
+        .hero-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            animation: underlineGrow 1.5s ease-out 0.5s both;
+        }
+
+        @keyframes underlineGrow {
+            from {
+                width: 0;
+                opacity: 0;
+            }
+
+            to {
+                width: 120px;
+                opacity: 1;
+            }
+        }
+
+        .hero-subtitle {
+            font-size: 1.35rem;
+            color: var(--gray);
+            font-weight: 400;
+            line-height: 1.7;
+            animation: fadeInUp 1s ease 0.3s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Stunning Tab Navigation */
+        .nav-tabs {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            animation: tabsReveal 0.8s ease 0.5s both;
+        }
+
+        @keyframes tabsReveal {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .tab-btn {
+            padding: 1.1rem 2.2rem;
+            background: white;
+            border: 2px solid var(--light-gray);
+            color: var(--charcoal);
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 14px;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 4px 12px var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(201, 169, 97, 0.15);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .tab-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .tab-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px var(--shadow);
+            border-color: var(--gold);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--navy), #2A4A75);
+            color: white;
+            border-color: var(--navy);
+            box-shadow: 0 8px 24px rgba(30, 58, 95, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Tab Content with Smooth Transitions */
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 3.5rem;
+            border-radius: 20px;
+            border: 2px solid var(--light-gray);
+            box-shadow: 0 8px 32px var(--shadow);
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: contentSlideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes contentSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .content-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 1.5rem;
+            position: relative;
+            display: inline-block;
+        }
+
+        .content-title::before {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 60%;
+            background: linear-gradient(180deg, var(--gold), transparent);
+            border-radius: 3px;
+        }
+
+        .content-text {
+            font-size: 1.15rem;
+            color: var(--gray);
+            line-height: 1.8;
+            margin-bottom: 2.5rem;
+        }
+
+        /* Stunning CTA Buttons */
+        .cta-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1.25rem 3rem;
+            background: linear-gradient(135deg, var(--navy), #2A4A75);
+            color: white;
+            font-size: 1.15rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 8px 20px rgba(30, 58, 95, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: 0.6s;
+        }
+
+        .cta-btn:hover::before {
+            left: 100%;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 12px 32px rgba(30, 58, 95, 0.4);
+        }
+
+        .cta-btn.secondary {
+            background: white;
+            color: var(--navy);
+            border: 2px solid var(--navy);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .cta-btn.secondary:hover {
+            background: var(--navy);
+            color: white;
+        }
+
+        /* Index Calculator - Stunning Design */
+        .calculator-widget {
+            background: linear-gradient(135deg, #F8F9FA, white);
+            padding: 2.5rem;
+            border-radius: 16px;
+            border: 2px solid var(--light-gray);
+            box-shadow: 0 8px 24px var(--shadow);
+            margin-top: 2rem;
+            animation: calculatorPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes calculatorPop {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .calculator-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .calculator-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .input-label {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--charcoal);
+        }
+
+        .calc-input {
+            padding: 1rem;
+            background: white;
+            border: 2px solid var(--light-gray);
+            border-radius: 10px;
+            color: var(--charcoal);
+            font-size: 1rem;
+            font-family: 'Heebo', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .calc-input:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 4px var(--gold-glow);
+        }
+
+        .calculator-result {
+            background: linear-gradient(135deg, var(--navy), #2A4A75);
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            animation: resultPulse 0.5s ease;
+        }
+
+        @keyframes resultPulse {
+            0% {
+                transform: scale(0.95);
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .result-label {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 0.5rem;
+        }
+
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: white;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Pricing Cards - Stunning Design */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2.5rem;
+        }
+
+        .pricing-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 16px;
+            border: 2px solid var(--light-gray);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pricing-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gold), var(--navy));
+            transform: scaleX(0);
+            transition: transform 0.6s ease;
+        }
+
+        .pricing-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 40px var(--shadow);
+            border-color: var(--gold);
+        }
+
+        .pricing-card.featured {
+            border-color: var(--gold);
+            box-shadow: 0 12px 32px var(--gold-glow);
+        }
+
+        .pricing-card.featured::before {
+            transform: scaleX(1);
+        }
+
+        .plan-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, var(--gold), #D4AF6A);
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 700;
+            border-radius: 20px;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .plan-name {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 1rem;
+        }
+
+        .plan-price {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--charcoal);
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-price span {
+            font-size: 1.2rem;
+            font-weight: 400;
+            color: var(--gray);
+        }
+
+        .plan-description {
+            font-size: 1rem;
+            color: var(--gray);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .plan-features {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .plan-features li {
+            padding: 0.75rem 0;
+            color: var(--charcoal);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .plan-features li:last-child {
+            border-bottom: none;
+        }
+
+        .check-icon {
+            width: 20px;
+            height: 20px;
+            background: var(--success);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        /* Blog Grid with Hover Effects */
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2.5rem;
+        }
+
+        .blog-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 14px;
+            border: 2px solid var(--light-gray);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .blog-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gold), var(--navy));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.5s ease;
+        }
+
+        .blog-card:hover::after {
+            transform: scaleX(1);
+        }
+
+        .blog-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 28px var(--shadow);
+            border-color: var(--gold);
+        }
+
+        .blog-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 1rem;
+            transition: color 0.3s ease;
+        }
+
+        .blog-card:hover .blog-title {
+            color: var(--gold);
+        }
+
+        .blog-excerpt {
+            font-size: 1rem;
+            color: var(--gray);
+            line-height: 1.7;
+        }
+
+        /* Contact Form */
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            text-align: right;
+        }
+
+        .form-label {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--charcoal);
+        }
+
+        .form-input,
+        .form-textarea {
+            padding: 1.1rem;
+            background: var(--cream);
+            border: 2px solid var(--light-gray);
+            border-radius: 10px;
+            color: var(--charcoal);
+            font-size: 1rem;
+            font-family: 'Heebo', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--gold);
+            background: white;
+            box-shadow: 0 0 0 4px var(--gold-glow);
+        }
+
+        .form-textarea {
+            min-height: 160px;
+            resize: vertical;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 5rem;
+            padding: 2.5rem 0;
+            text-align: center;
+            color: var(--gray);
+            font-size: 0.95rem;
+            border-top: 2px solid var(--light-gray);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.15rem;
+            }
+
+            .nav-tabs {
+                gap: 0.75rem;
+            }
+
+            .tab-btn {
+                padding: 0.9rem 1.6rem;
+                font-size: 0.95rem;
+            }
+
+            .tab-content {
+                padding: 2rem;
+            }
+
+            .content-title {
+                font-size: 2rem;
+            }
+
+            .calculator-inputs {
+                grid-template-columns: 1fr;
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Floating Accent Elements -->
+    <div class="accent-circle accent-1"></div>
+    <div class="accent-circle accent-2"></div>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo-container" onclick="window.location.href='index.html'">
+                <img src="../src/assets/logo-final-premium.png" alt="RentMate Logo" class="logo">
+                <div class="brand-name">RentMate</div>
+            </div>
+            <div class="lang-toggle">
+                <button class="lang-btn active" data-lang="he">עב</button>
+                <button class="lang-btn" data-lang="en">EN</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="hero-text">
+                <h1 class="hero-title" data-he="ברוכים הבאים ל-RentMate" data-en="Welcome to RentMate">ברוכים הבאים
+                    ל-RentMate</h1>
+                <p class="hero-subtitle"
+                    data-he="מערכת ניהול נכסים מבוססת AI - סריקת חוזים חכמה, חישוב מדד אוטומטי, וניהול מסמכים מתקדם. הכל במקום אחד."
+                    data-en="AI-Powered Property Management System - Smart contract scanning, automatic index calculation, and advanced document management. All in one place.">
+                    מערכת ניהול נכסים מבוססת AI - סריקת חוזים חכמה, חישוב מדד אוטומטי, וניהול מסמכים מתקדם. הכל במקום
+                    אחד.
+                </p>
+                <div
+                    style="display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 1rem; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(6, 182, 212, 0.1)); border-radius: 30px; border: 2px solid rgba(139, 92, 246, 0.3); animation: fadeInUp 1s ease 0.6s both;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path
+                            d="m12 3 1.912 5.813a2 2 0 0 0 1.275 1.275l5.813 1.912-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275z">
+                        </path>
+                    </svg>
+                    <span
+                        style="font-weight: 700; background: linear-gradient(135deg, #8B5CF6, #06B6D4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 1.1rem;"
+                        data-he="מופעל על ידי Gemini AI" data-en="Powered by Gemini AI">מופעל על ידי Gemini AI</span>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="nav-tabs">
+                <button class="tab-btn active" data-tab="home" data-he="בית" data-en="Home">בית</button>
+                <button class="tab-btn" data-tab="calculator" data-he="מחשבון מדד" data-en="Index Calculator">מחשבון
+                    מדד</button>
+                <button class="tab-btn" data-tab="pricing" data-he="תמחור ותוכניות" data-en="Pricing & Plans">תמחור
+                    ותוכניות</button>
+                <button class="tab-btn" data-tab="blog" data-he="בלוג" data-en="Blog">בלוג</button>
+                <button class="tab-btn" data-tab="qa" data-he="שאלות ותשובות" data-en="Q&A">שאלות ותשובות</button>
+                <button class="tab-btn" data-tab="about" data-he="אודות" data-en="About">אודות</button>
+                <button class="tab-btn" data-tab="contact" data-he="צור קשר" data-en="Contact">צור קשר</button>
+            </nav>
+
+            <!-- Tab Content: Home -->
+            <div class="tab-content active" id="home">
+                <h2 class="content-title" data-he="ניהול נכסים חכם מבוסס AI"
+                    data-en="AI-Powered Smart Property Management">ניהול נכסים חכם מבוסס AI</h2>
+                <p class="content-text"
+                    data-he="RentMate משתמשת בטכנולוגיית Gemini AI המתקדמת לסריקה אוטומטית של חוזי שכירות, זיהוי פרטים חשובים, וניהול מסמכים חכם. המערכת לומדת ומשתפרת עם כל שימוש, חוסכת לך זמן יקר ומפחיתה טעויות."
+                    data-en="RentMate uses advanced Gemini AI technology for automatic rental contract scanning, important detail recognition, and smart document management. The system learns and improves with each use, saving you valuable time and reducing errors.">
+                    RentMate משתמשת בטכנולוגיית Gemini AI המתקדמת לסריקה אוטומטית של חוזי שכירות, זיהוי פרטים חשובים,
+                    וניהול מסמכים חכם. המערכת לומדת ומשתפרת עם כל שימוש, חוסכת לך זמן יקר ומפחיתה טעויות.
+                </p>
+                <div
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin: 2rem 0;">
+                    <div
+                        style="padding: 1.5rem; background: linear-gradient(135deg, #F8F9FA, white); border-radius: 12px; border: 2px solid var(--light-gray); text-align: center;">
+                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🤖</div>
+                        <div style="font-weight: 700; color: var(--navy); margin-bottom: 0.5rem;"
+                            data-he="סריקת חוזים AI" data-en="AI Contract Scanning">סריקת חוזים AI</div>
+                        <div style="font-size: 0.9rem; color: var(--gray);" data-he="זיהוי אוטומטי של כל הפרטים"
+                            data-en="Automatic detail recognition">זיהוי אוטומטי של כל הפרטים</div>
+                    </div>
+                    <div
+                        style="padding: 1.5rem; background: linear-gradient(135deg, #F8F9FA, white); border-radius: 12px; border: 2px solid var(--light-gray); text-align: center;">
+                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">✨</div>
+                        <div style="font-weight: 700; color: var(--navy); margin-bottom: 0.5rem;"
+                            data-he="ניתוח מסמכים חכם" data-en="Smart Document Analysis">ניתוח מסמכים חכם</div>
+                        <div style="font-size: 0.9rem; color: var(--gray);" data-he="הבנה עמוקה של תוכן"
+                            data-en="Deep content understanding">הבנה עמוקה של תוכן</div>
+                    </div>
+                    <div
+                        style="padding: 1.5rem; background: linear-gradient(135deg, #F8F9FA, white); border-radius: 12px; border: 2px solid var(--light-gray); text-align: center;">
+                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">⚡</div>
+                        <div style="font-weight: 700; color: var(--navy); margin-bottom: 0.5rem;"
+                            data-he="אוטומציה מלאה" data-en="Full Automation">אוטומציה מלאה</div>
+                        <div style="font-size: 0.9rem; color: var(--gray);" data-he="חיסכון של שעות עבודה"
+                            data-en="Save hours of work">חיסכון של שעות עבודה</div>
+                    </div>
+                </div>
+                <button class="cta-btn" onclick="window.location.href='index.html'">
+                    <span data-he="עבור לדף הבית" data-en="Go to Homepage">עבור לדף הבית</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Tab Content: Index Calculator -->
+            <div class="tab-content" id="calculator">
+                <h2 class="content-title" data-he="מחשבון מדד" data-en="Index Calculator">מחשבון מדד</h2>
+                <p class="content-text" data-he="חשב בקלות את שכר הדירה המעודכן לפי מדד המחירים לצרכן"
+                    data-en="Easily calculate the updated rent according to the Consumer Price Index">
+                    חשב בקלות את שכר הדירה המעודכן לפי מדד המחירים לצרכן
+                </p>
+
+                <div class="calculator-widget">
+                    <h3 class="calculator-title" data-he="חישוב מדד מהיר" data-en="Quick Index Calculation">חישוב מדד
+                        מהיר</h3>
+                    <div class="calculator-inputs">
+                        <div class="input-group">
+                            <label class="input-label" data-he="תאריך בסיס" data-en="Base Date">תאריך בסיס</label>
+                            <input type="date" id="baseDate" class="calc-input">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label" data-he="סכום בסיס (₪)" data-en="Base Amount (₪)">סכום בסיס
+                                (₪)</label>
+                            <input type="number" id="baseAmount" class="calc-input" placeholder="5000" min="0">
+                        </div>
+                    </div>
+                    <div class="calculator-result">
+                        <div class="result-label" data-he="סכום מעודכן להיום:" data-en="Updated Amount Today:">סכום
+                            מעודכן להיום:</div>
+                        <div class="result-value" id="indexedAmount">₪0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Pricing -->
+            <div class="tab-content" id="pricing">
+                <h2 class="content-title" data-he="תוכניות ותמחור" data-en="Plans & Pricing">תוכניות ותמחור</h2>
+                <p class="content-text" data-he="בחר את התוכנית המתאימה לך ותתחיל לנהל את הנכסים שלך בצורה מקצועית"
+                    data-en="Choose the plan that suits you and start managing your properties professionally">
+                    בחר את התוכנית המתאימה לך ותתחיל לנהל את הנכסים שלך בצורה מקצועית
+                </p>
+
+                <div class="pricing-grid">
+                    <div class="pricing-card">
+                        <div class="plan-name" data-he="תוכנית בסיסית" data-en="Basic Plan">תוכנית בסיסית</div>
+                        <div class="plan-price">₪49<span data-he="/חודש" data-en="/month">/חודש</span></div>
+                        <p class="plan-description" data-he="מושלם לבעלי נכס בודד"
+                            data-en="Perfect for single property owners">מושלם לבעלי נכס בודד</p>
+                        <ul class="plan-features">
+                            <li><span class="check-icon">✓</span><span data-he="עד 1 נכס" data-en="Up to 1 property">עד
+                                    1 נכס</span></li>
+                            <li><span class="check-icon">✓</span><span data-he="חישוב מדד אוטומטי"
+                                    data-en="Automatic index calculation">חישוב מדד אוטומטי</span></li>
+                            <li><span class="check-icon">✓</span><span data-he="ניהול תשלומים"
+                                    data-en="Payment management">ניהול תשלומים</span></li>
+                            <li><span class="check-icon">✓</span><span data-he="תמיכה בסיסית"
+                                    data-en="Basic support">תמיכה בסיסית</span></li>
+                        </ul>
+                        <button class="cta-btn secondary" onclick="window.location.href='../index.html'">
+                            <span data-he="התחל עכשיו" data-en="Get Started">התחל עכשיו</span>
+                        </button>
+                    </div>
+
+                    <div class="pricing-card featured">
+                        <span class="plan-badge" data-he="מומלץ" data-en="Recommended">מומלץ</span>
+                        <div class="plan-name" data-he="תוכנית מקצועית" data-en="Professional Plan">תוכנית מקצועית</div>
+                        <div class="plan-price">₪99<span data-he="/חודש" data-en="/month">/חודש</span></div>
+                        <p class="plan-description" data-he="לבעלי מספר נכסים" data-en="For multiple property owners">
+                            לבעלי מספר נכסים</p>
+                        <ul class="plan-features">
+                            <li><span class="check-icon">✓</span><span data-he="עד 5 נכסים"
+                                    data-en="Up to 5 properties">עד 5 נכסים</span></li>
+                            <li><span class="check-icon">✓</span><span data-he="🤖 סריקת חוזים Gemini AI"
+                                    data-en="🤖 Gemini AI contract scanning">🤖 סריקת חוזים Gemini AI</span></li>
+                            <li><span class="check-icon">✓</span><span data-he="✨ ניתוח מסמכים חכם"
+                                    data-en="✨ Smart document analysis">✨ ניתוח מסמכים חכם</span></li>
+                            <li><span class="check-icon">✓</span><span data-he="דוחות מתקדמים"
+                                    data-en="Advanced reports">דוחות מתקדמים</span></li>
+                            <li><span class="check-icon">✓</span><span data-he="תמיכה מועדפת"
+                                    data-en="Priority support">תמיכה מועדפת</span></li>
+                            <li><span class="check-icon">✓</span><span data-he="ניהול מסמכים"
+                                    data-en="Document management">ניהול מסמכים</span></li>
+                        </ul>
+                        <button class="cta-btn" onclick="window.location.href='../index.html'">
+                            <span data-he="התחל עכשיו" data-en="Get Started">התחל עכשיו</span>
+                        </button>
+                    </div>
+
+                    <div class="pricing-card">
+                        <div class="plan-name" data-he="תוכנית עסקית" data-en="Business Plan">תוכנית עסקית</div>
+                        <div class="plan-price">₪199<span data-he="/חודש" data-en="/month">/חודש</span></div>
+                        <p class="plan-description" data-he="לניהול תיקי נכסים גדולים"
+                            data-en="For large property portfolios">לניהול תיקי נכסים גדולים</p>
+                        <ul class="plan-features">
+                            <li><span class="check-icon">✓</span><span data-he="נכסים ללא הגבלה"
+                                    data-en="Unlimited properties">נכסים ללא הגבלה</span></li>
+                            <li><span class="check-icon">✓</span><span data-he="🤖 Gemini AI ללא הגבלה"
+                                    data-en="🤖 Unlimited Gemini AI">🤖 Gemini AI ללא הגבלה</span></li>
+                            <li><span class="check-icon">✓</span><span data-he="✨ אוטומציה מלאה"
+                                    data-en="✨ Full automation">✨ אוטומציה מלאה</span></li>
+                            <li><span class="check-icon">✓</span><span data-he="ניהול צוות"
+                                    data-en="Team management">ניהול צוות</span></li>
+                            <li><span class="check-icon">✓</span><span data-he="תמיכה 24/7" data-en="24/7 support">תמיכה
+                                    24/7</span></li>
+                            <li><span class="check-icon">✓</span><span data-he="התאמה אישית"
+                                    data-en="Custom integration">התאמה אישית</span></li>
+                        </ul>
+                        <button class="cta-btn secondary" onclick="window.location.href='../index.html'">
+                            <span data-he="צור קשר" data-en="Contact Us">צור קשר</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Blog -->
+            <div class="tab-content" id="blog">
+                <h2 class="content-title" data-he="מרכז הידע שלנו" data-en="Our Knowledge Center">מרכז הידע שלנו</h2>
+                <p class="content-text" data-he="מאמרים מקצועיים, מדריכים מפורטים וטיפים שימושיים לניהול נכסים."
+                    data-en="Professional articles, detailed guides, and useful tips for property management.">
+                    מאמרים מקצועיים, מדריכים מפורטים וטיפים שימושיים לניהול נכסים.
+                </p>
+                <div class="blog-grid">
+                    <div class="blog-card" onclick="window.location.href='index.html#calculator'">
+                        <h3 class="blog-title" data-he="חישוב מדד - המדריך המלא"
+                            data-en="Index Calculation - Complete Guide">חישוב מדד - המדריך המלא</h3>
+                        <p class="blog-excerpt" data-he="הבנת חישוב מדד בחוזי שכירות והשפעתו על שכר הדירה"
+                            data-en="Understanding index calculation in rental contracts and its impact on rent">
+                            הבנת חישוב מדד בחוזי שכירות והשפעתו על שכר הדירה
+                        </p>
+                    </div>
+                    <div class="blog-card">
+                        <h3 class="blog-title" data-he="זכויות וחובות בחוזה שכירות"
+                            data-en="Rights and Obligations in Rental Contracts">זכויות וחובות בחוזה שכירות</h3>
+                        <p class="blog-excerpt" data-he="מדריך מקיף לזכויות הדיירים וחובות בעלי הנכסים"
+                            data-en="Comprehensive guide to tenant rights and landlord obligations">
+                            מדריך מקיף לזכויות הדיירים וחובות בעלי הנכסים
+                        </p>
+                    </div>
+                    <div class="blog-card">
+                        <h3 class="blog-title" data-he="ניהול תיק נכסים יעיל" data-en="Efficient Portfolio Management">
+                            ניהול תיק נכסים יעיל</h3>
+                        <p class="blog-excerpt" data-he="אסטרטגיות וכלים לניהול מקצועי של מספר נכסים"
+                            data-en="Strategies and tools for professional management of multiple properties">
+                            אסטרטגיות וכלים לניהול מקצועי של מספר נכסים
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Q&A -->
+            <div class="tab-content" id="qa">
+                <h2 class="content-title" data-he="שאלות נפוצות" data-en="Frequently Asked Questions">שאלות נפוצות</h2>
+                <p class="content-text" data-he="מצא תשובות לשאלות הנפוצות ביותר על RentMate, ניהול נכסים וחוזי שכירות."
+                    data-en="Find answers to the most common questions about RentMate, property management, and rental contracts.">
+                    מצא תשובות לשאלות הנפוצות ביותר על RentMate, ניהול נכסים וחוזי שכירות.
+                </p>
+                <button class="cta-btn secondary" onclick="window.location.href='index.html#faq'">
+                    <span data-he="צפה בשאלות נפוצות" data-en="View FAQ">צפה בשאלות נפוצות</span>
+                </button>
+            </div>
+
+            <!-- Tab Content: About -->
+            <div class="tab-content" id="about">
+                <h2 class="content-title" data-he="אודות RentMate" data-en="About RentMate">אודות RentMate</h2>
+                <p class="content-text"
+                    data-he="RentMate היא מערכת ניהול נכסים מקצועית שפותחה במיוחד עבור השוק הישראלי. אנו מספקים פתרון מקיף לבעלי נכסים, המשלב טכנולוגיה מתקדמת עם הבנה עמוקה של חוקי השכירות והדרישות הייחודיות של השוק המקומי."
+                    data-en="RentMate is a professional property management system developed specifically for the Israeli market. We provide a comprehensive solution for property owners, combining advanced technology with deep understanding of rental laws and unique local market requirements.">
+                    RentMate היא מערכת ניהול נכסים מקצועית שפותחה במיוחד עבור השוק הישראלי. אנו מספקים פתרון מקיף לבעלי
+                    נכסים, המשלב טכנולוגיה מתקדמת עם הבנה עמוקה של חוקי השכירות והדרישות הייחודיות של השוק המקומי.
+                </p>
+                <p class="content-text"
+                    data-he="המערכת שלנו מאפשרת ניהול יעיל של חוזי שכירות, מעקב אחר תשלומים, חישוב מדד אוטומטי, ניהול מסמכים ועוד - הכל בממשק פשוט ואינטואיטיבי."
+                    data-en="Our system enables efficient management of rental contracts, payment tracking, automatic index calculation, document management and more - all in a simple and intuitive interface.">
+                    המערכת שלנו מאפשרת ניהול יעיל של חוזי שכירות, מעקב אחר תשלומים, חישוב מדד אוטומטי, ניהול מסמכים ועוד
+                    - הכל בממשק פשוט ואינטואיטיבי.
+                </p>
+            </div>
+
+            <!-- Tab Content: Contact -->
+            <div class="tab-content" id="contact">
+                <h2 class="content-title" data-he="צור קשר" data-en="Contact Us">צור קשר</h2>
+                <p class="content-text" data-he="נשמח לענות על שאלותיך ולסייע לך בכל נושא."
+                    data-en="We'd be happy to answer your questions and assist you with any matter.">
+                    נשמח לענות על שאלותיך ולסייע לך בכל נושא.
+                </p>
+                <form class="contact-form" onsubmit="handleSubmit(event)">
+                    <div class="form-group">
+                        <label class="form-label" data-he="שם מלא" data-en="Full Name">שם מלא</label>
+                        <input type="text" class="form-input" required placeholder="הזן את שמך המלא"
+                            data-placeholder-he="הזן את שמך המלא" data-placeholder-en="Enter your full name">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-he="דוא״ל" data-en="Email">דוא״ל</label>
+                        <input type="email" class="form-input" required placeholder="your@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-he="הודעה" data-en="Message">הודעה</label>
+                        <textarea class="form-textarea" required placeholder="כתוב את הודעתך כאן..."
+                            data-placeholder-he="כתוב את הודעתך כאן..."
+                            data-placeholder-en="Write your message here..."></textarea>
+                    </div>
+                    <button type="submit" class="cta-btn">
+                        <span data-he="שלח הודעה" data-en="Send Message">שלח הודעה</span>
+                    </button>
+                </form>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2026 RentMate. <span data-he="כל הזכויות שמורות" data-en="All rights reserved">כל הזכויות
+                    שמורות</span>.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Language Toggle
+        const langButtons = document.querySelectorAll('.lang-btn');
+        const html = document.documentElement;
+
+        langButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const lang = btn.getAttribute('data-lang');
+                updateLanguage(lang);
+            });
+        });
+
+        function updateLanguage(lang) {
+            html.setAttribute('data-lang', lang);
+            html.setAttribute('lang', lang);
+            html.setAttribute('dir', lang === 'he' ? 'rtl' : 'ltr');
+
+            langButtons.forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+            });
+
+            document.querySelectorAll('[data-he][data-en]').forEach(el => {
+                const text = el.getAttribute(`data-${lang}`);
+                if (text) {
+                    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                        el.placeholder = text;
+                    } else {
+                        el.textContent = text;
+                    }
+                }
+            });
+
+            document.querySelectorAll('[data-placeholder-he][data-placeholder-en]').forEach(el => {
+                const placeholder = el.getAttribute(`data-placeholder-${lang}`);
+                if (placeholder) el.placeholder = placeholder;
+            });
+        }
+
+        // Tab Navigation
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabId = btn.getAttribute('data-tab');
+                tabButtons.forEach(b => b.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+
+        // Index Calculator
+        const baseDateInput = document.getElementById('baseDate');
+        const baseAmountInput = document.getElementById('baseAmount');
+        const indexedAmountDisplay = document.getElementById('indexedAmount');
+
+        const mockIndexData = {
+            '2023-01': 100.0, '2023-02': 100.5, '2023-03': 101.0, '2023-04': 101.5,
+            '2023-05': 102.0, '2023-06': 102.5, '2023-07': 103.0, '2023-08': 103.5,
+            '2023-09': 104.0, '2023-10': 104.5, '2023-11': 105.0, '2023-12': 105.5,
+            '2024-01': 106.0, '2024-02': 106.5, '2024-03': 107.0, '2024-04': 107.5,
+            '2024-05': 108.0, '2024-06': 108.5, '2024-07': 109.0, '2024-08': 109.5,
+            '2024-09': 110.0, '2024-10': 110.5, '2024-11': 111.0, '2024-12': 111.5,
+            '2025-01': 112.0, '2025-02': 112.5, '2025-03': 113.0, '2025-04': 113.5,
+            '2025-05': 114.0, '2025-06': 114.5, '2025-07': 115.0, '2025-08': 115.5,
+            '2025-09': 116.0, '2025-10': 116.5, '2025-11': 117.0, '2025-12': 117.5,
+            '2026-01': 118.0
+        };
+
+        function calculateIndex() {
+            const baseDate = baseDateInput.value;
+            const baseAmount = parseFloat(baseAmountInput.value);
+
+            if (!baseDate || !baseAmount || baseAmount <= 0) {
+                indexedAmountDisplay.textContent = '₪0';
+                return;
+            }
+
+            const baseYearMonth = baseDate.substring(0, 7);
+            const baseIndex = mockIndexData[baseYearMonth] || 100;
+            const currentIndex = mockIndexData['2026-01'] || 118;
+            const indexedAmount = (baseAmount * currentIndex) / baseIndex;
+
+            animateValue(indexedAmountDisplay, 0, indexedAmount, 800);
+        }
+
+        function animateValue(element, start, end, duration) {
+            const range = end - start;
+            const increment = range / (duration / 16);
+            let current = start;
+
+            const timer = setInterval(() => {
+                current += increment;
+                if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+                    current = end;
+                    clearInterval(timer);
+                }
+                element.textContent = '₪' + Math.round(current).toLocaleString('he-IL');
+            }, 16);
+        }
+
+        if (baseDateInput && baseAmountInput) {
+            baseDateInput.addEventListener('change', calculateIndex);
+            baseAmountInput.addEventListener('input', calculateIndex);
+
+            const oneYearAgo = new Date();
+            oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+            baseDateInput.value = oneYearAgo.toISOString().split('T')[0];
+        }
+
+        // Contact Form
+        function handleSubmit(e) {
+            e.preventDefault();
+            const lang = html.getAttribute('data-lang');
+            const message = lang === 'he' ? 'תודה על פנייתך! ניצור איתך קשר בקרוב.' : 'Thank you for your message! We will contact you soon.';
+            alert(message);
+            e.target.reset();
+        }
+    </script>
+</body>
+
+</html>

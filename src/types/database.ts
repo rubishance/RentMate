@@ -22,6 +22,72 @@ export interface Property {
     created_at?: string;
 }
 
+export type DocumentCategory =
+    | 'photo'
+    | 'video'
+    | 'utility_water'
+    | 'utility_electric'
+    | 'utility_gas'
+    | 'utility_municipality'
+    | 'utility_management'
+    | 'maintenance'
+    | 'invoice'
+    | 'receipt'
+    | 'insurance'
+    | 'warranty'
+    | 'legal'
+    | 'other';
+
+export interface DocumentFolder {
+    id: string;
+    property_id: string;
+    category: string; // 'utility_electric', 'maintenance', 'media', 'other'
+    name: string;
+    folder_date: string;
+    description?: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface PropertyDocument {
+    id: string;
+    user_id: string;
+    property_id: string;
+    folder_id?: string | null; // New field
+    category: DocumentCategory;
+    storage_bucket: string;
+    storage_path: string;
+    file_name: string;
+    file_size?: number;
+    mime_type?: string;
+    title?: string;
+    description?: string;
+    tags?: string[];
+    document_date?: string;
+    period_start?: string;
+    period_end?: string;
+    amount?: number;
+    currency?: string;
+    paid?: boolean;
+    payment_date?: string;
+    vendor_name?: string;
+    issue_type?: string;
+    created_at: string;
+    updated_at?: string;
+}
+
+export interface UserStorageUsage {
+    user_id: string;
+    total_bytes: number;
+    file_count: number;
+    media_bytes: number;
+    utilities_bytes: number;
+    maintenance_bytes: number;
+    documents_bytes: number;
+    last_calculated_at: string;
+    updated_at: string;
+}
+
 // AI Extraction Types
 export type ConfidenceLevel = 'high' | 'medium' | 'low';
 
@@ -176,8 +242,6 @@ export interface MonthlyPayment {
 
 export interface ReconciliationResult {
     totalBackPayOwed: number;
-    averageUnderpayment: number;
-    percentageOwed: number;
     monthlyBreakdown: MonthlyPayment[];
     totalMonths: number;
 }
@@ -188,10 +252,12 @@ export interface ReconciliationResult {
 
 export type Language = 'he' | 'en';
 export type Gender = 'male' | 'female' | 'unspecified';
+export type Theme = 'light' | 'dark' | 'system';
 
 export interface UserPreferences {
     language: Language;
     gender: Gender | null; // null when language is not Hebrew
+    theme: Theme;
 }
 
 // ============================================
@@ -223,10 +289,21 @@ export interface UserProfile {
     last_name: string;
     role: UserRole;
 
+    // Permissions
+    is_super_admin?: boolean;
+
     // Subscription & Plan
     subscription_status: SubscriptionStatus;
     subscription_plan?: SubscriptionPlan; // Legacy
     plan_id?: string; // New DB reference
+
+    // Notification Settings
+    notification_preferences?: {
+        contract_expiry_days: number;
+        rent_due_days: number;
+        extension_option_days: number;
+        extension_option_end_days: number;
+    };
 
     // Minimal payment info
     payment_provider: string; // 'none'

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, User, Mail, Phone, Loader2, Building2, CreditCard, Pen, Trash2 } from 'lucide-react';
+import { UserIcon as User, MailIcon as Mail, PhoneIcon as Phone, AssetsIcon as Building2, CreditCardIcon as CreditCard, EditIcon as Pen, TrashIcon as Trash2 } from '../icons/NavIcons';
+import { CloseIcon as X, LoaderIcon as Loader2 } from '../icons/MessageIcons';
 import { supabase } from '../../lib/supabase';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useSubscription } from '../../hooks/useSubscription';
@@ -191,13 +192,13 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" dir={lang === 'he' ? 'rtl' : 'ltr'}>
             <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-lg shadow-2xl scale-100 animate-in zoom-in-95 duration-200 overflow-hidden flex flex-col max-h-[calc(100vh-2rem)]">
                 {/* Header */}
-                <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                <div className="p-6 border-b border-border dark:border-gray-700 flex items-center justify-between">
                     <div>
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                            <User className="w-5 h-5 text-blue-600" />
+                        <h2 className="text-xl font-bold text-foreground dark:text-white flex items-center gap-2">
+                            <User className="w-5 h-5 text-primary" />
                             {title}
                         </h2>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        <p className="text-sm text-muted-foreground dark:text-muted-foreground mt-1">
                             {subtitle}
                         </p>
                     </div>
@@ -205,7 +206,7 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
                         {isReadOnly && (
                             <button
                                 onClick={() => setIsReadOnly(false)}
-                                className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-colors flex items-center gap-2 px-3 bg-blue-50/50"
+                                className="p-2 text-primary hover:text-primary hover:bg-primary/10 dark:hover:bg-blue-900/20 rounded-full transition-colors flex items-center gap-2 px-3 bg-primary/10/50"
                             >
                                 <Pen className="w-4 h-4" />
                                 <span className="text-sm font-medium">{t('edit')}</span>
@@ -213,7 +214,7 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
                         )}
                         <button
                             onClick={onClose}
-                            className="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                            className="p-2 text-muted-foreground hover:text-muted-foreground hover:bg-muted dark:hover:bg-gray-700 rounded-full transition-colors"
                             aria-label={t('close')}
                         >
                             <X className="w-5 h-5" />
@@ -248,12 +249,12 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
                             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('assignedAsset')} ({t('optional') || 'Optional'})</label>
                             {properties.length > 0 ? (
                                 <div className="relative">
-                                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                     <select
                                         disabled={isReadOnly || isLoadingProperties}
                                         value={formData.property_id}
                                         onChange={(e) => setFormData({ ...formData, property_id: e.target.value })}
-                                        className="w-full pl-9 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed appearance-none"
+                                        className="w-full pl-9 pr-4 py-2 border border-border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-foreground dark:text-white disabled:opacity-60 disabled:cursor-not-allowed appearance-none"
                                         aria-label={t('assignedAsset')}
                                     >
                                         <option value="">{t('selectProperty')}</option>
@@ -279,14 +280,14 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
                         <div className="space-y-2">
                             <FormLabel label={t('fullName')} required readOnly={isReadOnly} />
                             <div className="relative">
-                                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                 <input
                                     type="text"
                                     required
                                     disabled={isReadOnly}
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full pl-9 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
+                                    className="w-full pl-9 pr-4 py-2 border border-border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-foreground dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
                                 />
                             </div>
                         </div>
@@ -295,13 +296,13 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('idNumber')}</label>
                             <div className="relative">
-                                <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                 <input
                                     type="text"
                                     disabled={isReadOnly}
                                     value={formData.id_number}
                                     onChange={(e) => setFormData({ ...formData, id_number: e.target.value })}
-                                    className="w-full pl-9 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
+                                    className="w-full pl-9 pr-4 py-2 border border-border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-foreground dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
                                 />
                             </div>
                         </div>
@@ -310,13 +311,13 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('email')}</label>
                             <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                 <input
                                     type="email"
                                     disabled={isReadOnly}
                                     value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                    className="w-full pl-9 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
+                                    className="w-full pl-9 pr-4 py-2 border border-border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-foreground dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
                                 />
                             </div>
                         </div>
@@ -325,20 +326,20 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
                         <div className="space-y-2">
                             <FormLabel label={t('phone')} required readOnly={isReadOnly} />
                             <div className="relative">
-                                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                 <input
                                     type="tel"
                                     required
                                     disabled={isReadOnly}
                                     value={formData.phone}
                                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                    className="w-full pl-9 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
+                                    className="w-full pl-9 pr-4 py-2 border border-border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-foreground dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
                                 />
                             </div>
                         </div>
                     </div>
 
-                    <div className="sticky bottom-0 bg-white dark:bg-gray-800 z-10 pt-4 flex gap-3 border-t border-gray-100 dark:border-gray-700 -mx-6 px-6 -mb-6 pb-6 mt-6">
+                    <div className="sticky bottom-0 bg-white dark:bg-gray-800 z-10 pt-4 flex gap-3 border-t border-border dark:border-gray-700 -mx-6 px-6 -mb-6 pb-6 mt-6">
                         {isReadOnly ? (
                             <>
                                 {onDelete && (
@@ -358,7 +359,7 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
                                 <button
                                     type="button"
                                     onClick={() => setIsReadOnly(false)}
-                                    className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-xl font-medium transition-colors shadow-lg shadow-blue-500/30 flex items-center gap-2"
+                                    className="px-6 py-2 bg-primary text-white hover:bg-primary/90 rounded-xl font-medium transition-colors shadow-lg shadow-blue-500/30 flex items-center gap-2"
                                 >
                                     <Pen className="w-4 h-4" />
                                     {t('edit')}
@@ -366,7 +367,7 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
                                 <button
                                     type="button"
                                     onClick={onClose}
-                                    className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl font-medium transition-colors"
+                                    className="px-4 py-2 text-gray-700 bg-muted hover:bg-gray-200 rounded-xl font-medium transition-colors"
                                 >
                                     {t('close')}
                                 </button>
@@ -376,14 +377,14 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
                                 <button
                                     type="button"
                                     onClick={onClose}
-                                    className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 rounded-xl font-medium transition-colors"
+                                    className="flex-1 px-4 py-2 text-gray-700 bg-muted hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 rounded-xl font-medium transition-colors"
                                 >
                                     {t('cancel')}
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={loading || (!tenantToEdit && !canAddTenant)}
-                                    className="flex-1 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-xl font-medium transition-colors shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="flex-1 px-4 py-2 bg-primary text-white hover:bg-primary/90 rounded-xl font-medium transition-colors shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                                     {loading

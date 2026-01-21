@@ -5,7 +5,7 @@ export const ScannerAnimation = () => {
         <div className="relative w-32 h-40 mx-auto mb-8 perspective-1000">
             {/* Background Glow */}
             <motion.div
-                className="absolute inset-0 bg-blue-500/20 blur-2xl rounded-full"
+                className="absolute inset-0 bg-primary/20 blur-2xl rounded-full"
                 animate={{
                     scale: [1, 1.2, 1],
                     opacity: [0.3, 0.6, 0.3]
@@ -74,7 +74,7 @@ export const ScannerAnimation = () => {
                     {[...Array(6)].map((_, i) => (
                         <motion.div
                             key={i}
-                            className="absolute w-1 h-1 bg-blue-500 rounded-full"
+                            className="absolute w-1 h-1 bg-primary rounded-full"
                             initial={{ opacity: 0, y: "100%", x: Math.random() * 100 }}
                             animate={{
                                 opacity: [0, 1, 0],
