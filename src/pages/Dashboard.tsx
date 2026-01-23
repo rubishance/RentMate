@@ -18,6 +18,7 @@ import { SmartActionsWidget } from '../components/dashboard/SmartActionsWidget';
 import { StorageStatsWidget } from '../components/dashboard/StorageStatsWidget';
 import { KnowledgeBaseWidget } from '../components/dashboard/KnowledgeBaseWidget';
 import { propertyDocumentsService } from '../services/property-documents.service';
+import { useDataCache } from '../contexts/DataCacheContext';
 
 // --- Types ---
 interface FeedItem {
@@ -42,8 +43,10 @@ export function Dashboard() {
 
     const { lang, t } = useTranslation();
     const navigate = useNavigate();
-    const { effectiveTheme } = useUserPreferences();
+    const { preferences, effectiveTheme } = useUserPreferences();
     const [loading, setLoading] = useState(true);
+    const { get, set } = useDataCache();
+    const CACHE_KEY = `dashboard_data_${preferences.language}`;
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [stats, setStats] = useState({
         monthlyIncome: 0,
@@ -90,6 +93,16 @@ export function Dashboard() {
     };
 
     async function loadDashboardData() {
+        const cached = get<any>(CACHE_KEY);
+        if (cached) {
+            setProfile(cached.profile);
+            setStats(cached.stats);
+            setStorageCounts(cached.storageCounts);
+            setActiveContracts(cached.activeContracts);
+            setFeedItems(cached.feedItems);
+            setLoading(false); // Set loading to false immediately if cached data is shown
+        }
+
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
@@ -101,9 +114,13 @@ export function Dashboard() {
                 .eq('id', user.id)
                 .single();
 
+            let currentProfile = profileData; // Store for caching
             if (profileData) setProfile(profileData);
 
             // 2. Fetch Summary via RPC (Performance Refactor)
+            let currentStats = stats; // Initialize with current state for caching
+            let currentCounts = storageCounts; // Initialize with current state for caching
+
             try {
                 const { data: summary, error: rpcError } = await supabase.rpc('get_dashboard_summary', {
                     p_user_id: user.id
@@ -112,12 +129,14 @@ export function Dashboard() {
                 if (rpcError) throw rpcError;
 
                 if (summary) {
-                    setStats({
+                    currentStats = { // Update for caching
                         monthlyIncome: summary.income.monthlyTotal,
                         collected: summary.income.collected,
                         pending: summary.income.pending
-                    });
-                    setStorageCounts(summary.storage);
+                    };
+                    currentCounts = summary.storage; // Update for caching
+                    setStats(currentStats);
+                    setStorageCounts(currentCounts);
                 }
             } catch (err) {
                 console.warn('Dashboard summary RPC failed, using individual fallbacks', err);
@@ -135,16 +154,17 @@ export function Dashboard() {
                     else pending += p.amount;
                 });
 
-                setStats({
+                currentStats = { // Update for caching
                     monthlyIncome: collected + pending,
                     collected,
                     pending
-                });
+                };
+                setStats(currentStats);
 
                 // Fallback 2: Storage Counts
                 try {
-                    const counts = await propertyDocumentsService.getCategoryCounts();
-                    setStorageCounts(counts);
+                    currentCounts = await propertyDocumentsService.getCategoryCounts(); // Update for caching
+                    setStorageCounts(currentCounts);
                 } catch (storeErr) {
                     console.error('Total storage count failure', storeErr);
                 }
@@ -158,10 +178,21 @@ export function Dashboard() {
                 .order('end_date', { ascending: true })
                 .limit(5);
 
+            let currentContracts = contracts || []; // Store for caching
             if (contracts) setActiveContracts(contracts);
 
             // 4. Feed Items
-            await loadFeedItems();
+            const currentFeed = await loadFeedItems(); // loadFeedItems now returns the items
+            setFeedItems(currentFeed); // Update state with fresh feed items
+
+            // 5. Update Cache
+            set(CACHE_KEY, {
+                profile: currentProfile,
+                stats: currentStats,
+                storageCounts: currentCounts,
+                activeContracts: currentContracts,
+                feedItems: currentFeed
+            });
 
         } catch (error) {
             console.error('Error loading dashboard:', error);
@@ -170,14 +201,14 @@ export function Dashboard() {
         }
     }
 
-    async function loadFeedItems() {
+    async function loadFeedItems(): Promise<FeedItem[]> {
         const items: FeedItem[] = [];
         const today = new Date();
         const todayStr = today.toISOString().split('T')[0];
 
         try {
             const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return;
+            if (!user) return [];
 
             // 1. Expired Contracts (Active but past end date)
             const { data: expiredContracts } = await supabase
@@ -351,6 +382,7 @@ export function Dashboard() {
 
         } catch (err) {
             console.error('Error fetching feed items:', err);
+            return [];
         }
 
         // Sort by priority: warning > urgent > action > info
@@ -383,16 +415,33 @@ export function Dashboard() {
         });
 
         setFeedItems(filteredItems);
+        return filteredItems;
     }
 
 
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-white dark:bg-[#0a0a0a]">
-                <div className="animate-pulse flex flex-col items-center gap-4">
-                    <div className="w-16 h-16 bg-gray-100 dark:bg-neutral-800 rounded-[1.5rem] shadow-sm"></div>
-                    <div className="h-3 w-32 bg-gray-100 dark:bg-neutral-800 rounded-full"></div>
+            <div className="bg-white dark:bg-[#0a0a0a] min-h-screen px-2 max-w-7xl mx-auto space-y-6 pt-4 animate-pulse">
+                {/* Header Skeleton */}
+                <div className="flex flex-col mb-2 space-y-2">
+                    <div className="h-3 w-24 bg-gray-100 dark:bg-neutral-800 rounded-full" />
+                    <div className="h-8 w-48 bg-gray-100 dark:bg-neutral-800 rounded-xl" />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                    {/* Financial Pulse Skeleton */}
+                    <div className="bg-gray-50/50 dark:bg-neutral-900/50 border border-gray-100 dark:border-neutral-800 rounded-[2.5rem] p-6 md:p-8 h-64" />
+                    {/* Smart Actions Skeleton */}
+                    <div className="bg-gray-50/50 dark:bg-neutral-900/50 border border-gray-100 dark:border-neutral-800 rounded-[2.5rem] p-6 md:p-8 h-64" />
+                    {/* Knowledge Base Skeleton */}
+                    <div className="hidden lg:block bg-gray-50/50 dark:bg-neutral-900/50 border border-gray-100 dark:border-neutral-800 rounded-[2.5rem] p-6 md:p-8 h-64" />
+                </div>
+
+                {/* Timeline & Storage Skeleton */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="md:col-span-2 bg-gray-50/50 dark:bg-neutral-900/50 border border-gray-100 dark:border-neutral-800 rounded-[2.5rem] h-80" />
+                    <div className="bg-gray-50/50 dark:bg-neutral-900/50 border border-gray-100 dark:border-neutral-800 rounded-[2.5rem] h-80" />
                 </div>
             </div>
         );

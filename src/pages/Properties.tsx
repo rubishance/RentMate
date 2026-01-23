@@ -12,6 +12,7 @@ import placeholderImage from '../assets/property-placeholder-clean.png';
 import { PageHeader } from '../components/common/PageHeader';
 import { GlassCard } from '../components/common/GlassCard';
 import UpgradeRequestModal from '../components/modals/UpgradeRequestModal';
+import { useDataCache } from '../contexts/DataCacheContext';
 
 type ExtendedProperty = Property & {
     contracts: {
@@ -33,6 +34,8 @@ export function Properties() {
     const { preferences } = useUserPreferences();
     const [properties, setProperties] = useState<ExtendedProperty[]>([]);
     const [loading, setLoading] = useState(true);
+    const { get, set } = useDataCache();
+    const CACHE_KEY = 'properties_list';
 
     const [editingProperty, setEditingProperty] = useState<Property | null>(null);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -163,6 +166,12 @@ export function Properties() {
     }, []);
 
     async function fetchProperties() {
+        const cached = get<ExtendedProperty[]>(CACHE_KEY);
+        if (cached) {
+            setProperties(cached);
+            setLoading(false);
+        }
+
         try {
             const { data, error } = await supabase
                 .from('properties')
@@ -172,7 +181,9 @@ export function Properties() {
             if (error) {
                 console.error('Supabase error:', error);
             } else if (data) {
-                setProperties(data as unknown as ExtendedProperty[]);
+                const propertiesData = data as unknown as ExtendedProperty[];
+                setProperties(propertiesData);
+                set(CACHE_KEY, propertiesData);
             }
         } catch (error) {
             console.error('Error fetching properties:', error);
@@ -190,7 +201,7 @@ export function Properties() {
     }
 
     return (
-        <div className="space-y-6 px-2 pt-6">
+        <div className="space-y-6 px-4 pt-6">
             <PageHeader
                 title={lang === 'he' ? 'הנכסים שלי' : 'My Assets'}
                 subtitle={lang === 'he' ? 'ניהול פורטפוליו הנכסים שלך' : 'Manage your real estate portfolio'}

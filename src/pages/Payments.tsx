@@ -159,7 +159,7 @@ export function Payments() {
     }
 
     return (
-        <div className="space-y-6 px-2 pt-6">
+        <div className="space-y-6 px-4 pt-6">
             <PageHeader
                 title={t('paymentsTitle')}
                 subtitle={t('trackFuturePayments')}

@@ -10,6 +10,7 @@ import { ConfirmDeleteModal } from '../components/modals/ConfirmDeleteModal';
 import { useTranslation } from '../hooks/useTranslation';
 import { PageHeader } from '../components/common/PageHeader';
 import { GlassCard } from '../components/common/GlassCard';
+import { useDataCache } from '../contexts/DataCacheContext';
 
 interface ContractWithDetails extends Contract {
     properties: { address: string, city: string };
@@ -22,6 +23,8 @@ export function Contracts() {
     const [contracts, setContracts] = useState<ContractWithDetails[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<'all' | 'active' | 'archived'>('active');
+    const { get, set } = useDataCache();
+    const CACHE_KEY = 'contracts_list';
 
     // Modal State
     const [selectedContract, setSelectedContract] = useState<ContractWithDetails | null>(null);
@@ -51,6 +54,12 @@ export function Contracts() {
     }, [contracts, searchParams]);
 
     async function fetchContracts() {
+        const cached = get<ContractWithDetails[]>(CACHE_KEY);
+        if (cached) {
+            setContracts(cached);
+            setLoading(false);
+        }
+
         try {
             const { data, error } = await supabase
                 .from('contracts')
@@ -64,7 +73,9 @@ export function Contracts() {
             if (error) {
                 console.error('Error fetching contracts:', error);
             } else if (data) {
-                setContracts(data as any);
+                const contractsData = data as any;
+                setContracts(contractsData);
+                set(CACHE_KEY, contractsData);
             }
         } catch (error) {
             console.error('Error:', error);
@@ -181,7 +192,7 @@ export function Contracts() {
     }
 
     return (
-        <div className="space-y-6 px-2 pt-6">
+        <div className="space-y-6 px-4 pt-6">
             <PageHeader
                 title={t('contractsTitle')}
                 subtitle={t('contractsSubtitle')}
