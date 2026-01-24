@@ -4,7 +4,7 @@ import { ContractScanner } from '../components/ContractScanner';
 import { PropertyIcon } from '../components/common/PropertyIcon';
 import { Tooltip } from '../components/Tooltip';
 import { useNavigate } from 'react-router-dom';
-import { cn } from '../lib/utils';
+import { cn, formatDate } from '../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DatePicker } from '../components/ui/DatePicker';
 import { parseISO, format } from 'date-fns';
@@ -1700,7 +1700,7 @@ export function AddContract() {
                                             </div>
                                             <div className="flex justify-between flex-row-reverse border-b border-border/50 pb-2">
                                                 <span className="text-muted-foreground">{t('period')}</span>
-                                                <span className="font-medium">{formData.startDate} - {formData.endDate}</span>
+                                                <span className="font-medium">{formatDate(formData.startDate)} - {formatDate(formData.endDate)}</span>
                                             </div>
                                             <div className="flex justify-between flex-row-reverse border-b border-border/50 pb-2">
                                                 <span className="text-muted-foreground">שכ"ד</span>
@@ -1930,12 +1930,12 @@ export function AddContract() {
 
                             <h3 className="text-xl font-bold text-slate-900">שים לב! זוהתה חפיפה בתאריכים</h3>
                             <p className="text-slate-600">
-                                התאריכים שבחרת ({formData.startDate} - {formData.endDate}) חופפים לחוזה קיים בנכס זה.
+                                התאריכים שבחרת ({formatDate(formData.startDate)} - {formatDate(formData.endDate)}) חופפים לחוזה קיים בנכס זה.
                             </p>
 
                             {overlapDetails && (
                                 <div className="bg-amber-50 p-3 rounded-lg text-sm text-amber-800">
-                                    חוזה קיים: {new Date(overlapDetails.start).toLocaleDateString()} - {new Date(overlapDetails.end).toLocaleDateString()}
+                                    חוזה קיים: {formatDate(overlapDetails.start)} - {formatDate(overlapDetails.end)}
                                 </div>
                             )}
 

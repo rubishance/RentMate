@@ -66,7 +66,7 @@ export function DatePicker({
                             "text-sm font-medium",
                             value ? "text-foreground" : "text-muted-foreground"
                         )}>
-                            {value ? format(value, 'PPP') : placeholder}
+                            {value ? format(value, 'dd/MM/yyyy') : placeholder}
                         </span>
                     </div>
                 </button>

@@ -8,6 +8,7 @@ import { cn } from '../../lib/utils';
 import { supabase } from '../../lib/supabase';
 import { useUserPreferences } from '../../contexts/UserPreferencesContext';
 import { ThemeToggle } from '../common/ThemeToggle';
+import { LanguageToggle } from '../common/LanguageToggle';
 
 const NAV_LABELS = {
     he: {
@@ -146,9 +147,9 @@ export function AppShell() {
         }),
     };
     return (
-        <div className="h-full bg-background dark:bg-[#0a0a0a] text-foreground dark:text-white flex flex-col font-sans relative">
+        <div className="h-[100dvh] bg-background dark:bg-[#0a0a0a] text-foreground dark:text-white flex flex-col font-sans relative overflow-hidden">
             {/* Top Header */}
-            <header className="fixed top-0 left-0 right-0 h-14 bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur-md border-b border-border dark:border-neutral-800 z-50 flex items-center justify-between px-2">
+            <header className="fixed top-0 left-0 right-0 h-14 bg-white/60 dark:bg-[#0a0a0a]/60 backdrop-blur-xl border-b border-border dark:border-neutral-800 z-50 flex items-center justify-between px-2">
                 <div className="flex items-center gap-2 px-1 cursor-pointer" onClick={() => navigate('/dashboard')}>
                     <img
                         src={effectiveTheme === 'dark' ? logoIconDark : logoIconOnly}
@@ -160,8 +161,9 @@ export function AppShell() {
                         <span className="font-normal">Mate</span>
                     </span>
                 </div>
-                <div className="flex items-center gap-2">
-                    <ThemeToggle className="scale-90" />
+                <div className="flex items-center gap-1 md:gap-2">
+                    <ThemeToggle className="scale-[0.85]" />
+                    <LanguageToggle className="scale-[0.85]" />
                     <NotificationCenter />
                     <button
                         onClick={() => navigate('/settings')}
@@ -188,7 +190,7 @@ export function AppShell() {
             {/* Main Content Area (With Swipe) */}
             <motion.main
                 id="main-content"
-                className="flex-1 overflow-y-auto overflow-x-hidden pt-14 pb-32 scroll-smooth relative z-10"
+                className="flex-1 overflow-y-auto overflow-x-hidden pb-24 scroll-smooth relative z-10"
                 drag="x"
                 dragConstraints={{ left: 0, right: 0 }}
                 dragElastic={0.2}
@@ -203,7 +205,7 @@ export function AppShell() {
                         animate="center"
                         exit="exit"
                         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                        className="h-full"
+                        className="min-h-full"
                     >
                         <Outlet />
                     </motion.div>

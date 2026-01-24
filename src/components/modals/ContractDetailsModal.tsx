@@ -192,7 +192,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                     <div>
                         <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
                             <FileText className="w-5 h-5 text-primary" />
-                            {readOnly ? 'Contract Details' : 'Edit Contract'}
+                            {readOnly ? t('contractDetails') : t('editContract')}
                         </h2>
                         <div className="flex items-center gap-2 mt-1">
                             <p className="text-sm text-muted-foreground">
@@ -240,7 +240,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                 <User className="w-5 h-5" />
                             </div>
                             <div>
-                                <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Tenant</p>
+                                <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">{t('tenant')}</p>
                                 <p className="font-medium text-foreground dark:text-gray-100">{contract.tenants?.name || 'N/A'}</p>
                             </div>
                         </div>
@@ -249,7 +249,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                 <Building2 className="w-5 h-5" />
                             </div>
                             <div>
-                                <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Property</p>
+                                <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">{t('asset')}</p>
                                 <p className="font-medium text-foreground dark:text-gray-100">{contract.properties?.address || 'N/A'}</p>
                             </div>
                         </div>
@@ -262,23 +262,23 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                             {/* Dates & Status */}
                             <section className="space-y-4">
                                 <h3 className="font-semibold text-foreground dark:text-white flex items-center gap-2 pb-2 border-b border-border dark:border-gray-700">
-                                    <Calendar className="w-4 h-4 text-primary" /> Contract Period & Status
+                                    <Calendar className="w-4 h-4 text-primary" /> {t('contractPeriodStatus')}
                                 </h3>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-medium text-muted-foreground uppercase">Status</label>
+                                        <label className="text-xs font-medium text-muted-foreground uppercase">{t('status')}</label>
                                         <select
                                             disabled={readOnly}
                                             value={formData.status}
                                             onChange={e => setFormData({ ...formData, status: e.target.value })}
                                             className="w-full px-3 py-2 text-sm border border-border dark:border-gray-700 rounded-lg bg-white dark:bg-foreground disabled:bg-secondary disabled:text-muted-foreground"
                                         >
-                                            <option value="active">Active</option>
-                                            <option value="archived">Archived</option>
+                                            <option value="active">{t('active')}</option>
+                                            <option value="archived">{t('archived')}</option>
                                         </select>
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-medium text-muted-foreground uppercase">Signing Date</label>
+                                        <label className="text-xs font-medium text-muted-foreground uppercase">{t('signingDate')}</label>
                                         <DatePicker
                                             value={formData.signing_date ? parseISO(formData.signing_date) : undefined}
                                             onChange={(date) => setFormData({ ...formData, signing_date: date ? format(date, 'yyyy-MM-dd') : '' })}
@@ -286,7 +286,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-medium text-muted-foreground uppercase">Start Date</label>
+                                        <label className="text-xs font-medium text-muted-foreground uppercase">{t('startDate')}</label>
                                         <DatePicker
                                             value={formData.start_date ? parseISO(formData.start_date) : undefined}
                                             onChange={(date) => setFormData({ ...formData, start_date: date ? format(date, 'yyyy-MM-dd') : '' })}
@@ -294,7 +294,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-medium text-muted-foreground uppercase">End Date</label>
+                                        <label className="text-xs font-medium text-muted-foreground uppercase">{t('endDate')}</label>
                                         <DatePicker
                                             value={formData.end_date ? parseISO(formData.end_date) : undefined}
                                             onChange={(date) => setFormData({ ...formData, end_date: date ? format(date, 'yyyy-MM-dd') : '' })}
@@ -305,7 +305,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                         <div className="col-span-2 text-xs text-muted-foreground bg-secondary dark:bg-gray-800/50 p-2 rounded-lg flex items-center justify-center gap-2">
                                             <Clock className="w-3 h-3" />
                                             <span>
-                                                Duration:
+                                                {t('contractDuration')}:
                                                 <span className="font-bold text-foreground dark:text-white">
                                                     {(() => {
                                                         const start = new Date(formData.start_date);
@@ -317,9 +317,9 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                         const years = Math.floor(months / 12);
                                                         const remainingMonths = months % 12;
 
-                                                        if (years > 0) return ` ${years} Years${remainingMonths > 0 ? ` & ${remainingMonths} Months` : ''}`;
-                                                        if (months > 0) return ` ${months} Months`;
-                                                        return ` ${diffDays} Days`;
+                                                        if (years > 0) return ` ${years} ${t('years')}${remainingMonths > 0 ? ` & ${remainingMonths} ${t('months')}` : ''}`;
+                                                        if (months > 0) return ` ${months} ${t('months')}`;
+                                                        return ` ${diffDays} ${t('day')}`;
                                                     })()}
                                                 </span>
                                             </span>
@@ -331,11 +331,11 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                             {/* Financials */}
                             <section className="space-y-4">
                                 <h3 className="font-semibold text-foreground dark:text-white flex items-center gap-2 pb-2 border-b border-border dark:border-gray-700">
-                                    <DollarSign className="w-4 h-4 text-green-500" /> Financial Details
+                                    <DollarSign className="w-4 h-4 text-green-500" /> {t('paymentDetails')}
                                 </h3>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-medium text-muted-foreground uppercase">Base Rent</label>
+                                        <label className="text-xs font-medium text-muted-foreground uppercase">{t('baseRent')}</label>
                                         <div className="relative">
                                             <input
                                                 type="number"
@@ -350,7 +350,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                         </div>
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-medium text-muted-foreground uppercase">Currency</label>
+                                        <label className="text-xs font-medium text-muted-foreground uppercase">{t('currency')}</label>
                                         <select
                                             disabled={readOnly}
                                             value={formData.currency}
@@ -363,20 +363,20 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                         </select>
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-medium text-muted-foreground uppercase">Payment Freq.</label>
+                                        <label className="text-xs font-medium text-muted-foreground uppercase">{t('paymentFreq')}</label>
                                         <select
                                             disabled={readOnly}
                                             value={formData.payment_frequency}
                                             onChange={e => setFormData({ ...formData, payment_frequency: e.target.value })}
                                             className="w-full px-3 py-2 text-sm border border-border dark:border-gray-700 rounded-lg bg-white dark:bg-foreground disabled:bg-secondary disabled:text-muted-foreground"
                                         >
-                                            <option value="monthly">Monthly</option>
-                                            <option value="quarterly">Quarterly</option>
-                                            <option value="annually">Annually</option>
+                                            <option value="monthly">{t('monthly')}</option>
+                                            <option value="quarterly">{t('quarterly')}</option>
+                                            <option value="annually">{t('annually')}</option>
                                         </select>
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-medium text-muted-foreground uppercase">Payment Day</label>
+                                        <label className="text-xs font-medium text-muted-foreground uppercase">{t('paymentDay')}</label>
                                         <div className="relative">
                                             <input
                                                 type="number"
@@ -393,14 +393,14 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                 className="w-full pl-3 pr-8 py-2 text-sm border border-border dark:border-gray-700 rounded-lg bg-white dark:bg-foreground disabled:bg-secondary disabled:text-muted-foreground"
                                             />
                                             <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-muted-foreground text-xs">
-                                                Day
+                                                {t('day')}
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 {/* Variable Rent Steps */}
                                 <div className="pt-4 border-t border-border dark:border-gray-700">
-                                    <h4 className="text-sm font-medium text-foreground dark:text-white mb-3">Rent Steps (Variable Rent)</h4>
+                                    <h4 className="text-sm font-medium text-foreground dark:text-white mb-3">{t('rentStepsVariable')}</h4>
                                     <div className="space-y-2">
                                         {formData.rent_periods.map((period, idx) => (
                                             <div key={idx} className="flex items-center gap-2">
@@ -463,7 +463,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                 })}
                                                 className="text-xs text-primary hover:text-primary font-medium flex items-center gap-1"
                                             >
-                                                + Add Rent Step
+                                                {t('addRentStep')}
                                             </button>
                                         )}
                                     </div>
@@ -476,13 +476,13 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                             {/* Linkage */}
                             <section className="space-y-4">
                                 <h3 className="font-semibold text-foreground dark:text-white flex items-center gap-2 pb-2 border-b border-border dark:border-gray-700">
-                                    <TrendingUp className="w-4 h-4 text-purple-500" /> Linkage & Adjustments
+                                    <TrendingUp className="w-4 h-4 text-purple-500" /> {t('linkageAdjustments')}
                                 </h3>
 
                                 <div className="space-y-4">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-1.5">
-                                            <label className="text-xs font-medium text-muted-foreground uppercase">Linkage Type</label>
+                                            <label className="text-xs font-medium text-muted-foreground uppercase">{t('linkageType')}</label>
                                             <select
                                                 disabled={readOnly}
                                                 value={formData.linkage_type}
@@ -504,8 +504,8 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                     onChange={e => setFormData({ ...formData, linkage_sub_type: e.target.value })}
                                                     className="w-full px-3 py-2 text-sm border border-border dark:border-gray-700 rounded-lg bg-white dark:bg-foreground disabled:bg-secondary disabled:text-muted-foreground"
                                                 >
-                                                    <option value="known">Known Index</option>
-                                                    <option value="respect_of">In Respect Of</option>
+                                                    <option value="known">{t('knownIndex')}</option>
+                                                    <option value="respect_of">{t('inRespectOf')}</option>
                                                 </select>
                                             </div>
                                         )}
@@ -515,7 +515,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                         <div className="bg-secondary dark:bg-foreground/50 p-3 rounded-lg space-y-3">
                                             <div className="grid grid-cols-1 gap-3">
                                                 <div className="space-y-1">
-                                                    <label className="text-xs text-muted-foreground">Base Index Date</label>
+                                                    <label className="text-xs text-muted-foreground">{t('baseIndexDate')}</label>
                                                     <DatePicker
                                                         value={formData.base_index_date ? parseISO(formData.base_index_date) : undefined}
                                                         onChange={(date) => setFormData({ ...formData, base_index_date: date ? format(date, 'yyyy-MM-dd') : '' })}
@@ -536,11 +536,11 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                             })}
                                                             className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-indigo-500"
                                                         />
-                                                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Base Index is Minimum</span>
+                                                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{t('indexBaseMin')}</span>
                                                     </label>
                                                 </div>
                                                 <div className="space-y-1">
-                                                    <label className="text-xs text-muted-foreground">Ceiling (Max %)</label>
+                                                    <label className="text-xs text-muted-foreground">{t('ceiling')}</label>
                                                     <input
                                                         type="number"
                                                         disabled={readOnly}
@@ -558,13 +558,13 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                             {/* Option Periods */}
                             <section className="space-y-4">
                                 <h3 className="font-semibold text-foreground dark:text-white flex items-center gap-2 pb-2 border-b border-border dark:border-gray-700">
-                                    <Clock className="w-4 h-4 text-orange-500" /> Option Periods
+                                    <Clock className="w-4 h-4 text-orange-500" /> {t('optionPeriods')}
                                 </h3>
                                 <div className="space-y-3">
                                     {formData.option_periods.map((opt, idx) => (
                                         <div key={idx} className="bg-secondary dark:bg-gray-800 p-3 rounded-lg space-y-3">
                                             <div className="flex items-center justify-between">
-                                                <span className="text-xs font-medium text-muted-foreground uppercase">Option {idx + 1}</span>
+                                                <span className="text-xs font-medium text-muted-foreground uppercase">{t('optionRent')} {idx + 1}</span>
                                                 {!readOnly && (
                                                     <button
                                                         type="button"
@@ -601,8 +601,8 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                         }}
                                                         className="absolute inset-y-0 right-0 text-xs bg-transparent border-0 px-1 text-muted-foreground focus:ring-0"
                                                     >
-                                                        <option value="months">Mos</option>
-                                                        <option value="years">Yrs</option>
+                                                        <option value="months">{t('mos')}</option>
+                                                        <option value="years">{t('yrs')}</option>
                                                     </select>
                                                 </div>
                                                 <div className="flex gap-1">
@@ -653,10 +653,10 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                             {/* Security Deposit */}
                             <section className="space-y-4">
                                 <h3 className="font-semibold text-foreground dark:text-white flex items-center gap-2 pb-2 border-b border-border dark:border-gray-700">
-                                    <Shield className="w-4 h-4 text-muted-foreground" /> Security
+                                    <Shield className="w-4 h-4 text-muted-foreground" /> {t('securityAndAppendices')}
                                 </h3>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-medium text-muted-foreground uppercase">Deposit Amount</label>
+                                    <label className="text-xs font-medium text-muted-foreground uppercase">{t('depositAmount')}</label>
                                     <input
                                         type="number"
                                         disabled={readOnly}
@@ -696,7 +696,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                     className="px-6 py-2 bg-primary text-white hover:bg-primary/90 rounded-xl font-medium transition-colors shadow-lg shadow-blue-500/30 flex items-center gap-2"
                                 >
                                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                                    Save Changes
+                                    {t('saveChanges')}
                                 </button>
                             </>
                         )

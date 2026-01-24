@@ -33,6 +33,7 @@ export type TranslationKeys =
     | 'city'
     | 'status'
     | 'amount'
+    | 'currency'
     | 'date'
     | 'period'
     | 'from'
@@ -44,6 +45,32 @@ export type TranslationKeys =
     | 'optionalFolderNote'
     | 'eg_january_bill'
     | 'eg_electric_corp'
+    | 'contractDetails'
+    | 'editContract'
+    | 'contractPeriodStatus'
+    | 'paymentFreq'
+    | 'paymentDay'
+    | 'day'
+    | 'rentStepsVariable'
+    | 'addRentStep'
+    | 'linkageAdjustments'
+    | 'subType'
+    | 'mos'
+    | 'yrs'
+    | 'addOptionPeriod'
+    | 'depositAmount'
+    | 'reference'
+    | 'referencePlaceholder'
+    | 'dueDate'
+    | 'paidDate'
+    | 'selectContract'
+    | 'saveAndAddAnother'
+    | 'createAndClose'
+    | 'addPaymentTitle'
+    | 'optional'
+    | 'endOfForm'
+    | 'namePhoneRequired'
+    | 'mustBeLoggedIn'
 
     // Auth & Navigation
     | 'login'
@@ -94,6 +121,21 @@ export type TranslationKeys =
     | 'archiveAndCalculate' | 'archiveAndCalculate_female'
     | 'welcomeMessage'
     | 'allLooksQuiet'
+    | 'paymentPendingTitle'
+    | 'paymentPendingDesc'
+    | 'sendReminder' | 'sendReminder_female'
+    | 'activeMaintenanceTitle'
+    | 'activeMaintenanceDesc'
+    | 'viewRequests' | 'viewRequests_female'
+    | 'smartRecommendation'
+    | 'alerts'
+    | 'manageStorage' | 'manageStorage_female'
+    | 'items'
+    | 'now'
+    | 'addContractDesc'
+    | 'organizeDocsTitle'
+    | 'organizeDocsDesc'
+    | 'uploadNow' | 'uploadNow_female'
 
     // Analytics
     | 'analyticsTitle'
@@ -608,6 +650,30 @@ export type TranslationKeys =
     | 'uploadNow'
     | 'smartRecommendation'
     | 'knowledgeBaseDesc'
+    | 'privacySecurityTitle'
+    | 'privacySecuritySubtitle'
+    | 'changePassword'
+    | 'changePasswordBtn'
+    | 'deleteAccount'
+    | 'deletionProcessTitle'
+    | 'deletionStep1'
+    | 'deletionStep2'
+    | 'deletionStep3'
+    | 'deletionStep4'
+    | 'deletionStep5'
+    | 'suspendAccountBtn'
+    | 'newPassword'
+    | 'confirmPassword'
+    | 'enterNewPassword'
+    | 'enterPasswordAgain'
+    | 'passwordChangedSuccess'
+    | 'passwordLengthError'
+    | 'passwordsDoNotMatch'
+    | 'errorChangingPassword'
+    | 'accountSuspendedSuccess'
+    | 'errorSuspendingAccount'
+    | 'suspendConfirmation'
+    | 'backToDashboard'
     ;
 
 export const translations: Record<string, Record<TranslationKeys, string>> = {
@@ -665,6 +731,32 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         archiveAndCalculate: 'ארכב וחשב',
         welcomeMessage: 'ברוכים הבאים ל-RentMate',
         allLooksQuiet: 'הכל נראה רגוע כאן.',
+        paymentPendingTitle: 'תשלום ממתין',
+        paymentPendingDesc: 'יש לך חוב של ₪{amount} שטרם נגבה',
+        sendReminder: 'שלח תזכורת',
+        sendReminder_female: 'שלחי תזכורת',
+        activeMaintenanceTitle: 'קריאות שירות פתוחות',
+        activeMaintenanceDesc: 'יש לך {count} קריאות שירות הממתינות לטיפול',
+        viewRequests: 'צפה בקריאות',
+        viewRequests_female: 'צפי בקריאות',
+        smartRecommendation: 'המלצה חכמה',
+        alerts: 'התראות',
+        contractExpiringSoon: 'חוזה מסתיים בקרוב',
+        viewContract: 'צפה בחוזה',
+        paymentOverdue: 'תשלום באיחור',
+        paymentDueSoon: 'תשלום בקרוב',
+        viewPayments: 'צפה בתשלומים',
+        scanningBill: 'Gemini מנתח את המסמך...',
+        autoFilledByGemini: 'מולא אוטומטית על ידי AI',
+        manageStorage: 'ניהול אחסון',
+        manageStorage_female: 'ניהול אחסון',
+        items: 'פריטים',
+        now: 'עכשיו',
+        addContractDesc: 'הוסף את החוזה הראשון שלך כדי להתחיל לעקוב',
+        organizeDocsTitle: 'ארגן את המסמכים שלך',
+        organizeDocsDesc: 'העלה קבלות וחשבונות למקום אחד מסודר',
+        uploadNow: 'העלה עכשיו',
+        uploadNow_female: 'העלה עכשיו',
 
         analyticsTitle: 'אנליטיקה',
         analyticsSubtitle: 'סקירת ביצועי פורטפוליו',
@@ -851,6 +943,32 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         limitReached: 'מכסת החוזים מלאה',
         limitReachedDesc: 'הגעת למכסת החוזים המקסימלית בתוכנית שלך.',
         backToContracts: 'חזור לחוזים',
+        contractDetails: 'פרטי חוזה',
+        editContract: 'ערוך חוזה',
+        contractPeriodStatus: 'תקופת חוזה וסטטוס',
+        paymentFreq: 'תדירות תשלום',
+        paymentDay: 'יום תשלום',
+        day: 'יום',
+        rentStepsVariable: 'מדרגות שכר דירה (משתנה)',
+        addRentStep: '+ הוסף מדרגת שכר דירה',
+        linkageAdjustments: 'הצמדה והתאמות',
+        subType: 'תת-סוג',
+        mos: 'חוד\'',
+        yrs: 'שנים',
+        addOptionPeriod: '+ הוסף תקופת אופציה',
+        depositAmount: 'סכום הפיקדון',
+        reference: 'אסמכתא',
+        referencePlaceholder: 'קוד אישור, מספר צ\'ק...',
+        dueDate: 'תאריך פירעון',
+        paidDate: 'תאריך תשלום',
+        selectContract: 'בחר חוזה...',
+        saveAndAddAnother: 'שמור והוסף נוסף',
+        createAndClose: 'צור וסגור',
+        addPaymentTitle: 'הוספת תשלום',
+        optional: 'רשות',
+        endOfForm: 'סוף הטופס',
+        namePhoneRequired: 'שם וטלפון הם שדות חובה',
+        mustBeLoggedIn: 'עליך להיות מחובר כדי להוסיף שוכר',
         addItem: 'הוסף פריט',
         globalBaseRentHelp: 'שכירות בסיס חודשית קבועה (אלא אם הוגדר אחרת ברשימה).',
         baseIndexDate: 'תאריך בסיס למדד',
@@ -896,6 +1014,7 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         city: 'עיר',
         status: 'סטטוס',
         amount: 'סכום',
+        currency: 'מטבע',
         date: 'תאריך',
 
         note: 'הערה',
@@ -1316,18 +1435,31 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         lp_footer_careers: 'קריירה',
         lp_footer_contact: 'צור קשר',
         lp_footer_security: 'אבטחת מידע',
-        contractExpiringSoon: 'חוזה מסתיים בקרוב',
-        viewContract: 'צפה בחוזה',
-        paymentOverdue: 'תשלום באיחור',
-        paymentDueSoon: 'תשלום בקרוב',
-        viewPayments: 'צפה בתשלומים',
-        scanningBill: 'Gemini מנתח את המסמך...',
-        autoFilledByGemini: 'מולא אוטומטית על ידי AI',
-        organizeDocsTitle: 'נעשה סדר במסמכים?',
-        organizeDocsDesc: 'העלו את חשבונות החשמל והמים האחרונים שלכם כדי לשמור על סדר ולעקוב אחרי הוצאות הנכס.',
-        uploadNow: 'להעלאה עכשיו',
-        smartRecommendation: 'המלצה חכמה',
         knowledgeBaseDesc: 'מדריכים ומאמרים מקצועיים שיעזרו לכם לנהל את הנכסים שלכם בצורה חכמה ויעילה יותר.',
+        privacySecurityTitle: 'פרטיות ואבטחה',
+        privacySecuritySubtitle: 'נהלו את הגדרות האבטחה שלכם',
+        changePassword: 'שינוי סיסמה',
+        changePasswordBtn: 'שינוי סיסמה',
+        deleteAccount: 'מחיקת חשבון',
+        deletionProcessTitle: 'תהליך מחיקת חשבון:',
+        deletionStep1: 'החשבון יושעה למשך 14 ימים',
+        deletionStep2: 'לא תוכלו להתחבר במהלך תקופה זו',
+        deletionStep3: 'הנתונים שלכם יישמרו',
+        deletionStep4: 'ניתן לבטל את התהליך על ידי פנייה לתמיכה',
+        deletionStep5: 'לאחר 14 ימים - מחיקה לצמיתות',
+        suspendAccountBtn: 'השעיית חשבון',
+        newPassword: 'סיסמה חדשה',
+        confirmPassword: 'אישור סיסמה',
+        enterNewPassword: 'הזינו סיסמה חדשה',
+        enterPasswordAgain: 'הזינו את הסיסמה שוב',
+        passwordChangedSuccess: 'הסיסמה שונתה בהצלחה!',
+        passwordLengthError: 'הסיסמה חייבת להכיל לפחות 6 תווים',
+        passwordsDoNotMatch: 'הסיסמאות אינן תואמות',
+        errorChangingPassword: 'שגיאה בשינוי הסיסמה',
+        accountSuspendedSuccess: 'החשבון הושעה בהצלחה. תקבלו אימייל עם פרטים נוספים.',
+        errorSuspendingAccount: 'שגיאה בהשעיית החשבון',
+        suspendConfirmation: 'חשבונכם יושעה למשך 14 ימים.\n\nבמהלך תקופה זו:\n• לא תוכלו להתחבר למערכת\n• הנתונים שלכם יישמרו\n• תוכלו לבטל את ההשעיה על ידי פנייה לתמיכה\n\nלאחר 14 ימים, החשבון והנתונים יימחקו לצמיתות.\n\nהאם להמשיך?',
+        backToDashboard: 'חזרה ללוח הבקרה',
     },
 
     en: {
@@ -1384,6 +1516,32 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         archiveAndCalculate: 'Archive & Calculate',
         welcomeMessage: 'Welcome to RentMate',
         allLooksQuiet: 'Everything looks quiet here.',
+        paymentPendingTitle: 'Payment Pending',
+        paymentPendingDesc: 'You have ₪{amount} pending collection',
+        sendReminder: 'Send Reminder',
+        sendReminder_female: 'Send Reminder',
+        activeMaintenanceTitle: 'Open Maintenance',
+        activeMaintenanceDesc: 'You have {count} active maintenance calls',
+        viewRequests: 'View Requests',
+        viewRequests_female: 'View Requests',
+        smartRecommendation: 'Smart Recommendation',
+        alerts: 'Alerts',
+        contractExpiringSoon: 'Contract Expiring Soon',
+        viewContract: 'View Contract',
+        paymentOverdue: 'Payment Overdue',
+        paymentDueSoon: 'Payment Due Soon',
+        viewPayments: 'View Payments',
+        scanningBill: 'Gemini is analyzing the document...',
+        autoFilledByGemini: 'Auto-filled by AI',
+        manageStorage: 'Manage Storage',
+        manageStorage_female: 'Manage Storage',
+        items: 'items',
+        now: 'Now',
+        addContractDesc: 'Add your first contract to start tracking',
+        organizeDocsTitle: 'Organize Your Docs',
+        organizeDocsDesc: 'Upload receipts and bills to one place',
+        uploadNow: 'Upload Now',
+        uploadNow_female: 'Upload Now',
 
         analyticsTitle: 'Analytics',
         analyticsSubtitle: 'Portfolio performance overview',
@@ -1569,6 +1727,32 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         limitReached: 'Limit Reached',
         limitReachedDesc: 'You have reached the maximum number of contracts on your plan.',
         backToContracts: 'Back to Contracts',
+        contractDetails: 'Contract Details',
+        editContract: 'Edit Contract',
+        contractPeriodStatus: 'Contract Period & Status',
+        paymentFreq: 'Payment Freq.',
+        paymentDay: 'Payment Day',
+        day: 'Day',
+        rentStepsVariable: 'Rent Steps (Variable Rent)',
+        addRentStep: '+ Add Rent Step',
+        linkageAdjustments: 'Linkage & Adjustments',
+        subType: 'Sub-Type',
+        mos: 'Mos',
+        yrs: 'Yrs',
+        addOptionPeriod: '+ Add Option Period',
+        depositAmount: 'Deposit Amount',
+        reference: 'Reference',
+        referencePlaceholder: 'Confirmation code, check number...',
+        dueDate: 'Due Date',
+        paidDate: 'Paid Date',
+        selectContract: 'Select a contract...',
+        saveAndAddAnother: 'Save & Add Another',
+        createAndClose: 'Create & Close',
+        addPaymentTitle: 'Add Payment',
+        optional: 'Optional',
+        endOfForm: 'End of Form',
+        namePhoneRequired: 'Name and Phone are required',
+        mustBeLoggedIn: 'You must be logged in to add a tenant',
         addItem: 'Add Item',
         totalBase: 'Total Base',
         globalBaseRentHelp: 'Global base rent (will be used for all months unless overridden by list).',
@@ -1615,6 +1799,7 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         city: 'City',
         status: 'Status',
         amount: 'Amount',
+        currency: 'Currency',
         date: 'Date',
         note: 'Note',
 
@@ -2030,18 +2215,33 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         lp_footer_careers: 'Careers',
         lp_footer_contact: 'Contact Us',
         lp_footer_security: 'Security',
-        contractExpiringSoon: 'Contract Expiring Soon',
-        viewContract: 'View Contract',
-        paymentOverdue: 'Payment Overdue',
-        paymentDueSoon: 'Payment Due Soon',
-        viewPayments: 'View Payments',
-        scanningBill: 'Gemini is analyzing the document...',
-        autoFilledByGemini: 'Auto-filled by AI',
-        organizeDocsTitle: 'Organize your documents?',
-        organizeDocsDesc: 'Upload your latest utility bills and maintenance records to keep everything organized and track property expenses.',
-        uploadNow: 'Upload Now',
-        smartRecommendation: 'Smart Recommendation',
         knowledgeBaseDesc: 'Professional guides and articles to help you manage your properties smarter and more efficiently.',
+
+        // Privacy & Security Modal
+        privacySecurityTitle: 'Privacy & Security',
+        privacySecuritySubtitle: 'Manage your security settings',
+        changePassword: 'Change Password',
+        changePasswordBtn: 'Change Password',
+        deleteAccount: 'Delete Account',
+        deletionProcessTitle: 'Account Deletion Process:',
+        deletionStep1: 'Account will be suspended for 14 days',
+        deletionStep2: 'You cannot log in during this period',
+        deletionStep3: 'Your data will be preserved',
+        deletionStep4: 'Can be cancelled by contacting support',
+        deletionStep5: 'After 14 days - permanent deletion',
+        suspendAccountBtn: 'Suspend Account',
+        newPassword: 'New Password',
+        confirmPassword: 'Confirm Password',
+        enterNewPassword: 'Enter new password',
+        enterPasswordAgain: 'Enter password again',
+        passwordChangedSuccess: 'Password changed successfully!',
+        passwordLengthError: 'Password must be at least 6 characters',
+        passwordsDoNotMatch: 'Passwords do not match',
+        errorChangingPassword: 'Error changing password',
+        accountSuspendedSuccess: 'Account suspended successfully. You will receive an email with more details.',
+        errorSuspendingAccount: 'Error suspending account',
+        suspendConfirmation: 'Your account will be suspended for 14 days.\n\nDuring this period:\n• You will not be able to log in\n• Your data will be preserved\n• You can cancel the suspension by contacting support\n\nAfter 14 days, your account and data will be permanently deleted.\n\nContinue?',
+        backToDashboard: 'Back to Dashboard',
     },
 };
 

@@ -5,6 +5,10 @@ import { CloseIcon as X, LoaderIcon as Loader2 } from '../icons/MessageIcons';
 import { supabase } from '../../lib/supabase';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useSubscription } from '../../hooks/useSubscription';
+import { Modal } from '../ui/Modal';
+import { Button } from '../ui/Button';
+import { Card, CardContent } from '../ui/Card';
+import { cn } from '../../lib/utils';
 import { FormLabel } from '../ui/FormLabel';
 import type { Tenant, Property } from '../../types/database';
 
@@ -106,7 +110,7 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
 
         // Limit Check
         if (!tenantToEdit && !canAddTenant) {
-            setError(`You have reached the maximum number of tenants for your plan (${plan?.name}). Upgrade to add more.`);
+            setError(t('planLimitReachedTenantDesc', { planName: plan?.name || '' }));
             return;
         }
 
@@ -115,11 +119,11 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
 
         try {
             const { data: { user } } = await supabase.auth.getUser();
-            if (!user) throw new Error('You must be logged in to add a tenant');
+            if (!user) throw new Error(t('mustBeLoggedIn'));
 
             // Validation
             if (!formData.name || !formData.phone) {
-                throw new Error('Name and Phone are required');
+                throw new Error(t('namePhoneRequired'));
             }
             // Property is now optional
 
@@ -188,73 +192,93 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
 
     if (!isOpen) return null;
 
-    return createPortal(
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" dir={lang === 'he' ? 'rtl' : 'ltr'}>
-            <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-lg shadow-2xl scale-100 animate-in zoom-in-95 duration-200 overflow-hidden flex flex-col max-h-[calc(100vh-2rem)]">
-                {/* Header */}
-                <div className="p-6 border-b border-border dark:border-gray-700 flex items-center justify-between">
-                    <div>
-                        <h2 className="text-xl font-bold text-foreground dark:text-white flex items-center gap-2">
-                            <User className="w-5 h-5 text-primary" />
-                            {title}
-                        </h2>
-                        <p className="text-sm text-muted-foreground dark:text-muted-foreground mt-1">
-                            {subtitle}
-                        </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        {isReadOnly && (
-                            <button
-                                onClick={() => setIsReadOnly(false)}
-                                className="p-2 text-primary hover:text-primary hover:bg-primary/10 dark:hover:bg-blue-900/20 rounded-full transition-colors flex items-center gap-2 px-3 bg-primary/10/50"
-                            >
-                                <Pen className="w-4 h-4" />
-                                <span className="text-sm font-medium">{t('edit')}</span>
-                            </button>
-                        )}
-                        <button
-                            onClick={onClose}
-                            className="p-2 text-muted-foreground hover:text-muted-foreground hover:bg-muted dark:hover:bg-gray-700 rounded-full transition-colors"
-                            aria-label={t('close')}
+    const modalFooter = (
+        <div className="flex gap-3 w-full">
+            {isReadOnly ? (
+                <>
+                    {onDelete && (
+                        <Button
+                            variant="destructive"
+                            onClick={() => { onClose(); onDelete(); }}
+                            leftIcon={<Trash2 className="w-4 h-4" />}
                         >
-                            <X className="w-5 h-5" />
-                        </button>
-                    </div>
-                </div>
+                            {t('delete')}
+                        </Button>
+                    )}
+                    <div className="flex-1" />
+                    <Button
+                        variant="secondary"
+                        onClick={() => setIsReadOnly(false)}
+                        leftIcon={<Pen className="w-4 h-4" />}
+                    >
+                        {t('edit')}
+                    </Button>
+                    <Button onClick={onClose}>
+                        {t('close')}
+                    </Button>
+                </>
+            ) : (
+                <>
+                    <Button variant="ghost" className="flex-1" onClick={onClose}>
+                        {t('cancel')}
+                    </Button>
+                    <Button
+                        type="submit"
+                        form="add-tenant-form"
+                        className="flex-1"
+                        isLoading={loading}
+                        disabled={!tenantToEdit && !canAddTenant}
+                    >
+                        {isEditMode ? t('saveChanges') : t('addTenant')}
+                    </Button>
+                </>
+            )}
+        </div>
+    );
 
-                {/* Form */}
-                <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1">
-                    {!isReadOnly && !tenantToEdit && !canAddTenant && !subLoading && (
-                        <div className="p-4 mb-4 bg-orange-50 border border-orange-200 text-orange-800 rounded-lg flex items-start gap-3">
-                            <div className="p-1 bg-orange-100 rounded-full shrink-0">
-                                <User className="w-5 h-5 text-orange-600" />
-                            </div>
+    return (
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title={title}
+            description={subtitle}
+            footer={modalFooter}
+            size="md"
+        >
+            <div className="space-y-6">
+                {!isReadOnly && !tenantToEdit && !canAddTenant && !subLoading && (
+                    <Card className="bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:border-orange-900/50">
+                        <CardContent className="p-4 flex items-start gap-3">
+                            <User className="w-5 h-5 text-orange-600 mt-0.5" />
                             <div>
-                                <h4 className="font-semibold text-sm">{t('planLimitReached')}</h4>
-                                <p className="text-xs mt-1">
+                                <h4 className="font-bold text-sm text-orange-800 dark:text-orange-400">{t('planLimitReached')}</h4>
+                                <p className="text-xs text-orange-700 dark:text-orange-500 mt-1">
                                     {t('planLimitReachedTenantDesc', { planName: plan?.name || '' })}
                                 </p>
                             </div>
-                        </div>
-                    )}
-                    {error && (
-                        <div className="p-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 rounded-lg flex items-center gap-2">
-                            <X className="w-4 h-4" /> {error}
-                        </div>
-                    )}
+                        </CardContent>
+                    </Card>
+                )}
 
+                {error && (
+                    <div className="p-3 text-sm text-red-600 bg-red-50 dark:bg-red-950/30 rounded-xl flex items-center gap-2 border border-red-100 dark:border-red-900/50 font-bold uppercase tracking-tight">
+                        <X className="w-4 h-4" /> {error}
+                    </div>
+                )}
+
+                <form id="add-tenant-form" onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-4">
                         {/* Property Selection */}
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('assignedAsset')} ({t('optional') || 'Optional'})</label>
+                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">{t('assignedAsset')} ({t('optional')})</label>
                             {properties.length > 0 ? (
                                 <div className="relative">
-                                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                    <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                                     <select
                                         disabled={isReadOnly || isLoadingProperties}
                                         value={formData.property_id}
                                         onChange={(e) => setFormData({ ...formData, property_id: e.target.value })}
-                                        className="w-full pl-9 pr-4 py-2 border border-border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-foreground dark:text-white disabled:opacity-60 disabled:cursor-not-allowed appearance-none"
+                                        className="w-full h-12 pl-11 pr-4 rounded-2xl border border-border bg-background focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none appearance-none font-medium text-sm"
                                         aria-label={t('assignedAsset')}
                                     >
                                         <option value="">{t('selectProperty')}</option>
@@ -266,137 +290,87 @@ export function AddTenantModal({ isOpen, onClose, onSuccess, tenantToEdit, readO
                                     </select>
                                 </div>
                             ) : (
-                                <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200 rounded-lg text-sm flex flex-col gap-2">
-                                    <p>{t('noAssetsFoundDesc')}</p>
+                                <div className="p-4 bg-secondary/50 rounded-2xl text-sm flex flex-col gap-2 border border-border">
+                                    <p className="text-muted-foreground font-medium">{t('noAssetsFoundDesc')}</p>
                                     {!readOnly && (
-                                        <a href="/properties" className="font-medium underline hover:text-yellow-900 dark:hover:text-yellow-100 w-fit">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => window.location.href = '/properties'}
+                                            className="w-fit h-8 text-xs"
+                                        >
                                             {t('goToAssetsPage')}
-                                        </a>
+                                        </Button>
                                     )}
                                 </div>
                             )}
                         </div>
+
                         {/* Name */}
                         <div className="space-y-2">
-                            <FormLabel label={t('fullName')} required readOnly={isReadOnly} />
+                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">{t('fullName')}</label>
                             <div className="relative">
-                                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                 <input
                                     type="text"
                                     required
                                     disabled={isReadOnly}
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full pl-9 pr-4 py-2 border border-border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-foreground dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
+                                    className="w-full h-12 pl-11 pr-4 rounded-2xl border border-border bg-background focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none"
                                 />
                             </div>
                         </div>
 
                         {/* ID Number */}
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('idNumber')}</label>
+                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">{t('idNumber')}</label>
                             <div className="relative">
-                                <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                <CreditCard className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                 <input
                                     type="text"
                                     disabled={isReadOnly}
                                     value={formData.id_number}
                                     onChange={(e) => setFormData({ ...formData, id_number: e.target.value })}
-                                    className="w-full pl-9 pr-4 py-2 border border-border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-foreground dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
+                                    className="w-full h-12 pl-11 pr-4 rounded-2xl border border-border bg-background focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none"
                                 />
                             </div>
                         </div>
 
-                        {/* Email */}
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('email')}</label>
-                            <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                <input
-                                    type="email"
-                                    disabled={isReadOnly}
-                                    value={formData.email}
-                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                    className="w-full pl-9 pr-4 py-2 border border-border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-foreground dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
-                                />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Phone */}
+                            <div className="space-y-2">
+                                <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">{t('phone')}</label>
+                                <div className="relative">
+                                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                    <input
+                                        type="tel"
+                                        required
+                                        disabled={isReadOnly}
+                                        value={formData.phone}
+                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                        className="w-full h-12 pl-11 pr-4 rounded-2xl border border-border bg-background focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none"
+                                    />
+                                </div>
+                            </div>
+                            {/* Email */}
+                            <div className="space-y-2">
+                                <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">{t('email')}</label>
+                                <div className="relative">
+                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                    <input
+                                        type="email"
+                                        disabled={isReadOnly}
+                                        value={formData.email}
+                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                        className="w-full h-12 pl-11 pr-4 rounded-2xl border border-border bg-background focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none"
+                                    />
+                                </div>
                             </div>
                         </div>
-
-                        {/* Phone */}
-                        <div className="space-y-2">
-                            <FormLabel label={t('phone')} required readOnly={isReadOnly} />
-                            <div className="relative">
-                                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                <input
-                                    type="tel"
-                                    required
-                                    disabled={isReadOnly}
-                                    value={formData.phone}
-                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                    className="w-full pl-9 pr-4 py-2 border border-border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-foreground dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="sticky bottom-0 bg-white dark:bg-gray-800 z-10 pt-4 flex gap-3 border-t border-border dark:border-gray-700 -mx-6 px-6 -mb-6 pb-6 mt-6">
-                        {isReadOnly ? (
-                            <>
-                                {onDelete && (
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            onClose();
-                                            onDelete();
-                                        }}
-                                        className="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl font-medium transition-colors flex items-center gap-2"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                        {t('delete')}
-                                    </button>
-                                )}
-                                <div className="flex-1" />
-                                <button
-                                    type="button"
-                                    onClick={() => setIsReadOnly(false)}
-                                    className="px-6 py-2 bg-primary text-white hover:bg-primary/90 rounded-xl font-medium transition-colors shadow-lg shadow-blue-500/30 flex items-center gap-2"
-                                >
-                                    <Pen className="w-4 h-4" />
-                                    {t('edit')}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={onClose}
-                                    className="px-4 py-2 text-gray-700 bg-muted hover:bg-gray-200 rounded-xl font-medium transition-colors"
-                                >
-                                    {t('close')}
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                <button
-                                    type="button"
-                                    onClick={onClose}
-                                    className="flex-1 px-4 py-2 text-gray-700 bg-muted hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 rounded-xl font-medium transition-colors"
-                                >
-                                    {t('cancel')}
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={loading || (!tenantToEdit && !canAddTenant)}
-                                    className="flex-1 px-4 py-2 bg-primary text-white hover:bg-primary/90 rounded-xl font-medium transition-colors shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                                    {loading
-                                        ? (isEditMode ? t('saving') : t('adding'))
-                                        : (isEditMode ? t('saveChanges') : t('addTenant'))
-                                    }
-                                </button>
-                            </>
-                        )}
                     </div>
                 </form>
             </div>
-        </div>
-        , document.body);
+        </Modal>
+    );
 }

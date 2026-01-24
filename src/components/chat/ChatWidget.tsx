@@ -71,7 +71,13 @@ export function ChatWidget() {
     };
 
     return (
-        <div className="fixed bottom-24 right-6 z-[60] flex flex-col items-end space-y-4">
+        <motion.div
+            drag
+            dragConstraints={{ left: -window.innerWidth + 80, right: 0, top: -window.innerHeight + 80, bottom: 0 }}
+            dragElastic={0.1}
+            dragTransition={{ bounceStiffness: 600, bounceDamping: 20 }}
+            className="fixed bottom-24 right-6 z-[60] flex flex-col items-end space-y-4"
+        >
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
@@ -81,7 +87,7 @@ export function ChatWidget() {
                         className="w-[350px] h-[540px] bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
                     >
                         {/* Header */}
-                        <div className="p-4 bg-black border-b border-white/10 flex justify-between items-center text-white">
+                        <div className="p-4 bg-black border-b border-white/10 flex justify-between items-center text-white cursor-move">
                             <div className="flex items-center space-x-3 rtl:space-x-reverse">
                                 <div className="p-2 bg-white rounded-lg">
                                     <Bot className="w-5 h-5 text-black" />
@@ -143,17 +149,16 @@ export function ChatWidget() {
                         </div>
 
                         {/* Input */}
-                        <form onSubmit={handleSubmit} className="p-4 bg-black border-t border-white/10">
-                            <div className="flex space-x-2 rtl:space-x-reverse">
-                                <label htmlFor="chat-input" className="sr-only">שאלה לצ׳אט</label>
-                                <input
-                                    id="chat-input"
-                                    ref={inputRef}
-                                    type="text"
-                                    placeholder="שאל שאלה או דבר..."
-                                    dir="auto"
-                                    className="flex-1 bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-white/30 text-sm"
-                                />
+                        <form onSubmit={handleSubmit} className="px-5 py-4 bg-black border-t border-white/10">
+                            <div className="flex items-center gap-3">
+                                <button
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="p-2 bg-white hover:bg-gray-200 rounded-xl transition-colors disabled:opacity-50 shrink-0"
+                                    aria-label="שלח הודעה"
+                                >
+                                    <Send className="w-5 h-5 text-black" />
+                                </button>
                                 <button
                                     type="button"
                                     onClick={toggleVoiceInput}
@@ -169,14 +174,17 @@ export function ChatWidget() {
                                         <Mic className="w-5 h-5 text-white" />
                                     )}
                                 </button>
-                                <button
-                                    type="submit"
-                                    disabled={isLoading}
-                                    className="p-2 bg-white hover:bg-gray-200 rounded-xl transition-colors disabled:opacity-50 shrink-0"
-                                    aria-label="שלח הודעה"
-                                >
-                                    <Send className="w-5 h-5 text-black" />
-                                </button>
+                                <div className="flex-1">
+                                    <label htmlFor="chat-input" className="sr-only">שאלה לצ׳אט</label>
+                                    <input
+                                        id="chat-input"
+                                        ref={inputRef}
+                                        type="text"
+                                        placeholder="שאל שאלה או דבר..."
+                                        dir="auto"
+                                        className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-white/30 text-sm"
+                                    />
+                                </div>
                             </div>
                         </form>
                     </motion.div>
@@ -188,10 +196,10 @@ export function ChatWidget() {
                 onClick={toggleChat}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="p-4 bg-black rounded-full shadow-2xl text-white transition-all hover:bg-gray-800"
+                className="p-3 bg-black rounded-full shadow-2xl text-white transition-all hover:bg-gray-800"
             >
-                <MessageCircle className="w-6 h-6" />
+                <MessageCircle className="w-5 h-5" />
             </motion.button>
-        </div>
+        </motion.div>
     );
 }

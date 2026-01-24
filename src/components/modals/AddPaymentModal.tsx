@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import { DatePicker } from '../ui/DatePicker';
 import { format, parseISO } from 'date-fns';
+import { useTranslation } from '../../hooks/useTranslation';
 // import type { Contract } from '../../types/database';
 
 interface AddPaymentModalProps {
@@ -14,6 +15,7 @@ interface AddPaymentModalProps {
 }
 
 export function AddPaymentModal({ isOpen, onClose, onSuccess }: AddPaymentModalProps) {
+    const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [contracts, setContracts] = useState<any[]>([]);
     const [fetchingContracts, setFetchingContracts] = useState(true);
@@ -156,7 +158,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess }: AddPaymentModalP
                         >
                             {/* Header */}
                             <div className="flex items-center justify-between p-4 border-b border-border">
-                                <h2 className="text-lg font-bold text-foreground">Add Payment</h2>
+                                <h2 className="text-lg font-bold text-foreground">{t('addPaymentTitle')}</h2>
                                 <button
                                     onClick={onClose}
                                     className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground"
@@ -170,7 +172,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess }: AddPaymentModalP
 
                                 {/* Contract Selection */}
                                 <div className="space-y-1.5">
-                                    <label className="text-sm font-semibold text-gray-700 ml-1">Contract</label>
+                                    <label className="text-sm font-semibold text-gray-700 ml-1">{t('contracts')}</label>
                                     {fetchingContracts ? (
                                         <div className="h-10 bg-muted rounded-xl animate-pulse" />
                                     ) : (
@@ -182,7 +184,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess }: AddPaymentModalP
                                                 onChange={(e) => setFormData(prev => ({ ...prev, contract_id: e.target.value }))}
                                                 className="w-full pl-9 pr-4 py-3 bg-secondary border border-border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none appearance-none"
                                             >
-                                                <option value="">Select a contract...</option>
+                                                <option value="">{t('selectContract')}</option>
                                                 {contracts.map(c => (
                                                     <option key={c.id} value={c.id}>
                                                         {c.properties?.address} - {c.tenants?.name}
@@ -195,7 +197,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess }: AddPaymentModalP
 
                                 {/* Amount */}
                                 <div className="space-y-1.5">
-                                    <label className="text-sm font-semibold text-gray-700 ml-1">Amount</label>
+                                    <label className="text-sm font-semibold text-gray-700 ml-1">{t('amount')}</label>
                                     <div className="relative">
                                         <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                         <input
@@ -211,7 +213,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess }: AddPaymentModalP
 
                                 {/* Date */}
                                 <div className="space-y-1.5">
-                                    <label className="text-sm font-semibold text-gray-700 ml-1">Due Date</label>
+                                    <label className="text-sm font-semibold text-gray-700 ml-1">{t('dueDate')}</label>
                                     <div className="relative">
                                         <DatePicker
                                             value={formData.due_date ? parseISO(formData.due_date) : undefined}
@@ -223,7 +225,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess }: AddPaymentModalP
 
                                 {/* Payment Method */}
                                 <div className="space-y-1.5">
-                                    <label className="text-sm font-semibold text-gray-700 ml-1">Payment Method</label>
+                                    <label className="text-sm font-semibold text-gray-700 ml-1">{t('method')}</label>
                                     <div className="grid grid-cols-4 gap-2">
                                         {[
                                             { label: 'Transfer', value: 'bank_transfer' },
@@ -243,7 +245,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess }: AddPaymentModalP
                                                     : 'bg-white border-border text-muted-foreground hover:bg-secondary'
                                                     }`}
                                             >
-                                                {method.label}
+                                                {t(method.value)}
                                             </button>
                                         ))}
                                     </div>
@@ -251,7 +253,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess }: AddPaymentModalP
 
                                 {/* Status */}
                                 <div className="space-y-1.5">
-                                    <label className="text-sm font-semibold text-gray-700 ml-1">Status</label>
+                                    <label className="text-sm font-semibold text-gray-700 ml-1">{t('status')}</label>
                                     <div className="grid grid-cols-3 gap-2">
                                         {(['pending', 'paid', 'overdue'] as const).map(status => (
                                             <button
@@ -267,7 +269,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess }: AddPaymentModalP
                                                     : 'bg-white border-border text-muted-foreground hover:bg-secondary'
                                                     }`}
                                             >
-                                                {status}
+                                                {t(status)}
                                             </button>
                                         ))}
                                     </div>
@@ -283,18 +285,15 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess }: AddPaymentModalP
                                     disabled={loading}
                                     className="flex-1 py-3.5 px-4 bg-white border border-border hover:bg-secondary text-gray-700 font-bold rounded-xl transform transition-all active:scale-[0.98] disabled:opacity-70 mr-3"
                                 >
-                                    Save & Add Another
+                                    {t('saveAndAddAnother')}
                                 </button>
                                 <button
-                                    type="button" // Changed to button to avoid double submit if form submits? No, form `onSubmit` calls `handleSave(true)`. 
-                                    // Actually better to keep form submit for Enter key. 
-                                    // But I have two buttons.
-                                    // Let's make this one submit the form.
+                                    type="button"
                                     onClick={() => handleSave(true)}
                                     disabled={loading}
                                     className="flex-1 flex items-center justify-center py-3.5 px-4 bg-foreground hover:bg-gray-800 text-white font-bold rounded-xl shadow-lg shadow-gray-900/10 transform transition-all active:scale-[0.98] disabled:opacity-70"
                                 >
-                                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Create & Close'}
+                                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : t('createAndClose')}
                                 </button>
                             </div>
                         </motion.div>

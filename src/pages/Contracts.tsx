@@ -9,8 +9,10 @@ import { ContractDetailsModal } from '../components/modals/ContractDetailsModal'
 import { ConfirmDeleteModal } from '../components/modals/ConfirmDeleteModal';
 import { useTranslation } from '../hooks/useTranslation';
 import { PageHeader } from '../components/common/PageHeader';
-import { GlassCard } from '../components/common/GlassCard';
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
 import { useDataCache } from '../contexts/DataCacheContext';
+import { formatDate, cn } from '../lib/utils';
 
 interface ContractWithDetails extends Contract {
     properties: { address: string, city: string };
@@ -197,118 +199,113 @@ export function Contracts() {
                 title={t('contractsTitle')}
                 subtitle={t('contractsSubtitle')}
                 action={
-                    <button
+                    <Button
                         onClick={() => navigate('/contracts/new')}
-                        className="bg-black dark:bg-white text-white dark:text-black p-3.5 rounded-2xl hover:opacity-90 transition-all shadow-xl active:scale-95 flex items-center justify-center"
+                        size="icon"
+                        className="rounded-full w-12 h-12 shadow-lg"
+                        leftIcon={<Plus className="w-6 h-6" />}
                         aria-label={t('newContract')}
-                    >
-                        <Plus className="w-6 h-6" />
-                    </button>
+                    />
                 }
             />
 
-            {/* Tabs - Scrollable on mobile */}
-            <div className="flex border-b border-gray-100 dark:border-neutral-800 gap-8 overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0 md:pb-0 scrollbar-hide">
-                <button
-                    onClick={() => setFilter('all')}
-                    className={`pb-4 text-[10px] font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${filter === 'all' ? 'text-black dark:text-white' : 'text-gray-400 dark:text-gray-500 hover:text-black dark:hover:text-white'}`}
-                >
-                    {t('all')}
-                    {filter === 'all' && (
-                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black dark:bg-white rounded-t-full" />
-                    )}
-                </button>
-                <button
-                    onClick={() => setFilter('active')}
-                    className={`pb-4 text-[10px] font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${filter === 'active' ? 'text-black dark:text-white' : 'text-gray-400 dark:text-gray-500 hover:text-black dark:hover:text-white'}`}
-                >
-                    {t('active')}
-                    {filter === 'active' && (
-                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black dark:bg-white rounded-t-full" />
-                    )}
-                </button>
-                <button
-                    onClick={() => setFilter('archived')}
-                    className={`pb-4 text-[10px] font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${filter === 'archived' ? 'text-black dark:text-white' : 'text-gray-400 dark:text-gray-500 hover:text-black dark:hover:text-white'}`}
-                >
-                    {t('archived')}
-                    {filter === 'archived' && (
-                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black dark:bg-white rounded-t-full" />
-                    )}
-                </button>
+            {/* Tabs */}
+            <div className="flex bg-muted/50 p-1 rounded-2xl w-fit">
+                {(['active', 'archived', 'all'] as const).map((f) => (
+                    <button
+                        key={f}
+                        onClick={() => setFilter(f)}
+                        className={cn(
+                            "px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                            filter === f
+                                ? "bg-white dark:bg-neutral-900 text-primary shadow-sm"
+                                : "text-muted-foreground hover:text-foreground"
+                        )}
+                    >
+                        {f === 'active' ? t('active') : f === 'archived' ? t('archived') : t('all')}
+                    </button>
+                ))}
             </div>
 
             {/* List */}
             {filteredContracts.length === 0 ? (
-                <div className="text-center py-16 bg-gray-50 dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 rounded-[2rem]">
-                    <div className="w-20 h-20 bg-white dark:bg-neutral-800 rounded-[1.5rem] flex items-center justify-center mx-auto mb-6 shadow-sm">
-                        <FileText className="w-10 h-10 text-gray-400 dark:text-gray-500" />
+                <Card className="flex flex-col items-center justify-center py-20 border-dashed border-2 bg-muted/20">
+                    <div className="p-4 bg-white dark:bg-neutral-800 rounded-2xl flex items-center justify-center mb-6 shadow-sm">
+                        <FileText className="w-10 h-10 text-muted-foreground" />
                     </div>
-                    <h3 className="text-xl font-black text-black dark:text-white mb-2">{t('noActiveContracts')}</h3>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm max-w-xs mx-auto font-medium">
+                    <h3 className="text-xl font-black text-foreground mb-2">{t('noActiveContracts')}</h3>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm max-w-xs mx-auto font-medium text-center">
                         {t('noActiveContractsDesc')}
                     </p>
-                </div>
+                </Card>
             ) : (
                 <div className="grid gap-4">
-                    {filteredContracts.map((contract) => (
-                        <GlassCard
-                            key={contract.id}
-                            onClick={() => handleView(contract)}
-                            hoverEffect
-                            className="bg-white/60 p-4 flex flex-col md:flex-row items-start md:items-center justify-between cursor-pointer group gap-4 md:gap-0"
-                        >
-                            <div className="flex items-center gap-6 w-full md:w-auto">
-                                <div className="w-14 h-14 rounded-[1.25rem] bg-gray-50 dark:bg-neutral-800 text-black dark:text-white flex items-center justify-center border border-gray-100 dark:border-neutral-700 shadow-sm group-hover:scale-105 transition-transform shrink-0">
-                                    <FileText className="w-7 h-7" />
-                                </div>
-                                <div className="min-w-0 flex-1 space-y-1">
-                                    <h3 className="font-black text-black dark:text-white text-lg tracking-tight truncate">
-                                        {contract.properties?.city}{contract.properties?.address ? `, ${contract.properties.address}` : ''}
-                                    </h3>
-                                    <div className="flex flex-wrap gap-2 items-center">
-                                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400 truncate max-w-[150px]">{contract.tenants?.name}</span>
-                                        <span className="hidden md:inline w-1 h-1 rounded-full bg-gray-300 dark:bg-neutral-700"></span>
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500">
-                                            {(() => {
-                                                const start = new Date(contract.start_date);
-                                                const end = new Date(contract.end_date);
-                                                const diffTime = Math.abs(end.getTime() - start.getTime());
-                                                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-                                                const months = Math.floor(diffDays / 30);
-                                                const years = Math.floor(months / 12);
-                                                const remainingMonths = months % 12;
+                    {filteredContracts.map((contract) => {
+                        const isExpired = new Date(contract.end_date) < new Date(new Date().setHours(0, 0, 0, 0));
+                        return (
+                            <Card
+                                key={contract.id}
+                                onClick={() => handleView(contract)}
+                                hoverEffect
+                                className={cn(
+                                    "p-5 flex flex-col md:flex-row items-start md:items-center justify-between cursor-pointer group gap-4 md:gap-0",
+                                    isExpired && "opacity-60 grayscale"
+                                )}
+                            >
+                                <div className="flex items-center gap-6 w-full md:w-auto">
+                                    <div className="w-14 h-14 rounded-2xl bg-muted text-foreground flex items-center justify-center border border-border group-hover:scale-105 transition-transform shrink-0">
+                                        <FileText className="w-7 h-7" />
+                                    </div>
+                                    <div className="min-w-0 flex-1 space-y-1">
+                                        <h3 className="font-black text-foreground text-lg tracking-tight truncate">
+                                            {contract.properties?.city}{contract.properties?.address ? `, ${contract.properties.address}` : ''}
+                                        </h3>
+                                        <div className="flex flex-wrap gap-2 items-center">
+                                            <span className="text-xs font-bold text-muted-foreground truncate max-w-[150px]">{contract.tenants?.name}</span>
+                                            <span className="hidden md:inline w-1 h-1 rounded-full bg-border" />
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                                                {(() => {
+                                                    const start = new Date(contract.start_date);
+                                                    const end = new Date(contract.end_date);
+                                                    const diffTime = Math.abs(end.getTime() - start.getTime());
+                                                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                                                    const months = Math.floor(diffDays / 30);
+                                                    const years = Math.floor(months / 12);
+                                                    const remainingMonths = months % 12;
 
-                                                let duration = '';
-                                                if (years > 0) duration = `${years}y${remainingMonths > 0 ? ` ${remainingMonths}m` : ''}`;
-                                                else if (months > 0) duration = `${months}m`;
-                                                else duration = `${diffDays}d`;
+                                                    let duration = '';
+                                                    if (years > 0) duration = `${years}y${remainingMonths > 0 ? ` ${remainingMonths}m` : ''}`;
+                                                    else if (months > 0) duration = `${months}m`;
+                                                    else duration = `${diffDays}d`;
 
-                                                return `${duration} (${new Date(contract.end_date).toLocaleDateString()})`;
-                                            })()}
-                                        </span>
+                                                    return `${duration} (${formatDate(contract.end_date)})`;
+                                                })()}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div className="flex items-center justify-between w-full md:w-auto gap-6 pl-20 md:pl-0">
-                                <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border shadow-sm ${contract.status === 'active'
-                                    ? 'bg-green-50 dark:bg-green-900/20 text-green-600 border-green-100 dark:border-green-900/40'
-                                    : 'bg-gray-50 dark:bg-neutral-800 text-gray-400 dark:text-gray-500 border-gray-100 dark:border-neutral-700'
-                                    }`}>
-                                    {contract.status === 'active' ? t('active') : t('archived')}
-                                </span>
-                                <div onClick={(e) => e.stopPropagation()} className="border-l pl-4 border-gray-100 dark:border-neutral-800">
-                                    <ActionMenu
-                                        align={lang === 'he' ? 'left' : 'right'}
-                                        onView={() => handleView(contract)}
-                                        onEdit={() => handleEdit(contract)}
-                                        onDelete={() => handleDelete(contract)}
-                                        onCalculate={() => handleCalculatePayments(contract)}
-                                    />
+                                <div className="flex items-center justify-between w-full md:w-auto gap-6 pl-20 md:pl-0">
+                                    <span className={cn(
+                                        "px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border shadow-sm",
+                                        contract.status === 'active' && !isExpired
+                                            ? "bg-green-50 dark:bg-green-950 text-green-600 border-green-100 dark:border-green-900"
+                                            : "bg-muted text-muted-foreground border-border"
+                                    )}>
+                                        {contract.status === 'active' && !isExpired ? t('active') : t('archived')}
+                                    </span>
+                                    <div onClick={(e) => e.stopPropagation()} className="border-l pl-4 border-border">
+                                        <ActionMenu
+                                            align={lang === 'he' ? 'left' : 'right'}
+                                            onView={() => handleView(contract)}
+                                            onEdit={() => handleEdit(contract)}
+                                            onDelete={() => handleDelete(contract)}
+                                            onCalculate={() => handleCalculatePayments(contract)}
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                        </GlassCard>
-                    ))}
+                            </Card>
+                        );
+                    })}
                 </div>
             )}
 

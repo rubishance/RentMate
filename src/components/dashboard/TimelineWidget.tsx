@@ -56,8 +56,8 @@ export function TimelineWidget({ contracts, loading }: TimelineWidgetProps) {
                 progress,
                 daysLeft,
                 isOptionApproaching,
-                displayEndDate: format(endDate, 'd MMM yyyy', { locale: dateLocale }),
-                displayOptionDeadline: format(optionDeadline, 'd MMM', { locale: dateLocale }),
+                displayEndDate: format(endDate, 'dd/MM/yyyy'),
+                displayOptionDeadline: format(optionDeadline, 'dd/MM/yyyy'),
                 status: daysLeft < 30 ? 'critical' : daysLeft < 90 ? 'warning' : 'good'
             };
         }).sort((a, b) => a.daysLeft - b.daysLeft); // Sort by most urgent

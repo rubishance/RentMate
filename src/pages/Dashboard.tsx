@@ -11,6 +11,9 @@ import { TrendingUpIcon as TrendingUp, ClockIcon as Clock, AlertCircleIcon as Al
 import { AddPropertyModal } from '../components/modals/AddPropertyModal';
 import { AddTenantModal } from '../components/modals/AddTenantModal';
 import { AddPaymentModal } from '../components/modals/AddPaymentModal';
+import { formatDate, cn } from '../lib/utils';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
 
 // Widgets
 import { TimelineWidget } from '../components/dashboard/TimelineWidget';
@@ -226,8 +229,8 @@ export function Dashboard() {
                         id: `expired-${c.id}`,
                         type: 'warning',
                         title: t('contractEnded'),
-                        desc: t('contractEndedDesc', { address, date: new Date(c.end_date).toLocaleDateString() }),
-                        date: new Date(c.end_date).toLocaleDateString(),
+                        desc: t('contractEndedDesc', { address, date: formatDate(c.end_date) }),
+                        date: formatDate(c.end_date),
                         actionLabel: t('archiveAndCalculate'),
                         onAction: async () => {
                             await supabase
@@ -276,7 +279,7 @@ export function Dashboard() {
                         type: 'urgent',
                         title: t('contractExpiringSoon'),
                         desc: `${address} - ${daysLeft} ${t('daysLeft')}`,
-                        date: endDate.toLocaleDateString(),
+                        date: formatDate(endDate),
                         actionLabel: t('viewContract'),
                         onAction: () => navigate('/contracts')
                     });
@@ -308,8 +311,8 @@ export function Dashboard() {
                             id: `option-${c.id}`,
                             type: 'action',
                             title: t('optionDeadline'),
-                            desc: `${address} - ${t('optionDeadlineWarning', { date: optionDeadline.toLocaleDateString() })}`,
-                            date: optionDeadline.toLocaleDateString(),
+                            desc: `${address} - ${t('optionDeadlineWarning', { date: formatDate(optionDeadline) })}`,
+                            date: formatDate(optionDeadline),
                             actionLabel: t('review'),
                             onAction: () => navigate('/contracts')
                         });
@@ -338,7 +341,7 @@ export function Dashboard() {
                         type: 'warning',
                         title: t('paymentOverdue'),
                         desc: `${address} - ₪${p.amount.toLocaleString()}`,
-                        date: new Date(p.due_date).toLocaleDateString(),
+                        date: formatDate(p.due_date),
                         actionLabel: t('sendReminder'),
                         onAction: () => navigate('/payments')
                     });
@@ -373,7 +376,7 @@ export function Dashboard() {
                         type: 'info',
                         title: t('paymentDueSoon'),
                         desc: `${address} - ${daysUntil} ${t('daysLeft')}`,
-                        date: dueDate.toLocaleDateString(),
+                        date: formatDate(dueDate),
                         actionLabel: t('viewPayments'),
                         onAction: () => navigate('/payments')
                     });
@@ -396,7 +399,7 @@ export function Dashboard() {
                 type: 'success',
                 title: t('welcomeMessage'),
                 desc: t('allLooksQuiet'),
-                date: 'Now'
+                date: t('now')
             });
         }
 
@@ -422,80 +425,74 @@ export function Dashboard() {
 
     if (loading) {
         return (
-            <div className="bg-white dark:bg-[#0a0a0a] min-h-screen px-2 max-w-7xl mx-auto space-y-6 pt-4 animate-pulse">
-                {/* Header Skeleton */}
-                <div className="flex flex-col mb-2 space-y-2">
-                    <div className="h-3 w-24 bg-gray-100 dark:bg-neutral-800 rounded-full" />
-                    <div className="h-8 w-48 bg-gray-100 dark:bg-neutral-800 rounded-xl" />
+            <div className="bg-background min-h-screen px-4 max-w-7xl mx-auto space-y-6 pt-6">
+                <div className="flex flex-col space-y-2">
+                    <div className="h-4 w-24 bg-muted animate-pulse rounded-full" />
+                    <div className="h-10 w-48 bg-muted animate-pulse rounded-xl" />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                    {/* Financial Pulse Skeleton */}
-                    <div className="bg-gray-50/50 dark:bg-neutral-900/50 border border-gray-100 dark:border-neutral-800 rounded-[2.5rem] p-6 md:p-8 h-64" />
-                    {/* Smart Actions Skeleton */}
-                    <div className="bg-gray-50/50 dark:bg-neutral-900/50 border border-gray-100 dark:border-neutral-800 rounded-[2.5rem] p-6 md:p-8 h-64" />
-                    {/* Knowledge Base Skeleton */}
-                    <div className="hidden lg:block bg-gray-50/50 dark:bg-neutral-900/50 border border-gray-100 dark:border-neutral-800 rounded-[2.5rem] p-6 md:p-8 h-64" />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="h-64 bg-muted animate-pulse rounded-3xl" />
+                    <div className="h-64 bg-muted animate-pulse rounded-3xl" />
+                    <div className="hidden lg:block h-64 bg-muted animate-pulse rounded-3xl" />
                 </div>
 
-                {/* Timeline & Storage Skeleton */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="md:col-span-2 bg-gray-50/50 dark:bg-neutral-900/50 border border-gray-100 dark:border-neutral-800 rounded-[2.5rem] h-80" />
-                    <div className="bg-gray-50/50 dark:bg-neutral-900/50 border border-gray-100 dark:border-neutral-800 rounded-[2.5rem] h-80" />
+                    <div className="md:col-span-2 h-80 bg-muted animate-pulse rounded-3xl" />
+                    <div className="h-80 bg-muted animate-pulse rounded-3xl" />
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="bg-white dark:bg-[#0a0a0a] font-sans text-black dark:text-white min-h-screen">
-            <div className="px-2 max-w-7xl mx-auto space-y-6 pt-4">
-
+        <div className="bg-background min-h-screen">
+            <div className="px-4 max-w-7xl mx-auto space-y-8 pt-6">
                 {/* Simplified Welcome Section */}
-                <div className="flex flex-col mb-2">
-                    <h2 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest opacity-70">
+                <div className="flex flex-col">
+                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em]">
                         {t('welcomeBack')}
-                    </h2>
-                    <h1 className="text-3xl font-black text-black dark:text-white tracking-tighter">
+                    </span>
+                    <h1 className="text-4xl font-black tracking-tighter mt-1">
                         {profile?.first_name || profile?.full_name?.split(' ')[0] || t('user_generic')}
                     </h1>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {/* Financial Pulse */}
-                    <div className="bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 rounded-[2.5rem] p-6 md:p-8 shadow-sm relative overflow-hidden flex flex-col justify-between h-full">
-                        <div className="relative z-10">
-                            <div className="flex justify-between items-start mb-4">
-                                <span className="text-gray-400 dark:text-gray-500 font-bold text-xs uppercase tracking-widest leading-none">
+                    <Card className="p-8 flex flex-col justify-between h-full bg-white dark:bg-neutral-900 shadow-sm border-border rounded-3xl">
+                        <div>
+                            <div className="flex justify-between items-start mb-6">
+                                <span className="text-muted-foreground font-bold text-xs uppercase tracking-widest leading-none">
                                     {t('monthlyIncome')}
                                 </span>
-                                <div className="p-3 bg-gray-50 dark:bg-neutral-800 rounded-2xl text-black dark:text-white">
-                                    <TrendingUp className="w-5 h-5" />
+                                <div className="p-3 bg-secondary rounded-2xl">
+                                    <TrendingUp className="w-5 h-5 text-foreground" />
                                 </div>
                             </div>
-                            <div className="text-4xl md:text-5xl font-black text-black dark:text-white mb-6 md:mb-8 tracking-tighter">
+                            <div className="text-5xl font-black tracking-tighter text-foreground">
                                 ₪{stats.monthlyIncome.toLocaleString()}
                             </div>
+                        </div>
 
-                            {/* Mini Stats Row */}
-                            <div className="grid grid-cols-2 gap-4 pt-6 border-t border-gray-50 dark:border-neutral-800">
-                                <div>
-                                    <span className="text-[10px] md:text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider block mb-2">{t('collected')}</span>
-                                    <span className="text-lg md:text-xl font-black text-black dark:text-white flex items-center gap-2">
-                                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]"></span>
-                                        ₪{stats.collected.toLocaleString()}
-                                    </span>
-                                </div>
-                                <div>
-                                    <span className="text-[10px] md:text-xs text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider block mb-2">{t('pending')}</span>
-                                    <span className="text-lg md:text-xl font-black text-black dark:text-white flex items-center gap-2">
-                                        <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.3)]"></span>
-                                        ₪{stats.pending.toLocaleString()}
-                                    </span>
-                                </div>
+                        {/* Mini Stats Row */}
+                        <div className="grid grid-cols-2 gap-4 pt-8 border-t border-border mt-8">
+                            <div>
+                                <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider block mb-2">{t('collected')}</span>
+                                <span className="text-xl font-black text-foreground flex items-center gap-2">
+                                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]"></span>
+                                    ₪{stats.collected.toLocaleString()}
+                                </span>
+                            </div>
+                            <div>
+                                <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider block mb-2">{t('pending')}</span>
+                                <span className="text-xl font-black text-foreground flex items-center gap-2">
+                                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.3)]"></span>
+                                    ₪{stats.pending.toLocaleString()}
+                                </span>
                             </div>
                         </div>
-                    </div>
+                    </Card>
 
                     {/* Smart Actions */}
                     <div className="h-full">
@@ -510,7 +507,6 @@ export function Dashboard() {
                     </div>
                 </div>
 
-                {/* 2. Timeline & Quick Status */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="md:col-span-2">
                         <TimelineWidget contracts={activeContracts} />
@@ -521,38 +517,43 @@ export function Dashboard() {
                 </div>
 
                 {feedItems.length > 0 && (
-                    <div className="space-y-4 pb-8">
-                        <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest px-2">{t('alerts')}</h3>
+                    <div className="space-y-4 pb-12">
+                        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-2">{t('alerts')}</h3>
                         {feedItems.map(item => (
-                            <div key={item.id} className="bg-white dark:bg-neutral-900 p-5 rounded-[2rem] border border-gray-100 dark:border-neutral-800 shadow-sm flex items-center gap-4 relative group hover:border-black dark:hover:border-white transition-all">
-                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${item.type === 'warning' ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' :
-                                    item.type === 'urgent' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' :
-                                        item.type === 'success' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' :
-                                            'bg-gray-50 dark:bg-neutral-800 text-black dark:text-white'
-                                    }`}>
+                            <Card key={item.id} className="p-6 flex items-center gap-4 relative group hover:border-foreground transition-all rounded-[2rem] shadow-sm">
+                                <div className={cn(
+                                    "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-110 duration-500",
+                                    item.type === 'warning' ? 'bg-orange-50 dark:bg-orange-950 text-orange-600' :
+                                        item.type === 'urgent' ? 'bg-red-50 dark:bg-red-950 text-red-600' :
+                                            item.type === 'success' ? 'bg-green-50 dark:bg-green-950 text-green-600' :
+                                                'bg-secondary text-foreground'
+                                )}>
                                     {item.type === 'warning' ? <NotificationWarningIcon className="w-7 h-7" /> :
                                         item.type === 'urgent' ? <NotificationErrorIcon className="w-7 h-7" /> :
                                             item.type === 'success' ? <NotificationSuccessIcon className="w-7 h-7" /> :
                                                 <NotificationInfoIcon className="w-7 h-7" />}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <h4 className="font-bold text-black dark:text-white text-base tracking-tight">{item.title}</h4>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{item.desc}</p>
+                                    <h4 className="font-bold text-foreground text-base tracking-tight">{item.title}</h4>
+                                    <p className="text-sm text-muted-foreground truncate">{item.desc}</p>
                                     {item.actionLabel && item.onAction && (
-                                        <button
+                                        <Button
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 item.onAction?.();
                                             }}
-                                            className="mt-3 text-xs bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 px-4 py-2 rounded-xl font-bold transition-all active:scale-95 shadow-lg"
+                                            size="sm"
+                                            className="mt-3"
                                         >
                                             {item.actionLabel}
-                                        </button>
+                                        </Button>
                                     )}
                                 </div>
                                 <div className="text-right shrink-0 self-start">
-                                    <span className={`text-xs font-bold ${item.title.includes('+') ? 'text-green-600' : 'text-muted-foreground'
-                                        }`}>
+                                    <span className={cn(
+                                        "text-xs font-bold",
+                                        item.title.includes('+') ? 'text-green-600' : 'text-muted-foreground'
+                                    )}>
                                         {item.date}
                                     </span>
                                 </div>
@@ -565,7 +566,7 @@ export function Dashboard() {
                                         onDelete={() => deleteMessage(item.id)}
                                     />
                                 </div>
-                            </div>
+                            </Card>
                         ))}
                     </div>
                 )}

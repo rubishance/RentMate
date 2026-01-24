@@ -157,7 +157,8 @@ export function WelcomeLanding() {
         <div className={`min-h-screen bg-white dark:bg-[#0a0a0a] ${isRtl ? 'text-right' : 'text-left'}`} dir={isRtl ? 'rtl' : 'ltr'}>
 
             {/* Header */}
-            <header className="border-b border-gray-100 dark:border-neutral-800 bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur-md sticky top-0 z-50">
+            {/* Header - Stitched Refinement */}
+            <header className="border-b border-neutral-200 dark:border-neutral-800 bg-white/90 dark:bg-[#0a0a0a]/90 backdrop-blur-xl sticky top-0 z-50 shadow-sm transition-all duration-300">
                 <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
                     <div className="flex items-center gap-2 md:gap-3 shrink-0">
                         <img src={effectiveTheme === 'dark' ? logoIconDark : logoIconOnly} alt="RentMate Icon" className="h-8 md:h-10 w-auto object-contain flex-shrink-0" />
@@ -168,40 +169,40 @@ export function WelcomeLanding() {
                     </div>
 
                     <div className="flex items-center gap-4 lg:gap-8 shrink-0">
-                        <nav className="hidden lg:flex items-center gap-6">
+                        <nav className="hidden lg:flex items-center gap-2">
                             <button
                                 onClick={() => setActiveTab('home')}
-                                className={cn("text-sm font-medium transition-colors", activeTab === 'home' ? "text-black" : "text-gray-500 hover:text-black")}
+                                className={cn("px-4 py-2 text-sm font-medium rounded-full transition-all", activeTab === 'home' ? "bg-black text-white dark:bg-white dark:text-black" : "text-gray-500 hover:text-black hover:bg-gray-100 dark:hover:text-white dark:hover:bg-neutral-800")}
                             >
                                 {isRtl ? 'בית' : 'Home'}
                             </button>
                             <button
                                 onClick={() => setActiveTab('blog')}
-                                className={cn("text-sm font-medium transition-colors", activeTab === 'blog' ? "text-black" : "text-gray-500 hover:text-black")}
+                                className={cn("px-4 py-2 text-sm font-medium rounded-full transition-all", activeTab === 'blog' ? "bg-black text-white dark:bg-white dark:text-black" : "text-gray-500 hover:text-black hover:bg-gray-100 dark:hover:text-white dark:hover:bg-neutral-800")}
                             >
                                 {isRtl ? 'בלוג' : 'Blog'}
                             </button>
                             <button
                                 onClick={() => setActiveTab('demo')}
-                                className={cn("text-sm font-medium transition-colors", activeTab === 'demo' ? "text-black" : "text-gray-500 hover:text-black")}
+                                className={cn("px-4 py-2 text-sm font-medium rounded-full transition-all", activeTab === 'demo' ? "bg-black text-white dark:bg-white dark:text-black" : "text-gray-500 hover:text-black hover:bg-gray-100 dark:hover:text-white dark:hover:bg-neutral-800")}
                             >
                                 {isRtl ? 'הסברים והדגמה' : 'Demo'}
                             </button>
                             <button
                                 onClick={() => setActiveTab('calculator')}
-                                className={cn("text-sm font-medium transition-colors", activeTab === 'calculator' ? "text-black" : "text-gray-500 hover:text-black")}
+                                className={cn("px-4 py-2 text-sm font-medium rounded-full transition-all", activeTab === 'calculator' ? "bg-black text-white dark:bg-white dark:text-black" : "text-gray-500 hover:text-black hover:bg-gray-100 dark:hover:text-white dark:hover:bg-neutral-800")}
                             >
                                 {isRtl ? 'מחשבון הצמדה' : 'Index Calculator'}
                             </button>
                             <button
                                 onClick={() => setActiveTab('about')}
-                                className={cn("text-sm font-medium transition-colors", activeTab === 'about' ? "text-black" : "text-gray-500 hover:text-black")}
+                                className={cn("px-4 py-2 text-sm font-medium rounded-full transition-all", activeTab === 'about' ? "bg-black text-white dark:bg-white dark:text-black" : "text-gray-500 hover:text-black hover:bg-gray-100 dark:hover:text-white dark:hover:bg-neutral-800")}
                             >
                                 {isRtl ? 'אודות' : 'About'}
                             </button>
                             <button
                                 onClick={() => setActiveTab('contact')}
-                                className={cn("text-sm font-medium transition-colors", activeTab === 'contact' ? "text-black" : "text-gray-500 hover:text-black")}
+                                className={cn("px-4 py-2 text-sm font-medium rounded-full transition-all", activeTab === 'contact' ? "bg-black text-white dark:bg-white dark:text-black" : "text-gray-500 hover:text-black hover:bg-gray-100 dark:hover:text-white dark:hover:bg-neutral-800")}
                             >
                                 {isRtl ? 'צור קשר' : 'Contact'}
                             </button>
@@ -316,10 +317,12 @@ export function WelcomeLanding() {
                                     animate={{ opacity: 1, y: 0 }}
                                     className="text-center space-y-8"
                                 >
-                                    <h1 className="text-6xl md:text-7xl font-light text-black dark:text-white leading-tight">
+                                    <h1 className="text-6xl md:text-8xl font-medium tracking-tighter text-black dark:text-white leading-[1.1] mb-6">
                                         {isRtl ? 'ניהול נכסים,' : 'Property management,'}
                                         <br />
-                                        <span className="font-bold">{isRtl ? 'פשוט.' : 'simplified.'}</span>
+                                        <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-neutral-800 to-neutral-500 dark:from-white dark:to-neutral-400">
+                                            {isRtl ? 'פשוט.' : 'simplified.'}
+                                        </span>
                                     </h1>
 
                                     <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed font-light">
@@ -331,10 +334,10 @@ export function WelcomeLanding() {
                                     <div className="flex items-center justify-center gap-4 pt-4">
                                         <button
                                             onClick={() => navigate('/login?mode=signup')}
-                                            className="group px-6 py-3 bg-black dark:bg-white text-white dark:text-black text-sm font-medium rounded-lg hover:bg-neutral-800 dark:hover:bg-gray-100 transition-all flex items-center gap-2"
+                                            className="group px-8 py-4 bg-black dark:bg-white text-white dark:text-black text-sm font-bold rounded-xl hover:scale-105 hover:shadow-xl active:scale-95 transition-all duration-300 flex items-center gap-2"
                                         >
                                             {isRtl ? 'התחל בחינם' : 'Start free trial'}
-                                            <ArrowRight className={`w-4 h-4 group-hover:translate-x-0.5 transition-transform ${isRtl ? 'rotate-180' : ''}`} />
+                                            <ArrowRight className={`w-4 h-4 group-hover:translate-x-1 transition-transform ${isRtl ? 'rotate-180' : ''}`} />
                                         </button>
                                         <button
                                             onClick={() => setActiveTab('demo')}
@@ -489,15 +492,15 @@ export function WelcomeLanding() {
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ delay: i * 0.1 }}
                                             onClick={() => setSelectedFeature(feature)}
-                                            className="cursor-pointer group"
+                                            className="cursor-pointer group p-6 rounded-2xl hover:bg-gray-50 dark:hover:bg-neutral-900 transition-all duration-300 hover:-translate-y-1"
                                         >
-                                            <div className="w-10 h-10 text-gray-400 group-hover:text-black dark:group-hover:text-white transition-colors mb-6">
+                                            <div className="w-14 h-14 flex items-center justify-center bg-gray-100 dark:bg-neutral-800 rounded-2xl text-black dark:text-white mb-6 group-hover:scale-110 transition-transform duration-300 shadow-sm ring-1 ring-black/5 dark:ring-white/10">
                                                 <feature.icon />
                                             </div>
-                                            <h3 className="text-lg font-medium mb-2 group-hover:text-black dark:group-hover:text-white transition-colors text-black dark:text-white">
+                                            <h3 className="text-xl font-bold mb-3 text-black dark:text-white">
                                                 {feature.title}
                                             </h3>
-                                            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                                            <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
                                                 {feature.desc}
                                             </p>
                                         </motion.div>
@@ -569,16 +572,16 @@ export function WelcomeLanding() {
 
                             {/* Stats */}
                             <section className="max-w-5xl mx-auto px-6 py-24 border-t border-gray-100">
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-                                    <div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center divide-y md:divide-y-0 md:divide-x divide-gray-100 dark:divide-neutral-800 rtl:divide-x-reverse">
+                                    <div className="px-4">
                                         <div className="text-4xl font-light mb-2">AI Analysis</div>
                                         <div className="text-sm text-gray-600">{isRtl ? 'ניתוח בינה מלאכותית' : 'Smart Processing'}</div>
                                     </div>
-                                    <div>
+                                    <div className="px-4">
                                         <div className="text-4xl font-light mb-2">24/7</div>
                                         <div className="text-sm text-gray-600">{isRtl ? 'תמיכה' : 'Support'}</div>
                                     </div>
-                                    <div>
+                                    <div className="px-4">
                                         <div className="text-4xl font-light mb-2">Supabase</div>
                                         <div className="text-sm text-gray-600">{isRtl ? 'תשתית מאובטחת' : 'Secure Infrastructure'}</div>
                                     </div>
@@ -1032,7 +1035,7 @@ function BasicCalculatorView({ isRtl }: { isRtl: boolean }) {
                 <button
                     onClick={handleCalculate}
                     disabled={loading || !baseDate || !targetDate}
-                    className="w-full bg-black dark:bg-white text-white dark:text-black py-5 rounded-2xl font-bold text-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition-all shadow-xl disabled:opacity-50 flex items-center justify-center"
+                    className="w-full bg-black dark:bg-white text-white dark:text-black py-5 rounded-2xl font-bold text-lg hover:bg-gray-800 dark:hover:bg-gray-200 active:scale-98 transition-all shadow-xl disabled:opacity-50 flex items-center justify-center"
                 >
                     {loading ? (isRtl ? 'מחשב...' : 'Calculating...') : (isRtl ? 'חשב עכשיו' : 'Calculate Now')}
                 </button>

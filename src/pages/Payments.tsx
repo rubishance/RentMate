@@ -6,9 +6,13 @@ import { supabase } from '../lib/supabase';
 import { formatDate } from '../lib/utils';
 import type { Payment } from '../types/database';
 import { AddPaymentModal } from '../components/modals/AddPaymentModal';
+import { PaymentDetailsModal } from '../components/modals/PaymentDetailsModal';
 import { DatePicker } from '../components/ui/DatePicker';
 import { PageHeader } from '../components/common/PageHeader';
 import { useTranslation } from '../hooks/useTranslation';
+import { Card, CardContent } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { cn } from '../lib/utils';
 
 
 export function Payments() {
@@ -23,6 +27,8 @@ export function Payments() {
         overdue: 0
     });
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [showFilters, setShowFilters] = useState(false);
     const [filters, setFilters] = useState({
         tenantId: 'all',
@@ -195,29 +201,21 @@ export function Payments() {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 rounded-[2rem] p-6 shadow-sm">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="p-2.5 bg-gray-50 dark:bg-neutral-800 text-black dark:text-white rounded-xl">
-                            <CalendarCheck className="w-5 h-5" />
-                        </div>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500">{t('monthlyExpected')}</span>
-                    </div>
-                    <div>
-                        <p className="text-2xl font-black text-black dark:text-white">₪{stats.monthlyExpected.toLocaleString()}</p>
-                    </div>
-                </div>
+                <Card className="bg-primary/5 border-primary/10">
+                    <CardContent className="p-6 flex flex-col items-center text-center">
+                        <CalendarCheck className="w-6 h-6 text-primary mb-3" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-primary/60 mb-1">{t('monthlyExpected')}</span>
+                        <span className="text-2xl font-black text-primary tracking-tighter">₪{stats.monthlyExpected.toLocaleString()}</span>
+                    </CardContent>
+                </Card>
 
-                <div className="bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 rounded-[2rem] p-6 shadow-sm">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="p-2.5 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-500 rounded-xl">
-                            <Clock className="w-5 h-5" />
-                        </div>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500">{t('pendingCollection')}</span>
-                    </div>
-                    <div>
-                        <p className="text-2xl font-black text-black dark:text-white">₪{stats.pending.toLocaleString()}</p>
-                    </div>
-                </div>
+                <Card className="bg-orange-50/50 dark:bg-orange-950/20 border-orange-100 dark:border-orange-900/30">
+                    <CardContent className="p-6 flex flex-col items-center text-center">
+                        <Clock className="w-6 h-6 text-orange-600 dark:text-orange-400 mb-3" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-orange-600/60 dark:text-orange-400/60 mb-1">{t('pending')}</span>
+                        <span className="text-2xl font-black text-orange-600 dark:text-orange-400 tracking-tighter">₪{stats.pending.toLocaleString()}</span>
+                    </CardContent>
+                </Card>
             </div>
 
 
@@ -346,7 +344,14 @@ export function Payments() {
                 ) : (
                     <div className="divide-y divide-gray-50 dark:divide-neutral-800">
                         {filteredPayments.map(payment => (
-                            <div key={payment.id} className="p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-neutral-800/10 transition-all group">
+                            <div
+                                key={payment.id}
+                                onClick={() => {
+                                    setSelectedPayment(payment);
+                                    setIsDetailsModalOpen(true);
+                                }}
+                                className="p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-neutral-800/10 transition-all group cursor-pointer"
+                            >
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-3">
                                         <span className="font-black text-black dark:text-white text-lg">
@@ -413,6 +418,16 @@ export function Payments() {
             <AddPaymentModal
                 isOpen={isAddModalOpen}
                 onClose={() => setIsAddModalOpen(false)}
+                onSuccess={fetchPayments}
+            />
+
+            <PaymentDetailsModal
+                isOpen={isDetailsModalOpen}
+                payment={selectedPayment}
+                onClose={() => {
+                    setIsDetailsModalOpen(false);
+                    setSelectedPayment(null);
+                }}
                 onSuccess={fetchPayments}
             />
         </div>

@@ -495,7 +495,7 @@ export function MaintenanceRecords({ property, readOnly }: MaintenanceRecordsPro
                                             <div className="flex items-center gap-2">
                                                 <h3 className="font-bold text-lg text-foreground dark:text-white">{folder.name}</h3>
                                                 <span className="text-xs px-2 py-0.5 bg-muted dark:bg-gray-700 text-muted-foreground dark:text-gray-300 rounded-full">
-                                                    {format(parseISO(folder.folder_date), 'dd MMM yyyy')}
+                                                    {format(parseISO(folder.folder_date), 'dd/MM/yyyy')}
                                                 </span>
                                             </div>
                                             {folder.description && (

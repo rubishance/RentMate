@@ -9,7 +9,9 @@ import { AddTenantModal } from '../components/modals/AddTenantModal';
 import { ConfirmDeleteModal } from '../components/modals/ConfirmDeleteModal';
 import { useTranslation } from '../hooks/useTranslation';
 import { PageHeader } from '../components/common/PageHeader';
-import { GlassCard } from '../components/common/GlassCard';
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { cn } from '../lib/utils';
 
 export function Tenants() {
     const { t, lang } = useTranslation();
@@ -133,37 +135,37 @@ export function Tenants() {
                 title={t('myTenants')}
                 subtitle={t('manageTenantsDesc')}
                 action={
-                    <button
+                    <Button
                         onClick={handleAdd}
-                        className="bg-black dark:bg-white text-white dark:text-black p-3.5 rounded-2xl hover:opacity-90 transition-all shadow-xl active:scale-95 flex items-center justify-center"
+                        size="icon"
+                        className="rounded-full w-12 h-12 shadow-lg"
                         aria-label={t('addTenant')}
-                    >
-                        <Plus className="w-6 h-6" />
-                    </button>
+                        leftIcon={<Plus className="w-6 h-6" />}
+                    />
                 }
             />
 
             {tenants.length === 0 ? (
-                <GlassCard className="flex flex-col items-center justify-center py-16 border-dashed border-2 bg-white/50">
-                    <div className="p-4 bg-brand-navy/5 rounded-full mb-4">
-                        <User className="w-8 h-8 text-brand-navy/40" />
+                <Card className="flex flex-col items-center justify-center py-20 border-dashed border-2 bg-muted/20">
+                    <div className="p-4 bg-secondary rounded-full mb-4">
+                        <User className="w-8 h-8 text-muted-foreground" />
                     </div>
-                    <h3 className="text-lg font-bold text-foreground">{t('noTenantsFound')}</h3>
-                    <p className="text-muted-foreground text-sm mb-6">{t('addFirstTenantDesc')}</p>
-                    <button
+                    <h3 className="text-xl font-bold text-foreground">{t('noTenantsFound')}</h3>
+                    <p className="text-muted-foreground text-sm mb-8">{t('addFirstTenantDesc')}</p>
+                    <Button
                         onClick={handleAdd}
-                        className="text-brand-navy font-bold hover:underline text-sm">
+                    >
                         {t('addNewTenant')}
-                    </button>
-                </GlassCard>
+                    </Button>
+                </Card>
             ) : (
-                <div className="grid gap-3">
+                <div className="grid gap-4">
                     {tenants.map((tenant) => (
-                        <GlassCard
+                        <Card
                             key={tenant.id}
                             onClick={() => handleView(tenant)}
                             hoverEffect
-                            className="p-4 flex items-center justify-between cursor-pointer group"
+                            className="p-5 flex items-center justify-between cursor-pointer group rounded-3xl border-border bg-white dark:bg-neutral-900"
                         >
                             <div className="flex items-center gap-6">
                                 {/* Avatar */}
@@ -181,26 +183,39 @@ export function Tenants() {
                             </div>
 
                             {/* Actions */}
-                            <div className="flex items-center gap-4" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
                                 {tenant.phone && (
                                     <>
-                                        <a href={`tel:${tenant.phone}`} className="p-3 rounded-2xl bg-gray-50 dark:bg-neutral-800 text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all shadow-sm" title="Call">
+                                        <Button
+                                            variant="secondary"
+                                            size="icon"
+                                            className="rounded-2xl"
+                                            onClick={() => window.location.href = `tel:${tenant.phone}`}
+                                        >
                                             <Phone className="w-5 h-5" />
-                                        </a>
-                                        <a href={`https://wa.me/${tenant.phone.replace(/[^0-9]/g, '')}`}
-                                            target="_blank" rel="noopener noreferrer"
-                                            className="p-3 rounded-2xl bg-green-50 dark:bg-green-900/20 text-green-600 hover:bg-green-600 hover:text-white transition-all shadow-sm font-bold flex items-center justify-center" title="WhatsApp">
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className="rounded-2xl bg-green-50 dark:bg-green-950 text-green-600 border-green-100 dark:border-green-900"
+                                            onClick={() => window.open(`https://wa.me/${tenant.phone?.replace(/[^0-9]/g, '')}`, '_blank')}
+                                        >
                                             <MessageCircle className="w-5 h-5" />
-                                        </a>
+                                        </Button>
                                     </>
                                 )}
                                 {tenant.email && (
-                                    <a href={`mailto:${tenant.email}`} className="p-3 rounded-2xl bg-orange-50 dark:bg-orange-900/20 text-orange-600 hover:bg-orange-600 hover:text-white transition-all shadow-sm font-bold flex items-center justify-center" title="Email">
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className="rounded-2xl bg-orange-50 dark:bg-orange-950 text-orange-600 border-orange-100 dark:border-orange-900"
+                                        onClick={() => window.location.href = `mailto:${tenant.email}`}
+                                    >
                                         <Mail className="w-5 h-5" />
-                                    </a>
+                                    </Button>
                                 )}
                             </div>
-                        </GlassCard>
+                        </Card>
                     ))}
                 </div>
             )}

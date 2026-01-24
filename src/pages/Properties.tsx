@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { PlusIcon as Plus, HomeIcon as Home, BedIcon as BedDouble, RulerIcon as Ruler } from '../components/icons/NavIcons';
 import { supabase } from '../lib/supabase';
 import { AddPropertyModal } from '../components/modals/AddPropertyModal';
+import { formatDate } from '../lib/utils';
 import { ConfirmDeleteModal } from '../components/modals/ConfirmDeleteModal';
 import { IndexedRentModal } from '../components/modals/IndexedRentModal';
 import type { Property } from '../types/database';
@@ -13,6 +14,9 @@ import { PageHeader } from '../components/common/PageHeader';
 import { GlassCard } from '../components/common/GlassCard';
 import UpgradeRequestModal from '../components/modals/UpgradeRequestModal';
 import { useDataCache } from '../contexts/DataCacheContext';
+import { Card, CardContent } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { cn } from '../lib/utils';
 
 type ExtendedProperty = Property & {
     contracts: {
@@ -97,8 +101,8 @@ export function Properties() {
             if (contracts && contracts.length > 0) {
                 const contractItems = contracts.map((c: any) => {
                     const tenantName = c.tenants?.name || t('unknown');
-                    const startDate = new Date(c.start_date).toLocaleDateString();
-                    const endDate = new Date(c.end_date).toLocaleDateString();
+                    const startDate = formatDate(c.start_date);
+                    const endDate = formatDate(c.end_date);
                     return `${tenantName} (${startDate} - ${endDate})`;
                 });
 
@@ -206,37 +210,37 @@ export function Properties() {
                 title={lang === 'he' ? 'הנכסים שלי' : 'My Assets'}
                 subtitle={lang === 'he' ? 'ניהול פורטפוליו הנכסים שלך' : 'Manage your real estate portfolio'}
                 action={
-                    <button
+                    <Button
                         onClick={() => setIsAddModalOpen(true)}
-                        className="bg-black dark:bg-white text-white dark:text-black p-3.5 rounded-2xl hover:opacity-90 transition-all shadow-xl active:scale-95 flex items-center justify-center"
+                        size="icon"
+                        className="rounded-full w-12 h-12 shadow-lg"
                         aria-label={t('addProperty')}
-                    >
-                        <Plus className="w-6 h-6" />
-                    </button>
+                        leftIcon={<Plus className="w-6 h-6" />}
+                    />
                 }
             />
 
             {properties.length === 0 ? (
-                <GlassCard className="flex flex-col items-center justify-center py-16 border-dashed border-2 bg-white/50">
-                    <div className="p-4 bg-brand-navy/5 rounded-full mb-4">
-                        <Home className="w-8 h-8 text-brand-navy/40" />
+                <Card className="flex flex-col items-center justify-center py-20 border-dashed border-2 bg-muted/20">
+                    <div className="p-4 bg-secondary rounded-full mb-4">
+                        <Home className="w-8 h-8 text-muted-foreground" />
                     </div>
-                    <h3 className="text-lg font-bold text-foreground">{t('noAssetsFound')}</h3>
-                    <p className="text-muted-foreground text-sm mb-6">
+                    <h3 className="text-xl font-bold text-foreground">{t('noAssetsFound')}</h3>
+                    <p className="text-muted-foreground text-sm mb-8 text-center max-w-xs">
                         {t('addFirstPropertyDesc')}
                     </p>
-                    <button onClick={handleAdd} className="text-brand-navy font-bold hover:underline text-sm">
+                    <Button onClick={handleAdd} variant="primary">
                         {t('createFirstAsset')}
-                    </button>
-                </GlassCard>
+                    </Button>
+                </Card>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {properties.map((property) => (
-                        <GlassCard
+                        <Card
                             key={property.id}
                             onClick={() => handleView(property)}
                             hoverEffect
-                            className="cursor-pointer group flex flex-col h-full"
+                            className="bg-white dark:bg-neutral-900 group flex flex-col h-full border-border overflow-hidden rounded-3xl"
                         >
                             {/* Image Section */}
                             <div className="relative h-56 bg-gray-100 dark:bg-neutral-800 overflow-hidden">
@@ -287,9 +291,9 @@ export function Properties() {
                                     </div>
                                 </div>
 
-                                <div className="flex items-center justify-between pt-1 mt-auto">
+                                <div className="flex items-center justify-between pt-2 mt-auto">
                                     <div onClick={(e) => e.stopPropagation()} className="relative">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block mb-1">
+                                        <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground block mb-1">
                                             {t('monthlyRentLabel')}
                                         </span>
                                         <div className="flex items-baseline gap-2">
@@ -300,10 +304,10 @@ export function Properties() {
                                                         setIndexedRentContract(active);
                                                     }
                                                 }}
-                                                className={`text-2xl font-black text-black dark:text-white ${property.contracts?.some(c => c.status === 'active' && c.linkage_type && c.linkage_type !== 'none')
-                                                    ? 'cursor-pointer hover:underline decoration-dotted'
-                                                    : ''
-                                                    }`}
+                                                className={cn(
+                                                    "text-3xl font-black text-foreground tracking-tighter",
+                                                    property.contracts?.some(c => c.status === 'active' && c.linkage_type && c.linkage_type !== 'none') && "cursor-pointer hover:text-primary transition-colors underline decoration-dotted"
+                                                )}
                                             >
                                                 ₪{(property.contracts?.find(c => c.status === 'active')?.base_rent || property.rent_price || 0).toLocaleString()}
                                             </span>
@@ -337,11 +341,11 @@ export function Properties() {
                                                 </span>
                                                 <div className="flex items-center gap-2 justify-end">
                                                     <span className="text-[10px] font-black bg-gray-50 dark:bg-neutral-800 text-black dark:text-white px-2.5 py-1.5 rounded-xl border border-gray-100 dark:border-neutral-700 shadow-sm">
-                                                        {endDate.toLocaleDateString()}
+                                                        {formatDate(endDate)}
                                                     </span>
                                                     {hasOptions && (
                                                         <span className="text-[10px] font-black bg-black dark:bg-white text-white dark:text-black px-2.5 py-1.5 rounded-xl shadow-lg">
-                                                            {finalDate.toLocaleDateString()}
+                                                            {formatDate(finalDate)}
                                                         </span>
                                                     )}
                                                 </div>
@@ -350,7 +354,7 @@ export function Properties() {
                                     })()}
                                 </div>
                             </div>
-                        </GlassCard>
+                        </Card>
                     ))}
                 </div>
             )}

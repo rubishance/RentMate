@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from '../hooks/useTranslation';
-import { Book, Clock, Search, Tag } from 'lucide-react';
+import { Book, Clock, Search, Tag, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { articles, ArticleMetadata } from '../content/articleIndex';
@@ -44,7 +44,16 @@ export function KnowledgeBase() {
         <div className="min-h-screen bg-gray-50">
             {/* Header */}
             <div className="bg-white border-b border-gray-200">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+                    <button
+                        onClick={() => navigate('/dashboard')}
+                        className="mb-8 flex items-center gap-2 text-gray-400 hover:text-black transition-colors group"
+                        dir={lang === 'he' ? 'rtl' : 'ltr'}
+                    >
+                        <ArrowLeft className={`w-4 h-4 transition-transform ${lang === 'he' ? 'rotate-180 group-hover:translate-x-1' : 'group-hover:-translate-x-1'}`} />
+                        <span className="text-sm font-medium">{t('backToDashboard')}</span>
+                    </button>
+
                     <div className="text-center">
                         <div className="flex items-center justify-center gap-3 mb-4">
                             <Book className="w-10 h-10 text-primary" />
