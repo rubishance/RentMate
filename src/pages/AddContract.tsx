@@ -132,9 +132,19 @@ export function AddContract() {
 
     useEffect(() => {
         // Fetch properties for selection
-        supabase.from('properties').select('*').then(({ data }) => {
+        const fetchUserData = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const { data } = await supabase
+                .from('properties')
+                .select('*')
+                .eq('user_id', user.id);
+
             if (data) setExistingProperties(data as Property[]);
-        });
+        };
+
+        fetchUserData();
     }, []);
 
     // Auto-calculate Base Index Date based on Israeli standards

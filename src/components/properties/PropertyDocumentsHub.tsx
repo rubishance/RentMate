@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { FileText, Image as ImageIcon, Wrench, FileStack } from 'lucide-react';
+import { FileText, Image as ImageIcon, Wrench, FileStack, Banknote } from 'lucide-react';
 import type { Property } from '../../types/database';
 import { MediaGallery } from './MediaGallery';
 import { UtilityBillsManager } from './UtilityBillsManager';
 import { MaintenanceRecords } from './MaintenanceRecords';
 import { MiscDocuments } from './MiscDocuments';
+import { ChecksManager } from './ChecksManager';
 import { StorageUsageWidget } from './StorageUsageWidget';
 import { useTranslation } from '../../hooks/useTranslation';
 
@@ -13,7 +14,7 @@ interface PropertyDocumentsHubProps {
     readOnly?: boolean;
 }
 
-type TabType = 'media' | 'utilities' | 'maintenance' | 'documents';
+type TabType = 'media' | 'utilities' | 'maintenance' | 'documents' | 'checks';
 
 export function PropertyDocumentsHub({ property, readOnly }: PropertyDocumentsHubProps) {
     const { t } = useTranslation();
@@ -24,12 +25,13 @@ export function PropertyDocumentsHub({ property, readOnly }: PropertyDocumentsHu
         { id: 'utilities' as TabType, label: t('utilitiesStorage'), icon: FileText, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-900/10' },
         { id: 'maintenance' as TabType, label: t('maintenanceStorage'), icon: Wrench, color: 'text-sky-600', bg: 'bg-sky-50 dark:bg-sky-900/10' },
         { id: 'documents' as TabType, label: t('documentsStorage'), icon: FileStack, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-900/10' },
+        { id: 'checks' as TabType, label: t('checksStorage'), icon: Banknote, color: 'text-pink-600', bg: 'bg-pink-50 dark:bg-pink-900/10' },
     ];
 
     return (
         <div className="flex flex-col h-full">
             {/* Tab Navigation */}
-            <div className="flex border-b border-border dark:border-gray-700 bg-white dark:bg-gray-800">
+            <div className="flex border-b border-border dark:border-gray-700 bg-white dark:bg-gray-800 overflow-x-auto">
                 {tabs.map((tab) => {
                     const Icon = tab.icon;
                     const isActive = activeTab === tab.id;
@@ -37,7 +39,7 @@ export function PropertyDocumentsHub({ property, readOnly }: PropertyDocumentsHu
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`flex-1 flex flex-col items-center justify-center gap-1 group px-2 py-4 text-xs font-bold transition-all relative ${isActive
+                            className={`flex-1 min-w-[80px] flex flex-col items-center justify-center gap-1 group px-2 py-4 text-xs font-bold transition-all relative ${isActive
                                 ? 'text-primary dark:text-blue-400'
                                 : 'text-muted-foreground hover:text-gray-900 dark:hover:text-gray-200'
                                 }`}
@@ -67,6 +69,7 @@ export function PropertyDocumentsHub({ property, readOnly }: PropertyDocumentsHu
                 {activeTab === 'utilities' && <UtilityBillsManager property={property} readOnly={readOnly} />}
                 {activeTab === 'maintenance' && <MaintenanceRecords property={property} readOnly={readOnly} />}
                 {activeTab === 'documents' && <MiscDocuments property={property} readOnly={readOnly} />}
+                {activeTab === 'checks' && <ChecksManager property={property} readOnly={readOnly} />}
             </div>
         </div>
     );

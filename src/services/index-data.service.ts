@@ -11,18 +11,26 @@ import type { IndexData } from '../types/database';
  */
 export async function getIndexValue(
     type: 'cpi' | 'housing' | 'construction' | 'usd' | 'eur',
-    date: string // Format: 'YYYY-MM'
+    date: string // Format: 'YYYY-MM' or 'YYYY-MM-DD'
 ): Promise<number | null> {
     try {
+        // Normalize date based on index type
+        let lookupDate = date;
+        if (['cpi', 'housing', 'construction'].includes(type) && date.length > 7) {
+            lookupDate = date.slice(0, 7);
+        }
+
         const { data, error } = await supabase
             .from('index_data')
             .select('value')
             .eq('index_type', type)
-            .eq('date', date)
+            .eq('date', lookupDate)
             .single();
 
         if (error) {
-            console.error('Error fetching index value:', error);
+            // If full date check fails for currencies, try the month? 
+            // Better to just log and return null for now as currencies should have precise dates.
+            console.error(`Error fetching index value for ${type} at ${lookupDate}:`, error);
             return null;
         }
 

@@ -170,9 +170,13 @@ export function Properties() {
         }
 
         try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
             const { data, error } = await supabase
                 .from('properties')
                 .select('*, contracts(id, base_rent, status, end_date, linkage_type, base_index_date, base_index_value, option_periods)')
+                .eq('user_id', user.id) // STRICTLY enforce ownership
                 .order('created_at', { ascending: false });
 
             if (error) {

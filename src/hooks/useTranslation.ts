@@ -687,6 +687,14 @@ export type TranslationKeys =
     | 'accountSuspendedSuccess'
     | 'errorSuspendingAccount'
     | 'suspendConfirmation'
+    | 'indexWatcherTitle'
+    | 'liveUpdate'
+    | 'currentRent'
+    | 'projectedRent'
+    | 'newIndexPublished'
+    | 'noLinkedContracts'
+    | 'linkageStatus'
+    | 'calculatingProjection'
     | 'backToDashboard'
     ;
 
@@ -782,6 +790,14 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         saveRequired: 'יש לשמור קודם',
         savePropertyToAttachDocs: 'שמור את הנכס כדי לצרף מסמכים',
         knowledgeBaseDesc: 'מאגר ידע חכם לניהול נכסים',
+        indexWatcherTitle: 'מעקב מדדים חי',
+        liveUpdate: 'עדכון חי',
+        currentRent: 'שכירות נוכחית',
+        projectedRent: 'שכירות צפויה',
+        newIndexPublished: 'פורסם מדד חדש!',
+        noLinkedContracts: 'אין חוזים צמודי מדד פעילים',
+        linkageStatus: 'סטטוס הצמדה',
+        calculatingProjection: 'מחשב תחזית...',
 
         analyticsTitle: 'אנליטיקה',
         analyticsSubtitle: 'סקירת ביצועי פורטפוליו',
@@ -1632,6 +1648,14 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         linkageType: 'Linkage Type',
         cpi: 'CPI (Consumer Price Index)',
         housingServices: 'Housing Services',
+        indexWatcherTitle: 'Live Index Watcher',
+        liveUpdate: 'Live Update',
+        currentRent: 'Current Rent',
+        projectedRent: 'Projected Rent',
+        newIndexPublished: 'New Index Published!',
+        noLinkedContracts: 'No active linked contracts',
+        linkageStatus: 'Linkage Status',
+        calculatingProjection: 'Calculating...',
         constructionInputs: 'Construction Inputs',
         usdRate: 'USD Rate',
         eurRate: 'EUR Rate',

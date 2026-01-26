@@ -4,6 +4,7 @@ import { StorageStatsWidget } from './StorageStatsWidget';
 import { KnowledgeBaseWidget } from './KnowledgeBaseWidget';
 import { SmartActionsWidget } from './SmartActionsWidget'; // Assuming this exists based on list_dir
 import { UsageOverviewWidget } from './UsageOverviewWidget'; // Assuming this exists
+import { IndexWatcherWidget } from './IndexWatcherWidget';
 // Importing DashboardHero to usage if needed, or keeping it separate as a "Header"
 
 export type WidgetId =
@@ -11,7 +12,8 @@ export type WidgetId =
     | 'storage_stats'
     | 'knowledge_base'
     | 'smart_actions'
-    | 'usage_overview';
+    | 'usage_overview'
+    | 'index_watcher';
 
 export type WidgetSize = 'small' | 'medium' | 'large';
 
@@ -40,6 +42,7 @@ export const WIDGET_REGISTRY: Record<WidgetId, (data: DashboardData) => ReactNod
         openMaintenance: data.storageCounts.maintenance
     }} />,
     'usage_overview': (data) => <UsageOverviewWidget />,
+    'index_watcher': (data) => <IndexWatcherWidget contracts={data.activeContracts} />,
 };
 
 export const DEFAULT_WIDGET_LAYOUT: WidgetConfig[] = [
@@ -48,4 +51,5 @@ export const DEFAULT_WIDGET_LAYOUT: WidgetConfig[] = [
     { id: '3', widgetId: 'knowledge_base', size: 'medium', visible: true, order: 2 },
     { id: '4', widgetId: 'smart_actions', size: 'small', visible: true, order: 3 },
     { id: '5', widgetId: 'usage_overview', size: 'small', visible: true, order: 4 },
+    { id: '6', widgetId: 'index_watcher', size: 'medium', visible: true, order: 5 },
 ];

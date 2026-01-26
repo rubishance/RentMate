@@ -1,0 +1,436 @@
+﻿node.exe : Initialising 
+login role...
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
+    + CategoryInfo           
+   : NotSpecified: (Initial  
+  ising login role...:Stri   
+ ng) [], RemoteException
+    + FullyQualifiedErrorId  
+   : NativeCommandError
+ 
+Connecting to remote 
+database...
+Skipping migration 
+CONSOLIDATED_PHASE1.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration add_ai_ext
+raction_fields.sql... (file 
+name must match pattern 
+"<timestamp>_name.sql")
+Skipping migration add_contra
+ct_status_trigger.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration add_daily_
+notification_job.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration 
+add_needs_painting.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration add_option
+_periods_to_contracts.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration add_other_
+property_type.sql... (file 
+name must match pattern 
+"<timestamp>_name.sql")
+Skipping migration add_parkin
+g_storage_to_properties.sql..
+. (file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration 
+add_property_type.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration add_rent_p
+rice_to_properties.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration 
+add_stripe_fields.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration 
+add_user_id_to_tables.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration 
+check_sessions.sql... (file 
+name must match pattern 
+"<timestamp>_name.sql")
+Skipping migration cleanup_le
+gacy_columns.sql... (file 
+name must match pattern 
+"<timestamp>_name.sql")
+Skipping migration create_adm
+in_notifications.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration create_con
+tact_messages.sql... (file 
+name must match pattern 
+"<timestamp>_name.sql")
+Skipping migration create_con
+tracts_bucket.sql... (file 
+name must match pattern 
+"<timestamp>_name.sql")
+Skipping migration create_ind
+ex_bases_table.sql... (file 
+name must match pattern 
+"<timestamp>_name.sql")
+Skipping migration create_ind
+ex_data_table.sql... (file 
+name must match pattern 
+"<timestamp>_name.sql")
+Skipping migration create_not
+ifications_system.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration create_pro
+perty_images_bucket.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration 
+create_rate_limits.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration 
+create_rules_manager.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration create_use
+r_management_system.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration create_use
+r_preferences_table.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration deduplicat
+e_properties.sql... (file 
+name must match pattern 
+"<timestamp>_name.sql")
+Skipping migration emergency_
+fix_rls_security.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration emergency_
+fix_rls_security_v2.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration emergency_
+reset_signup.sql... (file 
+name must match pattern 
+"<timestamp>_name.sql")
+Skipping migration 
+enable_admin_updates.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration enforce_ac
+tive_contract_logic.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration enhance_no
+tifications_schema.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration 
+final_system_fix.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration fix_contra
+cts_missing_columns.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration fix_infini
+te_recursion.sql... (file 
+name must match pattern 
+"<timestamp>_name.sql")
+Skipping migration fix_missin
+g_contract_file_url.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration 
+fix_missing_profile.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration 
+fix_orphaned_users.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration 
+fix_permissions_final.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration fix_profil
+e_save_error.sql... (file 
+name must match pattern 
+"<timestamp>_name.sql")
+Skipping migration fix_proper
+ties_schema_missing_columns.s
+ql... (file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration fix_schema
+_comprehensive.sql... (file 
+name must match pattern 
+"<timestamp>_name.sql")
+Skipping migration 
+fix_signup_trigger.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration 
+fix_signup_trigger_v2.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration fix_tenant
+s_and_contracts_schema.sql...
+ (file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration force_acti
+vate_account.sql... (file 
+name must match pattern 
+"<timestamp>_name.sql")
+Skipping migration 
+link_past_invoices.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration 
+protect_invoices.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration 
+relax_session_limits.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration relax_tena
+nt_constraints.sql... (file 
+name must match pattern 
+"<timestamp>_name.sql")
+Skipping migration repair_sch
+ema_and_rescue.sql... (file 
+name must match pattern 
+"<timestamp>_name.sql")
+Skipping migration 
+reset_auth_policies.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration safe_set_n
+ull_on_delete.sql... (file 
+name must match pattern 
+"<timestamp>_name.sql")
+Skipping migration 
+safe_signup_debug.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration 
+secure_tables_rls.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration 
+seed_index_bases.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration 
+session_limits.sql... (file 
+name must match pattern 
+"<timestamp>_name.sql")
+Skipping migration setup_noti
+fications_complete.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration simplify_c
+ontract_statuses.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration 
+split_names.sql... (file 
+name must match pattern 
+"<timestamp>_name.sql")
+Skipping migration 
+storage_policies.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration 
+track_deleted_users.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration trigger_si
+gnup_notification.sql... 
+(file name must match 
+pattern 
+"<timestamp>_name.sql")
+Skipping migration 
+verify_rls.sql... (file name 
+must match pattern 
+"<timestamp>_name.sql")
+Found local migration files 
+to be inserted before the 
+last migration on remote 
+database.
+
+Rerun the command with 
+--include-all flag to apply 
+these migrations:
+supabase\migrations\20260110_
+seed_index_data.sql          
+        
+supabase\migrations\20260113_
+allow_public_index_read.sql  
+        
+supabase\migrations\20260113_
+configure_index_update_cron.s
+ql      
+supabase\migrations\20260113_
+drop_saved_calculations.sql  
+        
+supabase\migrations\20260116_
+add_account_deletion_tracking
+.sql    
+supabase\migrations\20260118_
+audit_log_triggers.sql       
+        
+supabase\migrations\20260118_
+create_feedback_system.sql   
+        
+supabase\migrations\20260119_
+add_granular_storage_quotas.s
+ql      
+supabase\migrations\20260119_
+add_storage_quotas.sql       
+        
+supabase\migrations\20260119_
+create_calculation_shares.sql
+        
+supabase\migrations\20260119_
+create_document_folders.sql  
+        
+supabase\migrations\20260119_
+create_property_documents.sql
+        
+supabase\migrations\20260119_
+create_property_media.sql    
+        
+supabase\migrations\20260119_
+create_short_links.sql       
+        
+supabase\migrations\20260119_
+create_user_storage_usage.sql
+        
+supabase\migrations\20260119_
+fix_rls_policies.sql         
+        
+supabase\migrations\20260119_
+fix_trigger_security.sql     
+        
+supabase\migrations\20260119_
+update_storage_trigger.sql   
+        
+supabase\migrations\20260120_
+add_extension_option_column.s
+ql      
+supabase\migrations\20260120_
+ai_usage_tracking.sql        
+        
+supabase\migrations\20260120_
+configurable_notifications.sq
+l       
+supabase\migrations\20260120_
+database_performance_refactor
+.sql    
+supabase\migrations\20260120_
+enhanced_notifications.sql   
+        
+supabase\migrations\20260120_
+extension_deadline_notificati
+ons.sql 
+supabase\migrations\20260120_
+extension_notifications.sql  
+        
+supabase\migrations\20260120_
+harden_security_definer_funct
+ions.sql
+supabase\migrations\20260120_
+notification_opt_out.sql     
+        
+supabase\migrations\20260120_
+notification_triggers.sql    
+        
+supabase\migrations\20260121_
+add_super_admin.sql          
+        
+supabase\migrations\20260121_
+admin_stats_function.sql     
+        
+supabase\migrations\20260121_
+fix_admin_permissions.sql    
+        
+supabase\migrations\20260121_
+fix_email_systems.sql        
+        
+supabase\migrations\20260121_
+improved_signup_trigger.sql  
+        
+supabase\migrations\20260121_
+infra_god_mode.sql           
+        
+supabase\migrations\20260121_
+system_broadcasts.sql        
+        
+supabase\migrations\202601230
+00001_ensure_rubi_super_admin
+.sql    
+

@@ -49,6 +49,7 @@ export function Payments() {
                         tenants (id, name)
                     )
                 `)
+                .eq('user_id', (await supabase.auth.getUser()).data.user?.id) // STRICTLY enforce ownership
                 .order('due_date', { ascending: true });
 
             if (error) {
@@ -65,6 +66,7 @@ export function Payments() {
                 const { data: bills } = await supabase
                     .from('property_documents')
                     .select('*, properties(id, title, address, city)')
+                    .eq('user_id', (await supabase.auth.getUser()).data.user?.id) // STRICTLY enforce ownership
                     .eq('paid', true)
                     .not('amount', 'is', null)
                     .ilike('category', 'utility_%');

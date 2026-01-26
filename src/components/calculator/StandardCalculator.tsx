@@ -44,6 +44,11 @@ export function StandardCalculator({ initialValues, shouldAutoCalculate }: Stand
     }, [shouldAutoCalculate]);
 
     const handleCalculate = async () => {
+        if (!baseRent || !baseDate || !targetDate) {
+            alert(t('fillAllFields')); // Ensure usage of translation key
+            return;
+        }
+
         setLoading(true);
         try {
             let processedBaseDate = baseDate.slice(0, 7);
@@ -253,7 +258,7 @@ export function StandardCalculator({ initialValues, shouldAutoCalculate }: Stand
 
                 <button
                     onClick={handleCalculate}
-                    disabled={loading || !baseRent || !baseDate || !targetDate}
+                    disabled={loading}
                     className="w-full h-24 bg-foreground text-background rounded-[2rem] font-black text-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-premium-dark disabled:opacity-20 flex items-center justify-center gap-4 group"
                 >
                     {loading ? t('calculating') : t('calculate')}

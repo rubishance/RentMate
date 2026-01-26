@@ -76,6 +76,9 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
 
     const fetchContracts = async () => {
         try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
             const { data, error } = await supabase
                 .from('contracts')
                 .select(`
@@ -87,7 +90,8 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                     base_index_date, 
                     properties (address), 
                     tenants (name)
-                `);
+                `)
+                .eq('user_id', user.id); // Enforce ownership
 
             if (error) throw error;
             if (data) setContracts(data);
@@ -118,7 +122,10 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
     };
 
     const handleAddPayment = () => {
-        if (!draftPayment.due_date || !draftPayment.amount) return;
+        if (!draftPayment.due_date || !draftPayment.amount) {
+            alert(t('fillAllFields')); // "Please fill all fields"
+            return;
+        }
 
         const newPayment = {
             id: `manual-${Date.now()}`,
@@ -129,7 +136,16 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
         const updated = [...paymentHistory, newPayment];
         setPaymentHistory(updated);
         updateMonthlyActuals(updated);
-        setDraftPayment({ due_date: '', amount: '' });
+
+        // Auto-fill next month
+        try {
+            const currentDate = new Date(draftPayment.due_date);
+            const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, currentDate.getDate());
+            const nextDateStr = format(nextMonth, 'yyyy-MM-dd');
+            setDraftPayment({ due_date: nextDateStr, amount: draftPayment.amount });
+        } catch (e) {
+            setDraftPayment({ due_date: '', amount: '' });
+        }
     };
 
     const handleRemovePayment = (id: string) => {
@@ -150,14 +166,27 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
     };
 
     const handleAddExpected = () => {
-        if (!draftExpected.due_date || !draftExpected.amount) return;
+        if (!draftExpected.due_date || !draftExpected.amount) {
+            alert(t('fillAllFields'));
+            return;
+        }
+
         const newPayment = {
             id: `manual-exp-${Date.now()}`,
             due_date: draftExpected.due_date,
             amount: parseFloat(draftExpected.amount) || 0
         };
         setExpectedHistory(prev => [...prev, newPayment]);
-        setDraftExpected({ due_date: '', amount: '' });
+
+        // Auto-fill next month
+        try {
+            const currentDate = new Date(draftExpected.due_date);
+            const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, currentDate.getDate());
+            const nextDateStr = format(nextMonth, 'yyyy-MM-dd');
+            setDraftExpected({ due_date: nextDateStr, amount: draftExpected.amount });
+        } catch (e) {
+            setDraftExpected({ due_date: '', amount: '' });
+        }
     };
 
     const handleRemoveExpected = (id: string) => {
@@ -169,10 +198,14 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
         if (!contractId) return;
         setLoading(true);
         try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
             const { data: contract } = await supabase
                 .from('contracts')
                 .select('*, properties(address), tenants(name)')
                 .eq('id', contractId)
+                .eq('user_id', user.id) // Enforce ownership
                 .single();
 
             if (contract) {
@@ -209,6 +242,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                     .from('payments')
                     .select('id, amount, due_date, status')
                     .eq('contract_id', contract.id)
+                    .eq('user_id', user.id) // Enforce ownership
                     .eq('status', 'paid')
                     .order('due_date', { ascending: true });
 

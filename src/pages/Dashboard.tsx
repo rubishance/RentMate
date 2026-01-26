@@ -102,6 +102,7 @@ export function Dashboard() {
             const { data: contracts } = await supabase
                 .from('contracts')
                 .select('*, properties(city, address)')
+                .eq('user_id', user.id) // STRICTLY enforce ownership
                 .eq('status', 'active')
                 .order('end_date', { ascending: true })
                 .limit(5);
@@ -143,6 +144,7 @@ export function Dashboard() {
             const { data: expired } = await supabase
                 .from('contracts')
                 .select('*, properties(city, address)')
+                .eq('user_id', userId) // STRICTLY enforce ownership
                 .eq('status', 'active')
                 .lt('end_date', today);
 
