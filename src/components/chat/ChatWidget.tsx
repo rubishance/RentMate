@@ -292,10 +292,10 @@ export function ChatWidget() {
                         initial={{ opacity: 0, y: 20, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                        className="w-[350px] h-[540px] bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+                        className="w-[350px] h-[540px] bg-white/90 dark:bg-black/80 backdrop-blur-xl border border-gray-200 dark:border-white/20 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
                     >
                         {/* Header */}
-                        <div className={`p-4 border-b border-white/10 flex justify-between items-center text-white cursor-move transition-colors ${mode === 'human' ? 'bg-brand-900/90' : 'bg-black'
+                        <div className={`p-4 border-b border-gray-200 dark:border-white/10 flex justify-between items-center cursor-move transition-colors ${mode === 'human' ? 'bg-brand-900/90 text-white' : 'bg-white dark:bg-black text-gray-900 dark:text-white'
                             }`}>
                             <div className="flex items-center space-x-3 rtl:space-x-reverse">
                                 <div className="p-1.5 bg-white dark:bg-neutral-800 rounded-lg flex items-center justify-center overflow-hidden w-9 h-9 border border-white/20">
@@ -354,14 +354,15 @@ export function ChatWidget() {
                         </div>
 
                         {/* CONTENT AREA: Menu OR Messages */}
+                        {/* CONTENT AREA: Menu OR Messages */}
                         {!isAiMode && mode === 'ai' ? (
                             // --- MAIN MENU ---
-                            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-white/5">
+                            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50 dark:bg-white/5">
                                 <div className="text-center mb-6 mt-4">
-                                    <p className="text-white text-lg font-bold">
+                                    <p className="text-gray-900 dark:text-white text-lg font-bold">
                                         {isRtl ? 'שלום! איך אני יכול לעזור?' : 'Hello! How can I help?'}
                                     </p>
-                                    <p className="text-gray-400 text-xs mt-1">
+                                    <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">
                                         {isRtl ? 'בחר אפשרות מהתפריט:' : 'Choose an option:'}
                                     </p>
                                 </div>
@@ -369,33 +370,33 @@ export function ChatWidget() {
                                 <div className="grid grid-cols-1 gap-3">
                                     <button
                                         onClick={() => navigate('/add-property')}
-                                        className="bg-white/10 hover:bg-white/20 p-4 rounded-xl text-right flex items-center justify-between group transition-all border border-white/5 hover:border-white/20"
+                                        className="bg-white dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 p-4 rounded-xl text-right flex items-center justify-between group transition-all border border-gray-200 dark:border-white/5 hover:border-brand-200 dark:hover:border-white/20 shadow-sm"
                                     >
-                                        <span className="text-white font-medium text-sm">📝 {isRtl ? 'הוספת נכס חדש' : 'Add Property'}</span>
+                                        <span className="text-gray-900 dark:text-white font-medium text-sm">📝 {isRtl ? 'הוספת נכס חדש' : 'Add Property'}</span>
                                     </button>
 
                                     <button
                                         onClick={() => navigate('/calculator')}
-                                        className="bg-white/10 hover:bg-white/20 p-4 rounded-xl text-right flex items-center justify-between group transition-all border border-white/5 hover:border-white/20"
+                                        className="bg-white dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 p-4 rounded-xl text-right flex items-center justify-between group transition-all border border-gray-200 dark:border-white/5 hover:border-brand-200 dark:hover:border-white/20 shadow-sm"
                                     >
-                                        <span className="text-white font-medium text-sm">🧮 {isRtl ? 'מחשבון שכר דירה' : 'Rent Calculator'}</span>
+                                        <span className="text-gray-900 dark:text-white font-medium text-sm">🧮 {isRtl ? 'מחשבון שכר דירה' : 'Rent Calculator'}</span>
                                     </button>
 
                                     <button
                                         onClick={() => navigate('/contracts')}
-                                        className="bg-white/10 hover:bg-white/20 p-4 rounded-xl text-right flex items-center justify-between group transition-all border border-white/5 hover:border-white/20"
+                                        className="bg-white dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 p-4 rounded-xl text-right flex items-center justify-between group transition-all border border-gray-200 dark:border-white/5 hover:border-brand-200 dark:hover:border-white/20 shadow-sm"
                                     >
-                                        <span className="text-white font-medium text-sm">📂 {isRtl ? 'החוזים שלי' : 'My Contracts'}</span>
+                                        <span className="text-gray-900 dark:text-white font-medium text-sm">📂 {isRtl ? 'החוזים שלי' : 'My Contracts'}</span>
                                     </button>
 
                                     <button
                                         onClick={() => window.open('https://wa.me/972501234567', '_blank')}
-                                        className="bg-white/10 hover:bg-white/20 p-4 rounded-xl text-right flex items-center justify-between group transition-all border border-white/5 hover:border-white/20"
+                                        className="bg-white dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 p-4 rounded-xl text-right flex items-center justify-between group transition-all border border-gray-200 dark:border-white/5 hover:border-brand-200 dark:hover:border-white/20 shadow-sm"
                                     >
-                                        <span className="text-white font-medium text-sm">💬 {isRtl ? 'תמיכה בווצאפ' : 'WhatsApp Support'}</span>
+                                        <span className="text-gray-900 dark:text-white font-medium text-sm">💬 {isRtl ? 'תמיכה בווצאפ' : 'WhatsApp Support'}</span>
                                     </button>
 
-                                    <div className="my-2 border-t border-white/10"></div>
+                                    <div className="my-2 border-t border-gray-200 dark:border-white/10"></div>
 
                                     <button
                                         onClick={activateAiMode}
@@ -408,7 +409,7 @@ export function ChatWidget() {
                             </div>
                         ) : (
                             // --- MESSAGES ---
-                            <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent bg-white/5">
+                            <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-white/10 scrollbar-track-transparent bg-gray-50 dark:bg-white/5">
                                 {activeMessages.map((msg, idx) => {
                                     const isUser = msg.role === 'user';
                                     const isAdmin = mode === 'human' && msg.role === 'admin';
@@ -420,10 +421,10 @@ export function ChatWidget() {
                                         >
                                             <div
                                                 className={`max-w-[80%] p-3 rounded-2xl text-sm shadow-sm ${isUser
-                                                    ? "bg-black dark:bg-white text-white dark:text-black rounded-br-none border border-white/10"
+                                                    ? "bg-black dark:bg-white text-white dark:text-black rounded-br-none border border-gray-700 dark:border-white/10"
                                                     : isAdmin
                                                         ? "bg-brand-600 text-white rounded-bl-none"
-                                                        : "bg-white/90 dark:bg-neutral-800 text-black dark:text-white rounded-bl-none border border-white/20"
+                                                        : "bg-white dark:bg-neutral-800 text-black dark:text-white rounded-bl-none border border-gray-200 dark:border-white/20"
                                                     }`}
                                                 dir="auto"
                                             >
@@ -434,9 +435,9 @@ export function ChatWidget() {
                                 })}
                                 {isListening && (
                                     <div className="flex justify-start">
-                                        <div className="bg-white/10 border border-white/5 p-3 rounded-2xl rounded-bl-none">
-                                            <div className="flex items-center space-x-2 text-white">
-                                                <Mic className="w-4 h-4 animate-pulse" />
+                                        <div className="bg-white dark:bg-white/10 border border-gray-200 dark:border-white/5 p-3 rounded-2xl rounded-bl-none">
+                                            <div className="flex items-center space-x-2 text-gray-900 dark:text-white">
+                                                <Mic className="w-4 h-4 animate-pulse text-brand-500" />
                                                 <span className="text-sm">מקשיב...</span>
                                             </div>
                                         </div>
@@ -444,11 +445,11 @@ export function ChatWidget() {
                                 )}
                                 {isLoading && mode === 'ai' && (
                                     <div className="flex justify-start">
-                                        <div className="bg-white/10 border border-white/5 p-3 rounded-2xl rounded-bl-none">
+                                        <div className="bg-white dark:bg-white/10 border border-gray-200 dark:border-white/5 p-3 rounded-2xl rounded-bl-none">
                                             <div className="flex space-x-2">
-                                                <div className="w-2 h-2 bg-white rounded-full animate-bounce" />
-                                                <div className="w-2 h-2 bg-white rounded-full animate-bounce delay-100" />
-                                                <div className="w-2 h-2 bg-white rounded-full animate-bounce delay-200" />
+                                                <div className="w-2 h-2 bg-gray-400 dark:bg-white rounded-full animate-bounce" />
+                                                <div className="w-2 h-2 bg-gray-400 dark:bg-white rounded-full animate-bounce delay-100" />
+                                                <div className="w-2 h-2 bg-gray-400 dark:bg-white rounded-full animate-bounce delay-200" />
                                             </div>
                                         </div>
                                     </div>
@@ -459,42 +460,42 @@ export function ChatWidget() {
 
                         {/* Input - Only show in AI Mode or Human Mode */}
                         {(isAiMode || mode === 'human') && (
-                            <form onSubmit={handleSubmit} className="px-5 py-4 bg-black border-t border-white/10">
+                            <form onSubmit={handleSubmit} className="px-5 py-4 bg-gray-50 dark:bg-black border-t border-gray-200 dark:border-white/10">
                                 <div className="flex items-center gap-3">
                                     <button
                                         type="submit"
                                         disabled={isLoading}
-                                        className="p-2 bg-white hover:bg-gray-200 rounded-xl transition-colors disabled:opacity-50 shrink-0"
+                                        className="p-2 bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-200 rounded-xl transition-colors disabled:opacity-50 shrink-0"
                                         aria-label="שלח הודעה"
                                     >
-                                        <Send className="w-5 h-5 text-black" />
+                                        <Send className="w-5 h-5 text-white dark:text-black" />
                                     </button>
                                     <button
                                         type="button"
                                         onClick={toggleVoiceInput}
                                         className={`p-2 rounded-xl transition-colors shrink-0 ${isListening
                                             ? 'bg-red-600 hover:bg-red-500'
-                                            : 'bg-white/10 hover:bg-white/20'
+                                            : 'bg-white dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 border border-gray-200 dark:border-transparent'
                                             } `}
                                         aria-label={isListening ? 'עצור הקלטה' : 'התחל הקלטה'}
                                     >
                                         {isListening ? (
                                             <MicOff className="w-5 h-5 text-white" />
                                         ) : (
-                                            <Mic className="w-5 h-5 text-white" />
+                                            <Mic className="w-5 h-5 text-gray-700 dark:text-white" />
                                         )}
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => fileInputRef.current?.click()}
                                         disabled={isUploading || isLoading || !user}
-                                        className="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors shrink-0 disabled:opacity-20"
+                                        className="p-2 bg-white dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 border border-gray-200 dark:border-transparent rounded-xl transition-colors shrink-0 disabled:opacity-20"
                                         aria-label="צרף קובץ"
                                     >
                                         {isUploading ? (
-                                            <Loader2 className="w-5 h-5 text-white animate-spin" />
+                                            <Loader2 className="w-5 h-5 text-brand-600 dark:text-white animate-spin" />
                                         ) : (
-                                            <Paperclip className="w-5 h-5 text-white" />
+                                            <Paperclip className="w-5 h-5 text-gray-700 dark:text-white" />
                                         )}
                                     </button>
                                     <input
@@ -519,7 +520,7 @@ export function ChatWidget() {
                                                     )
                                             }
                                             dir="auto"
-                                            className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-white/30 text-sm"
+                                            className="w-full bg-white dark:bg-white/10 border border-gray-200 dark:border-white/20 rounded-xl px-3 py-2 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:focus:ring-white/30 text-sm"
                                         />
                                     </div>
                                 </div>

@@ -12,7 +12,8 @@ import {
     Search,
     Send,
     Loader2,
-    XCircle
+    XCircle,
+    Activity
 } from 'lucide-react';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { cn } from '../../lib/utils';
@@ -26,6 +27,7 @@ interface SupportTicket {
     priority: 'low' | 'medium' | 'high' | 'urgent';
     status: 'open' | 'in_progress' | 'waiting_user' | 'resolved' | 'closed';
     assigned_to: string | null;
+    auto_reply_draft: string | null;
     chat_context: any;
     resolution_notes: string | null;
     created_at: string;
@@ -33,6 +35,12 @@ interface SupportTicket {
     resolved_at: string | null;
     user?: { email: string; full_name: string };
     assigned_admin?: { email: string; full_name: string };
+    ticket_analysis?: {
+        sentiment_score: number;
+        urgency_level: 'low' | 'medium' | 'high' | 'critical';
+        ai_summary: string;
+        category: string;
+    }[];
 }
 
 interface TicketComment {
@@ -45,6 +53,9 @@ interface TicketComment {
     user?: { email: string; full_name: string };
 }
 
+import { Sparkles } from 'lucide-react';
+import { SparklesIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+
 export default function SupportTickets() {
     const [tickets, setTickets] = useState<SupportTicket[]>([]);
     const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
@@ -54,6 +65,7 @@ export default function SupportTickets() {
     const [submitting, setSubmitting] = useState(false);
     const [filterStatus, setFilterStatus] = useState<string>('all');
     const [searchQuery, setSearchQuery] = useState('');
+    const [editedDraft, setEditedDraft] = useState<string>('');
 
     useEffect(() => {
         fetchTickets();
@@ -62,6 +74,7 @@ export default function SupportTickets() {
     useEffect(() => {
         if (selectedTicket) {
             fetchComments(selectedTicket.id);
+            setEditedDraft(selectedTicket.auto_reply_draft || '');
         }
     }, [selectedTicket]);
 
@@ -73,7 +86,8 @@ export default function SupportTickets() {
                 .select(`
                     *,
                     user:user_profiles!user_id(email, full_name),
-                    assigned_admin:user_profiles!assigned_to(email, full_name)
+                    assigned_admin:user_profiles!assigned_to(email, full_name),
+                    ticket_analysis(*)
                 `)
                 .order('created_at', { ascending: false });
 
@@ -154,6 +168,51 @@ export default function SupportTickets() {
         } catch (err: any) {
             console.error('Error updating status:', err);
             alert('Failed to update status: ' + err.message);
+        }
+    };
+
+    const handleApproveDraft = async () => {
+        if (!selectedTicket || !editedDraft) return;
+        setSubmitting(true);
+        try {
+            // 1. Resolve ticket
+            await supabase
+                .from('support_tickets')
+                .update({
+                    status: 'resolved',
+                    auto_reply_draft: editedDraft,
+                    resolved_at: new Date().toISOString()
+                })
+                .eq('id', selectedTicket.id);
+
+            // 2. Log interaction
+            await supabase.from('crm_interactions').insert({
+                user_id: selectedTicket.user_id,
+                type: 'email',
+                title: `RE: ${selectedTicket.title}`,
+                content: editedDraft,
+                status: 'closed',
+                metadata: { direction: 'outbound', automated: true }
+            });
+
+            // 3. Send email via notification link (logic is actually in handle-inbound-email for auto responses, 
+            // but for manual approve we trigger the notification helper)
+            await supabase.functions.invoke('send-notification-email', {
+                body: {
+                    email: selectedTicket.user?.email,
+                    notification: {
+                        title: `Update on your ticket: ${selectedTicket.title}`,
+                        message: editedDraft
+                    }
+                }
+            });
+
+            await fetchTickets();
+            setSelectedTicket(null);
+        } catch (err) {
+            console.error('Failed to approve draft:', err);
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -261,13 +320,13 @@ export default function SupportTickets() {
                         className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500/20 outline-none"
                     />
                 </div>
-                <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
+                <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-x-auto no-scrollbar">
                     {['all', 'open', 'in_progress', 'waiting_user', 'resolved', 'closed'].map((status) => (
                         <button
                             key={status}
                             onClick={() => setFilterStatus(status)}
                             className={cn(
-                                "px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
+                                "px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
                                 filterStatus === status
                                     ? 'bg-white dark:bg-gray-800 text-brand-600 shadow-sm'
                                     : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
@@ -282,131 +341,256 @@ export default function SupportTickets() {
             {/* Tickets Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Tickets List */}
-                <div className="lg:col-span-1 space-y-4 max-h-[800px] overflow-y-auto">
+                <div className="lg:col-span-1 space-y-4 max-h-[800px] overflow-y-auto pr-2 no-scrollbar">
                     {filteredTickets.length === 0 ? (
                         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-20 text-center">
                             <CheckCircle2 className="w-16 h-16 mx-auto mb-4 text-gray-200 dark:text-gray-700" />
                             <p className="font-black text-gray-400 uppercase tracking-widest">No tickets found</p>
                         </div>
                     ) : (
-                        filteredTickets.map((ticket) => (
-                            <div
-                                key={ticket.id}
-                                onClick={() => setSelectedTicket(ticket)}
-                                className={cn(
-                                    "bg-white dark:bg-gray-800 p-4 rounded-2xl border cursor-pointer transition-all hover:shadow-md",
-                                    selectedTicket?.id === ticket.id
-                                        ? 'border-brand-600 shadow-md'
-                                        : 'border-gray-200 dark:border-gray-700'
-                                )}
-                            >
-                                <div className="flex items-start justify-between gap-2 mb-2">
-                                    <h3 className="font-bold text-sm text-gray-900 dark:text-white line-clamp-2">{ticket.title}</h3>
-                                    <span className={cn("px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest border shrink-0", getPriorityColor(ticket.priority))}>
-                                        {ticket.priority}
-                                    </span>
+                        filteredTickets.map((ticket) => {
+                            const analysis = ticket.ticket_analysis?.[0];
+                            const sentimentEmoji = (analysis?.sentiment_score ?? 0) > 0.3 ? '😊' : (analysis?.sentiment_score ?? 0) < -0.3 ? '😡' : '😐';
+
+                            return (
+                                <div
+                                    key={ticket.id}
+                                    onClick={() => setSelectedTicket(ticket)}
+                                    className={cn(
+                                        "bg-white dark:bg-gray-800 p-5 rounded-3xl border cursor-pointer transition-all hover:shadow-xl group relative overflow-hidden",
+                                        selectedTicket?.id === ticket.id
+                                            ? 'border-brand-600 shadow-xl ring-1 ring-brand-600/20'
+                                            : 'border-slate-100 dark:border-neutral-800 shadow-minimal'
+                                    )}
+                                >
+                                    {analysis && (
+                                        <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-brand-500 to-purple-500 opacity-60" />
+                                    )}
+
+                                    <div className="flex items-start justify-between gap-2 mb-3">
+                                        <div className="flex gap-2 items-start">
+                                            <span className="text-lg">{sentimentEmoji}</span>
+                                            <h3 className="font-bold text-sm text-gray-900 dark:text-white line-clamp-2 leading-tight group-hover:text-brand-600 transition-colors">{ticket.title}</h3>
+                                        </div>
+                                        <span className={cn("px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-[0.2em] border shrink-0", getPriorityColor(ticket.priority))}>
+                                            {ticket.priority}
+                                        </span>
+                                    </div>
+
+                                    {analysis?.ai_summary && (
+                                        <p className="text-[10px] font-black uppercase text-brand-600 tracking-widest mb-2 flex items-center gap-1">
+                                            <Sparkles className="w-3 h-3" />
+                                            AI: {analysis.ai_summary}
+                                        </p>
+                                    )}
+
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-4 leading-relaxed">{ticket.description}</p>
+                                    <div className="flex items-center justify-between gap-2 mt-auto pt-2 border-t border-slate-50 dark:border-neutral-800">
+                                        <span className={cn("px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest border", getStatusColor(ticket.status))}>
+                                            {ticket.status.replace('_', ' ')}
+                                        </span>
+                                        <span className="text-[9px] font-black text-gray-400 tracking-widest uppercase">{new Date(ticket.created_at).toLocaleDateString()}</span>
+                                    </div>
                                 </div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-3">{ticket.description}</p>
-                                <div className="flex items-center justify-between gap-2">
-                                    <span className={cn("px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest border", getStatusColor(ticket.status))}>
-                                        {ticket.status.replace('_', ' ')}
-                                    </span>
-                                    <span className="text-[10px] text-gray-400">{new Date(ticket.created_at).toLocaleDateString()}</span>
-                                </div>
-                            </div>
-                        ))
+                            );
+                        })
                     )}
                 </div>
 
                 {/* Ticket Detail */}
                 <div className="lg:col-span-2">
                     {!selectedTicket ? (
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-20 text-center h-full flex items-center justify-center">
-                            <div>
-                                <MessageSquare className="w-16 h-16 mx-auto mb-4 text-gray-200 dark:text-gray-700" />
-                                <p className="font-black text-gray-400 uppercase tracking-widest">Select a ticket to view details</p>
+                        <div className="bg-white dark:bg-gray-800 rounded-3xl border border-slate-100 dark:border-neutral-800 p-20 text-center h-[800px] flex items-center justify-center shadow-minimal">
+                            <div className="space-y-4">
+                                <div className="w-24 h-24 bg-slate-50 dark:bg-neutral-900 rounded-[2.5rem] flex items-center justify-center mx-auto shadow-minimal border border-slate-100 dark:border-neutral-800">
+                                    <MessageSquare className="w-10 h-10 text-slate-200" />
+                                </div>
+                                <p className="font-black text-gray-400 uppercase tracking-[0.3em] text-xs">Select a ticket to reveal intelligence</p>
                             </div>
                         </div>
                     ) : (
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-[800px]">
+                        <div className="bg-white dark:bg-gray-800 rounded-3xl border border-slate-100 dark:border-neutral-800 overflow-hidden flex flex-col h-[800px] shadow-premium relative">
+                            {/* AI Background Accent */}
+                            {selectedTicket.ticket_analysis?.[0] && (
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500/5 blur-[120px] rounded-full -mr-32 -mt-32 pointer-events-none" />
+                            )}
+
                             {/* Ticket Header */}
-                            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                                <div className="flex items-start justify-between gap-4 mb-4">
-                                    <div className="flex-1">
-                                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{selectedTicket.title}</h2>
-                                        <div className="flex flex-wrap items-center gap-2">
-                                            <span className={cn("px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest border", getPriorityColor(selectedTicket.priority))}>
+                            <div className="p-8 border-b border-slate-100 dark:border-neutral-800 bg-white/50 dark:bg-neutral-900/50 backdrop-blur-3xl relative z-10">
+                                <div className="flex items-start justify-between gap-6 mb-6">
+                                    <div className="flex-1 space-y-3">
+                                        <div className="flex items-center gap-3">
+                                            <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tighter leading-none">{selectedTicket.title}</h2>
+                                            {selectedTicket.ticket_analysis?.[0] && (
+                                                <div className="flex items-center gap-1.5 px-3 py-1 bg-brand-50 text-brand-600 rounded-full border border-brand-100 text-[9px] font-black uppercase tracking-widest">
+                                                    <Sparkles className="w-3 h-3" />
+                                                    AI Analyzed
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex flex-wrap items-center gap-3">
+                                            <span className={cn("px-3 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest border", getPriorityColor(selectedTicket.priority))}>
                                                 {selectedTicket.priority}
                                             </span>
-                                            <span className={cn("px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest border", getStatusColor(selectedTicket.status))}>
+                                            <span className={cn("px-3 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest border", getStatusColor(selectedTicket.status))}>
                                                 {selectedTicket.status.replace('_', ' ')}
-                                            </span>
-                                            <span className="px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest border bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-900/20 dark:border-gray-700 dark:text-gray-400">
-                                                {selectedTicket.category}
                                             </span>
                                         </div>
                                     </div>
-                                    <select
-                                        value={selectedTicket.status}
-                                        onChange={(e) => handleUpdateStatus(selectedTicket.id, e.target.value)}
-                                        className="px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold"
-                                    >
-                                        <option value="open">Open</option>
-                                        <option value="in_progress">In Progress</option>
-                                        <option value="waiting_user">Waiting User</option>
-                                        <option value="resolved">Resolved</option>
-                                        <option value="closed">Closed</option>
-                                    </select>
+                                    <div className="flex flex-col items-end gap-2">
+                                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Management</p>
+                                        <select
+                                            value={selectedTicket.status}
+                                            onChange={(e) => handleUpdateStatus(selectedTicket.id, e.target.value)}
+                                            className="px-4 py-2 bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[1.2rem] text-[10px] font-black uppercase tracking-widest focus:ring-2 focus:ring-brand-500/20 outline-none cursor-pointer"
+                                        >
+                                            <option value="open">Open</option>
+                                            <option value="in_progress">In Progress</option>
+                                            <option value="waiting_user">Waiting User</option>
+                                            <option value="resolved">Resolved</option>
+                                            <option value="closed">Closed</option>
+                                        </select>
+                                    </div>
                                 </div>
-                                <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">{selectedTicket.description}</p>
-                                <div className="flex items-center gap-4 text-xs text-gray-500">
-                                    <div className="flex items-center gap-1">
-                                        <User className="w-4 h-4" />
+
+                                <blockquote className="p-5 bg-slate-50 dark:bg-neutral-900/50 rounded-2xl border border-slate-100 dark:border-neutral-800 text-sm font-medium text-gray-600 dark:text-gray-400 italic mb-6 leading-relaxed">
+                                    "{selectedTicket.description}"
+                                </blockquote>
+
+                                <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-neutral-800 flex items-center justify-center">
+                                            <User className="w-3 h-3" />
+                                        </div>
                                         {selectedTicket.user?.email || 'Unknown'}
                                     </div>
-                                    <div className="flex items-center gap-1">
-                                        <Calendar className="w-4 h-4" />
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-neutral-800 flex items-center justify-center">
+                                            <Calendar className="w-3 h-3" />
+                                        </div>
                                         {new Date(selectedTicket.created_at).toLocaleString()}
                                     </div>
                                 </div>
-                                {!selectedTicket.assigned_to && (
-                                    <button
-                                        onClick={() => handleAssignToMe(selectedTicket.id)}
-                                        className="mt-4 px-4 py-2 bg-brand-600 text-white text-xs font-bold rounded-xl hover:bg-brand-700 transition-all"
-                                    >
-                                        Assign to Me
-                                    </button>
-                                )}
                             </div>
 
-                            {/* Comments */}
-                            <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                                {comments.map((comment) => (
-                                    <div key={comment.id} className={cn("p-4 rounded-xl", comment.is_admin ? 'bg-brand-50 dark:bg-brand-900/20 ml-8' : 'bg-gray-50 dark:bg-gray-900 mr-8')}>
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="text-xs font-bold text-gray-900 dark:text-white">{comment.user?.email || 'Unknown'}</span>
-                                            <span className="text-[10px] text-gray-400">{new Date(comment.created_at).toLocaleString()}</span>
+                            {/* Comments & AI Intelligence View */}
+                            <div className="flex-1 overflow-y-auto p-8 space-y-8 bg-slate-50/30 dark:bg-black/20 no-scrollbar">
+                                {/* AI Intelligence Panel */}
+                                {selectedTicket.ticket_analysis?.[0] && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="p-6 bg-white dark:bg-neutral-900 rounded-[2rem] border border-slate-100 dark:border-neutral-800 shadow-minimal space-y-3">
+                                            <h4 className="text-[10px] font-black uppercase tracking-[0.25em] text-brand-600 flex items-center gap-2">
+                                                <Sparkles className="w-3.5 h-3.5" />
+                                                Insight Details
+                                            </h4>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-1">
+                                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Sentiment</p>
+                                                    <p className="text-xl font-black">{selectedTicket.ticket_analysis[0].sentiment_score > 0 ? 'Positive' : 'Fustrated'}</p>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Category</p>
+                                                    <p className="text-xl font-black capitalize">{selectedTicket.ticket_analysis[0].category}</p>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <p className="text-sm text-gray-700 dark:text-gray-300">{comment.comment}</p>
+                                        <div className="p-6 bg-white dark:bg-neutral-900 rounded-[2rem] border border-slate-100 dark:border-neutral-800 shadow-minimal space-y-3">
+                                            <h4 className="text-[10px] font-black uppercase tracking-[0.25em] text-brand-600 flex items-center gap-2">
+                                                <Activity className="w-3.5 h-3.5" />
+                                                Intelligence Loop
+                                            </h4>
+                                            <p className="text-xs font-bold text-gray-600 dark:text-gray-400 leading-relaxed italic line-clamp-2">
+                                                {selectedTicket.ticket_analysis[0].ai_summary}
+                                            </p>
+                                        </div>
                                     </div>
-                                ))}
+                                )}
+
+                                {/* Auto Reply Section */}
+                                {selectedTicket.auto_reply_draft && (
+                                    <div className="p-8 bg-gradient-to-br from-brand-50 to-purple-50 dark:from-brand-900/10 dark:to-purple-900/10 rounded-[2.5rem] border border-brand-100/50 dark:border-brand-500/10 shadow-premium-dark relative overflow-hidden group">
+                                        <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform">
+                                            <Sparkles className="w-16 h-16 text-brand-600" />
+                                        </div>
+                                        <div className="relative z-10 flex flex-col gap-6">
+                                            <div className="flex items-center justify-between">
+                                                <div className="space-y-1">
+                                                    <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-600 flex items-center gap-2">
+                                                        <SparklesIcon className="w-4 h-4" />
+                                                        Autopilot Draft
+                                                    </h4>
+                                                    <p className="text-[10px] font-bold text-gray-400 lowercase">this reply was crafted specifically for this user context</p>
+                                                </div>
+                                                <div className="px-2 py-1 bg-white/50 dark:bg-black/50 backdrop-blur-md rounded-lg text-[8px] font-black text-brand-600 uppercase tracking-widest border border-brand-100">
+                                                    Optimized
+                                                </div>
+                                            </div>
+                                            <textarea
+                                                value={editedDraft}
+                                                onChange={(e) => setEditedDraft(e.target.value)}
+                                                className="w-full bg-white/20 dark:bg-black/20 backdrop-blur-md border-none focus:ring-0 text-gray-800 dark:text-gray-200 text-sm font-medium italic min-h-[120px] rounded-2xl p-4 leading-relaxed"
+                                                placeholder="Crafting perfect response..."
+                                            />
+                                            <button
+                                                onClick={handleApproveDraft}
+                                                disabled={submitting}
+                                                className="w-full h-14 bg-foreground text-background rounded-full font-black text-[10px] uppercase tracking-[0.4em] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 shadow-premium-dark"
+                                            >
+                                                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircleIcon className="w-5 h-5" />}
+                                                Approve & Send Intelligent Reply
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* History / Comments */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-4 px-2">
+                                        <div className="h-px flex-1 bg-slate-100 dark:border-neutral-800" />
+                                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Communication History</span>
+                                        <div className="h-px flex-1 bg-slate-100 dark:border-neutral-800" />
+                                    </div>
+                                    {comments.map((comment) => (
+                                        <div key={comment.id} className={cn("p-6 rounded-[2rem] shadow-minimal relative group",
+                                            comment.is_admin
+                                                ? 'bg-white dark:bg-neutral-900 ml-12 border border-slate-100 dark:border-neutral-800'
+                                                : 'bg-slate-50 dark:bg-neutral-800/50 mr-12 border-transparent'
+                                        )}>
+                                            <div className="flex items-center justify-between mb-3">
+                                                <span className="text-[10px] font-black text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
+                                                    <div className={cn("w-1.5 h-1.5 rounded-full", comment.is_admin ? "bg-brand-500" : "bg-slate-400")} />
+                                                    {comment.is_admin ? 'RentMate Team' : comment.user?.full_name || 'Client'}
+                                                </span>
+                                                <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    {new Date(comment.created_at).toLocaleString()}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 leading-relaxed">{comment.comment}</p>
+                                        </div>
+                                    ))}
+                                    {comments.length === 0 && (
+                                        <div className="p-10 text-center opacity-40">
+                                            <p className="text-[10px] font-black uppercase tracking-widest">No previous correspondence</p>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Add Comment */}
-                            <div className="p-6 border-t border-gray-200 dark:border-gray-700">
-                                <div className="flex gap-2">
+                            <div className="p-8 border-t border-slate-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 relative z-10">
+                                <div className="flex gap-4">
                                     <input
                                         type="text"
                                         value={newComment}
                                         onChange={(e) => setNewComment(e.target.value)}
                                         onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
-                                        placeholder="Add a comment..."
-                                        className="flex-1 px-4 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500/20 outline-none"
+                                        placeholder="Add to follow-up..."
+                                        className="flex-1 px-6 py-4 bg-slate-50 dark:bg-neutral-800 border-none rounded-2xl text-[10px] font-bold tracking-widest focus:ring-2 focus:ring-brand-500/20 outline-none placeholder:uppercase placeholder:text-[9px]"
                                     />
                                     <button
                                         onClick={handleAddComment}
                                         disabled={submitting || !newComment.trim()}
-                                        className="px-6 py-2.5 bg-brand-600 text-white rounded-xl hover:bg-brand-700 transition-all font-bold shadow-lg shadow-brand-600/20 disabled:opacity-50 flex items-center gap-2"
+                                        className="w-14 h-14 bg-brand-600 text-white rounded-2xl hover:bg-brand-700 hover:scale-105 active:scale-95 transition-all shadow-premium-dark flex items-center justify-center disabled:opacity-50"
                                     >
                                         {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                                     </button>
@@ -419,3 +603,4 @@ export default function SupportTickets() {
         </div>
     );
 }
+

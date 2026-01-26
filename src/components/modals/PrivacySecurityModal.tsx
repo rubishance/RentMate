@@ -164,17 +164,33 @@ export function PrivacySecurityModal({ isOpen, onClose }: PrivacySecurityModalPr
                                         const { data: { user } } = await supabase.auth.getUser();
                                         if (user) {
                                             const newValue = !aiConsent;
-                                            // Upsert to ensure row exists
+
+                                            // Optimistic Update
+                                            setAiConsent(newValue);
+
+                                            // Determine operation based on existence check we did on mount
+                                            // Use upsert for safety
                                             const { error } = await supabase
                                                 .from('user_preferences')
-                                                .upsert({ user_id: user.id, ai_data_consent: newValue }, { onConflict: 'user_id' });
+                                                .upsert(
+                                                    {
+                                                        user_id: user.id,
+                                                        ai_data_consent: newValue,
+                                                        updated_at: new Date().toISOString()
+                                                    },
+                                                    { onConflict: 'user_id' }
+                                                );
 
-                                            if (error) throw error;
-                                            setAiConsent(newValue);
+                                            if (error) {
+                                                console.error('Supabase error:', error);
+                                                throw error;
+                                            }
                                         }
                                     } catch (err) {
                                         console.error(err);
-                                        alert("Failed to update setting");
+                                        // Revert on error
+                                        setAiConsent(!aiConsent);
+                                        alert("Failed to update setting. Please try again.");
                                     } finally {
                                         setIsLoadingConsent(false);
                                     }
@@ -316,6 +332,6 @@ export function PrivacySecurityModal({ isOpen, onClose }: PrivacySecurityModalPr
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
