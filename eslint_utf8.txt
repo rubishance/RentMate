@@ -1,0 +1,19 @@
+﻿
+C:\AnitiGravity Projects\RentMate\src\pages\admin\UserManagement.tsx
+   17:40  error  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+   18:40  error  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+   25:54  error  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+   49:17  error  'fetchedUsers' is never reassigned. Use 'const' instead  prefer-const
+   49:41  error  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+   51:23  error  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+   74:34  error  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+  106:23  error  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+  124:23  error  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+  143:23  error  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+  151:44  error  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+  173:25  error  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+  245:74  error  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+
+Γ£צ 13 problems (13 errors, 0 warnings)
+  1 error and 0 warnings potentially fixable with the `--fix` option.
+

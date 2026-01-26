@@ -6,12 +6,13 @@ import {
     SparklesIcon,
     TicketIcon,
     CalendarIcon,
-    ArrowRightIcon
+    ArrowRightIcon,
+    CurrencyDollarIcon
 } from '@heroicons/react/24/outline';
 
 interface ProposedAction {
     id: string;
-    type: 'ticket_reply' | 'lease_warning' | 'extension_check';
+    type: 'ticket_reply' | 'lease_warning' | 'extension_check' | 'sales_lead';
     title: string;
     description: string;
     draftContent?: string;
@@ -33,20 +34,28 @@ export function ActionInbox() {
             // 1. Fetch tickets with AI drafts
             const { data: tickets } = await supabase
                 .from('support_tickets')
-                .select('id, title, description, auto_reply_draft, user_id, updated_at, user_profiles(full_name)')
+                .select('id, title, description, auto_reply_draft, user_id, updated_at, user_profiles(full_name), metadata')
                 .not('auto_reply_draft', 'is', null)
                 .eq('status', 'open')
                 .limit(5);
 
-            const ticketActions: ProposedAction[] = (tickets || []).map(t => ({
-                id: `ticket-${t.id}`,
-                type: 'ticket_reply',
-                title: `Reply to: ${t.title}`,
-                description: `AI generated a response for ${(t.user_profiles as any)?.full_name || 'User'}`,
-                draftContent: t.auto_reply_draft,
-                updatedAt: t.updated_at,
-                metadata: { ticket_id: t.id, user_id: t.user_id }
-            }));
+            const ticketActions: ProposedAction[] = (tickets || []).map(t => {
+                const metadata = t.metadata as any || {};
+                const isLead = metadata.is_lead === true;
+                const isSales = t.title?.includes('[SALE]');
+
+                return {
+                    id: `ticket-${t.id}`,
+                    type: isSales ? 'sales_lead' as any : 'ticket_reply',
+                    title: isSales ? t.title.replace('[SALE] ', '') : `Reply to: ${t.title}`,
+                    description: isLead
+                        ? `New inquiry from ${metadata.original_sender || 'Potential Lead'}`
+                        : `AI generated a response for ${(t.user_profiles as any)?.full_name || 'User'}`,
+                    draftContent: t.auto_reply_draft,
+                    updatedAt: t.updated_at,
+                    metadata: { ...metadata, ticket_id: t.id, user_id: t.user_id, is_lead: isLead }
+                };
+            });
 
             // 2. Fetch Rent Updates from Autopilot (notifications with link to contracts)
             const { data: autopilotProposals } = await supabase
@@ -75,7 +84,7 @@ export function ActionInbox() {
     };
 
     const handleApprove = async (action: ProposedAction) => {
-        if (action.type === 'ticket_reply') {
+        if (action.type === 'ticket_reply' || action.type === 'sales_lead') {
             await supabase
                 .from('support_tickets')
                 .update({
@@ -91,7 +100,12 @@ export function ActionInbox() {
                 title: `RE: ${action.title}`,
                 content: action.draftContent,
                 status: 'closed',
-                metadata: { direction: 'outbound', automated: true }
+                metadata: {
+                    direction: 'outbound',
+                    automated: true,
+                    is_lead: action.metadata.is_lead,
+                    original_sender: action.metadata.original_sender
+                }
             });
         } else if (action.id.startsWith('autopilot-')) {
             // Mark notification as read (effectively resolving it from the inbox)
@@ -141,14 +155,26 @@ export function ActionInbox() {
                     actions.map(action => (
                         <div key={action.id} className="p-6 hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-all group">
                             <div className="flex gap-4">
-                                <div className={`mt-1 p-2 rounded-xl border ${action.type === 'ticket_reply' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-blue-50 text-blue-600 border-blue-100'
+                                <div className={`mt-1 p-2 rounded-xl border ${action.type === 'sales_lead' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                    action.type === 'ticket_reply' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                                        'bg-blue-50 text-blue-600 border-blue-100'
                                     }`}>
-                                    <TicketIcon className="w-4 h-4" />
+                                    {action.type === 'sales_lead' ? <CurrencyDollarIcon className="w-4 h-4" /> : <TicketIcon className="w-4 h-4" />}
                                 </div>
                                 <div className="flex-1">
                                     <div className="flex justify-between items-start mb-1">
                                         <div className="flex items-center gap-2">
                                             <h4 className="text-sm font-black text-gray-900 dark:text-white">{action.title}</h4>
+                                            {action.metadata.is_lead && (
+                                                <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[8px] font-black uppercase tracking-widest">
+                                                    LEAD
+                                                </span>
+                                            )}
+                                            {action.type === 'sales_lead' && (
+                                                <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[8px] font-black uppercase tracking-widest">
+                                                    SALE
+                                                </span>
+                                            )}
                                             {new Date(action.updatedAt) < new Date(Date.now() - 24 * 60 * 60 * 1000) && (
                                                 <span className="px-1.5 py-0.5 bg-rose-50 text-rose-600 border border-rose-100 rounded text-[8px] font-black uppercase tracking-widest animate-pulse">
                                                     Stagnant

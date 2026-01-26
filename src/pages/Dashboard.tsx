@@ -9,7 +9,9 @@ import { RentyRagdoll } from '../components/chat/RentyRagdoll';
 import { formatDate } from '../lib/utils';
 import { DashboardGrid } from '../components/dashboard/DashboardGrid';
 import { DEFAULT_WIDGET_LAYOUT, WidgetConfig, DashboardData } from '../components/dashboard/WidgetRegistry';
-import { Edit3Icon, CheckIcon } from 'lucide-react';
+import { Edit3Icon, CheckIcon, FileSearch } from 'lucide-react';
+import { ConciergeWidget } from '../components/dashboard/ConciergeWidget';
+import { ReportGenerationModal } from '../components/modals/ReportGenerationModal';
 
 interface FeedItem {
     id: string;
@@ -109,12 +111,22 @@ export function Dashboard() {
             // Feed
             const currentFeed = await loadFeedItems(user.id);
 
+            // Fetch settings
+            const { data: reportSetting } = await supabase
+                .from('system_settings')
+                .select('value')
+                .eq('key', 'auto_monthly_reports_enabled')
+                .single();
+
+            setReportsEnabled(reportSetting?.value === true);
+
             set(CACHE_KEY, {
                 profile: profileData,
                 stats: currentStats,
                 storageCounts: currentCounts,
                 activeContracts: contracts || [],
-                feedItems: currentFeed
+                feedItems: currentFeed,
+                reportsEnabled: reportSetting?.value === true
             });
         } catch (error) {
             console.error(error);
@@ -195,21 +207,43 @@ export function Dashboard() {
         feedItems
     };
 
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+    const [reportsEnabled, setReportsEnabled] = useState(false);
+
     return (
         <div className="pb-40 pt-6 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-700">
             {/* Hero Section */}
             <DashboardHero firstName={firstName} feedItems={feedItems} />
 
+            <div className="max-w-6xl mx-auto px-4">
+                <ConciergeWidget />
+            </div>
+
             {/* Dashboard Controls */}
-            <div className="flex justify-end px-4">
+            <div className="flex justify-end px-4 gap-4">
+                {reportsEnabled && (
+                    <button
+                        onClick={() => setIsReportModalOpen(true)}
+                        className="flex items-center gap-2 px-6 py-2 text-[10px] font-black uppercase tracking-widest rounded-full bg-indigo-500/10 text-indigo-600 border border-indigo-100 dark:border-indigo-900/30 hover:bg-indigo-500/20 transition-colors shadow-minimal"
+                    >
+                        <FileSearch className="w-3.5 h-3.5" />
+                        {lang === 'he' ? 'הפקת דוח' : 'Generate Report'}
+                    </button>
+                )}
+
                 <button
                     onClick={() => setIsEditingLayout(!isEditingLayout)}
-                    className="flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-full bg-slate-100 dark:bg-neutral-900 hover:bg-slate-200 transition-colors"
+                    className="flex items-center gap-2 px-6 py-2 text-[10px] font-black uppercase tracking-widest rounded-full bg-slate-100 dark:bg-neutral-900 hover:bg-slate-200 transition-colors"
                 >
-                    {isEditingLayout ? <CheckIcon className="w-3 h-3" /> : <Edit3Icon className="w-3 h-3" />}
+                    {isEditingLayout ? <CheckIcon className="w-3.5 h-3.5" /> : <Edit3Icon className="w-3.5 h-3.5" />}
                     {isEditingLayout ? 'Done' : 'Customize'}
                 </button>
             </div>
+
+            <ReportGenerationModal
+                isOpen={isReportModalOpen}
+                onClose={() => setIsReportModalOpen(false)}
+            />
 
             {/* Widget Grid */}
             <DashboardGrid

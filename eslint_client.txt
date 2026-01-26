@@ -1,0 +1,28 @@
+﻿
+C:\AnitiGravity Projects\RentMate\src\pages\admin\ClientProfile.tsx
+    3:10  error    'supabase' is defined but never used                                                                                @typescript-eslint/no-unused-vars
+    4:38  error    'CRMInteractionType' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+    7:5   error    'UserIcon' is defined but never used                                                                                @typescript-eslint/no-unused-vars
+    8:5   error    'EnvelopeIcon' is defined but never used                                                                            @typescript-eslint/no-unused-vars
+    9:5   error    'PhoneIcon' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+   14:5   error    'ClockIcon' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+   15:5   error    'CheckCircleIcon' is defined but never used                                                                         @typescript-eslint/no-unused-vars
+   17:5   error    'TrashIcon' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+   18:5   error    'ArrowDownTrayIcon' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+   20:26  error    'Filter' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+   29:38  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+   36:60  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+   43:58  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+   50:8   warning  React Hook useEffect has a missing dependency: 'fetchClientData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   58:23  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+   80:59  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+   86:23  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+  104:23  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+  128:23  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+  244:64  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+  298:71  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+  349:66  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+  374:48  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+
+Γ£צ 23 problems (22 errors, 1 warning)
+

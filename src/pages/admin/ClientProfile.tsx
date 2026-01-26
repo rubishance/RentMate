@@ -4,20 +4,14 @@ import { supabase } from '../../lib/supabase';
 import { crmService, CRMInteraction, CRMInteractionType } from '../../services/crm.service';
 import { MaskedAdminValue } from '../../components/admin/MaskedAdminValue';
 import {
-    UserIcon,
     EnvelopeIcon,
-    PhoneIcon,
     ChatBubbleLeftEllipsisIcon,
     DocumentTextIcon,
     ArrowLeftIcon,
     PlusIcon,
-    ClockIcon,
-    CheckCircleIcon,
     ExclamationCircleIcon,
-    TrashIcon,
-    ArrowDownTrayIcon
 } from '@heroicons/react/24/outline';
-import { Loader2, Table, Filter } from 'lucide-react';
+import { Loader2, Table } from 'lucide-react';
 import { TimelineItem } from '../../components/crm/TimelineItem';
 import { InteractionLogger } from '../../components/crm/InteractionLogger';
 import { AdminChatWindow } from '../../components/crm/AdminChatWindow';
@@ -26,24 +20,26 @@ const ClientProfile = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
-    const [data, setData] = useState<any>(null);
+    const [data, setData] = useState<any>(null); // Keeping any for now as it's a complex summary object
     const [interactions, setInteractions] = useState<CRMInteraction[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [isAddingNote, setIsAddingNote] = useState(false);
 
     // New Note Form
     const [isExporting, setIsExporting] = useState(false);
-    const [selectedBotChat, setSelectedBotChat] = useState<any | null>(null);
+    const [selectedBotChat, setSelectedBotChat] = useState<CRMInteraction | null>(null);
     const [feedFilter, setFeedFilter] = useState<'all' | 'ai' | 'human' | 'ticket'>('all');
     const [isChatOpen, setIsChatOpen] = useState(false);
 
     // Plan Editing
     const [isEditingPlan, setIsEditingPlan] = useState(false);
-    const [newPlan, setNewPlan] = useState('');
+    const [newPlanId, setNewPlanId] = useState('');
+    const [availablePlans, setAvailablePlans] = useState<any[]>([]);
 
     useEffect(() => {
         if (id) {
             fetchClientData();
+            fetchAvailablePlans();
         }
     }, [id]);
 
@@ -58,6 +54,15 @@ const ClientProfile = () => {
             setError(err.message || 'Failed to load client profile.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchAvailablePlans = async () => {
+        try {
+            const plans = await crmService.getSubscriptionPlans();
+            setAvailablePlans(plans || []);
+        } catch (err) {
+            console.error('Error fetching plans:', err);
         }
     };
 
@@ -98,13 +103,20 @@ const ClientProfile = () => {
     };
 
     const handleUpdatePlan = async () => {
-        if (!confirm(`Are you sure you want to change the plan to ${newPlan}?`)) return;
+        const plan = availablePlans.find(p => p.id === newPlanId);
+        if (!plan) return;
+
+        if (!confirm(`Are you sure you want to change the plan to ${plan.name}?`)) return;
         try {
-            await crmService.updateClientPlan(id!, newPlan);
+            await crmService.updateClientPlan(id!, plan.id, plan.name);
             // Optimistic update
             setData({
                 ...data,
-                profile: { ...data.profile, subscription_plan: newPlan }
+                profile: {
+                    ...data.profile,
+                    plan_id: plan.id,
+                    subscription_plan: plan.name
+                }
             });
             setIsEditingPlan(false);
         } catch (err: any) {
@@ -179,14 +191,14 @@ const ClientProfile = () => {
                             {isEditingPlan ? (
                                 <div className="flex items-center gap-2">
                                     <select
-                                        value={newPlan || profile.subscription_plan}
-                                        onChange={(e) => setNewPlan(e.target.value)}
+                                        value={newPlanId || profile.plan_id || ''}
+                                        onChange={(e) => setNewPlanId(e.target.value)}
                                         className="text-xs p-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
                                     >
-                                        <option value="free_tier">Free Tier</option>
-                                        <option value="plus">Plus</option>
-                                        <option value="pro_gold">Pro Gold</option>
-                                        <option value="enterprise">Enterprise</option>
+                                        <option value="">Select a plan...</option>
+                                        {availablePlans.map(p => (
+                                            <option key={p.id} value={p.id}>{p.name} (₪{p.price_monthly})</option>
+                                        ))}
                                     </select>
                                     <button onClick={handleUpdatePlan} className="text-xs text-brand-600 font-bold hover:underline">Save</button>
                                     <button onClick={() => setIsEditingPlan(false)} className="text-xs text-gray-400 hover:text-gray-600">Cancel</button>
@@ -197,7 +209,7 @@ const ClientProfile = () => {
                                         {profile.subscription_plan?.replace('_', ' ')}
                                     </span>
                                     <button
-                                        onClick={() => { setNewPlan(profile.subscription_plan); setIsEditingPlan(true); }}
+                                        onClick={() => { setNewPlanId(profile.plan_id || ''); setIsEditingPlan(true); }}
                                         className="text-[10px] text-gray-400 hover:text-brand-600"
                                     >
                                         Edit
@@ -328,7 +340,7 @@ const ClientProfile = () => {
                             </button>
                         </div>
                         <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50/20 dark:bg-gray-950/20">
-                            {selectedBotChat.messages?.map((msg: any, idx: number) => (
+                            {selectedBotChat.metadata?.messages?.map((msg: any, idx: number) => (
                                 <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                                     <div className="mb-1 flex items-center gap-2">
                                         <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">{msg.role}</span>

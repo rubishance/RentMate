@@ -13,8 +13,27 @@ import {
 } from '@heroicons/react/24/outline';
 import { Loader2 } from 'lucide-react';
 
+interface UserWithStats {
+    id: string;
+    email: string;
+    full_name: string;
+    phone?: string;
+    role: 'user' | 'admin' | 'manager';
+    subscription_status: 'active' | 'suspended';
+    plan_id: string;
+    created_at: string;
+    last_login: string | null;
+    properties_count: number;
+    tenants_count: number;
+    contracts_count: number;
+    ai_sessions_count: number;
+    open_tickets_count: number;
+    storage_usage_mb: number;
+    is_super_admin?: boolean;
+}
+
 const UserManagement = () => {
-    const [users, setUsers] = useState<any[]>([]);
+    const [users, setUsers] = useState<UserWithStats[]>([]);
     const [plans, setPlans] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -22,7 +41,7 @@ const UserManagement = () => {
     const [error, setError] = useState<string | null>(null);
 
     // Edit Modal State
-    const [selectedUser, setSelectedUser] = useState<any | null>(null);
+    const [selectedUser, setSelectedUser] = useState<UserWithStats | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [actionLoading, setActionLoading] = useState(false);
@@ -46,11 +65,11 @@ const UserManagement = () => {
 
             if (rpcError) throw rpcError;
 
-            let fetchedUsers = (data as any[]) || [];
+            const fetchedUsers = (data as UserWithStats[]) || [];
             setUsers(fetchedUsers);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error fetching users:', err);
-            setError(err.message || 'Failed to connect to user database. Check permissions.');
+            setError((err as Error).message || 'Failed to connect to user database. Check permissions.');
         } finally {
             setLoading(false);
         }
@@ -86,12 +105,15 @@ const UserManagement = () => {
         setModalMessage(null);
 
         try {
+            const planName = plans.find(p => p.id === editPlan)?.name || '';
+
             const { error } = await supabase
                 .from('user_profiles')
                 .update({
                     role: editRole,
                     subscription_status: editStatus,
-                    plan_id: editPlan
+                    plan_id: editPlan,
+                    subscription_plan: planName
                 })
                 .eq('id', selectedUser.id);
 
@@ -255,10 +277,11 @@ const UserManagement = () => {
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-right" dir="rtl">
                         <thead className="bg-gray-50 dark:bg-gray-900/50">
                             <tr>
-                                <th scope="col" className="py-4 pl-4 pr-6 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Name / Email</th>
-                                <th scope="col" className="px-3 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Role</th>
-                                <th scope="col" className="px-3 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Plan</th>
-                                <th scope="col" className="px-3 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Stats</th>
+                                <th scope="col" className="py-4 pl-4 pr-6 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Name / Contact</th>
+                                <th scope="col" className="px-3 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Role / Plan</th>
+                                <th scope="col" className="px-3 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Assets Stats</th>
+                                <th scope="col" className="px-3 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Platform Usage</th>
+                                <th scope="col" className="px-3 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Last Activity</th>
                                 <th scope="col" className="px-3 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
                                 <th scope="col" className="relative py-4 pr-3 pl-6"><span className="sr-only">Actions</span></th>
                             </tr>
@@ -266,38 +289,63 @@ const UserManagement = () => {
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                             {filteredUsers.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="py-20 text-center text-sm font-bold text-gray-400 uppercase tracking-widest">No users found.</td>
+                                    <td colSpan={7} className="py-20 text-center text-sm font-bold text-gray-400 uppercase tracking-widest">No users found.</td>
                                 </tr>
                             ) : (
                                 filteredUsers.map((user) => (
                                     <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                                         <td className="whitespace-nowrap py-5 pr-6 pl-3 text-sm">
                                             <div className="flex items-center gap-4">
-                                                <div className="h-10 w-10 flex-shrink-0 rounded-xl bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-800 flex items-center justify-center text-brand-600 dark:text-brand-400 font-black">
+                                                <div className="h-10 w-10 flex-shrink-0 rounded-xl bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-800 flex items-center justify-center text-brand-600 dark:text-brand-400 font-black relative">
                                                     {user.full_name?.charAt(0) || user.email?.charAt(0).toUpperCase()}
+                                                    {user.open_tickets_count > 0 && (
+                                                        <span className="absolute -top-1 -right-1 h-4 w-4 bg-rose-500 text-white text-[8px] font-black flex items-center justify-center rounded-full border-2 border-white dark:border-gray-800">
+                                                            {user.open_tickets_count}
+                                                        </span>
+                                                    )}
                                                 </div>
                                                 <div>
-                                                    <div className="font-bold text-gray-900 dark:text-white">{user.full_name || 'No Name'}</div>
-                                                    <div className="text-xs font-medium text-gray-500 tracking-tight">{user.email}</div>
+                                                    <div className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                                        {user.full_name || 'No Name'}
+                                                        {user.is_super_admin && <span className="text-[8px] bg-amber-100 text-amber-700 px-1 rounded font-black uppercase">SA</span>}
+                                                    </div>
+                                                    <div className="text-[10px] font-medium text-gray-400 tracking-tight">{user.email}</div>
+                                                    {user.phone && <div className="text-[10px] font-bold text-brand-600 tracking-tight mt-0.5">{user.phone}</div>}
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="whitespace-nowrap px-3 py-5">
-                                            <span className={`inline-flex rounded-lg px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ${user.role === 'admin' ? 'bg-purple-50 text-purple-700 border border-purple-100 dark:bg-purple-900/20 dark:border-purple-800' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'}`}>
-                                                {user.role}
-                                            </span>
-                                        </td>
-                                        <td className="whitespace-nowrap px-3 py-5">
-                                            <span className="inline-flex rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-800 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest">
-                                                {getPlanName(user.plan_id)}
-                                            </span>
+                                            <div className="flex flex-col gap-1">
+                                                <span className={`inline-flex w-fit rounded-lg px-2 py-0.5 text-[9px] font-black uppercase tracking-widest ${user.role === 'admin' ? 'bg-purple-50 text-purple-700 border border-purple-100 dark:bg-purple-900/20 dark:border-purple-800' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'}`}>
+                                                    {user.role}
+                                                </span>
+                                                <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">
+                                                    {getPlanName(user.plan_id)}
+                                                </span>
+                                            </div>
                                         </td>
                                         <td className="whitespace-nowrap px-3 py-5 text-right">
-                                            <div className="flex justify-end gap-x-4 text-[10px] font-bold">
-                                                <div className="text-gray-500 uppercase tracking-tighter">Assets: <span className="text-gray-900 dark:text-white">{user.properties_count}</span></div>
-                                                <div className="text-gray-500 uppercase tracking-tighter">Contracts: <span className="text-gray-900 dark:text-white">{user.contracts_count}</span></div>
-                                                <div className="text-gray-500 uppercase tracking-tighter">Tenants: <span className="text-gray-900 dark:text-white">{user.tenants_count}</span></div>
+                                            <div className="flex flex-col gap-1 text-[10px] font-black uppercase">
+                                                <div className="text-gray-500 flex justify-between gap-4">ASSETS: <span className="text-gray-900 dark:text-white">{user.properties_count}</span></div>
+                                                <div className="text-gray-500 flex justify-between gap-4">LEASES: <span className="text-gray-900 dark:text-white">{user.contracts_count}</span></div>
+                                                <div className="text-gray-500 flex justify-between gap-4">TENANTS: <span className="text-gray-900 dark:text-white">{user.tenants_count}</span></div>
                                             </div>
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-5 text-right">
+                                            <div className="flex flex-col gap-1 text-[10px] font-black uppercase">
+                                                <div className="text-gray-500 flex justify-between gap-4">STORAGE: <span className="text-emerald-600">{user.storage_usage_mb || 0} MB</span></div>
+                                                <div className="text-gray-500 flex justify-between gap-4">AI SESS: <span className="text-purple-600">{user.ai_sessions_count || 0}</span></div>
+                                            </div>
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-5">
+                                            <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                                                {user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never'}
+                                            </div>
+                                            {user.last_login && (
+                                                <div className="text-[9px] text-gray-400 font-medium">
+                                                    {new Date(user.last_login).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </div>
+                                            )}
                                         </td>
                                         <td className="whitespace-nowrap px-3 py-5">
                                             {user.subscription_status === 'active' ? (
@@ -385,6 +433,32 @@ const UserManagement = () => {
                                         <option key={p.id} value={p.id}>{p.name} ({p.max_properties === -1 ? 'Unlimited' : p.max_properties} Assets)</option>
                                     ))}
                                 </select>
+                            </div>
+
+                            <div className="bg-brand-50/30 dark:bg-brand-900/10 rounded-2xl p-6 border border-brand-100 dark:border-brand-800">
+                                <h4 className="text-[10px] font-black text-brand-600 dark:text-brand-400 uppercase tracking-widest mb-4">System Analytics</h4>
+                                <div className="grid grid-cols-2 gap-y-4 gap-x-8">
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="font-bold text-gray-500 uppercase tracking-tighter">Total Assets</span>
+                                        <span className="font-black text-gray-900 dark:text-white">{selectedUser.properties_count}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="font-bold text-gray-500 uppercase tracking-tighter">AI Sessions</span>
+                                        <span className="font-black text-purple-600">{selectedUser.ai_sessions_count || 0}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="font-bold text-gray-500 uppercase tracking-tighter">Active Tenants</span>
+                                        <span className="font-black text-gray-900 dark:text-white">{selectedUser.tenants_count}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="font-bold text-gray-500 uppercase tracking-tighter">Cloud Usage</span>
+                                        <span className="font-black text-emerald-600">{selectedUser.storage_usage_mb || 0} MB</span>
+                                    </div>
+                                    <div className="col-span-2 pt-2 border-t border-brand-100 dark:border-brand-800 flex justify-between items-center text-xs">
+                                        <span className="font-bold text-gray-500 uppercase tracking-tighter">Joined Date</span>
+                                        <span className="font-black text-gray-900 dark:text-white">{new Date(selectedUser.created_at).toLocaleDateString()}</span>
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-700">

@@ -188,6 +188,13 @@ Ensure all field names match exactly as listed above.`
                         p_input_tokens: usage.prompt_tokens,
                         p_output_tokens: usage.completion_tokens
                     });
+
+                    // Log Security Audit
+                    await supabase.rpc('log_ai_contract_audit', {
+                        p_user_id: user.id,
+                        p_action: 'AI_CONTRACT_EXTRACTION',
+                        p_details: { model: result.model || "gpt-4o" }
+                    });
                 }
             } catch (logError) {
                 console.error("Failed to log AI usage:", logError);

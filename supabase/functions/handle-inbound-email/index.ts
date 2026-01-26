@@ -25,8 +25,16 @@ async function analyzeEmailWithAI(subject: string, body: string, isSales: boolea
 
     try {
         const systemPrompt = isSales
-            ? `You are a top-tier Sales Representative for RentMate (a Property Management Platform). 
-               Analyze the incoming sales lead.
+            ? `You are a top-tier Sales Representative for RentMate. 
+               Analyze the incoming sales lead. 
+               Identify if they are interested in specific features: CPI Linkage, Digital Contracts, Tenant Management, or Maintenance Autopilot.
+               
+               Generate a TAIILORED proposal reply that:
+               1. Acknowledges their specific pain point (e.g., manual calculations, late rent).
+               2. Briefly explains how RentMate solves it (be specific about the feature).
+               3. Mentions our competitive pricing (10% lower than competitors).
+               4. Ends with a clear call to action (Schedule a 10-min demo).
+               
                Output JSON:
                {
                  "sentiment_score": number (-1.0 to 1.0),
@@ -34,7 +42,7 @@ async function analyzeEmailWithAI(subject: string, body: string, isSales: boolea
                  "category": "sales",
                  "confidence_score": number (0.0 to 1.0),
                  "summary": "Brief 1-sentence summary",
-                 "draft_reply": "A persuasive, friendly, professional email reply addressing their specific questions. Keep it under 100 words. Encourage a demo or call."
+                 "draft_reply": "Professional, persuasive proposal (max 120 words)."
                }`
             : `You are a helpful Support Agent for RentMate.
                Analyze the incoming support request.

@@ -9,7 +9,8 @@ import {
     AlertTriangle,
     ToggleLeft,
     ToggleRight,
-    RefreshCw as ArrowPathIcon
+    RefreshCw as ArrowPathIcon,
+    Sparkles
 } from 'lucide-react';
 
 interface NotificationRule {
@@ -30,7 +31,7 @@ interface SystemSetting {
 }
 
 export default function SystemSettings() {
-    const [activeTab, setActiveTab] = useState<'notifications' | 'general'>('notifications');
+    const [activeTab, setActiveTab] = useState<'notifications' | 'general' | 'autopilot'>('notifications');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [rules, setRules] = useState<NotificationRule[]>([]);
@@ -188,6 +189,18 @@ export default function SystemSettings() {
                         Global Variables
                     </div>
                 </button>
+                <button
+                    onClick={() => setActiveTab('autopilot')}
+                    className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'autopilot'
+                        ? 'bg-white dark:bg-gray-800 text-brand-600 shadow-sm border border-gray-100 dark:border-gray-700'
+                        : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                        }`}
+                >
+                    <div className="flex items-center gap-2">
+                        <ToggleRight className="w-4 h-4" />
+                        Autopilot Logic
+                    </div>
+                </button>
             </div>
 
             {/* Notifications Tab */}
@@ -249,7 +262,7 @@ export default function SystemSettings() {
             {/* General Settings Tab */}
             {activeTab === 'general' && (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {settings.map((setting) => (
+                    {settings.filter(s => !s.key.startsWith('auto_') && !s.key.startsWith('voice_')).map((setting) => (
                         <div key={setting.key} className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
                             <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Technical Key: {setting.key}</div>
                             <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight mb-2">{setting.key.replace(/_/g, ' ')}</h3>
@@ -288,6 +301,94 @@ export default function SystemSettings() {
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {/* Autopilot Logic Tab */}
+            {activeTab === 'autopilot' && (
+                <div className="space-y-10">
+                    {/* Master Switch Section */}
+                    {settings.find(s => s.key === 'auto_autopilot_master_enabled') && (
+                        <div className="bg-brand-600 p-8 rounded-[2.5rem] shadow-xl shadow-brand-600/20 text-white flex flex-col md:flex-row items-center justify-between gap-6 transition-all">
+                            <div className="flex-1 space-y-2">
+                                <h2 className="text-2xl font-black uppercase tracking-tight">Backend Automation Engine</h2>
+                                <p className="text-sm font-bold opacity-80 max-w-xl">
+                                    When enabled, RentMate will automatically scan contracts for linkage, monitor rent overrides, and generate user notifications.
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => handleSettingChange('auto_autopilot_master_enabled', !settings.find(s => s.key === 'auto_autopilot_master_enabled')?.value)}
+                                className={`flex items-center gap-4 px-8 py-4 rounded-2xl border-2 transition-all ${settings.find(s => s.key === 'auto_autopilot_master_enabled')?.value
+                                    ? 'bg-white text-brand-600 border-white'
+                                    : 'bg-transparent border-white/30 text-white'
+                                    }`}
+                            >
+                                <span className="font-black uppercase tracking-widest text-xs">
+                                    {settings.find(s => s.key === 'auto_autopilot_master_enabled')?.value ? 'System Active' : 'System Disabled'}
+                                </span>
+                                {settings.find(s => s.key === 'auto_autopilot_master_enabled')?.value ? <ToggleRight className="w-10 h-10" /> : <ToggleLeft className="w-10 h-10" />}
+                            </button>
+                        </div>
+                    )}
+
+                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {settings.filter(s => s.key.startsWith('auto_') && s.key !== 'auto_autopilot_master_enabled').map((setting) => (
+                            <div key={setting.key} className="bg-white dark:bg-gray-800 p-6 rounded-3xl border-2 border-dashed border-gray-100 dark:border-gray-700 shadow-sm transition-all hover:border-brand-200 dark:hover:border-brand-800">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <div className={`p-2 rounded-xl ${setting.value ? 'bg-brand-50 text-brand-600' : 'bg-gray-50 text-gray-400'}`}>
+                                        <Sparkles className="w-5 h-5" />
+                                    </div>
+                                    <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">{setting.key.replace(/^auto_/, '').replace(/_/g, ' ')}</h3>
+                                </div>
+                                <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">{setting.description}</p>
+
+                                <button
+                                    onClick={() => handleSettingChange(setting.key, !setting.value)}
+                                    className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl border-2 transition-all ${setting.value
+                                        ? 'bg-brand-600 border-brand-600 text-white shadow-lg shadow-brand-600/20'
+                                        : 'bg-gray-50 dark:bg-gray-900/50 border-gray-100 dark:border-gray-700 text-gray-400'
+                                        }`}
+                                >
+                                    <span className="text-[10px] font-black uppercase tracking-widest">{setting.value ? 'Active' : 'Disabled'}</span>
+                                    {setting.value ? <ToggleRight className="w-8 h-8" /> : <ToggleLeft className="w-8 h-8" />}
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="p-8 bg-gray-50 dark:bg-gray-900/50 rounded-[2.5rem] border border-gray-200 dark:border-gray-800">
+                        <div className="flex items-center gap-3 mb-6">
+                            <ToggleLeft className="w-6 h-6 text-gray-400" />
+                            <h2 className="text-base font-black text-gray-900 dark:text-white uppercase tracking-tight">Voice & Phone Integration (RESTRICTED)</h2>
+                        </div>
+                        <div className="grid gap-6 md:grid-cols-2">
+                            {settings.filter(s => s.key.startsWith('voice_')).map((setting) => (
+                                <div key={setting.key} className="space-y-3">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 px-1">{setting.key.replace(/_/g, ' ')}</label>
+                                    {typeof setting.value === 'boolean' ? (
+                                        <button
+                                            onClick={() => handleSettingChange(setting.key, !setting.value)}
+                                            className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl border-2 transition-all ${setting.value
+                                                ? 'bg-amber-50 border-amber-200 text-amber-700'
+                                                : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 text-gray-300'
+                                                }`}
+                                        >
+                                            <span className="text-xs font-black uppercase tracking-widest">{setting.value ? 'Channel Enabled' : 'Disabled (Pending Number)'}</span>
+                                            {setting.value ? <ToggleRight className="w-8 h-8" /> : <ToggleLeft className="w-8 h-8" />}
+                                        </button>
+                                    ) : (
+                                        <input
+                                            type="password"
+                                            value={setting.value}
+                                            placeholder="Enter API Key..."
+                                            onChange={(e) => handleSettingChange(setting.key, e.target.value)}
+                                            className="w-full px-5 py-4 bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-2xl text-gray-900 dark:text-white font-bold text-sm focus:border-brand-500 outline-none transition-all"
+                                        />
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

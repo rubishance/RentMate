@@ -41,7 +41,17 @@ DECLARE
     v_limit INTEGER;
     v_current_usage INTEGER;
     v_month_start TIMESTAMPTZ;
+    v_requester_role TEXT;
 BEGIN
+    -- SECURITY CHECK: 
+    -- 1. Must be authenticated
+    -- 2. Must be logging for self OR be an admin
+    SELECT role INTO v_requester_role FROM public.user_profiles WHERE id = auth.uid();
+    
+    IF p_user_id != auth.uid() AND COALESCE(v_requester_role, 'user') != 'admin' THEN
+        RAISE EXCEPTION 'Access Denied: You cannot log usage for another user.';
+    END IF;
+
     -- Get current month start
     v_month_start := date_trunc('month', now());
 

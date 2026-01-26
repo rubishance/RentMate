@@ -267,12 +267,25 @@ export const crmService = {
         return data;
     },
 
-    async updateClientPlan(userId: string, newPlan: string) {
+    async updateClientPlan(userId: string, planId: string, planName: string) {
         const { error } = await supabase
             .from('user_profiles')
-            .update({ subscription_plan: newPlan })
+            .update({
+                plan_id: planId,
+                subscription_plan: planName // Keep legacy for backward compatibility
+            })
             .eq('id', userId);
 
         if (error) throw error;
+    },
+
+    async getSubscriptionPlans() {
+        const { data, error } = await supabase
+            .from('subscription_plans')
+            .select('*')
+            .order('price_monthly', { ascending: true });
+
+        if (error) throw error;
+        return data;
     }
 };

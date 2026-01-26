@@ -270,6 +270,13 @@ async function searchContracts(query: string, userId: string) {
             status: contract.status
         }));
 
+        // Log Security Audit
+        await supabase.rpc('log_ai_contract_audit', {
+            p_user_id: userId,
+            p_action: 'AI_SEARCH_CONTRACTS',
+            p_details: { query, results_count: results.length }
+        });
+
         return {
             success: true,
             count: results.length,
@@ -328,6 +335,13 @@ async function getFinancialSummary(period: string, userId: string, currency: str
 
     const total = data.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
 
+    // Log Security Audit
+    await supabase.rpc('log_ai_contract_audit', {
+        p_user_id: userId,
+        p_action: 'AI_FINANCIAL_SUMMARY',
+        p_details: { period, currency, total_income: total, transactions: data.length }
+    });
+
     return {
         success: true,
         period,
@@ -359,6 +373,13 @@ async function checkExpiringContracts(daysThreshold: number, userId: string) {
         .gte('end_date', today.toISOString());
 
     if (error) return { success: false, message: error.message };
+
+    // Log Security Audit
+    await supabase.rpc('log_ai_contract_audit', {
+        p_user_id: userId,
+        p_action: 'AI_CHECK_EXPIRING_CONTRACTS',
+        p_details: { days_threshold: daysThreshold, count: data.length }
+    });
 
     return {
         success: true,
@@ -396,6 +417,13 @@ async function getTenantDetails(nameOrEmail: string, userId: string) {
         .limit(5);
 
     if (error) return { success: false, message: error.message };
+
+    // Log Security Audit
+    await supabase.rpc('log_ai_contract_audit', {
+        p_user_id: userId,
+        p_action: 'AI_GET_TENANT_DETAILS',
+        p_details: { name_or_email: nameOrEmail, found: data.length > 0 }
+    });
 
     return {
         success: true,
@@ -495,9 +523,12 @@ async function getIndexRates(indexType: string, startDate?: string, endDate?: st
     };
 }
 
-async function calculateRentLinkage(args: any) {
+async function calculateRentLinkage(args: any, userId: string | null) {
     const { base_rent, linkage_type, base_date, target_date } = args;
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+
+    // ... fetching index data ...
+    // (I'll just replace the whole function block to be safe)
 
     // Fetch base index
     const { data: baseData } = await supabase
@@ -528,6 +559,13 @@ async function calculateRentLinkage(args: any) {
     const delta = (Number(newRent) - base_rent).toFixed(2);
     const percentage = ((targetVal / baseVal - 1) * 100).toFixed(2);
 
+    // Log Security Audit
+    await supabase.rpc('log_ai_contract_audit', {
+        p_user_id: userId,
+        p_action: 'AI_CALCULATE_LINKAGE',
+        p_details: { ...args, result: newRent }
+    });
+
     return {
         success: true,
         base_rent,
@@ -556,17 +594,26 @@ async function searchMaintenanceRecords(args: any, userId: string) {
 
     if (error) return { success: false, message: error.message };
 
+    const results = data.map(r => ({
+        date: r.document_date,
+        description: r.description || r.title,
+        amount: r.amount,
+        vendor: r.vendor_name,
+        issue: r.issue_type,
+        property: r.property?.title || r.property?.address
+    }));
+
+    // Log Security Audit
+    await supabase.rpc('log_ai_contract_audit', {
+        p_user_id: userId,
+        p_action: 'AI_SEARCH_MAINTENANCE',
+        p_details: { query, results_count: results.length }
+    });
+
     return {
         success: true,
-        count: data.length,
-        records: data.map(r => ({
-            date: r.document_date,
-            description: r.description || r.title,
-            amount: r.amount,
-            vendor: r.vendor_name,
-            issue: r.issue_type,
-            property: r.property?.title || r.property?.address
-        }))
+        count: results.length,
+        records: results
     };
 }
 
@@ -894,7 +941,7 @@ ${knowledgeBase}`;
                         data: functionArgs
                     };
                 } else if (functionName === "calculate_rent_linkage") {
-                    functionResult = await calculateRentLinkage(functionArgs);
+                    functionResult = await calculateRentLinkage(functionArgs, userId);
                 } else {
                     functionResult = { success: false, message: "Unknown function" };
                 }
