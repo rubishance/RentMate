@@ -545,7 +545,7 @@ export function ChatWidget() {
                         <Headphones className="w-8 h-8 text-white" />
                     </div>
                 ) : (
-                    <BotIcon size={80} className="relative z-10" />
+                    <BotIcon size={64} className="relative z-10" />
                 )}
             </motion.button>
 

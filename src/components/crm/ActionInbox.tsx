@@ -39,7 +39,7 @@ export function ActionInbox() {
                 .limit(5);
 
             const ticketActions: ProposedAction[] = (tickets || []).map(t => ({
-                id: t.id,
+                id: `ticket-${t.id}`,
                 type: 'ticket_reply',
                 title: `Reply to: ${t.title}`,
                 description: `AI generated a response for ${(t.user_profiles as any)?.full_name || 'User'}`,
@@ -48,9 +48,25 @@ export function ActionInbox() {
                 metadata: { ticket_id: t.id, user_id: t.user_id }
             }));
 
-            // 2. Fetch pending automations from logs that need manual review? 
-            // For now, let's just show tickets.
-            setActions(ticketActions);
+            // 2. Fetch Rent Updates from Autopilot (notifications with link to contracts)
+            const { data: autopilotProposals } = await supabase
+                .from('notifications')
+                .select('id, title, message, metadata, created_at, user_profiles(full_name)')
+                .eq('metadata->>action', 'update_rent')
+                .is('read_at', null)
+                .limit(5);
+
+            const rentActions: ProposedAction[] = (autopilotProposals || []).map(n => ({
+                id: `autopilot-${n.id}`,
+                type: 'lease_warning' as any, // We'll map this icon
+                title: n.title,
+                description: n.message,
+                draftContent: `Hi ${(n.user_profiles as any)?.full_name || 'there'},\n\nBased on the latest CPI index, your rent for ${n.metadata?.property_address || 'the property'} has been updated to ${n.metadata?.new_rent} ILS.`,
+                updatedAt: n.created_at,
+                metadata: { notification_id: n.id, contract_id: n.metadata?.contract_id, ...n.metadata }
+            }));
+
+            setActions([...ticketActions, ...rentActions]);
         } catch (err) {
             console.error('Error fetching actions:', err);
         } finally {
@@ -64,25 +80,39 @@ export function ActionInbox() {
                 .from('support_tickets')
                 .update({
                     status: 'resolved',
-                    auto_reply_draft: action.draftContent // Save the potentially edited content
+                    auto_reply_draft: action.draftContent
                 })
                 .eq('id', action.metadata.ticket_id);
 
-            // Log the email interaction in CRM
+            // Log interaction
             await supabase.from('crm_interactions').insert({
-                user_id: action.metadata.user_id, // We should fetch user_id in ProposedAction
+                user_id: action.metadata.user_id,
                 type: 'email',
                 title: `RE: ${action.title}`,
                 content: action.draftContent,
                 status: 'closed',
-                metadata: {
-                    direction: 'outbound',
-                    automated: true
-                }
+                metadata: { direction: 'outbound', automated: true }
             });
+        } else if (action.id.startsWith('autopilot-')) {
+            // Mark notification as read (effectively resolving it from the inbox)
+            await supabase
+                .from('notifications')
+                .update({ read_at: new Date().toISOString() })
+                .eq('id', action.metadata.notification_id);
 
-            setActions(prev => prev.filter(a => a.id !== action.id));
+            // Here we could also update the contract price if we wanted to be super bold
+            // but for now, just logging is safer.
+            await supabase.from('crm_interactions').insert({
+                user_id: action.metadata.user_id,
+                type: 'email',
+                title: action.title,
+                content: action.draftContent,
+                status: 'open',
+                metadata: { type: 'autopilot_execution', action: 'rent_update' }
+            });
         }
+
+        setActions(prev => prev.filter(a => a.id !== action.id));
     };
 
     const handleUpdateDraft = (id: string, newContent: string) => {

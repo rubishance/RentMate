@@ -270,6 +270,49 @@ serve(async (req) => {
                 }
             }
 
+            // --- G. INDEX LINKAGE (CPI) MONITOR ---
+            const contractsWithLinkage = activeContracts?.filter(c => c.linkage_type !== 'none' && c.base_index_value);
+
+            if (contractsWithLinkage && contractsWithLinkage.length > 0) {
+                // Fetch latest indices in one go
+                const { data: latestIndices } = await adminClient
+                    .from('index_data')
+                    .select('index_type, date, value')
+                    .order('date', { ascending: false })
+                    .limit(10); // Get recent values for all types
+
+                for (const contract of contractsWithLinkage) {
+                    const targetIndex = latestIndices?.find(idx => idx.index_type === contract.linkage_type);
+
+                    if (targetIndex && contract.base_index_value) {
+                        const baseRent = contract.base_rent;
+                        const linkageRatio = targetIndex.value / contract.base_index_value;
+                        const newRent = Math.round(baseRent * linkageRatio);
+                        const difference = newRent - baseRent;
+
+                        // Only alert if there's a meaningful change (> 10 units)
+                        if (Math.abs(difference) > 10) {
+                            const address = contract.properties?.address || 'property';
+                            const indexMonth = new Date(targetIndex.date).toLocaleDateString('he-IL', { month: 'long', year: 'numeric' });
+
+                            await dispatcher.dispatch('info',
+                                'Rent Adjustment Calculated',
+                                `Based on the latest ${contract.linkage_type.toUpperCase()} index (${indexMonth}), the rent for ${address} should be ${newRent} ILS (Change of ${difference} ILS).`,
+                                {
+                                    contract_id: contract.id,
+                                    action: 'update_rent',
+                                    old_rent: baseRent,
+                                    new_rent: newRent,
+                                    index_date: targetIndex.date,
+                                    channels: { email: true }
+                                }
+                            );
+                            logs.push(`Calculated rent update for ${user.email} (contract ${contract.id})`);
+                        }
+                    }
+                }
+            }
+
             // --- F. INCOMPLETE SETUP NUDGE ---
             // If user has properties but 0 contracts and joined > 3 days ago
             const userAgeDays = Math.floor((today.getTime() - new Date(user.created_at).getTime()) / (1000 * 60 * 60 * 24));

@@ -81,9 +81,9 @@ export function WelcomeLanding() {
         >
             {/* --- HEADER --- */}
             <header className="fixed top-0 w-full z-50 bg-white/50 dark:bg-black/50 backdrop-blur-3xl border-b border-slate-100 dark:border-neutral-900 transition-all">
-                <div className="max-w-7xl mx-auto px-8 h-24 flex items-center justify-between">
+                <div className="max-w-7xl mx-auto px-6 md:px-8 h-20 md:h-24 flex items-center justify-between">
                     <div className="flex items-center cursor-pointer group" onClick={() => navigate('/')}>
-                        <span className="text-4xl font-black tracking-tighter text-foreground uppercase">
+                        <span className="text-2xl md:text-4xl font-black tracking-tighter text-foreground uppercase">
                             Rent<span className="opacity-40">Mate</span>
                         </span>
                     </div>
@@ -110,7 +110,7 @@ export function WelcomeLanding() {
                         ))}
                     </nav>
 
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-2 md:gap-6">
                         <div className="hidden md:flex gap-4">
                             <ThemeToggle />
                             <LanguageToggle />
@@ -122,13 +122,82 @@ export function WelcomeLanding() {
                             {isRtl ? 'כניסה' : 'Sign In'}
                         </button>
                         <button
-                            className="lg:hidden p-2 text-foreground"
+                            className="lg:hidden p-3 text-foreground hover:bg-slate-50 dark:hover:bg-neutral-900 rounded-xl transition-colors"
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
+                            aria-label="Toggle Menu"
                         >
                             {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                         </button>
                     </div>
                 </div>
+
+                {/* Mobile Menu Overlay */}
+                <AnimatePresence>
+                    {isMenuOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="fixed inset-0 top-[80px] bg-white/95 dark:bg-black/95 backdrop-blur-2xl z-40 lg:hidden overflow-y-auto"
+                        >
+                            <div className="p-8 flex flex-col space-y-12">
+                                <div className="space-y-2">
+                                    {['home', 'blog', 'demo', 'calculator'].map((tab, i) => (
+                                        <motion.button
+                                            initial={{ opacity: 0, x: isRtl ? 20 : -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: i * 0.1 }}
+                                            key={tab}
+                                            onClick={() => {
+                                                setActiveTab(tab as any);
+                                                setIsMenuOpen(false);
+                                            }}
+                                            className={cn(
+                                                "w-full text-right p-5 rounded-3xl text-3xl font-black uppercase tracking-tighter transition-all flex items-center justify-between group",
+                                                activeTab === tab
+                                                    ? "bg-slate-100 dark:bg-neutral-900 text-foreground"
+                                                    : "text-muted-foreground hover:text-foreground"
+                                            )}
+                                        >
+                                            <span>
+                                                {isRtl && tab === 'home' && 'בית'}
+                                                {isRtl && tab === 'blog' && 'בלוג'}
+                                                {isRtl && tab === 'demo' && 'הדגמה'}
+                                                {isRtl && tab === 'calculator' && 'מחשבון'}
+                                                {!isRtl && tab}
+                                            </span>
+                                            {activeTab === tab && <div className="w-2 h-2 rounded-full bg-primary" />}
+                                        </motion.button>
+                                    ))}
+                                </div>
+
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: 0.4 }}
+                                    className="border-t border-slate-100 dark:border-neutral-900 pt-10 space-y-8"
+                                >
+                                    <div className="flex items-center justify-between px-4">
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{isRtl ? 'מראה' : 'Appearance'}</span>
+                                        <ThemeToggle />
+                                    </div>
+                                    <div className="flex items-center justify-between px-4">
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{isRtl ? 'שפה' : 'Language'}</span>
+                                        <LanguageToggle />
+                                    </div>
+
+                                    <button
+                                        onClick={() => navigate('/login')}
+                                        className="w-full h-20 bg-foreground text-background font-black text-xs uppercase tracking-[0.3em] rounded-[2rem] shadow-premium-dark flex items-center justify-center gap-4 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                    >
+                                        {isRtl ? 'כניסה למערכת' : 'Sign In'}
+                                        <ArrowRight className={cn("w-6 h-6", isRtl && "rotate-180")} />
+                                    </button>
+                                </motion.div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </header>
 
             <main className="pt-24">
