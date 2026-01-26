@@ -115,7 +115,7 @@ ADD COLUMN IF NOT EXISTS subscription_tier TEXT DEFAULT 'free';
 
 ## 🚀 Next Steps (Optional)
 
-1. **Expand Knowledge Base**: Use NotebookLM to create comprehensive support guide
+1. **Expand Knowledge Base**: Use NotebookLM to create Renty's support guide
 2. **Add More Functions**:
    - Generate payment messages
    - Set reminders

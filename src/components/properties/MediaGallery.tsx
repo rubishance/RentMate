@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Upload, Loader2, Image as ImageIcon, Video, Trash2, ExternalLink, Plus, Folder, Check, X } from 'lucide-react';
+import { Upload, Loader2, Image as ImageIcon, Video, Trash2, ExternalLink, Plus, Folder, Check, X, Pencil as Pen } from 'lucide-react';
 import type { Property, PropertyDocument, DocumentFolder } from '../../types/database';
 import { propertyDocumentsService } from '../../services/property-documents.service';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -20,6 +20,7 @@ export function MediaGallery({ property, readOnly }: MediaGalleryProps) {
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(null);
     const [showUploadForm, setShowUploadForm] = useState(false);
+    const [editingFolder, setEditingFolder] = useState<DocumentFolder | null>(null);
 
     // New Album Form State
     const [albumName, setAlbumName] = useState('');
@@ -88,41 +89,50 @@ export function MediaGallery({ property, readOnly }: MediaGalleryProps) {
         setUploadProgress({ current: 0, total: stagedFiles.length });
 
         try {
-            // 1. Create Folder (Album)
-            const finalAlbumName = albumName.trim() || t('newAlbum', { defaultValue: 'New Album' });
+            if (editingFolder) {
+                // Update Folder
+                await propertyDocumentsService.updateFolder(editingFolder.id, {
+                    name: albumName.trim() || editingFolder.name,
+                    folder_date: albumDate,
+                    description: albumNote
+                });
+            } else {
+                // 1. Create Folder (Album)
+                const finalAlbumName = albumName.trim() || t('newAlbum', { defaultValue: 'New Album' });
 
-            const folder = await propertyDocumentsService.createFolder({
-                property_id: property.id,
-                category: 'photo',
-                name: finalAlbumName,
-                folder_date: albumDate || new Date().toISOString().split('T')[0],
-                description: albumNote
-            });
+                const folder = await propertyDocumentsService.createFolder({
+                    property_id: property.id,
+                    category: 'photo',
+                    name: finalAlbumName,
+                    folder_date: albumDate || new Date().toISOString().split('T')[0],
+                    description: albumNote
+                });
 
-            // 2. Upload Files
-            if (stagedFiles.length > 0) {
-                for (let i = 0; i < stagedFiles.length; i++) {
-                    let { file, note } = stagedFiles[i];
-                    const category = file.type.startsWith('video/') ? 'video' : 'photo';
+                // 2. Upload Files
+                if (stagedFiles.length > 0) {
+                    for (let i = 0; i < stagedFiles.length; i++) {
+                        let { file, note } = stagedFiles[i];
+                        const category = file.type.startsWith('video/') ? 'video' : 'photo';
 
-                    if (category === 'photo' && CompressionService.isImage(file)) {
-                        try {
-                            file = await CompressionService.compressImage(file);
-                        } catch (e) {
-                            console.warn('Compression failed, using original', e);
+                        if (category === 'photo' && CompressionService.isImage(file)) {
+                            try {
+                                file = await CompressionService.compressImage(file);
+                            } catch (e) {
+                                console.warn('Compression failed, using original', e);
+                            }
                         }
+
+                        await propertyDocumentsService.uploadDocument(file, {
+                            propertyId: property.id,
+                            category,
+                            folderId: folder.id,
+                            title: file.name,
+                            description: note,
+                            documentDate: albumDate
+                        });
+
+                        setUploadProgress({ current: i + 1, total: stagedFiles.length });
                     }
-
-                    await propertyDocumentsService.uploadDocument(file, {
-                        propertyId: property.id,
-                        category,
-                        folderId: folder.id,
-                        title: file.name,
-                        description: note,
-                        documentDate: albumDate
-                    });
-
-                    setUploadProgress({ current: i + 1, total: stagedFiles.length });
                 }
             }
 
@@ -132,15 +142,25 @@ export function MediaGallery({ property, readOnly }: MediaGalleryProps) {
             setAlbumNote('');
             setStagedFiles([]);
             setShowUploadForm(false);
+            setEditingFolder(null);
             loadData();
 
         } catch (error: any) {
-            console.error('Upload failed:', error);
+            console.error('Operation failed:', error);
             alert(`${t('error')}: ${error.message}`);
         } finally {
             setUploading(false);
             setUploadProgress(null);
         }
+    };
+
+    const handleEditFolder = (folder: DocumentFolder) => {
+        setEditingFolder(folder);
+        setAlbumName(folder.name);
+        setAlbumDate(folder.folder_date);
+        setAlbumNote(folder.description || '');
+        setStagedFiles([]);
+        setShowUploadForm(true);
     };
 
     const handleDeleteFolder = async (folderId: string) => {
@@ -273,7 +293,7 @@ export function MediaGallery({ property, readOnly }: MediaGalleryProps) {
                     <div className="relative flex items-center justify-between">
                         <div>
                             <h4 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
-                                {t('newAlbum')}
+                                {editingFolder ? t('edit') : t('newAlbum')}
                             </h4>
                             <p className="text-sm text-muted-foreground dark:text-muted-foreground mt-1">
                                 {t('createAlbumDesc', { defaultValue: 'Create a new album for your photos & videos' })}
@@ -324,71 +344,73 @@ export function MediaGallery({ property, readOnly }: MediaGalleryProps) {
                         </div>
                     </div>
 
-                    {/* Media Upload Section */}
-                    <div className="relative border-t border-border/50 dark:border-gray-700/50 pt-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <h5 className="text-sm font-bold text-foreground dark:text-gray-100 flex items-center gap-2">
-                                <ImageIcon className="w-4 h-4 text-primary" />
-                                {t('mediaFiles')}
-                            </h5>
-                            <span className="text-xs text-muted-foreground bg-muted dark:bg-gray-800 px-2 py-0.5 rounded-full">
-                                {stagedFiles.length} {t('files')}
-                            </span>
-                        </div>
-
-                        {/* Drop Zone / Input */}
-                        <div className="group relative mb-6">
-                            <input
-                                type="file"
-                                multiple
-                                accept="image/*,video/*"
-                                onChange={handleFileSelect}
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                            />
-                            <div className="w-full py-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl group-hover:border-primary group-hover:bg-primary/10/30 dark:group-hover:bg-blue-900/10 transition-all flex flex-col items-center justify-center text-center gap-2">
-                                <div className="p-3 bg-primary/10 dark:bg-blue-900/20 rounded-full group-hover:scale-110 transition-transform">
-                                    <Upload className="w-6 h-6 text-primary dark:text-blue-400" />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium text-foreground dark:text-white">{t('clickToUploadDrag')}</p>
-                                    <p className="text-xs text-muted-foreground dark:text-muted-foreground mt-1">PNG, JPG, MP4</p>
-                                </div>
+                    {/* Media Upload Section - Only for New Folders for now */}
+                    {!editingFolder && (
+                        <div className="relative border-t border-border/50 dark:border-gray-700/50 pt-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <h5 className="text-sm font-bold text-foreground dark:text-gray-100 flex items-center gap-2">
+                                    <ImageIcon className="w-4 h-4 text-primary" />
+                                    {t('mediaFiles')}
+                                </h5>
+                                <span className="text-xs text-muted-foreground bg-muted dark:bg-gray-800 px-2 py-0.5 rounded-full">
+                                    {stagedFiles.length} {t('files')}
+                                </span>
                             </div>
-                        </div>
 
-                        {stagedFiles.length > 0 && (
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-h-96 overflow-y-auto pr-1">
-                                {stagedFiles.map((item, idx) => (
-                                    <div key={idx} className="relative group aspect-square bg-white/60 dark:bg-gray-800/60 rounded-xl overflow-hidden border border-border dark:border-gray-700 shadow-sm hover:shadow-md transition-all">
-                                        {item.file.type.startsWith('image/') ? (
-                                            <img src={item.preview} alt="Preview" className="w-full h-full object-cover" />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center bg-muted dark:bg-gray-700">
-                                                <Video className="w-8 h-8 text-muted-foreground" />
-                                            </div>
-                                        )}
-
-                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-start justify-end p-2">
-                                            <button
-                                                onClick={() => removeStagedFile(idx)}
-                                                className="p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                                            >
-                                                <X className="w-4 h-4" />
-                                            </button>
-                                        </div>
-
-                                        <input
-                                            type="text"
-                                            value={item.note}
-                                            onChange={(e) => updateStagedFileNote(idx, e.target.value)}
-                                            placeholder={t('addQuickNote')}
-                                            className="absolute bottom-1 left-1 right-1 px-2 py-1.5 text-xs bg-white/90 dark:bg-black/70 border-0 rounded-lg backdrop-blur-md outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white placeholder-gray-500"
-                                        />
+                            {/* Drop Zone / Input */}
+                            <div className="group relative mb-6">
+                                <input
+                                    type="file"
+                                    multiple
+                                    accept="image/*,video/*"
+                                    onChange={handleFileSelect}
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                />
+                                <div className="w-full py-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl group-hover:border-primary group-hover:bg-primary/10/30 dark:group-hover:bg-blue-900/10 transition-all flex flex-col items-center justify-center text-center gap-2">
+                                    <div className="p-3 bg-primary/10 dark:bg-blue-900/20 rounded-full group-hover:scale-110 transition-transform">
+                                        <Upload className="w-6 h-6 text-primary dark:text-blue-400" />
                                     </div>
-                                ))}
+                                    <div>
+                                        <p className="text-sm font-medium text-foreground dark:text-white">{t('clickToUploadDrag')}</p>
+                                        <p className="text-xs text-muted-foreground dark:text-muted-foreground mt-1">PNG, JPG, MP4</p>
+                                    </div>
+                                </div>
                             </div>
-                        )}
-                    </div>
+
+                            {stagedFiles.length > 0 && (
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-h-96 overflow-y-auto pr-1">
+                                    {stagedFiles.map((item, idx) => (
+                                        <div key={idx} className="relative group aspect-square bg-white/60 dark:bg-gray-800/60 rounded-xl overflow-hidden border border-border dark:border-gray-700 shadow-sm hover:shadow-md transition-all">
+                                            {item.file.type.startsWith('image/') ? (
+                                                <img src={item.preview} alt="Preview" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center bg-muted dark:bg-gray-700">
+                                                    <Video className="w-8 h-8 text-muted-foreground" />
+                                                </div>
+                                            )}
+
+                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-start justify-end p-2">
+                                                <button
+                                                    onClick={() => removeStagedFile(idx)}
+                                                    className="p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </button>
+                                            </div>
+
+                                            <input
+                                                type="text"
+                                                value={item.note}
+                                                onChange={(e) => updateStagedFileNote(idx, e.target.value)}
+                                                placeholder={t('addQuickNote')}
+                                                className="absolute bottom-1 left-1 right-1 px-2 py-1.5 text-xs bg-white/90 dark:bg-black/70 border-0 rounded-lg backdrop-blur-md outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white placeholder-gray-500"
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     <div className="flex gap-3 pt-4 border-t border-border dark:border-gray-700/50">
                         <button
@@ -458,13 +480,22 @@ export function MediaGallery({ property, readOnly }: MediaGalleryProps) {
                                         </div>
                                     </div>
                                     {!readOnly && (
-                                        <button
-                                            onClick={() => handleDeleteFolder(folder.id)}
-                                            className="p-2 text-muted-foreground hover:text-red-500 transition-colors"
-                                            title={t('deleteAlbum')}
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
+                                        <div className="flex gap-1">
+                                            <button
+                                                onClick={() => handleEditFolder(folder)}
+                                                className="p-2 text-muted-foreground hover:text-primary transition-colors"
+                                                title={t('edit')}
+                                            >
+                                                <Pen className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteFolder(folder.id)}
+                                                className="p-2 text-muted-foreground hover:text-red-500 transition-colors"
+                                                title={t('deleteAlbum')}
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
                                     )}
                                 </div>
                                 <MediaGrid items={folderItems} />

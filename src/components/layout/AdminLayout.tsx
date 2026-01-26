@@ -23,6 +23,7 @@ const AdminLayout = () => {
     const location = useLocation();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [user, setUser] = useState<any>(null);
+    const [notification, setNotification] = useState<{ userId: string; userName: string } | null>(null);
 
     useEffect(() => {
         const getUser = async () => {
@@ -37,6 +38,47 @@ const AdminLayout = () => {
             }
         };
         getUser();
+
+        // Global Chat Listener
+        const channel = supabase
+            .channel('admin_global_notifications')
+            .on(
+                'postgres_changes',
+                { event: 'INSERT', schema: 'public', table: 'human_conversations', filter: 'status=eq.active' },
+                async (payload) => {
+                    // Fetch user name
+                    const { data: userData } = await supabase
+                        .from('user_profiles')
+                        .select('full_name, email')
+                        .eq('id', payload.new.user_id)
+                        .single();
+
+                    const userName = userData?.full_name || userData?.email || 'Unknown User';
+
+                    // Play sound (optional)
+                    try {
+                        const audio = new Audio('/notification.mp3'); // Ensure this file exists or fail silently
+                        audio.play().catch(() => { });
+                    } catch {
+                        // Audio file might not exist, ignore error
+                    }
+
+                    setNotification({
+                        userId: payload.new.user_id,
+                        userName: userName
+                    });
+
+                    // Auto-dismiss after 10 seconds
+                    setTimeout(() => {
+                        setNotification(null);
+                    }, 10000);
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, []);
 
     const navigation = [
@@ -139,6 +181,41 @@ const AdminLayout = () => {
                     <Outlet />
                 </main>
             </div>
+
+            {/* Global Chat Notification Toast */}
+            {notification && (
+                <div className="fixed bottom-6 right-6 z-[100] animate-in slide-in-from-bottom-5 fade-in duration-300">
+                    <div className="bg-white dark:bg-gray-800 border-l-4 border-brand-600 shadow-2xl rounded-r-xl p-4 max-w-sm flex items-start gap-4">
+                        <div className="p-2 bg-brand-100 dark:bg-brand-900/30 rounded-full shrink-0">
+                            <ChatBubbleLeftRightIcon className="w-6 h-6 text-brand-600" />
+                        </div>
+                        <div className="flex-1">
+                            <h4 className="font-black text-gray-900 dark:text-white uppercase tracking-tight text-sm">New Live Chat Request</h4>
+                            <p className="text-xs text-gray-500 mt-1 mb-2">
+                                <strong>{notification.userName}</strong> wants to speak with a human.
+                            </p>
+                            <div className="flex gap-2">
+                                <Link
+                                    to={`/admin/client/${notification.userId}`}
+                                    onClick={() => setNotification(null)}
+                                    className="bg-brand-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-brand-700 transition-colors uppercase tracking-wider"
+                                >
+                                    Open Chat
+                                </Link>
+                                <button
+                                    onClick={() => setNotification(null)}
+                                    className="text-gray-400 hover:text-gray-600 text-xs font-bold px-3 py-1.5 uppercase tracking-wider"
+                                >
+                                    Dismiss
+                                </button>
+                            </div>
+                        </div>
+                        <button onClick={() => setNotification(null)} className="text-gray-400 hover:text-gray-600">
+                            <XMarkIcon className="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

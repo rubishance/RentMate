@@ -1,292 +1,344 @@
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { Folder, Zap, ShieldCheck, TrendingUp, Mic, User, Signal, Wifi, Battery, ArrowRight } from 'lucide-react';
+import { BotFullBody } from '../chat/BotFullBody';
 
 /**
- * BillScanningAnimation Component
+ * BillScanningAnimation Component (v6.1 - "iPhone 16 Pro Max Edition")
  * 
- * A minimal black and white SVG animation showing:
- * - A phone from the front
- * - A bill being scanned on the screen
- * - The bill automatically filing into the correct folder
+ * Major updates:
+ * - iPhone 16 Pro Bezel with ultra-thin titanium borders.
+ * - Dynamic Island implementation with interactive state.
+ * - No background container (fully transparent).
+ * - Modern iOS-inspired UI for RentMate.
+ * - Refined animations and glass effects.
  */
 
 interface BillScanningAnimationProps {
     isRtl?: boolean;
 }
 
+type Step = 'DASHBOARD' | 'RENTY_GREET' | 'USER_VOICE' | 'SCANNING' | 'SUCCESS';
+
 export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationProps) => {
+    const [step, setStep] = useState<Step>('DASHBOARD');
+
+    useEffect(() => {
+        let isMounted = true;
+        const play = async () => {
+            if (!isMounted) return;
+            setStep('DASHBOARD');
+            await new Promise(r => setTimeout(r, 4000));
+            if (!isMounted) return;
+            setStep('RENTY_GREET');
+            await new Promise(r => setTimeout(r, 2500));
+            if (!isMounted) return;
+            setStep('USER_VOICE');
+            await new Promise(r => setTimeout(r, 3500));
+            if (!isMounted) return;
+            setStep('SCANNING');
+            await new Promise(r => setTimeout(r, 3500));
+            if (!isMounted) return;
+            setStep('SUCCESS');
+            await new Promise(r => setTimeout(r, 4500));
+            if (isMounted) play();
+        };
+        play();
+        return () => { isMounted = false; };
+    }, []);
+
     return (
-        <svg viewBox="0 0 600 400" className="w-full h-auto">
-            <defs>
-                {/* Scanning line gradient */}
-                <linearGradient id="scan-line" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="black" stopOpacity="0" />
-                    <stop offset="50%" stopColor="black" stopOpacity="0.4" />
-                    <stop offset="100%" stopColor="black" stopOpacity="0" />
-                </linearGradient>
-
-                {/* Screen glow */}
-                <filter id="screen-glow">
-                    <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-                    <feMerge>
-                        <feMergeNode in="coloredBlur" />
-                        <feMergeNode in="SourceGraphic" />
-                    </feMerge>
-                </filter>
-            </defs>
-
-            {/* Phone body - front view */}
-            <g>
-                {/* Phone frame */}
-                <rect x="180" y="50" width="240" height="300" rx="24" fill="black" />
-
-                {/* Screen */}
-                <rect x="190" y="70" width="220" height="260" rx="16" fill="white" />
-
-                {/* Camera notch */}
-                <rect x="270" y="60" width="60" height="8" rx="4" fill="black" />
-                <circle cx="285" cy="64" r="3" fill="#333" />
-
-                {/* Home indicator */}
-                <rect x="270" y="320" width="60" height="4" rx="2" fill="#e0e0e0" />
-            </g>
-
-            {/* Screen content */}
-            <g clipPath="url(#screen-clip)">
-                <defs>
-                    <clipPath id="screen-clip">
-                        <rect x="190" y="70" width="220" height="260" rx="16" />
-                    </clipPath>
-                </defs>
-
-                {/* App header */}
-                <rect x="190" y="70" width="220" height="50" fill="#fafafa" />
-                <text x="300" y="100" fontSize="14" fontWeight="600" fill="black" textAnchor="middle">
-                    {isRtl ? 'סורק מסמכים' : 'Document Scanner'}
-                </text>
-
-                {/* Bill document on screen - appears and gets scanned */}
-                <motion.g
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5, duration: 0.5 }}
-                >
-                    {/* Bill paper */}
-                    <rect x="220" y="140" width="160" height="120" rx="4" fill="white" stroke="black" strokeWidth="1.5" />
-
-                    {/* Bill header */}
-                    <text x="300" y="158" fontSize="10" fontWeight="600" fill="black" textAnchor="middle">
-                        {isRtl ? 'חשבון חשמל' : 'ELECTRICITY BILL'}
-                    </text>
-                    <line x1="230" y1="163" x2="370" y2="163" stroke="black" strokeWidth="0.5" opacity="0.2" />
-
-                    {/* Bill content lines */}
-                    <line x1={isRtl ? "260" : "230"} y1="175" x2={isRtl ? "370" : "340"} y2="175" stroke="black" strokeWidth="0.8" opacity="0.4" />
-                    <line x1={isRtl ? "240" : "230"} y1="185" x2={isRtl ? "370" : "360"} y2="185" stroke="black" strokeWidth="0.8" opacity="0.4" />
-                    <line x1={isRtl ? "280" : "230"} y1="195" x2={isRtl ? "370" : "320"} y2="195" stroke="black" strokeWidth="0.8" opacity="0.4" />
-
-                    {/* Amount - highlighted */}
-                    <motion.rect
-                        x={isRtl ? "295" : "225"}
-                        y="205"
-                        width="80"
-                        height="18"
-                        rx="2"
-                        fill="black"
-                        opacity="0.1"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 0.1 }}
-                        transition={{ delay: 1.5, duration: 0.3 }}
-                    />
-                    <text
-                        x={isRtl ? "370" : "230"}
-                        y="217"
-                        fontSize="11"
-                        fontWeight="700"
-                        fill="black"
-                        textAnchor={isRtl ? "end" : "start"}
-                        style={{ direction: 'ltr' }}
-                    >
-                        ₪324.50
-                    </text>
-
-                    {/* Date */}
-                    <motion.rect
-                        x={isRtl ? "305" : "225"}
-                        y="228"
-                        width="70"
-                        height="15"
-                        rx="2"
-                        fill="black"
-                        opacity="0.1"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 0.1 }}
-                        transition={{ delay: 1.7, duration: 0.3 }}
-                    />
-                    <text
-                        x={isRtl ? "370" : "230"}
-                        y="238"
-                        fontSize="9"
-                        fill="black"
-                        textAnchor={isRtl ? "end" : "start"}
-                        style={{ direction: 'ltr' }}
-                    >
-                        {isRtl ? '15.01.2026' : 'Jan 15, 2026'}
-                    </text>
-                </motion.g>
-
-                {/* Scanning line */}
-                <motion.rect
-                    x="220"
-                    y="140"
-                    width="160"
-                    height="20"
-                    fill="url(#scan-line)"
-                    initial={{ y: 140 }}
-                    animate={{ y: [140, 240, 140] }}
-                    transition={{
-                        duration: 2,
-                        delay: 0.8,
-                        repeat: 1,
-                        ease: "linear"
-                    }}
-                />
-
-                {/* Folders appearing at bottom */}
-                <motion.g
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 2.5, duration: 0.4 }}
-                >
-                    {/* Folder 1 - Contracts */}
-                    <g opacity="0.4">
-                        <path d="M 200 280 L 200 300 L 240 300 L 240 280 L 230 280 L 225 275 L 200 275 Z"
-                            fill="none" stroke="black" strokeWidth="1.5" />
-                        <text x="220" y="310" fontSize="8" fill="black" textAnchor="middle">
-                            {isRtl ? 'חוזים' : 'Contracts'}
-                        </text>
-                    </g>
-
-                    {/* Folder 2 - Bills (highlighted) */}
-                    <g>
-                        <motion.path
-                            d="M 260 280 L 260 300 L 300 300 L 300 280 L 290 280 L 285 275 L 260 275 Z"
-                            fill="black"
-                            fillOpacity="0.05"
-                            stroke="black"
-                            strokeWidth="2"
-                            initial={{ scale: 1 }}
-                            animate={{ scale: [1, 1.1, 1] }}
-                            transition={{ delay: 3.2, duration: 0.4 }}
-                        />
-                        <text x="280" y="310" fontSize="8" fontWeight="600" fill="black" textAnchor="middle">
-                            {isRtl ? 'חשבונות' : 'Bills'}
-                        </text>
-                    </g>
-
-                    {/* Folder 3 - Reports */}
-                    <g opacity="0.4">
-                        <path d="M 320 280 L 320 300 L 360 300 L 360 280 L 350 280 L 345 275 L 320 275 Z"
-                            fill="none" stroke="black" strokeWidth="1.5" />
-                        <text x="340" y="310" fontSize="8" fill="black" textAnchor="middle">
-                            {isRtl ? 'דוחות' : 'Reports'}
-                        </text>
-                    </g>
-                </motion.g>
-
-                {/* Bill moving to folder animation */}
-                <motion.g
-                    initial={{ x: 0, y: 0, scale: 1, opacity: 1 }}
-                    animate={{
-                        x: [-80, -80],
-                        y: [0, 120],
-                        scale: [1, 0.3],
-                        opacity: [1, 0]
-                    }}
-                    transition={{
-                        delay: 3,
-                        duration: 0.8,
-                        ease: [0.4, 0, 0.2, 1]
-                    }}
-                >
-                    <rect x="300" y="140" width="80" height="60" rx="3" fill="white" stroke="black" strokeWidth="1.5" />
-                    <text x="340" y="158" fontSize="8" fontWeight="600" fill="black" textAnchor="middle">
-                        {isRtl ? 'חשמל' : 'ELECTRICITY'}
-                    </text>
-                    <text x="340" y="168" fontSize="7" fill="black" textAnchor="middle">₪324.50</text>
-                </motion.g>
-
-                {/* Success checkmark */}
-                <motion.g
-                    initial={{ opacity: 0, scale: 0 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 3.8, duration: 0.3, type: "spring" }}
-                >
-                    <circle cx="280" cy="290" r="12" fill="black" />
-                    <motion.path
-                        d="M 274 290 L 278 294 L 286 286"
-                        stroke="white"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        fill="none"
-                        initial={{ pathLength: 0 }}
-                        animate={{ pathLength: 1 }}
-                        transition={{ delay: 4, duration: 0.2 }}
-                    />
-                </motion.g>
-            </g>
-
-            {/* Status indicator */}
-            <motion.g
-                initial={{ opacity: 0 }}
-                animate={{ opacity: [0, 1, 1, 1, 0] }}
-                transition={{
-                    duration: 4.5,
-                    times: [0, 0.1, 0.7, 0.9, 1]
-                }}
+        <div className="relative w-full h-full flex items-center justify-center">
+            {/* PHONE MOCKUP (iPhone 16 Pro Titanium Style) */}
+            <motion.div
+                className="relative w-[300px] h-[620px] bg-neutral-900 rounded-[58px] p-[2px] shadow-[0_50px_100px_rgba(0,0,0,0.5)] border border-white/10"
             >
-                <rect x="220" y="360" width="160" height="28" rx="14" fill="black" />
-                <motion.text
-                    x="300"
-                    y="380"
-                    fontSize="12"
-                    fontWeight="500"
-                    fill="white"
-                    textAnchor="middle"
-                    initial={{ opacity: 1 }}
-                    animate={{ opacity: [1, 1, 1, 0] }}
-                    transition={{
-                        duration: 4.5,
-                        times: [0, 0.6, 0.8, 1]
+                {/* Titanium Bezel Silk Edge */}
+                <div className="absolute inset-x-2 inset-y-2 rounded-[56px] border border-white/10 pointer-events-none z-10" />
+
+                {/* Inner Screen (Glassmorphic) */}
+                <div
+                    className="w-full h-full bg-white/5 dark:bg-black/20 backdrop-blur-2xl rounded-[56px] overflow-hidden relative border border-white/5 isolate"
+                    style={{
+                        transformStyle: 'flat',
+                        clipPath: 'inset(0 0 0 0 rounded 56px)',
+                        WebkitMaskImage: '-webkit-radial-gradient(white, black)'
                     }}
                 >
-                    {/* Text changes based on animation stage */}
-                    <motion.tspan
-                        initial={{ opacity: 1 }}
-                        animate={{ opacity: [1, 1, 0] }}
-                        transition={{ duration: 2.5, times: [0, 0.8, 1] }}
+
+                    {/* STATUS BAR */}
+                    <div className="absolute top-4 inset-x-0 h-8 flex items-center justify-between px-10 z-[100]">
+                        <span className="text-[12px] font-bold text-foreground drop-shadow-sm">9:41</span>
+                        <div className="flex gap-2 items-center opacity-80">
+                            <Signal className="w-3.5 h-3.5 text-foreground" />
+                            <Wifi className="w-3.5 h-3.5 text-foreground" />
+                            <Battery className="w-4.5 h-4.5 text-foreground" />
+                        </div>
+                    </div>
+
+                    {/* DYNAMIC ISLAND (iPhone 16 Pro Style) */}
+                    <motion.div
+                        className="absolute left-1/2 -translate-x-1/2 bg-black rounded-full z-[110] flex items-center justify-center shadow-2xl ring-1 ring-white/10"
+                        animate={{
+                            width: step === 'SCANNING' ? '160px' : step === 'USER_VOICE' ? '120px' : '95px',
+                            height: step === 'SCANNING' ? '36px' : step === 'USER_VOICE' ? '32px' : '30px',
+                            top: '12px'
+                        }}
+                        transition={{ type: 'spring', stiffness: 180, damping: 22 }}
                     >
-                        {isRtl ? 'סורק...' : 'Scanning...'}
-                    </motion.tspan>
-                </motion.text>
-                <motion.text
-                    x="300"
-                    y="380"
-                    fontSize="12"
-                    fontWeight="500"
-                    fill="white"
-                    textAnchor="middle"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: [0, 0, 1, 1, 0] }}
-                    transition={{
-                        duration: 4.5,
-                        times: [0, 0.55, 0.6, 0.85, 1]
-                    }}
-                >
-                    {isRtl ? 'מעביר לתיקיית חשבונות...' : 'Filing to Bills folder...'}
-                </motion.text>
-            </motion.g>
-        </svg>
+                        {step === 'SCANNING' && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="flex items-center gap-2 px-3"
+                            >
+                                <div className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_10px_#34d399]" />
+                                <span className="text-[9px] font-black text-white uppercase tracking-tighter">SCANNING</span>
+                            </motion.div>
+                        )}
+                        {step === 'USER_VOICE' && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="w-full flex justify-center items-center h-full"
+                            >
+                                <div className="flex gap-1.5 items-center h-full">
+                                    {[0.5, 1, 0.4, 0.8, 0.3].map((v, i) => (
+                                        <motion.div
+                                            key={i}
+                                            className="w-1.5 bg-gold rounded-full"
+                                            animate={{ height: ['4px', `${v * 16}px`, '4px'] }}
+                                            transition={{ duration: 0.5, repeat: Infinity, delay: i * 0.1 }}
+                                        />
+                                    ))}
+                                </div>
+                            </motion.div>
+                        )}
+                    </motion.div>
+
+                    {/* SCREEN CONTENT CONTAINER (Transparent / Glass) */}
+                    <div className="w-full h-full p-8 pt-20 flex flex-col relative">
+
+                        {/* APP HEADER */}
+                        <div className={`flex justify-between items-center mb-8 transition-all duration-500 ${step !== 'DASHBOARD' ? 'opacity-10 blur-md translate-y-2' : 'opacity-100 translate-y-0'}`}>
+                            <div className="space-y-1">
+                                <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground font-black">
+                                    {isRtl ? 'בוקר טוב, ישראל' : 'MORNING, ISRAEL'}
+                                </div>
+                                <div className="text-3xl font-black text-foreground tracking-tight flex items-center gap-2">
+                                    RentMate
+                                    <div className="w-2 h-2 bg-gold rounded-full" />
+                                </div>
+                            </div>
+                            <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10 shadow-lg">
+                                <User className="w-6 h-6 text-muted-foreground" />
+                            </div>
+                        </div>
+
+                        {/* DASHBOARD WIDGETS */}
+                        <div className={`space-y-6 transition-all duration-700 ${step !== 'DASHBOARD' ? 'opacity-10 blur-xl scale-90 translate-y-10' : 'opacity-100 scale-100 translate-y-0'}`}>
+                            <div className="bg-white/10 backdrop-blur-xl p-8 rounded-[3rem] shadow-2xl border border-white/10">
+                                <div className="flex justify-between items-center mb-4">
+                                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">{isRtl ? 'הכנסה חודשית' : 'MONTHLY REVENUE'}</span>
+                                    <TrendingUp className="w-5 h-5 text-emerald-400" />
+                                </div>
+                                <div className="text-5xl font-black text-foreground tracking-tighter leading-none mb-6">₪15,200</div>
+                                <div className="h-2 w-full bg-black/20 dark:bg-white/5 rounded-full overflow-hidden">
+                                    <motion.div
+                                        className="h-full bg-gold"
+                                        initial={{ width: '0%' }}
+                                        animate={{ width: '85%' }}
+                                        transition={{ duration: 1.5, delay: 0.5 }}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-6">
+                                <div className="bg-white/10 backdrop-blur-lg p-6 rounded-[2.5rem] border border-white/10 aspect-square flex flex-col justify-between group overflow-hidden relative shadow-xl">
+                                    <Folder className="w-8 h-8 text-muted-foreground/40" />
+                                    <div className="w-14 h-3 bg-foreground rounded-full opacity-20" />
+                                </div>
+                                <div className="bg-black/40 backdrop-blur-lg p-6 rounded-[2.5rem] border border-white/10 aspect-square flex flex-col justify-between shadow-2xl relative overflow-hidden">
+                                    <Zap className="w-8 h-8 text-gold animate-pulse" />
+                                    <div className="w-14 h-3 bg-white rounded-full opacity-40" />
+                                </div>
+                            </div>
+
+                            {/* NEW: Renty App Icon Widget */}
+                            <motion.div
+                                className="bg-gradient-to-br from-indigo-600 to-purple-700 p-4 rounded-3xl shadow-lg border border-white/20 flex items-center gap-4 relative overflow-hidden"
+                                whileHover={{ scale: 1.02 }}
+                            >
+                                <div className="w-10 h-10 bg-white/20 rounded-xl backdrop-blur-md flex items-center justify-center shrink-0 border border-white/30">
+                                    <div className="scale-150 transform">
+                                        <BotFullBody size={20} />
+                                    </div>
+                                </div>
+                                <div className="min-w-0">
+                                    <div className="text-[9px] font-black text-white/60 uppercase tracking-widest leading-none mb-1">AI ASSISTANT</div>
+                                    <div className="text-[13px] font-bold text-white truncate">Ask Renty Ready</div>
+                                </div>
+                                <motion.div
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white/10 flex items-center justify-center"
+                                    animate={{ x: [0, 5, 0] }}
+                                    transition={{ repeat: Infinity, duration: 2 }}
+                                >
+                                    <ArrowRight className="w-3 h-3 text-white" />
+                                </motion.div>
+                            </motion.div>
+                        </div>
+
+                        {/* CHAT INTERFACE OVERLAY */}
+                        <AnimatePresence>
+                            {step !== 'DASHBOARD' && (
+                                <motion.div
+                                    className="absolute inset-x-0 bottom-0 z-[80] flex flex-col items-center pb-12"
+                                    initial={{ opacity: 0, y: 50 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 50 }}
+                                >
+                                    {/* BLUR BACKGROUND */}
+                                    <div className="absolute inset-0 bg-white/40 dark:bg-black/60 backdrop-blur-md -z-10" />
+
+                                    {/* RENTY CHARACTER */}
+                                    <motion.div
+                                        animate={{ y: step === 'SCANNING' || step === 'SUCCESS' ? 140 : 0 }}
+                                        transition={{ type: 'spring', damping: 20, stiffness: 100 }}
+                                        className="relative z-10"
+                                    >
+                                        <BotFullBody size={130} />
+                                    </motion.div>
+
+                                    {/* DIALOGUE BUBBLE */}
+                                    <AnimatePresence>
+                                        {(step === 'RENTY_GREET' || step === 'USER_VOICE') && (
+                                            <motion.div
+                                                className="absolute top-[-60px] left-1/2 -translate-x-1/2 w-[85%] bg-neutral-900 dark:bg-white text-white dark:text-black p-4 rounded-2xl text-[10px] font-bold shadow-2xl border border-white/10 z-20 text-center"
+                                                initial={{ scale: 0, opacity: 0 }}
+                                                animate={{ scale: 1, opacity: 1 }}
+                                                exit={{ scale: 0, opacity: 0 }}
+                                            >
+                                                {isRtl ? 'שלום! אני רנטי - בוט ה-AI של RentMate. כיצד אפשר לעזור?' : 'Hi! I\'m Renty - RentMate\'s AI bot. How can I help?'}
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+
+                                    {/* USER VOICE / COMMAND */}
+                                    <AnimatePresence>
+                                        {(step === 'USER_VOICE' || step === 'SCANNING') && (
+                                            <motion.div
+                                                className="absolute top-[-10px] left-1/2 -translate-x-1/2 w-[60%] bg-gold text-black p-3 rounded-xl shadow-xl border border-white/20 z-20 text-center"
+                                                initial={{ scale: 0, opacity: 0 }}
+                                                animate={{ scale: 1, opacity: 1 }}
+                                                exit={{ scale: 0, opacity: 0 }}
+                                            >
+                                                {step === 'USER_VOICE' ? (
+                                                    <div className="text-[9px] font-black tracking-widest uppercase flex items-center justify-center gap-2">
+                                                        <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                                                        {isRtl ? 'מקליט...' : 'LISTENING...'}
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-[9px] font-black truncate">{isRtl ? 'מתייק חשבון...' : 'Filing Bill...'}</div>
+                                                )}
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        {/* SCANNING MODAL */}
+                        <AnimatePresence>
+                            {(step === 'SCANNING') && (
+                                <motion.div
+                                    className="absolute inset-x-4 top-24 bg-white dark:bg-neutral-900 rounded-[3rem] shadow-[0_40px_80px_rgba(0,0,0,0.5)] border border-neutral-100 dark:border-neutral-800 z-[100] p-8 overflow-hidden"
+                                    initial={{ y: 350, opacity: 0, scale: 0.95 }}
+                                    animate={{ y: 0, opacity: 1, scale: 1 }}
+                                    exit={{ y: 350, opacity: 0, scale: 0.95 }}
+                                    transition={{ type: 'spring', damping: 25, stiffness: 120 }}
+                                >
+                                    <div className="flex justify-between items-center mb-8">
+                                        <div>
+                                            <div className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1">{isRtl ? 'חברת החשמל' : 'IEC ISRAEL'}</div>
+                                            <div className="text-3xl font-black dark:text-white tracking-tighter">₪324.50</div>
+                                        </div>
+                                        <Zap className="w-8 h-8 text-gold drop-shadow-[0_0_10px_#c5a059]" />
+                                    </div>
+                                    <div className="space-y-3 mb-6">
+                                        <div className="h-2.5 w-full bg-neutral-100 dark:bg-neutral-800 rounded-full" />
+                                        <div className="h-2.5 w-1/2 bg-neutral-100 dark:bg-neutral-800 rounded-full" />
+                                    </div>
+                                    <div className="flex justify-between items-center text-[10px] font-black text-neutral-400 tracking-tighter">
+                                        <span className="bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-lg">15/01/2026</span>
+                                        <span className="text-red-500">{isRtl ? 'ממתין לתשלום' : 'PENDING'}</span>
+                                    </div>
+                                    {/* Scanning High-Tec Beam */}
+                                    <motion.div
+                                        className="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-gold to-transparent shadow-[0_0_20px_#c5a059]"
+                                        animate={{ top: ['0%', '100%', '0%'] }}
+                                        transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                                    />
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        {/* SUCCESS FEEDBACK */}
+                        <AnimatePresence>
+                            {step === 'SUCCESS' && (
+                                <motion.div
+                                    className="absolute inset-0 z-[120] flex flex-col items-center justify-center p-8 bg-neutral-900/80 backdrop-blur-md"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                >
+                                    <motion.div
+                                        className="w-28 h-28 bg-gold rounded-[2.5rem] flex items-center justify-center shadow-[0_0_60px_#c5a059] relative"
+                                        initial={{ scale: 0, rotate: -45 }}
+                                        animate={{ scale: 1, rotate: 0 }}
+                                        transition={{ type: 'spring', damping: 10 }}
+                                    >
+                                        <ShieldCheck className="w-14 h-14 text-black" />
+                                        <motion.div
+                                            className="absolute -top-3 -right-3 w-10 h-10 bg-black border-4 border-gold rounded-full flex items-center justify-center"
+                                            animate={{ scale: [1, 1.2, 1] }}
+                                            transition={{ repeat: Infinity, duration: 2 }}
+                                        >
+                                            <Zap className="w-5 h-5 text-gold" />
+                                        </motion.div>
+                                    </motion.div>
+                                    <motion.div
+                                        className="mt-8 text-center"
+                                        initial={{ y: 20, opacity: 0 }}
+                                        animate={{ y: 0, opacity: 1 }}
+                                        transition={{ delay: 0.2 }}
+                                    >
+                                        <div className="text-gold font-black text-2xl mb-2 tracking-tighter">{isRtl ? 'הקובץ תויק!' : 'SUCCESSFULLY FILED'}</div>
+                                        <div className="text-white/40 text-[10px] uppercase font-bold tracking-[0.2em]">
+                                            {isRtl ? 'תיקיית חשבונות חשמל 2026' : 'ELECTRICITY BILLS 2026'}
+                                        </div>
+                                    </motion.div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                    </div>
+                </div>
+
+                {/* iPhone 16 Pro Home Bar */}
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1.5 bg-white/20 rounded-full backdrop-blur-3xl z-[130]" />
+            </motion.div>
+
+            {/* EXTERNAL PROGRESS BAR */}
+            <div className="absolute bottom-4 flex gap-1 items-center">
+                {['DASHBOARD', 'RENTY_GREET', 'USER_VOICE', 'SCANNING', 'SUCCESS'].map((s) => (
+                    <motion.div
+                        key={s}
+                        className={`h-1.5 rounded-full ${step === s ? 'bg-gold' : 'bg-neutral-800'}`}
+                        animate={{ width: step === s ? '40px' : '10px' }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    />
+                ))}
+            </div>
+        </div>
     );
 };
 

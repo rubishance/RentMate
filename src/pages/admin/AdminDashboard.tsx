@@ -11,14 +11,18 @@ import {
     Settings,
     CreditCard,
     ExternalLink,
-    Loader2
+    Loader2,
+    Cpu,
+    MessageSquare
 } from 'lucide-react';
+import { ActiveChatsWidget } from '../../components/crm/ActiveChatsWidget';
 
 interface DashboardStats {
     totalUsers: number;
     activeUsers: number;
     totalContracts: number;
     totalRevenue: number;
+    totalAiCost: number;
 }
 
 interface RecentActivity {
@@ -36,6 +40,18 @@ interface NewUser {
     created_at: string;
 }
 
+interface AiConversation {
+    id: string;
+    user_id: string;
+    messages: any[];
+    total_cost_usd: number;
+    updated_at: string;
+    user_profiles?: {
+        full_name: string;
+        email: string;
+    };
+}
+
 const AdminDashboard = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
@@ -43,10 +59,12 @@ const AdminDashboard = () => {
         totalUsers: 0,
         activeUsers: 0,
         totalContracts: 0,
-        totalRevenue: 0
+        totalRevenue: 0,
+        totalAiCost: 0
     });
     const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
     const [newUsers, setNewUsers] = useState<NewUser[]>([]);
+    const [recentAiConvs, setRecentAiConvs] = useState<AiConversation[]>([]);
 
     useEffect(() => {
         fetchDashboardData();
@@ -68,18 +86,22 @@ const AdminDashboard = () => {
                 // Recent Activity
                 supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(5),
                 // New Users
-                supabase.from('user_profiles').select('id, email, full_name, created_at').order('created_at', { ascending: false }).limit(5)
+                supabase.from('user_profiles').select('id, email, full_name, created_at').order('created_at', { ascending: false }).limit(5),
+                // Recent AI Conversations
+                supabase.from('ai_conversations').select('*, user_profiles(full_name, email)').order('updated_at', { ascending: false }).limit(5)
             ]);
 
             setStats({
                 totalUsers: statsData?.totalUsers || 0,
                 activeUsers: statsData?.activeUsers || 0,
                 totalContracts: statsData?.totalContracts || 0,
-                totalRevenue: statsData?.totalRevenue || 0
+                totalRevenue: statsData?.totalRevenue || 0,
+                totalAiCost: statsData?.totalAiCost || 0
             });
 
             setRecentActivity(logsReq.data as RecentActivity[] || []);
             setNewUsers(newUsersReq.data as NewUser[] || []);
+            setRecentAiConvs((await supabase.from('ai_conversations').select('*, user_profiles(full_name, email)').order('updated_at', { ascending: false }).limit(5)).data as any[] || []);
 
         } catch (error) {
             console.error('Error loading dashboard:', error);
@@ -93,6 +115,7 @@ const AdminDashboard = () => {
         { name: 'Total Contracts', value: stats.totalContracts, icon: FileText, color: 'text-purple-600', bg: 'bg-purple-50' },
         { name: 'Total Revenue', value: `₪${stats.totalRevenue.toLocaleString()}`, icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50' },
         { name: 'Active Users', value: stats.activeUsers, icon: Activity, color: 'text-orange-600', bg: 'bg-orange-50' },
+        { name: 'AI Usage Cost', value: `$${stats.totalAiCost.toFixed(2)}`, icon: Cpu, color: 'text-blue-600', bg: 'bg-blue-50' },
     ];
 
     const quickLinks = [
@@ -140,6 +163,11 @@ const AdminDashboard = () => {
                         </div>
                     </div>
                 ))}
+            </div>
+
+            {/* Active Chats Widget */}
+            <div className="h-80">
+                <ActiveChatsWidget />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -219,6 +247,66 @@ const AdminDashboard = () => {
                             ))
                         )}
                     </ul>
+                </div>
+            </div>
+
+            {/* AI Conversations */}
+            <div className="bg-white dark:bg-gray-800 shadow-sm rounded-xl border border-border dark:border-gray-700 overflow-hidden">
+                <div className="px-6 py-5 border-b border-border dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
+                    <h3 className="text-base font-semibold leading-6 text-foreground dark:text-white flex items-center gap-2">
+                        <MessageSquare className="w-4 h-4 text-muted-foreground" />
+                        Latest AI Conversations
+                    </h3>
+                    <button onClick={() => navigate('/admin/conversations')} className="text-xs font-medium text-brand-600 hover:text-brand-500 flex items-center gap-1">
+                        View Analytics <ExternalLink className="w-3 h-3" />
+                    </button>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead className="bg-gray-50 dark:bg-gray-900/50">
+                            <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Message</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Cost</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Sync</th>
+                            </tr>
+                        </thead>
+                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            {recentAiConvs.length === 0 ? (
+                                <tr>
+                                    <td colSpan={4} className="px-6 py-10 text-center text-sm text-gray-500">No AI conversations logged yet.</td>
+                                </tr>
+                            ) : (
+                                recentAiConvs.map((conv) => (
+                                    <tr key={conv.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="flex items-center">
+                                                <div className="ml-0">
+                                                    <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                                        {conv.user_profiles?.full_name || 'Anonymous User'}
+                                                    </div>
+                                                    <div className="text-xs text-gray-500">{conv.user_profiles?.email || 'No email'}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="text-sm text-gray-900 dark:text-gray-300 max-w-sm truncate">
+                                                {conv.messages[conv.messages.length - 1]?.content || 'No messages'}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                                ${conv.total_cost_usd?.toFixed(3)}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-500">
+                                            {new Date(conv.updated_at).toLocaleString()}
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
                 </div>
             </div>
 

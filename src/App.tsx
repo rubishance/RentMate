@@ -22,7 +22,7 @@ import { Login } from './pages/Login';
 // Lazy load Main Pages (Named Exports)
 const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })));
 const Properties = lazy(() => import('./pages/Properties').then(module => ({ default: module.Properties })));
-const Tenants = lazy(() => import('./pages/Tenants').then(module => ({ default: module.Tenants })));
+const Tenants = lazy(() => import('./pages/Tenants'));
 const Contracts = lazy(() => import('./pages/Contracts').then(module => ({ default: module.Contracts })));
 const Payments = lazy(() => import('./pages/Payments').then(module => ({ default: module.Payments })));
 const AddContract = lazy(() => import('./pages/AddContract').then(module => ({ default: module.AddContract })));
@@ -50,6 +50,7 @@ const AdminNotifications = lazy(() => import('./pages/admin/AdminNotifications')
 const SystemSettings = lazy(() => import('./pages/admin/SystemSettings'));
 const StorageManagement = lazy(() => import('./pages/admin/StorageManagement'));
 const AIUsageManagement = lazy(() => import('./pages/admin/AIUsageManagement'));
+const ClientProfile = lazy(() => import('./pages/admin/ClientProfile'));
 
 const PlanManagement = lazy(() => import('./pages/admin/PlanManagement'));
 const Pricing = lazy(() => import('./pages/Pricing'));
@@ -102,7 +103,6 @@ function App() {
                     <Route element={<AppShell />}>
                       <Route path="/dashboard" element={<Dashboard />} />
                       <Route path="/properties" element={<Properties />} />
-                      <Route path="/tenants" element={<Tenants />} />
                       <Route path="/contracts" element={<Contracts />} />
                       <Route path="/contracts/new" element={<AddContract />} />
                       <Route path="/calculator" element={<Calculator />} />
@@ -132,14 +132,14 @@ function App() {
                       <Route path="feedback" element={<AdminFeedback />} />
                       <Route path="audit-logs" element={<AuditLogs />} />
                       <Route path="ai-usage" element={<AIUsageManagement />} />
+                      <Route path="client/:id" element={<ClientProfile />} />
                     </Route>
                   </Route>
                 </Routes>
               </Suspense>
+              {/* Global Widgets */}
+              <ChatWidget />
             </BrowserRouter>
-            {/* Global Widgets */}
-            <FeedbackWidget />
-            <ChatWidget />
           </ErrorBoundary>
         </DataCacheProvider>
       </NotificationsProvider>

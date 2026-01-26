@@ -14,7 +14,6 @@ const NAV_LABELS = {
     he: {
         '/dashboard': 'בית',
         '/properties': 'נכסים',
-        '/tenants': 'דיירים',
         '/contracts': 'חוזים',
         '/payments': 'תשלומים',
         '/calculator': 'מחשבון',
@@ -26,7 +25,6 @@ const NAV_LABELS = {
     en: {
         '/dashboard': 'Home',
         '/properties': 'Assets',
-        '/tenants': 'Tenants',
         '/contracts': 'Contracts',
         '/payments': 'Payments',
         '/calculator': 'Calc',
@@ -42,6 +40,7 @@ import logoIconDark from '../../assets/rentmate-icon-only-dark.png';
 import { useNotificationScheduler } from '../../hooks/useNotificationScheduler';
 import { NotificationCenter } from '../common/NotificationCenter';
 import { SystemBroadcast } from '../common/SystemBroadcast';
+// Custom SettingsIcon already imported from NavIcons
 // Custom SettingsIcon already imported from NavIcons
 
 export function AppShell() {
@@ -102,7 +101,6 @@ export function AppShell() {
     const navItems = [
         { path: '/dashboard', label: labels['/dashboard'], icon: HomeIcon },
         { path: '/properties', label: labels['/properties'], icon: AssetsIcon },
-        { path: '/tenants', label: labels['/tenants'], icon: TenantsIcon },
         { path: '/contracts', label: labels['/contracts'], icon: ContractsIcon },
         { path: '/payments', label: labels['/payments'], icon: PaymentsIcon },
         { path: '/tools', label: labels['/tools'], icon: ToolsIcon },
@@ -147,27 +145,32 @@ export function AppShell() {
         }),
     };
     return (
-        <div className="h-[100dvh] bg-background dark:bg-[#0a0a0a] text-foreground dark:text-white flex flex-col font-sans relative overflow-hidden">
-            {/* Top Header */}
-            <header className="fixed top-0 left-0 right-0 h-14 bg-white/60 dark:bg-[#0a0a0a]/60 backdrop-blur-xl border-b border-border dark:border-neutral-800 z-50 flex items-center justify-between px-2">
-                <div className="flex items-center gap-2 px-1 cursor-pointer" onClick={() => navigate('/dashboard')}>
-                    <img
-                        src={effectiveTheme === 'dark' ? logoIconDark : logoIconOnly}
-                        alt="RentMate Icon"
-                        className="h-9 w-9 object-contain"
-                    />
-                    <span className="text-xl tracking-tighter text-black dark:text-white leading-none">
-                        <span className="font-black">Rent</span>
-                        <span className="font-normal">Mate</span>
+        <div className="min-h-screen bg-white dark:bg-black font-sans selection:bg-primary/10">
+            {/* Header */}
+            <header className="fixed top-0 left-0 right-0 h-24 bg-white/50 dark:bg-black/50 backdrop-blur-3xl z-50 flex items-center justify-between px-8 border-b border-slate-50 dark:border-neutral-900 transition-all duration-500">
+                <div className="flex items-center gap-4 group cursor-pointer" onClick={() => navigate('/dashboard')}>
+                    <div className="w-10 h-10 bg-foreground rounded-[0.8rem] flex items-center justify-center group-hover:rotate-12 transition-transform duration-500">
+                        <img
+                            src={effectiveTheme === 'dark' ? logoIconDark : logoIconOnly}
+                            alt="RentMate"
+                            className="w-6 h-6 invert dark:invert-0"
+                        />
+                    </div>
+                    <span className="text-2xl font-black tracking-tighter text-foreground whitespace-nowrap lowercase">
+                        Rent<span className="opacity-40">Mate</span>
                     </span>
                 </div>
-                <div className="flex items-center gap-1 md:gap-2">
-                    <ThemeToggle className="scale-[0.85]" />
-                    <LanguageToggle className="scale-[0.85]" />
+
+                <div className="flex items-center gap-6">
+                    <div className="hidden md:flex gap-4">
+                        <ThemeToggle className="scale-[0.8]" />
+                        <LanguageToggle className="scale-[0.8]" />
+                    </div>
+                    <div className="h-8 w-[1px] bg-slate-100 dark:bg-neutral-800 hidden md:block" />
                     <NotificationCenter />
                     <button
                         onClick={() => navigate('/settings')}
-                        className="p-2 text-muted-foreground dark:text-gray-400 hover:text-foreground dark:hover:text-white hover:bg-slate-100 dark:hover:bg-neutral-800 rounded-full transition-colors"
+                        className="w-10 h-10 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-slate-50 dark:hover:bg-neutral-900 rounded-xl transition-all"
                         aria-label="Settings"
                     >
                         <SettingsIcon className="w-5 h-5" />
@@ -175,49 +178,55 @@ export function AppShell() {
                 </div>
             </header>
 
-            <div className="pt-14">
-                <SystemBroadcast />
+            <div className="pt-24 min-h-screen flex flex-col relative overflow-hidden">
+                <div className="relative z-50">
+                    <SystemBroadcast />
+                </div>
+
+                {/* Accessibility: Skip to Content */}
+                <a
+                    href="#main-content"
+                    className="sr-only focus:not-sr-only focus:absolute focus:top-28 focus:left-8 z-[999] px-8 py-4 bg-foreground text-background font-black uppercase text-[10px] tracking-widest rounded-2xl shadow-premium-dark"
+                >
+                    {preferences.language === 'he' ? 'דלג לתוכן המרכזי' : 'Skip to main content'}
+                </a>
+
+                {/* Main Content Area */}
+                <motion.main
+                    id="main-content"
+                    className="flex-1 overflow-y-auto overflow-x-hidden pb-40 scroll-smooth relative z-10"
+                    drag="x"
+                    dragConstraints={{ left: 0, right: 0 }}
+                    dragElastic={0.05}
+                    onDragEnd={onDragEnd}
+                >
+                    <AnimatePresence mode="wait" custom={direction} initial={false}>
+                        <motion.div
+                            key={location.pathname}
+                            custom={direction}
+                            variants={variants}
+                            initial="enter"
+                            animate="center"
+                            exit="exit"
+                            transition={{ type: 'spring', stiffness: 350, damping: 35 }}
+                            className="min-h-full px-6 md:px-10 max-w-7xl mx-auto"
+                        >
+                            <Outlet />
+                        </motion.div>
+                    </AnimatePresence>
+                </motion.main>
             </div>
-
-            {/* Accessibility: Skip to Content */}
-            <a
-                href="#main-content"
-                className="sr-only focus:not-sr-only focus:absolute focus:top-20 focus:left-4 z-[999] px-4 py-2 bg-primary text-white font-bold rounded-lg shadow-lg"
-            >
-                {preferences.language === 'he' ? 'דלג לתוכן המרכזי' : 'Skip to main content'}
-            </a>
-
-            {/* Main Content Area (With Swipe) */}
-            <motion.main
-                id="main-content"
-                className="flex-1 overflow-y-auto overflow-x-hidden pb-24 scroll-smooth relative z-10"
-                drag="x"
-                dragConstraints={{ left: 0, right: 0 }}
-                dragElastic={0.2}
-                onDragEnd={onDragEnd}
-            >
-                <AnimatePresence mode="wait" custom={direction} initial={false}>
-                    <motion.div
-                        key={location.pathname}
-                        custom={direction}
-                        variants={variants}
-                        initial="enter"
-                        animate="center"
-                        exit="exit"
-                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                        className="min-h-full"
-                    >
-                        <Outlet />
-                    </motion.div>
-                </AnimatePresence>
-            </motion.main>
 
             {/* Cookie Consent */}
             <CookieConsent />
 
-            {/* Bottom Navigation Bar */}
-            <nav className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur-sm border-t border-border dark:border-neutral-800 pt-3 pb-safe z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)] dark:shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.3)]" role="navigation" aria-label="Main Navigation">
-                <div className="flex justify-around items-center px-2">
+            {/* Premium Bottom Navigation */}
+            <div className="fixed bottom-10 left-0 right-0 z-[100] flex justify-center px-6 pointer-events-none">
+                <nav
+                    className="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-3xl border border-slate-100 dark:border-neutral-800 p-2.5 rounded-[2.5rem] shadow-premium flex gap-2 pointer-events-auto"
+                    role="navigation"
+                    aria-label="Main Navigation"
+                >
                     {navItems.map((item, index) => {
                         const isActive = location.pathname === item.path;
                         const Icon = item.icon;
@@ -228,22 +237,30 @@ export function AppShell() {
                                 aria-label={item.label}
                                 aria-current={isActive ? 'page' : undefined}
                                 className={cn(
-                                    "flex flex-col items-center justify-center min-w-[4rem] gap-1.5 transition-all duration-200",
-                                    isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                                    "relative flex items-center justify-center h-16 rounded-[1.8rem] transition-all duration-700",
+                                    isActive
+                                        ? "text-foreground bg-slate-50 dark:bg-neutral-800 px-8 shadow-minimal ring-1 ring-slate-100 dark:ring-neutral-700"
+                                        : "text-muted-foreground hover:text-foreground hover:bg-slate-50/50 dark:hover:bg-neutral-800/50 px-5"
                                 )}
                             >
-                                <div className={cn(
-                                    "p-1 rounded-xl transition-all duration-200",
-                                    isActive && "bg-primary/10 scale-110"
-                                )}>
-                                    <Icon className={cn("w-6 h-6", isActive && "stroke-[2.5px]")} />
-                                </div>
-                                <span className={cn("text-[10px] font-medium tracking-wide", isActive && "font-bold")}>{item.label}</span>
+                                <Icon className={cn("w-6 h-6 transition-all duration-700", isActive && "scale-110")} />
+                                <AnimatePresence>
+                                    {isActive && (
+                                        <motion.span
+                                            initial={{ opacity: 0, width: 0, marginLeft: 0 }}
+                                            animate={{ opacity: 1, width: 'auto', marginLeft: 12 }}
+                                            exit={{ opacity: 0, width: 0, marginLeft: 0 }}
+                                            className="text-[10px] font-black uppercase tracking-[0.2em] overflow-hidden whitespace-nowrap"
+                                        >
+                                            {item.label}
+                                        </motion.span>
+                                    )}
+                                </AnimatePresence>
                             </button>
                         );
                     })}
-                </div>
-            </nav>
+                </nav>
+            </div>
         </div>
     );
 }

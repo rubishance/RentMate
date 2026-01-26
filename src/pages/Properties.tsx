@@ -9,7 +9,22 @@ import type { Property } from '../types/database';
 import { useTranslation } from '../hooks/useTranslation';
 import { useUserPreferences } from '../contexts/UserPreferencesContext';
 import { PropertyIcon } from '../components/common/PropertyIcon';
-import placeholderImage from '../assets/property-placeholder-clean.png';
+import placeholderApartment from '../assets/placeholder-apartment.png';
+import placeholderPenthouse from '../assets/placeholder-penthouse.png';
+import placeholderGarden from '../assets/placeholder-garden.png';
+import placeholderHouse from '../assets/placeholder-house.png';
+import placeholderGeneric from '../assets/placeholder-generic.png';
+
+const getPlaceholder = (type?: string | null) => {
+    switch (type) {
+        case 'apartment': return placeholderApartment;
+        case 'penthouse': return placeholderPenthouse;
+        case 'garden': return placeholderGarden;
+        case 'house': return placeholderHouse;
+        default: return placeholderGeneric;
+    }
+};
+
 import { PageHeader } from '../components/common/PageHeader';
 import { GlassCard } from '../components/common/GlassCard';
 import UpgradeRequestModal from '../components/modals/UpgradeRequestModal';
@@ -71,39 +86,24 @@ export function Properties() {
         setAffectedItems([]);
 
         try {
-            // Get Tenants
-            const { data: tenants, error: tenantsError } = await supabase
-                .from('tenants')
-                .select('name')
-                .eq('property_id', property.id);
-
-            if (tenantsError) console.error('Error fetching tenants:', tenantsError);
 
             // Get Contracts with details
             const { data: contracts, error: contractsError } = await supabase
                 .from('contracts')
-                .select('*, tenants(name)')
+                .select('*')
                 .eq('property_id', property.id);
 
             if (contractsError) console.error('Error fetching contracts:', contractsError);
 
             const items = [];
 
-            if (tenants && tenants.length > 0) {
-                items.push({
-                    label: t('tenantsToBeDisconnected'),
-                    count: tenants.length,
-                    items: tenants.map(tenant => tenant.name || t('unnamed')),
-                    type: 'info'
-                });
-            }
 
             if (contracts && contracts.length > 0) {
-                const contractItems = contracts.map((c: any) => {
-                    const tenantName = c.tenants?.name || t('unknown');
+                const contractItems = (contracts as any[]).map((c: any) => {
+                    const tenantNames = Array.isArray(c.tenants) ? c.tenants.map((t: any) => t.name).join(', ') : t('unknown');
                     const startDate = formatDate(c.start_date);
                     const endDate = formatDate(c.end_date);
-                    return `${tenantName} (${startDate} - ${endDate})`;
+                    return `${tenantNames} (${startDate} - ${endDate})`;
                 });
 
                 items.push({
@@ -140,11 +140,6 @@ export function Properties() {
                 await supabase.from('contracts').delete().eq('property_id', deleteTarget.id);
             }
 
-            // 2. Disconnect tenants
-            await supabase
-                .from('tenants')
-                .update({ property_id: null })
-                .eq('property_id', deleteTarget.id);
 
             // 3. Delete property
             const { error } = await supabase
@@ -205,99 +200,130 @@ export function Properties() {
     }
 
     return (
-        <div className="space-y-6 px-4 pt-6">
-            <PageHeader
-                title={lang === 'he' ? 'הנכסים שלי' : 'My Assets'}
-                subtitle={lang === 'he' ? 'ניהול פורטפוליו הנכסים שלך' : 'Manage your real estate portfolio'}
-                action={
-                    <Button
-                        onClick={() => setIsAddModalOpen(true)}
-                        size="icon"
-                        className="rounded-full w-12 h-12 shadow-lg"
-                        aria-label={t('addProperty')}
-                        leftIcon={<Plus className="w-6 h-6" />}
-                    />
-                }
-            />
-
-            {properties.length === 0 ? (
-                <Card className="flex flex-col items-center justify-center py-20 border-dashed border-2 bg-muted/20">
-                    <div className="p-4 bg-secondary rounded-full mb-4">
-                        <Home className="w-8 h-8 text-muted-foreground" />
+        <div className="pb-40 pt-16 space-y-24 animate-in fade-in slide-in-from-bottom-6 duration-700">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 px-8">
+                <div className="space-y-2">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 dark:bg-neutral-900 rounded-full border border-slate-100 dark:border-neutral-800 shadow-minimal">
+                        <Home className="w-3 h-3 text-muted-foreground" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">{lang === 'he' ? 'הפורטפוליו שלי' : 'my portfolio'}</span>
                     </div>
-                    <h3 className="text-xl font-bold text-foreground">{t('noAssetsFound')}</h3>
-                    <p className="text-muted-foreground text-sm mb-8 text-center max-w-xs">
-                        {t('addFirstPropertyDesc')}
-                    </p>
-                    <Button onClick={handleAdd} variant="primary">
+                    <h1 className="text-6xl font-black tracking-tighter text-foreground lowercase">
+                        {lang === 'he' ? 'נכסים' : 'properties'}
+                    </h1>
+                </div>
+
+                <button
+                    onClick={handleAdd}
+                    className="h-16 px-10 bg-foreground text-background font-black text-xs uppercase tracking-[0.2em] rounded-[1.5rem] hover:scale-105 active:scale-95 transition-all shadow-premium-dark flex items-center justify-center gap-4 group"
+                >
+                    <Plus className="w-5 h-5 transition-transform group-hover:rotate-90" />
+                    {t('addProperty')}
+                </button>
+            </div>
+
+            {/* Empty State */}
+            {properties.length === 0 ? (
+                <div className="px-8 flex flex-col items-center justify-center py-40 rounded-[3rem] border border-slate-100 dark:border-neutral-800 bg-slate-50/50 dark:bg-neutral-900/50 mx-8">
+                    <div className="w-32 h-32 bg-white dark:bg-neutral-900 rounded-[3rem] flex items-center justify-center mx-auto shadow-minimal mb-10">
+                        <Home className="w-12 h-12 text-slate-200" />
+                    </div>
+                    <div className="text-center space-y-4">
+                        <h3 className="text-3xl font-black tracking-tighter text-foreground lowercase opacity-40">{t('noAssetsFound')}</h3>
+                        <p className="text-muted-foreground font-medium text-center max-w-sm px-10 leading-relaxed mx-auto">
+                            {t('addFirstPropertyDesc')}
+                        </p>
+                    </div>
+                    <button
+                        onClick={handleAdd}
+                        className="mt-12 px-10 py-5 bg-foreground text-background rounded-full font-black uppercase text-[10px] tracking-widest hover:scale-105 active:scale-95 transition-all shadow-premium-dark"
+                    >
                         {t('createFirstAsset')}
-                    </Button>
-                </Card>
+                    </button>
+                </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {properties.map((property) => (
-                        <Card
-                            key={property.id}
-                            onClick={() => handleView(property)}
-                            hoverEffect
-                            className="bg-white dark:bg-neutral-900 group flex flex-col h-full border-border overflow-hidden rounded-3xl"
-                        >
-                            {/* Image Section */}
-                            <div className="relative h-56 bg-gray-100 dark:bg-neutral-800 overflow-hidden">
-                                <img
-                                    src={property.image_url || placeholderImage}
-                                    alt={`${property.address}, ${property.city}`}
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                /* Properties Grid */
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 px-8">
+                    {properties.map((property) => {
+                        const activeContract = property.contracts?.find(c => c.status === 'active');
+                        return (
+                            <div
+                                key={property.id}
+                                onClick={() => handleView(property)}
+                                className="bg-white dark:bg-neutral-900 group flex flex-col h-full border border-slate-100 dark:border-neutral-800 overflow-hidden rounded-[3rem] shadow-minimal hover:shadow-premium transition-all duration-700 cursor-pointer relative"
+                            >
+                                {/* Image Section */}
+                                <div className="relative h-72 bg-slate-50 dark:bg-neutral-800 overflow-hidden">
+                                    <img
+                                        src={property.image_url || getPlaceholder(property.property_type)}
+                                        alt={`${property.address}, ${property.city}`}
+                                        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 filter saturate-50 group-hover:saturate-100"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
 
-                                <div className={`absolute top-4 ${lang === 'he' ? 'left-4' : 'right-4'} flex gap-2`}>
-                                    <span className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-xl shadow-lg border ${property.status === 'Occupied'
-                                        ? 'bg-white/90 dark:bg-neutral-900/90 text-green-600 border-green-200/50 dark:border-green-900/40'
-                                        : 'bg-white/90 dark:bg-neutral-900/90 text-orange-500 border-orange-200/50 dark:border-orange-900/40'
-                                        }`}>
-                                        {property.status === 'Occupied' ? t('occupied') : t('vacant')}
-                                    </span>
-                                </div>
-                                <div className={`absolute bottom-4 ${lang === 'he' ? 'right-4' : 'left-4'}`}>
-                                    <div className="flex items-center gap-2 px-3 py-1.5 bg-black/50 dark:bg-neutral-900/50 backdrop-blur-xl rounded-2xl border border-white/10">
-                                        <PropertyIcon type={property.property_type} className="w-4 h-4 text-white" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-white">
-                                            {property.property_type ? t(property.property_type as any) : t('apartment')}
+                                    {/* Status Badge - Top Left as per reference */}
+                                    <div className={`absolute top-8 ${lang === 'he' ? 'left-8' : 'right-8'} flex gap-3`}>
+                                        <span className={cn(
+                                            "px-4 py-2 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] backdrop-blur-3xl shadow-2xl border transition-all duration-500",
+                                            property.status === 'Occupied'
+                                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                                : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                                        )}>
+                                            {property.status === 'Occupied' ? t('occupied') : t('vacant')}
                                         </span>
                                     </div>
-                                </div>
-                            </div>
 
-                            {/* Content */}
-                            <div className="p-5 space-y-4 flex-1 flex flex-col">
-                                <div>
-                                    <h3 className="text-lg font-bold text-foreground leading-tight group-hover:text-brand-navy transition-colors">
-                                        {[property.address, property.city].filter(Boolean).join(', ')}
-                                    </h3>
-                                </div>
-
-                                {/* Specs */}
-                                <div className="flex items-center gap-6 py-4 border-y border-gray-100 dark:border-neutral-800">
-                                    <div className="flex items-center gap-2">
-                                        <BedDouble className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                                        <span className="text-sm font-black text-black dark:text-white">{property.rooms}</span>
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{t('rooms')}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <Ruler className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                                        <span className="text-sm font-black text-black dark:text-white">{property.size_sqm}</span>
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{t('sqm')}</span>
+                                    {/* Property Type Badge - Bottom Right as per reference */}
+                                    <div className={`absolute bottom-8 ${lang === 'he' ? 'right-8' : 'left-8'}`}>
+                                        <div className="flex items-center gap-4 px-5 py-3 bg-white/10 backdrop-blur-3xl rounded-[2rem] border border-white/20 shadow-2xl transition-transform duration-500 group-hover:scale-105">
+                                            <span className="text-[10px] font-black uppercase tracking-[0.15em] text-white">
+                                                {property.property_type ? t(property.property_type as any) : t('apartment')}
+                                            </span>
+                                            <PropertyIcon type={property.property_type} className="w-10 h-10 rounded-xl" />
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center justify-between pt-2 mt-auto">
-                                    <div onClick={(e) => e.stopPropagation()} className="relative">
-                                        <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground block mb-1">
-                                            {t('monthlyRentLabel')}
-                                        </span>
-                                        <div className="flex items-baseline gap-2">
-                                            <span
+                                {/* Content */}
+                                <div className="p-10 flex-1 flex flex-col space-y-8">
+                                    <div className="min-h-[3.5rem]">
+                                        <h3 className="text-2xl font-black tracking-tighter text-foreground lowercase leading-tight group-hover:text-primary transition-colors truncate">
+                                            {[property.address, property.city].filter(Boolean).join(', ')}
+                                        </h3>
+                                    </div>
+
+                                    {/* Detailed Specs Row */}
+                                    <div className="grid grid-cols-3 gap-4 py-6 border-y border-slate-50 dark:border-neutral-800/50">
+                                        <div className="flex flex-col items-center gap-1">
+                                            <div className="w-10 h-10 rounded-2xl bg-slate-50 dark:bg-neutral-800 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
+                                                <BedDouble className="w-5 h-5 text-slate-400" />
+                                            </div>
+                                            <span className="text-sm font-black text-foreground tracking-tighter">{property.rooms}</span>
+                                            <span className="text-[8px] font-black uppercase tracking-widest text-slate-300">{t('rooms')}</span>
+                                        </div>
+                                        <div className="flex flex-col items-center gap-1">
+                                            <div className="w-10 h-10 rounded-2xl bg-slate-50 dark:bg-neutral-800 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
+                                                <Ruler className="w-5 h-5 text-slate-400" />
+                                            </div>
+                                            <span className="text-sm font-black text-foreground tracking-tighter">{property.size_sqm}</span>
+                                            <span className="text-[8px] font-black uppercase tracking-widest text-slate-300">{t('sqm')}</span>
+                                        </div>
+                                        <div className="flex flex-col items-center gap-1">
+                                            <div className="w-10 h-10 rounded-2xl bg-slate-50 dark:bg-neutral-800 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
+                                                <Home className="w-5 h-5 text-slate-400 opacity-40" />
+                                            </div>
+                                            <span className="text-sm font-black text-foreground tracking-tighter">1</span>
+                                            <span className="text-[8px] font-black uppercase tracking-widest text-slate-300">{t('parking')}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Rent & Contract Section */}
+                                    <div className="flex items-center justify-between pt-4 mt-auto">
+                                        <div onClick={(e) => e.stopPropagation()} className="space-y-1">
+                                            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40 block">
+                                                {t('monthlyRentLabel')}
+                                            </span>
+                                            <div
                                                 onClick={() => {
                                                     const active = property.contracts?.find(c => c.status === 'active');
                                                     if (active && active.linkage_type && active.linkage_type !== 'none') {
@@ -305,57 +331,32 @@ export function Properties() {
                                                     }
                                                 }}
                                                 className={cn(
-                                                    "text-3xl font-black text-foreground tracking-tighter",
-                                                    property.contracts?.some(c => c.status === 'active' && c.linkage_type && c.linkage_type !== 'none') && "cursor-pointer hover:text-primary transition-colors underline decoration-dotted"
+                                                    "text-4xl font-black text-foreground tracking-tighter transition-all duration-500",
+                                                    property.contracts?.some(c => c.status === 'active' && c.linkage_type && c.linkage_type !== 'none') && "cursor-pointer hover:text-primary underline decoration-2 decoration-primary/10 hover:decoration-primary underline-offset-8"
                                                 )}
                                             >
-                                                ₪{(property.contracts?.find(c => c.status === 'active')?.base_rent || property.rent_price || 0).toLocaleString()}
-                                            </span>
+                                                ₪{(activeContract?.base_rent || property.rent_price || 0).toLocaleString()}
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    {/* End Date */}
-                                    {(() => {
-                                        const activeContract = property.contracts?.find(c => c.status === 'active');
-                                        if (!activeContract?.end_date) return null;
-
-                                        const endDate = new Date(activeContract.end_date);
-                                        let finalDate = new Date(endDate);
-
-                                        if (activeContract.option_periods && activeContract.option_periods.length > 0) {
-                                            activeContract.option_periods.forEach(period => {
-                                                if (period.unit === 'years') {
-                                                    finalDate.setFullYear(finalDate.getFullYear() + Number(period.length));
-                                                } else {
-                                                    finalDate.setMonth(finalDate.getMonth() + Number(period.length));
-                                                }
-                                            });
-                                        }
-
-                                        const hasOptions = finalDate.getTime() !== endDate.getTime();
-
-                                        return (
-                                            <div className="text-right">
-                                                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block mb-1">
-                                                    {lang === 'he' ? 'סיום חוזה' : 'Ends'} {hasOptions && '(+Opt)'}
+                                        {/* Contract Badge */}
+                                        {activeContract && (
+                                            <div className="flex flex-col items-end gap-2">
+                                                <span className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40">
+                                                    {lang === 'he' ? 'סיום חוזה' : 'lease ends'}
                                                 </span>
-                                                <div className="flex items-center gap-2 justify-end">
-                                                    <span className="text-[10px] font-black bg-gray-50 dark:bg-neutral-800 text-black dark:text-white px-2.5 py-1.5 rounded-xl border border-gray-100 dark:border-neutral-700 shadow-sm">
-                                                        {formatDate(endDate)}
+                                                <div className="flex items-center gap-2">
+                                                    <span className="px-4 py-2 rounded-xl bg-slate-50 dark:bg-neutral-800 text-[10px] font-black text-foreground border border-slate-100 dark:border-neutral-700 shadow-minimal group-hover:bg-white dark:group-hover:bg-neutral-700 transition-colors">
+                                                        {formatDate(activeContract.end_date)}
                                                     </span>
-                                                    {hasOptions && (
-                                                        <span className="text-[10px] font-black bg-black dark:bg-white text-white dark:text-black px-2.5 py-1.5 rounded-xl shadow-lg">
-                                                            {formatDate(finalDate)}
-                                                        </span>
-                                                    )}
                                                 </div>
                                             </div>
-                                        );
-                                    })()}
+                                        )}
+                                    </div>
                                 </div>
                             </div>
-                        </Card>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
 

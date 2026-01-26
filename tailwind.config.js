@@ -86,6 +86,22 @@ module.exports = {
                         dark: '#020617'
                     }
                 },
+                // Gold Palette (Premium)
+                gold: {
+                    DEFAULT: '#D4AF37', // Metallic Gold
+                    light: '#FFD700',   // Glowing Gold
+                    dark: '#B8860B',    // Dark Goldenrod
+                    50: '#FBF8E6',
+                    100: '#F6F1CD',
+                    200: '#EBE29B',
+                    300: '#E0D369',
+                    400: '#D5C437',
+                    500: '#D4AF37',
+                    600: '#AA8C2C',
+                    700: '#806921',
+                    800: '#554616',
+                    900: '#2B230B',
+                },
             },
             borderRadius: {
                 lg: "0.75rem",

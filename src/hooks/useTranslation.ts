@@ -71,6 +71,16 @@ export type TranslationKeys =
     | 'endOfForm'
     | 'namePhoneRequired'
     | 'mustBeLoggedIn'
+    | 'leaseTimeline'
+    | 'viewAll'
+    | 'upcomingAlerts'
+    | 'addAsset'
+    | 'systemStatus'
+    | 'location'
+    | 'specifications'
+    | 'visuals'
+    | 'saveRequired'
+    | 'savePropertyToAttachDocs'
 
     // Auth & Navigation
     | 'login'
@@ -757,6 +767,17 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         organizeDocsDesc: 'העלה קבלות וחשבונות למקום אחד מסודר',
         uploadNow: 'העלה עכשיו',
         uploadNow_female: 'העלה עכשיו',
+        leaseTimeline: 'ציר זמן שכירות',
+        viewAll: 'צפה בכל',
+        upcomingAlerts: 'התראות קרובות',
+        addAsset: 'הוסף נכס',
+        systemStatus: 'סטטוס מערכת',
+        location: 'מיקום',
+        specifications: 'מפרט',
+        visuals: 'תמונות',
+        saveRequired: 'יש לשמור קודם',
+        savePropertyToAttachDocs: 'שמור את הנכס כדי לצרף מסמכים',
+        knowledgeBaseDesc: 'מאגר ידע חכם לניהול נכסים',
 
         analyticsTitle: 'אנליטיקה',
         analyticsSubtitle: 'סקירת ביצועי פורטפוליו',
@@ -1435,7 +1456,6 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         lp_footer_careers: 'קריירה',
         lp_footer_contact: 'צור קשר',
         lp_footer_security: 'אבטחת מידע',
-        knowledgeBaseDesc: 'מדריכים ומאמרים מקצועיים שיעזרו לכם לנהל את הנכסים שלכם בצורה חכמה ויעילה יותר.',
         privacySecurityTitle: 'פרטיות ואבטחה',
         privacySecuritySubtitle: 'נהלו את הגדרות האבטחה שלכם',
         changePassword: 'שינוי סיסמה',
@@ -2216,8 +2236,16 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         lp_footer_contact: 'Contact Us',
         lp_footer_security: 'Security',
         knowledgeBaseDesc: 'Professional guides and articles to help you manage your properties smarter and more efficiently.',
-
-        // Privacy & Security Modal
+        leaseTimeline: 'Lease Timeline',
+        viewAll: 'View All',
+        upcomingAlerts: 'Upcoming Alerts',
+        addAsset: 'Add Asset',
+        systemStatus: 'System Status',
+        location: 'Location',
+        specifications: 'Specifications',
+        visuals: 'Visuals',
+        saveRequired: 'Save Required',
+        savePropertyToAttachDocs: 'Save property to attach documents',
         privacySecurityTitle: 'Privacy & Security',
         privacySecuritySubtitle: 'Manage your security settings',
         changePassword: 'Change Password',

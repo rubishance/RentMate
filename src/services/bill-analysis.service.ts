@@ -25,6 +25,7 @@ export interface ExtractedBillData {
     amount: number;
     date: string; // YYYY-MM-DD
     vendor: string;
+    invoiceNumber?: string;
     confidence: number;
     currency: string;
     billingPeriodStart?: string;
@@ -91,6 +92,7 @@ export const BillAnalysisService = {
                 - amount: The total sum to be paid for the current period (numeric).
                 - date: Billing/Invoice date (YYYY-MM-DD).
                 - vendor: Service provider name.
+                - invoiceNumber: The invoice or bill number (string).
                 - currency: usually '₪' or 'ILS'.
                 - billingPeriodStart: Service start date (YYYY-MM-DD).
                 - billingPeriodEnd: Service end date (YYYY-MM-DD).
@@ -114,6 +116,7 @@ export const BillAnalysisService = {
                 amount: typeof data.amount === 'number' ? data.amount : parseFloat(data.amount) || 0,
                 date: data.date || new Date().toISOString().split('T')[0],
                 vendor: data.vendor || 'Unknown Vendor',
+                invoiceNumber: data.invoiceNumber || '',
                 confidence: data.confidence || 0.5,
                 currency: data.currency || 'ILS',
                 billingPeriodStart: data.billingPeriodStart,

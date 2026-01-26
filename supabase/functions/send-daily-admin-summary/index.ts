@@ -45,6 +45,14 @@ serve(async (req: Request) => {
             .eq('type', 'support_ticket')
             .gte('created_at', last24h);
 
+        // Plan Upgrade Requests
+        const { count: newUpgrades } = await supabase
+            .from('admin_notifications')
+            .select('*', { count: 'exact', head: true })
+            .eq('type', 'upgrade_request')
+            .eq('status', 'pending')
+            .gte('created_at', last24h);
+
         // Active Properties
         const { count: totalProperties } = await supabase
             .from('properties')
@@ -66,6 +74,8 @@ serve(async (req: Request) => {
         .stat-label { font-size: 14px; color: #64748B; text-transform: uppercase; font-weight: bold; }
         .footer { padding: 30px; text-align: center; font-size: 12px; color: #94A3B8; background: #F8FAFC; border-top: 1px solid #E2E8F0; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .highlight-card { background: #F5F3FF; border: 1px solid #DDD6FE; }
+        .highlight-value { color: #7C3AED; }
     </style>
 </head>
 <body>
@@ -84,6 +94,12 @@ serve(async (req: Request) => {
                     <div class="stat-label">פניות תמיכה</div>
                     <div class="stat-value">${newTickets || 0}</div>
                 </div>
+            </div>
+
+            <div class="stat-card highlight-card">
+                <div class="stat-label">בקשות שדרוג תכנית</div>
+                <div class="stat-value highlight-value">${newUpgrades || 0}</div>
+                <div style="font-size:12px; color:#7C3AED;">בקשות חדשות שממתינות לטיפול המערכת</div>
             </div>
             
             <div class="stat-card">

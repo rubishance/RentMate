@@ -16,7 +16,6 @@ import { formatDate, cn } from '../lib/utils';
 
 interface ContractWithDetails extends Contract {
     properties: { address: string, city: string };
-    tenants: { name: string };
 }
 
 export function Contracts() {
@@ -67,8 +66,7 @@ export function Contracts() {
                 .from('contracts')
                 .select(`
                     *,
-                    properties (address, city),
-                    tenants (name)
+                    properties (address, city)
                 `)
                 .order('created_at', { ascending: false });
 
@@ -126,10 +124,10 @@ export function Contracts() {
 
             const items = [];
 
-            if (contract.tenants?.name) {
+            if (contract.tenants && contract.tenants.length > 0) {
                 items.push({
                     label: t('tenantDisconnectedWarning'),
-                    items: [contract.tenants.name],
+                    items: contract.tenants.map(t => t.name),
                     type: 'info'
                 });
             }
@@ -194,127 +192,134 @@ export function Contracts() {
     }
 
     return (
-        <div className="space-y-6 px-4 pt-6">
-            <PageHeader
-                title={t('contractsTitle')}
-                subtitle={t('contractsSubtitle')}
-                action={
-                    <Button
-                        onClick={() => navigate('/contracts/new')}
-                        size="icon"
-                        className="rounded-full w-12 h-12 shadow-lg"
-                        leftIcon={<Plus className="w-6 h-6" />}
-                        aria-label={t('newContract')}
-                    />
-                }
-            />
+        <div className="pb-40 pt-16 space-y-20 animate-in fade-in slide-in-from-bottom-6 duration-700">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 px-8">
+                <div className="space-y-2">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 dark:bg-neutral-900 rounded-full border border-slate-100 dark:border-neutral-800 shadow-minimal">
+                        <FileText className="w-3 h-3 text-muted-foreground" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">{t('activeAgreements')}</span>
+                    </div>
+                    <h1 className="text-6xl font-black tracking-tighter text-foreground lowercase">
+                        {t('contracts')}
+                    </h1>
+                </div>
 
-            {/* Tabs */}
-            <div className="flex bg-muted/50 p-1 rounded-2xl w-fit">
-                {(['active', 'archived', 'all'] as const).map((f) => (
+                <button
+                    onClick={() => navigate('/contracts/new')}
+                    className="h-16 px-10 bg-foreground text-background font-black text-xs uppercase tracking-[0.2em] rounded-[1.5rem] hover:scale-105 active:scale-95 transition-all shadow-premium-dark flex items-center justify-center gap-4"
+                >
+                    <Plus className="w-5 h-5 transition-transform group-hover:rotate-90" />
+                    {t('addContract')}
+                </button>
+            </div>
+
+            {/* Filter Tabs */}
+            <div className="flex gap-2 p-1.5 bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-full w-fit mx-8 shadow-minimal overflow-x-auto hide-scrollbar">
+                {(['active', 'all', 'archived'] as const).map((f) => (
                     <button
                         key={f}
                         onClick={() => setFilter(f)}
                         className={cn(
-                            "px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                            "px-8 py-3 text-[10px] font-black uppercase tracking-[0.2em] rounded-full transition-all duration-500 whitespace-nowrap",
                             filter === f
-                                ? "bg-white dark:bg-neutral-900 text-primary shadow-sm"
+                                ? "bg-white dark:bg-neutral-800 text-foreground shadow-premium"
                                 : "text-muted-foreground hover:text-foreground"
                         )}
                     >
-                        {f === 'active' ? t('active') : f === 'archived' ? t('archived') : t('all')}
+                        {t(f)}
                     </button>
                 ))}
             </div>
 
-            {/* List */}
-            {filteredContracts.length === 0 ? (
-                <Card className="flex flex-col items-center justify-center py-20 border-dashed border-2 bg-muted/20">
-                    <div className="p-4 bg-white dark:bg-neutral-800 rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-                        <FileText className="w-10 h-10 text-muted-foreground" />
-                    </div>
-                    <h3 className="text-xl font-black text-foreground mb-2">{t('noActiveContracts')}</h3>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm max-w-xs mx-auto font-medium text-center">
-                        {t('noActiveContractsDesc')}
-                    </p>
-                </Card>
-            ) : (
-                <div className="grid gap-4">
-                    {filteredContracts.map((contract) => {
-                        const isExpired = new Date(contract.end_date) < new Date(new Date().setHours(0, 0, 0, 0));
-                        return (
-                            <Card
-                                key={contract.id}
-                                onClick={() => handleView(contract)}
-                                hoverEffect
-                                className={cn(
-                                    "p-5 flex flex-col md:flex-row items-start md:items-center justify-between cursor-pointer group gap-4 md:gap-0",
-                                    isExpired && "opacity-60 grayscale"
-                                )}
+            {/* Contracts List */}
+            <div className="grid grid-cols-1 gap-6 px-8">
+                {filteredContracts.length === 0 ? (
+                    <div className="py-40 text-center space-y-10 animate-in fade-in duration-1000">
+                        <div className="w-32 h-32 bg-slate-50 dark:bg-neutral-900 rounded-[3rem] flex items-center justify-center mx-auto shadow-minimal">
+                            <FileText className="w-12 h-12 text-slate-200" />
+                        </div>
+                        <div className="space-y-4">
+                            <h3 className="text-3xl font-black tracking-tighter text-foreground lowercase opacity-40">{t('noContractsFound')}</h3>
+                            <button
+                                onClick={() => navigate('/contracts/new')}
+                                className="px-10 py-4 bg-foreground text-background font-black text-[10px] uppercase tracking-widest rounded-full shadow-premium-dark hover:scale-105 transition-all"
                             >
-                                <div className="flex items-center gap-6 w-full md:w-auto">
-                                    <div className="w-14 h-14 rounded-2xl bg-muted text-foreground flex items-center justify-center border border-border group-hover:scale-105 transition-transform shrink-0">
-                                        <FileText className="w-7 h-7" />
+                                {t('createFirstContract')}
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    filteredContracts.map((contract) => {
+                        const isExpired = new Date(contract.end_date) < new Date(new Date().setHours(0, 0, 0, 0));
+                        const tenantNames = Array.isArray(contract.tenants) ? contract.tenants.map(t => t.name).join(' & ') : '';
+
+                        return (
+                            <div
+                                key={contract.id}
+                                className={cn(
+                                    "group p-10 bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[3rem] shadow-minimal hover:shadow-premium transition-all duration-700 flex flex-col lg:flex-row items-center justify-between gap-10 cursor-pointer overflow-hidden relative",
+                                    isExpired && "opacity-60 saturate-50 hover:opacity-100 hover:saturate-100"
+                                )}
+                                onClick={() => handleView(contract)}
+                            >
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 dark:bg-neutral-800/30 rounded-bl-[4rem] -translate-y-full group-hover:translate-y-0 transition-transform duration-1000 pointer-events-none" />
+
+                                <div className="flex flex-col md:flex-row items-center gap-10 min-w-0 w-full lg:w-auto">
+                                    <div className="w-20 h-20 bg-slate-50 dark:bg-neutral-800 rounded-[1.5rem] flex items-center justify-center shrink-0 shadow-minimal group-hover:scale-110 group-hover:rotate-3 transition-all duration-700 border border-slate-100 dark:border-neutral-700">
+                                        <FileText className="w-9 h-9 text-foreground" />
                                     </div>
-                                    <div className="min-w-0 flex-1 space-y-1">
-                                        <h3 className="font-black text-foreground text-lg tracking-tight truncate">
-                                            {contract.properties?.city}{contract.properties?.address ? `, ${contract.properties.address}` : ''}
-                                        </h3>
-                                        <div className="flex flex-wrap gap-2 items-center">
-                                            <span className="text-xs font-bold text-muted-foreground truncate max-w-[150px]">{contract.tenants?.name}</span>
-                                            <span className="hidden md:inline w-1 h-1 rounded-full bg-border" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                                                {(() => {
-                                                    const start = new Date(contract.start_date);
-                                                    const end = new Date(contract.end_date);
-                                                    const diffTime = Math.abs(end.getTime() - start.getTime());
-                                                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-                                                    const months = Math.floor(diffDays / 30);
-                                                    const years = Math.floor(months / 12);
-                                                    const remainingMonths = months % 12;
-
-                                                    let duration = '';
-                                                    if (years > 0) duration = `${years}y${remainingMonths > 0 ? ` ${remainingMonths}m` : ''}`;
-                                                    else if (months > 0) duration = `${months}m`;
-                                                    else duration = `${diffDays}d`;
-
-                                                    return `${duration} (${formatDate(contract.end_date)})`;
-                                                })()}
-                                            </span>
+                                    <div className="text-center md:text-left rtl:md:text-right min-w-0 flex-1 space-y-3">
+                                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
+                                            <h3 className="text-3xl font-black tracking-tighter text-foreground lowercase truncate">{tenantNames || t('unnamedTenant')}</h3>
+                                            {isExpired && (
+                                                <span className="px-4 py-1 bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400 text-[9px] font-black uppercase tracking-widest rounded-full">{t('expired')}</span>
+                                            )}
                                         </div>
+                                        <p className="text-muted-foreground text-base font-medium opacity-60 truncate">
+                                            {contract.properties?.address}, {contract.properties?.city}
+                                        </p>
                                     </div>
                                 </div>
-                                <div className="flex items-center justify-between w-full md:w-auto gap-6 pl-20 md:pl-0">
-                                    <span className={cn(
-                                        "px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border shadow-sm",
-                                        contract.status === 'active' && !isExpired
-                                            ? "bg-green-50 dark:bg-green-950 text-green-600 border-green-100 dark:border-green-900"
-                                            : "bg-muted text-muted-foreground border-border"
-                                    )}>
-                                        {contract.status === 'active' && !isExpired ? t('active') : t('archived')}
-                                    </span>
-                                    <div onClick={(e) => e.stopPropagation()} className="border-l pl-4 border-border">
+
+                                <div className="flex flex-wrap items-center justify-center lg:justify-end gap-16 w-full lg:w-auto">
+                                    <div className="text-center md:text-right space-y-2">
+                                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40 block">{t('monthlyRent')}</span>
+                                        <span className="text-2xl font-black tracking-tighter text-foreground">
+                                            ₪{contract.base_rent?.toLocaleString()}
+                                        </span>
+                                    </div>
+
+                                    <div className="text-center md:text-right space-y-2">
+                                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40 block">{t('endDate')}</span>
+                                        <span className="text-xl font-black tracking-tight text-foreground lowercase">
+                                            {formatDate(contract.end_date)}
+                                        </span>
+                                    </div>
+
+                                    <div className="flex items-center gap-4" onClick={e => e.stopPropagation()}>
+                                        <div className="h-12 w-[1px] bg-slate-100 dark:bg-neutral-800 hidden md:block mx-2" />
                                         <ActionMenu
-                                            align={lang === 'he' ? 'left' : 'right'}
                                             onView={() => handleView(contract)}
                                             onEdit={() => handleEdit(contract)}
                                             onDelete={() => handleDelete(contract)}
                                             onCalculate={() => handleCalculatePayments(contract)}
+                                            align={lang === 'he' ? 'left' : 'right'}
                                         />
                                     </div>
                                 </div>
-                            </Card>
+                            </div>
                         );
-                    })}
-                </div>
-            )}
+                    })
+                )}
+            </div>
 
             <ContractDetailsModal
                 isOpen={isDetailsModalOpen}
                 onClose={() => setIsDetailsModalOpen(false)}
-                onSuccess={fetchContracts}
                 contract={selectedContract}
                 initialReadOnly={isReadOnly}
+                onSuccess={fetchContracts}
             />
 
             <ConfirmDeleteModal

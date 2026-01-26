@@ -13,7 +13,6 @@ import { PropertyTypeSelect } from '../common/PropertyTypeSelect';
 import { FormLabel } from '../ui/FormLabel';
 import { formatDate } from '../../lib/utils';
 import { supabase } from '../../lib/supabase';
-import { AddTenantModal } from './AddTenantModal';
 import { ContractDetailsModal } from './ContractDetailsModal';
 import { useSubscription } from '../../hooks/useSubscription';
 import { CompressionService } from '../../services/compression.service';
@@ -24,10 +23,11 @@ import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Card, CardContent } from '../ui/Card';
 import { cn } from '../../lib/utils';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useRef } from 'react';
 
 // Extend Contract type to include joined tenants data
-type ExtendedContract = Contract & { tenants: { name: string } | null };
+type ExtendedContract = Contract;
 
 const PROPERTY_DEFAULTS: Record<string, string> = {
     apartment: apartmentIcon,
@@ -44,9 +44,14 @@ interface AddPropertyModalProps {
     propertyToEdit?: Property | null;
     readOnly?: boolean;
     onDelete?: () => void;
+    initialData?: {
+        title?: string;
+        address?: string;
+        city?: string;
+    };
 }
 
-export function AddPropertyModal({ isOpen, onClose, onSuccess, propertyToEdit, readOnly, onDelete }: AddPropertyModalProps) {
+export function AddPropertyModal({ isOpen, onClose, onSuccess, propertyToEdit, readOnly, onDelete, initialData }: AddPropertyModalProps) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'details' | 'contracts' | 'documents'>('details');
@@ -56,8 +61,6 @@ export function AddPropertyModal({ isOpen, onClose, onSuccess, propertyToEdit, r
     // Overlay Modal State
     const [selectedContract, setSelectedContract] = useState<any | null>(null); // any to match ContractWithDetails
     const [isContractModalOpen, setIsContractModalOpen] = useState(false);
-    const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
-    const [isTenantModalOpen, setIsTenantModalOpen] = useState(false);
 
     // Internal read-only state
     const [isReadOnly, setIsReadOnly] = useState(readOnly);
@@ -111,8 +114,8 @@ export function AddPropertyModal({ isOpen, onClose, onSuccess, propertyToEdit, r
         } else if (isOpen && !propertyToEdit) {
             // Reset form when opening in "Add" mode
             setFormData({
-                address: '',
-                city: '',
+                address: initialData?.address || '',
+                city: initialData?.city || '',
                 rooms: '',
                 size_sqm: '',
                 rent_price: '',
@@ -124,14 +127,14 @@ export function AddPropertyModal({ isOpen, onClose, onSuccess, propertyToEdit, r
             setContracts([]);
             setActiveTab('details');
         }
-    }, [isOpen, propertyToEdit, readOnly]);
+    }, [isOpen, propertyToEdit, readOnly, initialData]);
 
     async function fetchContracts(propertyId: string) {
         setContractLoading(true);
         try {
             const { data, error } = await supabase
                 .from('contracts')
-                .select('*, tenants(name)')
+                .select('*')
                 .eq('property_id', propertyId)
                 .order('start_date', { ascending: false });
 
@@ -147,6 +150,7 @@ export function AddPropertyModal({ isOpen, onClose, onSuccess, propertyToEdit, r
 
     const [uploadMode, setUploadMode] = useState<'url' | 'upload'>('upload');
     const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [isFetchingGoogle, setIsFetchingGoogle] = useState(false);
 
 
@@ -157,6 +161,7 @@ export function AddPropertyModal({ isOpen, onClose, onSuccess, propertyToEdit, r
         if (!e.target.files || e.target.files.length === 0) return;
 
         setIsUploading(true);
+        setError(null);
         let file = e.target.files[0];
 
         // Compress if image
@@ -169,7 +174,7 @@ export function AddPropertyModal({ isOpen, onClose, onSuccess, propertyToEdit, r
         }
 
         const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const fileName = `prop_${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
         const filePath = `${fileName}`;
 
         try {
@@ -185,13 +190,35 @@ export function AddPropertyModal({ isOpen, onClose, onSuccess, propertyToEdit, r
                 .getPublicUrl(filePath);
 
             setFormData(prev => ({ ...prev, image_url: data.publicUrl }));
-
-
         } catch (err: any) {
             console.error('Error uploading image:', err);
             setError('Failed to upload image: ' + err.message);
         } finally {
             setIsUploading(false);
+        }
+    };
+
+    const handleGoogleFetch = async () => {
+        if (!formData.address || !formData.city) {
+            alert(lang === 'he' ? 'נא להזין כתובת ועיר קודם' : 'Please enter address and city first');
+            return;
+        }
+
+        const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+        if (!apiKey) {
+            alert(lang === 'he' ? 'מפתח Google Maps חסר' : 'Google Maps API key missing');
+            return;
+        }
+
+        setIsFetchingGoogle(true);
+        try {
+            const location = `${formData.address}, ${formData.city}`;
+            const imageUrl = `https://maps.googleapis.com/maps/api/streetview?size=800x600&location=${encodeURIComponent(location)}&key=${apiKey}`;
+            setFormData(prev => ({ ...prev, image_url: imageUrl }));
+        } catch (err) {
+            console.error('Error fetching Google image:', err);
+        } finally {
+            setIsFetchingGoogle(false);
         }
     };
 
@@ -308,28 +335,12 @@ export function AddPropertyModal({ isOpen, onClose, onSuccess, propertyToEdit, r
                 address: formData.address,
                 city: formData.city
             },
-            tenants: contract.tenants || { name: 'Unknown' } // Fallback
+            tenants: Array.isArray(contract.tenants) ? contract.tenants : [{ name: 'Unknown' }]
         };
         setSelectedContract(contractWithDetails);
         setIsContractModalOpen(true);
     };
 
-    const handleViewTenant = async (tenantId: string) => {
-        try {
-            const { data } = await supabase
-                .from('tenants')
-                .select('*')
-                .eq('id', tenantId)
-                .single();
-
-            if (data) {
-                setSelectedTenant(data);
-                setIsTenantModalOpen(true);
-            }
-        } catch (err) {
-            console.error('Error fetching tenant:', err);
-        }
-    };
 
     const isEditMode = !!propertyToEdit;
     const { t, lang } = useTranslation();
@@ -398,15 +409,6 @@ export function AddPropertyModal({ isOpen, onClose, onSuccess, propertyToEdit, r
                     initialReadOnly={true}
                 />
             )}
-            {isTenantModalOpen && (
-                <AddTenantModal
-                    isOpen={isTenantModalOpen}
-                    onClose={() => setIsTenantModalOpen(false)}
-                    onSuccess={() => { }}
-                    tenantToEdit={selectedTenant}
-                    readOnly={true}
-                />
-            )}
 
             <Modal
                 isOpen={isOpen}
@@ -416,15 +418,15 @@ export function AddPropertyModal({ isOpen, onClose, onSuccess, propertyToEdit, r
                 footer={modalFooter}
                 size="lg"
             >
-                <div className="flex flex-col h-full -m-6">
-                    {/* Tabs Navigation */}
-                    <div className="flex border-b border-border px-6 shrink-0 bg-background/80 backdrop-blur-md sticky top-0 z-20">
+                <div className="flex flex-col h-full">
+                    {/* Simplified Tab Navigation */}
+                    <div className="flex border-b border-border mb-8 overflow-x-auto no-scrollbar">
                         {[
                             { id: 'details', label: lang === 'he' ? 'פרטי נכס' : 'Details' },
-                            { id: 'contracts', label: lang === 'he' ? 'היסטוריית חוזים' : 'Contracts' },
+                            { id: 'contracts', label: lang === 'he' ? 'חוזים' : 'Contracts' },
                             { id: 'documents', label: lang === 'he' ? 'מסמכים' : 'Documents' }
                         ].map((tab) => {
-                            if (tab.id === 'contracts' && !isEditMode && !isReadOnly) return null;
+                            if (tab.id !== 'details' && !isEditMode && !isReadOnly) return null;
                             const isActive = activeTab === tab.id;
                             return (
                                 <button
@@ -432,15 +434,15 @@ export function AddPropertyModal({ isOpen, onClose, onSuccess, propertyToEdit, r
                                     type="button"
                                     onClick={() => setActiveTab(tab.id as any)}
                                     className={cn(
-                                        "pb-3 px-4 text-sm font-bold transition-all relative pt-4",
-                                        isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                                        "pb-4 px-6 text-[10px] font-black uppercase tracking-widest transition-all relative whitespace-nowrap",
+                                        isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
                                     )}
                                 >
                                     {tab.label}
                                     {isActive && (
                                         <motion.div
-                                            layoutId="activeTab"
-                                            className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
+                                            layoutId="activeTabUnderline"
+                                            className="absolute bottom-0 left-0 right-0 h-1 bg-primary"
                                         />
                                     )}
                                 </button>
@@ -448,274 +450,254 @@ export function AddPropertyModal({ isOpen, onClose, onSuccess, propertyToEdit, r
                         })}
                     </div>
 
-                    {/* Content Scrollable */}
-                    <div className="flex-1 overflow-y-auto p-6 min-h-[50vh]">
+                    {/* Content */}
+                    <div className="flex-1 min-h-[500px] h-[60vh]">
                         {activeTab === 'details' ? (
-                            <form id="add-property-form" onSubmit={handleSubmit} className="space-y-6">
-                                {!isReadOnly && !propertyToEdit && !canAddProperty && !subLoading && (
-                                    <Card className="bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:border-orange-900/50">
-                                        <CardContent className="p-4 flex items-start gap-3">
-                                            <Building2 className="w-5 h-5 text-orange-600 mt-0.5" />
-                                            <div>
-                                                <h4 className="font-bold text-sm text-orange-800 dark:text-orange-400">Plan Limit Reached</h4>
-                                                <p className="text-xs text-orange-700 dark:text-orange-500 mt-1">
-                                                    You have reached the limit for your <b>{plan?.name}</b> plan. Upgrade to add more assets.
-                                                </p>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                )}
-
+                            <form id="add-property-form" onSubmit={handleSubmit} className="space-y-10">
                                 {error && (
-                                    <div className="p-3 text-sm text-red-600 bg-red-50 dark:bg-red-950/30 rounded-xl flex items-center gap-2 border border-red-100 dark:border-red-900/50 uppercase font-bold tracking-tight">
+                                    <div className="p-4 text-xs font-bold bg-red-50 text-red-600 rounded-2xl border border-red-100 flex items-center gap-2">
                                         <X className="w-4 h-4" /> {error}
                                     </div>
                                 )}
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {/* Form Fields - using standardized inputs could be next, but keeping existing logic for speed */}
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Property Type</label>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    {/* Primary Info */}
+                                    <div className="md:col-span-2 space-y-4">
+                                        <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">{t('location')}</h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                            <div className="md:col-span-1">
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    placeholder={t('city')}
+                                                    disabled={isReadOnly}
+                                                    value={formData.city}
+                                                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                                                    className="w-full h-14 px-5 rounded-[1.25rem] bg-slate-50 border-transparent focus:bg-white border-2 focus:border-primary transition-all outline-none font-bold"
+                                                />
+                                            </div>
+                                            <div className="md:col-span-2 relative">
+                                                <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    placeholder={t('address')}
+                                                    disabled={isReadOnly}
+                                                    value={formData.address}
+                                                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                                    className="w-full h-14 pl-12 pr-5 rounded-[1.25rem] bg-slate-50 border-transparent focus:bg-white border-2 focus:border-primary transition-all outline-none font-bold"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Property Type & Specs */}
+                                    <div className="space-y-4">
+                                        <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">{t('specifications')}</h4>
                                         <PropertyTypeSelect
                                             value={formData.property_type as any}
-                                            onChange={(value) => {
-                                                const currentImage = formData.image_url;
-                                                const isDefaultOrEmpty = !currentImage || Object.values(PROPERTY_DEFAULTS).some(img => currentImage.includes(img) || currentImage === img);
-                                                if (isDefaultOrEmpty) {
-                                                    setFormData({ ...formData, property_type: value, image_url: PROPERTY_DEFAULTS[value] });
-                                                } else {
-                                                    setFormData({ ...formData, property_type: value });
-                                                }
-                                            }}
+                                            onChange={(value) => setFormData(prev => ({ ...prev, property_type: value }))}
                                             disabled={isReadOnly}
                                         />
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">City</label>
-                                        <input
-                                            type="text"
-                                            required
-                                            disabled={isReadOnly}
-                                            value={formData.city}
-                                            onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                                            className="w-full h-12 px-4 rounded-2xl border border-border bg-background focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none"
-                                        />
-                                    </div>
-
-                                    <div className="md:col-span-2 space-y-2">
-                                        <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Address</label>
-                                        <div className="relative">
-                                            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                            <input
-                                                type="text"
-                                                required
-                                                disabled={isReadOnly}
-                                                value={formData.address}
-                                                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                                                className="w-full h-12 pl-11 pr-4 rounded-2xl border border-border bg-background focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none"
-                                            />
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="relative">
+                                                <BedDouble className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
+                                                <input
+                                                    type="number"
+                                                    step="0.5"
+                                                    placeholder={t('rooms')}
+                                                    disabled={isReadOnly}
+                                                    value={formData.rooms}
+                                                    onChange={(e) => setFormData({ ...formData, rooms: e.target.value })}
+                                                    className="w-full h-12 pl-10 pr-4 rounded-2xl bg-slate-50 border-transparent focus:bg-white border-2 focus:border-primary transition-all outline-none font-bold text-sm"
+                                                />
+                                            </div>
+                                            <div className="relative">
+                                                <Ruler className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
+                                                <input
+                                                    type="number"
+                                                    placeholder={t('size')}
+                                                    disabled={isReadOnly}
+                                                    value={formData.size_sqm}
+                                                    onChange={(e) => setFormData({ ...formData, size_sqm: e.target.value })}
+                                                    className="w-full h-12 pl-10 pr-4 rounded-2xl bg-slate-50 border-transparent focus:bg-white border-2 focus:border-primary transition-all outline-none font-bold text-sm"
+                                                />
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Rooms</label>
-                                        <div className="relative">
-                                            <BedDouble className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                            <input
-                                                type="number"
-                                                step="0.5"
-                                                disabled={isReadOnly}
-                                                value={formData.rooms}
-                                                onChange={(e) => setFormData({ ...formData, rooms: e.target.value })}
-                                                className="w-full h-12 pl-11 pr-4 rounded-2xl border border-border bg-background focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Size (m²)</label>
-                                        <div className="relative">
-                                            <Ruler className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                            <input
-                                                type="number"
-                                                disabled={isReadOnly}
-                                                value={formData.size_sqm}
-                                                onChange={(e) => setFormData({ ...formData, size_sqm: e.target.value })}
-                                                className="w-full h-12 pl-11 pr-4 rounded-2xl border border-border bg-background focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Amenities */}
-                                <div className="grid grid-cols-2 gap-4">
-                                    <Button
-                                        type="button"
-                                        variant={formData.has_parking ? 'primary' : 'outline'}
-                                        onClick={() => !isReadOnly && setFormData({ ...formData, has_parking: !formData.has_parking })}
-                                        className="h-20 flex-col gap-2 rounded-3xl"
-                                        disabled={isReadOnly}
-                                    >
-                                        <Car className="w-5 h-5" />
-                                        <span className="text-xs font-bold uppercase tracking-widest">Parking</span>
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        variant={formData.has_storage ? 'primary' : 'outline'}
-                                        onClick={() => !isReadOnly && setFormData({ ...formData, has_storage: !formData.has_storage })}
-                                        className="h-20 flex-col gap-2 rounded-3xl"
-                                        disabled={isReadOnly}
-                                    >
-                                        <Box className="w-5 h-5" />
-                                        <span className="text-xs font-bold uppercase tracking-widest">Storage</span>
-                                    </Button>
-                                </div>
-
-                                {/* Image Preview */}
-                                <div className="space-y-4">
-                                    <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Property Image</label>
-                                    {formData.image_url ? (
-                                        <div className="relative aspect-video rounded-3xl overflow-hidden border-4 border-muted group">
-                                            <img src={formData.image_url} alt="Property" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                                            {!isReadOnly && (
-                                                <button
-                                                    onClick={() => setFormData({ ...formData, image_url: '' })}
-                                                    className="absolute top-4 right-4 bg-black/50 hover:bg-black text-white p-2 rounded-full transition-colors"
-                                                >
-                                                    <X className="w-4 h-4" />
-                                                </button>
-                                            )}
-                                        </div>
-                                    ) : !isReadOnly && (
-                                        <div className="flex gap-4">
+                                    {/* Amenities & Image */}
+                                    <div className="space-y-4">
+                                        <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">{t('visuals')}</h4>
+                                        <div className="flex gap-3">
                                             <Button
                                                 type="button"
-                                                variant="outline"
-                                                onClick={() => setUploadMode('upload')}
-                                                className="flex-1 h-32 flex-col rounded-3xl border-dashed"
+                                                variant={formData.has_parking ? 'primary' : 'outline'}
+                                                onClick={() => !isReadOnly && setFormData({ ...formData, has_parking: !formData.has_parking })}
+                                                className="flex-1 h-12 rounded-2xl"
+                                                disabled={isReadOnly}
                                             >
-                                                <Upload className="w-6 h-6 mb-2" />
-                                                <span className="text-xs font-bold uppercase tracking-widest">Upload Image</span>
+                                                <Car className="w-4 h-4 mr-2" /> <span className="text-[10px] font-black uppercase tracking-widest">Parking</span>
                                             </Button>
                                             <Button
                                                 type="button"
-                                                variant="outline"
-                                                onClick={() => setUploadMode('url')}
-                                                className="flex-1 h-32 flex-col rounded-3xl border-dashed"
+                                                variant={formData.has_storage ? 'primary' : 'outline'}
+                                                onClick={() => !isReadOnly && setFormData({ ...formData, has_storage: !formData.has_storage })}
+                                                className="flex-1 h-12 rounded-2xl"
+                                                disabled={isReadOnly}
                                             >
-                                                <ImageIcon className="w-6 h-6 mb-2" />
-                                                <span className="text-xs font-bold uppercase tracking-widest">Google Maps</span>
+                                                <Box className="w-4 h-4 mr-2" /> <span className="text-[10px] font-black uppercase tracking-widest">Storage</span>
                                             </Button>
                                         </div>
-                                    )}
-                                </div>
 
-                                {/* Active Tenancy */}
-                                {isReadOnly && contracts.some(c => c.status === 'active') && (
-                                    <div className="pt-6 border-t border-border">
-                                        <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-4">Current Tenant</h3>
-                                        {contracts.filter(c => c.status === 'active').map(contract => (
-                                            <Card key={contract.id} className="p-4 bg-primary/5 border-primary/10">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">
-                                                            {contract.tenants?.name.charAt(0).toUpperCase()}
+                                        {!formData.image_url && !isReadOnly && (
+                                            <div className="space-y-4">
+                                                <div className="flex gap-3">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setUploadMode('upload')}
+                                                        className={cn(
+                                                            "flex-1 h-12 rounded-2xl border-2 transition-all flex items-center justify-center gap-2",
+                                                            uploadMode === 'upload' ? "border-primary bg-primary/5 text-primary shadow-sm" : "border-dashed border-slate-200 text-muted-foreground hover:border-primary hover:text-primary"
+                                                        )}
+                                                    >
+                                                        <Upload className="w-4 h-4" /> <span className="text-[10px] font-black uppercase tracking-widest">{t('uploadFile')}</span>
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setUploadMode('url')}
+                                                        className={cn(
+                                                            "flex-1 h-12 rounded-2xl border-2 transition-all flex items-center justify-center gap-2",
+                                                            uploadMode === 'url' ? "border-primary bg-primary/5 text-primary shadow-sm" : "border-dashed border-slate-200 text-muted-foreground hover:border-primary hover:text-primary"
+                                                        )}
+                                                    >
+                                                        <ImageIcon className="w-4 h-4" /> <span className="text-[10px] font-black uppercase tracking-widest">Maps</span>
+                                                    </button>
+                                                </div>
+
+                                                <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                                                    {uploadMode === 'upload' ? (
+                                                        <div
+                                                            onClick={() => fileInputRef.current?.click()}
+                                                            className="w-full py-10 border-2 border-dashed border-slate-200 hover:border-primary hover:bg-primary/5 rounded-[1.5rem] transition-all flex flex-col items-center justify-center gap-3 cursor-pointer group"
+                                                        >
+                                                            <input
+                                                                type="file"
+                                                                ref={fileInputRef}
+                                                                onChange={handleFileUpload}
+                                                                accept="image/*"
+                                                                className="hidden"
+                                                            />
+                                                            {isUploading ? (
+                                                                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                                                            ) : (
+                                                                <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
+                                                                    <Upload className="w-6 h-6" />
+                                                                </div>
+                                                            )}
+                                                            <span className="text-xs font-bold text-muted-foreground group-hover:text-primary transition-colors">
+                                                                {isUploading ? t('uploading') : t('clickToUpload')}
+                                                            </span>
                                                         </div>
-                                                        <div>
-                                                            <p className="font-bold text-sm">{contract.tenants?.name}</p>
-                                                            <p className="text-xs text-muted-foreground">{formatDate(contract.start_date)} - {formatDate(contract.end_date)}</p>
+                                                    ) : (
+                                                        <div className="flex gap-2">
+                                                            <div className="relative flex-1">
+                                                                <ImageIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                                                <input
+                                                                    type="url"
+                                                                    placeholder={t('image_url_placeholder', { defaultValue: 'Enter image URL or use Maps' })}
+                                                                    value={formData.image_url}
+                                                                    onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                                                                    className="w-full h-12 pl-10 pr-4 rounded-2xl bg-slate-50 border-transparent focus:bg-white border-2 focus:border-primary transition-all outline-none text-sm font-bold"
+                                                                />
+                                                            </div>
+                                                            <Button
+                                                                type="button"
+                                                                onClick={handleGoogleFetch}
+                                                                isLoading={isFetchingGoogle}
+                                                                className="px-6 h-12 rounded-2xl"
+                                                            >
+                                                                {t('importFromGoogle')}
+                                                            </Button>
                                                         </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {formData.image_url && (
+                                            <div className="relative aspect-video rounded-[1.5rem] overflow-hidden group">
+                                                <img src={formData.image_url} alt="Property" className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-700" />
+                                                {!isReadOnly && (
+                                                    <button
+                                                        onClick={() => setFormData(prev => ({ ...prev, image_url: '' }))}
+                                                        className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    >
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </form>
+                        ) : activeTab === 'contracts' ? (
+                            <div className="space-y-8 py-4">
+                                {contractLoading ? (
+                                    <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary/30" /></div>
+                                ) : contracts.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 opacity-40">
+                                        <FileText className="w-12 h-12" />
+                                        <p className="text-[10px] font-black uppercase tracking-widest">{t('noContracts')}</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-6">
+                                        {contracts.map(c => (
+                                            <Card
+                                                key={c.id}
+                                                className={cn(
+                                                    "p-6 cursor-pointer border-none shadow-minimal transition-all hover:shadow-premium group",
+                                                    c.status === 'active' ? "bg-emerald-50/30 dark:bg-emerald-950/20" : "bg-white dark:bg-neutral-900"
+                                                )}
+                                                onClick={() => handleViewContract(c)}
+                                            >
+                                                <div className="flex justify-between items-center">
+                                                    <div className="space-y-1">
+                                                        <p className="font-black text-lg">{Array.isArray(c.tenants) ? c.tenants.map(t => t.name).join(', ') : t('unknownTenant')}</p>
+                                                        <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">
+                                                            {formatDate(c.start_date)} - {formatDate(c.end_date)}
+                                                        </p>
                                                     </div>
-                                                    <p className="font-black text-primary">₪{contract.base_rent?.toLocaleString()}</p>
+                                                    <div className="text-right">
+                                                        <p className="font-black text-xl">₪{c.base_rent?.toLocaleString()}</p>
+                                                        <span className={cn(
+                                                            "text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full",
+                                                            c.status === 'active' ? "bg-emerald-500 text-white" : "bg-muted text-muted-foreground"
+                                                        )}>
+                                                            {c.status}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </Card>
                                         ))}
                                     </div>
                                 )}
-                            </form>
-                        ) : activeTab === 'contracts' ? (
-                            <div className="space-y-6">
-                                {contractLoading ? (
-                                    <div className="flex justify-center p-8"><Loader2 className="animate-spin text-primary" /></div>
-                                ) : contracts.length === 0 ? (
-                                    <div className="text-center py-20 bg-muted/20 rounded-3xl border-2 border-dashed">
-                                        <FileText className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-                                        <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">No contracts found</p>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-8">
-                                        {/* Active */}
-                                        {contracts.filter(c => c.status === 'active').length > 0 && (
-                                            <div className="space-y-4">
-                                                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-emerald-600 flex items-center gap-2">
-                                                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                                                    Active Contracts
-                                                </h3>
-                                                {contracts.filter(c => c.status === 'active').map(c => (
-                                                    <Card
-                                                        key={c.id}
-                                                        onClick={() => handleViewContract(c)}
-                                                        hoverEffect
-                                                        className="p-5 flex justify-between items-center border-l-4 border-l-emerald-500"
-                                                    >
-                                                        <div>
-                                                            <p className="font-black text-lg">{c.tenants?.name}</p>
-                                                            <p className="text-sm text-muted-foreground font-medium">
-                                                                {formatDate(c.start_date)} - {formatDate(c.end_date)}
-                                                            </p>
-                                                        </div>
-                                                        <div className="text-right">
-                                                            <p className="font-black text-xl text-emerald-600">₪{c.base_rent?.toLocaleString()}</p>
-                                                        </div>
-                                                    </Card>
-                                                ))}
-                                            </div>
-                                        )}
-
-                                        {/* History */}
-                                        {contracts.filter(c => c.status !== 'active').length > 0 && (
-                                            <div className="space-y-4">
-                                                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
-                                                    <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />
-                                                    Previous
-                                                </h3>
-                                                {contracts.filter(c => c.status !== 'active').map(c => (
-                                                    <Card
-                                                        key={c.id}
-                                                        onClick={() => handleViewContract(c)}
-                                                        hoverEffect
-                                                        className="p-5 flex justify-between items-center opacity-60 grayscale hover:opacity-100 hover:grayscale-0 transition-all border-none bg-muted/30"
-                                                    >
-                                                        <div>
-                                                            <p className="font-bold text-base">{c.tenants?.name}</p>
-                                                            <p className="text-xs text-muted-foreground">
-                                                                {formatDate(c.start_date)} - {formatDate(c.end_date)}
-                                                            </p>
-                                                        </div>
-                                                        <div className="text-right">
-                                                            <p className="font-black">₪{c.base_rent?.toLocaleString()}</p>
-                                                        </div>
-                                                    </Card>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
                             </div>
                         ) : (
-                            <div className="h-full">
+                            <div className="py-4 h-full">
                                 {propertyToEdit ? (
-                                    <PropertyDocumentsHub property={propertyToEdit} readOnly={isReadOnly} />
+                                    <div className="h-full overflow-hidden">
+                                        <PropertyDocumentsHub property={propertyToEdit} readOnly={isReadOnly} />
+                                    </div>
                                 ) : (
-                                    <div className="flex flex-col items-center justify-center py-20 text-center px-4 bg-muted/20 rounded-3xl border-2 border-dashed">
-                                        <FileText className="w-12 h-12 text-muted-foreground/30 mb-4" />
-                                        <h3 className="text-lg font-black uppercase tracking-widest text-muted-foreground mb-1">
-                                            Save Property First
-                                        </h3>
-                                        <p className="text-sm text-muted-foreground max-w-xs">
-                                            To upload documents, please save the property first to create a record in the system.
-                                        </p>
+                                    <div className="flex flex-col items-center justify-center py-32 text-center space-y-4">
+                                        <div className="w-16 h-16 rounded-3xl bg-slate-50 flex items-center justify-center text-muted-foreground">
+                                            <FileText className="w-8 h-8" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <h3 className="font-black text-xs uppercase tracking-widest">{t('saveRequired')}</h3>
+                                            <p className="text-sm text-muted-foreground max-w-[200px] leading-relaxed">{t('savePropertyToAttachDocs')}</p>
+                                        </div>
                                     </div>
                                 )}
                             </div>

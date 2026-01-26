@@ -4,67 +4,108 @@
 
 @layer base {
   :root {
-    /* Minimalist Black & White Theme */
+    /* Zen Minimalist Palette - Mono & Slate Based */
     --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    --foreground: 240 10% 3.9%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    --card-foreground: 240 10% 3.9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
+    --popover-foreground: 240 10% 3.9%;
 
-    --primary: 0 0% 9%;
+    --primary: 240 5.9% 10%;
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
 
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
 
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
 
-    /* Premium Radius */
-    --radius: 1rem;
+    --radius: 0.75rem;
   }
 
   .dark {
-    --background: 0 0% 3.9%;
+    --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
 
-    --card: 0 0% 3.9%;
+    --card: 240 10% 3.9%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 3.9%;
+    --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
 
     --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
+    --primary-foreground: 240 5.9% 10%;
 
-    --secondary: 0 0% 14.9%;
+    --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
 
-    --accent: 0 0% 14.9%;
+    --accent: 240 3.7% 15.9%;
     --accent-foreground: 0 0% 98%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+  }
+
+  * {
+    @apply border-border;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer utilities {
+
+  /* Premium Shadows */
+  .shadow-minimal {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02), 0 1px 0 rgba(0, 0, 0, 0.02);
+  }
+
+  .shadow-premium {
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.05), 0 10px 20px -5px rgba(0, 0, 0, 0.02);
+  }
+
+  .shadow-premium-dark {
+    box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.4);
+  }
+
+  .glass-morphism {
+    @apply bg-white/50 dark:bg-black/50 backdrop-blur-3xl;
+  }
+
+  /* Hide number input spinners */
+  .no-spinner::-webkit-outer-spin-button,
+  .no-spinner::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .no-spinner {
+    -moz-appearance: textfield;
   }
 
   .hide-scrollbar::-webkit-scrollbar {
@@ -77,24 +118,7 @@
   }
 }
 
-@layer utilities {
-
-  /* Hide number input spinners */
-  .no-spinner::-webkit-outer-spin-button,
-  .no-spinner::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-
-  .no-spinner {
-    -moz-appearance: textfield;
-  }
-}
-
 @layer base {
-  * {
-    @apply border-border;
-  }
 
   html,
   body,
@@ -106,7 +130,6 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', 'Assistant', sans-serif;
   }
 
   /* Language-specific fonts */
@@ -117,7 +140,7 @@
 
   [dir="ltr"],
   [lang="en"] {
-    font-family: 'Inter', 'Outfit', sans-serif;
+    font-family: 'Outfit', 'Inter', sans-serif;
   }
 
   /* Dark mode text color fixes */
@@ -127,96 +150,48 @@
   .dark h4,
   .dark h5,
   .dark h6 {
-    color: white;
+    @apply text-foreground;
   }
 
-  .dark p {
-    color: theme('colors.gray.100');
-  }
-
-  /* Only apply global dark text colors to elements that don't have explicit color classes */
-  .dark span:not([class*="text-"]):not(.badge) {
-    color: theme('colors.gray.100');
-  }
-
-  /* Selective apply to prevent overriding Tailwind utility classes */
-
-  .dark label:not([style*="color"]) {
-    color: theme('colors.gray.300');
+  .dark p,
+  .dark span:not([class*="text-"]) {
+    @apply text-muted-foreground;
   }
 
   /* Accessibility: High Contrast Focus Indicator */
   :focus-visible {
-    outline: 2px solid #000;
-    outline-offset: 2px;
+    outline: 2px solid theme('colors.foreground');
+    outline-offset: 4px;
   }
 
-  .dark :focus-visible {
-    outline: 2px solid #fff;
-  }
+  /* Custom Scrollbar for Desktop */
+  @media (min-width: 1024px) {
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
 
-  /* Force gray checkboxes instead of blue */
-  input[type="checkbox"] {
-    accent-color: #6b7280;
-  }
+    ::-webkit-scrollbar-track {
+      @apply bg-transparent;
+    }
 
-  .dark input[type="checkbox"] {
-    accent-color: #9ca3af;
-  }
+    ::-webkit-scrollbar-thumb {
+      @apply bg-slate-200 dark:bg-neutral-800 rounded-full border-4 border-solid border-transparent bg-clip-padding;
+    }
 
-  /* Ensure button text is always visible - prevent dark mode override */
-  button span,
-  button div {
-    color: inherit;
-  }
-
-  /* Admin panel labels - force pure black/white color */
-  .admin-label {
-    color: #000000 !important;
-    font-weight: 700 !important;
-  }
-
-  .dark .admin-label {
-    color: #ffffff !important;
-  }
-
-  /* Table row fixes for dark mode */
-  .dark tr:hover {
-    background-color: rgba(255, 255, 255, 0.05) !important;
-  }
-
-  /* Generic text contrast fix for dark mode */
-  .dark .text-muted-foreground {
-    color: #94a3b8 !important;
-    /* Slate 400 */
+    ::-webkit-scrollbar-thumb:hover {
+      @apply bg-slate-300 dark:bg-neutral-700;
+    }
   }
 }
 
-/* View Transitions API - Beautiful theme change animation */
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation-duration: 0.5s;
+/* Page Transition Animations */
+.animate-in {
+  animation-duration: 0.7s;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  animation-fill-mode: both;
 }
 
-::view-transition-old(root) {
-  animation-name: fade-out;
-}
-
-::view-transition-new(root) {
-  animation-name: fade-in;
-}
-
-@keyframes fade-out {
-  from {
-    opacity: 1;
-  }
-
-  to {
-    opacity: 0;
-  }
-}
-
-@keyframes fade-in {
+@keyframes fadeIn {
   from {
     opacity: 0;
   }
@@ -224,6 +199,24 @@
   to {
     opacity: 1;
   }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    transform: translateY(20px);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation-name: fadeIn;
+}
+
+.slide-in-from-bottom-6 {
+  animation-name: slideInFromBottom;
 }
 
 /* Safe Mobile Fix: Prevent iOS zoom on inputs */
@@ -233,149 +226,18 @@ textarea {
   font-size: 16px !important;
 }
 
-/* Safe Mobile Fix: Better touch response (no 300ms delay) */
+/* Safe Mobile Fix: Better touch response */
 button,
 a {
   touch-action: manipulation;
 }
 
-/* RTL Layout Fixes for Hebrew - Minimal and Safe */
 [dir="rtl"] {
   direction: rtl;
 }
 
-/* Ensure inputs and forms work properly in RTL */
 [dir="rtl"] input,
 [dir="rtl"] textarea,
 [dir="rtl"] select {
   text-align: right;
-  direction: rtl;
-}
-
-/* ============================================ */
-/* Page Transition Animations */
-/* ============================================ */
-
-/* Smooth fade-in for page content */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Apply fade-in to main content areas */
-main,
-.page-content,
-[class*="space-y-6"] {
-  animation: fadeIn 0.2s ease-out;
-}
-
-/* Optimize rendering performance */
-* {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Hardware acceleration for smoother transitions */
-.transition,
-.transition-all,
-.transition-colors,
-.transition-transform {
-  will-change: transform, opacity;
-}
-
-/* Reduce motion for users who prefer it */
-@media (prefers-reduced-motion: reduce) {
-
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-/* ============================================ */
-/* Modern Minimal UI Utility Classes */
-/* ============================================ */
-
-/* Button Styles */
-.btn-primary {
-  @apply bg-primary hover:bg-primary/90 text-white rounded-lg px-4 py-2 font-medium transition-colors shadow-sm;
-}
-
-.btn-secondary {
-  @apply bg-secondary hover:bg-secondary/80 text-foreground rounded-lg px-4 py-2 font-medium transition-colors;
-}
-
-.btn-danger {
-  @apply bg-red-600 hover:bg-red-700 text-white rounded-lg px-4 py-2 font-medium transition-colors shadow-sm;
-}
-
-.btn-ghost {
-  @apply bg-transparent hover:bg-secondary text-foreground rounded-lg px-4 py-2 font-medium transition-colors;
-}
-
-/* Card Styles */
-.card-standard {
-  @apply bg-card border border-border rounded-xl shadow-sm;
-}
-
-.card-hover {
-  @apply bg-card border border-border rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300;
-}
-
-/* Input Styles */
-.input-standard {
-  @apply bg-white border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors;
-}
-
-.input-error {
-  @apply bg-white border border-red-500 rounded-lg px-3 py-2 text-foreground focus:ring-2 focus:ring-red-500 focus:border-transparent;
-}
-
-/* Modal Styles */
-.modal-overlay {
-  @apply fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm;
-}
-
-.modal-content {
-  @apply bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden;
-}
-
-/* Text Styles */
-.text-heading {
-  @apply text-foreground font-bold;
-}
-
-.text-body {
-  @apply text-foreground;
-}
-
-.text-muted {
-  @apply text-muted-foreground;
-}
-
-/* Badge Styles */
-.badge-primary {
-  @apply bg-primary/10 text-primary px-2 py-1 rounded-lg text-xs font-medium;
-}
-
-.badge-success {
-  @apply bg-emerald-50 text-emerald-600 px-2 py-1 rounded-lg text-xs font-medium;
-}
-
-.badge-warning {
-  @apply bg-amber-50 text-amber-600 px-2 py-1 rounded-lg text-xs font-medium;
-}
-
-.badge-danger {
-  @apply bg-red-50 text-red-600 px-2 py-1 rounded-lg text-xs font-medium;
 }

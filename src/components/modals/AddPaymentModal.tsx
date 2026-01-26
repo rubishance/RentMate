@@ -12,9 +12,16 @@ interface AddPaymentModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess: () => void;
+    initialData?: {
+        contract_id?: string;
+        amount?: number | string;
+        due_date?: string;
+        status?: 'pending' | 'paid' | 'overdue';
+        payment_method?: string;
+    };
 }
 
-export function AddPaymentModal({ isOpen, onClose, onSuccess }: AddPaymentModalProps) {
+export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: AddPaymentModalProps) {
     const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [contracts, setContracts] = useState<any[]>([]);
@@ -32,8 +39,18 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess }: AddPaymentModalP
     useEffect(() => {
         if (isOpen) {
             fetchContracts();
+            if (initialData) {
+                setFormData(prev => ({
+                    ...prev,
+                    contract_id: initialData.contract_id || prev.contract_id,
+                    amount: initialData.amount ? initialData.amount.toString() : prev.amount,
+                    due_date: initialData.due_date || prev.due_date,
+                    status: initialData.status || prev.status,
+                    payment_method: initialData.payment_method || prev.payment_method,
+                }));
+            }
         }
-    }, [isOpen]);
+    }, [isOpen, initialData]);
 
     async function fetchContracts() {
         try {

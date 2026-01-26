@@ -10,7 +10,6 @@ import { format, parseISO } from 'date-fns';
 
 interface ContractWithDetails extends Contract {
     properties: { address: string, city: string };
-    tenants: { name: string };
 }
 
 interface ContractDetailsModalProps {
@@ -241,7 +240,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                             </div>
                             <div>
                                 <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">{t('tenant')}</p>
-                                <p className="font-medium text-foreground dark:text-gray-100">{contract.tenants?.name || 'N/A'}</p>
+                                <p className="font-medium text-foreground dark:text-gray-100">{contract.tenants?.map(t => t.name).join(', ') || 'N/A'}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">

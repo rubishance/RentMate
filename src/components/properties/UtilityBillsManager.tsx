@@ -44,9 +44,12 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
         date: string;
         note: string;
         vendorName: string;
+        invoiceNumber: string;
         periodStart: string;
         periodEnd: string;
         isAnalyzing?: boolean;
+        isDuplicate?: boolean;
+        duplicateDoc?: PropertyDocument;
         aiData?: ExtractedBillData;
     }>>([]);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -69,15 +72,13 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
         try {
             const category = `utility_${activeUtility}` as DocumentCategory;
 
-            const [fetchedFolders, fetchedDocs, fetchedAnalytics] = await Promise.all([
+            const [fetchedFolders, fetchedDocs] = await Promise.all([
                 propertyDocumentsService.getFolders(property.id, category),
-                propertyDocumentsService.getPropertyDocuments(property.id, { category }),
-                propertyDocumentsService.getUtilityAnalytics(property.id, activeUtility)
+                propertyDocumentsService.getPropertyDocuments(property.id, { category })
             ]);
 
             setFolders(fetchedFolders);
             setDocuments(fetchedDocs);
-            setAnalytics(fetchedAnalytics);
         } catch (error) {
             console.error('Error loading data:', error);
         } finally {
@@ -110,6 +111,7 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                 date: newFolderDate,
                 note: '',
                 vendorName: '',
+                invoiceNumber: '',
                 periodStart: '',
                 periodEnd: '',
                 isAnalyzing: true // Start analyzing immediately
@@ -125,14 +127,17 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                     if (fileObj.file.type.startsWith('image/') || fileObj.file.type === 'application/pdf') {
                         const result = await BillAnalysisService.analyzeBill(fileObj.file);
 
+                        // Check for duplicate
+                        const duplicate = await propertyDocumentsService.checkDuplicateBill(
+                            result.vendor,
+                            result.date,
+                            result.invoiceNumber || '',
+                            result.billingPeriodStart,
+                            result.billingPeriodEnd
+                        );
+
                         setStagedFiles(prev => prev.map(f => {
                             if (f.id !== fileObj.id) return f;
-
-                            // Auto-switch tab if confidence is high and mismatched
-                            if (result.confidence > 0.8 && result.category !== 'other' && result.category !== activeUtility) {
-                                // Optional: Notification or subtle tab switch? 
-                                // For now, just note it. switching tabs might lose state of other files.
-                            }
 
                             return {
                                 ...f,
@@ -140,9 +145,12 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                                 date: result.date,
                                 note: result.summary || '',
                                 vendorName: result.vendor || '',
+                                invoiceNumber: result.invoiceNumber || '',
                                 periodStart: result.billingPeriodStart || '',
                                 periodEnd: result.billingPeriodEnd || '',
                                 isAnalyzing: false,
+                                isDuplicate: !!duplicate,
+                                duplicateDoc: duplicate as PropertyDocument,
                                 aiData: result
                             };
                         }));
@@ -208,6 +216,7 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                         title: stagedFile.file.name,
                         description: stagedFile.note,
                         vendorName: stagedFile.vendorName,
+                        invoiceNumber: stagedFile.invoiceNumber,
                         periodStart: stagedFile.periodStart,
                         periodEnd: stagedFile.periodEnd
                     });
@@ -300,51 +309,7 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
             </div>
 
 
-            {/* Analytics Overview Card */}
-            {!loading && analytics && (analytics.averageMonthly > 0 || analytics.monthlyData.length > 0) && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-border dark:border-gray-700 shadow-sm flex items-center justify-between">
-                        <div>
-                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('averageMonthly')}</p>
-                            <p className="text-2xl font-bold text-foreground dark:text-white mt-1">₪{Math.round(analytics.averageMonthly).toLocaleString()}</p>
-                        </div>
-                        <div className="p-3 bg-primary/10 dark:bg-blue-900/20 rounded-full text-primary dark:text-blue-400">
-                            <DollarSign className="w-5 h-5" />
-                        </div>
-                    </div>
-
-                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-border dark:border-gray-700 shadow-sm flex items-center justify-between">
-                        <div>
-                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('trend')}</p>
-                            <div className="flex items-center gap-2 mt-1">
-                                <p className="text-2xl font-bold text-foreground dark:text-white capitalize">
-                                    {analytics.trend === 'up' ? t('increasing') : analytics.trend === 'down' ? t('decreasing') : t('stable')}
-                                </p>
-                                {renderTrendIcon(analytics.trend)}
-                            </div>
-                        </div>
-                        <div className={`p-3 rounded-full ${analytics.trend === 'up' ? 'bg-red-50 text-red-500' : analytics.trend === 'down' ? 'bg-green-50 text-green-500' : 'bg-secondary text-muted-foreground'}`}>
-                            <Calendar className="w-5 h-5" />
-                        </div>
-                    </div>
-
-                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-border dark:border-gray-700 shadow-sm flex items-center justify-between">
-                        <div>
-                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">YoY Change</p>
-                            <div className="flex items-center gap-2 mt-1">
-                                <p className={`text-2xl font-bold ${analytics.yearOverYear > 0 ? 'text-red-500' : analytics.yearOverYear < 0 ? 'text-green-500' : 'text-foreground'}`}>
-                                    {analytics.yearOverYear > 0 ? '+' : ''}{analytics.yearOverYear.toFixed(1)}%
-                                </p>
-                            </div>
-                        </div>
-                        <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-full text-purple-600 dark:text-purple-400">
-                            <TrendingUp className="w-5 h-5" />
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Actions ... (rest of the file) */}
+            {/* Actions */}
 
             {!readOnly && !showUploadForm && (
                 <button
@@ -473,10 +438,19 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                                                 Scanning bill...
                                             </div>
                                         ) : file.aiData ? (
-                                            <div className="mb-3 flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded-lg w-fit">
-                                                <Sparkles className="w-3 h-3" />
-                                                <span>Auto-filled by Gemini</span>
-                                                <span className="font-mono opacity-70">({(file.aiData.confidence * 100).toFixed(0)}% conf)</span>
+                                            <div className="mb-3 space-y-2">
+                                                <div className="flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded-lg w-fit">
+                                                    <Sparkles className="w-3 h-3" />
+                                                    <span>Auto-filled by Gemini</span>
+                                                    <span className="font-mono opacity-70">({(file.aiData.confidence * 100).toFixed(0)}% conf)</span>
+                                                </div>
+                                                {file.isDuplicate && (
+                                                    <div className="flex items-center gap-2 text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1.5 rounded-lg border border-red-100 dark:border-red-900/30">
+                                                        <X className="w-3.5 h-3.5" />
+                                                        <span className="font-bold">Duplicate Detected!</span>
+                                                        <span>A bill with this number, vendor, and date already exists.</span>
+                                                    </div>
+                                                )}
                                             </div>
                                         ) : null}
 
@@ -488,6 +462,16 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                                                     value={file.vendorName}
                                                     onChange={(e) => updateStagedFile(file.id, 'vendorName', e.target.value)}
                                                     placeholder={t('eg_electric_corp')}
+                                                    className="w-full px-3 py-1.5 text-xs border border-border dark:border-gray-700 rounded-lg bg-white/50 dark:bg-foreground/50 outline-none focus:border-primary transition-colors"
+                                                />
+                                            </div>
+                                            <div className="col-span-1 space-y-1">
+                                                <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">Invoice Number</label>
+                                                <input
+                                                    type="text"
+                                                    value={file.invoiceNumber}
+                                                    onChange={(e) => updateStagedFile(file.id, 'invoiceNumber', e.target.value)}
+                                                    placeholder="e.g. 12345678"
                                                     className="w-full px-3 py-1.5 text-xs border border-border dark:border-gray-700 rounded-lg bg-white/50 dark:bg-foreground/50 outline-none focus:border-primary transition-colors"
                                                 />
                                             </div>

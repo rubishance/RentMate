@@ -164,6 +164,35 @@ serve(async (req) => {
 
     console.log('Email sent successfully:', data.id)
 
+    // 3. Log to CRM
+    try {
+      // Try to find if the email belongs to a registered user
+      const { data: userData } = await supabase.from('user_profiles').select('id').eq('email', user_email).single()
+
+      let targetUserId = userData?.id || user_id // fallback to passed ID if matches format, or maybe 'guest'
+
+      // If 'guest', we might want to store it differently, but for now let's only log if we have a valid UUID or if we allow guests
+      if (targetUserId && targetUserId !== 'guest') {
+        await supabase.from('crm_interactions').insert({
+          user_id: targetUserId,
+          type: 'email',
+          title: `Contact Form: ${body.subject || 'Support Request'}`,
+          content: message,
+          status: 'open', // Open because it needs a reply
+          metadata: {
+            direction: 'inbound', // It's inbound to US from the user
+            from: user_email,
+            to: ADMIN_EMAIL,
+            external_id: data.id,
+            provider: 'resend'
+          }
+        })
+      }
+    } catch (logErr) {
+      console.error('Failed to log email to CRM:', logErr)
+      // Don't fail the request just because logging failed
+    }
+
     return new Response(
       JSON.stringify({ success: true, id: data.id }),
       {

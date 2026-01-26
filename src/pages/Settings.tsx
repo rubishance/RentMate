@@ -1,21 +1,18 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import logoIconOnly from '../assets/rentmate-icon-only.png';
-import logoIconDark from '../assets/rentmate-icon-only-dark.png';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { User, Bell, Shield, Wallet, CreditCard, ChevronRight, Mail, Send, Check, LogOut, Receipt, Languages, Cloud, Book } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { User, Bell, Shield, ChevronRight, Mail, Send, Check, LogOut } from 'lucide-react';
 import { useUserPreferences } from '../contexts/UserPreferencesContext';
 import type { Language, Gender } from '../types/database';
 import { EditProfileModal, NotificationsSettingsModal } from '../components/modals/EditProfileModal';
-import { SubscriptionCard } from '../components/subscription/SubscriptionCard';
 import { useTranslation } from '../hooks/useTranslation';
 import { PrivacySecurityModal } from '../components/modals/PrivacySecurityModal';
+import { cn } from '../lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export function Settings() {
-    const { preferences, setLanguage, setGender, effectiveTheme } = useUserPreferences();
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
     const [isAdmin, setIsAdmin] = useState(false);
 
     const [userData, setUserData] = useState<{ full_name: string | null; email: string | null; first_name?: string; last_name?: string }>({
@@ -36,7 +33,6 @@ export function Settings() {
     useEffect(() => {
         fetchUserData();
     }, []);
-
 
     const fetchUserData = async () => {
         const { data: { user } } = await supabase.auth.getUser();
@@ -64,15 +60,15 @@ export function Settings() {
         }
     };
 
-    const languageOptions: { value: Language; label: string }[] = [
-        { value: 'he', label: 'עברית (Hebrew)' },
-        { value: 'en', label: 'English' },
-    ];
-
-    const genderOptions: { value: Gender; label: string; labelHe: string }[] = [
-        { value: 'male', label: 'Male', labelHe: 'זכר' },
-        { value: 'female', label: 'Female', labelHe: 'נקבה' }
-    ];
+    const handleSendMessage = async () => {
+        setIsSendingMessage(true);
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        setIsSendingMessage(false);
+        setMessageSent(true);
+        setTimeout(() => setMessageSent(false), 3000);
+        setContactMessage('');
+    };
 
     const settingsSections = [
         {
@@ -97,232 +93,185 @@ export function Settings() {
                     onClick: () => setIsPrivacySecurityOpen(true)
                 },
             ]
-        },
-        {
-            title: t('settings_help_resources'),
-            items: [
-                {
-                    icon: Book,
-                    label: t('knowledgeBase'),
-                    description: t('knowledgeBaseDesc') || (preferences.language === 'he' ? 'מדריכים ומאמרים מקצועיים' : 'Professional guides and articles'),
-                    onClick: () => navigate('/knowledge-base')
-                }
-            ]
-        },
+        }
     ];
 
-    const handleSendMessage = async () => {
-        if (!contactMessage.trim()) return;
-
-        setIsSendingMessage(true);
-
-        try {
-            // Get current user
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) throw new Error('Not authenticated');
-
-            // Save message to database
-            const { error: dbError } = await supabase
-                .from('contact_messages')
-                .insert({
-                    user_id: user.id,
-                    user_name: userData.full_name || 'RentMate User',
-                    user_email: userData.email || user.email,
-                    message: contactMessage,
-                    status: 'new'
-                });
-
-            if (dbError) throw dbError;
-
-            // Send email notification via Edge Function
-            const { error: emailError } = await supabase.functions.invoke('send-contact-email', {
-                body: { user_id: user.id, user_name: userData.full_name, user_email: userData.email, message: contactMessage }
-            });
-
-            if (emailError) {
-                console.error('Email notification failed:', emailError);
-                throw new Error(emailError.message || 'Email sending failed');
-            }
-
-            // Show success
-            setMessageSent(true);
-            setContactMessage('');
-            setTimeout(() => setMessageSent(false), 3000);
-        } catch (error) {
-            console.error('Error sending message:', error);
-            alert(`Failed to send message: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        } finally {
-            setIsSendingMessage(false);
-        }
-    };
-
     return (
-        <div className="space-y-6 px-4 pt-6">
+        <div className="pb-40 pt-16 space-y-20 animate-in fade-in slide-in-from-bottom-6 duration-700 px-8">
             {/* Header */}
-            <div className="relative h-20 flex items-center justify-between mb-2">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('settings')}</h1>
-                    <p className="text-sm text-muted-foreground">{t('manageAccount')}</p>
+            <div className="space-y-2">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 dark:bg-neutral-900 rounded-full border border-slate-100 dark:border-neutral-800 shadow-minimal">
+                    <User className="w-3 h-3 text-muted-foreground" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">{t('preferencesAndAccount')}</span>
                 </div>
-
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-                    <img
-                        src={effectiveTheme === 'dark' ? logoIconDark : logoIconOnly}
-                        alt="RentMate"
-                        className="h-16 w-auto object-contain drop-shadow-sm transition-all duration-500"
-                    />
-                </div>
-
-                <div className="w-8"></div> {/* Spacer for balance */}
+                <h1 className="text-6xl font-black tracking-tighter text-foreground lowercase">
+                    {t('settings')}
+                </h1>
             </div>
 
-            {/* Subscription Card */}
-            <SubscriptionCard />
-
-            {/* User Profile Card - Clickable */}
+            {/* User Profile Card */}
             <div
-                className="bg-card border border-border rounded-2xl p-6 flex items-center gap-4 cursor-pointer hover:bg-secondary transition-colors group relative"
+                onClick={() => setIsEditProfileOpen(true)}
+                className="bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[3rem] p-10 flex items-center gap-10 cursor-pointer shadow-minimal hover:shadow-premium transition-all duration-700 group relative overflow-hidden"
             >
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl group-hover:scale-110 transition-transform">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 dark:bg-neutral-800/30 rounded-bl-[4rem] -translate-y-full group-hover:translate-y-0 transition-transform duration-1000 pointer-events-none" />
+
+                <div className="w-24 h-24 rounded-[2rem] bg-slate-50 dark:bg-neutral-800 flex items-center justify-center text-foreground font-black text-3xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-700 shadow-minimal border border-slate-100 dark:border-neutral-700">
                     {userData.full_name?.charAt(0) || userData.email?.charAt(0).toUpperCase()}
                 </div>
-                <div className="flex-1">
-                    <h3 className="font-bold text-lg">{userData.full_name || 'RentMate User'}</h3>
-                    <p className="text-sm text-muted-foreground">{userData.email}</p>
+                <div className="flex-1 space-y-2">
+                    <h3 className="font-black text-3xl tracking-tighter text-foreground lowercase leading-none">{userData.full_name || 'rentmate user'}</h3>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-40">{userData.email}</p>
                 </div>
-                <button className="text-sm text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">{t('edit')}</button>
+                <div className="w-14 h-14 rounded-2xl bg-slate-50 dark:bg-neutral-800 flex items-center justify-center text-slate-300 group-hover:bg-foreground group-hover:text-background group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 shadow-minimal">
+                    <ChevronRight className="w-7 h-7" />
+                </div>
             </div>
 
-            {/* Admin Dashboard Link (Only visible to admins) */}
-            {
-                isAdmin && (
-                    <div className="bg-gradient-to-r from-brand-600 to-purple-600 rounded-2xl p-6 text-white shadow-lg cursor-pointer" onClick={() => window.location.href = '/admin'}>
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h3 className="font-bold text-lg">{t('settings_admin_dashboard')}</h3>
-                                <p className="text-sm opacity-90">{t('settings_admin_desc')}</p>
-                            </div>
-                            <Shield className="w-8 h-8 opacity-80" />
+            {/* Admin Dashboard Link */}
+            {isAdmin && (
+                <div
+                    onClick={() => window.location.href = '/admin'}
+                    className="bg-foreground text-background rounded-[3rem] p-10 shadow-premium-dark cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all group overflow-hidden relative"
+                >
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl group-hover:scale-125 transition-transform duration-1000" />
+                    <div className="flex items-center justify-between relative z-10">
+                        <div className="space-y-2 text-center md:text-left rtl:md:text-right w-full md:w-auto">
+                            <h3 className="font-black text-2xl tracking-tighter uppercase mb-1">{t('settings_admin_dashboard')}</h3>
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50">{t('settings_admin_desc')}</p>
                         </div>
+                        <Shield className="w-12 h-12 opacity-30 group-hover:rotate-12 transition-transform duration-500 hidden md:block" />
                     </div>
-                )
-            }
-
+                </div>
+            )}
 
             {/* Settings Sections */}
-            {
-                settingsSections.map((section) => (
-                    <div key={section.title} className="space-y-3">
-                        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide px-1">
-                            {section.title}
-                        </h2>
-                        <div className="bg-card border border-border rounded-2xl overflow-hidden divide-y divide-border">
+            <div className="grid grid-cols-1 lg:grid-cols-1 gap-12">
+                {settingsSections.map((section) => (
+                    <div key={section.title} className="space-y-8">
+                        <div className="px-4">
+                            <span className="text-[10px] font-black text-muted-foreground uppercase opacity-40 tracking-[0.5em] block mb-2">{section.title}</span>
+                        </div>
+                        <div className="bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[3rem] overflow-hidden shadow-minimal divide-y divide-slate-50 dark:divide-neutral-800/10">
                             {section.items.map((item) => {
                                 const Icon = item.icon;
                                 return (
                                     <button
                                         key={item.label}
                                         onClick={item.onClick}
-                                        className="w-full flex items-center gap-4 p-4 hover:bg-secondary transition-colors text-left"
+                                        className="w-full flex items-center gap-8 p-10 hover:bg-slate-50/50 dark:hover:bg-neutral-800/20 transition-all text-left group"
                                     >
-                                        <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-                                            <Icon className="w-5 h-5 text-foreground" />
+                                        <div className="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-neutral-800 flex items-center justify-center border border-slate-100 dark:border-neutral-700 group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
+                                            <Icon className="w-7 h-7 text-foreground" />
                                         </div>
-                                        <div className="flex-1">
-                                            <div className="font-medium">{item.label}</div>
-                                            <div className="text-sm text-muted-foreground">{item.description}</div>
+                                        <div className="flex-1 space-y-2">
+                                            <div className="font-black text-xl tracking-tighter text-foreground lowercase">{item.label}</div>
+                                            <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-40">{item.description}</div>
                                         </div>
-                                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                                        <ChevronRight className="w-6 h-6 text-slate-200 group-hover:text-foreground group-hover:translate-x-2 transition-all duration-500" />
                                     </button>
                                 );
                             })}
                         </div>
                     </div>
-                ))
-            }
+                ))}
+            </div>
 
-            {/* Contact Support Section */}
-            <div className="space-y-3">
-                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide px-1">
-                    {t('support')}
-                </h2>
-                <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
+            {/* Support Section */}
+            <div className="space-y-8">
+                <div className="px-4">
+                    <span className="text-[10px] font-black text-muted-foreground uppercase opacity-40 tracking-[0.5em] block mb-2">{t('support')}</span>
+                </div>
+                <div className="bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[3rem] overflow-hidden shadow-minimal">
                     <button
                         onClick={() => setIsContactOpen(!isContactOpen)}
-                        className="w-full flex items-center gap-4 p-4 hover:bg-secondary/50 transition-colors text-left"
+                        className="w-full flex items-center gap-8 p-10 hover:bg-slate-50/50 dark:hover:bg-neutral-800/20 transition-all text-left group"
                     >
-                        <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-                            <Mail className="w-5 h-5 text-foreground" />
+                        <div className="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-neutral-800 flex items-center justify-center border border-slate-100 dark:border-neutral-700 group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
+                            <Mail className="w-7 h-7 text-foreground" />
                         </div>
-                        <div className="flex-1">
-                            <div className="font-medium text-foreground">{t('contactSupport')}</div>
-                            <div className="text-sm text-muted-foreground">
+                        <div className="flex-1 space-y-2">
+                            <div className="font-black text-xl tracking-tighter text-foreground lowercase">{t('contactSupport')}</div>
+                            <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-40">
                                 {t('contactSupportDesc')}
                             </div>
                         </div>
-                        <ChevronRight className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${isContactOpen ? 'rotate-90' : ''}`} />
+                        <div className={cn(
+                            "w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-700",
+                            isContactOpen ? 'bg-foreground text-background scale-110 rotate-90 shadow-premium-dark' : 'bg-slate-50 dark:bg-neutral-800 text-slate-300 group-hover:text-foreground'
+                        )}>
+                            <ChevronRight className="w-6 h-6" />
+                        </div>
                     </button>
 
-                    {isContactOpen && (
-                        <div className="p-6 pt-0 border-t border-border mt-4">
-                            <textarea
-                                value={contactMessage}
-                                onChange={(e) => setContactMessage(e.target.value)}
-                                placeholder={t('typeMessageHere')}
-                                className="w-full min-h-[120px] p-4 border border-border rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all mt-4"
-                                disabled={isSendingMessage}
-                            />
-                            <button
-                                onClick={handleSendMessage}
-                                disabled={!contactMessage.trim() || isSendingMessage}
-                                className={`w-full mt-4 flex items-center justify-center gap-2 p-3 rounded-xl font-medium transition-all ${!contactMessage.trim() || isSendingMessage
-                                    ? 'bg-secondary text-muted-foreground cursor-not-allowed'
-                                    : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25'
-                                    }`}
+                    <AnimatePresence>
+                        {isContactOpen && (
+                            <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                className="overflow-hidden"
                             >
-                                {isSendingMessage ? (
-                                    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                                ) : messageSent ? (
-                                    <>
-                                        <Check className="w-5 h-5" />
-                                        {t('settings_sent')}
-                                    </>
-                                ) : (
-                                    <>
-                                        <Send className="w-5 h-5" />
-                                        {t('sendMessage')}
-                                    </>
-                                )}
-                            </button>
-                            <p className="text-xs text-muted-foreground text-center mt-4">
-                                {t('orEmailDirectly')} <a href="mailto:support@rentmate.co.il" className="text-primary hover:underline">support@rentmate.co.il</a>
-                            </p>
-                        </div>
-                    )}
+                                <div className="p-10 bg-slate-50/50 dark:bg-neutral-800/10 border-t border-slate-50 dark:border-neutral-800/10 space-y-8">
+                                    <textarea
+                                        value={contactMessage}
+                                        onChange={(e) => setContactMessage(e.target.value)}
+                                        placeholder={t('typeMessageHere')}
+                                        className="w-full min-h-[200px] p-10 bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[2.5rem] resize-none outline-none font-medium placeholder:font-black placeholder:uppercase placeholder:text-[10px] placeholder:tracking-widest transition-all focus:border-primary/20 shadow-minimal"
+                                        disabled={isSendingMessage}
+                                    />
+                                    <div className="space-y-6">
+                                        <button
+                                            onClick={handleSendMessage}
+                                            disabled={!contactMessage.trim() || isSendingMessage}
+                                            className={cn(
+                                                "w-full h-18 py-6 rounded-full font-black uppercase text-xs tracking-[0.3em] transition-all flex items-center justify-center gap-4",
+                                                !contactMessage.trim() || isSendingMessage
+                                                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                                    : 'bg-foreground text-background hover:scale-[1.02] active:scale-[0.98] shadow-premium-dark'
+                                            )}
+                                        >
+                                            {isSendingMessage ? (
+                                                <div className="w-7 h-7 border-3 border-current border-t-transparent rounded-full animate-spin" />
+                                            ) : messageSent ? (
+                                                <><Check className="w-6 h-6" /> {t('settings_sent')}</>
+                                            ) : (
+                                                <><Send className="w-6 h-6" /> {t('sendMessage')}</>
+                                            )}
+                                        </button>
+                                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground text-center opacity-40">
+                                            {t('orEmailDirectly')} <a href="mailto:support@rentmate.co.il" className="text-primary hover:underline hover:opacity-100">support@rentmate.co.il</a>
+                                        </p>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
             </div>
 
-            {/* Logout Button */}
-            <button
-                onClick={async () => {
-                    await supabase.auth.signOut();
-                    window.location.href = '/login';
-                }}
-                className="w-full flex items-center justify-center gap-2 p-4 bg-destructive/10 text-destructive rounded-2xl font-medium hover:bg-destructive/20 transition-colors"
-            >
-                <LogOut className="w-5 h-5" />
-                {t('logout')}
-            </button>
-
-            {/* App Version */}
-            <div className="text-center text-xs text-muted-foreground pt-4 space-y-2">
-                <div>{t('appVersion')}</div>
+            {/* Logout & Footer */}
+            <div className="pt-20 space-y-16 border-t border-slate-50 dark:border-neutral-800/50">
                 <button
-                    onClick={() => navigate('/accessibility')}
-                    className="text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary rounded px-2"
+                    onClick={async () => {
+                        await supabase.auth.signOut();
+                        window.location.href = '/login';
+                    }}
+                    className="w-full h-20 bg-rose-500/5 text-rose-500 rounded-full font-black uppercase text-xs tracking-[0.4em] hover:bg-rose-500/10 active:scale-[0.98] transition-all border border-rose-500/10 shadow-minimal flex items-center justify-center gap-4 group"
                 >
-                    {t('accessibilityStatement')}
+                    <LogOut className="w-6 h-6 group-hover:-translate-x-1 group-hover:rotate-12 transition-all" />
+                    {t('logout')}
                 </button>
+
+                <div className="text-center space-y-8">
+                    <div className="text-[10px] font-black uppercase tracking-[0.8em] text-muted-foreground opacity-20">{t('appVersion')}</div>
+                    <button
+                        onClick={() => navigate('/accessibility')}
+                        className="text-[10px] font-black uppercase tracking-[0.3em] text-primary hover:text-foreground transition-all px-8 py-3 bg-primary/5 rounded-full hover:bg-primary/10"
+                    >
+                        {t('accessibilityStatement')}
+                    </button>
+                </div>
             </div>
 
             <EditProfileModal
@@ -344,6 +293,6 @@ export function Settings() {
                 isOpen={isPrivacySecurityOpen}
                 onClose={() => setIsPrivacySecurityOpen(false)}
             />
-        </div >
+        </div>
     );
 }

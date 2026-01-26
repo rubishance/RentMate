@@ -331,6 +331,7 @@ class PropertyDocumentsService {
             periodStart?: string;
             periodEnd?: string;
             vendorName?: string;
+            invoiceNumber?: string;
             issueType?: string;
             tags?: string[];
         }
@@ -399,6 +400,7 @@ class PropertyDocumentsService {
                 period_start: metadata.periodStart,
                 period_end: metadata.periodEnd,
                 vendor_name: metadata.vendorName,
+                invoice_number: metadata.invoiceNumber,
                 issue_type: metadata.issueType,
                 tags: metadata.tags
             })
@@ -611,6 +613,31 @@ class PropertyDocumentsService {
                 amount: b.amount
             }))
         };
+    }
+
+    /**
+     * Check if a duplicate bill exists
+     */
+    async checkDuplicateBill(vendorName: string, documentDate: string, invoiceNumber: string, periodStart?: string, periodEnd?: string): Promise<PropertyDocument | null> {
+        if (!vendorName || !documentDate || !invoiceNumber) return null;
+
+        let query = supabase
+            .from('property_documents')
+            .select('*')
+            .eq('vendor_name', vendorName)
+            .eq('document_date', documentDate)
+            .eq('invoice_number', invoiceNumber);
+
+        if (periodStart) query = query.eq('period_start', periodStart);
+        if (periodEnd) query = query.eq('period_end', periodEnd);
+
+        const { data, error } = await query.maybeSingle();
+
+        if (error) {
+            console.error('Error checking duplicate bill:', error);
+            return null;
+        }
+        return data as PropertyDocument;
     }
 }
 

@@ -3,7 +3,7 @@ import { ArrowLeft, ArrowRight, Building, Check, User, Calendar, Settings as Set
 import { ContractScanner } from '../components/ContractScanner';
 import { PropertyIcon } from '../components/common/PropertyIcon';
 import { Tooltip } from '../components/Tooltip';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { cn, formatDate } from '../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DatePicker } from '../components/ui/DatePicker';
@@ -26,7 +26,30 @@ const STEPS = [
 
 export function AddContract() {
     const navigate = useNavigate();
+    const location = useLocation();
     const { lang, t } = useTranslation();
+
+    useEffect(() => {
+        const prefill = (location.state as any)?.prefill;
+        if (prefill) {
+            setFormData(prev => ({
+                ...prev,
+                tenants: [{
+                    name: prefill.tenant_name || '',
+                    id_number: '',
+                    email: '',
+                    phone: ''
+                }],
+                rent: prefill.monthly_rent ? prefill.monthly_rent.toString() : prev.rent
+            }));
+            if (prefill.property_id) {
+                setIsExistingProperty(true);
+                setSelectedPropertyId(prefill.property_id);
+            }
+            // Clear state after reading to prevent re-fill on refresh
+            window.history.replaceState({}, document.title);
+        }
+    }, [location]);
     const { canAddContract, loading: subLoading, plan } = useSubscription();
 
     const [step, setStep] = useState(1);
@@ -42,11 +65,8 @@ export function AddContract() {
         hasStorage: false,
         property_type: 'apartment',
 
-        // Tenant
-        tenantName: '',
-        tenantId: '',
-        tenantEmail: '',
-        tenantPhone: '',
+        // Tenants
+        tenants: [{ name: '', id_number: '', email: '', phone: '' }],
 
         // Financials
         rent: '',
@@ -100,23 +120,15 @@ export function AddContract() {
     const [isUploading, setIsUploading] = useState(false);
     const [imageError, setImageError] = useState<string | null>(null);
 
-    const [existingTenants, setExistingTenants] = useState<any[]>([]);
-    const [isExistingTenant, setIsExistingTenant] = useState(false);
-    const [selectedTenantId, setSelectedTenantId] = useState<string>(''); // For existing selection
     const [existingProperties, setExistingProperties] = useState<Property[]>([]);
     const [isExistingProperty, setIsExistingProperty] = useState(false);
-    const [selectedPropertyId, setSelectedPropertyId] = useState<string>(''); // For existing selection
+    const [selectedPropertyId, setSelectedPropertyId] = useState<string>('');
     const [storagePreference, setStoragePreference] = useState<'cloud' | 'device' | 'both'>('device');
     const [saveContractFile, setSaveContractFile] = useState(false);
     const [hasOverlap, setHasOverlap] = useState(false);
     const [blockedIntervals, setBlockedIntervals] = useState<{ from: Date; to: Date }[]>([]);
 
     useEffect(() => {
-        // Fetch tenants for selection
-        supabase.from('tenants').select('*').then(({ data }) => {
-            if (data) setExistingTenants(data as Tenant[]);
-        });
-
         // Fetch properties for selection
         supabase.from('properties').select('*').then(({ data }) => {
             if (data) setExistingProperties(data as Property[]);
@@ -275,10 +287,21 @@ export function AddContract() {
 
 
     const nextStep = async () => {
-        if (hasOverlap) {
-            setShowOverlapWarning(true);
-            return;
+        if (step === 1) {
+            if (!formData.address && !selectedPropertyId) {
+                alert('נא לבחור או להזין כתובת נכס');
+                return;
+            }
+            if (!formData.tenants[0]?.name) {
+                alert('נא להזין לפחות דייר אחד');
+                return;
+            }
         }
+        if (step === 2 && formData.startDate && formData.endDate) {
+            await checkOverlap(selectedPropertyId, formData.startDate, formData.endDate);
+            // The checkOverlap function sets showOverlapWarning internally if needed.
+        }
+
         if (step === 5) {
             setIsSaving(true);
             try {
@@ -326,40 +349,10 @@ export function AddContract() {
                     }
                 }
 
-                // 2. Handle Tenant
-                let tenantId: string;
-
-                if (isExistingTenant && selectedTenantId) {
-                    // Start by checking if selected tenant is valid
-                    // Update existing tenant's property_id link
-                    const { error: updateError } = await supabase
-                        .from('tenants')
-                        .update({ property_id: propertyId })
-                        .eq('id', selectedTenantId);
-
-                    if (updateError) throw new Error(`Update Tenant Error: ${updateError.message}`);
-                    tenantId = selectedTenantId;
-                } else {
-                    // Create New Tenant
-                    const { data: newTenant, error: createError } = await supabase.from('tenants').insert({
-                        property_id: propertyId,
-                        name: formData.tenantName,
-                        full_name: formData.tenantName,
-                        monthly_rent: parseFloat(formData.rent) || 0,
-                        id_number: formData.tenantId,
-                        email: formData.tenantEmail,
-                        phone: formData.tenantPhone,
-                        user_id: user.id
-                    }).select().single();
-
-                    if (createError) throw new Error(`Create Tenant Error: ${createError.message}`);
-                    tenantId = newTenant.id;
-                }
-
                 // 3. Create Contract
                 const { data: newContract, error: contractError } = await supabase.from('contracts').insert({
                     property_id: propertyId,
-                    tenant_id: tenantId,
+                    tenants: formData.tenants,
                     signing_date: formData.signingDate || null,
                     start_date: formData.startDate || null,
                     end_date: formData.endDate || null,
@@ -443,7 +436,7 @@ export function AddContract() {
                     // Cloud Upload (RentMate)
                     if (storagePreference === 'cloud' || storagePreference === 'both') {
                         const fileExt = fileToUpload.name.split('.').pop();
-                        const fileName = `${tenantId}_${Date.now()}.${fileExt}`;
+                        const fileName = `contract_${Date.now()}.${fileExt}`;
                         const filePath = `${propertyId}/${fileName}`;
 
                         const { error: uploadError } = await supabase.storage
@@ -471,7 +464,8 @@ export function AddContract() {
                         const url = URL.createObjectURL(contractFile);
                         const a = document.createElement('a');
                         a.href = url;
-                        a.download = `contract_${formData.tenantName.trim().replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+                        const tenantSafeName = formData.tenants[0]?.name.trim().replace(/\s+/g, '_') || 'tenant';
+                        a.download = `contract_${tenantSafeName}_${new Date().toISOString().split('T')[0]}.pdf`;
                         document.body.appendChild(a);
                         a.click();
                         document.body.removeChild(a);
@@ -620,10 +614,11 @@ export function AddContract() {
                 // Duplicates removed
 
                 // Tenant
-                case 'tenantName': newFormData.tenantName = val; break;
-                case 'tenantId': newFormData.tenantId = val; break;
-                case 'tenantEmail': newFormData.tenantEmail = val; break;
-                case 'tenantPhone': newFormData.tenantPhone = val; break;
+                // Tenants (Store in first tenant for scan results)
+                case 'tenantName': newFormData.tenants[0].name = val; break;
+                case 'tenantId': newFormData.tenants[0].id_number = val; break;
+                case 'tenantEmail': newFormData.tenants[0].email = val; break;
+                case 'tenantPhone': newFormData.tenants[0].phone = val; break;
 
                 // Financials
                 case 'rent': newFormData.rent = val; break;
@@ -677,17 +672,6 @@ export function AddContract() {
                 setSelectedPropertyId(matchedProp.id);
                 newFormData.city = matchedProp.city || newFormData.city;
                 newFormData.address = matchedProp.address || newFormData.address;
-            }
-
-            const matchedTenant = existingTenants.find(t =>
-                (newFormData.tenantId && t.id_number === newFormData.tenantId)
-            );
-
-            if (matchedTenant) {
-                setIsExistingTenant(true);
-                setSelectedTenantId(matchedTenant.id);
-                newFormData.tenantId = matchedTenant.id_number;
-                newFormData.tenantName = matchedTenant.name;
             }
 
             setFormData(newFormData);
@@ -1072,91 +1056,97 @@ export function AddContract() {
                                         <div className="space-y-4">
                                             <div className="flex items-center justify-between">
                                                 <h3 className="font-semibold text-lg flex items-center gap-2"><User className="w-4 h-4" /> {t('tenantDetails')}</h3>
-
-                                                {/* Type Toggle */}
-                                                <div className="flex bg-secondary/50 p-1 rounded-lg">
-                                                    <button
-                                                        onClick={() => setIsExistingTenant(false)}
-                                                        className={cn(
-                                                            "px-3 py-1 text-xs font-medium rounded-md transition-all",
-                                                            !isExistingTenant ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-                                                        )}
-                                                    >
-                                                        {t('newTenant')}
-                                                    </button>
-                                                    <button
-                                                        onClick={() => setIsExistingTenant(true)}
-                                                        className={cn(
-                                                            "px-3 py-1 text-xs font-medium rounded-md transition-all",
-                                                            isExistingTenant ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-                                                        )}
-                                                    >
-                                                        {t('existingTenant')}
-                                                    </button>
-                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFormData({
+                                                        ...formData,
+                                                        tenants: [...formData.tenants, { name: '', id_number: '', email: '', phone: '' }]
+                                                    })}
+                                                    className="flex items-center gap-1 text-primary text-sm font-bold hover:underline"
+                                                >
+                                                    <Plus className="w-4 h-4" /> חבר דייר נוסף
+                                                </button>
                                             </div>
 
-                                            {isExistingTenant ? (
-                                                <div className="space-y-2">
-                                                    <label className="text-sm font-medium">{t('chooseTenant')}</label>
-                                                    <select
-                                                        className="w-full p-3 bg-background border border-border rounded-xl"
-                                                        value={selectedTenantId}
-                                                        onChange={(e) => {
-                                                            const newId = e.target.value;
-                                                            setSelectedTenantId(newId);
-                                                            const tenant = existingTenants.find(t => t.id === newId);
-                                                            if (tenant) {
-                                                                setFormData({
-                                                                    ...formData,
-                                                                    tenantName: tenant.full_name || tenant.name || '',
-                                                                    tenantId: tenant.id_number || '',
-                                                                    tenantEmail: tenant.email || '',
-                                                                    tenantPhone: tenant.phone || ''
-                                                                });
-                                                            }
-                                                        }}
-                                                    >
-                                                        <option value="">בחר דייר...</option>
-                                                        {existingTenants.map(t => (
-                                                            <option key={t.id} value={t.id}>{t.full_name || t.name} ({t.id_number})</option>
-                                                        ))}
-                                                    </select>
-                                                </div>
-                                            ) : (
-                                                <>
-                                                    <div className="space-y-2">
-                                                        <label className="text-sm font-medium flex items-center gap-2">{t('fullName')} {scannedQuotes.tenantName && <Tooltip quote={scannedQuotes.tenantName} />} <ConfidenceDot field="tenantName" /></label>
-                                                        <input
-                                                            value={formData.tenantName}
-                                                            onChange={e => setFormData({ ...formData, tenantName: e.target.value })}
-                                                            className="w-full p-3 bg-background border border-border rounded-xl" />
-                                                    </div>
-                                                    <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-6">
+                                                {formData.tenants.map((tenant, index) => (
+                                                    <div key={index} className="p-4 border border-border rounded-2xl space-y-4 relative bg-secondary/5 group transition-colors hover:bg-secondary/10">
+                                                        {formData.tenants.length > 1 && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const newTenants = [...formData.tenants];
+                                                                    newTenants.splice(index, 1);
+                                                                    setFormData({ ...formData, tenants: newTenants });
+                                                                }}
+                                                                className="absolute top-3 left-3 p-1.5 text-red-500 hover:bg-red-50 rounded-full transition-colors opacity-0 group-hover:opacity-100"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </button>
+                                                        )}
+
                                                         <div className="space-y-2">
-                                                            <label className="text-sm font-medium flex items-center gap-2">{t('idNumber')} {scannedQuotes.tenantId && <Tooltip quote={scannedQuotes.tenantId} />} <ConfidenceDot field="tenantId" /></label>
+                                                            <label className="text-sm font-medium flex items-center gap-2">
+                                                                שם מלא
+                                                                {index === 0 && scannedQuotes.tenantName && <Tooltip quote={scannedQuotes.tenantName} />}
+                                                                {index === 0 && <ConfidenceDot field="tenants" />}
+                                                            </label>
                                                             <input
-                                                                value={formData.tenantId}
-                                                                onChange={e => setFormData({ ...formData, tenantId: e.target.value })}
-                                                                className="w-full p-3 bg-background border border-border rounded-xl" />
+                                                                value={tenant.name}
+                                                                onChange={e => {
+                                                                    const newTenants = [...formData.tenants];
+                                                                    newTenants[index].name = e.target.value;
+                                                                    setFormData({ ...formData, tenants: newTenants });
+                                                                }}
+                                                                className="w-full p-3 bg-background border border-border rounded-xl"
+                                                            />
                                                         </div>
+
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div className="space-y-2">
+                                                                <label className="text-sm font-medium">תעודת זהות</label>
+                                                                <input
+                                                                    value={tenant.id_number}
+                                                                    onChange={e => {
+                                                                        const newTenants = [...formData.tenants];
+                                                                        newTenants[index].id_number = e.target.value;
+                                                                        setFormData({ ...formData, tenants: newTenants });
+                                                                    }}
+                                                                    className="w-full p-3 bg-background border border-border rounded-xl font-mono"
+                                                                />
+                                                            </div>
+                                                            <div className="space-y-2">
+                                                                <label className="text-sm font-medium">טלפון</label>
+                                                                <input
+                                                                    value={tenant.phone}
+                                                                    onChange={e => {
+                                                                        const newTenants = [...formData.tenants];
+                                                                        newTenants[index].phone = e.target.value;
+                                                                        setFormData({ ...formData, tenants: newTenants });
+                                                                    }}
+                                                                    className="w-full p-3 bg-background border border-border rounded-xl"
+                                                                    dir="ltr"
+                                                                />
+                                                            </div>
+                                                        </div>
+
                                                         <div className="space-y-2">
-                                                            <label className="text-sm font-medium flex items-center gap-2">{t('phone')} {scannedQuotes.tenantPhone && <Tooltip quote={scannedQuotes.tenantPhone} />} <ConfidenceDot field="tenantPhone" /></label>
+                                                            <label className="text-sm font-medium">אימייל</label>
                                                             <input
-                                                                value={formData.tenantPhone}
-                                                                onChange={e => setFormData({ ...formData, tenantPhone: e.target.value })}
-                                                                className="w-full p-3 bg-background border border-border rounded-xl" dir="ltr" />
+                                                                value={tenant.email}
+                                                                onChange={e => {
+                                                                    const newTenants = [...formData.tenants];
+                                                                    newTenants[index].email = e.target.value;
+                                                                    setFormData({ ...formData, tenants: newTenants });
+                                                                }}
+                                                                className="w-full p-3 bg-background border border-border rounded-xl"
+                                                                type="email"
+                                                                dir="ltr"
+                                                            />
                                                         </div>
                                                     </div>
-                                                    <div className="space-y-2">
-                                                        <label className="text-sm font-medium flex items-center gap-2">{t('email')} {scannedQuotes.tenantEmail && <Tooltip quote={scannedQuotes.tenantEmail} />} <ConfidenceDot field="tenantEmail" /></label>
-                                                        <input
-                                                            value={formData.tenantEmail}
-                                                            onChange={e => setFormData({ ...formData, tenantEmail: e.target.value })}
-                                                            className="w-full p-3 bg-background border border-border rounded-xl" type="email" dir="ltr" />
-                                                    </div>
-                                                </>
-                                            )}
+                                                ))}
+                                            </div>
                                         </div>
                                     </motion.div>
                                 )
@@ -1696,7 +1686,7 @@ export function AddContract() {
                                             <h4 className="font-bold text-xs text-muted-foreground mb-2">סיכום נתונים</h4>
                                             <div className="flex justify-between flex-row-reverse border-b border-border/50 pb-2">
                                                 <span className="text-muted-foreground">{t('tenant')}</span>
-                                                <span className="font-medium">{formData.tenantName || '-'}</span>
+                                                <span className="font-medium">{formData.tenants.map(t => t.name).filter(Boolean).join(', ') || '-'}</span>
                                             </div>
                                             <div className="flex justify-between flex-row-reverse border-b border-border/50 pb-2">
                                                 <span className="text-muted-foreground">{t('period')}</span>

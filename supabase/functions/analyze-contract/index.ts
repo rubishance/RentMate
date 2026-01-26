@@ -150,6 +150,32 @@ Ensure all field names match exactly as listed above.`
 
         const result = await response.json()
         const content = result.choices[0].message.content
+        const usage = result.usage;
+
+        // Extract user ID from JWT for logging
+        const authHeader = req.headers.get("authorization");
+        if (authHeader && usage) {
+            try {
+                const supabaseUrl = Deno.env.get('SUPABASE_URL');
+                const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+                const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
+
+                const token = authHeader.replace("Bearer ", "");
+                const { data: { user } } = await supabase.auth.getUser(token);
+
+                if (user) {
+                    await supabase.rpc('log_ai_usage', {
+                        p_user_id: user.id,
+                        p_model: result.model || "gpt-4o",
+                        p_feature: 'contract-extraction',
+                        p_input_tokens: usage.prompt_tokens,
+                        p_output_tokens: usage.completion_tokens
+                    });
+                }
+            } catch (logError) {
+                console.error("Failed to log AI usage:", logError);
+            }
+        }
 
         // Parse the JSON response
         let extractedData

@@ -1,36 +1,78 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
 export interface Message {
     role: 'user' | 'assistant' | 'system';
     content: string;
+    timestamp?: string;
 }
 
 export function useChatBot() {
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    // Initial welcome message in Hebrew
-    const [messages, setMessages] = useState<Message[]>([
-        { role: 'assistant', content: 'שלום! אני בוט התמיכה של RentMate. איך אוכל לעזור לך בנושא שכירות, חוזים או מס?' }
-    ]);
+    const [conversationId, setConversationId] = useState<string | null>(null);
+    const [messages, setMessages] = useState<Message[]>([]);
+
+    useEffect(() => {
+        const initChat = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            const isGuest = !session;
+
+            const welcomeMsg = isGuest
+                ? 'שלום! אני רנטי. אני יכול לעזור לך להבין איך RentMate עובד. כדי להשתמש ביכולות המתקדמות (סריקת מסמכים, חישובים והצמדות), עליך להתחבר למערכת.'
+                : 'שלום! אני רנטי - בוט ה-AI של RentMate. כיצד אפשר לעזור היום?';
+
+            setMessages([{
+                role: 'assistant',
+                content: welcomeMsg,
+                timestamp: new Date().toISOString()
+            }]);
+        };
+        initChat();
+    }, []);
+
+    const [uiAction, setUiAction] = useState<{ action: string, modal: string, data: any } | null>(null);
 
     const toggleChat = () => setIsOpen(!isOpen);
 
-    const sendMessage = async (content: string) => {
-        if (!content.trim()) return;
+    const clearUiAction = () => setUiAction(null);
 
-        // Add user message
-        const userMessage: Message = { role: 'user', content };
-        const newMessages = [...messages, userMessage];
-        setMessages(newMessages);
+    const sendMessage = async (content: string, fileInfo?: { name: string, path: string }) => {
+        if (!content.trim() && !fileInfo) return;
+
+        // Add user message with hidden file context if present
+        const displayContent = fileInfo
+            ? `${content}\n\n[File Attached: ${fileInfo.name}]`
+            : content;
+
+        const userMessage: Message = {
+            role: 'user',
+            content: displayContent,
+            timestamp: new Date().toISOString()
+        };
+
+        // If file exists, we inject private context for the AI to know about the file
+        const apiMessages = [...messages];
+        if (fileInfo) {
+            apiMessages.push({
+                role: 'system',
+                content: `USER UPLOADED FILE: ${fileInfo.name}. Storage Path: ${fileInfo.path}. Help the user organize this file using available tools.`
+            });
+        }
+        apiMessages.push(userMessage);
+
+        const newMessagesForDisplay = [...messages, userMessage];
+        setMessages(newMessagesForDisplay);
         setIsLoading(true);
 
         try {
-            // Get auth session for authenticated function calls
             const { data: { session } } = await supabase.auth.getSession();
 
             const { data, error } = await supabase.functions.invoke('chat-support', {
-                body: { messages: newMessages },
+                body: {
+                    messages: apiMessages,
+                    conversationId: conversationId
+                },
                 headers: session?.access_token ? {
                     Authorization: `Bearer ${session.access_token}`
                 } : {}
@@ -38,66 +80,35 @@ export function useChatBot() {
 
             if (error) throw error;
 
-            // Handle the response
-            // Note: The edge function currently returns a stream or text. 
-            // For simplicity in this version, we'll assume the Edge Function returns the full JSON response 
-            // if we didn't implement client-side streaming consumption yet.
-            // *Self-correction*: My Edge function returned `response.body` with `text/event-stream`.
-            // The `supabase.functions.invoke` helper handles JSON automatically if it's JSON, 
-            // but for streams we might need a different handling or just simple text for V1.
+            if (data && data.choices?.[0]) {
+                const assistantMessage: Message = {
+                    role: 'assistant',
+                    content: data.choices[0].message.content || "I couldn't get an answer.",
+                    timestamp: new Date().toISOString()
+                };
+                setMessages(prev => [...prev, assistantMessage]);
 
-            // Let's adjust the Edge function in my mind: It returns `response.body`. 
-            // If we used `invoke`, it tries to parse JSON.
-            // To keep V1 simple and robust, let's assume valid JSON return for `choices[0].message.content`
-            // OR let's handle the Text response.
-            // Actually, standard `invoke` parses JSON. If I stream, I should probably read the stream reader.
-            // For this MV "Low Cost" P, let's just use the `data` assuming it's the completion text.
-            // Wait, the OpenAI response from the edge function was just piping the body.
-            // OpenAI returns JSON by default unless `stream: true`.
-            // IN my edge function `stream: true` was set.
-            // Consuming a stream in React requires a bit more code (TextDecoder).
+                if (data.conversationId) {
+                    setConversationId(data.conversationId);
+                }
 
-            // Let's implement a simple non-streaming reader for now to avoid complex hook state, 
-            // OR a simple reader. Let's do a simple reader.
-
-            if (data) {
-                // If `invoke` automatically parsed a JSON non-stream, `data` is the object.
-                // If it was a stream, `data` might be a Blob or ReadableStream? 
-                // Supabase `invoke` docs say: `responseType: 'text' | 'json' | 'arraybuffer' | 'blob'`. Default json.
-                // If I want to read the stream, I should arguably set `stream: false` in the Edge Function for V1 simplicity.
-                // But the user likes "Premium". Streaming is premium.
-                // Okay, I'll write the hook to handle the streaming response properly if possible, 
-                // BUT `supabase-js` invoke might abstract it. 
-                // Let's stick to non-streaming for the first iteration to ensure reliability, 
-                // or just handle the text.
-
-                // Actually, let's change the Edge Function to `stream: false` to guarantee it works with `invoke` easily 
-                // without complex stream parsing on part 1. 
-                // I can't change the edge function right now without another tool call.
-                // I'll stick to expectation of text/json.
-                // If the edge function returns a stream, `invoke` might fail to parse JSON.
-
-                // Let's try to handle it as text.
-                // Just in case, I'll assume the helper returns the OpenAI JSON response if I turn off streaming 
-                // or a Reader if I keep it. 
-                // I will write the hook assuming we get the text content back.
+                // Handle UI Action
+                if (data.uiAction) {
+                    setUiAction(data.uiAction);
+                }
             }
 
-            // Placeholder for now: We will likely get a JSON object from OpenAI if we didn't stream.
-            // Since I set `stream: true` in the edge function, I made a mistake for a simple `invoke`.
-            // I will assume for this step that I'll fix the edge function to `stream: false` 
-            // OR handle the stream.
-            // Let's write the hook generic enough.
-            const assistantMessage: Message = { role: 'assistant', content: data.choices[0].message.content || "I couldn't get an answer." };
-            setMessages(prev => [...prev, assistantMessage]);
-
-        } catch (err) {
-            console.error('Chat error:', err);
-            setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I'm having trouble connecting right now." }]);
+        } catch (err: any) {
+            console.error('Chat error details:', err);
+            const errorMessage = err.message || "Unknown connection error";
+            setMessages(prev => [...prev, {
+                role: 'assistant',
+                content: `Error: ${errorMessage}. Please check your OpenAI API key and Supabase Function logs.`
+            }]);
         } finally {
             setIsLoading(false);
         }
     };
 
-    return { isOpen, toggleChat, isLoading, messages, sendMessage };
+    return { isOpen, toggleChat, isLoading, messages, sendMessage, uiAction, clearUiAction };
 }

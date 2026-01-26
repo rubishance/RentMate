@@ -71,6 +71,7 @@ export interface PropertyDocument {
     paid?: boolean;
     payment_date?: string;
     vendor_name?: string;
+    invoice_number?: string;
     issue_type?: string;
     created_at: string;
     updated_at?: string;
@@ -168,6 +169,12 @@ export interface Contract {
         amount: number;
         currency: 'ILS' | 'USD' | 'EUR';
     }[];
+    tenants?: {
+        name: string;
+        id_number?: string;
+        email?: string;
+        phone?: string;
+    }[];
 }
 
 // ============================================
@@ -258,6 +265,7 @@ export interface UserPreferences {
     language: Language;
     gender: Gender | null; // null when language is not Hebrew
     theme: Theme;
+    ai_data_consent?: boolean;
 }
 
 // ============================================

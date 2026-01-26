@@ -17,7 +17,10 @@ import {
     TrashIcon,
     ArrowDownTrayIcon
 } from '@heroicons/react/24/outline';
-import { Loader2, Table } from 'lucide-react';
+import { Loader2, Table, Filter } from 'lucide-react';
+import { TimelineItem } from '../../components/crm/TimelineItem';
+import { InteractionLogger } from '../../components/crm/InteractionLogger';
+import { AdminChatWindow } from '../../components/crm/AdminChatWindow';
 
 const ClientProfile = () => {
     const { id } = useParams<{ id: string }>();
@@ -29,11 +32,14 @@ const ClientProfile = () => {
     const [isAddingNote, setIsAddingNote] = useState(false);
 
     // New Note Form
-    const [newNoteType, setNewNoteType] = useState<CRMInteractionType>('note');
-    const [newNoteTitle, setNewNoteTitle] = useState('');
-    const [newNoteContent, setNewNoteContent] = useState('');
-    const [actionLoading, setActionLoading] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
+    const [selectedBotChat, setSelectedBotChat] = useState<any | null>(null);
+    const [feedFilter, setFeedFilter] = useState<'all' | 'ai' | 'human' | 'ticket'>('all');
+    const [isChatOpen, setIsChatOpen] = useState(false);
+
+    // Plan Editing
+    const [isEditingPlan, setIsEditingPlan] = useState(false);
+    const [newPlan, setNewPlan] = useState('');
 
     useEffect(() => {
         if (id) {
@@ -55,35 +61,12 @@ const ClientProfile = () => {
         }
     };
 
-    const handleAddNote = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!newNoteContent.trim()) return;
-
-        setActionLoading(true);
-        try {
-            const { data: { user } } = await supabase.auth.getUser();
-            const newInteraction = await crmService.addInteraction({
-                user_id: id!,
-                admin_id: user?.id || null,
-                type: newNoteType,
-                title: newNoteTitle || null,
-                content: newNoteContent,
-                status: 'open'
-            });
-
-            setInteractions([newInteraction, ...interactions]);
-            setIsAddingNote(false);
-            setNewNoteTitle('');
-            setNewNoteContent('');
-            setNewNoteType('note');
-        } catch (err: any) {
-            alert('Error adding note: ' + err.message);
-        } finally {
-            setActionLoading(false);
-        }
+    const handleLogSuccess = (newInteraction: CRMInteraction) => {
+        setInteractions([newInteraction, ...interactions]);
+        setIsAddingNote(false);
     };
 
-    const handleDeleteInteraction = async (interactionId: number) => {
+    const handleDeleteInteraction = async (interactionId: any) => {
         if (!confirm('Are you sure you want to delete this interaction log?')) return;
 
         try {
@@ -94,6 +77,14 @@ const ClientProfile = () => {
         }
     };
 
+    const filteredInteractions = interactions.filter(i => {
+        if (feedFilter === 'all') return true;
+        if (feedFilter === 'ai') return i.type === 'chat';
+        if (feedFilter === 'human') return ['note', 'call', 'email', 'human_chat', 'whatsapp'].includes(i.type);
+        if (feedFilter === 'ticket') return i.type === 'support_ticket';
+        return true;
+    });
+
     const handleExport = async () => {
         setIsExporting(true);
         try {
@@ -103,6 +94,21 @@ const ClientProfile = () => {
             alert('Export failed: ' + err.message);
         } finally {
             setIsExporting(false);
+        }
+    };
+
+    const handleUpdatePlan = async () => {
+        if (!confirm(`Are you sure you want to change the plan to ${newPlan}?`)) return;
+        try {
+            await crmService.updateClientPlan(id!, newPlan);
+            // Optimistic update
+            setData({
+                ...data,
+                profile: { ...data.profile, subscription_plan: newPlan }
+            });
+            setIsEditingPlan(false);
+        } catch (err: any) {
+            alert('Failed to update plan: ' + err.message);
         }
     };
 
@@ -142,7 +148,15 @@ const ClientProfile = () => {
                         <MaskedAdminValue value={profile.email} label="Profile Email" userId={id} maskType="email" /> • Joined {new Date(profile.created_at).toLocaleDateString()}
                     </p>
                 </div>
-                <div className="ml-auto">
+                <div className="ml-auto flex gap-2">
+                    <button
+                        onClick={() => setIsChatOpen(!isChatOpen)}
+                        className={`inline-flex items-center gap-2 px-4 py-2 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg ${isChatOpen ? 'bg-gray-600 hover:bg-gray-700 shadow-gray-600/20' : 'bg-purple-600 hover:bg-purple-700 shadow-purple-600/20'
+                            }`}
+                    >
+                        <ChatBubbleLeftEllipsisIcon className="w-4 h-4" />
+                        {isChatOpen ? 'Close Chat' : 'Live Chat'}
+                    </button>
                     <button
                         onClick={handleExport}
                         disabled={isExporting}
@@ -162,9 +176,34 @@ const ClientProfile = () => {
                         <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Account Status</h3>
                         <div className="flex items-center justify-between mb-4">
                             <span className="text-sm font-bold text-gray-700 dark:text-gray-300">Plan</span>
-                            <span className="px-3 py-1 bg-brand-50 text-brand-700 dark:bg-brand-900/20 dark:text-brand-400 rounded-lg text-xs font-black uppercase tracking-widest">
-                                {profile.subscription_plan?.replace('_', ' ')}
-                            </span>
+                            {isEditingPlan ? (
+                                <div className="flex items-center gap-2">
+                                    <select
+                                        value={newPlan || profile.subscription_plan}
+                                        onChange={(e) => setNewPlan(e.target.value)}
+                                        className="text-xs p-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+                                    >
+                                        <option value="free_tier">Free Tier</option>
+                                        <option value="plus">Plus</option>
+                                        <option value="pro_gold">Pro Gold</option>
+                                        <option value="enterprise">Enterprise</option>
+                                    </select>
+                                    <button onClick={handleUpdatePlan} className="text-xs text-brand-600 font-bold hover:underline">Save</button>
+                                    <button onClick={() => setIsEditingPlan(false)} className="text-xs text-gray-400 hover:text-gray-600">Cancel</button>
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-2">
+                                    <span className="px-3 py-1 bg-brand-50 text-brand-700 dark:bg-brand-900/20 dark:text-brand-400 rounded-lg text-xs font-black uppercase tracking-widest">
+                                        {profile.subscription_plan?.replace('_', ' ')}
+                                    </span>
+                                    <button
+                                        onClick={() => { setNewPlan(profile.subscription_plan); setIsEditingPlan(true); }}
+                                        className="text-[10px] text-gray-400 hover:text-brand-600"
+                                    >
+                                        Edit
+                                    </button>
+                                </div>
+                            )}
                         </div>
                         <div className="flex items-center justify-between">
                             <span className="text-sm font-bold text-gray-700 dark:text-gray-300">Standing</span>
@@ -212,7 +251,7 @@ const ClientProfile = () => {
                 <div className="lg:col-span-2 space-y-6">
                     <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
                         <div className="p-6 border-b border-gray-50 dark:border-gray-700 flex justify-between items-center">
-                            <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Communication Logs</h3>
+                            <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Interactive Timeline</h3>
                             <button
                                 onClick={() => setIsAddingNote(true)}
                                 className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-brand-600/20"
@@ -224,116 +263,100 @@ const ClientProfile = () => {
 
                         {/* Add Note Form */}
                         {isAddingNote && (
-                            <div className="p-6 bg-brand-50/50 dark:bg-brand-900/10 border-b border-brand-100 dark:border-brand-900/30">
-                                <form onSubmit={handleAddNote} className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Type</label>
-                                            <select
-                                                value={newNoteType}
-                                                onChange={(e) => setNewNoteType(e.target.value as CRMInteractionType)}
-                                                className="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm font-bold p-2.5 shadow-sm"
-                                            >
-                                                <option value="note">Internal Note</option>
-                                                <option value="email">Email Sent/Received</option>
-                                                <option value="call">Phone Call</option>
-                                                <option value="support_ticket">Support Ticket</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Reference Title (Optional)</label>
-                                            <input
-                                                type="text"
-                                                value={newNoteTitle}
-                                                onChange={(e) => setNewNoteTitle(e.target.value)}
-                                                placeholder="e.g. Billing Question"
-                                                className="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm font-bold p-2.5 shadow-sm"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Interaction Content</label>
-                                        <textarea
-                                            value={newNoteContent}
-                                            onChange={(e) => setNewNoteContent(e.target.value)}
-                                            rows={3}
-                                            required
-                                            placeholder="Details of the conversation or internal observation..."
-                                            className="w-full rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm font-medium p-3 shadow-sm"
-                                        />
-                                    </div>
-                                    <div className="flex gap-3 justify-end">
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsAddingNote(false)}
-                                            className="px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-700"
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            type="submit"
-                                            disabled={actionLoading}
-                                            className="px-6 py-2 bg-brand-600 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-brand-700 transition-all disabled:opacity-50"
-                                        >
-                                            {actionLoading ? 'Saving...' : 'Save Log'}
-                                        </button>
-                                    </div>
-                                </form>
+                            <div className="border-b border-gray-100 dark:border-gray-700 bg-brand-50/30 dark:bg-brand-900/10">
+                                <InteractionLogger
+                                    userId={id!}
+                                    onLogSuccess={handleLogSuccess}
+                                    onCancel={() => setIsAddingNote(false)}
+                                />
                             </div>
                         )}
 
-                        <div className="divide-y divide-gray-50 dark:divide-gray-700 p-6">
-                            {interactions.length === 0 ? (
+                        {/* Filters */}
+                        <div className="px-6 py-4 border-b border-gray-50 dark:border-gray-700 flex gap-2 overflow-x-auto">
+                            {['all', 'ai', 'ticket', 'human'].map((f) => (
+                                <button
+                                    key={f}
+                                    onClick={() => setFeedFilter(f as any)}
+                                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${feedFilter === f
+                                        ? 'bg-brand-50 text-brand-700 dark:bg-brand-900/20 dark:text-brand-400'
+                                        : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                                        }`}
+                                >
+                                    {f === 'all' ? 'All Activity' :
+                                        f === 'ai' ? 'Bot Chats' :
+                                            f === 'ticket' ? 'Tickets' : 'Human Logs'}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="divide-y divide-gray-50 dark:divide-gray-800 p-6 max-h-[800px] overflow-y-auto">
+                            {filteredInteractions.length === 0 ? (
                                 <div className="text-center py-12">
                                     <ChatBubbleLeftEllipsisIcon className="w-12 h-12 text-gray-200 dark:text-gray-700 mx-auto mb-4" />
-                                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">No communication history</p>
+                                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">No activity found</p>
                                 </div>
                             ) : (
-                                interactions.map((interaction) => (
-                                    <div key={interaction.id} className="py-6 first:pt-0 group">
-                                        <div className="flex justify-between items-start mb-2">
-                                            <div className="flex items-center gap-2">
-                                                <span className={`p-1.5 rounded-lg ${interaction.type === 'email' ? 'bg-blue-50 text-blue-600' :
-                                                    interaction.type === 'call' ? 'bg-emerald-50 text-emerald-600' :
-                                                        interaction.type === 'support_ticket' ? 'bg-amber-50 text-amber-600' :
-                                                            interaction.type === 'chat' ? 'bg-purple-50 text-purple-600' :
-                                                                'bg-gray-100 text-gray-600'
-                                                    }`}>
-                                                    {interaction.type === 'email' && <EnvelopeIcon className="w-4 h-4" />}
-                                                    {interaction.type === 'call' && <PhoneIcon className="w-4 h-4" />}
-                                                    {interaction.type === 'support_ticket' && <DocumentTextIcon className="w-4 h-4" />}
-                                                    {interaction.type === 'chat' && <ChatBubbleLeftEllipsisIcon className="w-4 h-4" />}
-                                                    {interaction.type === 'note' && <ChatBubbleLeftEllipsisIcon className="w-4 h-4" />}
-                                                </span>
-                                                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-                                                    {interaction.type.replace('_', ' ')}
-                                                </span>
-                                                <span className="text-[10px] text-gray-300">•</span>
-                                                <span className="text-[10px] font-bold text-gray-400 flex items-center gap-1">
-                                                    <ClockIcon className="w-3 h-3" />
-                                                    {new Date(interaction.created_at).toLocaleString()}
-                                                </span>
-                                            </div>
-                                            <button
-                                                onClick={() => handleDeleteInteraction(interaction.id)}
-                                                className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-400 hover:text-red-500 transition-all"
-                                            >
-                                                <TrashIcon className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                        {interaction.title && (
-                                            <h4 className="text-sm font-black text-gray-900 dark:text-white mb-1">{interaction.title}</h4>
-                                        )}
-                                        <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed font-medium">
-                                            {interaction.content}
-                                        </p>
-                                    </div>
+                                filteredInteractions.map((interaction) => (
+                                    <TimelineItem
+                                        key={interaction.id}
+                                        interaction={interaction}
+                                        onDelete={handleDeleteInteraction}
+                                        onOpenBotChat={setSelectedBotChat}
+                                    />
                                 ))
                             )}
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* AI Transcript Modal */}
+            {selectedBotChat && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-gray-900 w-full max-w-2xl max-h-[80vh] rounded-3xl overflow-hidden flex flex-col shadow-2xl border border-gray-100 dark:border-gray-800">
+                        <div className="p-6 border-b border-gray-50 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
+                            <div>
+                                <h3 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight">AI Conversation Transcript</h3>
+                                <p className="text-xs font-bold text-gray-500">System context and logs</p>
+                            </div>
+                            <button
+                                onClick={() => setSelectedBotChat(null)}
+                                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl text-gray-400"
+                            >
+                                <PlusIcon className="w-6 h-6 rotate-45" />
+                            </button>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50/20 dark:bg-gray-950/20">
+                            {selectedBotChat.messages?.map((msg: any, idx: number) => (
+                                <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                                    <div className="mb-1 flex items-center gap-2">
+                                        <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">{msg.role}</span>
+                                        <span className="text-[9px] text-gray-300">{new Date(msg.timestamp || Date.now()).toLocaleTimeString()}</span>
+                                    </div>
+                                    <div className={`p-4 rounded-2xl max-w-[85%] text-sm font-medium leading-relaxed ${msg.role === 'user'
+                                        ? 'bg-brand-600 text-white rounded-tr-none'
+                                        : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-gray-700 rounded-tl-none shadow-sm'
+                                        }`}>
+                                        {msg.content}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="p-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 text-center">
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">End of Automated Transcript</span>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Live Chat Window */}
+            {isChatOpen && (
+                <AdminChatWindow
+                    userId={id!}
+                    adminId={(data?.profile as any)?.id} // Assuming admin is current user - handled in component
+                    onClose={() => setIsChatOpen(false)}
+                />
+            )}
         </div>
     );
 };

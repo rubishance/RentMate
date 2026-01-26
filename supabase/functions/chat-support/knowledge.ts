@@ -35,6 +35,7 @@ export const KNOWLEDGE_HE = `
 - **מחשבון הצמדה**: חישוב עליית שכירות לפי מדד המחירים לצרכן
 - **מסמכים**: אחסון מאובטח של שטרות בעלות, תיעוד תחזוקה וקבלות
 - **דיווחים**: ייצוא דוחות למס הכנסה
+- **צ'אט AI חכם**: ניתן להעלות קבצים, לחשב הצמדות למדד, ולתעד הוצאות בדיבור חופשי
 
 ---
 
@@ -76,6 +77,13 @@ export const KNOWLEDGE_HE = `
 - **ייצוא לרו"ח**: פורמט Excel תואם
 - **מסלול 10%**: חישוב אוטומטי של מס לפי מסלול 10%
 - **ניכוי הוצאות**: תיעוד הוצאות מוכרות
+
+## סייען ה-AI של RentMate
+צ'אט ה-AI אינו רק למתן תשובות, הוא כלי עבודה פעיל:
+- **תיעוד קבלות**: העלה קבלה דרך כפתור ה-Paperclip ואמור לבוט: "תייק את הקבלה הזו להוצאות תחזוקה בנכס רחוב הרצל".
+- **חישוב הצמדה**: שאל את הבוט: "כמה השכירות שלי צריכה להיות עכשיו אם היא 5,000 ש"ח צמודה למדד מינואר 2024?".
+- **חיפוש היסטוריה**: שאל: "מתי פעם אחרונה תיקנתי את המזגן בדירה בחיפה?".
+- **רישום הוצאות**: אמור לבוט: "רשום הוצאה של 200 ש"ח על אינסטלטור היום".
 
 ---
 
@@ -269,6 +277,7 @@ export const KNOWLEDGE_EN = `
 - **Linkage Calculator**: Calculate rent increases based on CPI
 - **Documents**: Secure storage of deeds, maintenance records, and receipts
 - **Reports**: Export reports for tax purposes
+- **Smart AI Chat**: Upload files, calculate linkage, and log expenses through conversation
 
 ---
 
@@ -310,6 +319,13 @@ export const KNOWLEDGE_EN = `
 - **Export for accountant**: Compatible Excel format
 - **10% track**: Automatic tax calculation for 10% track
 - **Expense deduction**: Documentation of recognized expenses
+
+## RentMate AI Assistant
+The AI chat is more than just support; it's an active property management tool:
+- **Document Organization**: Upload a file via the Paperclip button and tell the bot: "Save this receipt to the Maintenance folder for Herzl St property."
+- **Linkage Calculations**: Ask: "My rent is 5,000 NIS linked to CPI from Jan 2024. How much should I charge today?"
+- **Maintenance History**: Ask: "When was the last time I fixed the AC in the Haifa apartment?"
+- **Manual Logging**: Tell the bot: "Log a 200 NIS plumbing expense for today."
 
 ---
 

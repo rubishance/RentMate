@@ -1,9 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { PageHeader } from '../components/common/PageHeader';
 import { useTranslation } from '../hooks/useTranslation';
-
+import { cn } from '../lib/utils';
 import {
     XAxis,
     YAxis,
@@ -16,8 +14,7 @@ import {
     Pie,
     Cell
 } from 'recharts';
-import { TrendingUp, DollarSign, Home, CreditCard, BarChart2 } from 'lucide-react';
-
+import { TrendingUp, DollarSign, Home, BarChart2 } from 'lucide-react';
 
 export function Analytics({ embedMode = false }: { embedMode?: boolean }) {
     const { t } = useTranslation();
@@ -140,191 +137,160 @@ export function Analytics({ embedMode = false }: { embedMode?: boolean }) {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-[400px]">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <div className="flex items-center justify-center min-h-[50vh]">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground"></div>
             </div>
         );
     }
 
     return (
-        <div className={`space-y-6 ${embedMode ? '' : 'px-4 pt-6'}`}>
+        <div className={cn("pb-40 pt-16 space-y-20 animate-in fade-in slide-in-from-bottom-6 duration-700", !embedMode && "px-8")}>
+            {/* Header */}
             {!embedMode && (
-                <PageHeader
-                    title={t('analyticsTitle')}
-                    subtitle={t('analyticsSubtitle')}
-                />
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                    <div className="space-y-2">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 dark:bg-neutral-900 rounded-full border border-slate-100 dark:border-neutral-800 shadow-minimal">
+                            <BarChart2 className="w-3 h-3 text-muted-foreground" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">{t('performanceTracking')}</span>
+                        </div>
+                        <h1 className="text-6xl font-black tracking-tighter text-foreground lowercase">
+                            {t('analytics')}
+                        </h1>
+                    </div>
+                </div>
             )}
 
             {/* Metrics Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-card border border-border rounded-2xl p-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                            <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {[
+                    { label: t('totalRevenueLTM'), value: metrics.totalRevenue, icon: TrendingUp, color: 'text-emerald-500', isCurrency: true, trend: '+12% vs last year' },
+                    { label: t('avgRentPerProperty'), value: metrics.avgRent, icon: DollarSign, color: 'text-primary', isCurrency: true },
+                    { label: t('occupancyRate'), value: metrics.occupancyRate, icon: Home, color: 'text-amber-500', isPercentage: true },
+                    { label: t('totalProperties'), value: metrics.totalProperties, icon: Home, color: 'text-foreground' }
+                ].map((m, i) => (
+                    <div key={i} className="p-10 bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[2.5rem] shadow-minimal group hover:shadow-premium transition-all duration-700 space-y-6">
+                        <div className="flex items-center justify-between">
+                            <div className="w-14 h-14 bg-slate-50 dark:bg-neutral-900 rounded-2xl flex items-center justify-center shadow-minimal group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
+                                <m.icon className={cn("w-6 h-6", m.color)} />
+                            </div>
+                            {m.trend && (
+                                <span className="text-[9px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-3 py-1.5 rounded-full">{m.trend}</span>
+                            )}
                         </div>
-                        <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">+12% {t('vsLastYear')}</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{t('totalRevenueLTM')}</p>
-                    <h3 className="text-2xl font-bold mt-1">
-                        {new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS', maximumFractionDigits: 0 }).format(metrics.totalRevenue)}
-                    </h3>
-                </div>
-
-                <div className="bg-card border border-border rounded-2xl p-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="p-2 bg-primary/10 dark:bg-blue-900/20 rounded-lg">
-                            <DollarSign className="w-5 h-5 text-primary dark:text-blue-400" />
-                        </div>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{t('avgRentPerProperty')}</p>
-                    <h3 className="text-2xl font-bold mt-1">
-                        {new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS', maximumFractionDigits: 0 }).format(metrics.avgRent)}
-                    </h3>
-                </div>
-
-                <div className="bg-card border border-border rounded-2xl p-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
-                            <Home className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                        <div>
+                            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40 block mb-2">{m.label}</span>
+                            <h3 className="text-4xl font-black text-foreground tracking-tighter lowercase">
+                                {m.isCurrency && '₪'}
+                                {m.value.toLocaleString()}
+                                {m.isPercentage && '%'}
+                            </h3>
                         </div>
                     </div>
-                    <p className="text-sm text-muted-foreground">{t('occupancyRate')}</p>
-                    <h3 className="text-2xl font-bold mt-1">{metrics.occupancyRate}%</h3>
-                </div>
-
-                <div className="bg-card border border-border rounded-2xl p-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="p-2 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-                            <CreditCard className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-                        </div>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{t('totalProperties')}</p>
-                    <h3 className="text-2xl font-bold mt-1">{metrics.totalProperties}</h3>
-                </div>
+                ))}
             </div>
 
-            {/* Charts Row 1 */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Revenue Chart */}
-                <div className="bg-card border border-border rounded-2xl p-6">
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="font-bold text-lg">{t('revenueTrend')}</h3>
-                        <select className="bg-transparent text-sm font-medium text-muted-foreground border-none outline-none cursor-pointer">
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                {/* Revenue Trend Chart */}
+                <div className="bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[3rem] p-12 shadow-minimal hover:shadow-premium transition-all duration-700 space-y-12">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-primary mb-2 block">{t('performance')}</span>
+                            <h3 className="text-3xl font-black text-foreground tracking-tighter lowercase">{t('revenueTrend')}</h3>
+                        </div>
+                        <select className="bg-slate-50 dark:bg-neutral-800 text-[9px] font-black uppercase tracking-widest text-muted-foreground border-none outline-none cursor-pointer px-4 py-2 rounded-full shadow-minimal">
                             <option>{t('last12Months')}</option>
                         </select>
                     </div>
-                    <div className="h-[300px] w-full">
+                    <div className="h-[350px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={revenueData}>
                                 <defs>
                                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1} />
+                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2} />
                                         <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" opacity={0.5} />
                                 <XAxis
                                     dataKey="name"
                                     axisLine={false}
                                     tickLine={false}
-                                    tick={{ fill: '#6B7280', fontSize: 12 }}
+                                    tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 900 }}
                                     dy={10}
                                 />
                                 <YAxis
                                     axisLine={false}
                                     tickLine={false}
-                                    tick={{ fill: '#6B7280', fontSize: 12 }}
+                                    tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 900 }}
                                     tickFormatter={(value) => `₪${value / 1000}k`}
                                 />
                                 <Tooltip
-                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                    formatter={(value: any) => [new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS' }).format(Number(value) || 0), t('revenue')]}
+                                    contentStyle={{ borderRadius: '2rem', border: 'none', boxShadow: '0 20px 50px -10px rgb(0 0 0 / 0.1)', background: '#fff' }}
+                                    formatter={(value: any) => [`₪${Number(value).toLocaleString()}`, t('revenue')]}
                                 />
                                 <Area
                                     type="monotone"
                                     dataKey="revenue"
                                     stroke="#3b82f6"
-                                    strokeWidth={3}
+                                    strokeWidth={4}
                                     fillOpacity={1}
                                     fill="url(#colorRevenue)"
+                                    animationDuration={2000}
                                 />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
 
-                {/* Utility Costs Chart */}
-                <div className="bg-card border border-border rounded-2xl p-6">
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="font-bold text-lg">Utility Expenses</h3>
-                        <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground">Rolling 12mo</span>
+                {/* Status Breakdown Chart */}
+                <div className="bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[3rem] p-12 shadow-minimal hover:shadow-premium transition-all duration-700 space-y-12">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-amber-500 mb-2 block">{t('collection')}</span>
+                            <h3 className="text-3xl font-black text-foreground tracking-tighter lowercase">{t('paymentStatus')}</h3>
                         </div>
                     </div>
-                    <div className="h-[300px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={revenueData}> {/* Placeholder using revenueData for now, but should fetch utility data */}
-                                <defs>
-                                    <linearGradient id="colorUtility" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.1} />
-                                        <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                                <XAxis
-                                    dataKey="name"
-                                    axisLine={false}
-                                    tickLine={false}
-                                    tick={{ fill: '#6B7280', fontSize: 12 }}
-                                    dy={10}
-                                />
-                                <YAxis
-                                    axisLine={false}
-                                    tickLine={false}
-                                    tick={{ fill: '#6B7280', fontSize: 12 }}
-                                    tickFormatter={(value) => `₪${value}`}
-                                />
-                                <Tooltip
-                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                />
-                                <Area
-                                    type="monotone"
-                                    dataKey="expense"
-                                    stroke="#f59e0b"
-                                    strokeWidth={3}
-                                    fillOpacity={1}
-                                    fill="url(#colorUtility)"
-                                />
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-
-                {/* Payment Status */}
-                <div className="bg-card border border-border rounded-2xl p-6">
-                    <h3 className="font-bold text-lg mb-6">{t('paymentStatus')}</h3>
-                    <div className="h-[300px] w-full">
+                    <div className="h-[350px] w-full relative">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
                                     data={paymentStatusData}
                                     cx="50%"
                                     cy="50%"
-                                    outerRadius={100}
+                                    innerRadius={80}
+                                    outerRadius={120}
+                                    paddingAngle={8}
                                     dataKey="value"
-                                    label={(entry) => `${entry.name}: ${entry.value}`}
+                                    animationDuration={1500}
                                 >
                                     {paymentStatusData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                        <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
                                     ))}
                                 </Pie>
-                                <Tooltip />
+                                <Tooltip
+                                    contentStyle={{ borderRadius: '2rem', border: 'none', boxShadow: '0 20px 50px -10px rgb(0 0 0 / 0.1)', background: '#fff' }}
+                                />
                             </PieChart>
                         </ResponsiveContainer>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                            <span className="text-4xl font-black text-foreground tracking-tighter">
+                                {paymentStatusData.reduce((acc, curr) => acc + curr.value, 0)}
+                            </span>
+                            <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-40">{t('totalUnits')}</span>
+                        </div>
+                    </div>
+                    {/* Legend Custom */}
+                    <div className="flex justify-center gap-10">
+                        {paymentStatusData.map((s, i) => (
+                            <div key={i} className="flex items-center gap-3">
+                                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: s.color }} />
+                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{s.name}</span>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
-
         </div>
     );
 }

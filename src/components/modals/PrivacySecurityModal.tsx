@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { X, Shield, Eye, EyeOff, Trash2, Lock, AlertTriangle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Shield, Eye, EyeOff, Trash2, Lock, AlertTriangle, Cloud } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useTranslation } from '../../hooks/useTranslation';
 
@@ -16,6 +16,29 @@ export function PrivacySecurityModal({ isOpen, onClose }: PrivacySecurityModalPr
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [passwordError, setPasswordError] = useState('');
     const [passwordSuccess, setPasswordSuccess] = useState(false);
+
+    const [aiConsent, setAiConsent] = useState(false);
+    const [isLoadingConsent, setIsLoadingConsent] = useState(false);
+
+    // Fetch consent on open
+    useEffect(() => {
+        if (isOpen) {
+            const fetchConsent = async () => {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    const { data } = await supabase
+                        .from('user_preferences')
+                        .select('ai_data_consent')
+                        .eq('user_id', user.id)
+                        .single();
+                    if (data) {
+                        setAiConsent(data.ai_data_consent || false);
+                    }
+                }
+            };
+            fetchConsent();
+        }
+    }, [isOpen]);
 
     if (!isOpen) return null;
 
@@ -82,6 +105,7 @@ export function PrivacySecurityModal({ isOpen, onClose }: PrivacySecurityModalPr
         }
     };
 
+
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -110,6 +134,63 @@ export function PrivacySecurityModal({ isOpen, onClose }: PrivacySecurityModalPr
 
                 {/* Content */}
                 <div className="p-6 space-y-6">
+                    {/* AI Data Access Consent */}
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                            <Cloud className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                            <h3 className="font-semibold text-foreground dark:text-white">
+                                RentMate AI
+                            </h3>
+                        </div>
+
+                        <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-4 flex items-start justify-between gap-4">
+                            <div>
+                                <h4 className="font-medium text-purple-900 dark:text-purple-100 mb-1">
+                                    Allow AI Analysis
+                                </h4>
+                                <p className="text-sm text-purple-700 dark:text-purple-300">
+                                    Allow RentMate AI to access your contracts, payments, and tenant data to provide financial insights and smart alerts.
+                                    <span className='block mt-1 font-semibold'>This is required for features like "How much did I earn?"</span>
+                                    <span className='block mt-2 text-xs opacity-80 italic'>
+                                        Data is processed securely via OpenAI and is NOT used for model training.
+                                        Insights are generated in real-time for your specific request.
+                                    </span>
+                                </p>
+                            </div>
+                            <button
+                                onClick={async () => {
+                                    setIsLoadingConsent(true);
+                                    try {
+                                        const { data: { user } } = await supabase.auth.getUser();
+                                        if (user) {
+                                            const newValue = !aiConsent;
+                                            // Upsert to ensure row exists
+                                            const { error } = await supabase
+                                                .from('user_preferences')
+                                                .upsert({ user_id: user.id, ai_data_consent: newValue }, { onConflict: 'user_id' });
+
+                                            if (error) throw error;
+                                            setAiConsent(newValue);
+                                        }
+                                    } catch (err) {
+                                        console.error(err);
+                                        alert("Failed to update setting");
+                                    } finally {
+                                        setIsLoadingConsent(false);
+                                    }
+                                }}
+                                disabled={isLoadingConsent}
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${aiConsent ? 'bg-purple-600' : 'bg-gray-200 dark:bg-gray-700'
+                                    }`}
+                            >
+                                <span
+                                    className={`${aiConsent ? 'translate-x-6' : 'translate-x-1'
+                                        } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
+                                />
+                            </button>
+                        </div>
+                    </div>
+
                     {/* Change Password Section */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-2">
