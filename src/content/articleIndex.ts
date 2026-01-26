@@ -168,5 +168,18 @@ export const articles: ArticleMetadata[] = [
         description_he: 'למדו על הסכסוכים הנפוצים ביותר בין משכירים לשוכרים בישראל ואסטרטגיות מוכחות למנוע אותם לפני שהם מסלימים.',
         keywords_en: ['rental disputes', 'landlord tenant conflict', 'dispute resolution'],
         keywords_he: ['סכסוכי שכירות', 'קונפליקט משכיר שוכר', 'פתרון סכסוכים']
+    },
+    {
+        slug: 'admin-email-forwarding-guide',
+        title_en: 'Admin Guide: Smart Email Forwarding to CRM',
+        title_he: 'מדריך למנהלים: העברת אימיילים חכמה ל-CRM',
+        category: 'Admin Operations',
+        category_he: 'תפעול מנהלים',
+        readTime: 3,
+        date: '2026-01-26',
+        description_en: 'Learn how to use log@rentmate.co.il to automatically sync client communications and attachments directly to the RentMate CRM history.',
+        description_he: 'למדו כיצד להשתמש בכתובת log@rentmate.co.il כדי לסנכרן אוטומטית תקשורת עם לקוחות וקבצים מצורפים ישירות להיסטוריית ה-CRM של RentMate.',
+        keywords_en: ['email forwarding', 'CRM logging', 'admin tools', 'support tickets'],
+        keywords_he: ['העברת אימייל', 'תיעוד CRM', 'כלי ניהול', 'קריאות שירות']
     }
 ];

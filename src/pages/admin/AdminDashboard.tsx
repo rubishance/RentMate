@@ -13,7 +13,8 @@ import {
     ExternalLink,
     Loader2,
     Cpu,
-    MessageSquare
+    MessageSquare,
+    Sparkles
 } from 'lucide-react';
 import { ActiveChatsWidget } from '../../components/crm/ActiveChatsWidget';
 import { ActionInbox } from '../../components/crm/ActionInbox';
@@ -24,6 +25,7 @@ interface DashboardStats {
     totalContracts: number;
     totalRevenue: number;
     totalAiCost: number;
+    automatedActionCount: number;
 }
 
 interface RecentActivity {
@@ -61,11 +63,14 @@ const AdminDashboard = () => {
         activeUsers: 0,
         totalContracts: 0,
         totalRevenue: 0,
-        totalAiCost: 0
+        totalAiCost: 0,
+        automatedActionCount: 0
     });
     const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
     const [newUsers, setNewUsers] = useState<NewUser[]>([]);
     const [recentAiConvs, setRecentAiConvs] = useState<AiConversation[]>([]);
+    const [autopilotEnabled, setAutopilotEnabled] = useState<boolean>(true);
+    const [toggling, setToggling] = useState(false);
 
     useEffect(() => {
         fetchDashboardData();
@@ -97,12 +102,21 @@ const AdminDashboard = () => {
                 activeUsers: statsData?.activeUsers || 0,
                 totalContracts: statsData?.totalContracts || 0,
                 totalRevenue: statsData?.totalRevenue || 0,
-                totalAiCost: statsData?.totalAiCost || 0
+                totalAiCost: statsData?.totalAiCost || 0,
+                automatedActionCount: statsData?.totalAutomatedActions || 0
             });
 
             setRecentActivity(logsReq.data as RecentActivity[] || []);
             setNewUsers(newUsersReq.data as NewUser[] || []);
             setRecentAiConvs((await supabase.from('ai_conversations').select('*, user_profiles(full_name, email)').order('updated_at', { ascending: false }).limit(5)).data as any[] || []);
+
+            // Fetch Autopilot Setting
+            const { data: setting } = await supabase
+                .from('system_settings')
+                .select('value')
+                .eq('key', 'crm_autopilot_enabled')
+                .single();
+            if (setting) setAutopilotEnabled(setting.value === true);
 
         } catch (error) {
             console.error('Error loading dashboard:', error);
@@ -117,6 +131,7 @@ const AdminDashboard = () => {
         { name: 'Total Revenue', value: `₪${stats.totalRevenue.toLocaleString()}`, icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50' },
         { name: 'Active Users', value: stats.activeUsers, icon: Activity, color: 'text-orange-600', bg: 'bg-orange-50' },
         { name: 'AI Usage Cost', value: `$${stats.totalAiCost.toFixed(2)}`, icon: Cpu, color: 'text-blue-600', bg: 'bg-blue-50' },
+        { name: 'Autopilot Decisions', value: stats.automatedActionCount, icon: Sparkles, color: 'text-amber-600', bg: 'bg-amber-50' },
     ];
 
     const quickLinks = [
@@ -125,6 +140,23 @@ const AdminDashboard = () => {
         { name: 'Audit Logs', icon: Shield, path: '/admin/audit-logs', desc: 'Review system security events' },
         { name: 'System Settings', icon: Settings, path: '/admin/settings', desc: 'Global configuration' },
     ];
+
+    const toggleAutopilot = async () => {
+        setToggling(true);
+        try {
+            const newValue = !autopilotEnabled;
+            const { error } = await supabase
+                .from('system_settings')
+                .upsert({ key: 'crm_autopilot_enabled', value: newValue });
+
+            if (error) throw error;
+            setAutopilotEnabled(newValue);
+        } catch (err) {
+            console.error('Failed to toggle autopilot:', err);
+        } finally {
+            setToggling(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -137,14 +169,35 @@ const AdminDashboard = () => {
     return (
         <div className="space-y-8 pb-10">
             {/* Header */}
-            <div className="flex flex-col gap-1">
-                <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
-                    <Activity className="w-8 h-8 text-brand-600" />
-                    System Overview
-                </h1>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mt-1">
-                    Real-time platform metrics, revenue tracking, and administrative controls.
-                </p>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="flex flex-col gap-1">
+                    <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+                        <Activity className="w-8 h-8 text-brand-600" />
+                        System Overview
+                    </h1>
+                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mt-1">
+                        Real-time platform metrics, revenue tracking, and administrative controls.
+                    </p>
+                </div>
+
+                <div className="flex items-center gap-3 bg-white dark:bg-gray-800 p-2 px-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-minimal">
+                    <div className="flex flex-col">
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Autopilot Status</span>
+                        <span className={`text-xs font-bold ${autopilotEnabled ? 'text-emerald-600' : 'text-rose-600'}`}>
+                            {autopilotEnabled ? '● OPERATIONAL' : '○ STANDBY'}
+                        </span>
+                    </div>
+                    <button
+                        onClick={toggleAutopilot}
+                        disabled={toggling}
+                        className={`p-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${autopilotEnabled
+                            ? 'bg-rose-50 text-rose-600 hover:bg-rose-100'
+                            : 'bg-brand-600 text-white hover:bg-brand-700'
+                            }`}
+                    >
+                        {toggling ? 'Updating...' : autopilotEnabled ? 'Disable AI' : 'Enable AI'}
+                    </button>
+                </div>
             </div>
 
             {/* Stats Grid */}

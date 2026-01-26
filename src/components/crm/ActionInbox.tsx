@@ -15,6 +15,7 @@ interface ProposedAction {
     title: string;
     description: string;
     draftContent?: string;
+    updatedAt: string;
     metadata: any;
 }
 
@@ -32,7 +33,7 @@ export function ActionInbox() {
             // 1. Fetch tickets with AI drafts
             const { data: tickets } = await supabase
                 .from('support_tickets')
-                .select('id, title, description, auto_reply_draft, user_id, user_profiles(full_name)')
+                .select('id, title, description, auto_reply_draft, user_id, updated_at, user_profiles(full_name)')
                 .not('auto_reply_draft', 'is', null)
                 .eq('status', 'open')
                 .limit(5);
@@ -43,7 +44,8 @@ export function ActionInbox() {
                 title: `Reply to: ${t.title}`,
                 description: `AI generated a response for ${(t.user_profiles as any)?.full_name || 'User'}`,
                 draftContent: t.auto_reply_draft,
-                metadata: { ticket_id: t.id }
+                updatedAt: t.updated_at,
+                metadata: { ticket_id: t.id, user_id: t.user_id }
             }));
 
             // 2. Fetch pending automations from logs that need manual review? 
@@ -57,17 +59,34 @@ export function ActionInbox() {
     };
 
     const handleApprove = async (action: ProposedAction) => {
-        // Mocking approval logic
         if (action.type === 'ticket_reply') {
-            alert(`Sending response for ticket ${action.metadata.ticket_id}`);
-            // In real app: Update ticket status and insert crm_interaction
             await supabase
                 .from('support_tickets')
-                .update({ status: 'resolved' }) // Or just keep open but log reply
+                .update({
+                    status: 'resolved',
+                    auto_reply_draft: action.draftContent // Save the potentially edited content
+                })
                 .eq('id', action.metadata.ticket_id);
+
+            // Log the email interaction in CRM
+            await supabase.from('crm_interactions').insert({
+                user_id: action.metadata.user_id, // We should fetch user_id in ProposedAction
+                type: 'email',
+                title: `RE: ${action.title}`,
+                content: action.draftContent,
+                status: 'closed',
+                metadata: {
+                    direction: 'outbound',
+                    automated: true
+                }
+            });
 
             setActions(prev => prev.filter(a => a.id !== action.id));
         }
+    };
+
+    const handleUpdateDraft = (id: string, newContent: string) => {
+        setActions(prev => prev.map(a => a.id === id ? { ...a, draftContent: newContent } : a));
     };
 
     if (loading) return <div className="animate-pulse h-40 bg-gray-50 dark:bg-gray-800/50 rounded-2xl" />;
@@ -98,16 +117,32 @@ export function ActionInbox() {
                                 </div>
                                 <div className="flex-1">
                                     <div className="flex justify-between items-start mb-1">
-                                        <h4 className="text-sm font-black text-gray-900 dark:text-white">{action.title}</h4>
+                                        <div className="flex items-center gap-2">
+                                            <h4 className="text-sm font-black text-gray-900 dark:text-white">{action.title}</h4>
+                                            {new Date(action.updatedAt) < new Date(Date.now() - 24 * 60 * 60 * 1000) && (
+                                                <span className="px-1.5 py-0.5 bg-rose-50 text-rose-600 border border-rose-100 rounded text-[8px] font-black uppercase tracking-widest animate-pulse">
+                                                    Stagnant
+                                                </span>
+                                            )}
+                                        </div>
                                         <span className="text-[10px] font-black text-gray-400 flex items-center gap-1 uppercase">
-                                            <CalendarIcon className="w-3 h-3" /> Just now
+                                            <CalendarIcon className="w-3 h-3" />
+                                            {new Date(action.updatedAt).toLocaleDateString()}
                                         </span>
                                     </div>
                                     <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-4">{action.description}</p>
 
                                     {action.draftContent && (
                                         <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800 mb-4">
-                                            <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 italic">"{action.draftContent}"</p>
+                                            <textarea
+                                                value={action.draftContent}
+                                                onChange={(e) => handleUpdateDraft(action.id, e.target.value)}
+                                                className="w-full bg-transparent border-none focus:ring-0 text-xs font-semibold text-gray-700 dark:text-gray-300 italic resize-none p-0"
+                                                rows={3}
+                                            />
+                                            <div className="mt-2 text-[9px] font-black text-gray-400 uppercase tracking-widest text-right">
+                                                AI Draft - Editable
+                                            </div>
                                         </div>
                                     )}
 
