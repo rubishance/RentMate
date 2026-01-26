@@ -42,85 +42,70 @@ serve(async (req) => {
 
         console.log(`Processing automation for ${users.length} users...`);
 
-        // 2. Iterate Per User (Scalability note: In future, this should be batched or use a DB-side cursor)
+        // 2. Iterate Per User
         for (const user of users) {
             const settings = user.user_automation_settings?.[0] || {};
-            const leaseExpiryDays = settings.lease_expiry_days || 100;
-            const extensionNoticeDays = settings.extension_notice_days || 60;
+            const globalLeaseDays = settings.lease_expiry_days || 100;
+            const globalExtDays = settings.extension_notice_days || 60;
             const rentOverdueDays = settings.rent_overdue_days || 5;
 
-            // --- A. LEASE EXPIRY CHECK (Contract Ends) ---
-            const expiryTargetDate = new Date();
-            expiryTargetDate.setDate(expiryTargetDate.getDate() + leaseExpiryDays);
-            const expiryDateStr = expiryTargetDate.toISOString().split('T')[0]; // YYYY-MM-DD
-
-            const { data: expiringContracts } = await adminClient
+            // --- A \u0026 B. LEASE \u0026 EXTENSION CHECKS ---
+            // Fetch ALL active contracts for this user
+            const { data: activeContracts } = await adminClient
                 .from('contracts')
-                .select('id, property_id, properties(address)')
+                .select('id, end_date, property_id, properties(address), notice_period_days, option_notice_days, option_periods')
                 .eq('user_id', user.id)
-                .eq('status', 'active')
-                .eq('end_date', expiryDateStr); // Exact match for "Notify me 100 days before"
+                .eq('status', 'active');
 
-            if (expiringContracts && expiringContracts.length > 0) {
-                for (const contract of expiringContracts) {
-                    await sendNotification(adminClient, user.id, 'warning',
-                        'Lease Ending Soon',
-                        `Contract for ${contract.properties?.address || 'property'} ends in ${leaseExpiryDays} days. Time to renew or find a tenant.`,
-                        { contract_id: contract.id, action: 'renew' }
-                    );
-                    logs.push(`Notified ${user.email} re: expiry (contract ${contract.id})`);
-                }
-            }
+            if (activeContracts) {
+                for (const contract of activeContracts) {
+                    const address = contract.properties?.address || 'property';
 
-            // --- B. EXTENSION OPTION CHECK (Decision Deadline) ---
-            // Assuming we have 'option_end_date' or similar. 
-            // If the schema doesn't have it explicitly as a column, we might check `contracts.option_periods` JSON.
-            // For now, let's assume we look at 'end_date' AGAIN but with the extension specific threshold?
-            // User request: "60 days for extension and 100 for contract ends". 
-            // If the contract has an option, the 'end_date' is the end of *current* term.
-            // So we actually want to warn about the SAME end_date but at a different threshold IF there is an option?
-            // Implementation: We'll check again.
+                    // 1. Lease Expiry Check
+                    const leaseThreshold = contract.notice_period_days || globalLeaseDays;
+                    const expiryTarget = new Date();
+                    expiryTarget.setDate(expiryTarget.getDate() + leaseThreshold);
+                    const expiryTargetStr = expiryTarget.toISOString().split('T')[0];
 
-            const extTargetDate = new Date();
-            extTargetDate.setDate(extTargetDate.getDate() + extensionNoticeDays);
-            const extDateStr = extTargetDate.toISOString().split('T')[0];
-
-            const { data: extensionContracts } = await adminClient
-                .from('contracts')
-                .select('id, property_id, properties(address), option_periods')
-                .eq('user_id', user.id)
-                .eq('status', 'active')
-                .eq('end_date', extDateStr)
-                .not('option_periods', 'is', null); // Only if they have options
-
-            if (extensionContracts && extensionContracts.length > 0) {
-                for (const contract of extensionContracts) {
-                    // Double check JSON array is not empty
-                    if (Array.isArray(contract.option_periods) && contract.option_periods.length > 0) {
-                        await sendNotification(adminClient, user.id, 'info',
-                            'Extension Deadline Approaching',
-                            `You have ${extensionNoticeDays} days to decide on the extension option for ${contract.properties?.address}.`,
-                            { contract_id: contract.id, action: 'extension' }
+                    if (contract.end_date === expiryTargetStr) {
+                        await sendNotification(adminClient, user.id, 'warning',
+                            'Lease Ending Soon',
+                            `Contract for ${address} ends in ${leaseThreshold} days. Time to renew or find a tenant.`,
+                            { contract_id: contract.id, action: 'renew' }
                         );
-                        logs.push(`Notified ${user.email} re: extension (contract ${contract.id})`);
+                        logs.push(`Notified ${user.email} re: expiry (contract ${contract.id}) at ${leaseThreshold}d threshold`);
+                    }
+
+                    // 2. Extension Option Check
+                    if (Array.isArray(contract.option_periods) && contract.option_periods.length > 0) {
+                        const extThreshold = contract.option_notice_days || globalExtDays;
+                        const extTarget = new Date();
+                        extTarget.setDate(extTarget.getDate() + extThreshold);
+                        const extTargetStr = extTarget.toISOString().split('T')[0];
+
+                        if (contract.end_date === extTargetStr) {
+                            await sendNotification(adminClient, user.id, 'info',
+                                'Extension Deadline Approaching',
+                                `You have ${extThreshold} days left to decide on the extension option for ${address} (Autonomous Alert).`,
+                                { contract_id: contract.id, action: 'extension' }
+                            );
+                            logs.push(`Notified ${user.email} re: extension (contract ${contract.id}) at ${extThreshold}d threshold`);
+                        }
                     }
                 }
             }
 
             // --- C. RENT OVERDUE CHECK ---
             const overdueTargetDate = new Date();
-            overdueTargetDate.setDate(overdueTargetDate.getDate() - rentOverdueDays); // e.g. 5 days AGO
+            overdueTargetDate.setDate(overdueTargetDate.getDate() - rentOverdueDays);
             const overdueDateStr = overdueTargetDate.toISOString().split('T')[0];
 
-            // Re-query with correct join
             const { data: latePayments } = await adminClient
                 .from('payments')
                 .select('id, amount, currency, contracts!inner(user_id, properties(address))')
                 .eq('contracts.user_id', user.id)
                 .eq('status', 'pending')
-                .lte('due_date', overdueDateStr) // "Overdue BY at least X days" (so <= target date)
-                .gt('due_date', (new Date(overdueTargetDate.getTime() - 86400000).toISOString().split('T')[0])); // Limit to just the "5th day" to avoid spamming everyday? OR keep spamming?
-            // Current logic: Just notify on the exact day.
+                .eq('due_date', overdueDateStr); // Exact match for the Xth day of delay
 
             if (latePayments && latePayments.length > 0) {
                 for (const payment of latePayments) {

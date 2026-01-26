@@ -158,6 +158,8 @@ export interface Contract {
     contract_file_url: string | null; // Supabase storage URL
     contract_file_name: string | null;
     needs_painting?: boolean;
+    notice_period_days?: number | null;
+    option_notice_days?: number | null;
     option_periods?: {
         length: number;
         unit: 'months' | 'years';

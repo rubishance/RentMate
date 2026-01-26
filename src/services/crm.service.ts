@@ -70,7 +70,7 @@ export const crmService = {
             supabase.from('invoices').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
             this.getInteractions(userId),
             supabase.from('ai_conversations').select('*').eq('user_id', userId).order('updated_at', { ascending: false }),
-            supabase.from('support_tickets').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+            supabase.from('support_tickets').select('*, ticket_analysis(*)').eq('user_id', userId).order('created_at', { ascending: false }),
             supabase.from('human_conversations').select('*, human_messages(*)').eq('user_id', userId).order('created_at', { ascending: false })
         ]);
 
@@ -127,7 +127,9 @@ export const crmService = {
                 priority: ticket.priority,
                 category: ticket.category,
                 resolution_notes: ticket.resolution_notes,
-                ticket_id: ticket.id
+                ticket_id: ticket.id,
+                ai_analysis: ticket.ticket_analysis?.[0] || null,
+                auto_reply_draft: ticket.auto_reply_draft
             },
             created_at: ticket.created_at
         }));

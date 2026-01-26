@@ -118,6 +118,43 @@ export function TimelineItem({ interaction, onDelete, onOpenBotChat }: TimelineI
             <div className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed font-medium bg-gray-50/50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800">
                 {interaction.content}
 
+                {isTicket && interaction.metadata?.ai_analysis && (
+                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700/50 space-y-4">
+                        <div className="flex flex-wrap gap-2">
+                            <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest border ${interaction.metadata.ai_analysis.urgency_level === 'critical' ? 'bg-red-500 text-white border-red-600' :
+                                    interaction.metadata.ai_analysis.urgency_level === 'high' ? 'bg-orange-50 text-orange-600 border-orange-200' :
+                                        'bg-blue-50 text-blue-600 border-blue-200'
+                                }`}>
+                                AI Priority: {interaction.metadata.ai_analysis.urgency_level}
+                            </span>
+                            <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-lg text-[9px] font-black uppercase tracking-widest">
+                                AI Category: {interaction.metadata.ai_analysis.category}
+                            </span>
+                            <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest border ${interaction.metadata.ai_analysis.sentiment_score < 0 ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                                }`}>
+                                Sentiment: {interaction.metadata.ai_analysis.sentiment_score?.toFixed(2)}
+                            </span>
+                        </div>
+
+                        {interaction.metadata.ai_analysis.ai_summary && (
+                            <div className="bg-white/50 dark:bg-black/20 p-3 rounded-lg border border-gray-100 dark:border-gray-700/50">
+                                <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">AI Summary</span>
+                                <p className="text-xs italic text-gray-500">{interaction.metadata.ai_analysis.ai_summary}</p>
+                            </div>
+                        )}
+
+                        {interaction.metadata?.auto_reply_draft && (
+                            <div className="bg-brand-50/30 dark:bg-brand-500/5 p-4 rounded-xl border border-brand-100 dark:border-brand-500/20">
+                                <span className="text-[9px] font-black text-brand-600 uppercase tracking-widest block mb-2">AI Proposed Response</span>
+                                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{interaction.metadata.auto_reply_draft}</p>
+                                <button className="px-4 py-2 bg-brand-600 text-white text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-brand-700 transition-all shadow-minimal">
+                                    Approve & Send
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 {isTicket && interaction.metadata?.resolution_notes && (
                     <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Resolution Notes</span>

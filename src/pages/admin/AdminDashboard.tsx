@@ -16,6 +16,7 @@ import {
     MessageSquare
 } from 'lucide-react';
 import { ActiveChatsWidget } from '../../components/crm/ActiveChatsWidget';
+import { ActionInbox } from '../../components/crm/ActionInbox';
 
 interface DashboardStats {
     totalUsers: number;
@@ -168,6 +169,11 @@ const AdminDashboard = () => {
             {/* Active Chats Widget */}
             <div className="h-80">
                 <ActiveChatsWidget />
+            </div>
+
+            {/* AI Action Inbox (New) */}
+            <div className="grid grid-cols-1 gap-8">
+                <ActionInbox />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

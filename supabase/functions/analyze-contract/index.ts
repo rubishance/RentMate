@@ -122,6 +122,8 @@ Extract these fields from the rental contract:
 33. renewal_option - Boolean (true/false) if option to renew exists
 34. pets_allowed - Boolean (true/false) or null if not mentioned
 35. special_clauses - A text summary of special terms (Pets, Smoking, Repairs, Breach, Early Exit).
+36. notice_period_days - Number of days notice required for non-renewal or termination (e.g., 90). If mentioned in months, convert to days (1 month = 30 days).
+37. option_notice_days - Number of days notice required to exercise a renewal option (e.g., 60). If mentioned in months, convert to days (1 month = 30 days).
 
 Return ONLY valid JSON in this exact format:
 {
