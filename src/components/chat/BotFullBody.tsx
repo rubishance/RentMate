@@ -31,20 +31,10 @@ export function BotFullBody({ size = 500, className = "" }: { size?: number, cla
             ref={containerRef}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
-            className={`relative ${className} flex items-center justify-center p-12`}
+            className={`relative ${className} flex items-center justify-center`}
             style={{ perspective: 1000 }}
         >
-            {/* Background Removal Filter */}
-            <svg style={{ position: 'absolute', width: 0, height: 0 }}>
-                <filter id="remove-white-body-v2" x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
-                    <feColorMatrix type="matrix" values="
-                        1 0 0 0 0
-                        0 1 0 0 0
-                        0 0 1 0 0
-                        -2 -2 -2 1 5
-                    " />
-                </filter>
-            </svg>
+
 
             <motion.div
                 className="relative flex items-center justify-center"
@@ -78,14 +68,12 @@ export function BotFullBody({ size = 500, className = "" }: { size?: number, cla
                 </motion.div>
 
                 <motion.img
-                    src="/assets/images/renty-full-body-white.png"
+                    src="/assets/images/matey-full-body-v2.png"
                     alt="Renty Animated"
                     className="relative z-10 w-full h-auto object-contain pointer-events-none"
                     style={{
                         width: size,
-                        filter: 'url(#remove-white-body-v2)',
                         transform: "translateZ(20px)",
-                        clipPath: 'inset(0 0 2% 0)'
                     }}
                     animate={{
                         y: [0, -15, 0],

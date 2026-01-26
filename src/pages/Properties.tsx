@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { PlusIcon as Plus, HomeIcon as Home, BedIcon as BedDouble, RulerIcon as Ruler } from '../components/icons/NavIcons';
 import { supabase } from '../lib/supabase';
-import { AddPropertyModal } from '../components/modals/AddPropertyModal';
 import { formatDate } from '../lib/utils';
 import { ConfirmDeleteModal } from '../components/modals/ConfirmDeleteModal';
 import { IndexedRentModal } from '../components/modals/IndexedRentModal';
@@ -32,6 +31,7 @@ import { useDataCache } from '../contexts/DataCacheContext';
 import { Card, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { cn } from '../lib/utils';
+import { useStack } from '../contexts/StackContext';
 
 type ExtendedProperty = Property & {
     contracts: {
@@ -56,10 +56,7 @@ export function Properties() {
     const { get, set } = useDataCache();
     const CACHE_KEY = 'properties_list';
 
-    const [editingProperty, setEditingProperty] = useState<Property | null>(null);
-    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
-    const [isReadOnly, setIsReadOnly] = useState(false);
 
     const [deleteTarget, setDeleteTarget] = useState<Property | null>(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -70,15 +67,16 @@ export function Properties() {
     const [affectedItems, setAffectedItems] = useState<any[]>([]);
 
     const handleAdd = () => {
-        setEditingProperty(null);
-        setIsReadOnly(false);
-        setIsAddModalOpen(true);
+        push('wizard', {}, { isExpanded: true, title: t('addProperty') });
     };
 
+    const { push } = useStack();
+
     const handleView = (property: Property) => {
-        setEditingProperty(property);
-        setIsReadOnly(true);
-        setIsAddModalOpen(true);
+        push('property_hub', {
+            propertyId: property.id,
+            property: property
+        }, { title: property.address });
     };
 
     const handleDelete = async (property: Property) => {
@@ -359,15 +357,6 @@ export function Properties() {
                     })}
                 </div>
             )}
-
-            <AddPropertyModal
-                isOpen={isAddModalOpen}
-                onClose={() => setIsAddModalOpen(false)}
-                onSuccess={fetchProperties}
-                propertyToEdit={editingProperty}
-                readOnly={isReadOnly}
-                onDelete={() => editingProperty && handleDelete(editingProperty)}
-            />
 
             <IndexedRentModal
                 isOpen={!!indexedRentContract}

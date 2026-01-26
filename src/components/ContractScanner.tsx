@@ -106,13 +106,7 @@ export function ContractScanner({ onScanComplete, onCancel, mode = 'modal', skip
 
                 // If it's the generic "non-2xx" error, try to see if there's more info
                 if (detailedMessage && detailedMessage.includes('non-2xx')) {
-                    try {
-                        // Check if the error object actually contains the response body in some property
-                        // For debug: show the whole object
-                        detailedMessage += ` details: ${JSON.stringify(error)}`;
-                    } catch (e) {
-                        // ignore
-                    }
+                    detailedMessage = 'שירות הניתוח נמצא בעומס או אינו זמין כרגע. אנא נסו שנית בעוד מספר רגעים.';
                 }
 
                 throw new Error(`AI Analysis Failed: ${detailedMessage}`);

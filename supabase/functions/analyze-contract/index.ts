@@ -2,6 +2,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY')
 
 // SECURITY: Restrict CORS to allowed origins only
 const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || 'https://qfvrekvugdjnwhnaucmz.supabase.co'
@@ -31,15 +32,29 @@ serve(async (req) => {
             throw new Error(`No images provided. Received payload keys: ${Object.keys(payload)}. Images value: ${JSON.stringify(images)}. Full payload: ${JSON.stringify(payload)}`)
         }
 
-        // Call OpenAI GPT-4o Vision API
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        // Call AI Engine
+        let apiUrl = "https://api.openai.com/v1/chat/completions";
+        let apiKey = OPENAI_API_KEY;
+        let model = "gpt-4o";
+
+        if (!OPENAI_API_KEY && GEMINI_API_KEY) {
+            apiUrl = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+            apiKey = GEMINI_API_KEY;
+            model = "gemini-1.5-pro"; // Use Pro for complex contract analysis
+        }
+
+        if (!apiKey) {
+            throw new Error("Missing API Key. Please configure OPENAI_API_KEY or GEMINI_API_KEY in Supabase secrets.");
+        }
+
+        const response = await fetch(apiUrl, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${OPENAI_API_KEY}`,
+                'Authorization': `Bearer ${apiKey}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                model: 'gpt-4o',
+                model: model,
                 messages: [
                     {
                         role: 'system',

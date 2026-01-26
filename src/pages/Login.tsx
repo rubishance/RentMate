@@ -550,15 +550,27 @@ export function Login() {
                                 <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500"><span className="bg-white dark:bg-neutral-900 px-3">{t('auth_or_continue')}</span></div>
                             </div>
 
-                            <button
-                                type="button"
-                                onClick={() => handleSocialLogin('google')}
-                                disabled={loading}
-                                className="w-full flex items-center justify-center gap-3 py-4 bg-white dark:bg-neutral-800 border border-gray-100 dark:border-neutral-800 rounded-2xl hover:bg-gray-50 dark:hover:bg-neutral-700 transition-all shadow-sm disabled:opacity-50"
-                            >
-                                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
-                                <span className="text-sm font-bold text-black dark:text-white">Continue with Google</span>
-                            </button>
+                            <div className="grid grid-cols-1 gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => handleSocialLogin('google')}
+                                    disabled={loading}
+                                    className="w-full flex items-center justify-center gap-3 py-4 bg-white dark:bg-neutral-800 border border-gray-100 dark:border-neutral-800 rounded-2xl hover:bg-gray-50 dark:hover:bg-neutral-700 transition-all shadow-sm disabled:opacity-50"
+                                >
+                                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
+                                    <span className="text-sm font-bold text-black dark:text-white">{lang === 'he' ? 'המשך עם Google' : 'Continue with Google'}</span>
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => handleSocialLogin('facebook')}
+                                    disabled={loading}
+                                    className="w-full flex items-center justify-center gap-3 py-4 bg-[#1877F2] hover:bg-[#166fe5] text-white rounded-2xl transition-all shadow-sm disabled:opacity-50"
+                                >
+                                    <img src="https://www.svgrepo.com/show/475643/facebook-color.svg" alt="Facebook" className="w-5 h-5 brightness-0 invert" />
+                                    <span className="text-sm font-bold">Continue with Facebook</span>
+                                </button>
+                            </div>
 
                             {/* Trust & Security Badge */}
                             <div className="flex items-center justify-center gap-2 opacity-30 grayscale hover:opacity-100 transition-opacity">

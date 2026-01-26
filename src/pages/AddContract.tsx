@@ -45,6 +45,7 @@ export function AddContract() {
             if (prefill.property_id) {
                 setIsExistingProperty(true);
                 setSelectedPropertyId(prefill.property_id);
+                setIsPropertyLocked(true);
             }
             // Clear state after reading to prevent re-fill on refresh
             window.history.replaceState({}, document.title);
@@ -127,6 +128,7 @@ export function AddContract() {
     const [saveContractFile, setSaveContractFile] = useState(false);
     const [hasOverlap, setHasOverlap] = useState(false);
     const [blockedIntervals, setBlockedIntervals] = useState<{ from: Date; to: Date }[]>([]);
+    const [isPropertyLocked, setIsPropertyLocked] = useState(false);
 
     useEffect(() => {
         // Fetch properties for selection
@@ -476,7 +478,7 @@ export function AddContract() {
 
 
 
-                navigate('/contracts');
+                navigate('/properties');
 
             } catch (err: any) {
                 console.error(err);
@@ -797,33 +799,36 @@ export function AddContract() {
                                             <div className="flex items-center justify-between">
                                                 <h3 className="font-semibold text-lg flex items-center gap-2"><Building className="w-4 h-4" /> פרטי הנכס</h3>
 
-                                                <div className="flex bg-secondary/50 p-1 rounded-lg">
-                                                    <button
-                                                        onClick={() => setIsExistingProperty(false)}
-                                                        className={cn(
-                                                            "px-3 py-1 text-xs font-medium rounded-md transition-all",
-                                                            !isExistingProperty ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-                                                        )}
-                                                    >
-                                                        {t('newProperty')}
-                                                    </button>
-                                                    <button
-                                                        onClick={() => setIsExistingProperty(true)}
-                                                        className={cn(
-                                                            "px-3 py-1 text-xs font-medium rounded-md transition-all",
-                                                            isExistingProperty ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-                                                        )}
-                                                    >
-                                                        {t('existingProperty')}
-                                                    </button>
-                                                </div>
+                                                {!isPropertyLocked && (
+                                                    <div className="flex bg-secondary/50 p-1 rounded-lg">
+                                                        <button
+                                                            onClick={() => setIsExistingProperty(false)}
+                                                            className={cn(
+                                                                "px-3 py-1 text-xs font-medium rounded-md transition-all",
+                                                                !isExistingProperty ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                                                            )}
+                                                        >
+                                                            {t('newProperty')}
+                                                        </button>
+                                                        <button
+                                                            onClick={() => setIsExistingProperty(true)}
+                                                            className={cn(
+                                                                "px-3 py-1 text-xs font-medium rounded-md transition-all",
+                                                                isExistingProperty ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                                                            )}
+                                                        >
+                                                            {t('existingProperty')}
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
 
                                             {isExistingProperty ? (
                                                 <div className="space-y-2">
                                                     <label className="text-sm font-medium">{t('chooseProperty')}</label>
                                                     <select
-                                                        className="w-full p-3 bg-background border border-border rounded-xl"
+                                                        className="w-full p-3 bg-background border border-border rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                                                        disabled={isPropertyLocked}
                                                         value={selectedPropertyId}
                                                         onChange={(e) => {
                                                             const newId = e.target.value;

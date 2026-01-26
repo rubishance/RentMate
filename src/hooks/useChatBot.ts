@@ -12,6 +12,7 @@ export function useChatBot() {
     const [isLoading, setIsLoading] = useState(false);
     const [conversationId, setConversationId] = useState<string | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
+    const [isAiMode, setIsAiMode] = useState(false); // Default to menu mode if hybrid is enabled
 
     useEffect(() => {
         const initChat = async () => {
@@ -100,15 +101,35 @@ export function useChatBot() {
 
         } catch (err: any) {
             console.error('Chat error details:', err);
-            const errorMessage = err.message || "Unknown connection error";
+
+            let errorMessage = err.message || "Unknown connection error";
+
+            // Attempt to extract detailed error from response body if available
+            if (err && typeof err === 'object' && 'context' in err) {
+                try {
+                    const responseBody = await (err as any).context.json();
+                    if (responseBody.error) {
+                        errorMessage = responseBody.error;
+                    }
+                } catch (e) {
+                    // Ignore JSON parse error
+                    console.warn('Failed to parse error context JSON', e);
+                }
+            } else if (err.message && (err.message.toLowerCase().includes("non-2xx") || err.message.toLowerCase().includes("failed to fetch"))) {
+                errorMessage = "שירות ה-AI אינו זמין כרגע. וודא שהגדרת את מפתח ה-API (OpenAI או Gemini) בסודות של Supabase.";
+            }
+
             setMessages(prev => [...prev, {
                 role: 'assistant',
-                content: `Error: ${errorMessage}. Please check your OpenAI API key and Supabase Function logs.`
+                content: `Error: ${errorMessage}`
             }]);
         } finally {
             setIsLoading(false);
         }
     };
 
-    return { isOpen, toggleChat, isLoading, messages, sendMessage, uiAction, clearUiAction };
+    const activateAiMode = () => setIsAiMode(true);
+    const deactivateAiMode = () => setIsAiMode(false);
+
+    return { isOpen, toggleChat, isLoading, messages, sendMessage, uiAction, clearUiAction, isAiMode, activateAiMode, deactivateAiMode };
 }

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { CalendarIcon as CalendarCheck, ClockIcon as Clock, AlertCircleIcon as AlertCircle, FilterIcon as SlidersHorizontal, ArrowRightIcon as ArrowRight, PlusIcon as Plus } from '../components/icons/NavIcons';
 import { format } from 'date-fns';
 import { supabase } from '../lib/supabase';
-import { formatDate, cn } from '../lib/utils';
+import { cn } from '../lib/utils';
 import type { Payment } from '../types/database';
 import { AddPaymentModal } from '../components/modals/AddPaymentModal';
 import { PaymentDetailsModal } from '../components/modals/PaymentDetailsModal';
@@ -12,7 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 export function Payments() {
     const { t } = useTranslation();
-    const [payments, setPayments] = useState<Payment[]>([]);
+    const [payments, setPayments] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [periodFilter, setPeriodFilter] = useState<'all' | '3m' | '6m' | '1y'>('3m');
     const [stats, setStats] = useState({
@@ -29,7 +29,8 @@ export function Payments() {
         propertyId: 'all',
         startDate: '',
         endDate: '',
-        paymentMethod: 'all'
+        paymentMethod: 'all',
+        type: 'all' as 'all' | 'rent' | 'bills'
     });
 
     useEffect(() => {
@@ -55,9 +56,41 @@ export function Payments() {
             }
 
             if (data) {
-                const paymentData = data as any[];
-                setPayments(paymentData);
-                calculateStats(paymentData);
+                const rentPayments = (data as any[]).map(p => ({
+                    ...p,
+                    displayType: 'rent'
+                }));
+
+                // Fetch Paid Bills
+                const { data: bills } = await supabase
+                    .from('property_documents')
+                    .select('*, properties(id, title, address, city)')
+                    .eq('paid', true)
+                    .not('amount', 'is', null)
+                    .ilike('category', 'utility_%');
+
+                let allItems = [...rentPayments];
+                if (bills) {
+                    const billPayments = bills.map(b => ({
+                        ...b,
+                        id: b.id,
+                        amount: b.amount,
+                        due_date: b.document_date || b.created_at,
+                        status: 'paid',
+                        payment_method: 'bank_transfer',
+                        displayType: 'bill',
+                        contracts: {
+                            properties: b.properties,
+                            tenants: { name: b.vendor_name || t('bills') }
+                        }
+                    }));
+                    allItems = [...allItems, ...billPayments];
+                }
+
+                allItems.sort((a, b) => new Date(b.due_date).getTime() - new Date(a.due_date).getTime());
+
+                setPayments(allItems);
+                calculateStats(rentPayments);
             }
         } catch (error) {
             console.error('Error fetching payments:', error);
@@ -89,19 +122,21 @@ export function Payments() {
         setStats({
             monthlyExpected: monthly,
             pending: pending,
-            overdue: 0 // Could implement overdue calculation
+            overdue: 0
         });
     }
 
     const filteredPayments = payments.filter(payment => {
-        if (filters.tenantId !== 'all' && (payment as any).contracts?.tenants?.id !== filters.tenantId) return false;
-        if (filters.propertyId !== 'all' && (payment as any).contracts?.properties?.id !== filters.propertyId) return false;
-        if (filters.paymentMethod !== 'all' && payment.payment_method !== filters.paymentMethod) return false;
-        if (filters.startDate && payment.due_date < filters.startDate) return false;
-        if (filters.endDate && payment.due_date > filters.endDate) return false;
+        const p = payment as any;
+        if (filters.type !== 'all' && p.displayType !== filters.type) return false;
+        if (filters.tenantId !== 'all' && p.contracts?.tenants?.id !== filters.tenantId) return false;
+        if (filters.propertyId !== 'all' && p.contracts?.properties?.id !== filters.propertyId) return false;
+        if (filters.paymentMethod !== 'all' && p.payment_method !== filters.paymentMethod) return false;
+        if (filters.startDate && p.due_date < filters.startDate) return false;
+        if (filters.endDate && p.due_date > filters.endDate) return false;
 
         if (periodFilter !== 'all') {
-            const dueDate = new Date(payment.due_date);
+            const dueDate = new Date(p.due_date);
             const now = new Date();
             const months = periodFilter === '3m' ? 3 : periodFilter === '6m' ? 6 : 12;
             const threshold = new Date();
@@ -112,8 +147,8 @@ export function Payments() {
         return true;
     });
 
-    const uniqueTenants = Array.from(new Set(payments.map(p => (p as any).contracts?.tenants).filter(Boolean).map(t => JSON.stringify(t)))).map(s => JSON.parse(s));
-    const uniqueProperties = Array.from(new Set(payments.map(p => (p as any).contracts?.properties).filter(Boolean).map(pr => JSON.stringify(pr)))).map(s => JSON.parse(s));
+    const uniqueTenants = Array.from(new Set(payments.map(p => (p as any).contracts?.tenants).filter(Boolean).map(t => JSON.stringify(t)))).map(s => JSON.parse(s as string));
+    const uniqueProperties = Array.from(new Set(payments.map(p => (p as any).contracts?.properties).filter(Boolean).map(pr => JSON.stringify(pr)))).map(s => JSON.parse(s as string));
 
     if (loading) {
         return (
@@ -218,6 +253,19 @@ export function Payments() {
                         <div className="p-12 bg-slate-50 dark:bg-neutral-900/50 rounded-[3rem] border border-slate-100 dark:border-neutral-800 space-y-12">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
                                 <div className="space-y-4">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('paymentType')}</label>
+                                    <select
+                                        className="w-full h-16 px-8 rounded-2xl border-2 border-transparent bg-white dark:bg-neutral-900 text-xs font-black text-foreground shadow-minimal focus:border-foreground transition-all outline-none appearance-none"
+                                        value={filters.type}
+                                        onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value as any }))}
+                                    >
+                                        <option value="all">{t('allTypes')}</option>
+                                        <option value="rent">{t('rent')}</option>
+                                        <option value="bills">{t('bills')}</option>
+                                    </select>
+                                </div>
+
+                                <div className="space-y-4">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('tenant')}</label>
                                     <select
                                         className="w-full h-16 px-8 rounded-2xl border-2 border-transparent bg-white dark:bg-neutral-900 text-xs font-black text-foreground shadow-minimal focus:border-foreground transition-all outline-none appearance-none"
@@ -242,23 +290,6 @@ export function Payments() {
                                         {uniqueProperties.map((p: any) => (
                                             <option key={p.id} value={p.id}>{p.address}</option>
                                         ))}
-                                    </select>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('method')}</label>
-                                    <select
-                                        className="w-full h-16 px-8 rounded-2xl border-2 border-transparent bg-white dark:bg-neutral-900 text-xs font-black text-foreground shadow-minimal focus:border-foreground transition-all outline-none appearance-none"
-                                        value={filters.paymentMethod}
-                                        onChange={(e) => setFilters(prev => ({ ...prev, paymentMethod: e.target.value }))}
-                                    >
-                                        <option value="all">{t('allMethods')}</option>
-                                        <option value="bank_transfer">{t('transfer')}</option>
-                                        <option value="bit">{t('bit')}</option>
-                                        <option value="paybox">{t('paybox')}</option>
-                                        <option value="check">{t('check')}</option>
-                                        <option value="cash">{t('cash')}</option>
-                                        <option value="credit_card">{t('creditCard')}</option>
                                     </select>
                                 </div>
 
@@ -311,8 +342,10 @@ export function Payments() {
                                 <div
                                     key={payment.id}
                                     onClick={() => {
-                                        setSelectedPayment(payment);
-                                        setIsDetailsModalOpen(true);
+                                        if (payment.displayType === 'rent') {
+                                            setSelectedPayment(payment);
+                                            setIsDetailsModalOpen(true);
+                                        }
                                     }}
                                     className="p-10 flex flex-col lg:flex-row lg:items-center justify-between gap-10 hover:bg-slate-50/50 dark:hover:bg-neutral-800/10 transition-all group cursor-pointer relative overflow-hidden"
                                 >
@@ -327,19 +360,20 @@ export function Payments() {
                                         <div className="text-center md:text-left rtl:md:text-right space-y-3">
                                             <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
                                                 <h3 className="text-2xl font-black tracking-tighter text-foreground lowercase">
-                                                    {(payment as any).contracts?.tenants?.name || t('unnamedTenant')}
+                                                    {payment.contracts?.tenants?.name || t('unnamedTenant')}
                                                 </h3>
                                                 <span className={cn(
                                                     "text-[8px] px-3 py-1 rounded-full uppercase font-black tracking-[0.2em] shadow-minimal border",
-                                                    payment.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
-                                                        payment.status === 'overdue' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' :
-                                                            'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                                                    payment.displayType === 'bill' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
+                                                        payment.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
+                                                            payment.status === 'overdue' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' :
+                                                                'bg-amber-500/10 text-amber-500 border-amber-500/20'
                                                 )}>
-                                                    {payment.status}
+                                                    {payment.displayType === 'bill' ? t('bills') : payment.status}
                                                 </span>
                                             </div>
                                             <p className="text-muted-foreground text-sm font-medium opacity-60">
-                                                {(payment as any).contracts?.properties?.address}, {(payment as any).contracts?.properties?.city}
+                                                {payment.contracts?.properties?.address}, {payment.contracts?.properties?.city}
                                             </p>
                                         </div>
                                     </div>

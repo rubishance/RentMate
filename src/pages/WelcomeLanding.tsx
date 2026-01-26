@@ -201,10 +201,10 @@ export function WelcomeLanding() {
 
                                     {/* Bot Column */}
                                     <div className="order-1 lg:order-2 relative h-[40vh] lg:h-[70vh] flex items-center justify-center">
-                                        <div className="relative w-full h-full flex items-center justify-center scale-110 lg:scale-125">
-                                            <div className="absolute inset-0 bg-slate-100 dark:bg-neutral-900 blur-[150px] rounded-full opacity-40 animate-pulse"></div>
+                                        <div className="relative w-full h-full flex items-center justify-center">
+                                            <div className="absolute inset-0 bg-slate-100 dark:bg-neutral-900 blur-[150px] rounded-full opacity-30 animate-pulse"></div>
                                             <div className="relative z-20">
-                                                <BotFullBody size={600} />
+                                                <BotFullBody size={320} />
                                             </div>
                                         </div>
                                     </div>

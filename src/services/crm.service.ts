@@ -64,13 +64,14 @@ export const crmService = {
     },
 
     async getClientSummary(userId: string) {
-        // Get user profile, invoices, interactions, AI conversations, and support tickets
-        const [profile, invoices, interactions, aiConversations, supportTickets] = await Promise.all([
+        // Get user profile, invoices, interactions, AI conversations, support tickets, and human chats
+        const [profile, invoices, interactions, aiConversations, supportTickets, humanConversations] = await Promise.all([
             supabase.from('user_profiles').select('*').eq('id', userId).single(),
             supabase.from('invoices').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
             this.getInteractions(userId),
             supabase.from('ai_conversations').select('*').eq('user_id', userId).order('updated_at', { ascending: false }),
-            supabase.from('support_tickets').select('*').eq('user_id', userId).order('created_at', { ascending: false })
+            supabase.from('support_tickets').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+            supabase.from('human_conversations').select('*, human_messages(*)').eq('user_id', userId).order('created_at', { ascending: false })
         ]);
 
         if (profile.error) throw profile.error;
@@ -88,6 +89,26 @@ export const crmService = {
             metadata: {
                 messages: conv.messages,
                 total_cost: conv.total_cost_usd,
+                conversation_id: conv.id
+            },
+            created_at: conv.created_at
+        }));
+
+        // Transform Human Conversations into CRM format
+        const humanChatInteractions: CRMInteraction[] = (humanConversations.data || []).map(conv => ({
+            id: conv.id,
+            user_id: conv.user_id,
+            admin_id: conv.admin_id,
+            type: 'human_chat',
+            title: 'Live Support Session',
+            content: `Human support session with ${conv.human_messages?.length || 0} messages. Status: ${conv.status}`,
+            status: conv.status,
+            metadata: {
+                messages: conv.human_messages?.map((m: any) => ({
+                    role: m.role,
+                    content: m.content,
+                    timestamp: m.created_at
+                })),
                 conversation_id: conv.id
             },
             created_at: conv.created_at
@@ -111,8 +132,13 @@ export const crmService = {
             created_at: ticket.created_at
         }));
 
-        // Merge and sort all interactions (Manual + Bot + Tickets)
-        const unifiedInteractions = [...interactions, ...botInteractions, ...ticketInteractions].sort(
+        // Merge and sort all interactions (Manual + Bot + Tickets + Human Chats)
+        const unifiedInteractions = [
+            ...interactions,
+            ...botInteractions,
+            ...humanChatInteractions,
+            ...ticketInteractions
+        ].sort(
             (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         );
 

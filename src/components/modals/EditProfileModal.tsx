@@ -191,16 +191,18 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
             if (!user) return;
 
             const { data, error } = await supabase
-                .from('user_profiles')
-                .select('notification_preferences')
-                .eq('id', user.id)
+                .from('user_automation_settings')
+                .select('*')
+                .eq('user_id', user.id)
                 .single();
 
-            if (!error && data?.notification_preferences) {
-                setContractExpiryDays(data.notification_preferences.contract_expiry_days || 60);
-                setRentDueDays(data.notification_preferences.rent_due_days || 3);
-                setExtensionOptionDays(data.notification_preferences.extension_option_days || 30);
-                setExtensionOptionEndDays(data.notification_preferences.extension_option_end_days || 7);
+            if (!error && data) {
+                setContractExpiryDays(data.lease_expiry_days || 60);
+                setRentDueDays(data.rent_overdue_days || 3);
+                setExtensionOptionDays(data.extension_notice_days || 30);
+                // setExtensionOptionEndDays(data.extension_option_end_days || 7); // Not in DB yet, sticking to task plan columns
+            } else if (error && error.code === 'PGRST116') {
+                // No settings yet, defaults are fine
             }
         } catch (error) {
             console.error('Error loading notification preferences:', error);
@@ -215,17 +217,18 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error('No user found');
 
+            const updates = {
+                user_id: user.id,
+                lease_expiry_days: Math.min(Math.max(contractExpiryDays, 1), 365),
+                rent_overdue_days: Math.min(Math.max(rentDueDays, 1), 180),
+                extension_notice_days: Math.min(Math.max(extensionOptionDays, 1), 180),
+                // extension_option_end_days: ... 
+                updated_at: new Date().toISOString()
+            };
+
             const { error } = await supabase
-                .from('user_profiles')
-                .update({
-                    notification_preferences: {
-                        contract_expiry_days: Math.min(Math.max(contractExpiryDays, 1), 180),
-                        rent_due_days: Math.min(Math.max(rentDueDays, 1), 180),
-                        extension_option_days: Math.min(Math.max(extensionOptionDays, 1), 180),
-                        extension_option_end_days: Math.min(Math.max(extensionOptionEndDays, 1), 180)
-                    }
-                })
-                .eq('id', user.id);
+                .from('user_automation_settings')
+                .upsert(updates);
 
             if (error) throw error;
 

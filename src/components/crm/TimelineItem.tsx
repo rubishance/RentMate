@@ -47,7 +47,7 @@ export function TimelineItem({ interaction, onDelete, onOpenBotChat }: TimelineI
     return (
         <div className="py-6 first:pt-0 group relative pl-8 border-l-2 border-slate-100 dark:border-slate-800 ml-3">
             {/* Timeline Dot */}
-            <div className={`absolute -left-[9px] top-6 w-4 h-4 rounded-full border-2 border-white dark:border-gray-900 ${isBot ? 'bg-purple-400' : isTicket ? 'bg-amber-400' : 'bg-gray-300'
+            <div className={`absolute -left-[9px] top-6 w-4 h-4 rounded-full border-2 border-white dark:border-gray-900 ${isBot ? 'bg-purple-400' : isTicket ? 'bg-amber-400' : interaction.type === 'human_chat' ? 'bg-brand-400' : 'bg-gray-300'
                 }`} />
 
             <div className="flex justify-between items-start mb-2">
@@ -77,7 +77,7 @@ export function TimelineItem({ interaction, onDelete, onOpenBotChat }: TimelineI
                         </a>
                     )}
                     {/* Only allow deleting manual notes/logs */}
-                    {!isBot && !isTicket && (
+                    {!isBot && !isTicket && interaction.type !== 'human_chat' && (
                         <button
                             onClick={() => onDelete(interaction.id)}
                             className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-400 hover:text-red-500 transition-all"
@@ -91,15 +91,23 @@ export function TimelineItem({ interaction, onDelete, onOpenBotChat }: TimelineI
             {interaction.title && (
                 <h4 className="text-sm font-black text-gray-900 dark:text-white mb-1.5 flex items-center gap-2">
                     {interaction.title}
-                    {isBot && (
-                        <span className="px-2 py-0.5 bg-purple-50 text-purple-600 rounded text-[9px] font-black uppercase tracking-widest">
+                    {(isBot || interaction.type === 'human_chat') && (
+                        <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${isBot ? 'bg-purple-50 text-purple-600' : 'bg-brand-50 text-brand-600'}`}>
                             {interaction.metadata?.messages?.length || 0} msgs
                         </span>
                     )}
                     {isTicket && interaction.status && (
                         <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest border ${interaction.status === 'open' ? 'bg-red-50 text-red-600 border-red-100' :
-                                interaction.status === 'resolved' ? 'bg-green-50 text-green-600 border-green-100' :
-                                    'bg-gray-50 text-gray-600 border-gray-100'
+                            interaction.status === 'resolved' ? 'bg-green-50 text-green-600 border-green-100' :
+                                'bg-gray-50 text-gray-600 border-gray-100'
+                            }`}>
+                            {interaction.status.replace('_', ' ')}
+                        </span>
+                    )}
+                    {!isBot && !isTicket && interaction.type !== 'human_chat' && interaction.status && (
+                        <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest border ${interaction.status === 'open' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                            interaction.status === 'needs_follow_up' ? 'bg-rose-50 text-rose-600 border-rose-100' :
+                                'bg-slate-50 text-slate-600 border-slate-100'
                             }`}>
                             {interaction.status.replace('_', ' ')}
                         </span>
@@ -118,10 +126,10 @@ export function TimelineItem({ interaction, onDelete, onOpenBotChat }: TimelineI
                 )}
             </div>
 
-            {isBot && (
+            {(isBot || interaction.type === 'human_chat') && (
                 <button
                     onClick={() => onOpenBotChat(interaction.metadata)}
-                    className="mt-3 text-[10px] font-black text-purple-600 uppercase tracking-widest hover:underline flex items-center gap-1 group/btn"
+                    className={`mt-3 text-[10px] font-black uppercase tracking-widest hover:underline flex items-center gap-1 group/btn ${isBot ? 'text-purple-600' : 'text-brand-600'}`}
                 >
                     <ChatBubbleLeftEllipsisIcon className="w-3 h-3 group-hover/btn:translate-x-0.5 transition-transform" />
                     Open Transcript

@@ -160,6 +160,10 @@ export type TranslationKeys =
     // Payments Page
     | 'paymentsTitle'
     | 'trackFuturePayments'
+    | 'allTypes'
+    | 'rent'
+    | 'bills'
+    | 'paymentType'
     | 'addPayment' | 'addPayment_female'
     | 'monthlyExpected'
     | 'pendingCollection'
@@ -796,6 +800,10 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
 
         paymentsTitle: 'תשלומים',
         trackFuturePayments: 'מעקב תשלומים',
+        allTypes: 'כל הסוגים',
+        rent: 'שכירות',
+        bills: 'חשבונות',
+        paymentType: 'סוג תשלום',
         addPayment: 'הוסף תשלום',
         monthlyExpected: 'צפי חודשי',
         pendingCollection: 'ממתין לגבייה',
@@ -1580,6 +1588,10 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
 
         paymentsTitle: 'Payments',
         trackFuturePayments: 'Track future payments',
+        allTypes: 'All Types',
+        rent: 'Rent',
+        bills: 'Bills',
+        paymentType: 'Type',
         addPayment: 'Add Payment',
         monthlyExpected: 'Monthly Expected',
         pendingCollection: 'Pending Collection',

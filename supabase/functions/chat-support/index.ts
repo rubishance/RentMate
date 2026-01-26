@@ -3,6 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
@@ -188,6 +189,36 @@ const FUNCTION_TOOLS = [
                     target_date: { type: "string", description: "YYYY-MM" }
                 },
                 required: ["base_rent", "linkage_type", "base_date", "target_date"]
+            }
+        }
+    },
+    {
+        type: "function",
+        function: {
+            name: "trigger_human_support",
+            description: "Escalate the conversation to a human support agent. Use this if the user is frustrated, angry, or specifically asks for a real person. (Hebrew: העבר לנציג אנושי).",
+            parameters: {
+                type: "object",
+                properties: {
+                    reason: { type: "string", description: "Why are we handing over to a human?" }
+                }
+            }
+        }
+    },
+    {
+        type: "function",
+        function: {
+            name: "generate_whatsapp_message",
+            description: "Generate a professional WhatsApp message for a tenant. Use this for rent reminders, linkage updates, or general property updates. (Hebrew: הפק הודעת וואטסאפ).",
+            parameters: {
+                type: "object",
+                properties: {
+                    tenant_name: { type: "string" },
+                    type: { type: "string", enum: ["rent_reminder", "linkage_update", "maintenance_update", "general"] },
+                    amount: { type: "number", description: "Optional: Amount for rent or linkage" },
+                    property_name: { type: "string" }
+                },
+                required: ["tenant_name", "type"]
             }
         }
     }
@@ -580,12 +611,46 @@ serve(async (req) => {
     }
 
     try {
-        if (!OPENAI_API_KEY) {
-            throw new Error("OPENAI_API_KEY is not set.");
+        console.log("Chat support function invoked.");
+
+        if (!OPENAI_API_KEY && !GEMINI_API_KEY) {
+            console.error("Critical: AI API Keys missing from environment.");
+            throw new Error("Missing AI API Key. Please set OPENAI_API_KEY or GEMINI_API_KEY in Supabase secrets.");
         }
 
-        const { messages, conversationId } = await req.json();
+        const body = await req.json().catch(e => {
+            console.error("Failed to parse request body:", e);
+            return null;
+        });
+
+        if (!body || !body.messages) {
+            return new Response(JSON.stringify({ error: "Invalid request: messages array is required." }), {
+                status: 400,
+                headers: { ...corsHeaders, "Content-Type": "application/json" }
+            });
+        }
+
+        const { messages, conversationId } = body;
+        const userContent = messages[messages.length - 1]?.content || '';
+
+        // --- PING TEST (Moved Early) ---
+        if (userContent.toLowerCase() === 'ping') {
+            console.log("Ping detected, responding with status.");
+            const status = [];
+            if (OPENAI_API_KEY) status.push("OpenAI: OK");
+            if (GEMINI_API_KEY) status.push("Gemini: OK");
+            if (status.length === 0) status.push("No keys detected");
+
+            return new Response(
+                JSON.stringify({
+                    choices: [{ message: { role: "assistant", content: "Pong! " + status.join(" | ") } }]
+                }),
+                { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+        }
+
         const authHeader = req.headers.get("authorization");
+        console.log("Auth header present:", !!authHeader);
 
         // Extract user ID from JWT
         let userId = null;
@@ -623,18 +688,6 @@ serve(async (req) => {
         }
 
         // Detect user language and load appropriate knowledge base
-        const userContent = messages[messages.length - 1]?.content || '';
-
-        // --- PING TEST ---
-        if (userContent.toLowerCase() === 'ping') {
-            return new Response(
-                JSON.stringify({
-                    choices: [{ message: { role: "assistant", content: "Pong! System connected. OpenAI Key: " + (OPENAI_API_KEY ? "Detected" : "MISSING") } }]
-                }),
-                { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-            );
-        }
-
         const userLanguage = detectLanguage(userContent);
         const knowledgeBase = getKnowledgeBase(userLanguage);
 
@@ -646,7 +699,10 @@ serve(async (req) => {
             systemPrompt = `You are a helper for property owners using "RentMate". 
                 
 ROLE & TONE:
-- Professional, helpful, concise.
+- Professional, helpful, and use CLEAR, SIMPLE language.
+- Avoid technical jargon; explain complex property management terms simply.
+- Be concise, direct, and natural. Focus on high readability.
+- **FORMATTING**: Use bullet points and bold text to highlight key info. Break long paragraphs into short, digestible chunks.
 - Expert in RentMate app features and property management.
 - LANGUAGE: Respond in the SAME language the user writes in (Hebrew or English).
 - **CRITICAL - NO ADVICE**: You are strictly prohibited from giving legal, tax, or financial advice. YOU ARE NOT A LAWYER OR ADVISOR.
@@ -679,8 +735,9 @@ ROLE:
 - **RESTRICTION**: If asked about specific data or to perform actions (like adding a property), politely explain that they need to Sign Up/Login first to use these features.
 
 TONE:
-- Welcoming, premium, expert, and encouraging.
-- Hebrew or English (match user).
+- Welcoming, premium, and encouraging.
+- Use CLEAR, PLAIN language (Hebrew or English). Avoid being overly formal or robotic.
+- Match user's language choice.
 
 KEY SELLING POINTS (Use when relevant):
 - AI Contract Scanning: Extract data from PDFs automatically.
@@ -708,14 +765,24 @@ ${knowledgeBase}`;
         const activeTools = userId ? FUNCTION_TOOLS : [];
 
         // Initial API call with function tools
-        let response = await fetch("https://api.openai.com/v1/chat/completions", {
+        let apiUrl = "https://api.openai.com/v1/chat/completions";
+        let apiKey = OPENAI_API_KEY;
+        let model = "gpt-4o-mini";
+
+        if (!OPENAI_API_KEY && GEMINI_API_KEY) {
+            apiUrl = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+            apiKey = GEMINI_API_KEY;
+            model = "gemini-1.5-flash";
+        }
+
+        let response = await fetch(apiUrl, {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ${OPENAI_API_KEY}`,
+                "Authorization": `Bearer ${apiKey}`,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                model: "gpt-4o-mini",
+                model: model,
                 messages: openaiMessages,
                 tools: activeTools.length > 0 ? activeTools : undefined,
                 temperature: 0.7,
@@ -727,7 +794,7 @@ ${knowledgeBase}`;
 
         if (!response.ok) {
             return new Response(
-                JSON.stringify({ error: `OpenAI Error: ${result.error?.message || JSON.stringify(result)}` }),
+                JSON.stringify({ error: `AI Engine Error (${response.status}): ${result.error?.message || JSON.stringify(result)}` }),
                 { status: response.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
             );
         }
@@ -774,6 +841,49 @@ ${knowledgeBase}`;
                     functionResult = await listProperties(userId);
                 } else if (functionName === "list_folders") {
                     functionResult = await listFolders(functionArgs.property_id, userId);
+                } else if (functionName === "trigger_human_support") {
+                    // ESCALATE TO HUMAN
+                    return new Response(
+                        JSON.stringify({
+                            choices: [{
+                                message: {
+                                    content: "I am connecting you to a human agent now. One moment please...",
+                                    role: "assistant"
+                                }
+                            }],
+                            uiAction: {
+                                action: "TRIGGER_HUMAN",
+                                data: { reason: functionArgs.reason }
+                            }
+                        }),
+                        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                    );
+                } else if (functionName === "generate_whatsapp_message") {
+                    // GENERATE WHATSAPP MESSAGE (No DB Write)
+                    const { tenant_name, type, amount, property_name } = functionArgs;
+                    let text = `שלום ${tenant_name}, `;
+
+                    if (type === 'rent_reminder') {
+                        text += `רק מזכיר שהגיע מועד תשלום השכירות${property_name ? ` עבור ${property_name}` : ''}${amount ? ` על סך ₪${amount}` : ''}. תודה!`;
+                    } else if (type === 'linkage_update') {
+                        text += `מעדכן שבוצעה הצמדה למדד${property_name ? ` בנכס ${property_name}` : ''}. השכירות המעודכנת היא ₪${amount}. המשך יום נעים!`;
+                    } else if (type === 'maintenance_update') {
+                        text += `עדכון לגבי התיקון ${property_name ? `בנכס ${property_name}` : ''}: העבודה הושלמה. תודה על הסבלנות!`;
+                    } else {
+                        text += `מה שלומך? אשמח לדבר איתך לגבי ${property_name || 'הדירה'}. תודה!`;
+                    }
+
+                    return new Response(
+                        JSON.stringify({
+                            choices: [{
+                                message: {
+                                    content: `הפקתי עבורך הודעת וואטסאפ מוכנה:\n\n"${text}"\n\nאתה יכול להעתיק אותה ולשלוח לשוכר.`,
+                                    role: "assistant"
+                                }
+                            }]
+                        }),
+                        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                    );
                 } else if (functionName.startsWith("prepare_")) {
                     // UI PREPARATION TOOLS (No DB Write)
                     functionResult = {
@@ -798,15 +908,15 @@ ${knowledgeBase}`;
                 content: JSON.stringify(functionResult)
             });
 
-            // Get final response from OpenAI
-            response = await fetch("https://api.openai.com/v1/chat/completions", {
+            // Get final response from AI
+            response = await fetch(apiUrl, {
                 method: "POST",
                 headers: {
-                    "Authorization": `Bearer ${OPENAI_API_KEY}`,
+                    "Authorization": `Bearer ${apiKey}`,
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    model: "gpt-4o-mini",
+                    model: model,
                     messages: openaiMessages,
                     temperature: 0.7,
                     max_tokens: 800,

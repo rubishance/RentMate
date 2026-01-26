@@ -22,8 +22,8 @@ import { Login } from './pages/Login';
 // Lazy load Main Pages (Named Exports)
 const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })));
 const Properties = lazy(() => import('./pages/Properties').then(module => ({ default: module.Properties })));
-const Tenants = lazy(() => import('./pages/Tenants'));
-const Contracts = lazy(() => import('./pages/Contracts').then(module => ({ default: module.Contracts })));
+
+
 const Payments = lazy(() => import('./pages/Payments').then(module => ({ default: module.Payments })));
 const AddContract = lazy(() => import('./pages/AddContract').then(module => ({ default: module.AddContract })));
 const Calculator = lazy(() => import('./pages/Calculator').then(module => ({ default: module.Calculator })));
@@ -65,6 +65,9 @@ const MFAEnrollment = lazy(() => import('./components/auth/MFAEnrollment'));
 const MFAChallenge = lazy(() => import('./components/auth/MFAChallenge'));
 const SuperAdminGuard = lazy(() => import('./components/guards/SuperAdminGuard'));
 
+import { StackProvider } from './contexts/StackContext';
+import { StackContainer } from './components/layout/StackContainer';
+
 
 
 function App() {
@@ -72,75 +75,78 @@ function App() {
     <UserPreferencesProvider>
       <NotificationsProvider>
         <DataCacheProvider>
-          <ErrorBoundary>
-            <BrowserRouter>
-              <Suspense fallback={<PageLoader />}>
-                <Routes>
-                  <Route path="/" element={<WelcomeLanding />} />
-                  <Route path="/pricing" element={<Pricing />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/reset-password" element={<ResetPassword />} />
-                  <Route path="/s/:slug" element={<ShortLinkRedirect />} />
-                  <Route path="/maintenance" element={<MaintenancePage />} />
+          <StackProvider>
+            <ErrorBoundary>
+              <BrowserRouter>
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
+                    <Route path="/" element={<WelcomeLanding />} />
+                    <Route path="/pricing" element={<Pricing />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
+                    <Route path="/s/:slug" element={<ShortLinkRedirect />} />
+                    <Route path="/maintenance" element={<MaintenancePage />} />
 
-                  {/* MFA Routes - Accessible only if logged in */}
-                  <Route element={<AuthGuard />}>
-                    <Route path="/auth/mfa/enroll" element={<MFAEnrollment />} />
-                    <Route path="/auth/mfa/challenge" element={<MFAChallenge />} />
-                  </Route>
-
-                  <Route path="/calc/:id" element={<SharedCalculation />} />
-
-                  {/* Legal Routes */}
-                  <Route path="/accessibility" element={<AccessibilityStatement />} />
-                  <Route path="/legal/privacy" element={<PrivacyPolicy />} />
-                  <Route path="/legal/terms" element={<TermsOfService />} />
-                  <Route path="/knowledge-base" element={<KnowledgeBase />} />
-                  <Route path="/knowledge-base/:slug" element={<ArticleViewer />} />
-
-                  {/* Main App Routes - Protected by AuthGuard */}
-                  <Route element={<AuthGuard />}>
-                    <Route element={<AppShell />}>
-                      <Route path="/dashboard" element={<Dashboard />} />
-                      <Route path="/properties" element={<Properties />} />
-                      <Route path="/contracts" element={<Contracts />} />
-                      <Route path="/contracts/new" element={<AddContract />} />
-                      <Route path="/calculator" element={<Calculator />} />
-                      <Route path="/settings" element={<Settings />} />
-                      <Route path="/analytics" element={<Analytics />} />
-                      <Route path="/tools" element={<Tools />} />
-
-                      <Route path="/payments" element={<Payments />} />
+                    {/* MFA Routes - Accessible only if logged in */}
+                    <Route element={<AuthGuard />}>
+                      <Route path="/auth/mfa/enroll" element={<MFAEnrollment />} />
+                      <Route path="/auth/mfa/challenge" element={<MFAChallenge />} />
                     </Route>
-                  </Route>
 
-                  {/* Admin Routes */}
-                  <Route element={<AdminGuard />}>
-                    <Route path="/admin" element={<AdminLayout />}>
-                      <Route element={<SuperAdminGuard />}>
-                        <Route path="owner" element={<OwnerDashboard />} />
-                        <Route path="broadcasts" element={<BroadcastManager />} />
+                    <Route path="/calc/:id" element={<SharedCalculation />} />
+
+                    {/* Legal Routes */}
+                    <Route path="/accessibility" element={<AccessibilityStatement />} />
+                    <Route path="/legal/privacy" element={<PrivacyPolicy />} />
+                    <Route path="/legal/terms" element={<TermsOfService />} />
+                    <Route path="/knowledge-base" element={<KnowledgeBase />} />
+                    <Route path="/knowledge-base/:slug" element={<ArticleViewer />} />
+
+                    {/* Main App Routes - Protected by AuthGuard */}
+                    <Route element={<AuthGuard />}>
+                      <Route element={<AppShell />}>
+                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/properties" element={<Properties />} />
+
+                        <Route path="/contracts/new" element={<AddContract />} />
+                        <Route path="/calculator" element={<Calculator />} />
+                        <Route path="/settings" element={<Settings />} />
+                        <Route path="/analytics" element={<Analytics />} />
+                        <Route path="/tools" element={<Tools />} />
+
+                        <Route path="/payments" element={<Payments />} />
                       </Route>
-                      <Route index element={<AdminDashboard />} />
-                      <Route path="notifications" element={<AdminNotifications />} />
-                      <Route path="settings" element={<SystemSettings />} />
-                      <Route path="users" element={<UserManagement />} />
-
-                      <Route path="plans" element={<PlanManagement />} />
-                      <Route path="storage" element={<StorageManagement />} />
-                      <Route path="invoices" element={<AdminInvoices />} />
-                      <Route path="feedback" element={<AdminFeedback />} />
-                      <Route path="audit-logs" element={<AuditLogs />} />
-                      <Route path="ai-usage" element={<AIUsageManagement />} />
-                      <Route path="client/:id" element={<ClientProfile />} />
                     </Route>
-                  </Route>
-                </Routes>
-              </Suspense>
-              {/* Global Widgets */}
-              <ChatWidget />
-            </BrowserRouter>
-          </ErrorBoundary>
+
+                    {/* Admin Routes */}
+                    <Route element={<AdminGuard />}>
+                      <Route path="/admin" element={<AdminLayout />}>
+                        <Route element={<SuperAdminGuard />}>
+                          <Route path="owner" element={<OwnerDashboard />} />
+                          <Route path="broadcasts" element={<BroadcastManager />} />
+                        </Route>
+                        <Route index element={<AdminDashboard />} />
+                        <Route path="notifications" element={<AdminNotifications />} />
+                        <Route path="settings" element={<SystemSettings />} />
+                        <Route path="users" element={<UserManagement />} />
+
+                        <Route path="plans" element={<PlanManagement />} />
+                        <Route path="storage" element={<StorageManagement />} />
+                        <Route path="invoices" element={<AdminInvoices />} />
+                        <Route path="feedback" element={<AdminFeedback />} />
+                        <Route path="audit-logs" element={<AuditLogs />} />
+                        <Route path="ai-usage" element={<AIUsageManagement />} />
+                        <Route path="client/:id" element={<ClientProfile />} />
+                      </Route>
+                    </Route>
+                  </Routes>
+                </Suspense>
+                {/* Global Widgets */}
+                <ChatWidget />
+                <StackContainer />
+              </BrowserRouter>
+            </ErrorBoundary>
+          </StackProvider>
         </DataCacheProvider>
       </NotificationsProvider>
     </UserPreferencesProvider>

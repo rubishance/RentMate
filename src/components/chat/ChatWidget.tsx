@@ -7,23 +7,30 @@ import { BotIcon } from './BotIcon';
 import { useNavigate } from 'react-router-dom';
 import { useUserPreferences } from '../../contexts/UserPreferencesContext';
 import { crmService } from '../../services/crm.service';
+import { useStack } from '../../contexts/StackContext';
+import { useTranslation } from '../../hooks/useTranslation';
 
 // Modals
 import { AddPaymentModal } from '../modals/AddPaymentModal';
-import { AddPropertyModal } from '../modals/AddPropertyModal';
 import { AddMaintenanceModal } from '../modals/AddMaintenanceModal';
 
 export function ChatWidget() {
+    const { t } = useTranslation();
     const { preferences } = useUserPreferences();
     const isRtl = preferences.language === 'he';
-    const { isOpen, toggleChat, isLoading, messages: botMessages, sendMessage: sendBotMessage, uiAction, clearUiAction } = useChatBot();
+    const { isOpen, toggleChat, isLoading, messages: botMessages, sendMessage: sendBotMessage, uiAction, clearUiAction, isAiMode, activateAiMode, deactivateAiMode } = useChatBot();
     const navigate = useNavigate();
+    const { push } = useStack();
     const inputRef = useRef<HTMLInputElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isListening, setIsListening] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [recognition, setRecognition] = useState<any>(null);
+
+    // Hybrid Mode State
+    const [isHybridEnabled, setIsHybridEnabled] = useState(true); // Default to true (safe)
+    const [checkingHybrid, setCheckingHybrid] = useState(true);
 
     // Human Chat State
     const [mode, setMode] = useState<'ai' | 'human'>('ai');
@@ -45,17 +52,33 @@ export function ChatWidget() {
                 const { data: { user: authUser } } = await supabase.auth.getUser();
                 setUser(authUser);
 
-                // 1. Check Global Setting
-                const { data: setting } = await supabase
+                // 1. Check Global Chat Settings
+                const { data: humanSetting } = await supabase
                     .from('system_settings')
                     .select('value')
                     .eq('key', 'live_chat_enabled')
                     .single();
 
-                const isEnabled = (setting?.value === true || setting?.value === 'true') && !!authUser;
-                setIsHumanChatEnabled(isEnabled);
+                const isHumanEnabled = (humanSetting?.value === true || humanSetting?.value === 'true') && !!authUser;
+                setIsHumanChatEnabled(isHumanEnabled);
 
-                // 2. Check for active conversation to auto-switch
+                // 2. Check Hybrid Mode Setting
+                const { data: hybridSetting } = await supabase
+                    .from('system_settings')
+                    .select('value')
+                    .eq('key', 'hybrid_chat_mode')
+                    .single();
+
+                // If setting exists, use it. If not, default to TRUE (Menu Mode)
+                const hybridEnabled = hybridSetting ? (hybridSetting.value === true || hybridSetting.value === 'true') : true;
+                setIsHybridEnabled(hybridEnabled);
+
+                // If Hybrid is OFF, auto-activate AI
+                if (!hybridEnabled) {
+                    activateAiMode();
+                }
+
+                // 3. Check for active conversation to auto-switch
                 if (authUser) {
                     const activeChat = await crmService.getActiveHumanChat(authUser.id);
                     if (activeChat) {
@@ -68,6 +91,7 @@ export function ChatWidget() {
                 console.error('Error checking chat settings:', err);
             } finally {
                 setCheckingSettings(false);
+                setCheckingHybrid(false);
             }
         };
 
@@ -122,14 +146,20 @@ export function ChatWidget() {
                 if (uiAction.modal === 'contract' || uiAction.modal === 'tenant' || uiAction.modal === 'add_tenant') {
                     // Contracts and Tenants now handled by the contract wizard
                     navigate('/contracts/new', { state: { prefill: uiAction.data } });
+                } else if (uiAction.modal === 'property' || uiAction.modal === 'add_property') {
+                    push('wizard', { initialData: uiAction.data }, { title: t('addProperty'), isExpanded: true });
+                } else if (uiAction.modal === 'maintenance' || uiAction.modal === 'add_maintenance') {
+                    push('maintenance_chat', { propertyAddress: uiAction.data?.address }, { title: t('maintenance'), isExpanded: true });
                 } else {
                     setModalData(uiAction.data);
                     setActiveModal(uiAction.modal);
                 }
+            } else if (uiAction.action === 'TRIGGER_HUMAN') {
+                startHumanChat();
             }
             clearUiAction();
         }
-    }, [uiAction, navigate, clearUiAction]);
+    }, [uiAction, navigate, clearUiAction, push]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -268,11 +298,15 @@ export function ChatWidget() {
                         <div className={`p-4 border-b border-white/10 flex justify-between items-center text-white cursor-move transition-colors ${mode === 'human' ? 'bg-brand-900/90' : 'bg-black'
                             }`}>
                             <div className="flex items-center space-x-3 rtl:space-x-reverse">
-                                <div className="p-2 bg-white rounded-lg">
-                                    {mode === 'human' ? <Headphones className="w-5 h-5 text-brand-600" /> : <Bot className="w-5 h-5 text-black" />}
+                                <div className="p-1.5 bg-white dark:bg-neutral-800 rounded-lg flex items-center justify-center overflow-hidden w-9 h-9 border border-white/20">
+                                    {mode === 'human' ? (
+                                        <Headphones className="w-5 h-5 text-brand-600" />
+                                    ) : (
+                                        <BotIcon size={24} className="relative z-10" />
+                                    )}
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold text-white">{mode === 'human' ? 'תמיכה אנושית' : 'Renty - תמיכה חכמה [PROD-DEBUG]'}</h3>
+                                    <h3 className="font-semibold text-white">{mode === 'human' ? 'תמיכה אנושית' : 'Renty - תמיכה חכמה'}</h3>
                                     <p className="text-xs text-gray-400">{mode === 'human' ? 'מחובר לנציג שירות' : (isRtl ? 'העוזר האישי שלך' : 'Your Personal Assistant')}</p>
                                 </div>
                             </div>
@@ -295,6 +329,21 @@ export function ChatWidget() {
                                         <Bot className="w-4 h-4" />
                                     </button>
                                 )}
+                                {/* Exit AI Mode Button (Back to Menu) */}
+                                {mode === 'ai' && isAiMode && isHybridEnabled && (
+                                    <button
+                                        onClick={deactivateAiMode}
+                                        className="p-1.5 hover:bg-white/10 rounded-lg text-xs font-bold text-gray-300"
+                                        title="Back to Menu"
+                                    >
+                                        <div className="grid grid-cols-2 gap-[2px] w-3.5 h-3.5">
+                                            <div className="bg-white rounded-[1px]"></div>
+                                            <div className="bg-white rounded-[1px]"></div>
+                                            <div className="bg-white rounded-[1px]"></div>
+                                            <div className="bg-white rounded-[1px]"></div>
+                                        </div>
+                                    </button>
+                                )}
                                 <button
                                     onClick={toggleChat}
                                     className="p-1 hover:bg-white/10 rounded-full transition-colors"
@@ -304,121 +353,178 @@ export function ChatWidget() {
                             </div>
                         </div>
 
-                        {/* Messages */}
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent bg-white/5">
-                            {activeMessages.map((msg, idx) => {
-                                const isUser = msg.role === 'user';
-                                const isAdmin = mode === 'human' && msg.role === 'admin';
+                        {/* CONTENT AREA: Menu OR Messages */}
+                        {!isAiMode && mode === 'ai' ? (
+                            // --- MAIN MENU ---
+                            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-white/5">
+                                <div className="text-center mb-6 mt-4">
+                                    <p className="text-white text-lg font-bold">
+                                        {isRtl ? 'שלום! איך אני יכול לעזור?' : 'Hello! How can I help?'}
+                                    </p>
+                                    <p className="text-gray-400 text-xs mt-1">
+                                        {isRtl ? 'בחר אפשרות מהתפריט:' : 'Choose an option:'}
+                                    </p>
+                                </div>
 
-                                return (
-                                    <div
-                                        key={idx}
-                                        className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'}`}
+                                <div className="grid grid-cols-1 gap-3">
+                                    <button
+                                        onClick={() => navigate('/add-property')}
+                                        className="bg-white/10 hover:bg-white/20 p-4 rounded-xl text-right flex items-center justify-between group transition-all border border-white/5 hover:border-white/20"
                                     >
-                                        <div
-                                            className={`max-w-[80%] p-3 rounded-2xl text-sm shadow-sm ${isUser
-                                                ? "bg-black dark:bg-white text-white dark:text-black rounded-br-none border border-white/10"
-                                                : isAdmin
-                                                    ? "bg-brand-600 text-white rounded-bl-none"
-                                                    : "bg-white/90 dark:bg-neutral-800 text-black dark:text-white rounded-bl-none border border-white/20"
-                                                }`}
-                                            dir="auto"
-                                        >
-                                            {msg.content}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                            {isListening && (
-                                <div className="flex justify-start">
-                                    <div className="bg-white/10 border border-white/5 p-3 rounded-2xl rounded-bl-none">
-                                        <div className="flex items-center space-x-2 text-white">
-                                            <Mic className="w-4 h-4 animate-pulse" />
-                                            <span className="text-sm">מקשיב...</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                            {isLoading && mode === 'ai' && (
-                                <div className="flex justify-start">
-                                    <div className="bg-white/10 border border-white/5 p-3 rounded-2xl rounded-bl-none">
-                                        <div className="flex space-x-2">
-                                            <div className="w-2 h-2 bg-white rounded-full animate-bounce" />
-                                            <div className="w-2 h-2 bg-white rounded-full animate-bounce delay-100" />
-                                            <div className="w-2 h-2 bg-white rounded-full animate-bounce delay-200" />
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                            <div ref={messagesEndRef} />
-                        </div>
+                                        <span className="text-white font-medium text-sm">📝 {isRtl ? 'הוספת נכס חדש' : 'Add Property'}</span>
+                                    </button>
 
-                        {/* Input */}
-                        <form onSubmit={handleSubmit} className="px-5 py-4 bg-black border-t border-white/10">
-                            <div className="flex items-center gap-3">
-                                <button
-                                    type="submit"
-                                    disabled={isLoading}
-                                    className="p-2 bg-white hover:bg-gray-200 rounded-xl transition-colors disabled:opacity-50 shrink-0"
-                                    aria-label="שלח הודעה"
-                                >
-                                    <Send className="w-5 h-5 text-black" />
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={toggleVoiceInput}
-                                    className={`p-2 rounded-xl transition-colors shrink-0 ${isListening
-                                        ? 'bg-red-600 hover:bg-red-500'
-                                        : 'bg-white/10 hover:bg-white/20'
-                                        } `}
-                                    aria-label={isListening ? 'עצור הקלטה' : 'התחל הקלטה'}
-                                >
-                                    {isListening ? (
-                                        <MicOff className="w-5 h-5 text-white" />
-                                    ) : (
-                                        <Mic className="w-5 h-5 text-white" />
-                                    )}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => fileInputRef.current?.click()}
-                                    disabled={isUploading || isLoading || !user}
-                                    className="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors shrink-0 disabled:opacity-20"
-                                    aria-label="צרף קובץ"
-                                >
-                                    {isUploading ? (
-                                        <Loader2 className="w-5 h-5 text-white animate-spin" />
-                                    ) : (
-                                        <Paperclip className="w-5 h-5 text-white" />
-                                    )}
-                                </button>
-                                <input
-                                    type="file"
-                                    ref={fileInputRef}
-                                    className="hidden"
-                                    onChange={handleFileSelect}
-                                    accept=".pdf,image/*"
-                                />
-                                <div className="flex-1">
-                                    <label htmlFor="chat-input" className="sr-only">שאלה לצ׳אט</label>
-                                    <input
-                                        id="chat-input"
-                                        ref={inputRef}
-                                        type="text"
-                                        placeholder={
-                                            mode === 'human'
-                                                ? (isRtl ? "שלח הודעה לנציג..." : "Message agent...")
-                                                : (!user
-                                                    ? (isRtl ? "שאל על RentMate..." : "Ask about RentMate...")
-                                                    : (isRtl ? "שאל שאלה או דבר..." : "Ask or tell me something...")
-                                                )
-                                        }
-                                        dir="auto"
-                                        className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-white/30 text-sm"
-                                    />
+                                    <button
+                                        onClick={() => navigate('/calculator')}
+                                        className="bg-white/10 hover:bg-white/20 p-4 rounded-xl text-right flex items-center justify-between group transition-all border border-white/5 hover:border-white/20"
+                                    >
+                                        <span className="text-white font-medium text-sm">🧮 {isRtl ? 'מחשבון שכר דירה' : 'Rent Calculator'}</span>
+                                    </button>
+
+                                    <button
+                                        onClick={() => navigate('/contracts')}
+                                        className="bg-white/10 hover:bg-white/20 p-4 rounded-xl text-right flex items-center justify-between group transition-all border border-white/5 hover:border-white/20"
+                                    >
+                                        <span className="text-white font-medium text-sm">📂 {isRtl ? 'החוזים שלי' : 'My Contracts'}</span>
+                                    </button>
+
+                                    <button
+                                        onClick={() => window.open('https://wa.me/972501234567', '_blank')}
+                                        className="bg-white/10 hover:bg-white/20 p-4 rounded-xl text-right flex items-center justify-between group transition-all border border-white/5 hover:border-white/20"
+                                    >
+                                        <span className="text-white font-medium text-sm">💬 {isRtl ? 'תמיכה בווצאפ' : 'WhatsApp Support'}</span>
+                                    </button>
+
+                                    <div className="my-2 border-t border-white/10"></div>
+
+                                    <button
+                                        onClick={activateAiMode}
+                                        className="bg-brand-600 hover:bg-brand-500 p-4 rounded-xl text-right flex items-center justify-center gap-2 group transition-all shadow-lg shadow-brand-900/50"
+                                    >
+                                        <Bot className="w-5 h-5 text-white animate-pulse" />
+                                        <span className="text-white font-bold text-sm">{isRtl ? 'לצ׳אט עם נציג AI' : 'Chat with AI Agent'}</span>
+                                    </button>
                                 </div>
                             </div>
-                        </form>
+                        ) : (
+                            // --- MESSAGES ---
+                            <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent bg-white/5">
+                                {activeMessages.map((msg, idx) => {
+                                    const isUser = msg.role === 'user';
+                                    const isAdmin = mode === 'human' && msg.role === 'admin';
+
+                                    return (
+                                        <div
+                                            key={idx}
+                                            className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'}`}
+                                        >
+                                            <div
+                                                className={`max-w-[80%] p-3 rounded-2xl text-sm shadow-sm ${isUser
+                                                    ? "bg-black dark:bg-white text-white dark:text-black rounded-br-none border border-white/10"
+                                                    : isAdmin
+                                                        ? "bg-brand-600 text-white rounded-bl-none"
+                                                        : "bg-white/90 dark:bg-neutral-800 text-black dark:text-white rounded-bl-none border border-white/20"
+                                                    }`}
+                                                dir="auto"
+                                            >
+                                                {msg.content}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                                {isListening && (
+                                    <div className="flex justify-start">
+                                        <div className="bg-white/10 border border-white/5 p-3 rounded-2xl rounded-bl-none">
+                                            <div className="flex items-center space-x-2 text-white">
+                                                <Mic className="w-4 h-4 animate-pulse" />
+                                                <span className="text-sm">מקשיב...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                                {isLoading && mode === 'ai' && (
+                                    <div className="flex justify-start">
+                                        <div className="bg-white/10 border border-white/5 p-3 rounded-2xl rounded-bl-none">
+                                            <div className="flex space-x-2">
+                                                <div className="w-2 h-2 bg-white rounded-full animate-bounce" />
+                                                <div className="w-2 h-2 bg-white rounded-full animate-bounce delay-100" />
+                                                <div className="w-2 h-2 bg-white rounded-full animate-bounce delay-200" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                                <div ref={messagesEndRef} />
+                            </div>
+                        )}
+
+                        {/* Input - Only show in AI Mode or Human Mode */}
+                        {(isAiMode || mode === 'human') && (
+                            <form onSubmit={handleSubmit} className="px-5 py-4 bg-black border-t border-white/10">
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        type="submit"
+                                        disabled={isLoading}
+                                        className="p-2 bg-white hover:bg-gray-200 rounded-xl transition-colors disabled:opacity-50 shrink-0"
+                                        aria-label="שלח הודעה"
+                                    >
+                                        <Send className="w-5 h-5 text-black" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={toggleVoiceInput}
+                                        className={`p-2 rounded-xl transition-colors shrink-0 ${isListening
+                                            ? 'bg-red-600 hover:bg-red-500'
+                                            : 'bg-white/10 hover:bg-white/20'
+                                            } `}
+                                        aria-label={isListening ? 'עצור הקלטה' : 'התחל הקלטה'}
+                                    >
+                                        {isListening ? (
+                                            <MicOff className="w-5 h-5 text-white" />
+                                        ) : (
+                                            <Mic className="w-5 h-5 text-white" />
+                                        )}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        disabled={isUploading || isLoading || !user}
+                                        className="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors shrink-0 disabled:opacity-20"
+                                        aria-label="צרף קובץ"
+                                    >
+                                        {isUploading ? (
+                                            <Loader2 className="w-5 h-5 text-white animate-spin" />
+                                        ) : (
+                                            <Paperclip className="w-5 h-5 text-white" />
+                                        )}
+                                    </button>
+                                    <input
+                                        type="file"
+                                        ref={fileInputRef}
+                                        className="hidden"
+                                        onChange={handleFileSelect}
+                                        accept=".pdf,image/*"
+                                    />
+                                    <div className="flex-1">
+                                        <label htmlFor="chat-input" className="sr-only">שאלה לצ׳אט</label>
+                                        <input
+                                            id="chat-input"
+                                            ref={inputRef}
+                                            type="text"
+                                            placeholder={
+                                                mode === 'human'
+                                                    ? (isRtl ? "שלח הודעה לנציג..." : "Message agent...")
+                                                    : (!user
+                                                        ? (isRtl ? "שאל על RentMate..." : "Ask about RentMate...")
+                                                        : (isRtl ? "שאל שאלה או דבר..." : "Ask or tell me something...")
+                                                    )
+                                            }
+                                            dir="auto"
+                                            className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-white/30 text-sm"
+                                        />
+                                    </div>
+                                </div>
+                            </form>
+                        )}
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -446,12 +552,6 @@ export function ChatWidget() {
             {/* AI-Triggered Modals */}
             <AddPaymentModal
                 isOpen={activeModal === 'payment' || activeModal === 'add_payment'}
-                onClose={() => setActiveModal(null)}
-                onSuccess={() => setActiveModal(null)}
-                initialData={modalData}
-            />
-            <AddPropertyModal
-                isOpen={activeModal === 'property' || activeModal === 'add_property'}
                 onClose={() => setActiveModal(null)}
                 onSuccess={() => setActiveModal(null)}
                 initialData={modalData}
