@@ -53,7 +53,7 @@ export function Properties() {
     const { preferences } = useUserPreferences();
     const [properties, setProperties] = useState<ExtendedProperty[]>([]);
     const [loading, setLoading] = useState(true);
-    const { get, set } = useDataCache();
+    const { get, set, clear } = useDataCache();
     const CACHE_KEY = 'properties_list';
 
     const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
@@ -75,7 +75,8 @@ export function Properties() {
     const handleView = (property: Property) => {
         push('property_hub', {
             propertyId: property.id,
-            property: property
+            property: property,
+            onDelete: () => fetchProperties()
         }, { title: property.address });
     };
 
@@ -146,6 +147,9 @@ export function Properties() {
                 .eq('id', deleteTarget.id);
 
             if (error) throw error;
+
+            // Invalidate all cache (affects dashboard, lists, etc)
+            clear();
 
             setProperties(prev => prev.filter(p => p.id !== deleteTarget.id));
             setIsDeleteModalOpen(false);

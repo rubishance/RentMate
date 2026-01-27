@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 
 
 // SECURITY: Restrict CORS to allowed origins only
-const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || 'https://qfvrekvugdjnwhnaucmz.supabase.co';
+const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || Deno.env.get('SUPABASE_URL') || '*';
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': ALLOWED_ORIGIN,

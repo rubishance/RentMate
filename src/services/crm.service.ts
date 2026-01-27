@@ -42,7 +42,7 @@ export const crmService = {
         return data as CRMInteraction;
     },
 
-    async updateInteraction(id: number, updates: Partial<CRMInteraction>) {
+    async updateInteraction(id: number | string, updates: Partial<CRMInteraction>) {
         const { data, error } = await supabase
             .from('crm_interactions')
             .update(updates)
@@ -54,7 +54,7 @@ export const crmService = {
         return data as CRMInteraction;
     },
 
-    async deleteInteraction(id: number) {
+    async deleteInteraction(id: number | string) {
         const { error } = await supabase
             .from('crm_interactions')
             .delete()

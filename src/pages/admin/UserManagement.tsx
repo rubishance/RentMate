@@ -13,6 +13,19 @@ import {
 } from '@heroicons/react/24/outline';
 import { Loader2 } from 'lucide-react';
 
+interface SubscriptionPlan {
+    id: string;
+    name: string;
+    price_monthly: number;
+    max_properties: number;
+    max_tenants: number;
+    max_contracts: number;
+    max_sessions: number;
+    features: Record<string, any>;
+    created_at: string;
+    updated_at: string;
+}
+
 interface UserWithStats {
     id: string;
     email: string;
@@ -34,7 +47,7 @@ interface UserWithStats {
 
 const UserManagement = () => {
     const [users, setUsers] = useState<UserWithStats[]>([]);
-    const [plans, setPlans] = useState<any[]>([]);
+    const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterRole, setFilterRole] = useState<'all' | 'user' | 'admin'>('all');
@@ -90,7 +103,7 @@ const UserManagement = () => {
         return matchesSearch && matchesRole;
     });
 
-    const openEditModal = (user: any) => {
+    const openEditModal = (user: UserWithStats) => {
         setSelectedUser(user);
         setEditRole(user.role);
         setEditStatus(user.subscription_status || 'active');
@@ -167,7 +180,7 @@ const UserManagement = () => {
         }
     };
 
-    const handleImpersonate = async (user: any) => {
+    const handleImpersonate = async (user: UserWithStats) => {
         if (!confirm(`Generate a secure login link for ${user.email}? You can use this to access their account.`)) return;
 
         try {
@@ -175,7 +188,7 @@ const UserManagement = () => {
             if (!session) throw new Error('No session');
 
             // Admin generate link edge function
-            const res = await fetch('https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/admin-generate-link', {
+            const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-generate-link`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

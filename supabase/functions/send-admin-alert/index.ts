@@ -2,6 +2,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -47,7 +48,7 @@ serve(async (req) => {
   <div class="wrapper">
     <div class="main">
       <div class="header">
-        <img src="https://qfvrekvugdjnwhnaucmz.supabase.co/storage/v1/object/public/assets/logo.png" alt="RentMate" width="150" style="display: block; margin: 0 auto;">
+        <img src="${SUPABASE_URL}/storage/v1/object/public/assets/logo.png" alt="RentMate" width="150" style="display: block; margin: 0 auto;">
       </div>
       <div class="content">
         <h2>${heading}</h2>

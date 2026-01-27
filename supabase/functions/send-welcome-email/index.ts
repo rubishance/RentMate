@@ -43,7 +43,7 @@ serve(async (req: Request) => {
 <body>
     <div class="container">
         <div class="header">
-            <img src="https://qfvrekvugdjnwhnaucmz.supabase.co/storage/v1/object/public/assets/logo.png" alt="RentMate" width="150" style="max-width: 150px; height: auto;">
+            <img src="${SUPABASE_URL}/storage/v1/object/public/assets/logo.png" alt="RentMate" width="150" style="max-width: 150px; height: auto;">
         </div>
         <div class="content" style="text-align: right;">
             <h2 style="color: #0F172A;">ברוכים הבאים ל-RentMate!</h2>

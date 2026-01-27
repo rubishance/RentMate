@@ -52,7 +52,7 @@ export function Login() {
         }
     };
 
-    const handleSocialLogin = async (provider: 'google' | 'apple' | 'facebook') => {
+    const handleSocialLogin = async (provider: 'google' | 'apple') => {
         if (!isSupabaseConfigured) {
             setError('Social login requires valid Supabase keys.');
             return;
@@ -561,15 +561,7 @@ export function Login() {
                                     <span className="text-sm font-bold text-black dark:text-white">{lang === 'he' ? 'המשך עם Google' : 'Continue with Google'}</span>
                                 </button>
 
-                                <button
-                                    type="button"
-                                    onClick={() => handleSocialLogin('facebook')}
-                                    disabled={loading}
-                                    className="w-full flex items-center justify-center gap-3 py-4 bg-[#1877F2] hover:bg-[#166fe5] text-white rounded-2xl transition-all shadow-sm disabled:opacity-50"
-                                >
-                                    <img src="https://www.svgrepo.com/show/475643/facebook-color.svg" alt="Facebook" className="w-5 h-5 brightness-0 invert" />
-                                    <span className="text-sm font-bold">Continue with Facebook</span>
-                                </button>
+
                             </div>
 
                             {/* Trust & Security Badge */}

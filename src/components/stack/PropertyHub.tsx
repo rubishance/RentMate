@@ -12,17 +12,20 @@ import { useStack } from '../../contexts/StackContext';
 import { supabase } from '../../lib/supabase';
 import { ConfirmDeleteModal } from '../modals/ConfirmDeleteModal';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useDataCache } from '../../contexts/DataCacheContext';
 
 interface PropertyHubProps {
     propertyId: string;
     property: Property;
+    onDelete?: () => void;
 }
 
 type TabType = 'snapshot' | 'people' | 'wallet' | 'files';
 
-export function PropertyHub({ property: initialProperty, propertyId }: PropertyHubProps) {
+export function PropertyHub({ property: initialProperty, propertyId, onDelete }: PropertyHubProps) {
     const { t, lang } = useTranslation();
     const { push, pop } = useStack();
+    const { set, clear } = useDataCache();
     const [activeTab, setActiveTab] = useState<TabType>('snapshot');
     const [property, setProperty] = useState(initialProperty);
     const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
@@ -63,6 +66,10 @@ export function PropertyHub({ property: initialProperty, propertyId }: PropertyH
             const { error } = await supabase.from('properties').delete().eq('id', propertyId);
             if (error) throw error;
 
+            // 3. Invalidate all cache
+            clear();
+
+            onDelete?.(); // Trigger refresh in parent
             pop(); // Close the hub
         } catch (error) {
             console.error('Error deleting property:', error);

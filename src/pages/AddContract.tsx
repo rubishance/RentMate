@@ -15,6 +15,7 @@ import { useTranslation } from '../hooks/useTranslation';
 import { generatePaymentSchedule } from '../utils/payment-generator';
 import { useSubscription } from '../hooks/useSubscription';
 import { CompressionService } from '../services/compression.service';
+import { useDataCache } from '../contexts/DataCacheContext';
 
 const STEPS = [
     { id: 1, labelKey: 'stepTenantProperty', icon: Building },
@@ -28,6 +29,7 @@ export function AddContract() {
     const navigate = useNavigate();
     const location = useLocation();
     const { lang, t } = useTranslation();
+    const { clear: clearCache } = useDataCache();
 
     useEffect(() => {
         const prefill = (location.state as any)?.prefill;
@@ -488,6 +490,7 @@ export function AddContract() {
 
 
 
+                clearCache(); // Invalidate all cache on success
                 navigate('/properties');
 
             } catch (err: any) {

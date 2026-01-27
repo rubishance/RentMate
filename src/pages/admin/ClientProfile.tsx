@@ -16,11 +16,47 @@ import { TimelineItem } from '../../components/crm/TimelineItem';
 import { InteractionLogger } from '../../components/crm/InteractionLogger';
 import { AdminChatWindow } from '../../components/crm/AdminChatWindow';
 
+interface SubscriptionPlan {
+    id: string;
+    name: string;
+    price_monthly: number;
+    max_properties: number;
+    max_tenants: number;
+    max_contracts: number;
+    max_sessions: number;
+    features: Record<string, any>;
+}
+
+interface Invoice {
+    id: string;
+    amount: number;
+    issue_date: string;
+    status: 'paid' | 'unpaid' | 'overdue';
+}
+
+interface ClientProfileData {
+    profile: {
+        id: string;
+        email: string;
+        full_name: string;
+        role: string;
+        subscription_status: string;
+        subscription_plan?: string;
+        plan_id?: string;
+        created_at: string;
+    };
+    invoices: Invoice[];
+    interactions: CRMInteraction[];
+    properties_count?: number;
+    contracts_count?: number;
+    tenants_count?: number;
+}
+
 const ClientProfile = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
-    const [data, setData] = useState<any>(null); // Keeping any for now as it's a complex summary object
+    const [data, setData] = useState<ClientProfileData | null>(null);
     const [interactions, setInteractions] = useState<CRMInteraction[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [isAddingNote, setIsAddingNote] = useState(false);
@@ -34,7 +70,7 @@ const ClientProfile = () => {
     // Plan Editing
     const [isEditingPlan, setIsEditingPlan] = useState(false);
     const [newPlanId, setNewPlanId] = useState('');
-    const [availablePlans, setAvailablePlans] = useState<any[]>([]);
+    const [availablePlans, setAvailablePlans] = useState<SubscriptionPlan[]>([]);
 
     useEffect(() => {
         if (id) {
@@ -71,7 +107,7 @@ const ClientProfile = () => {
         setIsAddingNote(false);
     };
 
-    const handleDeleteInteraction = async (interactionId: any) => {
+    const handleDeleteInteraction = async (interactionId: string | number) => {
         if (!confirm('Are you sure you want to delete this interaction log?')) return;
 
         try {
@@ -93,6 +129,7 @@ const ClientProfile = () => {
     const handleExport = async () => {
         setIsExporting(true);
         try {
+            if (!data) throw new Error('Client data not loaded');
             const link = await crmService.exportToGoogleSheets(id!, data.profile.full_name);
             window.open(link, '_blank');
         } catch (err: any) {
@@ -110,14 +147,18 @@ const ClientProfile = () => {
         try {
             await crmService.updateClientPlan(id!, plan.id, plan.name);
             // Optimistic update
-            setData({
-                ...data,
-                profile: {
-                    ...data.profile,
-                    plan_id: plan.id,
-                    subscription_plan: plan.name
-                }
-            });
+            if (data) {
+                setData({
+                    ...data,
+                    profile: {
+                        ...data.profile,
+                        plan_id: plan.id,
+                        subscription_plan: plan.name
+                    },
+                    invoices: data.invoices || [],
+                    interactions: data.interactions || []
+                });
+            }
             setIsEditingPlan(false);
         } catch (err: any) {
             alert('Failed to update plan: ' + err.message);
@@ -235,7 +276,7 @@ const ClientProfile = () => {
                             {invoices.length === 0 ? (
                                 <p className="text-xs text-gray-400 font-medium italic">No invoices found for this client.</p>
                             ) : (
-                                invoices.slice(0, 5).map((inv: any) => (
+                                invoices.slice(0, 5).map((inv: Invoice) => (
                                     <div key={inv.id} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800">
                                         <div className="flex items-center gap-3">
                                             <DocumentTextIcon className="w-5 h-5 text-gray-400" />
@@ -340,7 +381,7 @@ const ClientProfile = () => {
                             </button>
                         </div>
                         <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50/20 dark:bg-gray-950/20">
-                            {selectedBotChat.metadata?.messages?.map((msg: any, idx: number) => (
+                            {selectedBotChat.metadata?.messages?.map((msg: { role: string; content: string; timestamp?: string }, idx: number) => (
                                 <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                                     <div className="mb-1 flex items-center gap-2">
                                         <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">{msg.role}</span>

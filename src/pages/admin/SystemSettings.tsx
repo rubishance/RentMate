@@ -26,7 +26,7 @@ interface NotificationRule {
 
 interface SystemSetting {
     key: string;
-    value: any;
+    value: string | number | boolean | Record<string, any>;
     description: string;
 }
 
@@ -71,11 +71,11 @@ export default function SystemSettings() {
         }
     };
 
-    const handleRuleChange = (id: string, field: keyof NotificationRule, value: any) => {
+    const handleRuleChange = (id: string, field: keyof NotificationRule, value: string | number | boolean | string[]) => {
         setRules(prev => prev.map(r => r.id === id ? { ...r, [field]: value } : r));
     };
 
-    const handleSettingChange = (key: string, value: any) => {
+    const handleSettingChange = (key: string, value: string | number | boolean | Record<string, any>) => {
         setSettings(prev => prev.map(s => s.key === key ? { ...s, value } : s));
     };
 
@@ -379,7 +379,7 @@ export default function SystemSettings() {
                                     ) : (
                                         <input
                                             type="password"
-                                            value={setting.value}
+                                            value={typeof setting.value === 'string' ? setting.value : ''}
                                             placeholder="Enter API Key..."
                                             onChange={(e) => handleSettingChange(setting.key, e.target.value)}
                                             className="w-full px-5 py-4 bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-2xl text-gray-900 dark:text-white font-bold text-sm focus:border-brand-500 outline-none transition-all"
