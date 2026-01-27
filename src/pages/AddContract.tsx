@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, Building, Check, User, Calendar, Settings as SettingsIcon, Shield, FileText, ChevronDown, Cloud, HardDrive, Download, Car, Box, Plus, Trash2, MapPin, Image as ImageIcon, Loader2, Upload, AlertTriangle } from 'lucide-react';
 import { ContractScanner } from '../components/ContractScanner';
 import { PropertyIcon } from '../components/common/PropertyIcon';
+import { PropertyTypeSelect } from '../components/common/PropertyTypeSelect';
 import { Tooltip } from '../components/Tooltip';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn, formatDate } from '../lib/utils';
@@ -872,27 +873,10 @@ export function AddContract() {
                                                         {/* Asset Type */}
                                                         <div className="space-y-2">
                                                             <label className="text-sm font-medium flex items-center gap-2">{t('propertyType')} <ConfidenceDot field="property_type" /></label>
-                                                            <div className="relative">
-                                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10 pointer-events-none">
-                                                                    {formData.property_type ? (
-                                                                        <PropertyIcon type={formData.property_type as any} className="w-5 h-5" />
-                                                                    ) : (
-                                                                        <Building className="w-4 h-4" />
-                                                                    )}
-                                                                </div>
-                                                                <select
-                                                                    value={formData.property_type}
-                                                                    onChange={(e) => setFormData({ ...formData, property_type: e.target.value })}
-                                                                    className="w-full pr-10 pl-4 py-3 bg-background border border-border rounded-xl appearance-none focus:ring-2 focus:ring-primary/20 transition-all text-right"
-                                                                >
-                                                                    <option value="apartment">{t('apartment')}</option>
-                                                                    <option value="penthouse">{t('penthouse')}</option>
-                                                                    <option value="garden">{t('gardenApartment')}</option>
-                                                                    <option value="house">{t('house')}</option>
-                                                                    <option value="other">{t('other')}</option>
-                                                                </select>
-                                                                <ChevronDown className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                                                            </div>
+                                                            <PropertyTypeSelect
+                                                                value={formData.property_type as any}
+                                                                onChange={(val) => setFormData({ ...formData, property_type: val })}
+                                                            />
                                                         </div>
 
                                                         {/* City */}
@@ -1122,7 +1106,7 @@ export function AddContract() {
 
                                                         <div className="grid grid-cols-2 gap-4">
                                                             <div className="space-y-2">
-                                                                <label className="text-sm font-medium">תעודת זהות</label>
+                                                                <label className="text-sm font-medium">{t('idNumber')}</label>
                                                                 <input
                                                                     value={tenant.id_number}
                                                                     onChange={e => {
@@ -1134,7 +1118,7 @@ export function AddContract() {
                                                                 />
                                                             </div>
                                                             <div className="space-y-2">
-                                                                <label className="text-sm font-medium">טלפון</label>
+                                                                <label className="text-sm font-medium">{t('phone')}</label>
                                                                 <input
                                                                     value={tenant.phone}
                                                                     onChange={e => {
@@ -1149,7 +1133,7 @@ export function AddContract() {
                                                         </div>
 
                                                         <div className="space-y-2">
-                                                            <label className="text-sm font-medium">אימייל</label>
+                                                            <label className="text-sm font-medium">{t('email')}</label>
                                                             <input
                                                                 value={tenant.email}
                                                                 onChange={e => {
@@ -1186,7 +1170,7 @@ export function AddContract() {
                                                         ...formData,
                                                         signingDate: date ? format(date, 'yyyy-MM-dd') : ''
                                                     })}
-                                                    placeholder="בחר תאריך..."
+                                                    placeholder={t('selectDate')}
                                                 />
                                             </div>
                                         </div>
@@ -1311,7 +1295,7 @@ export function AddContract() {
                                                     onChange={(date) => setFormData({ ...formData, startDate: date ? format(date, 'yyyy-MM-dd') : '' })}
                                                     disabledDays={blockedIntervals}
                                                     error={hasOverlap}
-                                                    placeholder="בחר תאריך..."
+                                                    placeholder={t('selectDate')}
                                                 />
                                             </div>
                                             <div className="space-y-2">
@@ -1321,7 +1305,7 @@ export function AddContract() {
                                                     onChange={(date) => setFormData({ ...formData, endDate: date ? format(date, 'yyyy-MM-dd') : '' })}
                                                     minDate={formData.startDate ? parseISO(formData.startDate) : undefined}
                                                     disabledDays={blockedIntervals}
-                                                    placeholder="בחר תאריך..."
+                                                    placeholder={t('selectDate')}
                                                 />
                                                 {formData.startDate && formData.endDate && (
                                                     <div className="text-xs text-muted-foreground bg-secondary/30 p-2 rounded-lg flex items-center gap-2">
@@ -1384,7 +1368,7 @@ export function AddContract() {
                                             {/* Rent Steps (Variable Rent) */}
                                             <div className="space-y-3 pt-2">
                                                 <div className="flex items-center justify-between">
-                                                    <label className="text-sm font-medium flex items-center gap-2">{t('rentSteps')} (אופציונלי) <ConfidenceDot field="rentSteps" /></label>
+                                                    <label className="text-sm font-medium flex items-center gap-2">{t('rentSteps')} {t('optional')} <ConfidenceDot field="rentSteps" /></label>
                                                     <button
                                                         type="button"
                                                         onClick={() => setFormData(prev => ({
@@ -1427,7 +1411,7 @@ export function AddContract() {
                                                                     />
                                                                 </div>
                                                                 <div className="w-20 space-y-1">
-                                                                    <label className="text-[10px] text-muted-foreground opacity-0">מטבע</label>
+                                                                    <label className="text-[10px] text-muted-foreground opacity-0">{t('currency')}</label>
                                                                     <select
                                                                         value={step.currency}
                                                                         onChange={e => {

@@ -21,7 +21,7 @@ interface SubscriptionPlan {
     max_tenants: number;
     max_contracts: number;
     max_sessions: number;
-    features: Record<string, any>;
+    features: Record<string, unknown>;
     created_at: string;
     updated_at: string;
 }
@@ -135,8 +135,8 @@ const UserManagement = () => {
             setModalMessage({ type: 'success', text: 'User updated successfully!' });
             fetchData();
             setTimeout(() => setIsEditModalOpen(false), 1500);
-        } catch (err: any) {
-            setModalMessage({ type: 'error', text: err.message });
+        } catch (err: unknown) {
+            setModalMessage({ type: 'error', text: err instanceof Error ? err.message : 'An unknown error occurred' });
         } finally {
             setActionLoading(false);
         }
@@ -153,8 +153,8 @@ const UserManagement = () => {
             });
             if (error) throw error;
             setModalMessage({ type: 'success', text: 'Reset email sent!' });
-        } catch (err: any) {
-            setModalMessage({ type: 'error', text: err.message });
+        } catch (err: unknown) {
+            setModalMessage({ type: 'error', text: err instanceof Error ? err.message : 'An unknown error occurred' });
         } finally {
             setActionLoading(false);
         }
@@ -172,9 +172,9 @@ const UserManagement = () => {
             setModalMessage({ type: 'success', text: 'User deleted successfully.' });
             setIsEditModalOpen(false);
             fetchData();
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            setModalMessage({ type: 'error', text: 'Error deleting user: ' + err.message });
+            setModalMessage({ type: 'error', text: 'Error deleting user: ' + (err instanceof Error ? err.message : 'Unknown error') });
         } finally {
             setActionLoading(false);
         }
@@ -202,9 +202,9 @@ const UserManagement = () => {
 
             await navigator.clipboard.writeText(data.url);
             alert(`Login Link generated and copied to clipboard!\n\nUser: ${data.email}\n\nPaste this in an Incognito/Private window to access their account.`);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Impersonation error:', error);
-            alert(`Error: ${error.message}`);
+            alert(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     };
 
@@ -274,7 +274,7 @@ const UserManagement = () => {
                     <FunnelIcon className="h-5 w-5 text-gray-400" />
                     <select
                         value={filterRole}
-                        onChange={(e) => setFilterRole(e.target.value as any)}
+                        onChange={(e) => setFilterRole(e.target.value as 'all' | 'user' | 'admin')}
                         className="rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 py-2.5 pl-3 pr-10 text-sm font-bold text-gray-900 dark:text-white focus:border-brand-500 focus:ring-brand-500 capitalize"
                     >
                         <option value="all">All Roles</option>

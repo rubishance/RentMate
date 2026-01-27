@@ -10,8 +10,7 @@ import {
     CheckBadgeIcon,
     DevicePhoneMobileIcon,
     ArrowPathIcon,
-    ExclamationTriangleIcon,
-    FunnelIcon
+    ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 
 interface FeedbackItem {
@@ -21,7 +20,10 @@ interface FeedbackItem {
     type: string;
     status: string;
     screenshot_url: string | null;
-    device_info: any;
+    device_info: {
+        screen?: { width: number; height: number };
+        userAgent?: string;
+    } | null;
     user_id: string | null;
     user?: { email: string };
 }
@@ -47,9 +49,9 @@ export default function AdminFeedback() {
 
             if (fetchError) throw fetchError;
             setFeedback(data || []);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error fetching feedback:', err);
-            setError(err.message || 'Failed to load user feedback.');
+            setError(err instanceof Error ? err.message : 'Failed to load user feedback.');
         } finally {
             setLoading(false);
         }
@@ -64,8 +66,8 @@ export default function AdminFeedback() {
 
             if (updateError) throw updateError;
             setFeedback(prev => prev.map(f => f.id === id ? { ...f, status: newStatus } : f));
-        } catch (err: any) {
-            alert('Failed to update status: ' + err.message);
+        } catch (err: unknown) {
+            alert('Failed to update status: ' + (err instanceof Error ? err.message : 'Unknown error'));
         }
     };
 

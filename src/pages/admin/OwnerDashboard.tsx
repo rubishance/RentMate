@@ -12,8 +12,6 @@ import {
     MegaphoneIcon
 } from '@heroicons/react/24/outline';
 import {
-    BarChart,
-    Bar,
     XAxis,
     YAxis,
     CartesianGrid,
@@ -24,9 +22,27 @@ import {
 } from 'recharts';
 import { Loader2 } from 'lucide-react';
 
+interface FinancialMetrics {
+    total_users: number;
+    active_subscribers: number;
+    new_users_30d: number;
+    mrr: number;
+    total_revenue: number;
+    avg_revenue_per_user: number;
+    storage: {
+        total_mb: number;
+        media_mb: number;
+        docs_mb: number;
+    };
+    system_status: {
+        maintenance_mode: boolean;
+        ai_disabled: boolean;
+    };
+}
+
 export default function OwnerDashboard() {
     const [loading, setLoading] = useState(true);
-    const [metrics, setMetrics] = useState<any>(null);
+    const [metrics, setMetrics] = useState<FinancialMetrics | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [activeBroadcasts, setActiveBroadcasts] = useState<number>(0);
     const [toggling, setToggling] = useState<string | null>(null);
@@ -41,10 +57,10 @@ export default function OwnerDashboard() {
             const { data, error } = await supabase.rpc('get_financial_metrics');
 
             if (error) throw error;
-            setMetrics(data);
-        } catch (err: any) {
+            setMetrics(data as FinancialMetrics);
+        } catch (err: unknown) {
             console.error('Error fetching owner metrics:', err);
-            setError(err.message);
+            setError(err instanceof Error ? err.message : 'Unknown error');
         } finally {
             setLoading(false);
         }
@@ -68,8 +84,8 @@ export default function OwnerDashboard() {
 
             if (error) throw error;
             await fetchMetrics(); // Refresh to get updated status
-        } catch (err: any) {
-            alert('Failed to toggle setting: ' + err.message);
+        } catch (err: unknown) {
+            alert('Failed to toggle setting: ' + (err instanceof Error ? err.message : 'Unknown error'));
         } finally {
             setToggling(null);
         }
@@ -152,7 +168,7 @@ export default function OwnerDashboard() {
                             {metrics?.active_subscribers}
                         </div>
                         <div className="text-xs font-bold text-purple-500">
-                            {((metrics?.active_subscribers / metrics?.total_users) * 100).toFixed(1)}% Conversion Rate
+                            {metrics ? ((metrics.active_subscribers / metrics.total_users) * 100).toFixed(1) : '0'}% Conversion Rate
                         </div>
                     </div>
                 </div>
@@ -226,17 +242,17 @@ export default function OwnerDashboard() {
                                     </div>
                                     <div className="space-y-2">
                                         <div className="flex justify-between text-[10px] font-bold">
-                                            <span className="text-gray-400">STORAGE USAGE ({metrics?.storage?.total_mb?.toFixed(1)} MB)</span>
-                                            <span className="text-white">{((metrics?.storage?.total_mb / 5000) * 100).toFixed(1)}%</span>
+                                            <span className="text-gray-400">STORAGE USAGE ({metrics?.storage?.total_mb?.toFixed(1) || '0'} MB)</span>
+                                            <span className="text-white">{metrics?.storage?.total_mb ? ((metrics.storage.total_mb / 5000) * 100).toFixed(1) : '0'}%</span>
                                         </div>
                                         <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden flex">
                                             <div
                                                 className="bg-brand-500 h-full transition-all duration-500"
-                                                style={{ width: `${(metrics?.storage?.media_mb / (metrics?.storage?.total_mb || 1)) * 100}%` }}
+                                                style={{ width: `${metrics?.storage?.total_mb ? (metrics.storage.media_mb / (metrics.storage.total_mb || 1)) * 100 : 0}%` }}
                                             />
                                             <div
                                                 className="bg-purple-500 h-full transition-all duration-500"
-                                                style={{ width: `${(metrics?.storage?.docs_mb / (metrics?.storage?.total_mb || 1)) * 100}%` }}
+                                                style={{ width: `${metrics?.storage?.total_mb ? (metrics.storage.docs_mb / (metrics.storage.total_mb || 1)) * 100 : 0}%` }}
                                             />
                                         </div>
                                         <div className="flex gap-4 pt-1">
@@ -255,7 +271,7 @@ export default function OwnerDashboard() {
                                 <div className="grid grid-cols-2 gap-3">
                                     <button
                                         disabled={toggling === 'maintenance_mode'}
-                                        onClick={() => toggleSystemSetting('maintenance_mode', metrics?.system_status?.maintenance_mode)}
+                                        onClick={() => toggleSystemSetting('maintenance_mode', metrics?.system_status?.maintenance_mode || false)}
                                         className={cn(
                                             "p-4 rounded-2xl border transition-all flex flex-col gap-2 text-left relative overflow-hidden group",
                                             metrics?.system_status?.maintenance_mode
@@ -275,7 +291,7 @@ export default function OwnerDashboard() {
 
                                     <button
                                         disabled={toggling === 'disable_ai_processing'}
-                                        onClick={() => toggleSystemSetting('disable_ai_processing', metrics?.system_status?.ai_disabled)}
+                                        onClick={() => toggleSystemSetting('disable_ai_processing', metrics?.system_status?.ai_disabled || false)}
                                         className={cn(
                                             "p-4 rounded-2xl border transition-all flex flex-col gap-2 text-left relative overflow-hidden group",
                                             metrics?.system_status?.ai_disabled

@@ -36,7 +36,7 @@ interface RecentActivity {
     id: string;
     action: string;
     created_at: string;
-    details: any;
+    details: Record<string, unknown>;
     user_id: string;
 }
 
@@ -47,10 +47,15 @@ interface NewUser {
     created_at: string;
 }
 
+interface Message {
+    role: string;
+    content: string;
+}
+
 interface AiConversation {
     id: string;
     user_id: string;
-    messages: any[];
+    messages: Message[];
     total_cost_usd: number;
     updated_at: string;
     user_profiles?: {
@@ -76,8 +81,7 @@ const AdminDashboard = () => {
     const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
     const [newUsers, setNewUsers] = useState<NewUser[]>([]);
     const [recentAiConvs, setRecentAiConvs] = useState<AiConversation[]>([]);
-    const [autopilotEnabled, setAutopilotEnabled] = useState<boolean>(true);
-    const [toggling, setToggling] = useState(false);
+
 
     useEffect(() => {
         fetchDashboardData();
@@ -95,7 +99,7 @@ const AdminDashboard = () => {
                 throw statsError;
             }
 
-            const [logsReq, newUsersReq, convsReq] = await Promise.all([
+            const [logsReq, newUsersReq] = await Promise.all([
                 // Recent Activity
                 supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(5),
                 // New Users
@@ -118,15 +122,9 @@ const AdminDashboard = () => {
 
             setRecentActivity(logsReq.data as RecentActivity[] || []);
             setNewUsers(newUsersReq.data as NewUser[] || []);
-            setRecentAiConvs((await supabase.from('ai_conversations').select('*, user_profiles(full_name, email)').order('updated_at', { ascending: false }).limit(5)).data as any[] || []);
+            setRecentAiConvs((await supabase.from('ai_conversations').select('*, user_profiles(full_name, email)').order('updated_at', { ascending: false }).limit(5)).data as AiConversation[] || []);
 
-            // Fetch Autopilot Setting
-            const { data: setting } = await supabase
-                .from('system_settings')
-                .select('value')
-                .eq('key', 'crm_autopilot_enabled')
-                .single();
-            if (setting) setAutopilotEnabled(setting.value === true);
+
 
         } catch (error) {
             console.error('Error loading dashboard:', error);
@@ -151,22 +149,7 @@ const AdminDashboard = () => {
         { name: 'System Settings', icon: Settings, path: '/admin/settings', desc: 'Global configuration' },
     ];
 
-    const toggleAutopilot = async () => {
-        setToggling(true);
-        try {
-            const newValue = !autopilotEnabled;
-            const { error } = await supabase
-                .from('system_settings')
-                .upsert({ key: 'crm_autopilot_enabled', value: newValue });
 
-            if (error) throw error;
-            setAutopilotEnabled(newValue);
-        } catch (err) {
-            console.error('Failed to toggle autopilot:', err);
-        } finally {
-            setToggling(false);
-        }
-    };
 
     if (loading) {
         return (

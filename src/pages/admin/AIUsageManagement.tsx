@@ -66,7 +66,18 @@ export default function AIUsageManagement() {
 
             if (usageError) throw usageError;
 
-            const formattedUsage = usageData?.map((u: any) => ({
+            interface RawUsageData {
+                user_id: string;
+                message_count: number;
+                tokens_used: number;
+                last_reset_at: string;
+                user_profiles: {
+                    email: string;
+                    subscription_tier: string;
+                } | null;
+            }
+
+            const formattedUsage = (usageData as unknown as RawUsageData[])?.map((u) => ({
                 user_id: u.user_id,
                 message_count: u.message_count,
                 tokens_used: u.tokens_used,
@@ -76,9 +87,9 @@ export default function AIUsageManagement() {
             })) || [];
 
             setUsage(formattedUsage);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error fetching AI usage data:', err);
-            setError(err.message || 'Failed to load AI usage statistics');
+            setError(err instanceof Error ? err.message : 'Failed to load AI usage statistics');
         } finally {
             setLoading(false);
         }
@@ -120,9 +131,9 @@ export default function AIUsageManagement() {
 
             setEditedLimits({});
             fetchData();
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error saving limits:', err);
-            alert('Failed to save limits: ' + err.message);
+            alert('Failed to save limits: ' + (err instanceof Error ? err.message : 'Unknown error'));
         } finally {
             setSaving(false);
         }

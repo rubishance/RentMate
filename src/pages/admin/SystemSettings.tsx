@@ -26,7 +26,7 @@ interface NotificationRule {
 
 interface SystemSetting {
     key: string;
-    value: string | number | boolean | Record<string, any>;
+    value: string | number | boolean | Record<string, unknown>;
     description: string;
 }
 
@@ -63,7 +63,7 @@ export default function SystemSettings() {
             if (settingsError) throw settingsError;
             setSettings(settingsData || []);
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error fetching settings:', error);
             setMessage({ type: 'error', text: 'Failed to load system configurations.' });
         } finally {
@@ -75,7 +75,7 @@ export default function SystemSettings() {
         setRules(prev => prev.map(r => r.id === id ? { ...r, [field]: value } : r));
     };
 
-    const handleSettingChange = (key: string, value: string | number | boolean | Record<string, any>) => {
+    const handleSettingChange = (key: string, value: string | number | boolean | Record<string, unknown>) => {
         setSettings(prev => prev.map(s => s.key === key ? { ...s, value } : s));
     };
 
@@ -106,9 +106,9 @@ export default function SystemSettings() {
             }
 
             setMessage({ type: 'success', text: 'Settings updated successfully.' });
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error saving settings:', error);
-            setMessage({ type: 'error', text: 'Failed to save changes: ' + error.message });
+            setMessage({ type: 'error', text: 'Failed to save changes: ' + (error instanceof Error ? error.message : 'Unknown error') });
         } finally {
             setSaving(false);
         }

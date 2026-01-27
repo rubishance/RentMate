@@ -5,21 +5,28 @@ import {
     PlusIcon,
     TrashIcon,
     CheckCircleIcon,
-    XCircleIcon,
-    ArrowPathIcon,
     PencilSquareIcon,
-    ClockIcon,
     LinkIcon
 } from '@heroicons/react/24/outline';
 import { Loader2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
+interface Broadcast {
+    id: string;
+    message: string;
+    type: 'info' | 'warning' | 'error' | 'success';
+    is_active: boolean;
+    expires_at: string | null;
+    target_link: string | null;
+    created_at: string;
+}
+
 export default function BroadcastManager() {
-    const [broadcasts, setBroadcasts] = useState<any[]>([]);
+    const [broadcasts, setBroadcasts] = useState<Broadcast[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const [form, setForm] = useState<any>({
+    const [form, setForm] = useState<Partial<Broadcast>>({
         message: '',
         type: 'info',
         is_active: true,
@@ -66,8 +73,8 @@ export default function BroadcastManager() {
             setIsEditing(false);
             setForm({ message: '', type: 'info', is_active: true, expires_at: '', target_link: '' });
             fetchBroadcasts();
-        } catch (err: any) {
-            alert('Failed to save: ' + err.message);
+        } catch (err: unknown) {
+            alert('Failed to save: ' + (err instanceof Error ? err.message : 'Unknown error'));
         } finally {
             setSaving(false);
         }
@@ -79,7 +86,7 @@ export default function BroadcastManager() {
         if (!error) fetchBroadcasts();
     };
 
-    const handleEdit = (b: any) => {
+    const handleEdit = (b: Broadcast) => {
         setForm({
             ...b,
             expires_at: b.expires_at ? new Date(b.expires_at).toISOString().slice(0, 16) : ''
@@ -116,7 +123,7 @@ export default function BroadcastManager() {
                         <div className="md:col-span-2">
                             <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Message</label>
                             <textarea
-                                value={form.message}
+                                value={form.message || ''}
                                 onChange={e => setForm({ ...form, message: e.target.value })}
                                 rows={2}
                                 className="w-full p-4 bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-xl font-bold text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20"
@@ -127,7 +134,7 @@ export default function BroadcastManager() {
                             <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Type</label>
                             <select
                                 value={form.type}
-                                onChange={e => setForm({ ...form, type: e.target.value })}
+                                onChange={e => setForm({ ...form, type: e.target.value as Broadcast['type'] })}
                                 className="w-full p-3 bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-xl font-bold text-gray-900 dark:text-white outline-none"
                             >
                                 <option value="info">Information (Blue)</option>
@@ -140,7 +147,7 @@ export default function BroadcastManager() {
                             <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Expiry Date (Optional)</label>
                             <input
                                 type="datetime-local"
-                                value={form.expires_at}
+                                value={form.expires_at || ''}
                                 onChange={e => setForm({ ...form, expires_at: e.target.value })}
                                 className="w-full p-3 bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-xl font-bold text-gray-900 dark:text-white outline-none"
                             />
@@ -149,7 +156,7 @@ export default function BroadcastManager() {
                             <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Target Link (Optional)</label>
                             <input
                                 type="text"
-                                value={form.target_link}
+                                value={form.target_link || ''}
                                 onChange={e => setForm({ ...form, target_link: e.target.value })}
                                 className="w-full p-3 bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-xl font-bold text-gray-900 dark:text-white outline-none"
                                 placeholder="/dashboard, /pricing, etc."

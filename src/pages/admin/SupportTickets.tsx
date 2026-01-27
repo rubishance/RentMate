@@ -3,19 +3,16 @@ import { supabase } from '../../lib/supabase';
 import {
     Ticket,
     MessageSquare,
-    Clock,
     CheckCircle2,
-    AlertCircle,
     User,
     Calendar,
-    Filter,
     Search,
     Send,
     Loader2,
-    XCircle,
-    Activity
+    Activity,
+    Sparkles
 } from 'lucide-react';
-import { ArrowPathIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon, SparklesIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { cn } from '../../lib/utils';
 
 interface SupportTicket {
@@ -28,7 +25,7 @@ interface SupportTicket {
     status: 'open' | 'in_progress' | 'waiting_user' | 'resolved' | 'closed';
     assigned_to: string | null;
     auto_reply_draft: string | null;
-    chat_context: any;
+    chat_context: unknown;
     resolution_notes: string | null;
     created_at: string;
     updated_at: string;
@@ -52,9 +49,6 @@ interface TicketComment {
     created_at: string;
     user?: { email: string; full_name: string };
 }
-
-import { Sparkles } from 'lucide-react';
-import { SparklesIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 
 export default function SupportTickets() {
     const [tickets, setTickets] = useState<SupportTicket[]>([]);
@@ -93,7 +87,7 @@ export default function SupportTickets() {
 
             if (error) throw error;
             setTickets(data || []);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error fetching tickets:', err);
         } finally {
             setLoading(false);
@@ -113,7 +107,7 @@ export default function SupportTickets() {
 
             if (error) throw error;
             setComments(data || []);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error fetching comments:', err);
         }
     };
@@ -139,9 +133,9 @@ export default function SupportTickets() {
 
             setNewComment('');
             await fetchComments(selectedTicket.id);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error adding comment:', err);
-            alert('Failed to add comment: ' + err.message);
+            alert('Failed to add comment: ' + (err instanceof Error ? err.message : 'Unknown error'));
         } finally {
             setSubmitting(false);
         }
@@ -149,7 +143,7 @@ export default function SupportTickets() {
 
     const handleUpdateStatus = async (ticketId: string, newStatus: string) => {
         try {
-            const updates: any = { status: newStatus };
+            const updates: Record<string, unknown> = { status: newStatus };
             if (newStatus === 'resolved' || newStatus === 'closed') {
                 updates.resolved_at = new Date().toISOString();
             }
@@ -163,11 +157,11 @@ export default function SupportTickets() {
 
             await fetchTickets();
             if (selectedTicket?.id === ticketId) {
-                setSelectedTicket({ ...selectedTicket, status: newStatus as any });
+                setSelectedTicket({ ...selectedTicket, status: newStatus as 'open' | 'in_progress' | 'waiting_user' | 'resolved' | 'closed' });
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error updating status:', err);
-            alert('Failed to update status: ' + err.message);
+            alert('Failed to update status: ' + (err instanceof Error ? err.message : 'Unknown error'));
         }
     };
 
@@ -228,9 +222,9 @@ export default function SupportTickets() {
 
             if (error) throw error;
             await fetchTickets();
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error assigning ticket:', err);
-            alert('Failed to assign ticket: ' + err.message);
+            alert('Failed to assign ticket: ' + (err instanceof Error ? err.message : 'Unknown error'));
         }
     };
 
@@ -438,7 +432,14 @@ export default function SupportTickets() {
                                         </div>
                                     </div>
                                     <div className="flex flex-col items-end gap-2">
-                                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Management</p>
+                                        {!selectedTicket.assigned_to && (
+                                            <button
+                                                onClick={() => handleAssignToMe(selectedTicket.id)}
+                                                className="px-4 py-2 bg-brand-600 text-white rounded-[1.2rem] text-[10px] font-black uppercase tracking-widest hover:bg-brand-700 transition-colors shadow-lg shadow-brand-600/20"
+                                            >
+                                                Assign to Me
+                                            </button>
+                                        )}
                                         <select
                                             value={selectedTicket.status}
                                             onChange={(e) => handleUpdateStatus(selectedTicket.id, e.target.value)}
@@ -486,11 +487,11 @@ export default function SupportTickets() {
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div className="space-y-1">
                                                     <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Sentiment</p>
-                                                    <p className="text-xl font-black">{selectedTicket.ticket_analysis[0].sentiment_score > 0 ? 'Positive' : 'Fustrated'}</p>
+                                                    <p className="text-xl font-black">{(selectedTicket.ticket_analysis?.[0]?.sentiment_score ?? 0) > 0 ? 'Positive' : 'Fustrated'}</p>
                                                 </div>
                                                 <div className="space-y-1">
                                                     <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Category</p>
-                                                    <p className="text-xl font-black capitalize">{selectedTicket.ticket_analysis[0].category}</p>
+                                                    <p className="text-xl font-black capitalize">{selectedTicket.ticket_analysis?.[0]?.category || 'N/A'}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -500,7 +501,7 @@ export default function SupportTickets() {
                                                 Intelligence Loop
                                             </h4>
                                             <p className="text-xs font-bold text-gray-600 dark:text-gray-400 leading-relaxed italic line-clamp-2">
-                                                {selectedTicket.ticket_analysis[0].ai_summary}
+                                                {selectedTicket.ticket_analysis?.[0]?.ai_summary || 'No summary available'}
                                             </p>
                                         </div>
                                     </div>

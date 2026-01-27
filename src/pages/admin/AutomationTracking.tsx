@@ -4,7 +4,6 @@ import {
     Sparkles,
     Search,
     RefreshCw,
-    AlertCircle,
     Activity,
     CheckCircle2,
     XCircle,
@@ -20,7 +19,7 @@ interface AutomationLog {
     entity_id: string;
     action_taken: string;
     status: 'success' | 'failed' | 'pending';
-    details: any;
+    details: Record<string, unknown>;
     created_at: string;
     user_profiles?: {
         full_name: string;
@@ -50,7 +49,7 @@ export default function AutomationTracking() {
 
             if (error) throw error;
             setLogs(data as AutomationLog[]);
-        } catch (err) {
+        } catch (err: unknown) {
             console.error('Error fetching logs:', err);
         } finally {
             setLoading(false);
@@ -100,13 +99,13 @@ export default function AutomationTracking() {
 
             {/* Filter Ribbons */}
             <div className="flex flex-wrap gap-3">
-                {['all', 'success', 'failed'].map((f) => (
+                {(['all', 'success', 'failed'] as const).map((f) => (
                     <button
                         key={f}
-                        onClick={() => setFilter(f as any)}
+                        onClick={() => setFilter(f)}
                         className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${filter === f
-                                ? 'bg-brand-600 text-white border-brand-600 shadow-md shadow-brand-500/20'
-                                : 'bg-white dark:bg-gray-800 text-gray-400 border-slate-200 dark:border-slate-700 hover:border-brand-500'
+                            ? 'bg-brand-600 text-white border-brand-600 shadow-md shadow-brand-500/20'
+                            : 'bg-white dark:bg-gray-800 text-gray-400 border-slate-200 dark:border-slate-700 hover:border-brand-500'
                             }`}
                     >
                         {f}
@@ -178,10 +177,10 @@ export default function AutomationTracking() {
                                         </td>
                                         <td className="px-6 py-5">
                                             <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${log.status === 'success'
-                                                    ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800'
-                                                    : log.status === 'failed'
-                                                        ? 'bg-rose-50 text-rose-600 border border-rose-100 dark:bg-rose-900/20 dark:border-rose-800'
-                                                        : 'bg-amber-50 text-amber-600 border border-amber-100 dark:bg-amber-900/20 dark:border-amber-800'
+                                                ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800'
+                                                : log.status === 'failed'
+                                                    ? 'bg-rose-50 text-rose-600 border border-rose-100 dark:bg-rose-900/20 dark:border-rose-800'
+                                                    : 'bg-amber-50 text-amber-600 border border-amber-100 dark:bg-amber-900/20 dark:border-amber-800'
                                                 }`}>
                                                 {log.status === 'success' ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
                                                 {log.status}

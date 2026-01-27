@@ -1,10 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
-import { crmService, CRMInteraction, CRMInteractionType } from '../../services/crm.service';
+import { crmService, CRMInteraction } from '../../services/crm.service';
 import { MaskedAdminValue } from '../../components/admin/MaskedAdminValue';
 import {
-    EnvelopeIcon,
     ChatBubbleLeftEllipsisIcon,
     DocumentTextIcon,
     ArrowLeftIcon,
@@ -24,7 +22,7 @@ interface SubscriptionPlan {
     max_tenants: number;
     max_contracts: number;
     max_sessions: number;
-    features: Record<string, any>;
+    features: Record<string, unknown>;
 }
 
 interface Invoice {
@@ -72,35 +70,34 @@ const ClientProfile = () => {
     const [newPlanId, setNewPlanId] = useState('');
     const [availablePlans, setAvailablePlans] = useState<SubscriptionPlan[]>([]);
 
-    useEffect(() => {
-        if (id) {
-            fetchClientData();
-            fetchAvailablePlans();
-        }
-    }, [id]);
-
-    const fetchClientData = async () => {
+    const fetchClientData = useCallback(async () => {
+        if (!id) return;
         setLoading(true);
         try {
-            const summary = await crmService.getClientSummary(id!);
+            const summary = await crmService.getClientSummary(id);
             setData(summary);
             setInteractions(summary.interactions);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error fetching client data:', err);
-            setError(err.message || 'Failed to load client profile.');
+            setError(err instanceof Error ? err.message : 'Failed to load client profile.');
         } finally {
             setLoading(false);
         }
-    };
+    }, [id]);
 
-    const fetchAvailablePlans = async () => {
+    const fetchAvailablePlans = useCallback(async () => {
         try {
             const plans = await crmService.getSubscriptionPlans();
             setAvailablePlans(plans || []);
         } catch (err) {
             console.error('Error fetching plans:', err);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        fetchClientData();
+        fetchAvailablePlans();
+    }, [fetchClientData, fetchAvailablePlans]);
 
     const handleLogSuccess = (newInteraction: CRMInteraction) => {
         setInteractions([newInteraction, ...interactions]);
@@ -113,8 +110,8 @@ const ClientProfile = () => {
         try {
             await crmService.deleteInteraction(interactionId);
             setInteractions(interactions.filter(i => i.id !== interactionId));
-        } catch (err: any) {
-            alert('Error deleting: ' + err.message);
+        } catch (err: unknown) {
+            alert('Error deleting: ' + (err instanceof Error ? err.message : 'Unknown error'));
         }
     };
 
@@ -132,8 +129,8 @@ const ClientProfile = () => {
             if (!data) throw new Error('Client data not loaded');
             const link = await crmService.exportToGoogleSheets(id!, data.profile.full_name);
             window.open(link, '_blank');
-        } catch (err: any) {
-            alert('Export failed: ' + err.message);
+        } catch (err: unknown) {
+            alert('Export failed: ' + (err instanceof Error ? err.message : 'Unknown error'));
         } finally {
             setIsExporting(false);
         }
@@ -160,8 +157,8 @@ const ClientProfile = () => {
                 });
             }
             setIsEditingPlan(false);
-        } catch (err: any) {
-            alert('Failed to update plan: ' + err.message);
+        } catch (err: unknown) {
+            alert('Failed to update plan: ' + (err instanceof Error ? err.message : 'Unknown error'));
         }
     };
 
@@ -330,7 +327,7 @@ const ClientProfile = () => {
                             {['all', 'ai', 'ticket', 'human'].map((f) => (
                                 <button
                                     key={f}
-                                    onClick={() => setFeedFilter(f as any)}
+                                    onClick={() => setFeedFilter(f as 'all' | 'ai' | 'human' | 'ticket')}
                                     className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${feedFilter === f
                                         ? 'bg-brand-50 text-brand-700 dark:bg-brand-900/20 dark:text-brand-400'
                                         : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
@@ -406,7 +403,7 @@ const ClientProfile = () => {
             {isChatOpen && (
                 <AdminChatWindow
                     userId={id!}
-                    adminId={(data?.profile as any)?.id} // Assuming admin is current user - handled in component
+                    adminId={data?.profile?.id || ''} // Assuming admin is current user - handled in component
                     onClose={() => setIsChatOpen(false)}
                 />
             )}

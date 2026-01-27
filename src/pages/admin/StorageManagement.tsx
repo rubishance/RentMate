@@ -27,6 +27,23 @@ interface UserStorageSummary {
     };
 }
 
+interface RawStorageUsage {
+    user_id: string;
+    total_bytes: number;
+    file_count: number;
+    media_bytes: number;
+    utilities_bytes: number;
+    maintenance_bytes: number;
+    documents_bytes: number;
+    user_profiles: {
+        email: string | null;
+        subscription_plans: {
+            name: string;
+            max_storage_mb: number;
+        };
+    }[];
+}
+
 export function StorageManagement() {
     const [stats, setStats] = useState<UserStorageSummary[]>([]);
     const [loading, setLoading] = useState(true);
@@ -63,18 +80,19 @@ export function StorageManagement() {
 
             if (fetchError) throw fetchError;
 
-            const formattedData: UserStorageSummary[] = (data || []).map((item: any) => {
-                const maxBytes = item.user_profiles.subscription_plans.max_storage_mb === -1
+            const formattedData: UserStorageSummary[] = ((data as unknown as RawStorageUsage[]) || []).map((item) => {
+                const plan = item.user_profiles[0]?.subscription_plans || { name: 'unknown', max_storage_mb: 0 };
+                const maxBytes = plan.max_storage_mb === -1
                     ? Infinity
-                    : item.user_profiles.subscription_plans.max_storage_mb * 1024 * 1024;
+                    : plan.max_storage_mb * 1024 * 1024;
 
                 return {
                     user_id: item.user_id,
-                    email: item.user_profiles.email || 'No email',
-                    plan_name: item.user_profiles.subscription_plans.name,
+                    email: item.user_profiles[0]?.email || 'No email',
+                    plan_name: plan.name,
                     total_bytes: item.total_bytes,
                     file_count: item.file_count,
-                    max_storage_mb: item.user_profiles.subscription_plans.max_storage_mb,
+                    max_storage_mb: plan.max_storage_mb,
                     usage_percent: maxBytes === Infinity ? 0 : (item.total_bytes / maxBytes) * 100,
                     breakdown: {
                         media: item.media_bytes,
@@ -86,9 +104,9 @@ export function StorageManagement() {
             });
 
             setStats(formattedData);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error fetching storage stats:', err);
-            setError(err.message || 'Failed to load storage statistics');
+            setError(err instanceof Error ? err.message : 'Failed to load storage statistics');
         } finally {
             setLoading(false);
         }

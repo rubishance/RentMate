@@ -48,7 +48,37 @@ export type TranslationKeys =
     | 'amount'
     | 'date'
     | 'avgUnderpayment'
-    | 'percentageOwed';
+    | 'percentageOwed'
+
+    // Property Types
+    | 'apartment'
+    | 'penthouse'
+    | 'garden'
+    | 'house'
+    | 'other'
+
+    // Extra labels for Add Property
+    | 'addProperty'
+    | 'occupied'
+    | 'vacant'
+    | 'rooms'
+    | 'sqm'
+    | 'parking'
+    | 'monthlyRentLabel'
+    | 'createFirstAsset'
+    | 'noAssetsFound'
+    | 'addFirstPropertyDesc'
+    | 'idNumber'
+    | 'phone'
+    | 'email'
+    | 'optional'
+    | 'stepDate'
+    | 'newAmount'
+    | 'linkageAndIndices'
+    | 'selectDate'
+    | 'friendlyName'
+    | 'selectCategory'
+    | 'mainApartment';
 
 export const translations: Record<string, Record<TranslationKeys, string>> = {
     he: {
@@ -95,7 +125,35 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         totalActual: 'סה"כ שולם בפועל',
         advancedReconciliationOptions: 'אפשרויות התחשבנות מתקדמות',
         avgUnderpayment: 'ממוצע חסר לחודש',
-        percentageOwed: 'אחוז חוב'
+        percentageOwed: 'אחוז חוב',
+
+        apartment: 'דירה',
+        penthouse: 'פנטהאוז',
+        garden: 'דירת גן',
+        house: 'בית פרטי',
+        other: 'אחר',
+
+        addProperty: 'הוסף נכס',
+        occupied: 'תפוס',
+        vacant: 'פנוי',
+        rooms: 'חדרים',
+        sqm: 'מ"ר',
+        parking: 'חניה',
+        monthlyRentLabel: 'שכירות חודשית',
+        createFirstAsset: 'צור נכס ראשון',
+        noAssetsFound: 'לא נמצאו נכסים',
+        addFirstPropertyDesc: 'התחילו בניהול הנכסים שלכם על ידי הוספת הנכס הראשון.',
+        idNumber: 'תעודת זהות',
+        phone: 'טלפון',
+        email: 'אימייל',
+        optional: '(אופציונלי)',
+        stepDate: 'תאריך',
+        newAmount: 'סכום חדש',
+        linkageAndIndices: 'הצמדה ומדדים',
+        selectDate: 'בחר תאריך...',
+        friendlyName: 'כינוי לנכס',
+        selectCategory: 'בחר קטגוריה',
+        mainApartment: 'דירה ראשית'
     },
     en: {
         appName: 'RentMate',
@@ -141,6 +199,34 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         totalActual: 'Total Paid',
         advancedReconciliationOptions: 'Advanced Reconciliation',
         avgUnderpayment: 'Avg Underpayment',
-        percentageOwed: 'Debt %'
+        percentageOwed: 'Debt %',
+
+        apartment: 'Apartment',
+        penthouse: 'Penthouse',
+        garden: 'Garden Apt',
+        house: 'House',
+        other: 'Other',
+
+        addProperty: 'Add Property',
+        occupied: 'Occupied',
+        vacant: 'Vacant',
+        rooms: 'Rooms',
+        sqm: 'SQM',
+        parking: 'Parking',
+        monthlyRentLabel: 'Monthly Rent',
+        createFirstAsset: 'Create First Asset',
+        noAssetsFound: 'No assets found',
+        addFirstPropertyDesc: 'Start managing your properties by adding your first asset.',
+        idNumber: 'ID Number',
+        phone: 'Phone',
+        email: 'Email',
+        optional: '(Optional)',
+        stepDate: 'Date',
+        newAmount: 'New Amount',
+        linkageAndIndices: 'Linkage & Indices',
+        selectDate: 'Select Date...',
+        friendlyName: 'Friendly Name',
+        selectCategory: 'Select Category',
+        mainApartment: 'Main Apartment'
     }
 };

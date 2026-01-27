@@ -13,7 +13,7 @@ interface PropertyTypeSelectProps {
 const getPropertyTypes = (t: any): { value: NonNullable<Property['property_type']>; label: string }[] => [
     { value: 'apartment', label: t('apartment') },
     { value: 'penthouse', label: t('penthouse') },
-    { value: 'garden', label: t('gardenApartment') },
+    { value: 'garden', label: t('garden') },
     { value: 'house', label: t('house') },
     { value: 'other', label: t('other') }
 ];

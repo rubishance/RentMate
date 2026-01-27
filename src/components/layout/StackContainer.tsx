@@ -12,7 +12,7 @@ import { AddPropertyWizard } from '../stack/AddPropertyWizard';
 const LayerRegistry: Record<string, (props: any) => React.JSX.Element> = {
     'property_hub': (props) => <PropertyHub property={props.property} propertyId={props.propertyId} />,
     'maintenance_chat': (props) => <MaintenanceChat ticketId={props.ticketId} />,
-    'wizard': (props) => <AddPropertyWizard />,
+    'wizard': (props) => <AddPropertyWizard {...props} />,
     'contract_viewer': (props) => <div className="p-4">Contract Viewer: {props.contractId}</div>,
     'document_viewer': (props) => <div className="p-4">Document Viewer</div>,
     'single_bill': (props) => <div className="p-4">Bill Details</div>,

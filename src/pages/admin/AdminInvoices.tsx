@@ -36,9 +36,9 @@ export default function AdminInvoices() {
 
             if (fetchError) throw fetchError;
             setInvoices(data as Invoice[] || []);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error fetching invoices:', err);
-            setError(err.message || 'Failed to load system invoices.');
+            setError(err instanceof Error ? err.message : 'Failed to load system invoices.');
         } finally {
             setLoading(false);
         }
@@ -64,8 +64,8 @@ export default function AdminInvoices() {
             if (updateError) throw updateError;
             alert('Invoice marked as paid successfully.');
             fetchInvoices();
-        } catch (err: any) {
-            alert('Error updating invoice: ' + err.message);
+        } catch (err: unknown) {
+            alert('Error updating invoice: ' + (err instanceof Error ? err.message : 'Unknown error'));
         }
     };
 

@@ -32,9 +32,9 @@ export default function AuditLogs() {
 
             if (fetchError) throw fetchError;
             setLogs(data as AuditLog[]);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error fetching logs:', err);
-            setError(err.message || 'Failed to access system logs. You may need higher privileges.');
+            setError(err instanceof Error ? err.message : 'Failed to access system logs. You may need higher privileges.');
         } finally {
             setLoading(false);
         }
@@ -128,8 +128,8 @@ export default function AuditLogs() {
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className={`p-1.5 rounded-lg border ${log.action.includes('DELETE') ? 'bg-red-50 text-red-600 border-red-100 dark:bg-red-900/20 dark:border-red-800' :
-                                                        log.action.includes('UPDATE') ? 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:border-amber-800' :
-                                                            'bg-brand-50 text-brand-600 border-brand-100 dark:bg-brand-900/20 dark:border-brand-800'
+                                                    log.action.includes('UPDATE') ? 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:border-amber-800' :
+                                                        'bg-brand-50 text-brand-600 border-brand-100 dark:bg-brand-900/20 dark:border-brand-800'
                                                     }`}>
                                                     <Bars3CenterLeftIcon className="w-4 h-4" />
                                                 </div>

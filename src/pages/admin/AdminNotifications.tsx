@@ -12,8 +12,25 @@ import {
 } from '@heroicons/react/24/outline';
 import { Loader2 } from 'lucide-react';
 
+interface AdminNotification {
+    id: string;
+    user_id: string;
+    type: 'upgrade_request' | 'system_alert' | 'user_feedback' | string;
+    status: 'pending' | 'resolved' | 'dismissed';
+    content: {
+        requested_plan?: string;
+        [key: string]: unknown;
+    };
+    created_at: string;
+    user?: {
+        email: string;
+        full_name: string;
+        plan_id: string;
+    };
+}
+
 const AdminNotifications = () => {
-    const [notifications, setNotifications] = useState<any[]>([]);
+    const [notifications, setNotifications] = useState<AdminNotification[]>([]);
     const [loading, setLoading] = useState(true);
     const [processingId, setProcessingId] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -29,7 +46,7 @@ const AdminNotifications = () => {
                 schema: 'public',
                 table: 'admin_notifications'
             }, (payload) => {
-                setNotifications(prev => [payload.new, ...prev]);
+                setNotifications(prev => [(payload.new as AdminNotification), ...prev]);
             })
             .subscribe();
 
@@ -55,16 +72,16 @@ const AdminNotifications = () => {
                 .order('created_at', { ascending: false });
 
             if (fetchError) throw fetchError;
-            setNotifications(data || []);
-        } catch (err: any) {
+            setNotifications((data as unknown as AdminNotification[]) || []);
+        } catch (err: unknown) {
             console.error('Error fetching notifications:', err);
-            setError(err.message || 'Failed to sync with notification server.');
+            setError(err instanceof Error ? err.message : 'Failed to sync with notification server.');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleApprove = async (notification: any) => {
+    const handleApprove = async (notification: AdminNotification) => {
         const requestedPlan = notification.content?.requested_plan || 'pro';
         if (!confirm(`ACTIVATE UPGRADE? You are about to upgrade ${notification.user?.email} to the ${requestedPlan.toUpperCase()} plan.`)) return;
 
@@ -90,12 +107,12 @@ const AdminNotifications = () => {
             if (updateError) throw updateError;
 
             setNotifications(prev => prev.map(n =>
-                n.id === notification.id ? { ...n, status: 'resolved' } : n
+                n.id === notification.id ? { ...n, status: 'resolved' as const } : n
             ));
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error approving request:', err);
-            alert('Approval failed: ' + err.message);
+            alert('Approval failed: ' + (err instanceof Error ? err.message : 'Unknown error'));
         } finally {
             setProcessingId(null);
         }
@@ -114,12 +131,12 @@ const AdminNotifications = () => {
             if (discardError) throw discardError;
 
             setNotifications(prev => prev.map(n =>
-                n.id === id ? { ...n, status: 'dismissed' } : n
+                n.id === id ? { ...n, status: 'dismissed' as const } : n
             ));
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error dismissing:', err);
-            alert('Action failed: ' + err.message);
+            alert('Action failed: ' + (err instanceof Error ? err.message : 'Unknown error'));
         } finally {
             setProcessingId(null);
         }
@@ -182,7 +199,7 @@ const AdminNotifications = () => {
                                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                                     <div className="flex-1 flex gap-4">
                                         <div className={`p-3 rounded-2xl border shrink-0 ${n.type === 'upgrade_request' ? 'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-900/20 dark:border-purple-800' :
-                                                'bg-brand-50 text-brand-600 border-brand-100 dark:bg-brand-900/20 dark:border-brand-800'
+                                            'bg-brand-50 text-brand-600 border-brand-100 dark:bg-brand-900/20 dark:border-brand-800'
                                             }`}>
                                             {n.type === 'upgrade_request' ? <ArrowUpCircleIcon className="w-6 h-6" /> : <BellIcon className="w-6 h-6" />}
                                         </div>
@@ -192,8 +209,8 @@ const AdminNotifications = () => {
                                                     {n.type === 'upgrade_request' ? 'Plan Upgrade Request' : n.type.replace('_', ' ').toUpperCase()}
                                                 </h3>
                                                 <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest border ${n.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:border-amber-800' :
-                                                        n.status === 'resolved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800' :
-                                                            'bg-gray-50 text-gray-400 border-gray-100 dark:bg-gray-900 dark:border-gray-700'
+                                                    n.status === 'resolved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800' :
+                                                        'bg-gray-50 text-gray-400 border-gray-100 dark:bg-gray-900 dark:border-gray-700'
                                                     }`}>
                                                     {n.status}
                                                 </span>

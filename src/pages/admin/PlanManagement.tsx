@@ -8,20 +8,36 @@ import {
     ArrowPathIcon,
     PlusIcon,
     TrashIcon,
-    ChevronDownIcon,
-    ChevronUpIcon
 } from '@heroicons/react/24/outline';
 import { Loader2 } from 'lucide-react';
 
+interface SubscriptionPlan {
+    id: string;
+    name: string;
+    price_monthly: number;
+    price_yearly: number;
+    max_properties: number;
+    max_tenants: number;
+    max_contracts: number;
+    max_sessions: number;
+    max_storage_mb: number;
+    max_media_mb: number;
+    max_utilities_mb: number;
+    max_maintenance_mb: number;
+    max_documents_mb: number;
+    max_file_size_mb: number;
+    features: Record<string, boolean>;
+    created_at?: string;
+}
 const PlanManagement = () => {
-    const [plans, setPlans] = useState<any[]>([]);
+    const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
     const [loading, setLoading] = useState(true);
     const [editingId, setEditingId] = useState<string | null>(null);
-    const [editForm, setEditForm] = useState<any>({});
+    const [editForm, setEditForm] = useState<Partial<SubscriptionPlan>>({});
     const [saving, setSaving] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
 
-    const defaultPlan: any = {
+    const defaultPlan: Omit<SubscriptionPlan, 'id'> = {
         name: 'New Plan',
         price_monthly: 0,
         price_yearly: 0,
@@ -65,7 +81,7 @@ const PlanManagement = () => {
         }
     };
 
-    const handleEdit = (plan: any) => {
+    const handleEdit = (plan: SubscriptionPlan) => {
         setIsCreating(false);
         setEditingId(plan.id);
         // Ensure features is an object
@@ -91,19 +107,19 @@ const PlanManagement = () => {
         setSaving(true);
         try {
             const planData = {
-                name: editForm.name,
-                price_monthly: parseFloat(editForm.price_monthly) || 0,
-                price_yearly: parseFloat(editForm.price_yearly) || 0,
-                max_properties: parseInt(editForm.max_properties) || 0,
-                max_tenants: parseInt(editForm.max_tenants) || 0,
-                max_contracts: parseInt(editForm.max_contracts) || 0,
-                max_sessions: parseInt(editForm.max_sessions) || 0,
-                max_storage_mb: parseInt(editForm.max_storage_mb) || 0,
-                max_media_mb: parseInt(editForm.max_media_mb) || 0,
-                max_utilities_mb: parseInt(editForm.max_utilities_mb) || 0,
-                max_maintenance_mb: parseInt(editForm.max_maintenance_mb) || 0,
-                max_documents_mb: parseInt(editForm.max_documents_mb) || 0,
-                max_file_size_mb: parseInt(editForm.max_file_size_mb) || 0,
+                name: editForm.name || 'New Plan',
+                price_monthly: parseFloat(String(editForm.price_monthly || 0)),
+                price_yearly: parseFloat(String(editForm.price_yearly || 0)),
+                max_properties: parseInt(String(editForm.max_properties || 0)),
+                max_tenants: parseInt(String(editForm.max_tenants || 0)),
+                max_contracts: parseInt(String(editForm.max_contracts || 0)),
+                max_sessions: parseInt(String(editForm.max_sessions || 0)),
+                max_storage_mb: parseInt(String(editForm.max_storage_mb || 0)),
+                max_media_mb: parseInt(String(editForm.max_media_mb || 0)),
+                max_utilities_mb: parseInt(String(editForm.max_utilities_mb || 0)),
+                max_maintenance_mb: parseInt(String(editForm.max_maintenance_mb || 0)),
+                max_documents_mb: parseInt(String(editForm.max_documents_mb || 0)),
+                max_file_size_mb: parseInt(String(editForm.max_file_size_mb || 0)),
                 features: editForm.features || defaultPlan.features
             };
 
@@ -125,13 +141,13 @@ const PlanManagement = () => {
                     .eq('id', editingId);
 
                 if (error) throw error;
-                setPlans(prev => prev.map(p => p.id === editingId ? { ...p, ...planData } : p));
+                setPlans(prev => prev.map(p => p.id === editingId ? { ...p, ...planData } as SubscriptionPlan : p));
                 setEditingId(null);
                 alert('Plan updated successfully!');
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error saving plan:', error);
-            alert('Save failed: ' + error.message);
+            alert('Save failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
         } finally {
             setSaving(false);
         }
@@ -149,19 +165,19 @@ const PlanManagement = () => {
             if (error) throw error;
             setPlans(prev => prev.filter(p => p.id !== planId));
             alert('Plan deleted successfully');
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error deleting plan:', error);
-            alert('Delete failed: ' + error.message);
+            alert('Delete failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
         }
     };
 
-    const handleChange = (field: string, value: any) => {
-        setEditForm((prev: any) => ({ ...prev, [field]: value }));
+    const handleChange = (field: keyof SubscriptionPlan, value: string | number | boolean | Record<string, boolean>) => {
+        setEditForm((prev) => ({ ...prev, [field]: value }));
     };
 
     const toggleFeature = (featureKey: string) => {
         const currentFeatures = editForm.features || {};
-        setEditForm((prev: any) => ({
+        setEditForm((prev) => ({
             ...prev,
             features: {
                 ...currentFeatures,
@@ -177,8 +193,8 @@ const PlanManagement = () => {
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₪</span>
                 <input
                     type="number"
-                    value={editForm[field]}
-                    onChange={e => handleChange(field, e.target.value)}
+                    value={editForm[field as keyof SubscriptionPlan] as number}
+                    onChange={e => handleChange(field as keyof SubscriptionPlan, e.target.value)}
                     className="pl-8 block w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-brand-500 focus:ring-brand-500 font-bold text-gray-900 dark:text-white sm:text-sm"
                 />
             </div>
@@ -191,8 +207,8 @@ const PlanManagement = () => {
             <div className="relative">
                 <input
                     type="number"
-                    value={editForm[field]}
-                    onChange={e => handleChange(field, e.target.value)}
+                    value={editForm[field as keyof SubscriptionPlan] as number}
+                    onChange={e => handleChange(field as keyof SubscriptionPlan, e.target.value)}
                     className="block w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-brand-500 focus:ring-brand-500 font-bold text-gray-900 dark:text-white sm:text-sm"
                 />
                 {suffix && (
@@ -286,7 +302,7 @@ const PlanManagement = () => {
                                 <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Display Name</label>
                                 <input
                                     type="text"
-                                    value={editForm.name}
+                                    value={editForm.name || ''}
                                     onChange={e => handleChange('name', e.target.value)}
                                     className="block w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-brand-500 focus:ring-brand-500 font-black text-lg text-gray-900 dark:text-white"
                                     placeholder="e.g. ULTIMATE"

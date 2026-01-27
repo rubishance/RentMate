@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import {
     BarChart3,
     TrendingUp,
     MessageSquare,
     Clock,
-    Users,
     Zap,
     AlertCircle,
     Loader2
@@ -23,7 +22,6 @@ import {
     YAxis,
     CartesianGrid,
     Tooltip,
-    Legend,
     ResponsiveContainer
 } from 'recharts';
 
@@ -40,17 +38,24 @@ interface ChatAnalytics {
     escalation_rate: number;
 }
 
+interface Interaction {
+    user_id: string;
+    title: string | null;
+    created_at: string;
+}
+
+interface TicketData {
+    category: string;
+    created_at: string;
+}
+
 export default function ChatAnalytics() {
     const [analytics, setAnalytics] = useState<ChatAnalytics | null>(null);
     const [loading, setLoading] = useState(true);
     const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d');
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        fetchAnalytics();
-    }, [timeRange]);
-
-    const fetchAnalytics = async () => {
+    const fetchAnalytics = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
@@ -82,17 +87,21 @@ export default function ChatAnalytics() {
             if (ticketsError) throw ticketsError;
 
             // Process analytics
-            const processedAnalytics = processAnalyticsData(interactions || [], tickets || []);
+            const processedAnalytics = processAnalyticsData((interactions as unknown as Interaction[]) || [], (tickets as unknown as TicketData[]) || []);
             setAnalytics(processedAnalytics);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error fetching analytics:', err);
-            setError(err.message || 'Failed to load analytics');
+            setError(err instanceof Error ? err.message : 'Failed to load analytics');
         } finally {
             setLoading(false);
         }
-    };
+    }, [timeRange]);
 
-    const processAnalyticsData = (interactions: any[], tickets: any[]): ChatAnalytics => {
+    useEffect(() => {
+        fetchAnalytics();
+    }, [fetchAnalytics]);
+
+    const processAnalyticsData = (interactions: Interaction[], tickets: TicketData[]): ChatAnalytics => {
         // Total conversations (unique user sessions)
         const uniqueUsers = new Set(interactions.map(i => i.user_id));
         const total_conversations = uniqueUsers.size;
@@ -316,9 +325,9 @@ export default function ChatAnalytics() {
                                     cx="50%"
                                     cy="50%"
                                     labelLine={false}
-                                    label={(entry: any) => {
-                                        const data = analytics.category_breakdown[entry.index];
-                                        return `${data.category}: ${((entry.percent || 0) * 100).toFixed(0)}%`;
+                                    label={({ index, percent }: { index: number; percent?: number }) => {
+                                        const data = analytics.category_breakdown[index];
+                                        return `${data.category}: ${((percent || 0) * 100).toFixed(0)}%`;
                                     }}
                                     outerRadius={100}
                                     fill="#8884d8"
