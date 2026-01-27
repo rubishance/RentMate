@@ -40,19 +40,23 @@ ALTER TABLE public.human_conversations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.human_messages ENABLE ROW LEVEL SECURITY;
 
 -- Admins can do everything
+DROP POLICY IF EXISTS "Admins manage human conversations" ON public.human_conversations;
 CREATE POLICY "Admins manage human conversations" ON public.human_conversations
 AS PERMISSIVE FOR ALL TO authenticated
 USING (EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin'));
 
+DROP POLICY IF EXISTS "Admins manage human messages" ON public.human_messages;
 CREATE POLICY "Admins manage human messages" ON public.human_messages
 AS PERMISSIVE FOR ALL TO authenticated
 USING (EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin'));
 
 -- Users can see their own conversations
+DROP POLICY IF EXISTS "Users view own human conversations" ON public.human_conversations;
 CREATE POLICY "Users view own human conversations" ON public.human_conversations
 FOR SELECT TO authenticated
 USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users view/send own human messages" ON public.human_messages;
 CREATE POLICY "Users view/send own human messages" ON public.human_messages
 FOR ALL TO authenticated
 USING (

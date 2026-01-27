@@ -2,7 +2,7 @@
 -- This migration is NOT deployed yet - it's ready for when auth is implemented
 
 CREATE TABLE IF NOT EXISTS user_preferences (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     language TEXT NOT NULL DEFAULT 'he' CHECK (language IN ('he', 'en')),
     gender TEXT CHECK (gender IN ('male', 'female', 'unspecified')),
@@ -18,6 +18,7 @@ CREATE INDEX IF NOT EXISTS idx_user_preferences_user_id ON user_preferences(user
 ALTER TABLE user_preferences ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policy: Users can only read/write their own preferences
+DROP POLICY IF EXISTS "Users can manage their own preferences" ON user_preferences;
 CREATE POLICY "Users can manage their own preferences"
     ON user_preferences
     FOR ALL

@@ -23,6 +23,7 @@ ALTER TABLE public.human_conversations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.human_messages ENABLE ROW LEVEL SECURITY;
 
 -- Policies for humman_conversations
+DROP POLICY IF EXISTS "Admins can view all conversations" ON public.human_conversations;
 CREATE POLICY "Admins can view all conversations"
     ON public.human_conversations
     FOR SELECT
@@ -33,6 +34,7 @@ CREATE POLICY "Admins can view all conversations"
         )
     );
 
+DROP POLICY IF EXISTS "Admins can insert conversations" ON public.human_conversations;
 CREATE POLICY "Admins can insert conversations"
     ON public.human_conversations
     FOR INSERT
@@ -43,6 +45,7 @@ CREATE POLICY "Admins can insert conversations"
         )
     );
 
+DROP POLICY IF EXISTS "Admins can update conversations" ON public.human_conversations;
 CREATE POLICY "Admins can update conversations"
     ON public.human_conversations
     FOR UPDATE
@@ -53,12 +56,14 @@ CREATE POLICY "Admins can update conversations"
         )
     );
 
+DROP POLICY IF EXISTS "Users can view their own conversations" ON public.human_conversations;
 CREATE POLICY "Users can view their own conversations"
     ON public.human_conversations
     FOR SELECT
     USING (auth.uid() = user_id);
 
 -- Policies for human_messages
+DROP POLICY IF EXISTS "Admins can view all messages" ON public.human_messages;
 CREATE POLICY "Admins can view all messages"
     ON public.human_messages
     FOR SELECT
@@ -69,6 +74,7 @@ CREATE POLICY "Admins can view all messages"
         )
     );
 
+DROP POLICY IF EXISTS "Admins can insert messages" ON public.human_messages;
 CREATE POLICY "Admins can insert messages"
     ON public.human_messages
     FOR INSERT
@@ -79,6 +85,7 @@ CREATE POLICY "Admins can insert messages"
         )
     );
 
+DROP POLICY IF EXISTS "Users can view messages in their conversations" ON public.human_messages;
 CREATE POLICY "Users can view messages in their conversations"
     ON public.human_messages
     FOR SELECT
@@ -89,6 +96,7 @@ CREATE POLICY "Users can view messages in their conversations"
         )
     );
 
+DROP POLICY IF EXISTS "Users can insert messages in their active conversations" ON public.human_messages;
 CREATE POLICY "Users can insert messages in their active conversations"
     ON public.human_messages
     FOR INSERT

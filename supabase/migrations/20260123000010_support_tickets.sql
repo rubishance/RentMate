@@ -7,13 +7,29 @@ CREATE TABLE IF NOT EXISTS support_tickets (
     category TEXT NOT NULL CHECK (category IN ('technical', 'billing', 'feature_request', 'bug', 'other')),
     priority TEXT NOT NULL DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'urgent')),
     status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'in_progress', 'waiting_user', 'resolved', 'closed')),
-    assigned_to UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-    chat_context JSONB, -- Store the chat conversation that led to the ticket
-    resolution_notes TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    resolved_at TIMESTAMPTZ
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Ensure columns exist if table was created by a previous version
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'support_tickets' AND column_name = 'assigned_to') THEN
+        ALTER TABLE public.support_tickets ADD COLUMN assigned_to UUID REFERENCES auth.users(id) ON DELETE SET NULL;
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'support_tickets' AND column_name = 'chat_context') THEN
+        ALTER TABLE public.support_tickets ADD COLUMN chat_context JSONB;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'support_tickets' AND column_name = 'resolution_notes') THEN
+        ALTER TABLE public.support_tickets ADD COLUMN resolution_notes TEXT;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'support_tickets' AND column_name = 'resolved_at') THEN
+        ALTER TABLE public.support_tickets ADD COLUMN resolved_at TIMESTAMPTZ;
+    END IF;
+END $$;
 
 -- Ticket Comments Table (for back-and-forth communication)
 CREATE TABLE IF NOT EXISTS ticket_comments (
@@ -36,21 +52,25 @@ ALTER TABLE support_tickets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ticket_comments ENABLE ROW LEVEL SECURITY;
 
 -- Users can view their own tickets
+DROP POLICY IF EXISTS "Users can view own tickets" ON support_tickets;
 CREATE POLICY "Users can view own tickets"
     ON support_tickets FOR SELECT
     USING (auth.uid() = user_id);
 
 -- Users can create tickets
+DROP POLICY IF EXISTS "Users can create tickets" ON support_tickets;
 CREATE POLICY "Users can create tickets"
     ON support_tickets FOR INSERT
     WITH CHECK (auth.uid() = user_id);
 
 -- Users can update their own open tickets
+DROP POLICY IF EXISTS "Users can update own open tickets" ON support_tickets;
 CREATE POLICY "Users can update own open tickets"
     ON support_tickets FOR UPDATE
     USING (auth.uid() = user_id AND status = 'open');
 
 -- Admins can view all tickets
+DROP POLICY IF EXISTS "Admins can view all tickets" ON support_tickets;
 CREATE POLICY "Admins can view all tickets"
     ON support_tickets FOR SELECT
     USING (
@@ -61,6 +81,7 @@ CREATE POLICY "Admins can view all tickets"
     );
 
 -- Admins can update all tickets
+DROP POLICY IF EXISTS "Admins can update all tickets" ON support_tickets;
 CREATE POLICY "Admins can update all tickets"
     ON support_tickets FOR UPDATE
     USING (
@@ -71,6 +92,7 @@ CREATE POLICY "Admins can update all tickets"
     );
 
 -- Users can view comments on their tickets
+DROP POLICY IF EXISTS "Users can view own ticket comments" ON ticket_comments;
 CREATE POLICY "Users can view own ticket comments"
     ON ticket_comments FOR SELECT
     USING (
@@ -81,6 +103,7 @@ CREATE POLICY "Users can view own ticket comments"
     );
 
 -- Users can add comments to their tickets
+DROP POLICY IF EXISTS "Users can comment on own tickets" ON ticket_comments;
 CREATE POLICY "Users can comment on own tickets"
     ON ticket_comments FOR INSERT
     WITH CHECK (
@@ -91,6 +114,7 @@ CREATE POLICY "Users can comment on own tickets"
     );
 
 -- Admins can view all comments
+DROP POLICY IF EXISTS "Admins can view all comments" ON ticket_comments;
 CREATE POLICY "Admins can view all comments"
     ON ticket_comments FOR SELECT
     USING (
@@ -101,6 +125,7 @@ CREATE POLICY "Admins can view all comments"
     );
 
 -- Admins can add comments to any ticket
+DROP POLICY IF EXISTS "Admins can comment on all tickets" ON ticket_comments;
 CREATE POLICY "Admins can comment on all tickets"
     ON ticket_comments FOR INSERT
     WITH CHECK (
@@ -120,6 +145,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger for updated_at
+DROP TRIGGER IF EXISTS update_support_tickets_timestamp ON support_tickets;
 CREATE TRIGGER update_support_tickets_timestamp
     BEFORE UPDATE ON support_tickets
     FOR EACH ROW
@@ -147,6 +173,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger for admin notifications
+DROP TRIGGER IF EXISTS notify_admins_on_new_ticket ON support_tickets;
 CREATE TRIGGER notify_admins_on_new_ticket
     AFTER INSERT ON support_tickets
     FOR EACH ROW

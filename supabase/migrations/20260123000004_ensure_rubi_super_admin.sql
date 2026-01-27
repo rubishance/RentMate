@@ -1,6 +1,3 @@
--- Migration: ensure_rubi_super_admin
--- Description: Ensures the rubi@rentmate.co.il account has super admin privileges.
-
 DO $$
 BEGIN
     -- Update rubi@rentmate.co.il if it exists

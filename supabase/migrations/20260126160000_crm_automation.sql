@@ -57,31 +57,37 @@ ALTER TABLE public.automation_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_automation_settings ENABLE ROW LEVEL SECURITY;
 
 -- Admins can view all ticket analysis
+DROP POLICY IF EXISTS "Admins can view all ticket analysis" ON public.ticket_analysis;
 CREATE POLICY "Admins can view all ticket analysis" ON public.ticket_analysis
     FOR SELECT TO authenticated
-    USING (public.is_admin(auth.uid()));
+    USING (public.is_admin());
 
 -- Users can view their own automation settings
+DROP POLICY IF EXISTS "Users can view own automation settings" ON public.user_automation_settings;
 CREATE POLICY "Users can view own automation settings" ON public.user_automation_settings
     FOR SELECT TO authenticated
     USING (auth.uid() = user_id);
 
 -- Users can update their own automation settings
+DROP POLICY IF EXISTS "Users can update own automation settings" ON public.user_automation_settings;
 CREATE POLICY "Users can update own automation settings" ON public.user_automation_settings
     FOR UPDATE TO authenticated
     USING (auth.uid() = user_id);
 
 -- Insert policy for user automation settings (so they can create it initially)
+DROP POLICY IF EXISTS "Users can insert own automation settings" ON public.user_automation_settings;
 CREATE POLICY "Users can insert own automation settings" ON public.user_automation_settings
     FOR INSERT TO authenticated
     WITH CHECK (auth.uid() = user_id);
 
 -- Admins can manage automation rules
+DROP POLICY IF EXISTS "Admins can manage automation rules" ON public.automation_rules;
 CREATE POLICY "Admins can manage automation rules" ON public.automation_rules
     FOR ALL TO authenticated
-    USING (public.is_admin(auth.uid()));
+    USING (public.is_admin());
 
 -- Admins can view logs
+DROP POLICY IF EXISTS "Admins can view automation logs" ON public.automation_logs;
 CREATE POLICY "Admins can view automation logs" ON public.automation_logs
     FOR SELECT TO authenticated
-    USING (public.is_admin(auth.uid()));
+    USING (public.is_admin());

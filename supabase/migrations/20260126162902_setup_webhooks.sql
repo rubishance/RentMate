@@ -2,7 +2,7 @@
 -- This sends table events to the 'on-event-trigger' Edge Function
 
 -- 1. Enable net extension for webhooks if not already (usually enabled in Supabase)
-CREATE EXTENSION IF NOT EXISTS "net" WITH SCHEMA "extensions";
+CREATE EXTENSION IF NOT EXISTS pg_net;
 
 -- 2. Generic function to call our edge function via vault or direct URL
 -- Note: In a real environment, you'd use the SUPABASE_URL and SERVICE_ROLE_KEY.

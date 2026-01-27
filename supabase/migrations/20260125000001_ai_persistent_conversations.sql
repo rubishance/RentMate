@@ -14,15 +14,18 @@ CREATE TABLE IF NOT EXISTS public.ai_conversations (
 ALTER TABLE public.ai_conversations ENABLE ROW LEVEL SECURITY;
 
 -- Users can manage their own conversations
+DROP POLICY IF EXISTS "Users can view own AI conversations" ON public.ai_conversations;
 CREATE POLICY "Users can view own AI conversations"
     ON public.ai_conversations FOR SELECT
     USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete own AI conversations" ON public.ai_conversations;
 CREATE POLICY "Users can delete own AI conversations"
     ON public.ai_conversations FOR DELETE
     USING (auth.uid() = user_id);
 
 -- Admins can view everything
+DROP POLICY IF EXISTS "Admins can view all AI conversations" ON public.ai_conversations;
 CREATE POLICY "Admins can view all AI conversations"
     ON public.ai_conversations FOR SELECT
     USING (

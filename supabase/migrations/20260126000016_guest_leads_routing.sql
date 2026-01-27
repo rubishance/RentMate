@@ -3,24 +3,34 @@
 
 -- 1. Create a "Guest Leads" user system entry if not exists
 -- We use a fixed UUID for the "System Guest" to route anonymous emails.
-INSERT INTO auth.users (id, email, raw_user_meta_data, created_at)
-VALUES (
-  '00000000-0000-0000-0000-000000000000', 
-  'guest-leads@rentmate.co.il', 
-  '{"full_name": "Potential Lead"}'::jsonb, 
-  NOW()
-)
-ON CONFLICT (id) DO NOTHING;
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM auth.users WHERE id = '00000000-0000-0000-0000-000000000000' OR email = 'guest-leads@rentmate.co.il') THEN
+        INSERT INTO auth.users (id, email, raw_user_meta_data, created_at)
+        VALUES (
+          '00000000-0000-0000-0000-000000000000', 
+          'guest-leads@rentmate.co.il', 
+          '{"full_name": "Potential Lead"}'::jsonb, 
+          NOW()
+        );
+    END IF;
+END $$;
 
 -- 2. Ensure profile exists for routing
-INSERT INTO public.user_profiles (id, email, full_name, role)
-VALUES (
-  '00000000-0000-0000-0000-000000000000', 
-  'guest-leads@rentmate.co.il', 
-  'Potential Lead', 
-  'user'
-)
-ON CONFLICT (id) DO NOTHING;
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM public.user_profiles WHERE id = '00000000-0000-0000-0000-000000000000' OR email = 'guest-leads@rentmate.co.il') THEN
+        INSERT INTO public.user_profiles (id, email, full_name, first_name, last_name, role)
+        VALUES (
+          '00000000-0000-0000-0000-000000000000', 
+          'guest-leads@rentmate.co.il', 
+          'Potential Lead', 
+          'Potential',
+          'Lead',
+          'user'
+        );
+    END IF;
+END $$;
 
 -- 3. Update get_admin_stats to include automated actions count
 CREATE OR REPLACE FUNCTION public.get_admin_stats()
