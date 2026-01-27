@@ -186,7 +186,7 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         calculator: 'Calculator',
 
         name: 'Name',
-        address: 'Address',
+        address: 'Street Address',
         city: 'City',
         status: 'Status',
         amount: 'Amount',
@@ -208,12 +208,15 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         other: 'Other',
 
         addProperty: 'Add Property',
+        selectCategory: 'Select Category',
+        friendlyName: 'Friendly Name',
+        mainApartment: 'Main Apartment',
         occupied: 'Occupied',
         vacant: 'Vacant',
         rooms: 'Rooms',
-        sqm: 'SQM',
+        sqm: 'Size (sqm)',
         parking: 'Parking',
-        monthlyRentLabel: 'Monthly Rent',
+        monthlyRentLabel: 'Current Rent (ILS / Month)',
         createFirstAsset: 'Create First Asset',
         noAssetsFound: 'No assets found',
         addFirstPropertyDesc: 'Start managing your properties by adding your first asset.',
@@ -224,9 +227,6 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         stepDate: 'Date',
         newAmount: 'New Amount',
         linkageAndIndices: 'Linkage & Indices',
-        selectDate: 'Select Date...',
-        friendlyName: 'Friendly Name',
-        selectCategory: 'Select Category',
-        mainApartment: 'Main Apartment'
+        selectDate: 'Select Date...'
     }
 };
