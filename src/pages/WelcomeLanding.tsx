@@ -335,46 +335,7 @@ export function WelcomeLanding() {
                                 </div>
                             </section>
 
-                            {/* --- FOOTER --- */}
-                            <footer className="py-24 border-t border-slate-100 dark:border-neutral-900 bg-white dark:bg-black text-center px-8">
-                                <div className="max-w-7xl mx-auto space-y-16">
-                                    <div className="space-y-6">
-                                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.5em] opacity-40">
-                                            {isRtl ? 'מאובטח בטכנולוגיית ענן מובילה' : 'Built with Premium Enterprise Stack'}
-                                        </p>
-                                        <div className="flex flex-wrap justify-center gap-12 opacity-30 invert dark:invert-0 grayscale hover:grayscale-0 transition-all duration-1000">
-                                            {['Supabase', 'Stripe', 'OpenAI', 'AWS'].map(brand => (
-                                                <span key={brand} className="text-2xl font-black text-foreground tracking-tighter lowercase">{brand}</span>
-                                            ))}
-                                        </div>
-                                    </div>
 
-                                    <div className="pt-16 border-t border-slate-50 dark:border-neutral-900 flex flex-col md:flex-row items-center justify-between gap-8">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">
-                                            © 2025 RentMate. Intelligently Minimal.
-                                        </span>
-                                        <div className="flex gap-10">
-                                            <a
-                                                href="/legal/privacy"
-                                                onClick={(e) => { e.preventDefault(); navigate('/legal/privacy'); }}
-                                                className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
-                                            >
-                                                {isRtl ? 'פרטיות' : 'Privacy'}
-                                            </a>
-                                            <a
-                                                href="/legal/terms"
-                                                onClick={(e) => { e.preventDefault(); navigate('/legal/terms'); }}
-                                                className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
-                                            >
-                                                {isRtl ? 'תנאים' : 'Terms'}
-                                            </a>
-                                            <button className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors">
-                                                {isRtl ? 'תמיכה' : 'Support'}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </footer>
                         </motion.div>
                     )}
 
@@ -401,6 +362,47 @@ export function WelcomeLanding() {
                     )}
                 </AnimatePresence>
             </main>
+
+            {/* --- FOOTER (Global) --- */}
+            <footer className="py-24 border-t border-slate-100 dark:border-neutral-900 bg-white dark:bg-black text-center px-8 relative z-10">
+                <div className="max-w-7xl mx-auto space-y-16">
+                    <div className="space-y-6">
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.5em] opacity-40">
+                            {isRtl ? 'מאובטח בטכנולוגיית ענן מובילה' : 'Built with Premium Enterprise Stack'}
+                        </p>
+                        <div className="flex flex-wrap justify-center gap-12 opacity-30 invert dark:invert-0 grayscale hover:grayscale-0 transition-all duration-1000">
+                            {['Supabase', 'Stripe', 'OpenAI', 'AWS'].map(brand => (
+                                <span key={brand} className="text-2xl font-black text-foreground tracking-tighter lowercase">{brand}</span>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="pt-16 border-t border-slate-50 dark:border-neutral-900 flex flex-col md:flex-row items-center justify-between gap-8">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">
+                            © 2025 RentMate. Intelligently Minimal.
+                        </span>
+                        <div className="flex gap-10">
+                            <a
+                                href="/legal/privacy"
+                                onClick={(e) => { e.preventDefault(); navigate('/legal/privacy'); }}
+                                className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                                {isRtl ? 'פרטיות' : 'Privacy'}
+                            </a>
+                            <a
+                                href="/legal/terms"
+                                onClick={(e) => { e.preventDefault(); navigate('/legal/terms'); }}
+                                className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                                {isRtl ? 'תנאים' : 'Terms'}
+                            </a>
+                            <button className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors">
+                                {isRtl ? 'תמיכה' : 'Support'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </footer>
         </div>
     );
 }
