@@ -58,6 +58,15 @@ serve(async (req: Request) => {
             .from('properties')
             .select('*', { count: 'exact', head: true });
 
+        // SILENT MODE CHECK: If no significant activity, skip email
+        if ((newUsers || 0) === 0 && (newTickets || 0) === 0 && (newUpgrades || 0) === 0 && totalRevenue === 0) {
+            console.log("Silent Mode: No activity in the last 24h. Skipping daily summary.");
+            return new Response(JSON.stringify({ skipped: true, message: "No significant activity to report." }), {
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+                status: 200,
+            });
+        }
+
         // 2. Format Email
         const htmlBody = `
 <!DOCTYPE html>
