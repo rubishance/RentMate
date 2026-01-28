@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Property } from '../../types/database';
 import { cn } from '../../lib/utils';
-import { HomeIcon, UsersIcon, WalletIcon, FolderIcon, PhoneIcon, MapPinIcon, PlusIcon, MoreVertical, Edit2, Trash2, CheckIcon, FilePlus } from 'lucide-react';
+import { HomeIcon, WalletIcon, FolderIcon, PhoneIcon, MapPinIcon, PlusIcon, MoreVertical, Edit2, Trash2, CheckIcon, FilePlus, FileText } from 'lucide-react';
 import { PropertyDocumentsHub } from '../properties/PropertyDocumentsHub';
 import { Button } from '../ui/Button';
 import { SnapshotTab } from './tabs/SnapshotTab';
-import { PeopleTab } from './tabs/PeopleTab';
+import { ContractsTab } from './tabs/ContractsTab';
 import { WalletTab } from './tabs/WalletTab';
 import { useStack } from '../../contexts/StackContext';
 import { supabase } from '../../lib/supabase';
@@ -21,7 +21,7 @@ interface PropertyHubProps {
     onDelete?: () => void;
 }
 
-type TabType = 'snapshot' | 'people' | 'wallet' | 'files';
+type TabType = 'snapshot' | 'contracts' | 'wallet' | 'files';
 
 export function PropertyHub({ property: initialProperty, propertyId, onDelete }: PropertyHubProps) {
     const { t, lang } = useTranslation();
@@ -40,7 +40,7 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete }:
 
     const tabs = [
         { id: 'snapshot', label: t('snapshot'), icon: HomeIcon },
-        { id: 'people', label: t('tenants'), icon: UsersIcon },
+        { id: 'contracts', label: t('contracts'), icon: FileText },
         { id: 'wallet', label: t('financials'), icon: WalletIcon },
         { id: 'files', label: t('documents'), icon: FolderIcon },
     ] as const;
@@ -290,7 +290,7 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete }:
                         onPropertyChange={setEditedProperty}
                     />
                 )}
-                {activeTab === 'people' && <PeopleTab property={property} />}
+                {activeTab === 'contracts' && <ContractsTab propertyId={propertyId} />}
                 {activeTab === 'wallet' && <WalletTab property={property} />}
                 {activeTab === 'files' && (
                     <div className="h-full">
