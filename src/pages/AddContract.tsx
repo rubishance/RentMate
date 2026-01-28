@@ -1446,7 +1446,7 @@ export function AddContract() {
                                             <div className="bg-secondary/10 p-4 rounded-xl space-y-4">
                                                 <div className="space-y-2">
                                                     <label className="text-sm font-medium flex items-center gap-2">{t('linkageAndIndices')} <ConfidenceDot field="linkageType" /></label>
-                                                    <div className="grid grid-cols-3 gap-2">
+                                                    <div className="grid grid-cols-2 gap-2">
                                                         <label
                                                             className={cn(
                                                                 "flex flex-col items-center gap-2 p-2 border rounded-xl cursor-pointer transition-all",
@@ -1470,16 +1470,46 @@ export function AddContract() {
                                                         <label
                                                             className={cn(
                                                                 "flex flex-col items-center gap-2 p-2 border rounded-xl cursor-pointer transition-all",
+                                                                formData.linkageType === 'housing' ? "border-orange-500 bg-orange-50 ring-1 ring-orange-500" : "border-border hover:border-orange-300"
+                                                            )}
+                                                        >
+                                                            <input type="radio" name="linkage" className="hidden" checked={formData.linkageType === 'housing'} onChange={() => setFormData({ ...formData, linkageType: 'housing' })} />
+                                                            <span className="text-xs font-bold text-center">{t('linkedToHousing')}</span>
+                                                        </label>
+
+                                                        <label
+                                                            className={cn(
+                                                                "flex flex-col items-center gap-2 p-2 border rounded-xl cursor-pointer transition-all",
+                                                                formData.linkageType === 'construction' ? "border-amber-500 bg-amber-50 ring-1 ring-amber-500" : "border-border hover:border-amber-300"
+                                                            )}
+                                                        >
+                                                            <input type="radio" name="linkage" className="hidden" checked={formData.linkageType === 'construction'} onChange={() => setFormData({ ...formData, linkageType: 'construction' })} />
+                                                            <span className="text-xs font-bold text-center">{t('linkedToConstruction')}</span>
+                                                        </label>
+
+                                                        <label
+                                                            className={cn(
+                                                                "flex flex-col items-center gap-2 p-2 border rounded-xl cursor-pointer transition-all",
                                                                 formData.linkageType === 'usd' ? "border-green-500 bg-green-50 ring-1 ring-green-500" : "border-border hover:border-green-300"
                                                             )}
                                                         >
                                                             <input type="radio" name="linkage" className="hidden" checked={formData.linkageType === 'usd'} onChange={() => setFormData({ ...formData, linkageType: 'usd' })} />
                                                             <span className="text-xs font-bold text-center">{t('linkedToUsd')}</span>
                                                         </label>
+
+                                                        <label
+                                                            className={cn(
+                                                                "flex flex-col items-center gap-2 p-2 border rounded-xl cursor-pointer transition-all",
+                                                                formData.linkageType === 'eur' ? "border-blue-500 bg-blue-50 ring-1 ring-blue-500" : "border-border hover:border-blue-300"
+                                                            )}
+                                                        >
+                                                            <input type="radio" name="linkage" className="hidden" checked={formData.linkageType === 'eur'} onChange={() => setFormData({ ...formData, linkageType: 'eur' })} />
+                                                            <span className="text-xs font-bold text-center">{t('linkedToEur')}</span>
+                                                        </label>
                                                     </div>
                                                 </div>
 
-                                                {(formData.linkageType === 'cpi' || formData.linkageType === 'usd') && (
+                                                {formData.linkageType !== 'none' && (
                                                     <motion.div
                                                         initial={{ height: 0, opacity: 0 }}
                                                         animate={{ height: 'auto', opacity: 1 }}

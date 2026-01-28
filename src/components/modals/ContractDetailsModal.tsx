@@ -488,10 +488,12 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                 onChange={e => setFormData({ ...formData, linkage_type: e.target.value })}
                                                 className="w-full px-3 py-2 text-sm border border-border dark:border-gray-700 rounded-lg bg-white dark:bg-foreground disabled:bg-secondary disabled:text-muted-foreground"
                                             >
-                                                <option value="none">None</option>
-                                                <option value="cpi">CPI (Madad)</option>
-                                                <option value="usd">USD Rate</option>
-                                                <option value="eur">EUR Rate</option>
+                                                <option value="none">{t('notLinked')}</option>
+                                                <option value="cpi">{t('linkedToCpi')}</option>
+                                                <option value="housing">{t('linkedToHousing')}</option>
+                                                <option value="construction">{t('linkedToConstruction')}</option>
+                                                <option value="usd">{t('linkedToUsd')}</option>
+                                                <option value="eur">{t('linkedToEur')}</option>
                                             </select>
                                         </div>
                                         {formData.linkage_type !== 'none' && (

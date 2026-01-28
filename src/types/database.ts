@@ -142,7 +142,7 @@ export interface Contract {
     payment_day: number;
 
     // Linkage
-    linkage_type: 'cpi' | 'usd' | 'eur' | 'none';
+    linkage_type: 'cpi' | 'housing' | 'construction' | 'usd' | 'eur' | 'none';
     base_index_date: string | null;
     base_index_value: number | null;
     linkage_sub_type?: 'known' | 'respect_of' | 'base' | null;

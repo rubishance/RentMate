@@ -332,6 +332,9 @@ export type TranslationKeys =
     | 'notLinked'
     | 'linkedToCpi'
     | 'linkedToUsd'
+    | 'linkedToEur'
+    | 'linkedToHousing'
+    | 'linkedToConstruction'
     | 'indexType'
     | 'ceiling'
     | 'floorIndex'
@@ -955,6 +958,9 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         notLinked: 'לא צמוד',
         linkedToCpi: 'צמוד מדד (CPI)',
         linkedToUsd: 'צמוד דולר ($)',
+        linkedToEur: 'צמוד אירו (€)',
+        linkedToHousing: 'צמוד מדד הדיור',
+        linkedToConstruction: 'מדד התשומות',
         indexType: 'סוג מדד',
 
         ceiling: 'תקרה (מקסימום %)',
@@ -1750,6 +1756,9 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         notLinked: 'Not Linked',
         linkedToCpi: 'Linked to CPI',
         linkedToUsd: 'Linked to USD',
+        linkedToEur: 'Linked to EUR',
+        linkedToHousing: 'Housing Index',
+        linkedToConstruction: 'Construction Index',
         indexType: 'Index Type',
 
         ceiling: 'Ceiling (Max %)',
