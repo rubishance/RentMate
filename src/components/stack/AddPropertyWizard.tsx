@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Button } from '../ui/Button';
-import { CheckIcon, ArrowRightIcon, MapPin, Building2, Info } from 'lucide-react';
+import { CheckIcon, ArrowRightIcon, MapPin, Building2, Info, Upload, Image as ImageIcon, Loader2, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PropertyTypeSelect } from '../common/PropertyTypeSelect';
 import type { Property } from '../../types/database';
 import { useStack } from '../../contexts/StackContext';
+import { supabase } from '../../lib/supabase';
+import { CompressionService } from '../../services/compression.service';
+import { cn } from '../../lib/utils';
 
 // Wizard Steps Configuration
 const STEPS = [
-    { id: 'type', title: 'Asset Type', question: 'What kind of property is this?', icon: <Building2 className="w-6 h-6" /> },
     { id: 'address', title: 'Location', question: 'Where is it located?', icon: <MapPin className="w-6 h-6" /> },
     { id: 'details', title: 'Details', question: 'Tell us about the property.', icon: <Info className="w-6 h-6" /> },
 ];
@@ -35,8 +37,52 @@ export function AddPropertyWizard({ initialData, mode = 'add' }: AddPropertyWiza
         status: 'Vacant', // Removed from UI, default to Vacant
         title: '', // Removed from UI
         has_parking: initialData?.has_parking || false,
-        has_storage: initialData?.has_storage || false
+        has_storage: initialData?.has_storage || false,
+        image_url: initialData?.image_url || ''
     });
+
+    // Image Upload State
+    const [uploadMode, setUploadMode] = useState<'url' | 'upload'>('upload');
+    const [isUploading, setIsUploading] = useState(false);
+    const [imageError, setImageError] = useState<string | null>(null);
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files || e.target.files.length === 0) return;
+
+        setIsUploading(true);
+        let file = e.target.files[0];
+
+        try {
+            if (CompressionService.isImage(file)) {
+                file = await CompressionService.compressImage(file);
+            }
+        } catch (error) {
+            console.error('Compression failed:', error);
+        }
+
+        const fileExt = file.name.split('.').pop();
+        const fileName = `prop_${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        try {
+            const { error: uploadError } = await supabase.storage
+                .from('property-images')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data } = supabase.storage
+                .from('property-images')
+                .getPublicUrl(filePath);
+
+            setFormData(prev => ({ ...prev, image_url: data.publicUrl }));
+        } catch (err: any) {
+            console.error('Error uploading image:', err);
+            setImageError('Failed to upload image: ' + err.message);
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     const next = () => {
         if (currentStep === STEPS.length - 1) {
@@ -51,8 +97,8 @@ export function AddPropertyWizard({ initialData, mode = 'add' }: AddPropertyWiza
     const back = () => setCurrentStep(prev => Math.max(prev - 1, 0));
 
     const isStepValid = () => {
-        if (currentStep === 0) return !!formData.property_type;
-        if (currentStep === 1) return !!formData.address && !!formData.city;
+        if (currentStep === 0) return !!formData.address && !!formData.city;
+        if (currentStep === 1) return !!formData.property_type;
         return true;
     };
 
@@ -112,9 +158,39 @@ export function AddPropertyWizard({ initialData, mode = 'add' }: AddPropertyWiza
 
                             <div className="bg-white dark:bg-neutral-900/50 backdrop-blur-xl p-8 rounded-[2.5rem] border border-slate-100 dark:border-neutral-800 shadow-minimal min-h-[400px]">
                                 {currentStep === 0 && (
-                                    <div className="space-y-6 flex flex-col items-center py-4">
-                                        <div className="w-full max-w-sm">
-                                            <label className="text-sm font-bold text-foreground mb-4 block text-center uppercase tracking-wider">
+                                    <div className="space-y-6 py-4">
+                                        <div className="space-y-4">
+                                            {/* City above Address as requested */}
+                                            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700 focus-within:ring-2 ring-primary/20 transition-all">
+                                                <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">{t('city')}</label>
+                                                <input
+                                                    type="text"
+                                                    autoFocus
+                                                    placeholder="Tel Aviv"
+                                                    className="bg-transparent font-black text-2xl text-foreground w-full outline-none placeholder:opacity-30"
+                                                    value={formData.city}
+                                                    onChange={e => setFormData({ ...formData, city: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700 focus-within:ring-2 ring-primary/20 transition-all">
+                                                <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">{t('address')}</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Herzl 123, Apt 4"
+                                                    className="bg-transparent font-black text-2xl text-foreground w-full outline-none placeholder:opacity-30"
+                                                    value={formData.address}
+                                                    onChange={e => setFormData({ ...formData, address: e.target.value })}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {currentStep === 1 && (
+                                    <div className="space-y-8 py-4">
+                                        {/* Asset Type moved to page 2 as requested */}
+                                        <div className="p-6 rounded-[2rem] bg-white dark:bg-neutral-800/30 border border-slate-100 dark:border-neutral-700">
+                                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block mb-4 text-center">
                                                 {t('selectCategory')}
                                             </label>
                                             <PropertyTypeSelect
@@ -122,88 +198,153 @@ export function AddPropertyWizard({ initialData, mode = 'add' }: AddPropertyWiza
                                                 onChange={(val) => setFormData({ ...formData, property_type: val })}
                                             />
                                         </div>
-                                    </div>
-                                )}
 
-                                {currentStep === 1 && (
-                                    <div className="space-y-6 py-4">
-                                        <div className="space-y-4">
-                                            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700 focus-within:ring-2 ring-primary/20 transition-all">
-                                                <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">{t('address')}</label>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="p-6 rounded-[2rem] bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
+                                                <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">{t('rooms')}</label>
                                                 <input
-                                                    type="text"
-                                                    autoFocus
-                                                    placeholder="Herzl 123, Apt 4"
-                                                    className="bg-transparent font-black text-2xl text-foreground w-full outline-none placeholder:opacity-30"
-                                                    value={formData.address}
-                                                    onChange={e => setFormData({ ...formData, address: e.target.value })}
+                                                    type="number"
+                                                    step="0.5"
+                                                    className="bg-transparent font-black text-3xl text-foreground w-full outline-none"
+                                                    value={formData.rooms || ''}
+                                                    placeholder="0"
+                                                    onChange={e => setFormData({ ...formData, rooms: parseFloat(e.target.value) || 0 })}
                                                 />
                                             </div>
-                                            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700 focus-within:ring-2 ring-primary/20 transition-all">
-                                                <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">{t('city')}</label>
+                                            <div className="p-6 rounded-[2rem] bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
+                                                <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">{t('sqm')}</label>
                                                 <input
-                                                    type="text"
-                                                    placeholder="Tel Aviv"
-                                                    className="bg-transparent font-black text-2xl text-foreground w-full outline-none placeholder:opacity-30"
-                                                    value={formData.city}
-                                                    onChange={e => setFormData({ ...formData, city: e.target.value })}
+                                                    type="number"
+                                                    className="bg-transparent font-black text-3xl text-foreground w-full outline-none"
+                                                    value={formData.size_sqm || ''}
+                                                    placeholder="0"
+                                                    onChange={e => setFormData({ ...formData, size_sqm: parseFloat(e.target.value) || 0 })}
                                                 />
                                             </div>
-                                        </div>
-                                    </div>
-                                )}
 
-                                {currentStep === 2 && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
-                                        <div className="p-6 rounded-[2rem] bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
-                                            <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">{t('rooms')}</label>
-                                            <input
-                                                type="number"
-                                                step="0.5"
-                                                className="bg-transparent font-black text-3xl text-foreground w-full outline-none"
-                                                value={formData.rooms || ''}
-                                                placeholder="0"
-                                                onChange={e => setFormData({ ...formData, rooms: parseFloat(e.target.value) || 0 })}
-                                            />
-                                        </div>
-                                        <div className="p-6 rounded-[2rem] bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
-                                            <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">{t('sqm')}</label>
-                                            <input
-                                                type="number"
-                                                className="bg-transparent font-black text-3xl text-foreground w-full outline-none"
-                                                value={formData.size_sqm || ''}
-                                                placeholder="0"
-                                                onChange={e => setFormData({ ...formData, size_sqm: parseFloat(e.target.value) || 0 })}
-                                            />
-                                        </div>
+                                            {/* Features: Parking & Storage */}
+                                            <div className="col-span-1 md:col-span-2 grid grid-cols-2 gap-4">
+                                                <button
+                                                    onClick={() => setFormData(p => ({ ...p, has_parking: !p.has_parking }))}
+                                                    className={`p-4 rounded-2xl border flex items-center justify-between transition-all ${formData.has_parking
+                                                        ? 'bg-primary/10 border-primary text-primary'
+                                                        : 'bg-white dark:bg-neutral-900 border-slate-200 dark:border-neutral-800 text-muted-foreground'
+                                                        }`}
+                                                >
+                                                    <span className="font-bold">{t('parking')}</span>
+                                                    <div className={`w-6 h-6 rounded-full border flex items-center justify-center ${formData.has_parking ? 'bg-primary border-primary' : 'border-slate-300'}`}>
+                                                        {formData.has_parking && <CheckIcon className="w-4 h-4 text-white" />}
+                                                    </div>
+                                                </button>
 
-                                        {/* Features: Parking & Storage */}
-                                        <div className="col-span-1 md:col-span-2 grid grid-cols-2 gap-4">
-                                            <button
-                                                onClick={() => setFormData(p => ({ ...p, has_parking: !p.has_parking }))}
-                                                className={`p-4 rounded-2xl border flex items-center justify-between transition-all ${formData.has_parking
-                                                    ? 'bg-primary/10 border-primary text-primary'
-                                                    : 'bg-white dark:bg-neutral-900 border-slate-200 dark:border-neutral-800 text-muted-foreground'
-                                                    }`}
-                                            >
-                                                <span className="font-bold">{t('parking')}</span>
-                                                <div className={`w-6 h-6 rounded-full border flex items-center justify-center ${formData.has_parking ? 'bg-primary border-primary' : 'border-slate-300'}`}>
-                                                    {formData.has_parking && <CheckIcon className="w-4 h-4 text-white" />}
+                                                <button
+                                                    onClick={() => setFormData(p => ({ ...p, has_storage: !p.has_storage }))}
+                                                    className={`p-4 rounded-2xl border flex items-center justify-between transition-all ${formData.has_storage
+                                                        ? 'bg-primary/10 border-primary text-primary'
+                                                        : 'bg-white dark:bg-neutral-900 border-slate-200 dark:border-neutral-800 text-muted-foreground'
+                                                        }`}
+                                                >
+                                                    <span className="font-bold">{t('storage')}</span>
+                                                    <div className={`w-6 h-6 rounded-full border flex items-center justify-center ${formData.has_storage ? 'bg-primary border-primary' : 'border-slate-300'}`}>
+                                                        {formData.has_storage && <CheckIcon className="w-4 h-4 text-white" />}
+                                                    </div>
+                                                </button>
+                                            </div>
+
+                                            {/* Image Upload & Google Maps Restoration */}
+                                            <div className="col-span-1 md:col-span-2 space-y-4 pt-4 border-t border-slate-100 dark:border-neutral-800">
+                                                <div className="flex items-center justify-between">
+                                                    <label className="text-xs font-black uppercase tracking-wider text-muted-foreground">{t('propertyImage') || 'Property Image'}</label>
+                                                    <div className="flex p-1 bg-slate-100 dark:bg-neutral-800 rounded-xl">
+                                                        <button
+                                                            onClick={() => setUploadMode('upload')}
+                                                            className={cn("px-3 py-1 text-[10px] font-black uppercase rounded-lg transition-all", uploadMode === 'upload' ? "bg-white dark:bg-neutral-700 text-primary shadow-sm" : "text-muted-foreground")}
+                                                        >
+                                                            {t('upload') || 'Upload'}
+                                                        </button>
+                                                        <button
+                                                            onClick={() => setUploadMode('url')}
+                                                            className={cn("px-3 py-1 text-[10px] font-black uppercase rounded-lg transition-all", uploadMode === 'url' ? "bg-white dark:bg-neutral-700 text-primary shadow-sm" : "text-muted-foreground")}
+                                                        >
+                                                            Google Maps
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                            </button>
 
-                                            <button
-                                                onClick={() => setFormData(p => ({ ...p, has_storage: !p.has_storage }))}
-                                                className={`p-4 rounded-2xl border flex items-center justify-between transition-all ${formData.has_storage
-                                                    ? 'bg-primary/10 border-primary text-primary'
-                                                    : 'bg-white dark:bg-neutral-900 border-slate-200 dark:border-neutral-800 text-muted-foreground'
-                                                    }`}
-                                            >
-                                                <span className="font-bold">{t('storage')}</span>
-                                                <div className={`w-6 h-6 rounded-full border flex items-center justify-center ${formData.has_storage ? 'bg-primary border-primary' : 'border-slate-300'}`}>
-                                                    {formData.has_storage && <CheckIcon className="w-4 h-4 text-white" />}
-                                                </div>
-                                            </button>
+                                                {uploadMode === 'url' ? (
+                                                    <div className="flex gap-2">
+                                                        <input
+                                                            type="url"
+                                                            placeholder="Static Map URL"
+                                                            className="flex-1 bg-slate-50 dark:bg-neutral-800/50 p-4 rounded-2xl text-sm outline-none border border-transparent focus:border-primary/30 transition-all"
+                                                            value={formData.image_url}
+                                                            onChange={e => setFormData({ ...formData, image_url: e.target.value })}
+                                                        />
+                                                        <button
+                                                            onClick={async () => {
+                                                                if (!formData.address || !formData.city) {
+                                                                    alert('Please enter city and address first');
+                                                                    return;
+                                                                }
+                                                                const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+                                                                if (!apiKey) return;
+                                                                const location = `${formData.address}, ${formData.city}`;
+                                                                const imageUrl = `https://maps.googleapis.com/maps/api/streetview?size=600x400&location=${encodeURIComponent(location)}&key=${apiKey}`;
+                                                                setFormData(prev => ({ ...prev, image_url: imageUrl }));
+                                                            }}
+                                                            className="px-4 bg-primary/10 text-primary rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/20 transition-all"
+                                                        >
+                                                            Generate
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="relative border-2 border-dashed border-slate-200 dark:border-neutral-800 rounded-[2rem] p-8 hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-all text-center group cursor-pointer">
+                                                        <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            disabled={isUploading}
+                                                            onChange={handleFileUpload}
+                                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                        />
+                                                        <div className="flex flex-col items-center gap-2">
+                                                            {isUploading ? (
+                                                                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                                                            ) : (
+                                                                <Upload className="w-8 h-8 text-slate-300 group-hover:text-primary transition-all" />
+                                                            )}
+                                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                                                                {isUploading ? 'Uploading...' : 'Click to upload picture'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Image Preview */}
+                                                <AnimatePresence>
+                                                    {formData.image_url && (
+                                                        <motion.div
+                                                            initial={{ opacity: 0, scale: 0.9 }}
+                                                            animate={{ opacity: 1, scale: 1 }}
+                                                            exit={{ opacity: 0, scale: 0.9 }}
+                                                            className="relative w-full h-48 rounded-[2rem] overflow-hidden border border-slate-100 dark:border-neutral-800 shadow-lg group"
+                                                        >
+                                                            <img
+                                                                src={formData.image_url}
+                                                                alt="Preview"
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
+                                                                <button
+                                                                    onClick={() => setFormData(p => ({ ...p, image_url: '' }))}
+                                                                    className="p-3 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all shadow-xl"
+                                                                >
+                                                                    <Trash2 className="w-5 h-5" />
+                                                                </button>
+                                                            </div>
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
