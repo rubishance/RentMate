@@ -31,13 +31,17 @@ export function TimelineWidget({ contracts, loading }: TimelineWidgetProps) {
         if (!contracts || contracts.length === 0) return [];
 
         return contracts.map(contract => {
-            const startDate = new Date(contract.start_date);
-            const endDate = new Date(contract.end_date);
+            const startDate = contract.start_date ? new Date(contract.start_date) : null;
+            const endDate = contract.end_date ? new Date(contract.end_date) : null;
             const today = new Date();
+
+            if (!startDate || isNaN(startDate.getTime()) || !endDate || isNaN(endDate.getTime())) {
+                return null;
+            }
 
             const totalDays = differenceInDays(endDate, startDate);
             const daysPassed = differenceInDays(today, startDate);
-            const progress = Math.min(100, Math.max(0, (daysPassed / totalDays) * 100));
+            const progress = totalDays > 0 ? Math.min(100, Math.max(0, (daysPassed / totalDays) * 100)) : 0;
 
             const daysLeft = differenceInDays(endDate, today);
 
@@ -60,7 +64,7 @@ export function TimelineWidget({ contracts, loading }: TimelineWidgetProps) {
                 displayOptionDeadline: format(optionDeadline, 'dd/MM/yyyy'),
                 status: daysLeft < 30 ? 'critical' : daysLeft < 90 ? 'warning' : 'good'
             };
-        }).sort((a, b) => a.daysLeft - b.daysLeft); // Sort by most urgent
+        }).filter((item): item is NonNullable<typeof item> => item !== null).sort((a, b) => a.daysLeft - b.daysLeft); // Sort by most urgent
     }, [contracts, lang, dateLocale, t]);
 
     if (loading) {

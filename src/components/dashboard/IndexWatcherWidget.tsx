@@ -38,7 +38,7 @@ export function IndexWatcherWidget({ contracts }: IndexWatcherWidgetProps) {
 
                 const results = await Promise.all(linkedContracts.map(async contract => {
                     const latest = latestIndices[contract.linkage_type];
-                    if (!latest) return null;
+                    if (!latest || !contract.start_date) return null;
 
                     const res = await calculateStandard({
                         baseRent: contract.base_rent,
@@ -143,12 +143,12 @@ export function IndexWatcherWidget({ contracts }: IndexWatcherWidgetProps) {
                         <div className="flex items-center gap-2 bg-gray-50/50 dark:bg-neutral-800/50 p-3 rounded-2xl border border-transparent group-hover:border-gray-100 dark:group-hover:border-neutral-700 transition-all">
                             <div className="flex-1">
                                 <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-0.5">{t('currentRent')}</p>
-                                <p className="text-sm font-bold text-black dark:text-gray-300">₪{item.oldRent.toLocaleString()}</p>
+                                <p className="text-sm font-bold text-black dark:text-gray-300">₪{(item.oldRent || 0).toLocaleString()}</p>
                             </div>
                             <div className="w-px h-8 bg-gray-200 dark:bg-neutral-700"></div>
                             <div className="flex-1 pl-2">
                                 <p className="text-[9px] font-black uppercase tracking-widest text-emerald-500 dark:text-emerald-400 mb-0.5">{t('projectedRent')}</p>
-                                <p className="text-sm font-black text-black dark:text-white">₪{item.newRent.toLocaleString()}</p>
+                                <p className="text-sm font-black text-black dark:text-white">₪{(item.newRent || 0).toLocaleString()}</p>
                             </div>
                         </div>
                     </div>

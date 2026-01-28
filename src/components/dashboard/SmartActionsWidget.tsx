@@ -34,7 +34,7 @@ export function SmartActionsWidget({ stats, loading }: SmartActionsWidgetProps) 
                 id: 'collect_rent',
                 type: 'payment',
                 title: t('paymentPendingTitle'),
-                description: t('paymentPendingDesc', { amount: stats.pendingMoney.toLocaleString() }),
+                description: t('paymentPendingDesc', { amount: (stats.pendingMoney || 0).toLocaleString() }),
                 actionLabel: t('sendReminder'),
                 priority: 'high',
                 onAction: () => navigate('/payments?filter=pending')

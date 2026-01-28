@@ -149,12 +149,16 @@ export function Dashboard() {
                 .lt('end_date', today);
 
             expired?.forEach((c: any) => {
+                const endDate = c.end_date ? new Date(c.end_date) : null;
+                const property = Array.isArray(c.properties) ? c.properties[0] : c.properties;
+                const address = property?.address || property?.[0]?.address || t('unknownProperty');
+
                 items.push({
                     id: `expired-${c.id}`,
                     type: 'warning',
                     title: t('contractEnded'),
-                    desc: `${c.properties?.[0]?.address || c.properties?.address}`,
-                    date: formatDate(c.end_date),
+                    desc: address,
+                    date: endDate && !isNaN(endDate.getTime()) ? formatDate(endDate) : t('unknown'),
                     actionLabel: t('calculate'),
                     onAction: () => navigate('/calculator', { state: { contractData: c } })
                 });
@@ -173,7 +177,7 @@ export function Dashboard() {
                     id: `overdue-${p.id}`,
                     type: 'urgent',
                     title: t('paymentOverdue'),
-                    desc: `₪${p.amount.toLocaleString()}`,
+                    desc: `₪${(p.amount || 0).toLocaleString()}`,
                     date: formatDate(p.due_date),
                     onAction: () => navigate('/payments')
                 });

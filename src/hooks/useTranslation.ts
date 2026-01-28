@@ -38,7 +38,6 @@ export type TranslationKeys =
     | 'period'
     | 'from'
     | 'to'
-    | 'to'
     | 'month'
     | 'note'
     | 'vendorName'
