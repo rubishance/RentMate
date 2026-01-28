@@ -8,6 +8,13 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     define: {
       'import.meta.env.VITE_GOOGLE_MAPS_API_KEY': JSON.stringify(env.VITE_GOOGLE_MAPS_API_KEY)
+    },
+    build: {
+      rollupOptions: {
+        output: {
+          // Manual chunks reverted due to loading error
+        }
+      }
     }
   }
 })

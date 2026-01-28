@@ -124,27 +124,29 @@ export function Properties() {
     const confirmDelete = async () => {
         if (!deleteTarget) return;
         setIsDeleting(true);
+
         try {
+            const targetId = deleteTarget.id;
+
             // 1. Get all contract IDs to delete their payments
             const { data: contracts } = await supabase
                 .from('contracts')
                 .select('id')
-                .eq('property_id', deleteTarget.id);
+                .eq('property_id', targetId);
 
             if (contracts && contracts.length > 0) {
                 const contractIds = contracts.map(c => c.id);
                 // Delete payments
                 await supabase.from('payments').delete().in('contract_id', contractIds);
                 // Delete contracts
-                await supabase.from('contracts').delete().eq('property_id', deleteTarget.id);
+                await supabase.from('contracts').delete().eq('property_id', targetId);
             }
-
 
             // 3. Delete property
             const { error } = await supabase
                 .from('properties')
                 .delete()
-                .eq('id', deleteTarget.id);
+                .eq('id', targetId);
 
             if (error) throw error;
 

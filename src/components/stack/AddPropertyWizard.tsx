@@ -84,11 +84,36 @@ export function AddPropertyWizard({ initialData, mode = 'add' }: AddPropertyWiza
         }
     };
 
-    const next = () => {
+    const [isSaving, setIsSaving] = useState(false);
+
+    const next = async () => {
         if (currentStep === STEPS.length - 1) {
-            // In a real app, we would call a mutation to save the property here
-            console.log('Saving property:', formData);
-            pop();
+            setIsSaving(true);
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) throw new Error('User not authenticated');
+
+                const startData = {
+                    ...formData,
+                    user_id: user.id,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                };
+
+                const { error } = await supabase
+                    .from('properties')
+                    .insert(startData);
+
+                if (error) throw error;
+
+                // Success - close and refresh via parent/cache clearing
+                pop();
+            } catch (error) {
+                console.error('Error saving property:', error);
+                alert('Failed to save property. Please try again.');
+            } finally {
+                setIsSaving(false);
+            }
         } else {
             setCurrentStep(prev => prev + 1);
         }
@@ -359,9 +384,16 @@ export function AddPropertyWizard({ initialData, mode = 'add' }: AddPropertyWiza
                 <Button variant="ghost" onClick={back} disabled={currentStep === 0} className="rounded-full h-14 px-8 text-lg">
                     Back
                 </Button>
-                <Button onClick={next} disabled={!isStepValid()} size="lg" className="rounded-full h-14 px-12 text-lg shadow-xl shadow-primary/20 transition-all active:scale-95">
-                    {currentStep === STEPS.length - 1 ? 'Finish' : 'Next'}
-                    <ArrowRightIcon className="w-5 h-5 ml-2" />
+                <Button onClick={next} disabled={!isStepValid() || isSaving} size="lg" className="rounded-full h-14 px-12 text-lg shadow-xl shadow-primary/20 transition-all active:scale-95">
+                    {isSaving ? (
+                        <span className="flex items-center gap-2">
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                            {t('saving') || 'Saving...'}
+                        </span>
+                    ) : (
+                        currentStep === STEPS.length - 1 ? 'Finish' : 'Next'
+                    )}
+                    {!isSaving && <ArrowRightIcon className="w-5 h-5 ml-2" />}
                 </Button>
             </div>
         </div>
