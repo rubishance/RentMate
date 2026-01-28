@@ -8,7 +8,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { cn, formatDate } from '../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DatePicker } from '../components/ui/DatePicker';
-import { parseISO, format } from 'date-fns';
+import { parseISO, format, addYears, subDays, isValid } from 'date-fns';
 import type { ExtractedField, Tenant, Property } from '../types/database';
 
 import { supabase } from '../lib/supabase';
@@ -52,8 +52,23 @@ export function AddContract() {
             }
             // Clear state after reading to prevent re-fill on refresh
             window.history.replaceState({}, document.title);
+        } else {
+            // Default dates: Today and 1 year minus 1 day
+            const today = new Date();
+            const startStr = format(today, 'yyyy-MM-dd');
+            const endStr = format(subDays(addYears(today, 1), 1), 'yyyy-MM-dd');
+            setFormData(prev => ({
+                ...prev,
+                startDate: prev.startDate || startStr,
+                endDate: prev.endDate || endStr
+            }));
         }
-    }, [location]);
+
+        const propertyLocked = (location.state as any)?.propertyLocked;
+        if (propertyLocked) {
+            setIsPropertyLocked(true);
+        }
+    }, [location.state]);
     const { canAddContract, loading: subLoading, plan } = useSubscription();
 
     const [step, setStep] = useState(1);
@@ -1292,7 +1307,35 @@ export function AddContract() {
                                                 <DatePicker
                                                     label={t('startDate')}
                                                     value={formData.startDate ? parseISO(formData.startDate) : undefined}
-                                                    onChange={(date) => setFormData({ ...formData, startDate: date ? format(date, 'yyyy-MM-dd') : '' })}
+                                                    onChange={(date) => {
+                                                        const startDateStr = date ? format(date, 'yyyy-MM-dd') : '';
+                                                        const prevStartDateStr = formData.startDate;
+                                                        const prevEndDateStr = formData.endDate;
+
+                                                        let newEndDateStr = prevEndDateStr;
+
+                                                        // Check if the current end date was auto-calculated from the previous start date
+                                                        let wasAutoCalculated = false;
+                                                        if (prevStartDateStr && prevEndDateStr) {
+                                                            const prevStart = parseISO(prevStartDateStr);
+                                                            if (isValid(prevStart)) {
+                                                                const expectedPrevEnd = format(subDays(addYears(prevStart, 1), 1), 'yyyy-MM-dd');
+                                                                wasAutoCalculated = expectedPrevEnd === prevEndDateStr;
+                                                            }
+                                                        }
+
+                                                        // Update end date if it's empty OR it was auto-calculated previously
+                                                        if (date && (!prevEndDateStr || wasAutoCalculated)) {
+                                                            const calculatedEnd = subDays(addYears(date, 1), 1);
+                                                            newEndDateStr = format(calculatedEnd, 'yyyy-MM-dd');
+                                                        }
+
+                                                        setFormData({
+                                                            ...formData,
+                                                            startDate: startDateStr,
+                                                            endDate: newEndDateStr
+                                                        });
+                                                    }}
                                                     disabledDays={blockedIntervals}
                                                     error={hasOverlap}
                                                     placeholder={t('selectDate')}

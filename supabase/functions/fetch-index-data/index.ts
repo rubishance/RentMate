@@ -82,54 +82,37 @@ serve(async (req) => {
         try {
             console.log('Fetching CPI data from CBS...');
             // Fetch last 3 months to ensure we catch the latest update
-            const cpiUrl = 'https://api.cbs.gov.il/index/data/price?series=120010&format=json&download=false&last=3';
-
-            const cpiResponse = await fetchWithRetry(cpiUrl, 3, 2000);
-            const cpiJson = await cpiResponse.json();
-
-            // Parse CBS JSON Response
-            // Structure expected: { publicationSeries: [ { seriesId: 120010, day: [ { date: '2023-12-15', value: 105.2 }, ... ] } ] }
-            // Note: The specific key names might vary slightly, so we'll inspect "month" or "day" or "data".
-            // Based on standard CBS API:
-            // It usually returns a "month" array containing objects with "date" and "value".
-
-            let points = [];
-            if (cpiJson.month) points = cpiJson.month;
-            else if (cpiJson.day) points = cpiJson.day;
-            else if (cpiJson.data) points = cpiJson.data;
-
-            if (Array.isArray(points)) {
-                for (const point of points) {
-                    // point.date format is usually YYYY-MM-DDT00... or YYYY-MM-DD
-                    // We need YYYY-MM
-                    const dateStr = point.date.split('T')[0].slice(0, 7);
-                    const value = parseFloat(point.value);
-
-                    if (dateStr && !isNaN(value)) {
-                        results.push({
-                            index_type: 'cpi',
-                            date: dateStr,
-                            value: value,
-                            source: 'cbs'
-                        });
-                    }
-                }
-                console.log(`Successfully fetched ${points.length} CPI records`);
-            } else {
-                errors.push('CPI Parse Error: content structure unknown ' + JSON.stringify(cpiJson).slice(0, 100));
-            }
+            const cpiUrl = 'https://api.cbs.gov.il/index/data/price?series=120010&format=json&download=false&last=6';
+            await fetchCbsSeries(cpiUrl, 'cpi', results, errors);
         } catch (e) {
-            console.error('Error fetching CPI after retries:', e);
-            errors.push(`CPI Fetch Error: ${e instanceof Error ? e.message : JSON.stringify(e)}`);
+            console.error('Error fetching CPI:', e);
+            errors.push(`CPI Fetch Error: ${e instanceof Error ? e.message : String(e)}`);
         }
 
-        // 2. Fetch Exchange Rates from Bank of Israel with retry logic
+        // 2. Fetch Construction Index (Series 200010)
         try {
-            console.log('Fetching Exchange Rates from BOI...');
-            // USD
-            await fetchSpecificRate('US', 'usd', adminSupabase, results, errors);
-            // EUR
-            await fetchSpecificRate('EU', 'eur', adminSupabase, results, errors);
+            console.log('Fetching Construction index data from CBS...');
+            const constructionUrl = 'https://api.cbs.gov.il/index/data/price?series=200010&format=json&download=false&last=6';
+            await fetchCbsSeries(constructionUrl, 'construction', results, errors);
+        } catch (e) {
+            console.error('Error fetching Construction Index:', e);
+            errors.push(`Construction Fetch Error: ${e instanceof Error ? e.message : String(e)}`);
+        }
+
+        // 3. Fetch Housing Price Index (Series 40010)
+        try {
+            console.log('Fetching Housing index data from CBS...');
+            const housingUrl = 'https://api.cbs.gov.il/index/data/price?series=40010&format=json&download=false&last=6';
+            await fetchCbsSeries(housingUrl, 'housing', results, errors);
+        } catch (e) {
+            console.error('Error fetching Housing Index:', e);
+            errors.push(`Housing Fetch Error: ${e instanceof Error ? e.message : String(e)}`);
+        }
+
+        // 4. Fetch Exchange Rates from Bank of Israel (XML API)
+        try {
+            console.log('Fetching Exchange Rates from BOI (XML)...');
+            await fetchExchangeRatesXml(adminSupabase, results, errors);
         } catch (e) {
             console.error('Error fetching Exchange Rates:', e);
             errors.push(`BOI Fetch Error: ${e instanceof Error ? e.message : String(e)}`);
@@ -168,77 +151,92 @@ serve(async (req) => {
     }
 });
 
-async function fetchSpecificRate(
-    currencyCode: string,
-    dbType: 'usd' | 'eur',
+async function fetchExchangeRatesXml(
     supabase: any,
     results: IndexData[],
     errors: string[]
 ) {
-    // BOI Endpoint for specific currency, last 1 observation
-    const url = `https://edge.boi.org.il/FusionEdgeServer/sdmx/v2/data/dataflow/BOI.STATISTICS/EXR/1.0/R/${currencyCode}/ILS?c%5BDATA_TYPE%5D=OF00&lastNObservations=1&format=sdmx-json`;
+    const url = 'https://boi.org.il/PublicApi/GetExchangeRates?asXml=true';
 
     try {
-        console.log(`Fetching ${currencyCode} exchange rate...`);
+        console.log(`Fetching XML from ${url}...`);
         const resp = await fetchWithRetry(url, 3, 2000);
-        const data = await resp.json();
+        const text = await resp.text();
 
-        // SDMX JSON structure extraction
-        // data.dataSets[0].series -> key like "0:0:0:0" -> observations -> "0" -> [value]
-        // We need to be careful with the key. Since we requested ONE specific series, there should be only one key in 'series'.
+        // Simple Regex Parsing for <ExchangeRateResponseDTO> blocks
+        // Structure: <Key>USD</Key>...<CurrentExchangeRate>3.65</CurrentExchangeRate>...<LastUpdate>2026-01-28T...</LastUpdate>
+        const blocks = text.match(/<ExchangeRateResponseDTO>(.*?)<\/ExchangeRateResponseDTO>/g);
 
-        const series = data.dataSets?.[0]?.series;
-        if (!series) {
-            errors.push(`${currencyCode}: No series data found`);
+        if (!blocks) {
+            errors.push('BOI XML Error: No exchange rate blocks found');
             return;
         }
 
-        const seriesKey = Object.keys(series)[0];
-        const observation = series[seriesKey].observations['0'];
-        const rateValue = parseFloat(observation[0]);
+        console.log(`Found ${blocks.length} currency blocks`);
 
-        // Extract date from structure structure.dimensions.observation[0].values...
-        // Or simplified: use today's date or the one from the response if we can find it easily.
-        // SDMX puts time periods in structure.dimensions.observation[0].values
+        for (const block of blocks) {
+            const keyMatch = block.match(/<Key>(.*?)<\/Key>/);
+            const rateMatch = block.match(/<CurrentExchangeRate>(.*?)<\/CurrentExchangeRate>/);
+            const dateMatch = block.match(/<LastUpdate>(.*?)<\/LastUpdate>/);
 
-        const timeDimIndex = data.structure.dimensions.observation.findIndex((d: any) => d.id === 'TIME_PERIOD');
-        const dateValue = data.structure.dimensions.observation[timeDimIndex].values[0].id; // e.g., "2023-10-25"
+            if (keyMatch && rateMatch && dateMatch) {
+                const currency = keyMatch[1].toUpperCase();
+                const rate = parseFloat(rateMatch[1]);
+                const dateStr = dateMatch[1].split('T')[0]; // Extract YYYY-MM-DD
 
-        // We store 'YYYY-MM' for the monthly index, but for daily rates we might want full date?
-        // The DB schema says "date TEXT NOT NULL, -- Format: 'YYYY-MM'".
-        // This suggests we are storing monthly averages or the monthly representative rate?
-        // For Linkage, we usually need the specific "Base Index" for a date.
-        // IF the schema assumes monthly, we might be losing daily precision for currencies.
-        // Let's store YYYY-MM-DD if possible or just YYYY-MM if that's the constraint.
-        // Re-reading schema: "date TEXT NOT NULL". The comment says "Format: 'YYYY-MM'".
-        // If I put "2023-10-25", it might be fine if the app handles it.
-        // However, for consistency with CPI (which is monthly), let's stick to the schema, or update it.
-        // BUT, exchange rates change daily. Storing "2023-10" for a daily rate is misleading.
-        // I will store the full date "YYYY-MM-DD" and hope the app parses it correctly, 
-        // OR I will strictly follow the "YYYY-MM" comment and just store the latest for that month (which is ambiguous).
-        // Let's update the intention: Store specific date.
+                // Only interest in USD and EUR
+                if (currency === 'USD' || currency === 'EUR') {
+                    const dbType = currency.toLowerCase() as 'usd' | 'eur';
 
-        const record = {
-            index_type: dbType,
-            date: dateValue, // e.g. "2025-01-08"
-            value: rateValue,
-            source: 'exchange-api'
-        };
+                    const record = {
+                        index_type: dbType,
+                        date: dateStr,
+                        value: rate,
+                        source: 'exchange-api'
+                    };
 
-        const { error } = await supabase
-            .from('index_data')
-            .upsert(record, { onConflict: 'index_type,date' });
-
-        if (error) {
-            console.error(`Error Upserting ${dbType}:`, error);
-            errors.push(`${currencyCode} DB Error: ${error.message}`);
-        } else {
-            console.log(`Saved ${dbType}: ${rateValue} for ${dateValue}`);
-            results.push(record as any);
+                    console.log(`Parsed ${currency}: ${rate} for ${dateStr}`);
+                    results.push(record as any);
+                }
+            }
         }
 
     } catch (e) {
-        console.error(`Failed to fetch ${currencyCode} after retries:`, e);
-        errors.push(`${currencyCode} Fetch Error: ${e instanceof Error ? e.message : String(e)}`);
+        console.error('Failed to parse BOI XML:', e);
+        errors.push(`BOI XML Parse Error: ${e instanceof Error ? e.message : String(e)}`);
+    }
+}
+
+async function fetchCbsSeries(
+    url: string,
+    dbType: 'cpi' | 'housing' | 'construction',
+    results: IndexData[],
+    errors: string[]
+) {
+    const resp = await fetchWithRetry(url, 3, 2000);
+    const json = await resp.json();
+
+    let points = [];
+    if (json.month) points = json.month;
+    else if (json.day) points = json.day;
+    else if (json.data) points = json.data;
+
+    if (Array.isArray(points)) {
+        for (const point of points) {
+            const dateStr = point.date.split('T')[0].slice(0, 7);
+            const value = parseFloat(point.value);
+
+            if (dateStr && !isNaN(value)) {
+                results.push({
+                    index_type: dbType,
+                    date: dateStr,
+                    value: value,
+                    source: 'cbs'
+                });
+            }
+        }
+        console.log(`Successfully fetched ${points.length} ${dbType} records`);
+    } else {
+        errors.push(`${dbType} Parse Error: content structure unknown`);
     }
 }
