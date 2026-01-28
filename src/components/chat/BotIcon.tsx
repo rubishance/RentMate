@@ -1,28 +1,39 @@
 import { motion } from 'framer-motion';
+import { MessageSquare } from 'lucide-react';
 
 export function BotIcon({ size = 40, className = "" }: { size?: number, className?: string }) {
     return (
         <motion.div
-            className={`relative ${className} flex items-center justify-center`}
+            className={`relative ${className} flex items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500/20 to-brand-600/5 backdrop-blur-md border border-white/20 shadow-xl overflow-hidden`}
             style={{ width: size, height: size }}
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.3 }}
+            whileHover={{ scale: 1.05 }}
         >
-            <motion.img
-                src="/assets/images/renty-droid-front.png"
-                alt="Renty Icon"
-                className="w-full h-full object-contain pointer-events-none"
+            <motion.div
                 animate={{
-                    scale: [1, 1.05, 1],
-                    y: [0, -1, 0]
+                    scale: [1, 1.08, 1],
+                    rotate: [0, 2, 0, -2, 0]
                 }}
                 transition={{
-                    duration: 4,
+                    duration: 5,
                     repeat: Infinity,
                     ease: "easeInOut"
                 }}
-            />
+            >
+                <MessageSquare
+                    size={size * 0.55}
+                    className="text-white drop-shadow-md"
+                    strokeWidth={1.5}
+                />
+            </motion.div>
+
+            {/* Inner Sheen */}
+            <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
+
+            {/* Soft Glow */}
+            <div className="absolute inset-0 bg-brand-500/10 blur-xl -z-10 group-hover:bg-brand-500/20 transition-colors" />
         </motion.div>
     );
 }
