@@ -298,6 +298,7 @@ export interface UserProfile {
     first_name: string;
     last_name: string;
     role: UserRole;
+    phone?: string;
 
     // Permissions
     is_super_admin?: boolean;

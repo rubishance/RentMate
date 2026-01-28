@@ -31,9 +31,11 @@ export function AddPropertyWizard({ initialData, mode = 'add' }: AddPropertyWiza
         city: initialData?.city || '',
         rooms: initialData?.rooms || 1,
         size_sqm: initialData?.size_sqm || 0,
-        rent_price: initialData?.rent_price || 0,
-        status: initialData?.status || 'Vacant',
-        title: initialData?.title || ''
+        rent_price: 0, // Removed from UI, default to 0
+        status: 'Vacant', // Removed from UI, default to Vacant
+        title: '', // Removed from UI
+        has_parking: initialData?.has_parking || false,
+        has_storage: initialData?.has_storage || false
     });
 
     const next = () => {
@@ -120,29 +122,6 @@ export function AddPropertyWizard({ initialData, mode = 'add' }: AddPropertyWiza
                                                 onChange={(val) => setFormData({ ...formData, property_type: val })}
                                             />
                                         </div>
-                                        <div className="grid grid-cols-2 gap-4 w-full mt-4">
-                                            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
-                                                <span className="text-xs text-muted-foreground block mb-1">{t('status')}</span>
-                                                <select
-                                                    className="bg-transparent font-bold text-foreground w-full outline-none"
-                                                    value={formData.status}
-                                                    onChange={e => setFormData({ ...formData, status: e.target.value as any })}
-                                                >
-                                                    <option value="Vacant">{t('vacant')}</option>
-                                                    <option value="Occupied">{t('occupied')}</option>
-                                                </select>
-                                            </div>
-                                            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
-                                                <span className="text-xs text-muted-foreground block mb-1">{t('friendlyName')}</span>
-                                                <input
-                                                    type="text"
-                                                    placeholder={t('mainApartment')}
-                                                    className="bg-transparent font-bold text-foreground w-full outline-none"
-                                                    value={formData.title || ''}
-                                                    onChange={e => setFormData({ ...formData, title: e.target.value })}
-                                                />
-                                            </div>
-                                        </div>
                                     </div>
                                 )}
 
@@ -175,20 +154,17 @@ export function AddPropertyWizard({ initialData, mode = 'add' }: AddPropertyWiza
                                 )}
 
                                 {currentStep === 2 && (
-                                    <div className="grid grid-cols-2 gap-6 py-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
                                         <div className="p-6 rounded-[2rem] bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
                                             <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">{t('rooms')}</label>
-                                            <div className="flex items-center gap-4">
-                                                <button
-                                                    onClick={() => setFormData(p => ({ ...p, rooms: Math.max(1, (p.rooms || 1) - 0.5) }))}
-                                                    className="w-10 h-10 rounded-full bg-white dark:bg-neutral-700 flex items-center justify-center font-bold shadow-sm"
-                                                >-</button>
-                                                <span className="text-3xl font-black">{formData.rooms}</span>
-                                                <button
-                                                    onClick={() => setFormData(p => ({ ...p, rooms: (p.rooms || 1) + 0.5 }))}
-                                                    className="w-10 h-10 rounded-full bg-white dark:bg-neutral-700 flex items-center justify-center font-bold shadow-sm"
-                                                >+</button>
-                                            </div>
+                                            <input
+                                                type="number"
+                                                step="0.5"
+                                                className="bg-transparent font-black text-3xl text-foreground w-full outline-none"
+                                                value={formData.rooms || ''}
+                                                placeholder="0"
+                                                onChange={e => setFormData({ ...formData, rooms: parseFloat(e.target.value) || 0 })}
+                                            />
                                         </div>
                                         <div className="p-6 rounded-[2rem] bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
                                             <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">{t('sqm')}</label>
@@ -200,18 +176,34 @@ export function AddPropertyWizard({ initialData, mode = 'add' }: AddPropertyWiza
                                                 onChange={e => setFormData({ ...formData, size_sqm: parseFloat(e.target.value) || 0 })}
                                             />
                                         </div>
-                                        <div className="col-span-2 p-6 rounded-[2rem] bg-primary/5 border border-primary/10">
-                                            <label className="text-xs font-black uppercase tracking-wider text-primary block mb-2">{t('monthlyRentLabel')}</label>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-4xl font-black text-primary">₪</span>
-                                                <input
-                                                    type="number"
-                                                    className="bg-transparent font-black text-5xl text-primary w-full outline-none placeholder:text-primary/20"
-                                                    value={formData.rent_price || ''}
-                                                    placeholder="0"
-                                                    onChange={e => setFormData({ ...formData, rent_price: parseFloat(e.target.value) || 0 })}
-                                                />
-                                            </div>
+
+                                        {/* Features: Parking & Storage */}
+                                        <div className="col-span-1 md:col-span-2 grid grid-cols-2 gap-4">
+                                            <button
+                                                onClick={() => setFormData(p => ({ ...p, has_parking: !p.has_parking }))}
+                                                className={`p-4 rounded-2xl border flex items-center justify-between transition-all ${formData.has_parking
+                                                    ? 'bg-primary/10 border-primary text-primary'
+                                                    : 'bg-white dark:bg-neutral-900 border-slate-200 dark:border-neutral-800 text-muted-foreground'
+                                                    }`}
+                                            >
+                                                <span className="font-bold">{t('parking')}</span>
+                                                <div className={`w-6 h-6 rounded-full border flex items-center justify-center ${formData.has_parking ? 'bg-primary border-primary' : 'border-slate-300'}`}>
+                                                    {formData.has_parking && <CheckIcon className="w-4 h-4 text-white" />}
+                                                </div>
+                                            </button>
+
+                                            <button
+                                                onClick={() => setFormData(p => ({ ...p, has_storage: !p.has_storage }))}
+                                                className={`p-4 rounded-2xl border flex items-center justify-between transition-all ${formData.has_storage
+                                                    ? 'bg-primary/10 border-primary text-primary'
+                                                    : 'bg-white dark:bg-neutral-900 border-slate-200 dark:border-neutral-800 text-muted-foreground'
+                                                    }`}
+                                            >
+                                                <span className="font-bold">{t('storage')}</span>
+                                                <div className={`w-6 h-6 rounded-full border flex items-center justify-center ${formData.has_storage ? 'bg-primary border-primary' : 'border-slate-300'}`}>
+                                                    {formData.has_storage && <CheckIcon className="w-4 h-4 text-white" />}
+                                                </div>
+                                            </button>
                                         </div>
                                     </div>
                                 )}

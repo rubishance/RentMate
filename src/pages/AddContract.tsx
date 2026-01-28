@@ -1498,10 +1498,12 @@ export function AddContract() {
                                                                             onClick={() => setFormData({ ...formData, linkageSubType: type.val })}
                                                                             className={cn(
                                                                                 "flex-1 py-2 text-xs font-medium rounded-lg transition-all",
-                                                                                formData.linkageSubType === type.val
+                                                                                (formData.linkageSubType === type.val) // Only highlight if NOT manual
                                                                                     ? "bg-background text-foreground shadow-sm"
-                                                                                    : "text-muted-foreground hover:text-foreground"
+                                                                                    : "text-muted-foreground hover:text-foreground",
+                                                                                formData.linkageSubType === 'manual' && "opacity-50 cursor-not-allowed"
                                                                             )}
+                                                                            disabled={formData.linkageSubType === 'manual'}
                                                                         >
                                                                             {type.label}
                                                                         </button>
@@ -1510,16 +1512,63 @@ export function AddContract() {
                                                             </div>
                                                         )}
 
-                                                        <div className="space-y-2">
-                                                            <label className="text-sm font-medium flex items-center gap-2">
-                                                                {t('baseDate')}
-                                                                {scannedQuotes.baseIndexDate && <Tooltip quote={scannedQuotes.baseIndexDate} />} <ConfidenceDot field="baseIndexDate" />
-                                                            </label>
-                                                            <DatePicker
-                                                                value={formData.baseIndexDate ? parseISO(formData.baseIndexDate) : undefined}
-                                                                onChange={(date) => setFormData({ ...formData, baseIndexDate: date ? format(date, 'yyyy-MM-dd') : '' })}
-                                                                className="w-full"
-                                                            />
+                                                        {/* Base Index Selection Mode: Date vs Manual Rate */}
+                                                        <div className="space-y-4 bg-background/50 p-4 rounded-xl border border-border/50">
+                                                            <div className="flex items-center justify-between mb-2">
+                                                                <label className="text-sm font-bold text-foreground">{t('baseIndexMethod')}</label>
+                                                                <div className="flex bg-secondary/30 p-1 rounded-lg gap-1">
+                                                                    <button
+                                                                        onClick={() => setFormData(p => ({ ...p, linkageSubType: 'base', baseIndexValue: '' }))} // 'base' used as flag for Date mode if that was intent, or we can use local state. 
+                                                                        // Actually, 'linkageSubType' in formData is 'known' | 'respect_of' | 'base'. 
+                                                                        // Let's use 'manual_rate' vs 'date' concept.
+                                                                        // Since I can't easily add new state variables without full file rewrite, I will use:
+                                                                        // linkageSubType = 'manual' for Manual Rate
+                                                                        // linkageSubType = 'known'/'respect_of' for Date
+                                                                        className={cn(
+                                                                            "px-3 py-1 text-xs font-medium rounded-md transition-all",
+                                                                            formData.linkageSubType !== 'manual' ? "bg-white dark:bg-black shadow-sm" : "hover:bg-white/50"
+                                                                        )}
+                                                                    >
+                                                                        {t('byDate')}
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => setFormData(p => ({ ...p, linkageSubType: 'manual', baseIndexDate: '' }))}
+                                                                        className={cn(
+                                                                            "px-3 py-1 text-xs font-medium rounded-md transition-all",
+                                                                            formData.linkageSubType === 'manual' ? "bg-white dark:bg-black shadow-sm" : "hover:bg-white/50"
+                                                                        )}
+                                                                    >
+                                                                        {t('manualRate')}
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+
+                                                            {formData.linkageSubType === 'manual' ? (
+                                                                <div className="space-y-2">
+                                                                    <label className="text-sm font-medium flex items-center gap-2">
+                                                                        {t('baseIndexValue')} <ConfidenceDot field="baseIndexValue" />
+                                                                    </label>
+                                                                    <input
+                                                                        type="number"
+                                                                        value={formData.baseIndexValue}
+                                                                        onChange={(e) => setFormData({ ...formData, baseIndexValue: e.target.value })}
+                                                                        className="w-full p-3 bg-background border border-border rounded-xl no-spinner font-mono"
+                                                                        placeholder="e.g. 105.2"
+                                                                    />
+                                                                </div>
+                                                            ) : (
+                                                                <div className="space-y-2">
+                                                                    <label className="text-sm font-medium flex items-center gap-2">
+                                                                        {t('baseDate')}
+                                                                        {scannedQuotes.baseIndexDate && <Tooltip quote={scannedQuotes.baseIndexDate} />} <ConfidenceDot field="baseIndexDate" />
+                                                                    </label>
+                                                                    <DatePicker
+                                                                        value={formData.baseIndexDate ? parseISO(formData.baseIndexDate) : undefined}
+                                                                        onChange={(date) => setFormData({ ...formData, baseIndexDate: date ? format(date, 'yyyy-MM-dd') : '' })}
+                                                                        className="w-full"
+                                                                    />
+                                                                </div>
+                                                            )}
                                                         </div>
 
                                                         <div className="grid grid-cols-2 gap-4">
