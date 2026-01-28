@@ -31,8 +31,8 @@ export function AddPropertyWizard({ initialData, mode = 'add' }: AddPropertyWiza
         property_type: initialData?.property_type || 'apartment',
         address: initialData?.address || '',
         city: initialData?.city || '',
-        rooms: initialData?.rooms || 1,
-        size_sqm: initialData?.size_sqm || 0,
+        rooms: initialData?.rooms, // Empty as default
+        size_sqm: initialData?.size_sqm, // Also empty by default for consistency
         rent_price: 0, // Removed from UI, default to 0
         status: 'Vacant', // Removed from UI, default to Vacant
         title: '', // Removed from UI
@@ -119,11 +119,16 @@ export function AddPropertyWizard({ initialData, mode = 'add' }: AddPropertyWiza
         }
     };
 
-    const back = () => setCurrentStep(prev => Math.max(prev - 1, 0));
+    const back = () => {
+        if (currentStep === 0) {
+            pop();
+        } else {
+            setCurrentStep(prev => Math.max(prev - 1, 0));
+        }
+    };
 
     const isStepValid = () => {
-        if (currentStep === 0) return !!formData.address && !!formData.city;
-        if (currentStep === 1) return !!formData.property_type;
+        if (currentStep === 0) return !!formData.address && !!formData.city && !!formData.property_type;
         return true;
     };
 
@@ -185,7 +190,18 @@ export function AddPropertyWizard({ initialData, mode = 'add' }: AddPropertyWiza
                                 {currentStep === 0 && (
                                     <div className="space-y-6 py-4">
                                         <div className="space-y-4">
-                                            {/* City above Address as requested */}
+                                            {/* Asset Type moved to page 1 as requested */}
+                                            <div className="p-6 rounded-[2rem] bg-white dark:bg-neutral-800/30 border border-slate-100 dark:border-neutral-700 mb-4">
+                                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block mb-4 text-center">
+                                                    {t('selectCategory')}
+                                                </label>
+                                                <PropertyTypeSelect
+                                                    value={formData.property_type!}
+                                                    onChange={(val) => setFormData({ ...formData, property_type: val })}
+                                                />
+                                            </div>
+
+                                            {/* City above Address */}
                                             <div className="p-5 rounded-2xl bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700 focus-within:ring-2 ring-primary/20 transition-all">
                                                 <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">{t('city')}</label>
                                                 <input
@@ -213,16 +229,6 @@ export function AddPropertyWizard({ initialData, mode = 'add' }: AddPropertyWiza
 
                                 {currentStep === 1 && (
                                     <div className="space-y-8 py-4">
-                                        {/* Asset Type moved to page 2 as requested */}
-                                        <div className="p-6 rounded-[2rem] bg-white dark:bg-neutral-800/30 border border-slate-100 dark:border-neutral-700">
-                                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block mb-4 text-center">
-                                                {t('selectCategory')}
-                                            </label>
-                                            <PropertyTypeSelect
-                                                value={formData.property_type!}
-                                                onChange={(val) => setFormData({ ...formData, property_type: val })}
-                                            />
-                                        </div>
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="p-6 rounded-[2rem] bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
@@ -231,9 +237,9 @@ export function AddPropertyWizard({ initialData, mode = 'add' }: AddPropertyWiza
                                                     type="number"
                                                     step="0.5"
                                                     className="bg-transparent font-black text-3xl text-foreground w-full outline-none"
-                                                    value={formData.rooms || ''}
+                                                    value={formData.rooms ?? ''}
                                                     placeholder="0"
-                                                    onChange={e => setFormData({ ...formData, rooms: parseFloat(e.target.value) || 0 })}
+                                                    onChange={e => setFormData({ ...formData, rooms: e.target.value === '' ? undefined : parseFloat(e.target.value) })}
                                                 />
                                             </div>
                                             <div className="p-6 rounded-[2rem] bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
@@ -241,9 +247,9 @@ export function AddPropertyWizard({ initialData, mode = 'add' }: AddPropertyWiza
                                                 <input
                                                     type="number"
                                                     className="bg-transparent font-black text-3xl text-foreground w-full outline-none"
-                                                    value={formData.size_sqm || ''}
+                                                    value={formData.size_sqm ?? ''}
                                                     placeholder="0"
-                                                    onChange={e => setFormData({ ...formData, size_sqm: parseFloat(e.target.value) || 0 })}
+                                                    onChange={e => setFormData({ ...formData, size_sqm: e.target.value === '' ? undefined : parseFloat(e.target.value) })}
                                                 />
                                             </div>
 
@@ -381,7 +387,7 @@ export function AddPropertyWizard({ initialData, mode = 'add' }: AddPropertyWiza
 
             {/* Footer Navigation */}
             <div className="p-8 pb-12 bg-white dark:bg-neutral-900 border-t border-border flex justify-between items-center px-10 z-10">
-                <Button variant="ghost" onClick={back} disabled={currentStep === 0} className="rounded-full h-14 px-8 text-lg">
+                <Button variant="ghost" onClick={back} className="rounded-full h-14 px-8 text-lg">
                     Back
                 </Button>
                 <Button onClick={next} disabled={!isStepValid() || isSaving} size="lg" className="rounded-full h-14 px-12 text-lg shadow-xl shadow-primary/20 transition-all active:scale-95">
