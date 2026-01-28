@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { AddUserModal } from '../../components/modals/AddUserModal';
 import {
@@ -9,6 +10,7 @@ import {
     KeyIcon,
     ArrowPathIcon,
     UserIcon,
+    UserCircleIcon,
     ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 import { Loader2 } from 'lucide-react';
@@ -46,6 +48,7 @@ interface UserWithStats {
 }
 
 const UserManagement = () => {
+    const navigate = useNavigate();
     const [users, setUsers] = useState<UserWithStats[]>([]);
     const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
     const [loading, setLoading] = useState(true);
@@ -369,10 +372,17 @@ const UserManagement = () => {
                                         </td>
                                         <td className="whitespace-nowrap py-5 pl-6 pr-3 text-left">
                                             <div className="flex items-center justify-end gap-1">
-                                                <button onClick={() => openEditModal(user)} className="p-2 text-gray-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 rounded-xl transition-all" title="Edit User">
+                                                <button
+                                                    onClick={() => navigate(`/admin/client/${user.id}`)}
+                                                    className="p-2 text-gray-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 rounded-xl transition-all"
+                                                    title="Client Hub (CRM & Messaging)"
+                                                >
+                                                    <UserCircleIcon className="w-5 h-5" />
+                                                </button>
+                                                <button onClick={() => openEditModal(user)} className="p-2 text-gray-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 rounded-xl transition-all" title="Edit Account Settings">
                                                     <PencilSquareIcon className="w-5 h-5" />
                                                 </button>
-                                                <button onClick={() => handleImpersonate(user)} className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-xl transition-all" title="Login as User">
+                                                <button onClick={() => handleImpersonate(user)} className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-xl transition-all" title="Impersonate (Login as User)">
                                                     <KeyIcon className="w-5 h-5" />
                                                 </button>
                                             </div>
