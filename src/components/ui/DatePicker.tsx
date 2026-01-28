@@ -133,8 +133,8 @@ export function DatePicker({
                                             selected={value}
                                             onSelect={handleSelect}
                                             disabled={disabledDays}
-                                            fromDate={minDate || new Date(1900, 0, 1)}
-                                            toDate={maxDate || new Date(2100, 11, 31)}
+                                            startMonth={minDate || new Date(new Date().getFullYear() - 10, 0)}
+                                            endMonth={maxDate || new Date(new Date().getFullYear() + 40, 11)}
                                             captionLayout="dropdown"
                                             showOutsideDays
                                             className="p-0"
