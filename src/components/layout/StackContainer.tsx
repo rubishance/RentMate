@@ -7,13 +7,14 @@ import { cn } from '../../lib/utils';
 import { PropertyHub } from '../stack/PropertyHub';
 import { MaintenanceChat } from '../stack/MaintenanceChat';
 import { AddPropertyWizard } from '../stack/AddPropertyWizard';
+import { ContractHub } from '../stack/ContractHub';
 
 // Placeholder components for the stack layers
 const LayerRegistry: Record<string, (props: any) => React.JSX.Element> = {
     'property_hub': (props) => <PropertyHub property={props.property} propertyId={props.propertyId} />,
     'maintenance_chat': (props) => <MaintenanceChat ticketId={props.ticketId} />,
     'wizard': (props) => <AddPropertyWizard {...props} />,
-    'contract_viewer': (props) => <div className="p-4">Contract Viewer: {props.contractId}</div>,
+    'contract_viewer': (props) => <ContractHub contractId={props.contractId} />,
     'document_viewer': (props) => <div className="p-4">Document Viewer</div>,
     'single_bill': (props) => <div className="p-4">Bill Details</div>,
 };

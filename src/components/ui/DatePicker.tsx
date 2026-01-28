@@ -20,6 +20,7 @@ export interface DatePickerProps {
     label?: string;
     className?: string;
     error?: boolean;
+    readonly?: boolean;
 }
 
 export function DatePicker({
@@ -31,7 +32,8 @@ export function DatePicker({
     placeholder = "Pick a date",
     label,
     className,
-    error
+    error,
+    readonly
 }: DatePickerProps) {
     const [isOpen, setIsOpen] = React.useState(false);
 
@@ -48,11 +50,12 @@ export function DatePicker({
             <div className="relative">
                 <button
                     type="button"
-                    onClick={() => setIsOpen(true)}
+                    onClick={() => !readonly && setIsOpen(true)}
                     className={cn(
                         "w-full p-3 flex items-center justify-between bg-background/50 backdrop-blur-sm border rounded-xl transition-all duration-300 group",
                         error ? "border-red-500 ring-1 ring-red-500" : "border-border hover:border-primary/50 hover:bg-secondary/30",
-                        isOpen && "ring-2 ring-primary/20 border-primary"
+                        isOpen && "ring-2 ring-primary/20 border-primary",
+                        readonly && "cursor-default opacity-60 bg-secondary/20 hover:border-border hover:bg-secondary/20"
                     )}
                 >
                     <div className="flex items-center gap-3">
