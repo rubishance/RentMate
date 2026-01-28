@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Property } from '../../types/database';
 import { cn } from '../../lib/utils';
-import { HomeIcon, UsersIcon, WalletIcon, FolderIcon, PhoneIcon, MapPinIcon, PlusIcon, MoreVertical, Edit2, Trash2 } from 'lucide-react';
+import { HomeIcon, UsersIcon, WalletIcon, FolderIcon, PhoneIcon, MapPinIcon, PlusIcon, MoreVertical, Edit2, Trash2, CheckIcon } from 'lucide-react';
 import { PropertyDocumentsHub } from '../properties/PropertyDocumentsHub';
 import { Button } from '../ui/Button';
 import { SnapshotTab } from './tabs/SnapshotTab';
@@ -28,6 +28,8 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete }:
     const { set, clear } = useDataCache();
     const [activeTab, setActiveTab] = useState<TabType>('snapshot');
     const [property, setProperty] = useState(initialProperty);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editedProperty, setEditedProperty] = useState<Property>(initialProperty);
     const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
 
     // Delete State
@@ -43,7 +45,43 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete }:
 
     const handleEdit = () => {
         setIsMoreMenuOpen(false);
-        push('wizard', { initialData: property, mode: 'edit' }, { title: t('editProperty'), isExpanded: true });
+        setEditedProperty(property);
+        setIsEditing(true);
+    };
+
+    const handleCancel = () => {
+        setIsEditing(false);
+        setEditedProperty(property);
+    };
+
+    const handleSave = async () => {
+        setIsDeleting(true); // Re-use isDeleting for loading state or add isSaving
+        try {
+            const { error } = await supabase
+                .from('properties')
+                .update({
+                    address: editedProperty.address,
+                    city: editedProperty.city,
+                    rooms: editedProperty.rooms,
+                    size_sqm: editedProperty.size_sqm,
+                    property_type: editedProperty.property_type,
+                    has_parking: editedProperty.has_parking,
+                    has_storage: editedProperty.has_storage,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', propertyId);
+
+            if (error) throw error;
+
+            setProperty(prev => ({ ...prev, ...editedProperty }));
+            setIsEditing(false);
+            clear(); // Sync cache
+        } catch (error) {
+            console.error('Error saving property:', error);
+            alert('Failed to save changes');
+        } finally {
+            setIsDeleting(false);
+        }
     };
 
     const handleDeleteClick = () => {
@@ -103,20 +141,59 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete }:
                                 <div className={cn("w-1.5 h-1.5 rounded-full", property.status === 'Occupied' ? "bg-emerald-500" : "bg-amber-500")} />
                                 {property.status}
                             </div>
-                            <h1 className="text-3xl font-black tracking-tighter text-foreground leading-none">
-                                {property.address}
-                            </h1>
-                            <p className="text-muted-foreground font-medium">{property.city}</p>
+                            {isEditing ? (
+                                <div className="space-y-2">
+                                    <input
+                                        type="text"
+                                        className="text-3xl font-black tracking-tighter text-foreground bg-white/50 dark:bg-black/50 border border-primary/20 rounded-xl px-2 w-full outline-none focus:ring-2 ring-primary/20"
+                                        value={editedProperty.address}
+                                        onChange={e => setEditedProperty(prev => ({ ...prev, address: e.target.value }))}
+                                        placeholder={t('address')}
+                                    />
+                                    <input
+                                        type="text"
+                                        className="text-muted-foreground font-medium bg-white/50 dark:bg-black/50 border border-primary/20 rounded-xl px-2 w-full outline-none focus:ring-2 ring-primary/20"
+                                        value={editedProperty.city}
+                                        onChange={e => setEditedProperty(prev => ({ ...prev, city: e.target.value }))}
+                                        placeholder={t('city')}
+                                    />
+                                </div>
+                            ) : (
+                                <>
+                                    <h1 className="text-3xl font-black tracking-tighter text-foreground leading-none">
+                                        {property.address}
+                                    </h1>
+                                    <p className="text-muted-foreground font-medium">{property.city}</p>
+                                </>
+                            )}
                         </div>
 
                         {/* More Menu */}
                         <div className="relative">
-                            <button
-                                onClick={() => setIsMoreMenuOpen(!isMoreMenuOpen)}
-                                className="p-3 bg-white/50 dark:bg-black/50 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/10 text-foreground hover:bg-white dark:hover:bg-neutral-800 transition-all focus:outline-none"
-                            >
-                                <MoreVertical className="w-5 h-5" />
-                            </button>
+                            {isEditing ? (
+                                <div className="flex flex-col gap-2">
+                                    <button
+                                        onClick={handleSave}
+                                        disabled={isDeleting}
+                                        className="p-3 bg-primary text-white rounded-2xl shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                                    >
+                                        <CheckIcon className="w-5 h-5" />
+                                    </button>
+                                    <button
+                                        onClick={handleCancel}
+                                        className="p-3 bg-white/50 dark:bg-black/50 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/10 text-foreground hover:bg-slate-50 dark:hover:bg-neutral-800 transition-all"
+                                    >
+                                        <PlusIcon className="w-5 h-5 rotate-45" />
+                                    </button>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => setIsMoreMenuOpen(!isMoreMenuOpen)}
+                                    className="p-3 bg-white/50 dark:bg-black/50 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/10 text-foreground hover:bg-white dark:hover:bg-neutral-800 transition-all focus:outline-none"
+                                >
+                                    <MoreVertical className="w-5 h-5" />
+                                </button>
+                            )}
 
                             <AnimatePresence>
                                 {isMoreMenuOpen && (
@@ -183,7 +260,13 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete }:
 
             {/* 3. Content Area */}
             <div className="flex-1 overflow-y-auto bg-white dark:bg-neutral-900 min-h-0">
-                {activeTab === 'snapshot' && <SnapshotTab property={property} />}
+                {activeTab === 'snapshot' && (
+                    <SnapshotTab
+                        property={isEditing ? editedProperty : property}
+                        isEditing={isEditing}
+                        onPropertyChange={setEditedProperty}
+                    />
+                )}
                 {activeTab === 'people' && <PeopleTab property={property} />}
                 {activeTab === 'wallet' && <WalletTab property={property} />}
                 {activeTab === 'files' && (
