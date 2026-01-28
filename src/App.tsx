@@ -52,6 +52,7 @@ const StorageManagement = lazy(() => import('./pages/admin/StorageManagement'));
 const AIUsageManagement = lazy(() => import('./pages/admin/AIUsageManagement'));
 const ClientProfile = lazy(() => import('./pages/admin/ClientProfile'));
 const AutomationTracking = lazy(() => import('./pages/admin/AutomationTracking'));
+const SupportTickets = lazy(() => import('./pages/admin/SupportTickets'));
 
 const PlanManagement = lazy(() => import('./pages/admin/PlanManagement'));
 const Pricing = lazy(() => import('./pages/Pricing'));
@@ -139,6 +140,7 @@ function App() {
                         <Route path="ai-usage" element={<AIUsageManagement />} />
                         <Route path="automation" element={<AutomationTracking />} />
                         <Route path="client/:id" element={<ClientProfile />} />
+                        <Route path="tickets" element={<SupportTickets />} />
                       </Route>
                     </Route>
                   </Routes>

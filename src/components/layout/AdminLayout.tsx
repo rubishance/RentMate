@@ -92,6 +92,7 @@ const AdminLayout = () => {
         { name: 'Notifications', href: '/admin/notifications', icon: BellIcon },
         { name: 'Feedback', href: '/admin/feedback', icon: ChatBubbleLeftRightIcon },
         { name: 'Users & CRM', href: '/admin/users', icon: UsersIcon },
+        { name: 'Support Tickets', href: '/admin/tickets', icon: ClipboardDocumentListIcon },
         { name: 'Storage', href: '/admin/storage', icon: CircleStackIcon },
         { name: 'Plans', href: '/admin/plans', icon: TagIcon },
         { name: 'Invoices', href: '/admin/invoices', icon: DocumentTextIcon },
