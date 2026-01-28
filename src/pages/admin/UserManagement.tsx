@@ -52,9 +52,13 @@ const UserManagement = () => {
     const [users, setUsers] = useState<UserWithStats[]>([]);
     const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
     const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filterRole, setFilterRole] = useState<'all' | 'user' | 'admin'>('all');
     const [error, setError] = useState<string | null>(null);
+    const [columnFilters, setColumnFilters] = useState({
+        name: '',
+        role: 'all',
+        plan: 'all',
+        status: 'all',
+    });
 
     // Edit Modal State
     const [selectedUser, setSelectedUser] = useState<UserWithStats | null>(null);
@@ -96,14 +100,16 @@ const UserManagement = () => {
     }, []);
 
     const filteredUsers = users.filter(user => {
-        const term = searchTerm.toLowerCase();
-        const matchesSearch = !searchTerm ||
-            user.email?.toLowerCase().includes(term) ||
-            user.full_name?.toLowerCase().includes(term);
+        const matchesName = !columnFilters.name ||
+            user.full_name?.toLowerCase().includes(columnFilters.name.toLowerCase()) ||
+            user.email?.toLowerCase().includes(columnFilters.name.toLowerCase()) ||
+            user.phone?.includes(columnFilters.name);
 
-        const matchesRole = filterRole === 'all' || user.role === filterRole;
+        const matchesRole = columnFilters.role === 'all' || user.role === columnFilters.role;
+        const matchesPlan = columnFilters.plan === 'all' || user.plan_id === columnFilters.plan;
+        const matchesStatus = columnFilters.status === 'all' || user.subscription_status === columnFilters.status;
 
-        return matchesSearch && matchesRole;
+        return matchesName && matchesRole && matchesPlan && matchesStatus;
     });
 
     const openEditModal = (user: UserWithStats) => {
@@ -261,30 +267,30 @@ const UserManagement = () => {
                 </div>
             )}
 
-            {/* Filters & Search */}
-            <div className="flex flex-col sm:flex-row gap-4 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
-                <div className="flex-1 relative">
-                    <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <input
-                        type="text"
-                        className="block w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 pl-10 pr-4 py-2.5 focus:border-brand-500 focus:ring-brand-500 sm:text-sm font-medium text-gray-900 dark:text-white"
-                        placeholder="Search by email or name..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+            {/* Filters Header Summary (Optional, but we'll focus on the column filters) */}
+            <div className="flex items-center justify-between gap-4 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+                <div className="flex items-center gap-2">
+                    <FunnelIcon className="h-5 w-5 text-brand-600" />
+                    <span className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-widest">Active Filters:</span>
+                    <div className="flex gap-2">
+                        {Object.entries(columnFilters).map(([key, value]) => {
+                            if (value === 'all' || value === '') return null;
+                            return (
+                                <span key={key} className="px-2 py-1 bg-brand-50 text-brand-700 rounded-lg text-[10px] font-black uppercase border border-brand-100 flex items-center gap-1">
+                                    {key}: {value}
+                                    <button onClick={() => setColumnFilters({ ...columnFilters, [key]: key === 'name' ? '' : 'all' })}><XMarkIcon className="w-3 h-3" /></button>
+                                </span>
+                            );
+                        })}
+                        {Object.values(columnFilters).every(v => v === 'all' || v === '') && <span className="text-xs text-gray-400 font-medium italic">None</span>}
+                    </div>
                 </div>
-                <div className="flex items-center gap-3">
-                    <FunnelIcon className="h-5 w-5 text-gray-400" />
-                    <select
-                        value={filterRole}
-                        onChange={(e) => setFilterRole(e.target.value as 'all' | 'user' | 'admin')}
-                        className="rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 py-2.5 pl-3 pr-10 text-sm font-bold text-gray-900 dark:text-white focus:border-brand-500 focus:ring-brand-500 capitalize"
-                    >
-                        <option value="all">All Roles</option>
-                        <option value="user">User</option>
-                        <option value="admin">Admin</option>
-                    </select>
-                </div>
+                <button
+                    onClick={() => setColumnFilters({ name: '', role: 'all', plan: 'all', status: 'all' })}
+                    className="text-[10px] font-black text-brand-600 uppercase tracking-widest hover:underline"
+                >
+                    Clear All
+                </button>
             </div>
 
             {/* Table */}
@@ -300,6 +306,56 @@ const UserManagement = () => {
                                 <th scope="col" className="px-3 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Last Activity</th>
                                 <th scope="col" className="px-3 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
                                 <th scope="col" className="relative py-4 pr-3 pl-6"><span className="sr-only">Actions</span></th>
+                            </tr>
+                            <tr className="bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700">
+                                <th className="py-2 pr-6 pl-3">
+                                    <input
+                                        type="text"
+                                        placeholder="Filter Name..."
+                                        className="w-full text-[10px] p-1.5 rounded-lg border border-gray-100 dark:border-gray-700 dark:bg-gray-900 focus:ring-brand-500"
+                                        value={columnFilters.name}
+                                        onChange={(e) => setColumnFilters({ ...columnFilters, name: e.target.value })}
+                                    />
+                                </th>
+                                <th className="px-3 py-2">
+                                    <div className="flex flex-col gap-1">
+                                        <select
+                                            className="w-full text-[10px] p-1 rounded-lg border border-gray-100 dark:border-gray-700 dark:bg-gray-900"
+                                            value={columnFilters.role}
+                                            onChange={(e) => setColumnFilters({ ...columnFilters, role: e.target.value })}
+                                        >
+                                            <option value="all">Role: All</option>
+                                            <option value="user">User</option>
+                                            <option value="admin">Admin</option>
+                                            <option value="manager">Manager</option>
+                                        </select>
+                                        <select
+                                            className="w-full text-[10px] p-1 rounded-lg border border-gray-100 dark:border-gray-700 dark:bg-gray-900"
+                                            value={columnFilters.plan}
+                                            onChange={(e) => setColumnFilters({ ...columnFilters, plan: e.target.value })}
+                                        >
+                                            <option value="all">Plan: All</option>
+                                            {plans.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                                        </select>
+                                    </div>
+                                </th>
+                                <th className="px-3 py-2 opacity-30 select-none">
+                                    {/* Stats filters usually need ranges or > X, keeping simple for now */}
+                                </th>
+                                <th className="px-3 py-2 opacity-30 select-none"></th>
+                                <th className="px-3 py-2 opacity-30 select-none"></th>
+                                <th className="px-3 py-2">
+                                    <select
+                                        className="w-full text-[10px] p-1.5 rounded-lg border border-gray-100 dark:border-gray-700 dark:bg-gray-900"
+                                        value={columnFilters.status}
+                                        onChange={(e) => setColumnFilters({ ...columnFilters, status: e.target.value })}
+                                    >
+                                        <option value="all">Stat: All</option>
+                                        <option value="active">Active</option>
+                                        <option value="suspended">Suspended</option>
+                                    </select>
+                                </th>
+                                <th className="px-3 py-2"></th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">

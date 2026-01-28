@@ -122,8 +122,13 @@ serve(async (req) => {
         );
 
     } catch (error: any) {
+        console.error('Export Error:', error);
         return new Response(
-            JSON.stringify({ error: error.message }),
+            JSON.stringify({
+                error: error.message,
+                details: error.stack,
+                hint: 'Check Supabase Edge Function logs for details. Ensure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set.'
+            }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
     }

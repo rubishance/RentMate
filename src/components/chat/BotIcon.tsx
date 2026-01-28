@@ -10,7 +10,7 @@ export function BotIcon({ size = 40, className = "" }: { size?: number, classNam
             transition={{ duration: 0.3 }}
         >
             <motion.img
-                src="/assets/images/renty-head-executive.png"
+                src="/assets/images/renty-droid-front.png"
                 alt="Renty Icon"
                 className="w-full h-full object-contain pointer-events-none"
                 animate={{
