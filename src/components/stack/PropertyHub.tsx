@@ -1,8 +1,9 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Property } from '../../types/database';
 import { cn } from '../../lib/utils';
-import { HomeIcon, UsersIcon, WalletIcon, FolderIcon, PhoneIcon, MapPinIcon, PlusIcon, MoreVertical, Edit2, Trash2, CheckIcon } from 'lucide-react';
+import { HomeIcon, UsersIcon, WalletIcon, FolderIcon, PhoneIcon, MapPinIcon, PlusIcon, MoreVertical, Edit2, Trash2, CheckIcon, FilePlus } from 'lucide-react';
 import { PropertyDocumentsHub } from '../properties/PropertyDocumentsHub';
 import { Button } from '../ui/Button';
 import { SnapshotTab } from './tabs/SnapshotTab';
@@ -24,6 +25,7 @@ type TabType = 'snapshot' | 'people' | 'wallet' | 'files';
 
 export function PropertyHub({ property: initialProperty, propertyId, onDelete }: PropertyHubProps) {
     const { t, lang } = useTranslation();
+    const navigate = useNavigate();
     const { push, pop } = useStack();
     const { set, clear } = useDataCache();
     const [activeTab, setActiveTab] = useState<TabType>('snapshot');
@@ -42,6 +44,20 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete }:
         { id: 'wallet', label: t('financials'), icon: WalletIcon },
         { id: 'files', label: t('documents'), icon: FolderIcon },
     ] as const;
+
+    const handleAddContract = () => {
+        setIsMoreMenuOpen(false);
+        pop(); // Close the sheet
+        navigate('/contracts/new', {
+            state: {
+                prefill: {
+                    property_id: propertyId,
+                    property_address: property.address,
+                    city: property.city
+                }
+            }
+        });
+    };
 
     const handleEdit = () => {
         setIsMoreMenuOpen(false);
@@ -208,6 +224,13 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete }:
                                                 lang === 'he' ? "left-0" : "right-0"
                                             )}
                                         >
+                                            <button
+                                                onClick={handleAddContract}
+                                                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800 text-sm font-bold text-foreground transition-all"
+                                            >
+                                                <FilePlus className="w-4 h-4 text-emerald-500" />
+                                                {lang === 'he' ? 'הוספת חוזה' : 'Add Contract'}
+                                            </button>
                                             <button
                                                 onClick={handleEdit}
                                                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800 text-sm font-bold text-foreground transition-all"
