@@ -9,7 +9,7 @@ import {
     AlertTriangle,
     ToggleLeft,
     ToggleRight,
-    RefreshCw as ArrowPathIcon,
+    RefreshCw,
     Sparkles
 } from 'lucide-react';
 
@@ -31,7 +31,7 @@ interface SystemSetting {
 }
 
 export default function SystemSettings() {
-    const [activeTab, setActiveTab] = useState<'notifications' | 'general' | 'autopilot'>('notifications');
+    const [activeTab, setActiveTab] = useState<'notifications' | 'general' | 'autopilot' | 'integrations'>('notifications');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [rules, setRules] = useState<NotificationRule[]>([]);
@@ -68,6 +68,100 @@ export default function SystemSettings() {
             setMessage({ type: 'error', text: 'Failed to load system configurations.' });
         } finally {
             setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('google_code');
+        if (code && activeTab === 'integrations') {
+            handleGoogleCallback(code);
+        }
+    }, [activeTab]);
+
+    const handleGoogleCallback = async (code: string) => {
+        setSaving(true);
+        setMessage(null);
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) throw new Error('Not authenticated');
+
+            const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/google-drive-proxy`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`
+                },
+                body: JSON.stringify({
+                    action: 'exchange_code',
+                    code
+                })
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to exchange code');
+
+            setMessage({ type: 'success', text: 'Google Drive connected successfully!' });
+            // Clean up URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+            fetchData();
+        } catch (err: unknown) {
+            console.error(err);
+            setMessage({ type: 'error', text: 'Google Connection Failed: ' + (err instanceof Error ? err.message : 'Unknown error') });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const connectGoogle = () => {
+        const clientId = '386252373495-mtsignnt2es3d4t2cgrtnoq4q66or288'; // From your branding doc
+        const redirectUri = `${window.location.origin}/admin/settings?google_code=1`; // Internal flag or we can use the code directly
+
+        // Actually, the redirect URI in the edge function is fixed to:
+        // `${Deno.env.get('APP_URL')!}/auth/google/callback`
+        // We should probably follow that or update the edge function.
+
+        // Wait, the edge function says:
+        // redirect_uri: `${Deno.env.get('APP_URL')!.replace(/\/$/, '')}/auth/google/callback`
+
+        // So I should use that redirect URI.
+        const scopes = [
+            'https://www.googleapis.com/auth/drive.file',
+            'https://www.googleapis.com/auth/userinfo.email',
+            'https://www.googleapis.com/auth/userinfo.profile'
+        ].join(' ');
+
+        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+            `client_id=${clientId}&` +
+            `redirect_uri=${encodeURIComponent(window.location.origin + '/admin/settings')}&` +
+            `response_type=code&` +
+            `scope=${encodeURIComponent(scopes)}&` +
+            `access_type=offline&` +
+            `prompt=consent`;
+
+        window.location.href = authUrl;
+    };
+
+    const disconnectGoogle = async () => {
+        setSaving(true);
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            const { error } = await supabase
+                .from('user_profiles')
+                .update({
+                    google_refresh_token: null,
+                    google_drive_folder_id: null,
+                    google_drive_enabled: false
+                })
+                .eq('id', user?.id);
+
+            if (error) throw error;
+            setMessage({ type: 'success', text: 'Google Drive disconnected.' });
+            fetchData();
+        } catch (err: any) {
+            setMessage({ type: 'error', text: err.message });
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -140,7 +234,7 @@ export default function SystemSettings() {
                         onClick={fetchData}
                         className="p-2.5 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm"
                     >
-                        <ArrowPathIcon className="w-6 h-6" />
+                        <RefreshCw className="w-6 h-6" />
                     </button>
                     <button
                         onClick={saveChanges}
@@ -199,6 +293,18 @@ export default function SystemSettings() {
                     <div className="flex items-center gap-2">
                         <ToggleRight className="w-4 h-4" />
                         Autopilot Logic
+                    </div>
+                </button>
+                <button
+                    onClick={() => setActiveTab('integrations')}
+                    className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'integrations'
+                        ? 'bg-white dark:bg-gray-800 text-brand-600 shadow-sm border border-gray-100 dark:border-gray-700'
+                        : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                        }`}
+                >
+                    <div className="flex items-center gap-2">
+                        <RefreshCw className="w-4 h-4" />
+                        Integrations
                     </div>
                 </button>
             </div>
@@ -387,6 +493,49 @@ export default function SystemSettings() {
                                     )}
                                 </div>
                             ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+            {activeTab === 'integrations' && (
+                <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden p-8">
+                    <div className="flex flex-col md:flex-row items-start justify-between gap-8">
+                        <div className="max-w-xl space-y-4">
+                            <div className="flex items-center gap-3">
+                                <div className="p-3 bg-brand-50 rounded-2xl">
+                                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-8 h-8" />
+                                </div>
+                                <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Google Drive Integration</h3>
+                            </div>
+                            <p className="text-sm font-bold text-gray-500 leading-relaxed">
+                                Connect your Google account to enable **Automated CRM Exports**.
+                                This allows the system to generate and upload detailed interaction reports,
+                                invoices, and user statistics directly to a dedicated "RentMate" folder in your Google Drive.
+                            </p>
+                            <ul className="space-y-2">
+                                <li className="flex items-center gap-2 text-xs font-bold text-emerald-600">
+                                    <CheckCircle2 className="w-4 h-4" />
+                                    Automatic Daily Backups
+                                </li>
+                                <li className="flex items-center gap-2 text-xs font-bold text-emerald-600">
+                                    <CheckCircle2 className="w-4 h-4" />
+                                    One-Click CRM Exports (Google Sheets)
+                                </li>
+                                <li className="flex items-center gap-2 text-xs font-bold text-emerald-600">
+                                    <CheckCircle2 className="w-4 h-4" />
+                                    Secure Data Syncing
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div className="w-full md:w-auto">
+                            <button
+                                onClick={connectGoogle}
+                                className="w-full md:w-[280px] flex items-center justify-center gap-3 px-8 py-5 bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-700 rounded-2xl hover:border-brand-500 transition-all group shadow-sm"
+                            >
+                                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-6 h-6" />
+                                <span className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-widest group-hover:text-brand-600">Connect account</span>
+                            </button>
                         </div>
                     </div>
                 </div>
