@@ -34,15 +34,15 @@ export interface DashboardData {
 }
 
 export const WIDGET_REGISTRY: Record<WidgetId, (data: DashboardData) => ReactNode> = {
-    'timeline': (data) => <TimelineWidget contracts={data.activeContracts} />,
-    'storage_stats': (data) => <StorageStatsWidget counts={data.storageCounts} />,
+    'timeline': (data) => <TimelineWidget contracts={data?.activeContracts || []} />,
+    'storage_stats': (data) => <StorageStatsWidget counts={data?.storageCounts || {}} />,
     'knowledge_base': (data) => <KnowledgeBaseWidget />,
     'smart_actions': (data) => <SmartActionsWidget stats={{
-        pendingMoney: data.stats.pending,
-        openMaintenance: data.storageCounts.maintenance
+        pendingMoney: data?.stats?.pending || 0,
+        openMaintenance: data?.storageCounts?.maintenance || 0
     }} />,
     'usage_overview': (data) => <UsageOverviewWidget />,
-    'index_watcher': (data) => <IndexWatcherWidget contracts={data.activeContracts} />,
+    'index_watcher': (data) => <IndexWatcherWidget contracts={data?.activeContracts || []} />,
 };
 
 export const DEFAULT_WIDGET_LAYOUT: WidgetConfig[] = [

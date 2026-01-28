@@ -33,7 +33,7 @@ export function Dashboard() {
     const navigate = useNavigate();
     const { preferences } = useUserPreferences();
     const [loading, setLoading] = useState(true);
-    const { get, set } = useDataCache();
+    const { get, set, clear } = useDataCache();
     const CACHE_KEY = `dashboard_data_v3_${preferences.language}`;
 
     const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -50,10 +50,17 @@ export function Dashboard() {
     // Widget Layout State
     const [layout, setLayout] = useState<WidgetConfig[]>(DEFAULT_WIDGET_LAYOUT);
     const [isEditingLayout, setIsEditingLayout] = useState(false);
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+    const [reportsEnabled, setReportsEnabled] = useState(false);
 
     useEffect(() => {
+        // Force clear cache once to resolve any corrupted structure issues from previous turns
+        const recoveryDone = localStorage.getItem('recovery_done_v4');
+        if (!recoveryDone) {
+            clear();
+            localStorage.setItem('recovery_done_v4', 'true');
+        }
         loadDashboardData();
-        // Load layout from preferences if saved (TODO: Implement persistence)
     }, []);
 
     async function loadDashboardData() {
@@ -213,8 +220,6 @@ export function Dashboard() {
         feedItems
     };
 
-    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
-    const [reportsEnabled, setReportsEnabled] = useState(false);
 
     return (
         <div className="pb-40 pt-6 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-700">

@@ -47,7 +47,7 @@ export class ErrorBoundary extends Component<Props, State> {
                         Reload Page
                     </button>
 
-                    {import.meta.env.DEV && this.state.error && (
+                    {this.state.error && (
                         <pre className="mt-8 max-h-64 max-w-2xl overflow-auto rounded bg-gray-200 p-4 text-left text-xs text-gray-800 dark:bg-gray-800 dark:text-gray-200">
                             {this.state.error.toString()}
                         </pre>
