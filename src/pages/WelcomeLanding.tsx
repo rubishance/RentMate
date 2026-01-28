@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../hooks/useTranslation';
@@ -36,6 +36,20 @@ export function WelcomeLanding() {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<'home' | 'blog' | 'demo' | 'calculator'>('home');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [checkingAuth, setCheckingAuth] = useState(true);
+
+    // Auto-redirect if logged in
+    useEffect(() => {
+        const checkAuth = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                navigate('/dashboard', { replace: true });
+            } else {
+                setCheckingAuth(false);
+            }
+        };
+        checkAuth();
+    }, [navigate]);
 
     // Scroll Animation for Hero Walking
     const containerRef = useRef(null);
@@ -72,6 +86,14 @@ export function WelcomeLanding() {
             stat: "∞"
         },
     ];
+
+    if (checkingAuth) {
+        return (
+            <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center">
+                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            </div>
+        );
+    }
 
     return (
         <div
