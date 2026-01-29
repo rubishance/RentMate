@@ -27,25 +27,44 @@ export function IndexWatcherWidget({ contracts }: IndexWatcherWidgetProps) {
             }
 
             try {
-                // Fetch latest indices for relevant types
-                const types = Array.from(new Set(linkedContracts.map(c => c.linkage_type))) as any[];
-                const latestIndices: Record<string, any> = {};
+                // Fetch latest indices for relevant types (cache)
+                // Actually `calculateStandard` fetches internally, but optimizing with cache is good.
+                // However, `calculateStandard` might fetch specific dates not in `latest`.
+                // Let's rely on `calculateStandard`'s internal fetching or single-fetch optimization if needed.
+                // Given we want correct "Known Index" dates, simple `getLatestIndex` might be off (it gets absolute latest).
+                // We'll calculate specific dates.
 
-                await Promise.all(types.map(async type => {
-                    const latest = await getLatestIndex(type);
-                    if (latest) latestIndices[type] = latest;
-                }));
+                const today = new Date();
 
                 const results = await Promise.all(linkedContracts.map(async contract => {
-                    const latest = latestIndices[contract.linkage_type];
-                    if (!latest || !contract.start_date) return null;
+                    if (!contract.base_index_date) return null;
+
+                    // 1. Determine Effective Target Date (Today adjusted for 15th threshold)
+                    const subType = contract.linkage_sub_type || 'known';
+                    let targetDateStr = today.toISOString().slice(0, 7); // Default YYYY-MM
+
+                    if (subType === 'known') {
+                        const d = new Date(today);
+                        d.setMonth(d.getMonth() - 1); // Go back 1 month
+                        if (today.getDate() <= 15) {
+                            d.setMonth(d.getMonth() - 1); // Go back another if <= 15th
+                        }
+                        targetDateStr = d.toISOString().slice(0, 7);
+                    }
+
+                    // 2. Prepare Base Date provided in contract
+                    const baseDateStr = contract.base_index_date.slice(0, 7);
 
                     const res = await calculateStandard({
                         baseRent: contract.base_rent,
                         linkageType: contract.linkage_type,
-                        baseDate: contract.base_index_date || contract.start_date.slice(0, 7),
-                        targetDate: latest.date,
-                        isIndexBaseMinimum: true, // Typical standard
+                        baseDate: baseDateStr,
+                        targetDate: targetDateStr,
+                        linkageCeiling: contract.linkage_ceiling,
+                        isIndexBaseMinimum: contract.linkage_floor !== null, // Assuming presence implies floor
+                        // We do NOT pass linkageSubType here because we manually handled the date shift above for 'target'.
+                        // And base index date is fixed.
+                        // However, Chaining Factor service needs dates.
                     });
 
                     if (!res) return null;
@@ -61,7 +80,8 @@ export function IndexWatcherWidget({ contracts }: IndexWatcherWidgetProps) {
                         newRent: res.newRent,
                         change: res.percentageChange,
                         indexType: contract.linkage_type,
-                        indexDate: latest.date,
+                        indexDate: res.targetIndexValue ? targetDateStr : 'N/A', // Show effective date
+                        isProjected: true
                     };
                 }));
 

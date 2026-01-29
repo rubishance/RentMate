@@ -211,6 +211,7 @@ export interface StandardCalculationInput {
     manualTargetIndex?: number; // Override auto-fetch
     isIndexBaseMinimum?: boolean; // If true, rent cannot drop below base amount
     linkageCeiling?: number; // Annualized ceiling (e.g. 5% max increase per year)
+    linkageSubType?: 'known' | 'respect_of' | 'base'; // Israeli index calculation method
 }
 
 export interface StandardCalculationResult {

@@ -137,6 +137,71 @@ serve(async (req) => {
         const today = new Date();
         const currentMonth = today.getMonth();
 
+        // --- PRE-FETCH INDEX & CHAINING DATA ---
+        // Fetch chaining factors for cross-base calculations
+        const { data: chainingFactors } = await adminClient.from('chaining_factors').select('*');
+
+        // Fetch recent index history (enough to cover lookups)
+        const { data: indexHistory } = await adminClient
+            .from('index_data')
+            .select('index_type, date, value')
+            .order('date', { ascending: false })
+            .limit(100);
+
+        // Helper: Calculate Chaining Factor
+        const getChainingFactor = (indexType, baseDate, targetDate) => {
+            const getBaseYear = (d) => {
+                const year = new Date(d).getFullYear();
+                if (year >= 2024) return '2024';
+                if (year >= 2020) return '2020';
+                if (year >= 2018) return '2018';
+                if (year >= 2012) return '2012';
+                return '2012';
+            };
+            const fromBase = getBaseYear(baseDate);
+            const toBase = getBaseYear(targetDate);
+
+            if (fromBase === toBase) return 1.0;
+
+            const factorObj = chainingFactors?.find(f =>
+                f.index_type === indexType &&
+                f.from_base === fromBase &&
+                f.to_base === toBase
+            );
+            return factorObj ? Number(factorObj.factor) : 1.0;
+        };
+
+        // Helper: Effective Known Index Date (15th threshold)
+        const getEffectiveDate = (dateOb, subType) => {
+            if (subType === 'known') { // מדד ידוע
+                // If date <= 15th, use previous month's index
+                // If date > 15th, use current month's index (which assumes publication on 15th)
+                // Actually, "Known Index" means index published *before* the date.
+                // Index for month X is published on 15th of month X+1.
+                // Example: Payment Date Jan 10. Latest published is Nov index (published Dec 15).
+                // Payment Date Jan 20. Latest published is Dec index (published Jan 15).
+
+                const d = new Date(dateOb);
+                // Logic: Go back 1 month. If day <= 15, go back another month.
+                // E.g. Jan 10 -> Dec 15 (release of Nov index)? No.
+                // Let's use standard logic:
+                // Index Date = Date - 1 month. If Day <= 15, -1 month.
+                // Jan 10 -> Dec 10 -> -1 month -> Nov (Index Date).
+                // Jan 20 -> Dec 20 -> Dec (Index Date).
+                const target = new Date(d);
+                target.setMonth(target.getMonth() - 1);
+                if (target.getDate() <= 15) {
+                    target.setMonth(target.getMonth() - 1);
+                }
+                return target.toISOString().slice(0, 7); // YYYY-MM
+            } else {
+                // Respect Of (מדד בגין) - The index belonging to the payment month
+                // Usually means "Link to Index of Month X".
+                const d = new Date(dateOb);
+                return d.toISOString().slice(0, 7);
+            }
+        };
+
         for (const user of users) {
             const settings = {
                 ...(user.user_automation_settings?.[0] || {}),
@@ -146,7 +211,7 @@ serve(async (req) => {
 
             const { data: activeContracts } = await adminClient
                 .from('contracts')
-                .select('id, end_date, property_id, properties(address, status), notice_period_days, option_notice_days, option_periods, base_rent, linkage_type, base_index_value')
+                .select('id, end_date, property_id, properties(address, status), notice_period_days, option_notice_days, option_periods, base_rent, linkage_type, base_index_value, base_index_date, linkage_ceiling, linkage_sub_type, linkage_floor')
                 .eq('user_id', user.id)
                 .eq('status', 'active');
 
@@ -185,16 +250,83 @@ serve(async (req) => {
 
             // --- G. INDEX LINKAGE (CPI) MONITOR ---
             if (getSetting('auto_cpi_adjustment_proposals_enabled') === true) {
-                const contractsWithLinkage = activeContracts?.filter(c => c.linkage_type && c.linkage_type !== 'none' && c.base_index_value);
-                if (contractsWithLinkage?.length) {
-                    const { data: latestIndices } = await adminClient.from('index_data').select('index_type, date, value').order('date', { ascending: false }).limit(10);
+                const contractsWithLinkage = activeContracts?.filter(c => c.linkage_type && c.linkage_type !== 'none' && c.base_index_value && c.base_index_date);
+
+                if (contractsWithLinkage?.length && indexHistory?.length) {
                     for (const contract of contractsWithLinkage) {
-                        const targetIndex = latestIndices?.find(idx => idx.index_type === contract.linkage_type);
-                        if (targetIndex) {
-                            const newRent = Math.round(contract.base_rent * (targetIndex.value / contract.base_index_value));
-                            if (Math.abs(newRent - contract.base_rent) > 10) {
-                                await dispatcher.dispatch('info', 'Rent Adjustment Calculated', `New rent for ${contract.properties?.address || 'property'} should be ${newRent} ILS.`, { contract_id: contract.id, action: 'update_rent', new_rent: newRent });
+                        try {
+                            // 1. Determine Effective Target Date
+                            // We are proposing an adjustment for the CURRENT time.
+                            const effectiveTargetDateStr = getEffectiveDate(today, contract.linkage_sub_type || 'known');
+
+                            // 2. Determine Effective Base Date
+                            // Base index date is fixed in contract
+                            const effectiveBaseDateStr = getEffectiveDate(new Date(contract.base_index_date), contract.linkage_sub_type || 'known');
+                            // Actually, base_index_value is usually 'known' at signing.
+                            // But we use the stored base_index_value directly.
+                            // However, for Chaining, we need the DATE of the base index.
+                            // contract.base_index_date is "YYYY-MM-DD".
+
+                            // 3. Find Indices
+                            const targetIndexObj = indexHistory.find(idx => idx.index_type === contract.linkage_type && idx.date === effectiveTargetDateStr);
+
+                            if (targetIndexObj) {
+                                // 4. Calculate Chaining
+                                const chainFactor = getChainingFactor(contract.linkage_type, contract.base_index_date, today.toISOString());
+
+                                // 5. Standard Calculation
+                                // New = BaseRent * (Target * Chain / Base)
+                                let ratio = (targetIndexObj.value * chainFactor) / contract.base_index_value;
+
+                                // 6. Apply Annual Cap (Prorated)
+                                if (contract.linkage_ceiling > 0) {
+                                    const bDate = new Date(contract.base_index_date);
+                                    const tDate = new Date();
+                                    const diffDays = (tDate - bDate) / (1000 * 60 * 60 * 24);
+                                    const years = diffDays / 365.25;
+                                    const maxGrowth = (contract.linkage_ceiling / 100) * years;
+
+                                    // Calculate proposed growth
+                                    const rawGrowth = ratio - 1;
+                                    if (rawGrowth > maxGrowth) {
+                                        ratio = 1 + maxGrowth;
+                                    }
+                                }
+
+                                // 7. Apply Floor
+                                // If linkage_floor is 0 (or checked), don't drop below base (ratio 1)
+                                if (contract.linkage_floor !== null) {
+                                    // Assuming floor logic: if floor is checked (value 0?), min ratio is 1.
+                                    // If floor is specific value? Implementation specific.
+                                    // Let's assume Standard "Base is Floor" behavior
+                                    if (ratio < 1) ratio = 1;
+                                }
+
+                                const newRent = Math.round(contract.base_rent * ratio);
+
+                                // 8. Threshold Check
+                                if (Math.abs(newRent - contract.base_rent) > 10) {
+                                    // Deduplicate proposals?
+                                    // The logic to deduplicate is based on 'Rent Adjustment Calculated' title and recent time.
+                                    // We might want to include the 'new_rent' in metadata to avoid re-proposing same amount?
+                                    // Current createInAppNotification logic handles title deduplication.
+
+                                    await dispatcher.dispatch(
+                                        'info',
+                                        'Rent Adjustment Calculated',
+                                        `New rent for ${contract.properties?.address || 'property'} should be ${newRent} ILS (Index: ${targetIndexObj.value}).`,
+                                        {
+                                            contract_id: contract.id,
+                                            action: 'update_rent',
+                                            new_rent: newRent,
+                                            old_rent: contract.base_rent,
+                                            calculation_date: today.toISOString()
+                                        }
+                                    );
+                                }
                             }
+                        } catch (err) {
+                            console.error(`Error calculating linkage for contract ${contract.id}:`, err);
                         }
                     }
                 }

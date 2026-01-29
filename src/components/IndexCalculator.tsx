@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Calculator, Loader2 } from 'lucide-react';
-import { calculatorService } from '../services/CalculatorService';
+import { calculateStandard } from '../services/calculator.service';
+import { getIndexValue } from '../services/index-data.service';
 import { DatePicker } from './ui/DatePicker';
 import { format, parseISO } from 'date-fns';
 import { useTranslation } from '../hooks/useTranslation';
@@ -12,6 +13,7 @@ export function IndexCalculator() {
 
     // State
     const [indexType, setIndexType] = useState<'cpi' | 'housing' | 'construction' | 'usd' | 'eur'>('cpi');
+    const [linkageSubType, setLinkageSubType] = useState<'known' | 'respect_of' | 'base'>('known');
     const [baseDate, setBaseDate] = useState('');
     const [currentDate, setCurrentDate] = useState('');
     const [baseRent, setBaseRent] = useState('');
@@ -21,7 +23,12 @@ export function IndexCalculator() {
     // Fetched Indices
     const [baseIndexValue, setBaseIndexValue] = useState<number | null>(null);
     const [currentIndexValue, setCurrentIndexValue] = useState<number | null>(null);
-    const [calculatedRent, setCalculatedRent] = useState<number | null>(null);
+    const [calculatedResult, setCalculatedResult] = useState<{
+        newRent: number;
+        percentageChange: number;
+        formula: string;
+        linkageCoefficient: number;
+    } | null>(null);
 
     // Initial load - set defaults
     useEffect(() => {
@@ -36,86 +43,110 @@ export function IndexCalculator() {
         setBaseDate(toDateStr(yearAgo));
     }, []);
 
-    // Helper: Claculate Known Index Date
-    const getKnownIndexDate = (dateStr: string): string => {
-        if (!dateStr) return '';
-
-        // Note: Parsing YYYY-MM-DD manually is safer to avoid timezone shifts
-        const [y, m, d] = dateStr.split('-').map(Number);
-        const targetDate = new Date(y, m - 1, d);
-        const monthsToSubtract = d < 15 ? 2 : 1;
-        targetDate.setMonth(targetDate.getMonth() - monthsToSubtract);
-        return targetDate.toISOString().slice(0, 7); // YYYY-MM
-    };
-
-    const effectiveBaseDate = getKnownIndexDate(baseDate);
-    const effectiveCurrentDate = getKnownIndexDate(currentDate);
-
-    // Effect: Fetch indices when EFFECTIVE dates or type change
+    // Effect: Fetch indices when dates or types change
     useEffect(() => {
         async function fetchIndices() {
-            if (!effectiveBaseDate || !effectiveCurrentDate) return;
+            // Only fetch if dates are valid YYYY-MM-DD
+            if (baseDate.length !== 10 || currentDate.length !== 10) return;
 
             setLoading(true);
             try {
-                // Use the effective "Known Index" dates
+                // Adjust dates for "Known Index" (15th threshold) if needed for display purposes
+                // The new calculator service handles this internally for CALCULATION, 
+                // but we want to show the user the values they will get.
+
+                let effectiveBaseDate = baseDate;
+                let effectiveCurrentDate = currentDate;
+
+                if (linkageSubType === 'known') {
+                    // Manually replicate logic to show user strictly what index is being pulled
+                    const getEffective = (dStr: string) => {
+                        const d = new Date(dStr);
+                        if (d.getDate() <= 15) {
+                            d.setMonth(d.getMonth() - 1);
+                        }
+                        return d.toISOString().slice(0, 7);
+                    };
+                    effectiveBaseDate = getEffective(baseDate);
+                    effectiveCurrentDate = getEffective(currentDate);
+                } else {
+                    effectiveBaseDate = baseDate.slice(0, 7);
+                    effectiveCurrentDate = currentDate.slice(0, 7);
+                }
+
                 const [baseVal, currentVal] = await Promise.all([
-                    calculatorService.getIndexValue(indexType, effectiveBaseDate),
-                    calculatorService.getIndexValue(indexType, effectiveCurrentDate)
+                    getIndexValue(indexType, effectiveBaseDate),
+                    getIndexValue(indexType, effectiveCurrentDate)
                 ]);
 
                 setBaseIndexValue(baseVal);
                 setCurrentIndexValue(currentVal);
             } catch (err) {
                 console.error('Error fetching indices:', err);
+                setBaseIndexValue(null);
+                setCurrentIndexValue(null);
             } finally {
                 setLoading(false);
             }
         }
 
-        // Debounce slightly or just run
         const timer = setTimeout(fetchIndices, 500);
         return () => clearTimeout(timer);
-    }, [indexType, effectiveBaseDate, effectiveCurrentDate]);
+    }, [indexType, linkageSubType, baseDate, currentDate]);
 
 
 
     useEffect(() => {
         async function runCalculation() {
-            if (!baseIndexValue || !currentIndexValue || !baseRent) {
-                setCalculatedRent(null);
+            if (!baseRent) {
+                setCalculatedResult(null);
                 return;
             }
             const rent = parseFloat(baseRent);
             if (isNaN(rent) || rent <= 0) {
-                setCalculatedRent(null);
+                setCalculatedResult(null);
                 return;
             }
 
+            // Wait for indices to be ready? 
+            // Actually calculateStandard fetches internally if needed, 
+            // but we want to use the displayed dates so passing manual won't reflect 
+            // the Known Index logic if we override.
+            // Best approach: Let calculateStandard do the work.
+
+            if (!baseDate || !currentDate) return;
+
             try {
-                const res = await calculatorService.calculateLinkage(
-                    rent,
-                    baseIndexValue,
-                    currentIndexValue,
-                    effectiveBaseDate,     // Use Effective Known Index Date
-                    effectiveCurrentDate,  // Use Effective Known Index Date
-                    indexType,
-                    annualCeiling ? parseFloat(annualCeiling) : null,
-                    isFloorChecked ? 0 : null
-                );
-                setCalculatedRent(res);
+                const res = await calculateStandard({
+                    baseRent: rent,
+                    linkageType: indexType,
+                    linkageSubType: linkageSubType,
+                    baseDate: baseDate.slice(0, 7), // Pass YYYY-MM
+                    targetDate: currentDate.slice(0, 7), // Pass YYYY-MM
+                    linkageCeiling: annualCeiling ? parseFloat(annualCeiling) : undefined,
+                    isIndexBaseMinimum: isFloorChecked
+                });
+
+                if (res) {
+                    setCalculatedResult({
+                        newRent: res.newRent,
+                        percentageChange: res.percentageChange,
+                        formula: res.formula,
+                        linkageCoefficient: res.linkageCoefficient
+                    });
+                    // Re-sync UI indices with what the calculator used (e.g. chaining adjusted)
+                    // Actually calculateStandard returns used values.
+                } else {
+                    setCalculatedResult(null);
+                }
             } catch (err) {
                 console.error("Calculation error:", err);
-                setCalculatedRent(null);
+                setCalculatedResult(null);
             }
         }
         runCalculation();
-    }, [baseIndexValue, currentIndexValue, baseRent, effectiveBaseDate, effectiveCurrentDate, indexType, annualCeiling, isFloorChecked]);
+    }, [baseRent, baseDate, currentDate, indexType, linkageSubType, annualCeiling, isFloorChecked]);
 
-    const result = calculatedRent;
-    const percentChange = baseIndexValue && currentIndexValue
-        ? ((currentIndexValue - baseIndexValue) / baseIndexValue) * 100
-        : null;
 
     return (
         <div className="bg-card border border-border rounded-xl p-5 shadow-sm space-y-4">
@@ -144,6 +175,21 @@ export function IndexCalculator() {
                     </select>
                 </div>
 
+                {/* Linkage Sub Type (Israeli Standard) */}
+                {(indexType === 'cpi' || indexType === 'housing' || indexType === 'construction') && (
+                    <div className="space-y-1">
+                        <label className="text-xs font-medium text-muted-foreground">Index Calculation</label>
+                        <select
+                            value={linkageSubType}
+                            onChange={(e) => setLinkageSubType(e.target.value as any)}
+                            className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:ring-1 focus:ring-primary"
+                        >
+                            <option value="known">Known Index (מדד ידוע)</option>
+                            <option value="respect_of">In Respect Of (מדד בגין)</option>
+                        </select>
+                    </div>
+                )}
+
                 {/* Base Date */}
                 <div className="space-y-1">
                     <label className="text-xs font-medium text-muted-foreground">Base Date</label>
@@ -161,16 +207,11 @@ export function IndexCalculator() {
                             !loading && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-red-400">N/A</span>
                         )}
                     </div>
-                    {effectiveBaseDate && (
-                        <div className="text-[10px] text-muted-foreground text-right px-1">
-                            Effective Index: <span className="font-mono">{effectiveBaseDate}</span>
-                        </div>
-                    )}
                 </div>
 
                 {/* Current Date */}
                 <div className="space-y-1">
-                    <label className="text-xs font-medium text-muted-foreground">Index Date</label>
+                    <label className="text-xs font-medium text-muted-foreground">Payment Date</label>
                     <div className="relative">
                         <DatePicker
                             value={currentDate ? parseISO(currentDate) : undefined}
@@ -185,11 +226,6 @@ export function IndexCalculator() {
                             !loading && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-red-400">N/A</span>
                         )}
                     </div>
-                    {effectiveCurrentDate && (
-                        <div className="text-[10px] text-muted-foreground text-right px-1">
-                            Effective Index: <span className="font-mono">{effectiveCurrentDate}</span>
-                        </div>
-                    )}
                 </div>
 
                 {/* Base Rent */}
@@ -231,27 +267,35 @@ export function IndexCalculator() {
             </div>
 
             {/* Result Section */}
-            {result !== null && (
-                <div className="mt-4 pt-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <span>Change:</span>
-                        <span className={`font-bold ${percentChange! >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {percentChange! > 0 ? '+' : ''}{percentChange!.toFixed(2)}%
-                        </span>
+            {calculatedResult && (
+                <div className="mt-4 pt-4 border-t border-border flex flex-col gap-3 animate-in fade-in slide-in-from-top-2">
+
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <span>Total Increase:</span>
+                            <span className={`font-bold ${calculatedResult.percentageChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {calculatedResult.percentageChange > 0 ? '+' : ''}{calculatedResult.percentageChange.toFixed(2)}%
+                            </span>
+                        </div>
+
+                        <div className="flex items-center gap-3 bg-primary/5 px-4 py-2 rounded-xl border border-primary/10">
+                            <span className="text-sm font-medium">New Rent:</span>
+                            <span className="text-2xl font-bold text-primary font-mono">
+                                ₪{calculatedResult.newRent.toLocaleString()}
+                            </span>
+                        </div>
                     </div>
 
-                    <div className="flex items-center gap-3 bg-primary/5 px-4 py-2 rounded-xl border border-primary/10">
-                        <span className="text-sm font-medium">New Rent:</span>
-                        <span className="text-2xl font-bold text-primary font-mono">
-                            ₪{result.toLocaleString()}
-                        </span>
+                    {/* Detailed Formula Display handled by Service */}
+                    <div className="bg-secondary/20 p-3 rounded-lg text-xs font-mono text-muted-foreground overflow-x-auto whitespace-nowrap">
+                        {calculatedResult.formula}
                     </div>
                 </div>
             )}
 
             {(baseIndexValue === null || currentIndexValue === null) && !loading && baseDate && currentDate && (
                 <div className="text-xs text-red-500 bg-red-50 dark:bg-red-900/20 p-2 rounded">
-                    Missing index data for selected dates. Please try different dates.
+                    Missing index data for selected dates.
                 </div>
             )}
         </div>

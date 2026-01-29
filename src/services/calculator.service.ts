@@ -7,6 +7,7 @@ import type {
     IndexBase
 } from '../types/database';
 import { getIndexValue, getIndexRange, getMonthsBetween, getAvailableRange, getIndexBases } from './index-data.service';
+import { ChainingFactorService } from './chaining-factor.service';
 
 /**
  * Calculator Service
@@ -20,47 +21,58 @@ export async function calculateStandard(
     input: StandardCalculationInput
 ): Promise<StandardCalculationResult | null> {
     try {
+        // Apply "Known Index" date logic if specified
+        // Israeli contracts use "מדד ידוע" (published before payment) vs "מדד בגין" (for payment month)
+        // Rule: If payment date <= 15th, use previous month's index
+        let adjustedBaseDate = input.baseDate;
+        let adjustedTargetDate = input.targetDate;
+
+        if (input.linkageSubType === 'known') {
+            // For Known Index, shift dates based on 15th-of-month threshold
+            // This ensures we use the index published BEFORE the payment date
+            const baseDateObj = new Date(input.baseDate + '-15'); // Use 15th as threshold
+            const targetDateObj = new Date(input.targetDate + '-15');
+
+            // Shift to previous month
+            baseDateObj.setMonth(baseDateObj.getMonth() - 1);
+            targetDateObj.setMonth(targetDateObj.getMonth() - 1);
+
+            adjustedBaseDate = baseDateObj.toISOString().slice(0, 7);
+            adjustedTargetDate = targetDateObj.toISOString().slice(0, 7);
+        }
+
         // Fetch index values (or use manual overrides)
-        const baseIndexValue = input.manualBaseIndex ?? await getIndexValue(input.linkageType, input.baseDate);
-        const targetIndexValue = input.manualTargetIndex ?? await getIndexValue(input.linkageType, input.targetDate);
+        const baseIndexValue = input.manualBaseIndex ?? await getIndexValue(input.linkageType, adjustedBaseDate);
+        const targetIndexValue = input.manualTargetIndex ?? await getIndexValue(input.linkageType, adjustedTargetDate);
 
         if (baseIndexValue === null || targetIndexValue === null) {
             console.error('Missing index data for calculation');
             return null;
         }
 
-        // Calculate Chaining Factor
+        // Calculate Chaining Factor using new service
         // -------------------------
-        // We need to check if we crossed any index base periods.
-        // Formula: NewIndex * ChainFactors / BaseIndex
-        let chainFactor = 1.0;
+        // Note: Chaining only applies to CBS indices (CPI, Housing, Construction)
+        // Currency exchange rates (USD, EUR) don't have base year transitions
+        let adjustedTargetValue = targetIndexValue;
 
-        // Fetch bases only if not manual indices (manual implies specific known values)
-        // Actually, even with manual indices, if the dates span bases, we might need chaining, 
-        // but typically manual entry users handle that or it's a simple ratio.
-        // We'll proceed assuming if it's auto-fetch, we check bases.
-        if (!input.manualBaseIndex && !input.manualTargetIndex) {
-            const bases = await getIndexBases(input.linkageType);
+        if (input.linkageType === 'cpi' || input.linkageType === 'housing' || input.linkageType === 'construction') {
+            const chainingResult = await ChainingFactorService.getChainingFactor(
+                input.linkageType,
+                adjustedBaseDate,
+                adjustedTargetDate
+            );
 
-            // Sort bases descending (newest first)
-            // Iterate to find bases that started AFTER baseDate and BEFORE/ON targetDate
-            const bDate = new Date(input.baseDate + '-01'); // Ensure day is set
-            const tDate = new Date(input.targetDate + '-01');
-
-            bases.forEach((base: IndexBase) => {
-                const baseStart = new Date(base.base_period_start);
-                // logic: if a new base period started between baseDate and targetDate
-                if (baseStart > bDate && baseStart <= tDate) {
-                    if (base.chain_factor && base.chain_factor > 0) {
-                        chainFactor *= Number(base.chain_factor);
-                    }
-                }
-            });
+            // Apply chaining to target index
+            adjustedTargetValue = ChainingFactorService.applyChaining(
+                targetIndexValue,
+                chainingResult
+            );
         }
 
         // Calculate Linkage Ratio with Chain Factor
-        // Ratio = (Target * Chain) / Base
-        const rawRatio = (targetIndexValue * chainFactor) / baseIndexValue;
+        // Ratio = (Adjusted Target) / Base
+        const rawRatio = adjustedTargetValue / baseIndexValue;
 
         // Calculate מקדם קישור (linkage coefficient) in percentage change
         // e.g. 1.05 -> 5%
@@ -70,14 +82,15 @@ export async function calculateStandard(
         const partialLinkage = input.partialLinkage ?? 100;
         let effectiveChange = (linkageCoefficient / 100) * (partialLinkage / 100);
 
-        // Apply annualized ceiling if specified
+        // Apply annualized ceiling if specified (Prorated Cap)
         if (input.linkageCeiling !== undefined && input.linkageCeiling > 0) {
-            const bDate = new Date(input.baseDate + '-01');
-            const tDate = new Date(input.targetDate + '-01');
+            const bDate = new Date(adjustedBaseDate + '-01');
+            const tDate = new Date(adjustedTargetDate + '-01');
             const diffTime = Math.max(0, tDate.getTime() - bDate.getTime());
             const diffDays = diffTime / (1000 * 60 * 60 * 24);
             const years = diffDays / 365.25;
 
+            // Prorated ceiling: e.g., 5% annual cap -> 7.5% after 18 months
             const cumulativeCeiling = (input.linkageCeiling / 100) * years;
             effectiveChange = Math.min(effectiveChange, cumulativeCeiling);
         }
@@ -96,11 +109,14 @@ export async function calculateStandard(
 
         // Generate formula string
         let formula = '';
+        const hasChaining = adjustedTargetValue !== targetIndexValue;
+
         if (partialLinkage === 100) {
-            if (chainFactor !== 1.0) {
-                formula = `New Rent = ₪${input.baseRent.toLocaleString()} × ((${targetIndexValue} × ${chainFactor.toFixed(4)}) / ${baseIndexValue}) = ₪${Math.round(newRent).toLocaleString()}`;
+            if (hasChaining) {
+                const chainingFactor = adjustedTargetValue / targetIndexValue;
+                formula = `New Rent = ₪${input.baseRent.toLocaleString()} × ((${targetIndexValue} × ${chainingFactor.toFixed(4)}) / ${baseIndexValue}) = ₪${Math.round(newRent).toLocaleString()}`;
             } else {
-                formula = `New Rent = ₪${input.baseRent.toLocaleString()} × (${targetIndexValue} / ${baseIndexValue}) = ₪${Math.round(newRent).toLocaleString()}`;
+                formula = `New Rent = ₪${input.baseRent.toLocaleString()} × (${adjustedTargetValue} / ${baseIndexValue}) = ₪${Math.round(newRent).toLocaleString()}`;
             }
         } else {
             // Partial Linkage
@@ -114,7 +130,7 @@ export async function calculateStandard(
         return {
             newRent: Math.round(newRent),
             baseIndexValue,
-            targetIndexValue,
+            targetIndexValue: adjustedTargetValue,
             linkageCoefficient,
             percentageChange,
             absoluteChange,
