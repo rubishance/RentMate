@@ -6,6 +6,9 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { CompressionService } from '../../services/compression.service';
 import { format, parseISO } from 'date-fns';
 
+import { DocumentTimeline } from './DocumentTimeline';
+import { DocumentDetailsModal } from '../modals/DocumentDetailsModal';
+
 interface MediaGalleryProps {
     property: Property;
     readOnly?: boolean;
@@ -27,6 +30,8 @@ export function MediaGallery({ property, readOnly }: MediaGalleryProps) {
     const [albumDate, setAlbumDate] = useState(new Date().toISOString().split('T')[0]);
     const [albumNote, setAlbumNote] = useState('');
     const [stagedFiles, setStagedFiles] = useState<Array<{ file: File; note: string; preview: string }>>([]);
+    const [selectedDocument, setSelectedDocument] = useState<PropertyDocument | null>(null);
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
     useEffect(() => {
         loadData();
@@ -203,64 +208,6 @@ export function MediaGallery({ property, readOnly }: MediaGalleryProps) {
 
     const orphanedItems = mediaItems.filter(item => !item.folder_id);
 
-    // Reusable Grid Component
-    const MediaGrid = ({ items }: { items: PropertyDocument[] }) => (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
-            {items.map(item => (
-                <div key={item.id} className="group relative aspect-square bg-muted dark:bg-gray-800 rounded-xl overflow-hidden border border-border dark:border-gray-700 shadow-sm">
-                    {/* Content */}
-                    {item.category === 'video' ? (
-                        <div className="w-full h-full flex items-center justify-center bg-foreground">
-                            <Video className="w-12 h-12 text-white/50" />
-                        </div>
-                    ) : (
-                        <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                            {imageUrls[item.id] ? (
-                                <img src={imageUrls[item.id]} alt={item.title} className="w-full h-full object-cover" />
-                            ) : (
-                                <ImageIcon className="w-8 h-8 text-muted-foreground" />
-                            )}
-                        </div>
-                    )}
-
-                    {/* Overlay */}
-                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-4 text-center">
-                        {item.description && (
-                            <p className="text-white text-xs mb-2 line-clamp-3">{item.description}</p>
-                        )}
-                        <div className="flex gap-2">
-                            <button
-                                onClick={() => getFileUrl(item)}
-                                className="p-2 bg-white/20 hover:bg-white/40 rounded-full text-white backdrop-blur-sm transition-colors"
-                                title={t('view')}
-                            >
-                                <ExternalLink className="w-5 h-5" />
-                            </button>
-                            {!readOnly && (
-                                <button
-                                    onClick={() => handleDeleteDocument(item.id)}
-                                    className="p-2 bg-red-500/80 hover:bg-red-500 rounded-full text-white backdrop-blur-sm transition-colors"
-                                    title={t('delete')}
-                                >
-                                    <Trash2 className="w-5 h-5" />
-                                </button>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Type Badge */}
-                    <div className="absolute top-2 left-2 px-2 py-0.5 bg-black/50 backdrop-blur-md rounded text-[10px] text-white font-medium uppercase">
-                        {item.category}
-                    </div>
-
-                    {/* File Name */}
-                    <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent">
-                        <p className="text-xs text-white truncate">{item.title || item.file_name}</p>
-                    </div>
-                </div>
-            ))}
-        </div>
-    );
 
     return (
         <div className="p-6 space-y-6">
@@ -498,7 +445,13 @@ export function MediaGallery({ property, readOnly }: MediaGalleryProps) {
                                         </div>
                                     )}
                                 </div>
-                                <MediaGrid items={folderItems} />
+                                <DocumentTimeline
+                                    documents={folderItems}
+                                    onDocumentClick={(doc) => {
+                                        setSelectedDocument(doc);
+                                        setIsDetailsModalOpen(true);
+                                    }}
+                                />
                             </div>
                         );
                     })}
@@ -508,7 +461,13 @@ export function MediaGallery({ property, readOnly }: MediaGalleryProps) {
                         <div className="mt-8">
                             <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">{t('unsortedMedia')}</h4>
                             <div className="bg-white dark:bg-gray-800 rounded-xl border border-border dark:border-gray-700 overflow-hidden">
-                                <MediaGrid items={orphanedItems} />
+                                <DocumentTimeline
+                                    documents={orphanedItems}
+                                    onDocumentClick={(doc) => {
+                                        setSelectedDocument(doc);
+                                        setIsDetailsModalOpen(true);
+                                    }}
+                                />
                             </div>
                         </div>
                     )}
@@ -523,6 +482,16 @@ export function MediaGallery({ property, readOnly }: MediaGalleryProps) {
                     )}
                 </div>
             )}
+
+            <DocumentDetailsModal
+                isOpen={isDetailsModalOpen}
+                onClose={() => {
+                    setIsDetailsModalOpen(false);
+                    setSelectedDocument(null);
+                }}
+                document={selectedDocument}
+                onDelete={() => loadData()}
+            />
         </div>
     );
 }

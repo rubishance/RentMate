@@ -78,7 +78,10 @@ export type TranslationKeys =
     | 'selectDate'
     | 'friendlyName'
     | 'selectCategory'
-    | 'mainApartment';
+    | 'mainApartment'
+    | 'stepOptionRent'
+    | 'extensionEndDate'
+    | 'extensionRent';
 
 export const translations: Record<string, Record<TranslationKeys, string>> = {
     he: {
@@ -153,7 +156,10 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         selectDate: 'בחר תאריך...',
         friendlyName: 'כינוי לנכס',
         selectCategory: 'בחר קטגוריה',
-        mainApartment: 'דירה ראשית'
+        mainApartment: 'דירה ראשית',
+        stepOptionRent: 'שכר דירה באופציה',
+        extensionEndDate: 'תאריך סיום האופציה',
+        extensionRent: 'שכר דירה באופציה'
     },
     en: {
         appName: 'RentMate',
@@ -227,6 +233,9 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         stepDate: 'Date',
         newAmount: 'New Amount',
         linkageAndIndices: 'Linkage & Indices',
-        selectDate: 'Select Date...'
+        selectDate: 'Select Date...',
+        stepOptionRent: 'Option Rent',
+        extensionEndDate: 'Extension End Date',
+        extensionRent: 'Extension Rent'
     }
 };

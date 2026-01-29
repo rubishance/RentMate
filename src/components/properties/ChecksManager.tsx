@@ -5,6 +5,8 @@ import { propertyDocumentsService } from '../../services/property-documents.serv
 import { useTranslation } from '../../hooks/useTranslation';
 import { CompressionService } from '../../services/compression.service';
 import { format, parseISO } from 'date-fns';
+import { DocumentTimeline } from './DocumentTimeline';
+import { DocumentDetailsModal } from '../modals/DocumentDetailsModal';
 
 interface ChecksManagerProps {
     property: Property;
@@ -18,6 +20,8 @@ export function ChecksManager({ property, readOnly }: ChecksManagerProps) {
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
     const [showUploadForm, setShowUploadForm] = useState(false);
+    const [selectedDocument, setSelectedDocument] = useState<PropertyDocument | null>(null);
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
     // Upload Form State
     const [stagedFiles, setStagedFiles] = useState<Array<{
@@ -225,43 +229,25 @@ export function ChecksManager({ property, readOnly }: ChecksManagerProps) {
                 </div>
             )}
 
-            {/* Gallery */}
-            {loading ? (
-                <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
-            ) : documents.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground bg-secondary/20 rounded-3xl border border-dashed border-border">
-                    <ImageIcon className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                    <p>{t('noChecksYet')}</p>
-                </div>
-            ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {documents.map((doc) => (
-                        <div key={doc.id} className="group relative aspect-[3/2] bg-white dark:bg-gray-800 rounded-2xl border border-border dark:border-gray-700 overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer" onClick={() => window.open(propertyDocumentsService.getDocumentUrl(doc) as any)}>
-                            {/* Preview (Mock for PDF, Image for Image) */}
-                            <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-                                <FileText className="w-8 h-8 text-gray-400" />
-                                {/* In a real app, we'd fetch a thumbnail or check mime_type to render <img /> */}
-                            </div>
+            {/* Timeline View */}
+            <DocumentTimeline
+                documents={documents}
+                loading={loading}
+                onDocumentClick={(doc) => {
+                    setSelectedDocument(doc);
+                    setIsDetailsModalOpen(true);
+                }}
+            />
 
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
-                                <p className="text-white text-sm font-bold truncate">{doc.title}</p>
-                                <div className="flex justify-between items-end mt-1">
-                                    <span className="text-xs text-white/80">{doc.document_date ? format(parseISO(doc.document_date), 'dd/MM/yyyy') : '-'}</span>
-                                    {doc.amount && <span className="text-xs font-bold text-emerald-400">₪{doc.amount}</span>}
-                                </div>
-                            </div>
-                            {!readOnly && (
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); handleDeleteDocument(doc.id); }}
-                                    className="absolute top-2 right-2 p-2 bg-red-500/80 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
-                            )}
-                        </div>
-                    ))}
-                </div>
-            )}
+            <DocumentDetailsModal
+                isOpen={isDetailsModalOpen}
+                onClose={() => {
+                    setIsDetailsModalOpen(false);
+                    setSelectedDocument(null);
+                }}
+                document={selectedDocument}
+                onDelete={() => loadData()}
+            />
         </div>
     );
 }

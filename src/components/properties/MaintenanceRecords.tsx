@@ -5,9 +5,11 @@ import { propertyDocumentsService } from '../../services/property-documents.serv
 import { useTranslation } from '../../hooks/useTranslation';
 import { CompressionService } from '../../services/compression.service';
 import { BillAnalysisService } from '../../services/bill-analysis.service';
-import UpgradeRequestModal from '../modals/UpgradeRequestModal';
 import { Sparkles } from 'lucide-react';
+import UpgradeRequestModal from '../modals/UpgradeRequestModal';
 import { format, parseISO } from 'date-fns';
+import { DocumentTimeline } from './DocumentTimeline';
+import { DocumentDetailsModal } from '../modals/DocumentDetailsModal';
 
 interface MaintenanceRecordsProps {
     property: Property;
@@ -39,6 +41,8 @@ export function MaintenanceRecords({ property, readOnly }: MaintenanceRecordsPro
         aiData?: any;
     }>>([]);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+    const [selectedDocument, setSelectedDocument] = useState<PropertyDocument | null>(null);
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
     useEffect(() => {
         loadData();
@@ -472,134 +476,26 @@ export function MaintenanceRecords({ property, readOnly }: MaintenanceRecordsPro
                 </div>
             )}
 
-            {/* Folders List */}
-            {loading ? (
-                <div className="flex justify-center p-8">
-                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                </div>
-            ) : (
-                <div className="space-y-6">
-                    {/* Folders */}
-                    {folders.map(folder => {
-                        const folderDocs = docsByFolder[folder.id] || [];
-                        const folderCost = folderDocs.reduce((sum, d) => sum + (d.amount || 0), 0);
+            {/* Timeline View */}
+            <DocumentTimeline
+                documents={documents}
+                loading={loading}
+                onDocumentClick={(doc) => {
+                    setSelectedDocument(doc);
+                    setIsDetailsModalOpen(true);
+                }}
+            />
 
-                        return (
-                            <div key={folder.id} className="bg-white dark:bg-gray-800 rounded-xl border border-border dark:border-gray-700 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                                <div className="p-4 bg-gray-50/50 dark:bg-gray-700/30 flex items-start justify-between border-b border-border dark:border-gray-700">
-                                    <div className="flex items-start gap-3">
-                                        <div className="p-2 bg-primary/10 dark:bg-blue-900/30 text-primary dark:text-blue-400 rounded-lg mt-1">
-                                            <Folder className="w-5 h-5" />
-                                        </div>
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <h3 className="font-bold text-lg text-foreground dark:text-white">{folder.name}</h3>
-                                                <span className="text-xs px-2 py-0.5 bg-muted dark:bg-gray-700 text-muted-foreground dark:text-gray-300 rounded-full">
-                                                    {format(parseISO(folder.folder_date), 'dd/MM/yyyy')}
-                                                </span>
-                                            </div>
-                                            {folder.description && (
-                                                <p className="text-sm text-muted-foreground mt-1">{folder.description}</p>
-                                            )}
-                                            <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                                                <span>{folderDocs.length} {t('files')}</span>
-                                                {folderCost > 0 && (
-                                                    <span className="font-semibold text-foreground dark:text-white">₪{folderCost.toLocaleString()}</span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {!readOnly && (
-                                        <button
-                                            onClick={() => handleDeleteFolder(folder.id)}
-                                            className="p-2 text-muted-foreground hover:text-red-500 transition-colors"
-                                            title={t('deleteFolder')}
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    )}
-                                </div>
+            <DocumentDetailsModal
+                isOpen={isDetailsModalOpen}
+                onClose={() => {
+                    setIsDetailsModalOpen(false);
+                    setSelectedDocument(null);
+                }}
+                document={selectedDocument}
+                onDelete={() => loadData()}
+            />
 
-                                {folderDocs.length > 0 && (
-                                    <div className="divide-y divide-gray-100 dark:divide-gray-700/50">
-                                        {folderDocs.map(doc => (
-                                            <div key={doc.id} className="p-3 pl-16 flex items-center justify-between hover:bg-secondary dark:hover:bg-gray-700/20 transition-colors">
-                                                <div className="flex-1">
-                                                    <div className="flex items-center gap-2">
-                                                        <Hammer className="w-4 h-4 text-orange-500" />
-                                                        <p className="text-sm font-medium text-gray-700 dark:text-gray-200">{doc.title}</p>
-                                                    </div>
-                                                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 ml-6 text-xs text-muted-foreground">
-                                                        {doc.vendor_name && (
-                                                            <span className="flex items-center gap-1">
-                                                                <User className="w-3 h-3" /> {doc.vendor_name}
-                                                            </span>
-                                                        )}
-                                                        {doc.issue_type && (
-                                                            <span className="flex items-center gap-1">
-                                                                <Wrench className="w-3 h-3" /> {getIssueLabel(doc.issue_type)}
-                                                            </span>
-                                                        )}
-                                                        {doc.amount ? <span className="font-medium text-foreground dark:text-white">₪{doc.amount}</span> : null}
-                                                        {doc.document_date && (
-                                                            <span className="flex items-center gap-1">
-                                                                <Calendar className="w-3 h-3" /> {doc.document_date}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        onClick={() => window.open(propertyDocumentsService.getDocumentUrl(doc) as any)}
-                                                        className="px-3 py-1 text-xs font-medium text-primary hover:text-primary bg-primary/10 hover:bg-primary/10 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
-                                                    >
-                                                        {t('view')}
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    })}
-
-                    {orphanedDocs.length > 0 && (
-                        <div className="mt-8">
-                            <h4 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4 ltr:text-left rtl:text-right">{t('unsortedRecords')}</h4>
-                            <div className="space-y-4">
-                                {orphanedDocs.map(record => (
-                                    <div
-                                        key={record.id}
-                                        className="bg-white dark:bg-gray-800 p-5 rounded-[2.5rem] border border-border/60 dark:border-gray-700 flex items-center justify-between group hover:shadow-md hover:border-primary/30 transition-all duration-300 cursor-pointer"
-                                        onClick={() => window.open(propertyDocumentsService.getDocumentUrl(record) as any)}
-                                    >
-                                        <div className="flex-1 ltr:text-left rtl:text-right overflow-hidden pr-4 pl-4">
-                                            <p className="text-lg font-bold text-gray-700 dark:text-gray-200 truncate">{record.title || record.file_name}</p>
-                                            <div className="flex flex-wrap gap-3 mt-1 text-sm font-medium text-gray-400 dark:text-gray-500">
-                                                {record.amount && <span>₪{record.amount}</span>}
-                                                {record.document_date && <span>{record.document_date}</span>}
-                                            </div>
-                                        </div>
-                                        <div className="shrink-0 p-3 bg-secondary dark:bg-gray-700/50 rounded-2xl group-hover:bg-primary/10 transition-colors">
-                                            <Wrench className="w-5 h-5 text-gray-400 group-hover:text-primary" />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {folders.length === 0 && orphanedDocs.length === 0 && (
-                        <div className="text-center py-16 border-2 border-dashed border-border dark:border-gray-700 rounded-2xl">
-                            <div className="w-16 h-16 bg-secondary dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Wrench className="w-8 h-8 text-gray-300" />
-                            </div>
-                            <h4 className="font-semibold text-foreground dark:text-white">{t('noMaintenanceRecordsYet')}</h4>
-                        </div>
-                    )}
-                </div>
-            )}
             <UpgradeRequestModal
                 isOpen={showUpgradeModal}
                 onClose={() => setShowUpgradeModal(false)}

@@ -9,6 +9,7 @@ import { useUserPreferences } from '../../contexts/UserPreferencesContext';
 import { crmService } from '../../services/crm.service';
 import { useStack } from '../../contexts/StackContext';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useDataCache } from '../../contexts/DataCacheContext';
 
 // Modals
 import { AddPaymentModal } from '../modals/AddPaymentModal';
@@ -21,6 +22,7 @@ export function ChatWidget() {
     const { isOpen, toggleChat, isLoading, messages: botMessages, sendMessage: sendBotMessage, uiAction, clearUiAction, isAiMode, activateAiMode, deactivateAiMode } = useChatBot();
     const navigate = useNavigate();
     const { push } = useStack();
+    const { clear } = useDataCache();
     const inputRef = useRef<HTMLInputElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -85,7 +87,10 @@ export function ChatWidget() {
                     // Contracts and Tenants now handled by the contract wizard
                     navigate('/contracts/new', { state: { prefill: uiAction.data } });
                 } else if (uiAction.modal === 'property' || uiAction.modal === 'add_property') {
-                    push('wizard', { initialData: uiAction.data }, { title: t('addProperty'), isExpanded: true });
+                    push('wizard', {
+                        initialData: uiAction.data,
+                        onSuccess: () => clear()
+                    }, { title: t('addProperty'), isExpanded: true });
                 } else if (uiAction.modal === 'maintenance' || uiAction.modal === 'add_maintenance') {
                     push('maintenance_chat', { propertyAddress: uiAction.data?.address }, { title: t('maintenance'), isExpanded: true });
                 } else {
@@ -374,13 +379,19 @@ export function ChatWidget() {
             <AddPaymentModal
                 isOpen={activeModal === 'payment' || activeModal === 'add_payment'}
                 onClose={() => setActiveModal(null)}
-                onSuccess={() => setActiveModal(null)}
+                onSuccess={() => {
+                    clear();
+                    setActiveModal(null);
+                }}
                 initialData={modalData}
             />
             <AddMaintenanceModal
                 isOpen={activeModal === 'maintenance' || activeModal === 'add_maintenance'}
                 onClose={() => setActiveModal(null)}
-                onSuccess={() => setActiveModal(null)}
+                onSuccess={() => {
+                    clear();
+                    setActiveModal(null);
+                }}
                 initialData={modalData}
             />
         </motion.div>

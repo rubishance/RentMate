@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Property } from '../../types/database';
 import { cn } from '../../lib/utils';
-import { HomeIcon, WalletIcon, FolderIcon, PhoneIcon, MapPinIcon, PlusIcon, MoreVertical, Edit2, Trash2, CheckIcon, FilePlus, FileText } from 'lucide-react';
+import { HomeIcon, WalletIcon, FolderIcon, PhoneIcon, MapPinIcon, PlusIcon, MoreVertical, Edit2, Trash2, CheckIcon, FilePlus, FileText, Car, Archive } from 'lucide-react';
+import { Menu, MenuButton, MenuItem, MenuItems, Transition, Portal } from '@headlessui/react';
 import { PropertyDocumentsHub } from '../properties/PropertyDocumentsHub';
 import { Button } from '../ui/Button';
 import { SnapshotTab } from './tabs/SnapshotTab';
@@ -14,6 +15,9 @@ import { supabase } from '../../lib/supabase';
 import { ConfirmDeleteModal } from '../modals/ConfirmDeleteModal';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useDataCache } from '../../contexts/DataCacheContext';
+import { AddPaymentModal } from '../modals/AddPaymentModal';
+import { DollarSign } from 'lucide-react';
+import { propertyService } from '../../services/property.service';
 
 interface PropertyHubProps {
     propertyId: string;
@@ -21,25 +25,37 @@ interface PropertyHubProps {
     onDelete?: () => void;
 }
 
-type TabType = 'snapshot' | 'contracts' | 'wallet' | 'files';
+type TabType = 'contracts' | 'wallet' | 'files';
 
 export function PropertyHub({ property: initialProperty, propertyId, onDelete }: PropertyHubProps) {
     const { t, lang } = useTranslation();
     const navigate = useNavigate();
     const { push, pop } = useStack();
     const { set, clear } = useDataCache();
-    const [activeTab, setActiveTab] = useState<TabType>('snapshot');
+    const [activeTab, setActiveTab] = useState<TabType>('contracts');
     const [property, setProperty] = useState(initialProperty);
     const [isEditing, setIsEditing] = useState(false);
     const [editedProperty, setEditedProperty] = useState<Property>(initialProperty);
     const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
 
-    // Delete State
+    // Modals
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isAddPaymentModalOpen, setIsAddPaymentModalOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
+    // Self-healing synchronization: Ensure property status matches active contracts
+    useState(() => {
+        const sync = async () => {
+            const newStatus = await propertyService.syncOccupancyStatus(propertyId);
+            if (newStatus && newStatus !== property.status) {
+                setProperty(prev => ({ ...prev, status: newStatus }));
+                clear(); // Invalidate dashboard/list cache
+            }
+        };
+        sync();
+    });
+
     const tabs = [
-        { id: 'snapshot', label: t('snapshot'), icon: HomeIcon },
         { id: 'contracts', label: t('contracts'), icon: FileText },
         { id: 'wallet', label: t('financials'), icon: WalletIcon },
         { id: 'files', label: t('documents'), icon: FolderIcon },
@@ -164,7 +180,7 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete }:
                             {/* Status Badge */}
                             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/50 dark:bg-black/50 backdrop-blur-md rounded-full border border-white/20 dark:border-white/10 text-[10px] font-black uppercase tracking-widest mb-2">
                                 <div className={cn("w-1.5 h-1.5 rounded-full", property.status === 'Occupied' ? "bg-emerald-500" : "bg-amber-500")} />
-                                {property.status}
+                                {t(property.status.toLowerCase() as any)}
                             </div>
 
                             {isEditing ? (
@@ -225,6 +241,15 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete }:
                                                 <span>{property.size_sqm}</span>
                                                 <span className="text-[10px] uppercase tracking-wider opacity-70">{t('sqm')}</span>
                                             </div>
+                                            {(property.has_parking || property.has_storage) && (
+                                                <>
+                                                    <div className="w-[1px] h-3 bg-current opacity-20" />
+                                                    <div className="flex items-center gap-2">
+                                                        {property.has_parking && <Car className="w-3.5 h-3.5" />}
+                                                        {property.has_storage && <Archive className="w-3.5 h-3.5" />}
+                                                    </div>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
                                     <p className="text-muted-foreground font-medium">{property.city}</p>
@@ -245,58 +270,103 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete }:
                                     </button>
                                     <button
                                         onClick={handleCancel}
-                                        className="p-3 bg-white/50 dark:bg-black/50 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/10 text-foreground hover:bg-slate-50 dark:hover:bg-neutral-800 transition-all"
+                                        className="p-3 bg-white/50 dark:bg-black/50 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/10 text-foreground hover:bg-slate-50 dark:hover:bg-neutral-800 transition-all font-sans"
                                     >
                                         <PlusIcon className="w-5 h-5 rotate-45" />
                                     </button>
                                 </div>
                             ) : (
-                                <button
-                                    onClick={() => setIsMoreMenuOpen(!isMoreMenuOpen)}
-                                    className="p-3 bg-white/50 dark:bg-black/50 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/10 text-foreground hover:bg-white dark:hover:bg-neutral-800 transition-all focus:outline-none"
-                                >
-                                    <MoreVertical className="w-5 h-5" />
-                                </button>
-                            )}
+                                <Menu as="div" className="relative inline-block text-left">
+                                    <MenuButton
+                                        className="p-3 bg-white/50 dark:bg-black/50 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/10 text-foreground hover:bg-white dark:hover:bg-neutral-800 transition-all focus:outline-none"
+                                    >
+                                        <MoreVertical className="w-5 h-5" />
+                                    </MenuButton>
 
-                            <AnimatePresence>
-                                {isMoreMenuOpen && (
-                                    <>
-                                        <div className="fixed inset-0 z-40" onClick={() => setIsMoreMenuOpen(false)} />
-                                        <motion.div
-                                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                                            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                                            className={cn(
-                                                "absolute bottom-full mb-4 z-50 min-w-[160px] bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-neutral-800 p-2",
-                                                lang === 'he' ? "left-0" : "right-0"
-                                            )}
+                                    <Portal>
+                                        <Transition
+                                            as={Fragment}
+                                            enter="transition ease-out duration-100"
+                                            enterFrom="transform opacity-0 scale-95"
+                                            enterTo="transform opacity-100 scale-100"
+                                            leave="transition ease-in duration-75"
+                                            leaveFrom="transform opacity-100 scale-100"
+                                            leaveTo="transform opacity-0 scale-95"
                                         >
-                                            <button
-                                                onClick={handleAddContract}
-                                                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800 text-sm font-bold text-foreground transition-all"
-                                            >
-                                                <FilePlus className="w-4 h-4 text-emerald-500" />
-                                                {lang === 'he' ? 'הוספת חוזה' : 'Add Contract'}
-                                            </button>
-                                            <button
-                                                onClick={handleEdit}
-                                                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800 text-sm font-bold text-foreground transition-all"
-                                            >
-                                                <Edit2 className="w-4 h-4 text-brand-500" />
-                                                {t('edit')}
-                                            </button>
-                                            <button
-                                                onClick={handleDeleteClick}
-                                                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 text-sm font-bold text-red-600 transition-all"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                                {t('delete')}
-                                            </button>
-                                        </motion.div>
-                                    </>
-                                )}
-                            </AnimatePresence>
+                                            <MenuItems
+                                                anchor={{ to: lang === 'he' ? 'bottom start' : 'bottom end', gap: 8 }}
+                                                className={cn(
+                                                    "z-[100] min-w-[200px] bg-white dark:bg-neutral-900 rounded-[2rem] shadow-2xl border border-slate-100 dark:border-neutral-800 p-2 focus:outline-none font-sans",
+                                                    "animate-in fade-in zoom-in-95 duration-100"
+                                                )}>
+                                                <div className="py-1">
+                                                    <MenuItem>
+                                                        {({ focus }) => (
+                                                            <button
+                                                                onClick={() => setIsAddPaymentModalOpen(true)}
+                                                                className={cn(
+                                                                    "w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all",
+                                                                    focus ? "bg-slate-50 dark:bg-neutral-800 text-foreground" : "text-muted-foreground"
+                                                                )}
+                                                            >
+                                                                <DollarSign className="w-4 h-4 text-brand-500" />
+                                                                {lang === 'he' ? 'הוספת תשלום' : 'Add Payment'}
+                                                            </button>
+                                                        )}
+                                                    </MenuItem>
+
+                                                    <div className="h-[1px] bg-slate-50 dark:bg-neutral-800 my-2 mx-4" />
+
+                                                    <MenuItem>
+                                                        {({ focus }) => (
+                                                            <button
+                                                                onClick={handleAddContract}
+                                                                className={cn(
+                                                                    "w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all",
+                                                                    focus ? "bg-slate-50 dark:bg-neutral-800 text-foreground" : "text-muted-foreground"
+                                                                )}
+                                                            >
+                                                                <FilePlus className="w-4 h-4 text-emerald-500" />
+                                                                {lang === 'he' ? 'הוספת חוזה' : 'Add Contract'}
+                                                            </button>
+                                                        )}
+                                                    </MenuItem>
+
+                                                    <MenuItem>
+                                                        {({ focus }) => (
+                                                            <button
+                                                                onClick={handleEdit}
+                                                                className={cn(
+                                                                    "w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all",
+                                                                    focus ? "bg-slate-50 dark:bg-neutral-800 text-foreground" : "text-muted-foreground"
+                                                                )}
+                                                            >
+                                                                <Edit2 className="w-4 h-4 text-brand-500" />
+                                                                {t('edit')}
+                                                            </button>
+                                                        )}
+                                                    </MenuItem>
+
+                                                    <MenuItem>
+                                                        {({ focus }) => (
+                                                            <button
+                                                                onClick={handleDeleteClick}
+                                                                className={cn(
+                                                                    "w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all",
+                                                                    focus ? "bg-red-50 dark:bg-red-900/20 text-red-600" : "text-red-500"
+                                                                )}
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                                {t('delete')}
+                                                            </button>
+                                                        )}
+                                                    </MenuItem>
+                                                </div>
+                                            </MenuItems>
+                                        </Transition>
+                                    </Portal>
+                                </Menu>
+                            )}
                         </div>
                     </div>
 
@@ -335,22 +405,34 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete }:
             {/* 3. Tab Content */}
             <div className="flex-1 overflow-y-auto min-h-0 pt-6 pb-20">
                 <div className="px-6 h-full">
-                    {activeTab === 'snapshot' && <SnapshotTab property={property} />}
                     {activeTab === 'contracts' && <ContractsTab propertyId={propertyId} />}
                     {activeTab === 'wallet' && <WalletTab property={property} />}
                     {activeTab === 'files' && <PropertyDocumentsHub property={property} />}
                 </div>
             </div>
 
+            {/* 6. Modals */}
             <ConfirmDeleteModal
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={confirmDelete}
                 title={lang === 'he' ? 'מחיקת נכס' : 'Delete Asset'}
                 message={lang === 'he'
-                    ? `האם את/ה בטוח/ה שברצונך למחוק את הנכס "${property.address}"?`
-                    : `Are you sure you want to delete "${property.address}"?`}
+                    ? `האם את/ה בטוח/ה לגמרי שברצונך למחוק את הנכס "${property.address}"? כל המידע כולל חוזים ותשלומים ימחק לצמיתות.`
+                    : `Are you sure you want to delete "${property.address}"? All data including contracts and payments will be permanently deleted.`}
                 isDeleting={isDeleting}
+            />
+
+            <AddPaymentModal
+                isOpen={isAddPaymentModalOpen}
+                onClose={() => setIsAddPaymentModalOpen(false)}
+                onSuccess={() => {
+                    // Update cache/lists
+                    clear();
+                }}
+                initialData={{
+                    contract_id: (property as any).contracts?.find((c: any) => c.status === 'active')?.id
+                }}
             />
         </div>
     );

@@ -9,9 +9,11 @@ import { PaymentDetailsModal } from '../components/modals/PaymentDetailsModal';
 import { DatePicker } from '../components/ui/DatePicker';
 import { useTranslation } from '../hooks/useTranslation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useDataCache } from '../contexts/DataCacheContext';
 
 export function Payments() {
     const { t } = useTranslation();
+    const { clear } = useDataCache();
     const [payments, setPayments] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [periodFilter, setPeriodFilter] = useState<'all' | '3m' | '6m' | '1y'>('3m');
@@ -405,7 +407,10 @@ export function Payments() {
             <AddPaymentModal
                 isOpen={isAddModalOpen}
                 onClose={() => setIsAddModalOpen(false)}
-                onSuccess={fetchPayments}
+                onSuccess={() => {
+                    clear();
+                    fetchPayments();
+                }}
             />
 
             <PaymentDetailsModal
@@ -415,7 +420,10 @@ export function Payments() {
                     setIsDetailsModalOpen(false);
                     setSelectedPayment(null);
                 }}
-                onSuccess={fetchPayments}
+                onSuccess={() => {
+                    clear();
+                    fetchPayments();
+                }}
             />
         </div>
     );

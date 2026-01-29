@@ -210,6 +210,7 @@ export interface StandardCalculationInput {
     manualBaseIndex?: number; // Override auto-fetch
     manualTargetIndex?: number; // Override auto-fetch
     isIndexBaseMinimum?: boolean; // If true, rent cannot drop below base amount
+    linkageCeiling?: number; // Annualized ceiling (e.g. 5% max increase per year)
 }
 
 export interface StandardCalculationResult {

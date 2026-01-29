@@ -16,6 +16,7 @@ interface StandardCalculatorProps {
         baseDate?: string;
         targetDate?: string;
         isIndexBaseMinimum?: boolean;
+        linkageCeiling?: string;
     };
     shouldAutoCalculate?: boolean;
 }
@@ -29,6 +30,7 @@ export function StandardCalculator({ initialValues, shouldAutoCalculate }: Stand
     const [targetDate, setTargetDate] = useState(initialValues?.targetDate || '');
     const [partialLinkage, setPartialLinkage] = useState('100');
     const [indexBaseMinimum, setIndexBaseMinimum] = useState(initialValues?.isIndexBaseMinimum || false);
+    const [linkageCeiling, setLinkageCeiling] = useState(initialValues?.linkageCeiling || '');
     const [linkageSubType, setLinkageSubType] = useState<'known' | 'respect_of'>('known');
     const [useManualIndex, setUseManualIndex] = useState(false);
     const [manualBaseIndex, setManualBaseIndex] = useState('');
@@ -73,6 +75,7 @@ export function StandardCalculator({ initialValues, shouldAutoCalculate }: Stand
                 targetDate: processedTargetDate,
                 partialLinkage: parseFloat(partialLinkage) || 100,
                 isIndexBaseMinimum: indexBaseMinimum,
+                linkageCeiling: linkageCeiling ? parseFloat(linkageCeiling) : undefined,
                 manualBaseIndex: useManualIndex && manualBaseIndex ? parseFloat(manualBaseIndex) : undefined,
                 manualTargetIndex: useManualIndex && manualTargetIndex ? parseFloat(manualTargetIndex) : undefined
             });
@@ -180,6 +183,22 @@ export function StandardCalculator({ initialValues, shouldAutoCalculate }: Stand
                                         value={partialLinkage}
                                         onChange={(e) => setPartialLinkage(e.target.value)}
                                         placeholder="100"
+                                        className="w-full h-12 px-4 pr-10 bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 rounded-xl text-sm font-bold outline-none focus:border-primary"
+                                    />
+                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 font-bold">%</span>
+                                </div>
+                            </div>
+
+                            <hr className="border-slate-100 dark:border-neutral-800 my-6" />
+
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block ml-1">{t('maxIncrease')}</label>
+                                <div className="relative">
+                                    <input
+                                        type="number"
+                                        value={linkageCeiling}
+                                        onChange={(e) => setLinkageCeiling(e.target.value)}
+                                        placeholder="5"
                                         className="w-full h-12 px-4 pr-10 bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 rounded-xl text-sm font-bold outline-none focus:border-primary"
                                     />
                                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 font-bold">%</span>

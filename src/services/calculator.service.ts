@@ -70,6 +70,18 @@ export async function calculateStandard(
         const partialLinkage = input.partialLinkage ?? 100;
         let effectiveChange = (linkageCoefficient / 100) * (partialLinkage / 100);
 
+        // Apply annualized ceiling if specified
+        if (input.linkageCeiling !== undefined && input.linkageCeiling > 0) {
+            const bDate = new Date(input.baseDate + '-01');
+            const tDate = new Date(input.targetDate + '-01');
+            const diffTime = Math.max(0, tDate.getTime() - bDate.getTime());
+            const diffDays = diffTime / (1000 * 60 * 60 * 24);
+            const years = diffDays / 365.25;
+
+            const cumulativeCeiling = (input.linkageCeiling / 100) * years;
+            effectiveChange = Math.min(effectiveChange, cumulativeCeiling);
+        }
+
         // Apply index floor if specified (base index is minimum)
         if (input.isIndexBaseMinimum && effectiveChange < 0) {
             effectiveChange = 0; // Prevent rent from dropping below base
@@ -241,7 +253,15 @@ export async function calculateReconciliation(
             }
 
             if (input.maxIncreasePercentage !== undefined && input.maxIncreasePercentage > 0) {
-                effectiveRentChange = Math.min(effectiveRentChange, input.maxIncreasePercentage / 100);
+                // Determine years since contractStartDate for THIS month
+                const bDateStart = new Date(input.contractStartDate + '-01');
+                const mDateCurrent = new Date(month + '-01');
+                const diffTime = Math.max(0, mDateCurrent.getTime() - bDateStart.getTime());
+                const diffDays = diffTime / (1000 * 60 * 60 * 24);
+                const years = diffDays / 365.25;
+
+                const cumulativeCeiling = (input.maxIncreasePercentage / 100) * years;
+                effectiveRentChange = Math.min(effectiveRentChange, cumulativeCeiling);
             }
 
             currentMonthRent = baseToUse * (1 + effectiveRentChange);

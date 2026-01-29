@@ -57,6 +57,8 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
             if (data.baseRent) sData.baseRent = data.baseRent.toString();
             if (data.linkageType) sData.linkageType = data.linkageType;
             if (data.baseIndexDate) sData.baseDate = data.baseIndexDate;
+            if (data.linkageCeiling) sData.linkageCeiling = data.linkageCeiling.toString();
+            if (data.linkageFloor !== undefined) sData.isIndexBaseMinimum = data.linkageFloor === 0;
 
             // Prepare Rec Data
             const rData: any = {};

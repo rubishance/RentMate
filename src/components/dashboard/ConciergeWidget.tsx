@@ -4,10 +4,12 @@ import { GlassCard } from '../common/GlassCard';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStack } from '../../contexts/StackContext';
 import { supabase } from '../../lib/supabase';
+import { useDataCache } from '../../contexts/DataCacheContext';
 
 export function ConciergeWidget() {
     const { t, lang } = useTranslation();
     const { push } = useStack();
+    const { clear } = useDataCache();
     const [isVisible, setIsVisible] = useState(false);
     const [stats, setStats] = useState({ properties: 0, contracts: 0 });
     const [loading, setLoading] = useState(true);
@@ -69,7 +71,9 @@ export function ConciergeWidget() {
 
                 <div className="flex flex-col gap-2">
                     <button
-                        onClick={() => push('wizard', {}, { isExpanded: true })}
+                        onClick={() => push('wizard', {
+                            onSuccess: () => clear()
+                        }, { isExpanded: true })}
                         className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-700 transition-all flex items-center gap-2 group"
                     >
                         {lang === 'he' ? 'בוא נתחיל בסריקה' : "Let's Start Scanning"}

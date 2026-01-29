@@ -58,10 +58,11 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                 .from('contracts')
                 .select(`
                     id, 
+                    status,
                     properties (address), 
                     tenants (name)
                 `)
-                .eq('status', 'active');
+                .in('status', ['active', 'archived']);
 
             if (error) throw error;
             setContracts(data || []);
@@ -204,7 +205,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                                                 <option value="">{t('selectContract')}</option>
                                                 {contracts.map(c => (
                                                     <option key={c.id} value={c.id}>
-                                                        {c.properties?.address} - {c.tenants?.name}
+                                                        {c.properties?.address} - {c.tenants?.name} {c.status === 'archived' ? `(${t('archived')})` : ''}
                                                     </option>
                                                 ))}
                                             </select>

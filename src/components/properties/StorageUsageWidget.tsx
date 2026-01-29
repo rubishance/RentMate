@@ -62,8 +62,8 @@ export function StorageUsageWidget() {
                     <h3 className="font-bold text-foreground dark:text-white">{t('storageUsage')}</h3>
                 </div>
                 <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-muted-foreground">
-                        {formatBytes(usage.totalBytes)} / {usage.quotaBytes === Infinity ? t('unlimited') : formatBytes(usage.quotaBytes)}
+                    <span className="text-sm font-medium text-muted-foreground" dir="ltr">
+                        {formatBytes(usage.totalBytes, 2, true)} / {usage.quotaBytes === Infinity ? t('unlimited') : formatBytes(usage.quotaBytes, 2, true)}
                     </span>
                     <div className={`transform transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-muted-foreground">
@@ -88,19 +88,19 @@ export function StorageUsageWidget() {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
                             <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">{t('breakdownMedia')}</p>
-                            <p className="text-sm font-semibold text-foreground dark:text-white">{formatBytes(usage.breakdown.media)}</p>
+                            <p className="text-sm font-semibold text-foreground dark:text-white">{formatBytes(usage.breakdown.media, 2, true)}</p>
                         </div>
                         <div className="space-y-1">
                             <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">{t('breakdownUtilities')}</p>
-                            <p className="text-sm font-semibold text-foreground dark:text-white">{formatBytes(usage.breakdown.utilities)}</p>
+                            <p className="text-sm font-semibold text-foreground dark:text-white">{formatBytes(usage.breakdown.utilities, 2, true)}</p>
                         </div>
                         <div className="space-y-1">
                             <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">{t('breakdownMaintenance')}</p>
-                            <p className="text-sm font-semibold text-foreground dark:text-white">{formatBytes(usage.breakdown.maintenance)}</p>
+                            <p className="text-sm font-semibold text-foreground dark:text-white">{formatBytes(usage.breakdown.maintenance, 2, true)}</p>
                         </div>
                         <div className="space-y-1">
                             <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">{t('breakdownDocuments')}</p>
-                            <p className="text-sm font-semibold text-foreground dark:text-white">{formatBytes(usage.breakdown.documents)}</p>
+                            <p className="text-sm font-semibold text-foreground dark:text-white">{formatBytes(usage.breakdown.documents, 2, true)}</p>
                         </div>
                     </div>
 

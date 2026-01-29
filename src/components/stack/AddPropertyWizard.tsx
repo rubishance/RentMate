@@ -19,9 +19,10 @@ const STEPS = [
 interface AddPropertyWizardProps {
     initialData?: Partial<Property>;
     mode?: 'add' | 'edit';
+    onSuccess?: () => void;
 }
 
-export function AddPropertyWizard({ initialData, mode = 'add' }: AddPropertyWizardProps) {
+export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddPropertyWizardProps) {
     const { t } = useTranslation();
     const { pop } = useStack();
     const [currentStep, setCurrentStep] = useState(0);
@@ -115,6 +116,7 @@ export function AddPropertyWizard({ initialData, mode = 'add' }: AddPropertyWiza
                 if (error) throw error;
 
                 // Success - close and refresh via parent/cache clearing
+                if (onSuccess) onSuccess();
                 pop();
             } catch (error) {
                 console.error('Error saving property:', error);

@@ -647,6 +647,7 @@ export type TranslationKeys =
     | 'pricing_get_started'
     | 'pricing_contact_sales'
     | 'pricing_custom_plan'
+    | 'pricing_storage'
     | 'settings_help_resources'
     | 'settings_admin_dashboard'
     | 'settings_admin_desc'
@@ -703,6 +704,13 @@ export type TranslationKeys =
     | 'chooseTheme'
     | 'chooseLanguage'
     | 'preferencesAndAccount'
+    | 'stepOptionRent'
+    | 'extensionEndDate'
+    | 'extensionRent'
+    | 'maxIncrease'
+    | 'floorIndex'
+    | 'indexBaseMin'
+    | 'monthlyRent'
     ;
 
 export const translations: Record<string, Record<TranslationKeys, string>> = {
@@ -861,8 +869,8 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
 
         indexCalculator: 'מחשבון הצמדה',
         calculatorDesc: 'חישוב הפרשי הצמדה למדד והתחשבנות',
-        standardCalculation: 'חישוב סטנדרטי',
-        paymentReconciliation: 'התחשבנות',
+        standardCalculation: 'חישוב רגיל',
+        paymentReconciliation: 'התחשבנות (רטרו)',
         baseRent: 'שכירות בסיס (₪)',
         linkageType: 'סוג הצמדה',
         cpi: 'מדד המחירים לצרכן',
@@ -1488,6 +1496,7 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         pricing_get_started: 'התחילו עכשיו',
         pricing_contact_sales: 'צרו קשר עם מחלקת המכירות',
         pricing_custom_plan: 'זקוקים לתוכנית מותאמת אישית?',
+        pricing_storage: 'נפח אחסון ({quota})',
         settings_help_resources: 'עזרה ומשאבים',
         settings_admin_dashboard: 'לוח בקרה למנהל',
         settings_admin_desc: 'ניהול משתמשים, חשבוניות והגדרות מערכת',
@@ -1519,6 +1528,9 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         errorSuspendingAccount: 'שגיאה בהשעיית החשבון',
         suspendConfirmation: 'חשבונכם יושעה למשך 14 ימים.\n\nבמהלך תקופה זו:\n• לא תוכלו להתחבר למערכת\n• הנתונים שלכם יישמרו\n• תוכלו לבטל את ההשעיה על ידי פנייה לתמיכה\n\nלאחר 14 ימים, החשבון והנתונים יימחקו לצמיתות.\n\nהאם להמשיך?',
         backToDashboard: 'חזרה ללוח הבקרה',
+        stepOptionRent: 'שכר דירה באופציה',
+        extensionEndDate: 'תאריך סיום האופציה',
+        extensionRent: 'שכר דירה באופציה'
     },
 
     en: {
@@ -2287,6 +2299,7 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         pricing_get_started: 'Get Started',
         pricing_contact_sales: 'Contact Sales',
         pricing_custom_plan: 'Need a custom plan?',
+        pricing_storage: 'Storage ({quota})',
         settings_help_resources: 'Help & Resources',
         settings_admin_dashboard: 'Admin Dashboard',
         settings_admin_desc: 'Manage users, invoices, and system settings',
@@ -2329,6 +2342,9 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         errorSuspendingAccount: 'Error suspending account',
         suspendConfirmation: 'Your account will be suspended for 14 days.\n\nDuring this period:\n• You will not be able to log in\n• Your data will be preserved\n• You can cancel the suspension by contacting support\n\nAfter 14 days, your account and data will be permanently deleted.\n\nContinue?',
         backToDashboard: 'Back to Dashboard',
+        stepOptionRent: 'Option Rent',
+        extensionEndDate: 'Extension End Date',
+        extensionRent: 'Extension Rent'
     },
 };
 

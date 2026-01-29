@@ -73,37 +73,27 @@ export class CalculatorService {
      * Calculates the new rent based on linkage, supporting CHAINED INDICES.
      * Formula: Rent * (CurrentIndex / BaseIndex) * ChainFactors...
      */
-    async calculateLinkage(baseRent: number, baseIndex: number, currentIndex: number, baseDate: string, currentIndexDate: string, indexType: string = 'cpi'): Promise<number> {
+    async calculateLinkage(
+        baseRent: number,
+        baseIndex: number,
+        currentIndex: number,
+        baseDate: string,
+        currentIndexDate: string,
+        indexType: string = 'cpi',
+        linkage_ceiling?: number | null,
+        linkage_floor?: number | null
+    ): Promise<number> {
         if (baseIndex === 0) return baseRent;
 
         // 1. Fetch linkage bases
         const bases = await this.getIndexBases(indexType);
 
-        // 2. Identify if we crossed any base periods
-        // Logic: Find all bases that started AFTER the baseDate and BEFORE or ON the currentIndexDate
-
         let chainFactor = 1.0;
-
-        // Example: 
-        // Base Date: 2018-05 (Base 2016)
-        // Current Date: 2024-05 (Base 2022)
-        // We crossed:
-        // - Base 2022 (Starts 2023-01) -> Factor to 2020: F1
-        // - Base 2020 (Starts 2021-01) -> Factor to 2018: F2
-        // - Base 2018 (Starts 2019-01) -> Factor to 2016: F3
-        // Total Factor = F1 * F2 * F3
-
-        // Simple implementation:
-        // Sort bases descending.
-        // Iterate. If base.start_date > baseDate AND base.start_date <= currentIndexDate (approx), apply factor.
-
         const bDate = new Date(baseDate);
         const cDate = new Date(currentIndexDate);
 
         bases.forEach(base => {
             const baseStart = new Date(base.base_period_start);
-            // If this base period started AFTER the contract base date
-            // AND the contract *reaches* into or past this base period
             if (baseStart > bDate && baseStart <= cDate) {
                 if (base.chain_factor && base.chain_factor > 0) {
                     chainFactor *= parseFloat(base.chain_factor);
@@ -111,11 +101,26 @@ export class CalculatorService {
             }
         });
 
-        // CBS Formula for Chained:
-        // (Current Index * Chain Factor / Base Index) * Base Rent
-        // Note: This assumes Base Index is from the Original Base Period.
+        // Current ratio
+        let ratio = (currentIndex * chainFactor) / baseIndex;
 
-        const ratio = (currentIndex * chainFactor) / baseIndex;
+        // Apply Annualized Ceiling
+        if (linkage_ceiling !== undefined && linkage_ceiling !== null && linkage_ceiling > 0) {
+            const diffTime = Math.max(0, cDate.getTime() - bDate.getTime());
+            const diffDays = diffTime / (1000 * 60 * 60 * 24);
+            const years = diffDays / 365.25;
+
+            const cumulativeCeilingPercent = linkage_ceiling * years;
+            const maxRatio = 1 + (cumulativeCeilingPercent / 100);
+
+            ratio = Math.min(ratio, maxRatio);
+        }
+
+        // Apply Floor (if set to 0, it means "don't drop below base index")
+        if (linkage_floor === 0) {
+            ratio = Math.max(ratio, 1);
+        }
+
         return Math.round(baseRent * ratio);
     }
 

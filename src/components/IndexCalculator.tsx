@@ -3,10 +3,11 @@ import { Calculator, Loader2 } from 'lucide-react';
 import { calculatorService } from '../services/CalculatorService';
 import { DatePicker } from './ui/DatePicker';
 import { format, parseISO } from 'date-fns';
+import { useTranslation } from '../hooks/useTranslation';
 
 
 export function IndexCalculator() {
-
+    const { t, lang } = useTranslation();
     const [loading, setLoading] = useState(false);
 
     // State
@@ -14,6 +15,8 @@ export function IndexCalculator() {
     const [baseDate, setBaseDate] = useState('');
     const [currentDate, setCurrentDate] = useState('');
     const [baseRent, setBaseRent] = useState('');
+    const [annualCeiling, setAnnualCeiling] = useState('');
+    const [isFloorChecked, setIsFloorChecked] = useState(false);
 
     // Fetched Indices
     const [baseIndexValue, setBaseIndexValue] = useState<number | null>(null);
@@ -96,7 +99,9 @@ export function IndexCalculator() {
                     currentIndexValue,
                     effectiveBaseDate,     // Use Effective Known Index Date
                     effectiveCurrentDate,  // Use Effective Known Index Date
-                    indexType
+                    indexType,
+                    annualCeiling ? parseFloat(annualCeiling) : null,
+                    isFloorChecked ? 0 : null
                 );
                 setCalculatedRent(res);
             } catch (err) {
@@ -105,7 +110,7 @@ export function IndexCalculator() {
             }
         }
         runCalculation();
-    }, [baseIndexValue, currentIndexValue, baseRent, effectiveBaseDate, effectiveCurrentDate, indexType]);
+    }, [baseIndexValue, currentIndexValue, baseRent, effectiveBaseDate, effectiveCurrentDate, indexType, annualCeiling, isFloorChecked]);
 
     const result = calculatedRent;
     const percentChange = baseIndexValue && currentIndexValue
@@ -189,13 +194,39 @@ export function IndexCalculator() {
 
                 {/* Base Rent */}
                 <div className="space-y-1">
-                    <label className="text-xs font-medium text-muted-foreground">Base Rent</label>
+                    <label className="text-xs font-medium text-muted-foreground">{t('monthlyRent')}</label>
                     <input
                         type="number"
                         value={baseRent}
                         onChange={(e) => setBaseRent(e.target.value)}
                         className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:ring-1 focus:ring-primary"
+                        placeholder="0"
                     />
+                </div>
+
+                {/* Annual Ceiling */}
+                <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground">Annual Ceiling (%)</label>
+                    <input
+                        type="number"
+                        value={annualCeiling}
+                        onChange={(e) => setAnnualCeiling(e.target.value)}
+                        className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:ring-1 focus:ring-primary"
+                        placeholder="e.g. 5"
+                    />
+                </div>
+
+                {/* Floor Checkbox */}
+                <div className="flex items-end pb-2">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={isFloorChecked}
+                            onChange={(e) => setIsFloorChecked(e.target.checked)}
+                            className="w-4 h-4 rounded border-border text-primary focus:ring-primary"
+                        />
+                        <span className="text-xs font-medium text-muted-foreground">{t('floorIndex')}</span>
+                    </label>
                 </div>
             </div>
 

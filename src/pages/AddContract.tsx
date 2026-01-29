@@ -22,8 +22,8 @@ const STEPS = [
     { id: 1, labelKey: 'stepTenantProperty', icon: Building },
     { id: 2, labelKey: 'stepPeriods', icon: Calendar },
     { id: 3, labelKey: 'stepPayments', icon: SettingsIcon },
-    { id: 4, labelKey: 'stepSecurity', icon: Shield },
-    { id: 5, labelKey: 'stepSummary', icon: Check },
+    { id: 5, labelKey: 'stepSecurity', icon: Shield },
+    { id: 6, labelKey: 'stepSummary', icon: Check },
 ];
 
 export function AddContract() {
@@ -100,8 +100,7 @@ export function AddContract() {
         endDate: '',
 
         optionPeriods: [] as {
-            length: string;
-            unit: 'months' | 'years';
+            endDate: string;
             rentAmount?: string;
             currency?: 'ILS' | 'USD' | 'EUR';
         }[],
@@ -334,10 +333,16 @@ export function AddContract() {
                 return;
             }
             await checkOverlap(selectedPropertyId, formData.startDate, formData.endDate);
-            // The checkOverlap function sets showOverlapWarning internally if needed.
         }
 
-        if (step === 5) {
+        if (step === 3) {
+            if (!formData.rent || parseFloat(formData.rent) <= 0) {
+                alert('שכר דירה חודשי הוא שדה חובה');
+                return;
+            }
+        }
+
+        if (step === 6) {
             setIsSaving(true);
             try {
                 // Get current user
@@ -403,12 +408,20 @@ export function AddContract() {
                     base_index_value: parseFloat(formData.baseIndexValue) || null,
                     security_deposit_amount: parseFloat(formData.securityDeposit) || 0,
                     status: 'active',
-                    option_periods: formData.optionPeriods.map(p => ({
-                        length: parseInt(p.length) || 0,
-                        unit: p.unit,
-                        rentAmount: parseFloat(p.rentAmount || '') || null,
-                        currency: p.currency || 'ILS'
-                    })),
+                    option_periods: formData.optionPeriods.map((p, idx) => {
+                        const prevEnd = idx === 0 ? new Date(formData.endDate) : new Date(formData.optionPeriods[idx - 1].endDate);
+                        const currEnd = new Date(p.endDate);
+                        const diffTime = Math.abs(currEnd.getTime() - prevEnd.getTime());
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        const months = Math.round(diffDays / 30);
+
+                        return {
+                            length: months,
+                            unit: 'months' as const,
+                            rentAmount: parseFloat(p.rentAmount || '') || null,
+                            currency: p.currency || 'ILS'
+                        };
+                    }),
                     rent_periods: formData.rentSteps.map(s => ({
                         startDate: s.startDate,
                         amount: parseFloat(s.amount) || 0,
@@ -522,9 +535,12 @@ export function AddContract() {
             }
             return;
         }
-        setStep(s => Math.min(s + 1, 5));
+        setStep(s => Math.min(s + 1, 6));
     };
-    const prevStep = () => setStep(s => Math.max(s - 1, 1));
+
+    const prevStep = () => {
+        setStep(s => Math.max(s - 1, 1));
+    };
 
     // Overlap Check Logic
     async function checkOverlap(propId: string, start: string, end: string) {
@@ -1190,10 +1206,15 @@ export function AddContract() {
                                                 <DatePicker
                                                     label={t('signingDate')}
                                                     value={formData.signingDate ? parseISO(formData.signingDate) : undefined}
-                                                    onChange={(date) => setFormData({
-                                                        ...formData,
-                                                        signingDate: date ? format(date, 'yyyy-MM-dd') : ''
-                                                    })}
+                                                    onChange={(date) => {
+                                                        const dateStr = date ? format(date, 'yyyy-MM-dd') : '';
+                                                        setFormData(prev => ({
+                                                            ...prev,
+                                                            signingDate: dateStr,
+                                                            // Pre-fill base index date if it's empty
+                                                            baseIndexDate: (!prev.baseIndexDate || prev.baseIndexDate === '') ? dateStr : prev.baseIndexDate
+                                                        }));
+                                                    }}
                                                     placeholder={t('selectDate')}
                                                 />
                                             </div>
@@ -1284,7 +1305,7 @@ export function AddContract() {
                                                     type="button"
                                                     onClick={() => setFormData(prev => ({
                                                         ...prev,
-                                                        optionPeriods: [...prev.optionPeriods, { length: '12', unit: 'months', rentAmount: '', currency: 'ILS' }]
+                                                        optionPeriods: [...prev.optionPeriods, { endDate: '', rentAmount: '', currency: 'ILS' }]
                                                     }))}
                                                     className="text-xs text-primary hover:text-primary font-medium flex items-center gap-1"
                                                 >
@@ -1298,90 +1319,35 @@ export function AddContract() {
                                                 </div>
                                             )}
 
-                                            <div className="space-y-2">
+                                            <div className="space-y-3">
                                                 {formData.optionPeriods.map((period, idx) => (
-                                                    <div key={idx} className="flex flex-col bg-secondary/10 rounded-xl p-1 mb-2">
-                                                        <div className="flex gap-2 items-center p-1">
-                                                            <div className="relative flex-1">
-                                                                <input
-                                                                    type="number"
-                                                                    value={period.length}
-                                                                    onChange={(e) => {
-                                                                        const newPeriods = [...formData.optionPeriods];
-                                                                        newPeriods[idx].length = e.target.value;
-                                                                        setFormData({ ...formData, optionPeriods: newPeriods });
-                                                                    }}
-                                                                    className="w-full p-3 bg-background border border-border rounded-lg pl-36"
-                                                                />
-                                                                <div className="absolute left-1 top-1 bottom-1 flex bg-secondary/50 rounded-lg p-1 gap-1">
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => {
-                                                                            const newPeriods = [...formData.optionPeriods];
-                                                                            newPeriods[idx].unit = 'months';
-                                                                            setFormData({ ...formData, optionPeriods: newPeriods });
-                                                                        }}
-                                                                        className={cn(
-                                                                            "px-2 rounded-md text-xs font-medium transition-all",
-                                                                            period.unit === 'months' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-                                                                        )}
-                                                                    >
-                                                                        {t('months')}
-                                                                    </button>
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => {
-                                                                            const newPeriods = [...formData.optionPeriods];
-                                                                            newPeriods[idx].unit = 'years';
-                                                                            setFormData({ ...formData, optionPeriods: newPeriods });
-                                                                        }}
-                                                                        className={cn(
-                                                                            "px-2 rounded-md text-xs font-medium transition-all",
-                                                                            period.unit === 'years' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-                                                                        )}
-                                                                    >
-                                                                        {t('years')}
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    const newPeriods = formData.optionPeriods.filter((_, i) => i !== idx);
-                                                                    setFormData({ ...formData, optionPeriods: newPeriods });
-                                                                }}
-                                                                className="p-3 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                                            >
-                                                                <Trash2 className="w-5 h-5" />
-                                                            </button>
-                                                        </div>
-                                                        {/* Option Rent */}
-                                                        <div className="flex gap-2 items-center pr-2 pb-2 pl-2">
-                                                            <span className="text-xs text-muted-foreground whitespace-nowrap">{t('optionRent')}:</span>
-                                                            <input
-                                                                type="number"
-                                                                value={period.rentAmount || ''}
-                                                                onChange={e => {
+                                                    <div key={idx} className="flex gap-2 items-end bg-secondary/10 p-3 rounded-xl">
+                                                        <div className="flex-1 space-y-2">
+                                                            <DatePicker
+                                                                label={`${t('extensionEndDate')} ${idx + 1}`}
+                                                                value={period.endDate ? parseISO(period.endDate) : undefined}
+                                                                onChange={(date) => {
                                                                     const newPeriods = [...formData.optionPeriods];
-                                                                    newPeriods[idx].rentAmount = e.target.value;
+                                                                    newPeriods[idx].endDate = date ? format(date, 'yyyy-MM-dd') : '';
                                                                     setFormData({ ...formData, optionPeriods: newPeriods });
                                                                 }}
-                                                                className="w-32 p-1.5 text-xs bg-background border border-border rounded-lg"
+                                                                minDate={idx === 0
+                                                                    ? (formData.endDate ? parseISO(formData.endDate) : undefined)
+                                                                    : (formData.optionPeriods[idx - 1].endDate ? parseISO(formData.optionPeriods[idx - 1].endDate) : undefined)
+                                                                }
+                                                                className="w-full"
                                                             />
-                                                            <select
-                                                                value={period.currency || 'ILS'}
-                                                                onChange={e => {
-                                                                    const newPeriods = [...formData.optionPeriods];
-                                                                    newPeriods[idx].currency = e.target.value as any;
-                                                                    setFormData({ ...formData, optionPeriods: newPeriods });
-                                                                }}
-                                                                className="p-1.5 text-xs bg-background border border-border rounded-lg"
-                                                            >
-                                                                <option value="ILS">₪</option>
-                                                                <option value="USD">$</option>
-                                                                <option value="EUR">€</option>
-                                                            </select>
                                                         </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                const newPeriods = formData.optionPeriods.filter((_, i) => i !== idx);
+                                                                setFormData({ ...formData, optionPeriods: newPeriods });
+                                                            }}
+                                                            className="p-3 text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-border/50 h-[46px]"
+                                                        >
+                                                            <Trash2 className="w-5 h-5" />
+                                                        </button>
                                                     </div>
                                                 ))}
                                             </div>
@@ -1404,7 +1370,7 @@ export function AddContract() {
                                             {/* Rent Amount */}
                                             <div className="space-y-2">
                                                 <label className="text-sm font-medium flex items-center gap-2">
-                                                    {t('monthlyRent')}
+                                                    {t('monthlyRent')} <span className="text-red-500">*</span>
                                                     {scannedQuotes.rent && <Tooltip quote={scannedQuotes.rent} />} <ConfidenceDot field="rent" />
                                                 </label>
                                                 <div className="relative">
@@ -1417,6 +1383,55 @@ export function AddContract() {
                                                     />
                                                 </div>
                                             </div>
+
+                                            {/* Extension Rent Section */}
+                                            {formData.optionPeriods.length > 0 && (
+                                                <div className="space-y-4 pt-4 mt-2 border-t border-border/50">
+                                                    <div className="flex items-center gap-2 text-primary">
+                                                        <Plus className="w-4 h-4" />
+                                                        <h4 className="text-sm font-bold">{t('extensionRent')}</h4>
+                                                    </div>
+                                                    <div className="grid gap-3">
+                                                        {formData.optionPeriods.map((period, idx) => (
+                                                            <div key={idx} className="bg-secondary/20 p-4 rounded-xl space-y-3 border border-border/50">
+                                                                <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+                                                                    <span>{t('extensionEndDate')} {idx + 1}</span>
+                                                                    <span className="text-primary">{period.endDate ? formatDate(period.endDate) : t('selectDate')}</span>
+                                                                </div>
+                                                                <div className="flex gap-2">
+                                                                    <div className="relative flex-1">
+                                                                        <span className="absolute left-3 top-2.5 text-muted-foreground text-sm">₪</span>
+                                                                        <input
+                                                                            type="number"
+                                                                            value={period.rentAmount || ''}
+                                                                            onChange={(e) => {
+                                                                                const newPeriods = [...formData.optionPeriods];
+                                                                                newPeriods[idx].rentAmount = e.target.value;
+                                                                                setFormData({ ...formData, optionPeriods: newPeriods });
+                                                                            }}
+                                                                            className="w-full pl-8 p-2.5 bg-background border border-border rounded-lg text-sm"
+                                                                            placeholder="0"
+                                                                        />
+                                                                    </div>
+                                                                    <select
+                                                                        value={period.currency || 'ILS'}
+                                                                        onChange={(e) => {
+                                                                            const newPeriods = [...formData.optionPeriods];
+                                                                            newPeriods[idx].currency = e.target.value as any;
+                                                                            setFormData({ ...formData, optionPeriods: newPeriods });
+                                                                        }}
+                                                                        className="w-24 p-2.5 bg-background border border-border rounded-lg text-sm"
+                                                                    >
+                                                                        <option value="ILS">₪</option>
+                                                                        <option value="USD">$</option>
+                                                                        <option value="EUR">€</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
 
                                             {/* Rent Steps (Variable Rent) */}
                                             <div className="space-y-3 pt-2">
@@ -1516,7 +1531,17 @@ export function AddContract() {
                                                                 formData.linkageType === 'cpi' ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:border-primary/50"
                                                             )}
                                                         >
-                                                            <input type="radio" name="linkage" className="hidden" checked={formData.linkageType === 'cpi'} onChange={() => setFormData({ ...formData, linkageType: 'cpi' })} />
+                                                            <input
+                                                                type="radio"
+                                                                name="linkage"
+                                                                className="hidden"
+                                                                checked={formData.linkageType === 'cpi'}
+                                                                onChange={() => setFormData(prev => ({
+                                                                    ...prev,
+                                                                    linkageType: 'cpi',
+                                                                    baseIndexDate: (!prev.baseIndexDate || prev.baseIndexDate === '') ? prev.signingDate : prev.baseIndexDate
+                                                                }))}
+                                                            />
                                                             <span className="text-xs font-bold text-center">{t('linkedToCpi')}</span>
                                                         </label>
 
@@ -1526,7 +1551,17 @@ export function AddContract() {
                                                                 formData.linkageType === 'housing' ? "border-orange-500 bg-orange-50 ring-1 ring-orange-500" : "border-border hover:border-orange-300"
                                                             )}
                                                         >
-                                                            <input type="radio" name="linkage" className="hidden" checked={formData.linkageType === 'housing'} onChange={() => setFormData({ ...formData, linkageType: 'housing' })} />
+                                                            <input
+                                                                type="radio"
+                                                                name="linkage"
+                                                                className="hidden"
+                                                                checked={formData.linkageType === 'housing'}
+                                                                onChange={() => setFormData(prev => ({
+                                                                    ...prev,
+                                                                    linkageType: 'housing',
+                                                                    baseIndexDate: (!prev.baseIndexDate || prev.baseIndexDate === '') ? prev.signingDate : prev.baseIndexDate
+                                                                }))}
+                                                            />
                                                             <span className="text-xs font-bold text-center">{t('linkedToHousing')}</span>
                                                         </label>
 
@@ -1536,7 +1571,17 @@ export function AddContract() {
                                                                 formData.linkageType === 'construction' ? "border-amber-500 bg-amber-50 ring-1 ring-amber-500" : "border-border hover:border-amber-300"
                                                             )}
                                                         >
-                                                            <input type="radio" name="linkage" className="hidden" checked={formData.linkageType === 'construction'} onChange={() => setFormData({ ...formData, linkageType: 'construction' })} />
+                                                            <input
+                                                                type="radio"
+                                                                name="linkage"
+                                                                className="hidden"
+                                                                checked={formData.linkageType === 'construction'}
+                                                                onChange={() => setFormData(prev => ({
+                                                                    ...prev,
+                                                                    linkageType: 'construction',
+                                                                    baseIndexDate: (!prev.baseIndexDate || prev.baseIndexDate === '') ? prev.signingDate : prev.baseIndexDate
+                                                                }))}
+                                                            />
                                                             <span className="text-xs font-bold text-center">{t('linkedToConstruction')}</span>
                                                         </label>
 
@@ -1546,7 +1591,17 @@ export function AddContract() {
                                                                 formData.linkageType === 'usd' ? "border-green-500 bg-green-50 ring-1 ring-green-500" : "border-border hover:border-green-300"
                                                             )}
                                                         >
-                                                            <input type="radio" name="linkage" className="hidden" checked={formData.linkageType === 'usd'} onChange={() => setFormData({ ...formData, linkageType: 'usd' })} />
+                                                            <input
+                                                                type="radio"
+                                                                name="linkage"
+                                                                className="hidden"
+                                                                checked={formData.linkageType === 'usd'}
+                                                                onChange={() => setFormData(prev => ({
+                                                                    ...prev,
+                                                                    linkageType: 'usd',
+                                                                    baseIndexDate: (!prev.baseIndexDate || prev.baseIndexDate === '') ? prev.signingDate : prev.baseIndexDate
+                                                                }))}
+                                                            />
                                                             <span className="text-xs font-bold text-center">{t('linkedToUsd')}</span>
                                                         </label>
 
@@ -1556,7 +1611,17 @@ export function AddContract() {
                                                                 formData.linkageType === 'eur' ? "border-blue-500 bg-blue-50 ring-1 ring-blue-500" : "border-border hover:border-blue-300"
                                                             )}
                                                         >
-                                                            <input type="radio" name="linkage" className="hidden" checked={formData.linkageType === 'eur'} onChange={() => setFormData({ ...formData, linkageType: 'eur' })} />
+                                                            <input
+                                                                type="radio"
+                                                                name="linkage"
+                                                                className="hidden"
+                                                                checked={formData.linkageType === 'eur'}
+                                                                onChange={() => setFormData(prev => ({
+                                                                    ...prev,
+                                                                    linkageType: 'eur',
+                                                                    baseIndexDate: (!prev.baseIndexDate || prev.baseIndexDate === '') ? prev.signingDate : prev.baseIndexDate
+                                                                }))}
+                                                            />
                                                             <span className="text-xs font-bold text-center">{t('linkedToEur')}</span>
                                                         </label>
                                                     </div>
@@ -1751,9 +1816,9 @@ export function AddContract() {
                             }
 
                             {
-                                step === 4 && (
+                                step === 5 && (
                                     <motion.div
-                                        key="step4"
+                                        key="step5"
                                         initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
                                         className="space-y-6"
                                     >
@@ -1821,9 +1886,9 @@ export function AddContract() {
                             }
 
                             {
-                                step === 5 && (
+                                step === 6 && (
                                     <motion.div
-                                        key="step5"
+                                        key="step6"
                                         initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
                                         className="space-y-6"
                                     >
@@ -1851,6 +1916,16 @@ export function AddContract() {
                                                 <span className="text-muted-foreground">שכ"ד</span>
                                                 <span className="font-medium">₪{formData.rent || '0'}</span>
                                             </div>
+
+                                            {formData.optionPeriods.map((period, idx) => (
+                                                <div key={idx} className="flex justify-between flex-row-reverse border-b border-border/50 pb-2">
+                                                    <span className="text-muted-foreground">{t('extensionEndDate')} {idx + 1}</span>
+                                                    <span className="font-medium">
+                                                        {period.currency === 'USD' ? '$' : period.currency === 'EUR' ? '€' : '₪'}{period.rentAmount || '0'}
+                                                        ({period.endDate ? formatDate(period.endDate) : '-'})
+                                                    </span>
+                                                </div>
+                                            ))}
                                             {!(!formData.linkageType || formData.linkageType === 'none') && (
                                                 <>
                                                     <div className="flex justify-between flex-row-reverse border-b border-border/50 pb-2">
@@ -2050,7 +2125,7 @@ export function AddContract() {
                             </>
                         ) : (
                             <>
-                                {step === 5 ? 'צור חוזה' : 'הבא'} <ArrowRight className="w-4 h-4 rotate-180" />
+                                {step === 6 ? 'צור חוזה' : 'הבא'} <ArrowRight className="w-4 h-4 rotate-180" />
                             </>
                         )}
                     </button>

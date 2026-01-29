@@ -67,7 +67,12 @@ export function Properties() {
     const [affectedItems, setAffectedItems] = useState<any[]>([]);
 
     const handleAdd = () => {
-        push('wizard', {}, { isExpanded: true, title: t('addProperty') });
+        push('wizard', {
+            onSuccess: () => {
+                clear();
+                fetchProperties();
+            }
+        }, { isExpanded: true, title: t('addProperty') });
     };
 
     const { push } = useStack();

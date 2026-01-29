@@ -16,11 +16,21 @@ export function formatDate(date: string | Date | null | undefined): string {
     });
 }
 
-export function formatBytes(bytes: number, decimals = 2) {
+export function formatBytes(bytes: number, decimals = 2, isRTL = false) {
     if (!bytes || bytes === 0) return '0 Bytes';
     const k = 1024;
     const dm = decimals < 0 ? 0 : decimals;
     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    const value = parseFloat((bytes / Math.pow(k, i)).toFixed(dm));
+    const unit = sizes[i];
+
+    // For RTL, we want to ensure the number stays to the left of the unit (logical "Value Unit")
+    // but without the browser reordering it incorrectly (e.g. "Unit Value")
+    // Wrapping in LRI (Left-to-Right Isolate) \u2066 and PDI (Pop Directional Isolate) \u2069
+    // ensures the internal ordering is maintained while being part of a larger RTL sentence.
+    if (isRTL) {
+        return `\u2066${value} ${unit}\u2069`;
+    }
+    return value + ' ' + unit;
 }

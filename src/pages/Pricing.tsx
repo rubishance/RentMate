@@ -151,6 +151,14 @@ export default function Pricing() {
                                     <li className="flex items-start gap-3">
                                         <CheckCircleIcon className={`w-5 h-5 flex-shrink-0 ${isPro ? 'text-white' : 'text-green-500'}`} />
                                         <span className="text-sm">
+                                            {t('pricing_storage', {
+                                                quota: plan.max_storage_mb === -1 ? '∞' : (plan.max_storage_mb >= 1024 ? `${(plan.max_storage_mb / 1024).toFixed(0)}GB` : `${plan.max_storage_mb}MB`)
+                                            })}
+                                        </span>
+                                    </li>
+                                    <li className="flex items-start gap-3">
+                                        <CheckCircleIcon className={`w-5 h-5 flex-shrink-0 ${isPro ? 'text-white' : 'text-green-500'}`} />
+                                        <span className="text-sm">
                                             {plan.max_tenants === -1 ? '∞' : plan.max_tenants} {t('pricing_tenants')}
                                         </span>
                                     </li>

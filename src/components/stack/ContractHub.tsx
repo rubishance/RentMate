@@ -11,6 +11,7 @@ import { DatePicker } from '../ui/DatePicker';
 import { format, parseISO } from 'date-fns';
 import { cn } from '../../lib/utils';
 import { useDataCache } from '../../contexts/DataCacheContext';
+import { propertyService } from '../../services/property.service';
 
 interface ContractHubProps {
     contractId: string;
@@ -120,6 +121,11 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                 .eq('id', contractId);
 
             if (error) throw error;
+
+            // Sync property occupancy status if status changed
+            if (formData.status !== contract.status) {
+                await propertyService.syncOccupancyStatus(contract.property_id);
+            }
 
             setReadOnly(true);
             clear(); // Sync cache

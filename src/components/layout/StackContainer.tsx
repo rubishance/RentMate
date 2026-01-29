@@ -57,7 +57,7 @@ export function StackContainer() {
                         {/* Sheet / Layer */}
                         <motion.div
                             className={cn(
-                                "relative w-full bg-white dark:bg-neutral-900 shadow-2xl overflow-hidden pointer-events-auto",
+                                "relative w-full bg-white dark:bg-neutral-900 shadow-2xl overflow-hidden pointer-events-auto flex flex-col",
                                 layer.isExpanded ? "h-[100dvh] rounded-none" : "h-[90dvh] rounded-t-[2.5rem]"
                             )}
                             initial="hidden"
@@ -66,7 +66,7 @@ export function StackContainer() {
                             variants={sheetVariants}
                         >
                             {/* Drag Handle (Visual Only for now) & Header */}
-                            <div className="h-14 flex items-center justify-between px-6 border-b border-slate-100 dark:border-neutral-800">
+                            <div className="h-14 flex items-center justify-between px-6 border-b border-slate-100 dark:border-neutral-800 shrink-0">
                                 <div className="flex-1" />
                                 <div className="w-12 h-1.5 bg-slate-200 dark:bg-neutral-800 rounded-full mx-auto" />
                                 <div className="flex-1 flex justify-end">
@@ -80,7 +80,7 @@ export function StackContainer() {
                             </div>
 
                             {/* Content */}
-                            <div className="h-full overflow-y-auto pb-20">
+                            <div className="flex-1 overflow-y-auto min-h-0 pb-20">
                                 <Component {...layer.props} />
                             </div>
                         </motion.div>
