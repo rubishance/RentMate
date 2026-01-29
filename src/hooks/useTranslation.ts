@@ -397,7 +397,8 @@ export type TranslationKeys =
     | 'saveToDevice'
     | 'summary'
     | 'createContract' | 'createContract_female'
-    | 'stepTenantProperty'
+    | 'stepAsset'
+    | 'stepTenant'
     | 'stepPeriods'
     | 'stepPayments'
     | 'stepSecurity'
@@ -432,6 +433,9 @@ export type TranslationKeys =
     | 'planLimitReached'
     | 'planLimitReachedTenantDesc'
     | 'planName'
+    | 'foreignCurrency'
+    | 'indexOption'
+    | 'linkageCategory'
 
     // Subscription & Plan
     | 'unlockPotential' | 'unlockPotential_female'
@@ -1051,7 +1055,8 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         saveToDevice: 'שמור למכשיר שלי',
         summary: 'סיכום',
         createContract: 'צור חוזה',
-        stepTenantProperty: 'שוכר ונכס',
+        stepAsset: 'פרטי נכס',
+        stepTenant: 'פרטי דייר',
         stepPeriods: 'תקופות',
         stepPayments: 'תשלומים',
         stepSecurity: 'בטוחות',
@@ -1124,6 +1129,9 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         indexSubType: 'סוג מדד הצמדה',
         avgUnderpayment: 'ממוצע חסר לחודש',
         percentageOwed: 'אחוז חוב',
+        foreignCurrency: 'מט"ח',
+        indexOption: 'מדד',
+        linkageCategory: 'סוג הצמדה',
 
         name: 'שם',
         address: 'כתובת',
@@ -1908,7 +1916,8 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         saveToDevice: 'Save to My Device',
         summary: 'Summary',
         createContract: 'Create Contract',
-        stepTenantProperty: 'Tenant & Property',
+        stepAsset: 'Asset Details',
+        stepTenant: 'Tenant Details',
         stepPeriods: 'Periods',
         stepPayments: 'Payments',
         stepSecurity: 'Security',
@@ -1978,6 +1987,9 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         totalBackPayOwed: 'Total Back-Pay Owed',
         avgUnderpayment: 'Avg Underpayment',
         percentageOwed: 'Percentage Owed',
+        foreignCurrency: 'Foreign Currency',
+        indexOption: 'Index',
+        linkageCategory: 'Linkage Type',
         monthlyBreakdown: 'Month-by-Month Breakdown',
         shouldPay: 'Should Pay',
         paid: 'Paid',

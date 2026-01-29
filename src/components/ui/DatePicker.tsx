@@ -36,6 +36,14 @@ export function DatePicker({
     readonly
 }: DatePickerProps) {
     const [isOpen, setIsOpen] = React.useState(false);
+    const [month, setMonth] = React.useState<Date | undefined>(value || new Date());
+
+    // Update month when opening
+    React.useEffect(() => {
+        if (isOpen && value) {
+            setMonth(value);
+        }
+    }, [isOpen, value]);
 
     // Close on selection if single mode (default)
     const handleSelect = (date: Date | undefined) => {
@@ -116,6 +124,7 @@ export function DatePicker({
                                         .rdp-day_selected:not([disabled]) { font-weight: bold; color: white; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.4); }
                                         .rdp-day_selected:hover:not([disabled]) { background-color: #2563eb; }
                                         .rdp-button:hover:not([disabled]):not(.rdp-day_selected) { background-color: rgba(0,0,0,0.05); }
+                                        .rdp-day_today:not(.rdp-day_selected) { border: 2px solid #3b82f6; color: #3b82f6; font-weight: 700; }
                                         .rdp-nav_button { width: 32px; height: 32px; border-radius: 8px; }
                                         .rdp-nav_button:hover { background-color: rgba(0,0,0,0.05); }
                                         .rdp-head_cell { color: #64748b; font-weight: 600; font-size: 0.875rem; }
@@ -133,6 +142,8 @@ export function DatePicker({
                                             selected={value}
                                             onSelect={handleSelect}
                                             disabled={disabledDays}
+                                            month={month}
+                                            onMonthChange={setMonth}
                                             startMonth={minDate || new Date(new Date().getFullYear() - 10, 0)}
                                             endMonth={maxDate || new Date(new Date().getFullYear() + 40, 11)}
                                             captionLayout="dropdown"

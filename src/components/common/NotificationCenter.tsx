@@ -28,7 +28,7 @@ export function NotificationCenter() {
         // Navigate based on metadata
         if (notification.metadata) {
             if (notification.metadata.contract_id) {
-                navigate('/contracts');
+                navigate('/properties');
             } else if (notification.metadata.payment_id) {
                 navigate('/payments');
             }

@@ -113,7 +113,7 @@ export function TimelineWidget({ contracts, loading }: TimelineWidgetProps) {
                     <div key={item.id} className="relative group">
                         <div className="flex justify-between items-start mb-3">
                             <div>
-                                <h4 className="font-bold text-black dark:text-white group-hover:underline cursor-pointer" onClick={() => navigate('/contracts')}>{item.address}</h4>
+                                <h4 className="font-bold text-black dark:text-white group-hover:underline cursor-pointer" onClick={() => navigate('/properties')}>{item.address}</h4>
                                 <p className="text-xs font-medium text-gray-400 dark:text-gray-500 mt-1">
                                     {item.daysLeft > 0
                                         ? t('daysLeft', { count: item.daysLeft })
@@ -164,7 +164,7 @@ export function TimelineWidget({ contracts, loading }: TimelineWidgetProps) {
 
             {contracts.length > 3 && (
                 <button
-                    onClick={() => navigate('/contracts')}
+                    onClick={() => navigate('/properties')}
                     className="w-full mt-4 text-xs text-muted-foreground hover:text-primary flex items-center justify-center gap-1 py-2"
                 >
                     {t('viewAllContracts')} <ArrowRight className="w-3 h-3" />

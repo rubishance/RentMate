@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { UserPreferencesProvider } from './contexts/UserPreferencesContext';
 import { NotificationsProvider } from './contexts/NotificationsContext';
 import { DataCacheProvider } from './contexts/DataCacheContext';
@@ -109,6 +109,9 @@ function App() {
                       <Route element={<AppShell />}>
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/properties" element={<Properties />} />
+
+                        {/* Redirect old contracts route to properties */}
+                        <Route path="/contracts" element={<Navigate to="/properties" replace />} />
 
                         <Route path="/contracts/new" element={<AddContract />} />
                         <Route path="/calculator" element={<Calculator />} />
