@@ -304,60 +304,41 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete }:
                 </div>
             </div>
 
-            {/* 2. Sticky Pill Navigation */}
-            {!isEditing && (
-                <div className="sticky top-0 z-30 px-6 py-4 bg-slate-50/90 dark:bg-black/90 backdrop-blur-xl pointer-events-none">
-                    <div className="flex items-center gap-2 p-1.5 bg-white dark:bg-neutral-900 rounded-full border border-slate-100 dark:border-neutral-800 shadow-sm w-fit pointer-events-auto">
-                        <button onClick={() => scrollToSection('contracts')} className={cn("px-4 py-1.5 rounded-full text-xs font-bold transition-all", activeTab === 'contracts' ? "bg-black dark:bg-white text-white dark:text-black" : "text-muted-foreground hover:text-foreground")}>
-                            {t('contracts')}
-                        </button>
-                        <button onClick={() => scrollToSection('wallet')} className={cn("px-4 py-1.5 rounded-full text-xs font-bold transition-all", activeTab === 'wallet' ? "bg-black dark:bg-white text-white dark:text-black" : "text-muted-foreground hover:text-foreground")}>
-                            {t('financials')}
-                        </button>
-                        <button onClick={() => scrollToSection('files')} className={cn("px-4 py-1.5 rounded-full text-xs font-bold transition-all", activeTab === 'files' ? "bg-black dark:bg-white text-white dark:text-black" : "text-muted-foreground hover:text-foreground")}>
-                            {t('documents')}
-                        </button>
-                    </div>
+            {/* 2. Tabs Navigation */}
+            <div className="px-6 relative z-20">
+                <div className="flex gap-1 bg-white/50 dark:bg-white/5 backdrop-blur-xl p-1.5 rounded-[2rem] border border-white/20 dark:border-white/10 shadow-minimal overflow-x-auto no-scrollbar">
+                    {tabs.map((tab) => {
+                        const Icon = tab.icon;
+                        const isActive = activeTab === tab.id;
+                        return (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={cn(
+                                    "flex items-center gap-2.5 px-5 py-3 rounded-[1.5rem] transition-all duration-500 whitespace-nowrap group",
+                                    isActive
+                                        ? "bg-black dark:bg-white text-white dark:text-black shadow-lg shadow-black/10 scale-[1.02]"
+                                        : "text-muted-foreground hover:text-foreground hover:bg-white/50 dark:hover:bg-white/5"
+                                )}
+                            >
+                                <Icon className={cn(
+                                    "w-4 h-4 transition-transform duration-500",
+                                    isActive ? "scale-110" : "group-hover:scale-110"
+                                )} />
+                                <span className="text-xs font-black uppercase tracking-widest">{tab.label}</span>
+                            </button>
+                        );
+                    })}
                 </div>
-            )}
+            </div>
 
-            {/* 3. Content Area - Scrollable Feed */}
-            <div className="flex-1 overflow-y-auto min-h-0 pb-20">
-                <div className="px-6 space-y-12">
-                    {/* Contracts Section */}
-                    <section id="contracts" className="scroll-mt-24">
-                        <div className="flex items-center gap-2 mb-4 opacity-50">
-                            <FileText className="w-4 h-4" />
-                            <span className="text-xs font-black uppercase tracking-widest">{t('contracts')}</span>
-                        </div>
-                        <ContractsTab propertyId={propertyId} />
-                    </section>
-
-                    {/* Divider */}
-                    <div className="h-[1px] bg-slate-200 dark:bg-neutral-800" />
-
-                    {/* Financials Section */}
-                    <section id="wallet" className="scroll-mt-24">
-                        <div className="flex items-center gap-2 mb-4 opacity-50">
-                            <WalletIcon className="w-4 h-4" />
-                            <span className="text-xs font-black uppercase tracking-widest">{t('financials')}</span>
-                        </div>
-                        <WalletTab property={property} />
-                    </section>
-
-                    {/* Divider */}
-                    <div className="h-[1px] bg-slate-200 dark:bg-neutral-800" />
-
-                    {/* Documents Section */}
-                    <section id="files" className="scroll-mt-24">
-                        <div className="flex items-center gap-2 mb-4 opacity-50">
-                            <FolderIcon className="w-4 h-4" />
-                            <span className="text-xs font-black uppercase tracking-widest">{t('documents')}</span>
-                        </div>
-                        <div className="bg-slate-100/50 dark:bg-neutral-900/50 rounded-3xl border border-slate-200/60 dark:border-neutral-800">
-                            <PropertyDocumentsHub property={property} />
-                        </div>
-                    </section>
+            {/* 3. Tab Content */}
+            <div className="flex-1 overflow-y-auto min-h-0 pt-6 pb-20">
+                <div className="px-6 h-full">
+                    {activeTab === 'snapshot' && <SnapshotTab property={property} />}
+                    {activeTab === 'contracts' && <ContractsTab propertyId={propertyId} />}
+                    {activeTab === 'wallet' && <WalletTab property={property} />}
+                    {activeTab === 'files' && <PropertyDocumentsHub property={property} />}
                 </div>
             </div>
 

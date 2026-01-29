@@ -94,10 +94,18 @@ export function AddPropertyWizard({ initialData, mode = 'add' }: AddPropertyWiza
                 if (!user) throw new Error('User not authenticated');
 
                 const startData = {
-                    ...formData,
-                    user_id: user.id,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
+                    address: (formData.address || '').trim(),
+                    city: (formData.city || '').trim(),
+                    title: formData.address && formData.city ? `${formData.address}, ${formData.city}` : (formData.address || formData.city || ''),
+                    property_type: formData.property_type,
+                    rooms: Number(formData.rooms) || 0,
+                    size_sqm: Number(formData.size_sqm) || 0,
+                    has_parking: !!formData.has_parking,
+                    has_storage: !!formData.has_storage,
+                    rent_price: Number(formData.rent_price) || 0,
+                    status: formData.status || 'Vacant',
+                    image_url: formData.image_url || null,
+                    user_id: user.id
                 };
 
                 const { error } = await supabase
