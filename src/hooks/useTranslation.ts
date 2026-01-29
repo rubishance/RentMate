@@ -434,8 +434,15 @@ export type TranslationKeys =
     | 'planLimitReachedTenantDesc'
     | 'planName'
     | 'foreignCurrency'
+    | 'baseIndexValue'
     | 'indexOption'
     | 'linkageCategory'
+    | 'propertySpecs'
+    | 'leaseTerms'
+    | 'financials'
+    | 'partiesInvolved'
+    | 'option'
+    | 'periods'
 
     // Subscription & Plan
     | 'unlockPotential' | 'unlockPotential_female'
@@ -1020,11 +1027,11 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         newAmount: 'סכום חדש',
         linkageAndIndices: 'הצמדה ומדדים',
         notLinked: 'לא צמוד',
-        linkedToCpi: 'צמוד מדד (CPI)',
+        linkedToCpi: 'מדד המחירים לצרכן',
         linkedToUsd: 'צמוד דולר ($)',
         linkedToEur: 'צמוד אירו (€)',
-        linkedToHousing: 'צמוד מדד הדיור',
-        linkedToConstruction: 'מדד התשומות',
+        linkedToHousing: 'מדד מחירי הדיור',
+        linkedToConstruction: 'מדד תשומות הבנייה',
         indexType: 'סוג מדד',
 
         ceiling: 'תקרה (מקסימום %)',
@@ -1093,6 +1100,7 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         addItem: 'הוסף פריט',
         globalBaseRentHelp: 'שכירות בסיס חודשית קבועה (אלא אם הוגדר אחרת ברשימה).',
         baseIndexDate: 'תאריך בסיס למדד',
+        baseIndexValue: 'ערך מדד בסיס',
         noPaymentsListed: 'אין תשלומים ברשימה.',
         addFirstPayment: 'הוסף תשלום ראשון',
         manualPaymentHelp: 'הזן את הסכום החודשי הממוצע ששולם.',
@@ -1132,6 +1140,12 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         foreignCurrency: 'מט"ח',
         indexOption: 'מדד',
         linkageCategory: 'סוג הצמדה',
+        propertySpecs: 'מפרט הנכס',
+        leaseTerms: 'תנאי השכירות',
+        financials: 'פרטים פיננסיים',
+        partiesInvolved: 'הצדדים לחוזה',
+        option: 'אופציה',
+        periods: 'תקופות',
 
         name: 'שם',
         address: 'כתובת',
@@ -1955,6 +1969,7 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         totalBase: 'Total Base',
         globalBaseRentHelp: 'Global base rent (will be used for all months unless overridden by list).',
         baseIndexDate: 'Base Index Date',
+        baseIndexValue: 'Base Index Value',
         noPaymentsListed: 'No payments listed.',
         addFirstPayment: 'Add your first payment',
         manualPaymentHelp: 'Enter the average amount paid per month manually.',
@@ -1990,6 +2005,12 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         foreignCurrency: 'Foreign Currency',
         indexOption: 'Index',
         linkageCategory: 'Linkage Type',
+        propertySpecs: 'Property Specs',
+        leaseTerms: 'Lease Terms',
+        financials: 'Financial Details',
+        partiesInvolved: 'Parties Involved',
+        option: 'Option',
+        periods: 'Periods',
         monthlyBreakdown: 'Month-by-Month Breakdown',
         shouldPay: 'Should Pay',
         paid: 'Paid',

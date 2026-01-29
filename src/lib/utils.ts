@@ -34,3 +34,18 @@ export function formatBytes(bytes: number, decimals = 2, isRTL = false) {
     }
     return value + ' ' + unit;
 }
+
+export function formatNumber(val: string | number | null | undefined): string {
+    if (val === null || val === undefined || val === '') return '';
+    const num = typeof val === 'string' ? parseFloat(val.replace(/,/g, '')) : val;
+    if (isNaN(num)) return String(val);
+
+    return new Intl.NumberFormat('en-US', {
+        maximumFractionDigits: 2,
+        useGrouping: true
+    }).format(num);
+}
+
+export function parseNumber(val: string): string {
+    return val.replace(/,/g, '');
+}

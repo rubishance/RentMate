@@ -5,7 +5,7 @@ import { PropertyIcon } from '../components/common/PropertyIcon';
 import { PropertyTypeSelect } from '../components/common/PropertyTypeSelect';
 import { Tooltip } from '../components/Tooltip';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { cn, formatDate } from '../lib/utils';
+import { cn, formatDate, formatNumber, parseNumber } from '../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DatePicker } from '../components/ui/DatePicker';
 import { parseISO, format, addYears, subDays, isValid } from 'date-fns';
@@ -393,24 +393,71 @@ export function AddContract() {
                     }
                 }
 
+                // Helper to safely parse numbers and return null instead of NaN
+                const safeFloat = (val: any) => {
+                    const parsed = parseFloat(val);
+                    return (!isNaN(parsed) && isFinite(parsed)) ? parsed : null;
+                };
+
+                // Helper to safely parse integers
+                const safeInt = (val: any, fallback = 0) => {
+                    const parsed = parseInt(val);
+                    return (!isNaN(parsed) && isFinite(parsed)) ? parsed : fallback;
+                };
+
+                // NEW: Recursive sanitation to prevent NaN/Infinity in JSON columns
+                const sanitizePayload = (obj: any): any => {
+                    if (obj === null || obj === undefined) return obj;
+                    if (typeof obj === 'number') {
+                        return isFinite(obj) ? obj : null;
+                    }
+                    if (Array.isArray(obj)) {
+                        return obj.map(sanitizePayload);
+                    }
+                    if (typeof obj === 'object') {
+                        const sanitized: any = {};
+                        for (const key in obj) {
+                            sanitized[key] = sanitizePayload(obj[key]);
+                        }
+                        return sanitized;
+                    }
+                    return obj;
+                };
+
+                // Linkage Sub Type Mapping (Ensure valid enum value)
+                let linkageSubTypeVal = null;
+                if (formData.linkageType !== 'none') {
+                    if (formData.linkageSubType === 'known' || formData.linkageSubType === 'respect_of' || formData.linkageSubType === 'base') {
+                        linkageSubTypeVal = formData.linkageSubType;
+                    } else {
+                        // Default to known if manual or other UI value is set
+                        linkageSubTypeVal = 'known';
+                    }
+                }
+
                 // 3. Create Contract
                 const contractPayload = {
                     property_id: propertyId,
-                    tenants: (formData.tenants || []).filter(t => t.name.trim() !== ''),
+                    tenants: (formData.tenants || []).filter(t => t.name.trim() !== '').map(t => ({
+                        name: t.name || '',
+                        id_number: t.id_number || '',
+                        email: t.email || '',
+                        phone: t.phone || ''
+                    })),
                     signing_date: formData.signingDate || null,
                     start_date: formData.startDate || null,
                     end_date: formData.endDate || null,
-                    base_rent: parseFloat(formData.rent) || 0,
-                    currency: formData.hasLinkage ? formData.currency : 'ILS',
-                    payment_frequency: formData.paymentFrequency.toLowerCase(),
-                    payment_day: parseInt(formData.paymentDay) || 1,
+                    base_rent: safeFloat(formData.rent) || 0,
+                    currency: (['ILS', 'USD', 'EUR'].includes(formData.currency)) ? formData.currency : 'ILS',
+                    payment_frequency: (formData.paymentFrequency || 'monthly').toLowerCase(),
+                    payment_day: safeInt(formData.paymentDay, 1),
                     linkage_type: (!formData.linkageType || formData.linkageType === 'none') ? 'none' : formData.linkageType,
-                    linkage_sub_type: formData.linkageType === 'cpi' ? formData.linkageSubType : null,
-                    linkage_ceiling: formData.hasLinkageCeiling ? parseFloat(formData.linkageCeiling) || null : null,
-                    linkage_floor: parseFloat(formData.linkageFloor) || null,
+                    linkage_sub_type: linkageSubTypeVal,
+                    linkage_ceiling: formData.hasLinkageCeiling ? safeFloat(formData.linkageCeiling) : null,
+                    linkage_floor: safeFloat(formData.linkageFloor),
                     base_index_date: formData.baseIndexDate || null,
-                    base_index_value: parseFloat(formData.baseIndexValue) || null,
-                    security_deposit_amount: parseFloat(formData.securityDeposit) || 0,
+                    base_index_value: safeFloat(formData.baseIndexValue),
+                    security_deposit_amount: safeFloat(formData.securityDeposit) || 0,
                     status: 'active',
                     option_periods: (formData.optionPeriods || []).map((p, idx) => {
                         const prevDateStr = idx === 0 ? formData.endDate : formData.optionPeriods[idx - 1].endDate;
@@ -424,32 +471,28 @@ export function AddContract() {
                             months = Math.round(diffDays / 30);
                         }
 
-                        // Ensure rentAmount is a valid number or null
-                        const parsedAmount = p.rentAmount ? parseFloat(p.rentAmount) : null;
-
                         return {
                             length: months || 0,
                             unit: 'months' as const,
-                            rentAmount: (parsedAmount !== null && !isNaN(parsedAmount)) ? parsedAmount : null,
+                            rentAmount: safeFloat(p.rentAmount),
                             currency: p.currency || 'ILS'
                         };
                     }),
-                    rent_periods: (formData.rentSteps || []).map(s => {
-                        const parsedStepAmount = parseFloat(s.amount);
-                        return {
-                            startDate: s.startDate || formData.startDate,
-                            amount: !isNaN(parsedStepAmount) ? parsedStepAmount : 0,
-                            currency: s.currency || 'ILS'
-                        };
-                    }),
+                    rent_periods: (formData.rentSteps || []).map(s => ({
+                        startDate: s.startDate || formData.startDate,
+                        amount: safeFloat(s.amount) || 0,
+                        currency: s.currency || 'ILS'
+                    })),
                     contract_file_url: null as string | null,
                     user_id: user.id,
                     needs_painting: !!formData.needsPainting
                 };
 
-                console.log('Inserting contract with payload:', JSON.stringify(contractPayload, null, 2));
+                const sanitizedPayload = sanitizePayload(contractPayload);
 
-                const { data: newContract, error: contractError } = await supabase.from('contracts').insert(contractPayload).select().single();
+                console.log('[DEBUG] Saving sanitized contract payload:', JSON.stringify(sanitizedPayload, null, 2));
+
+                const { data: newContract, error: contractError } = await supabase.from('contracts').insert(sanitizedPayload).select().single();
 
                 if (contractError) throw new Error(`Contract Error: ${contractError.message} `);
 
@@ -458,21 +501,21 @@ export function AddContract() {
                     const schedule = await generatePaymentSchedule({
                         startDate: formData.startDate,
                         endDate: formData.endDate,
-                        baseRent: parseFloat(formData.rent) || 0,
+                        baseRent: safeFloat(formData.rent) || 0,
                         currency: 'ILS',
-                        paymentFrequency: formData.paymentFrequency.toLowerCase() as any,
-                        paymentDay: parseInt(formData.paymentDay) || 1,
+                        paymentFrequency: (formData.paymentFrequency || 'monthly').toLowerCase() as any,
+                        paymentDay: safeInt(formData.paymentDay, 1),
                         linkageType: (!formData.linkageType || formData.linkageType === 'none') ? 'none' : formData.linkageType as any,
-                        linkageSubType: formData.linkageSubType as any,
+                        linkageSubType: linkageSubTypeVal as any,
                         baseIndexDate: formData.baseIndexDate || null,
-                        baseIndexValue: parseFloat(formData.baseIndexValue) || null,
-                        linkageCeiling: formData.hasLinkageCeiling ? parseFloat(formData.linkageCeiling) || null : null,
+                        baseIndexValue: safeFloat(formData.baseIndexValue),
+                        linkageCeiling: formData.hasLinkageCeiling ? safeFloat(formData.linkageCeiling) : null,
 
-                        linkageFloor: parseFloat(formData.linkageFloor) || null,
-                        rent_periods: formData.rentSteps.map(s => ({
-                            startDate: s.startDate,
-                            amount: parseFloat(s.amount) || 0,
-                            currency: s.currency,
+                        linkageFloor: safeFloat(formData.linkageFloor),
+                        rent_periods: (formData.rentSteps || []).map(s => ({
+                            startDate: s.startDate || formData.startDate,
+                            amount: safeFloat(s.amount) || 0,
+                            currency: s.currency || 'ILS',
                         }))
                     });
 
@@ -964,19 +1007,25 @@ export function AddContract() {
                                                         <div className="space-y-2">
                                                             <label className="text-sm font-medium flex items-center gap-2">{t('rooms')} <ConfidenceDot field="rooms" /></label>
                                                             <input
-                                                                type="number"
-                                                                value={formData.rooms}
-                                                                onChange={e => setFormData({ ...formData, rooms: e.target.value })}
-                                                                className="w-full p-3 bg-background border border-border rounded-xl"
+                                                                type="text"
+                                                                value={formatNumber(formData.rooms)}
+                                                                onChange={e => {
+                                                                    const val = parseNumber(e.target.value);
+                                                                    if (/^\d*$/.test(val)) setFormData({ ...formData, rooms: val });
+                                                                }}
+                                                                className="w-full p-3 bg-background border border-border rounded-xl no-spinner"
                                                             />
                                                         </div>
                                                         <div className="space-y-2">
                                                             <label className="text-sm font-medium flex items-center gap-2">{t('sizeSqm')} <ConfidenceDot field="size" /></label>
                                                             <input
-                                                                type="number"
-                                                                value={formData.size}
-                                                                onChange={e => setFormData({ ...formData, size: e.target.value })}
-                                                                className="w-full p-3 bg-background border border-border rounded-xl"
+                                                                type="text"
+                                                                value={formatNumber(formData.size)}
+                                                                onChange={e => {
+                                                                    const val = parseNumber(e.target.value);
+                                                                    if (/^\d*\.?\d*$/.test(val)) setFormData({ ...formData, size: val });
+                                                                }}
+                                                                className="w-full p-3 bg-background border border-border rounded-xl no-spinner"
                                                             />
                                                         </div>
                                                     </div>
@@ -1339,10 +1388,23 @@ export function AddContract() {
                                                 </label>
                                                 <button
                                                     type="button"
-                                                    onClick={() => setFormData(prev => ({
-                                                        ...prev,
-                                                        optionPeriods: [...prev.optionPeriods, { endDate: '', rentAmount: '', currency: 'ILS' }]
-                                                    }))}
+                                                    onClick={() => {
+                                                        const lastOption = formData.optionPeriods[formData.optionPeriods.length - 1];
+                                                        const baseDateStr = lastOption?.endDate || formData.endDate;
+                                                        let defaultDate = '';
+
+                                                        if (baseDateStr) {
+                                                            const baseDate = parseISO(baseDateStr);
+                                                            if (isValid(baseDate)) {
+                                                                defaultDate = format(addYears(baseDate, 1), 'yyyy-MM-dd');
+                                                            }
+                                                        }
+
+                                                        setFormData(prev => ({
+                                                            ...prev,
+                                                            optionPeriods: [...prev.optionPeriods, { endDate: defaultDate, rentAmount: '', currency: 'ILS' }]
+                                                        }));
+                                                    }}
                                                     className="text-xs text-primary hover:text-primary font-medium flex items-center gap-1"
                                                 >
                                                     <Plus className="w-3 h-3" /> {t('addPeriod')}
@@ -1372,6 +1434,23 @@ export function AddContract() {
                                                                     : (formData.optionPeriods[idx - 1].endDate ? parseISO(formData.optionPeriods[idx - 1].endDate) : undefined)
                                                                 }
                                                                 className="w-full"
+                                                            />
+                                                        </div>
+                                                        <div className="w-24 space-y-1">
+                                                            <label className="text-[10px] text-muted-foreground font-bold">{t('optionRent')}</label>
+                                                            <input
+                                                                type="text"
+                                                                value={formatNumber(period.rentAmount)}
+                                                                onChange={e => {
+                                                                    const val = parseNumber(e.target.value);
+                                                                    if (/^\d*\.?\d*$/.test(val)) {
+                                                                        const newPeriods = [...formData.optionPeriods];
+                                                                        newPeriods[idx].rentAmount = val;
+                                                                        setFormData({ ...formData, optionPeriods: newPeriods });
+                                                                    }
+                                                                }}
+                                                                className="w-full p-2 text-xs bg-background border border-border rounded-lg no-spinner font-bold"
+                                                                placeholder={formData.currency === 'ILS' ? '₪' : formData.currency === 'USD' ? '$' : '€'}
                                                             />
                                                         </div>
                                                         <button
@@ -1412,10 +1491,13 @@ export function AddContract() {
                                                 <div className="relative">
                                                     <span className="absolute left-4 top-3 text-muted-foreground">{formData.currency === 'ILS' ? '₪' : formData.currency === 'USD' ? '$' : '€'}</span>
                                                     <input
-                                                        type="number"
-                                                        value={formData.rent}
-                                                        onChange={(e) => setFormData({ ...formData, rent: e.target.value })}
-                                                        className="w-full pl-8 p-3 bg-background border border-border rounded-xl font-bold text-lg"
+                                                        type="text"
+                                                        value={formatNumber(formData.rent)}
+                                                        onChange={e => {
+                                                            const val = parseNumber(e.target.value);
+                                                            if (/^\d*\.?\d*$/.test(val)) setFormData({ ...formData, rent: val });
+                                                        }}
+                                                        className="w-full pl-8 p-3 bg-background border border-border rounded-xl font-bold text-lg no-spinner"
                                                     />
                                                 </div>
                                             </div>
@@ -1481,7 +1563,7 @@ export function AddContract() {
                                                     <div className="space-y-2 bg-secondary/10 p-3 rounded-xl">
                                                         {formData.rentSteps.map((step, idx) => (
                                                             <div key={idx} className="flex gap-2 items-end">
-                                                                <div className="flex-1 space-y-1">
+                                                                <div className="flex-[2] space-y-1">
                                                                     <label className="text-[10px] text-muted-foreground font-bold">{t('stepDate')}</label>
                                                                     <DatePicker
                                                                         value={step.startDate ? parseISO(step.startDate) : undefined}
@@ -1495,32 +1577,22 @@ export function AddContract() {
                                                                 </div>
                                                                 <div className="flex-1 space-y-1">
                                                                     <label className="text-[10px] text-muted-foreground font-bold">{t('newAmount')}</label>
-                                                                    <input
-                                                                        type="number"
-                                                                        value={step.amount}
-                                                                        onChange={e => {
-                                                                            const newSteps = [...formData.rentSteps];
-                                                                            newSteps[idx].amount = e.target.value;
-                                                                            setFormData({ ...formData, rentSteps: newSteps });
-                                                                        }}
-                                                                        className="w-full p-2 text-xs bg-background border border-border rounded-lg"
-                                                                    />
-                                                                </div>
-                                                                <div className="w-20 space-y-1">
-                                                                    <label className="text-[10px] text-muted-foreground opacity-0">{t('currency')}</label>
-                                                                    <select
-                                                                        value={step.currency}
-                                                                        onChange={e => {
-                                                                            const newSteps = [...formData.rentSteps];
-                                                                            newSteps[idx].currency = e.target.value as any;
-                                                                            setFormData({ ...formData, rentSteps: newSteps });
-                                                                        }}
-                                                                        className="w-full p-2 text-xs bg-background border border-border rounded-lg"
-                                                                    >
-                                                                        <option value="ILS">₪</option>
-                                                                        <option value="USD">$</option>
-                                                                        <option value="EUR">€</option>
-                                                                    </select>
+                                                                    <div className="relative">
+                                                                        <span className="absolute left-2 top-2 text-[10px] text-muted-foreground opacity-50">{formData.currency === 'ILS' ? '₪' : formData.currency === 'USD' ? '$' : '€'}</span>
+                                                                        <input
+                                                                            type="text"
+                                                                            value={formatNumber(step.amount)}
+                                                                            onChange={e => {
+                                                                                const val = parseNumber(e.target.value);
+                                                                                if (/^\d*\.?\d*$/.test(val)) {
+                                                                                    const newSteps = [...formData.rentSteps];
+                                                                                    newSteps[idx].amount = val;
+                                                                                    setFormData({ ...formData, rentSteps: newSteps });
+                                                                                }
+                                                                            }}
+                                                                            className="w-full p-2 pl-6 text-xs bg-background border border-border rounded-lg no-spinner font-bold"
+                                                                        />
+                                                                    </div>
                                                                 </div>
                                                                 <button
                                                                     type="button"
@@ -1549,7 +1621,8 @@ export function AddContract() {
                                                             setFormData(prev => ({
                                                                 ...prev,
                                                                 hasLinkage: checked,
-                                                                linkageType: checked ? (prev.linkageType === 'none' ? 'cpi' : prev.linkageType) : 'none'
+                                                                linkageType: checked ? (prev.linkageType === 'none' ? 'cpi' : prev.linkageType) : 'none',
+                                                                baseIndexDate: (checked && (!prev.baseIndexDate || prev.baseIndexDate === '')) ? prev.signingDate : prev.baseIndexDate
                                                             }));
                                                         }}
                                                         className="w-5 h-5 rounded-lg border-gray-300 text-primary focus:ring-primary"
@@ -1583,7 +1656,8 @@ export function AddContract() {
                                                                             const isNewCurrency = cat.val === 'currency';
                                                                             setFormData(prev => ({
                                                                                 ...prev,
-                                                                                linkageType: isNewCurrency ? 'usd' : 'cpi'
+                                                                                linkageType: isNewCurrency ? 'usd' : 'cpi',
+                                                                                baseIndexDate: (!prev.baseIndexDate || prev.baseIndexDate === '') ? prev.signingDate : prev.baseIndexDate
                                                                             }));
                                                                         }}
                                                                         className={cn(
@@ -1668,9 +1742,12 @@ export function AddContract() {
                                                                                 {t('baseIndexValue')} <ConfidenceDot field="baseIndexValue" />
                                                                             </label>
                                                                             <input
-                                                                                type="number"
-                                                                                value={formData.baseIndexValue}
-                                                                                onChange={(e) => setFormData({ ...formData, baseIndexValue: e.target.value })}
+                                                                                type="text"
+                                                                                value={formatNumber(formData.baseIndexValue)}
+                                                                                onChange={(e) => {
+                                                                                    const val = parseNumber(e.target.value);
+                                                                                    if (/^\d*\.?\d*$/.test(val)) setFormData({ ...formData, baseIndexValue: val });
+                                                                                }}
                                                                                 className="w-full p-2.5 bg-background border border-border rounded-lg no-spinner font-mono text-sm"
                                                                                 placeholder="e.g. 105.2"
                                                                             />
@@ -1732,10 +1809,13 @@ export function AddContract() {
                                                                         {formData.hasLinkageCeiling && (
                                                                             <div className="relative mt-1">
                                                                                 <input
-                                                                                    type="number"
-                                                                                    value={formData.linkageCeiling}
-                                                                                    onChange={(e) => setFormData({ ...formData, linkageCeiling: e.target.value })}
-                                                                                    className="w-full p-2 bg-background border border-border rounded-lg text-xs"
+                                                                                    type="text"
+                                                                                    value={formatNumber(formData.linkageCeiling)}
+                                                                                    onChange={(e) => {
+                                                                                        const val = parseNumber(e.target.value);
+                                                                                        if (/^\d*\.?\d*$/.test(val)) setFormData({ ...formData, linkageCeiling: val });
+                                                                                    }}
+                                                                                    className="w-full p-2 bg-background border border-border rounded-lg text-xs no-spinner"
                                                                                     placeholder="%"
                                                                                 />
                                                                                 <span className="absolute right-3 top-2 text-muted-foreground text-[10px]">%</span>
@@ -1781,9 +1861,14 @@ export function AddContract() {
                                                 <label className="text-sm font-medium flex items-center gap-2">{t('securityDeposit')} {scannedQuotes.securityDeposit && <Tooltip quote={scannedQuotes.securityDeposit} />} <ConfidenceDot field="securityDeposit" /></label>
                                                 <div className="relative">
                                                     <input
-                                                        value={formData.securityDeposit}
-                                                        onChange={e => setFormData({ ...formData, securityDeposit: e.target.value })}
-                                                        className="w-full p-3 pl-8 bg-background border border-border rounded-xl no-spinner" type="number" />
+                                                        type="text"
+                                                        value={formatNumber(formData.securityDeposit)}
+                                                        onChange={e => {
+                                                            const val = parseNumber(e.target.value);
+                                                            if (/^\d*\.?\d*$/.test(val)) setFormData({ ...formData, securityDeposit: val });
+                                                        }}
+                                                        className="w-full p-3 pl-8 bg-background border border-border rounded-xl no-spinner font-bold"
+                                                    />
                                                     <span className="absolute left-4 top-3 text-muted-foreground">₪</span>
                                                 </div>
                                             </div>
@@ -1852,62 +1937,167 @@ export function AddContract() {
                                             </p>
                                         </div>
 
-                                        <div className="bg-secondary/20 p-4 rounded-xl text-sm space-y-3 text-right">
-                                            <h4 className="font-bold text-xs text-muted-foreground mb-2">סיכום נתונים</h4>
-                                            <div className="flex justify-between flex-row-reverse border-b border-border/50 pb-2">
-                                                <span className="text-muted-foreground">{t('tenant')}</span>
-                                                <span className="font-medium">{formData.tenants.map(t => t.name).filter(Boolean).join(', ') || '-'}</span>
-                                            </div>
-                                            <div className="flex justify-between flex-row-reverse border-b border-border/50 pb-2">
-                                                <span className="text-muted-foreground">{t('period')}</span>
-                                                <span className="font-medium">{formatDate(formData.startDate)} - {formatDate(formData.endDate)}</span>
-                                            </div>
-                                            <div className="flex justify-between flex-row-reverse border-b border-border/50 pb-2">
-                                                <span className="text-muted-foreground">שכ"ד</span>
-                                                <span className="font-medium">₪{formData.rent || '0'}</span>
+                                        <div className="space-y-6 text-right">
+                                            {/* Section 1: Asset & Physical Details */}
+                                            <div className="bg-secondary/10 p-4 rounded-xl space-y-3">
+                                                <h4 className="font-bold text-sm text-primary flex items-center gap-2 flex-row-reverse border-b border-border/50 pb-2 mb-3">
+                                                    <Building className="w-4 h-4" /> {t('propertySpecs')}
+                                                </h4>
+                                                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                                                    <span className="text-muted-foreground">{t('address')}</span>
+                                                    <span className="font-medium">{formData.address || '-'}, {formData.city || '-'}</span>
+
+                                                    <span className="text-muted-foreground">{t('propertyType')}</span>
+                                                    <span className="font-medium">{t(formData.property_type as any)}</span>
+
+                                                    <span className="text-muted-foreground">{t('rooms')}</span>
+                                                    <span className="font-medium">{formData.rooms || '-'} {t('rooms')}</span>
+
+                                                    <span className="text-muted-foreground">{t('sizeSqm')}</span>
+                                                    <span className="font-medium">{formData.size ? `${formData.size} ${t('sqm')}` : '-'}</span>
+
+                                                    <span className="text-muted-foreground">{t('parking')}</span>
+                                                    <span className="font-medium">{formData.hasParking ? t('yes') : t('no')}</span>
+
+                                                    <span className="text-muted-foreground">{t('storage')}</span>
+                                                    <span className="font-medium">{formData.hasStorage ? t('yes') : t('no')}</span>
+                                                </div>
                                             </div>
 
-                                            {formData.optionPeriods.map((period, idx) => (
-                                                <div key={idx} className="flex justify-between flex-row-reverse border-b border-border/50 pb-2">
-                                                    <span className="text-muted-foreground">{t('extensionEndDate')} {idx + 1}</span>
-                                                    <span className="font-medium">
-                                                        {period.currency === 'USD' ? '$' : period.currency === 'EUR' ? '€' : '₪'}{period.rentAmount || '0'}
-                                                        ({period.endDate ? formatDate(period.endDate) : '-'})
-                                                    </span>
-                                                </div>
-                                            ))}
-                                            {!(!formData.linkageType || formData.linkageType === 'none') && (
-                                                <>
-                                                    <div className="flex justify-between flex-row-reverse border-b border-border/50 pb-2">
-                                                        <span className="text-muted-foreground">הצמדה</span>
-                                                        <span className="font-medium">
-                                                            {formData.linkageType === 'cpi' ? 'למדד' : 'לדולר'}
-                                                            {formData.linkageType === 'cpi' && formData.linkageSubType === 'known' && ' (ידוע)'}
-                                                            {formData.linkageType === 'cpi' && formData.linkageSubType === 'respect_of' && ' (בגין)'}
-                                                        </span>
-                                                    </div>
-                                                    {(formData.linkageCeiling || formData.linkageFloor) && (
-                                                        <div className="flex justify-between flex-row-reverse border-b border-border/50 pb-2">
-                                                            <span className="text-muted-foreground">הגבלות</span>
-                                                            <span className="font-medium text-xs">
-                                                                {formData.linkageCeiling && `תקרה: ${formData.linkageCeiling}% `}
-                                                                {formData.linkageFloor && `רצפה: ${formData.linkageFloor}% `}
-                                                            </span>
+                                            {/* Section 2: Parties Involved */}
+                                            <div className="bg-secondary/10 p-4 rounded-xl space-y-3">
+                                                <h4 className="font-bold text-sm text-primary flex items-center gap-2 flex-row-reverse border-b border-border/50 pb-2 mb-3">
+                                                    <User className="w-4 h-4" /> {t('partiesInvolved')}
+                                                </h4>
+                                                <div className="space-y-4">
+                                                    {formData.tenants.map((tenant, idx) => (
+                                                        <div key={idx} className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm bg-white/50 p-2 rounded-lg">
+                                                            <span className="text-muted-foreground font-bold">{t('tenant')} {formData.tenants.length > 1 ? idx + 1 : ''}</span>
+                                                            <span className="font-bold">{tenant.name || '-'}</span>
+
+                                                            <span className="text-muted-foreground">{t('idNumber')}</span>
+                                                            <span className="font-medium">{tenant.id_number || '-'}</span>
+
+                                                            <span className="text-muted-foreground">{t('phone')}</span>
+                                                            <span className="font-medium">{tenant.phone || '-'}</span>
+
+                                                            <span className="text-muted-foreground">{t('email')}</span>
+                                                            <span className="font-medium">{tenant.email || '-'}</span>
+                                                        </div>
+                                                    ))}
+                                                    {formData.guarantorsInfo && (
+                                                        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm border-t border-border/30 pt-2">
+                                                            <span className="text-muted-foreground">{t('guarantors')}</span>
+                                                            <span className="font-medium whitespace-pre-line">{formData.guarantorsInfo}</span>
                                                         </div>
                                                     )}
-                                                </>
-                                            )}
-                                            <div className="flex justify-between flex-row-reverse">
-                                                <span className="text-muted-foreground">תשלום</span>
-                                                <span className="font-medium">{formData.paymentMethod} ({formData.paymentFrequency})</span>
+                                                </div>
                                             </div>
-                                            <div className="grid grid-cols-2 gap-3 text-sm">
-                                                <div className="text-muted-foreground">{lang === 'he' ? 'פיקדון' : 'Deposit Amount'}:</div>
-                                                <div className="font-medium">{formData.securityDeposit ? `₪${formData.securityDeposit}` : '-'}</div>
-                                                <div className="text-muted-foreground">ערבויות:</div>
-                                                <div className="font-medium">{formData.guarantees || '-'}</div>
-                                                <div className="text-muted-foreground">בעלי חיים:</div>
-                                                <div className="font-medium">{formData.petsAllowed === 'true' ? 'מותר' : 'אסור'}</div>
+
+                                            {/* Section 3: Lease Timeline & Terms */}
+                                            <div className="bg-secondary/10 p-4 rounded-xl space-y-3">
+                                                <h4 className="font-bold text-sm text-primary flex items-center gap-2 flex-row-reverse border-b border-border/50 pb-2 mb-3">
+                                                    <Calendar className="w-4 h-4" /> {t('leaseTerms')}
+                                                </h4>
+                                                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                                                    <span className="text-muted-foreground">{t('startDate')}</span>
+                                                    <span className="font-medium">{formatDate(formData.startDate)}</span>
+
+                                                    <span className="text-muted-foreground">{t('endDate')}</span>
+                                                    <span className="font-medium">{formatDate(formData.endDate)}</span>
+
+                                                    <span className="text-muted-foreground">{t('signingDate')}</span>
+                                                    <span className="font-medium">{formData.signingDate ? formatDate(formData.signingDate) : '-'}</span>
+
+                                                    <span className="text-muted-foreground">{t('optionPeriods')}</span>
+                                                    <span className="font-medium">{formData.optionPeriods.length > 0 ? `${formData.optionPeriods.length} ${t('periods')}` : t('no')}</span>
+
+                                                    {formData.optionPeriods.map((period, idx) => (
+                                                        <div key={idx} className="contents text-xs">
+                                                            <span className="text-muted-foreground pr-4 border-r border-border/30 flex items-center h-full">└ {t('option')} {idx + 1}</span>
+                                                            <span className="font-medium py-1">
+                                                                {formatDate(period.endDate)} {period.rentAmount ? `(₪${formatNumber(period.rentAmount)})` : ''}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            {/* Section 4: Financial & Linkage Details */}
+                                            <div className="bg-secondary/10 p-4 rounded-xl space-y-3">
+                                                <h4 className="font-bold text-sm text-primary flex items-center gap-2 flex-row-reverse border-b border-border/50 pb-2 mb-3">
+                                                    <SettingsIcon className="w-4 h-4" /> {t('financials')}
+                                                </h4>
+                                                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                                                    <span className="text-muted-foreground">{t('monthlyRent')}</span>
+                                                    <span className="font-bold text-lg text-primary">₪{formatNumber(formData.rent || '0')}</span>
+
+                                                    {formData.rentSteps.length > 0 && (
+                                                        <div className="col-span-2 space-y-1 mb-2">
+                                                            <div className="text-xs text-muted-foreground mb-1">{t('rentSteps')}:</div>
+                                                            {formData.rentSteps.map((step, idx) => (
+                                                                <div key={idx} className="flex justify-between flex-row-reverse text-xs bg-white/30 p-1 px-2 rounded">
+                                                                    <span>{step.startDate ? formatDate(step.startDate) : '-'}:</span>
+                                                                    <span className="font-bold">₪{formatNumber(step.amount)}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+
+                                                    <span className="text-muted-foreground">{t('paymentFrequency')}</span>
+                                                    <span className="font-medium">
+                                                        {(() => {
+                                                            const map: any = { 'monthly': 'monthly', 'bimonthly': 'bimonthly', 'quarterly': 'quarterly', 'semi_annually': 'semiAnnually', 'yearly': 'annually' };
+                                                            return t(map[formData.paymentFrequency] || formData.paymentFrequency as any);
+                                                        })()}
+                                                    </span>
+
+                                                    <span className="text-muted-foreground">{t('paymentMethod')}</span>
+                                                    <span className="font-medium">
+                                                        {(() => {
+                                                            const map: any = { 'bank_transfer': 'transfer', 'check': 'check', 'cash': 'cash', 'bit': 'bit', 'paybox': 'paybox', 'credit_card': 'creditCard', 'other': 'other' };
+                                                            return t(map[formData.paymentMethod] || formData.paymentMethod as any);
+                                                        })()}
+                                                    </span>
+
+                                                    <span className="text-muted-foreground">{t('linkageType')}</span>
+                                                    <span className="font-medium">
+                                                        {formData.linkageType === 'none' ? t('notLinked') :
+                                                            formData.linkageType === 'cpi' ? t('linkedToCpi') :
+                                                                formData.linkageType === 'usd' ? t('linkedToUsd') :
+                                                                    formData.linkageType === 'eur' ? t('linkedToEur') : formData.linkageType}
+                                                    </span>
+
+                                                    {formData.linkageType !== 'none' && (
+                                                        <div className="col-span-2 grid grid-cols-2 gap-x-4 gap-y-1 mt-1 border-t border-border/20 pt-1">
+                                                            <span className="text-muted-foreground text-xs pr-4">└ {t('indexSubType')}</span>
+                                                            <span className="font-medium text-xs">
+                                                                {formData.linkageSubType === 'known' ? t('knownIndex') :
+                                                                    formData.linkageSubType === 'respect_of' ? t('inRespectOf') :
+                                                                        formData.linkageSubType === 'base' ? t('baseIndexValue') : formData.linkageSubType}
+                                                            </span>
+
+                                                            <span className="text-muted-foreground text-xs pr-4">└ {t('baseIndexDate')}</span>
+                                                            <span className="font-medium text-xs">{formData.baseIndexDate ? formatDate(formData.baseIndexDate) : '-'}</span>
+
+                                                            {(formData.linkageCeiling || formData.linkageFloor) && (
+                                                                <>
+                                                                    <span className="text-muted-foreground text-xs pr-4">└ {t('capCeiling')}</span>
+                                                                    <span className="font-medium text-xs">
+                                                                        {formData.linkageCeiling && `${formData.linkageCeiling}% `}
+                                                                        {formData.linkageFloor && `(${t('floorIndex')})`}
+                                                                    </span>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    )}
+
+                                                    <span className="text-muted-foreground">{t('securityDeposit')}</span>
+                                                    <span className="font-medium">{formData.securityDeposit ? `₪${formatNumber(formData.securityDeposit)}` : '-'}</span>
+
+                                                    <span className="text-muted-foreground">{t('petsAllowed')}</span>
+                                                    <span className="font-medium">{formData.petsAllowed === 'true' ? t('yes') : t('no')}</span>
+                                                </div>
                                             </div>
                                         </div>
 
