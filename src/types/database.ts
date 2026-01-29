@@ -93,7 +93,7 @@ export interface UserStorageUsage {
 export type ConfidenceLevel = 'high' | 'medium' | 'low';
 
 export interface ExtractedField {
-    fieldName: keyof Omit<Contract, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'status' | 'contract_file_url' | 'contract_file_name' | 'ai_extracted' | 'ai_extraction_data'> | 'buildingNum' | 'aptNum' | 'paymentFrequency' | 'tenantName' | 'tenantId' | 'tenantEmail' | 'tenantPhone' | 'landlordName' | 'landlordId' | 'landlordPhone' | 'address' | 'city' | 'street' | 'rooms' | 'floor' | 'hasParking' | 'hasStorage' | 'size' | 'rent' | 'paymentDay' | 'securityDeposit' | 'guaranteeType' | 'startDate' | 'endDate' | 'signingDate' | 'linkageType' | 'indexCalculationMethod' | 'baseIndexDate' | 'baseIndexValue' | 'indexLimitType' | 'renewalOption' | 'petsAllowed' | 'guarantorsInfo' | 'specialClauses';
+    fieldName: keyof Omit<Contract, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'status' | 'contract_file_url' | 'contract_file_name' | 'ai_extracted' | 'ai_extraction_data'> | 'linkageCeiling' | 'buildingNum' | 'aptNum' | 'paymentFrequency' | 'tenantName' | 'tenantId' | 'tenantEmail' | 'tenantPhone' | 'landlordName' | 'landlordId' | 'landlordPhone' | 'address' | 'city' | 'street' | 'rooms' | 'floor' | 'hasParking' | 'hasStorage' | 'size' | 'rent' | 'paymentDay' | 'securityDeposit' | 'guaranteeType' | 'startDate' | 'endDate' | 'signingDate' | 'linkageType' | 'indexCalculationMethod' | 'baseIndexDate' | 'baseIndexValue' | 'indexLimitType' | 'renewalOption' | 'petsAllowed' | 'guarantorsInfo' | 'specialClauses';
     extractedValue: string | number | null | boolean | any;
     sourceText?: string; // Actual excerpt from contract
     confidence: ConfidenceLevel;

@@ -698,6 +698,11 @@ export type TranslationKeys =
     | 'linkageStatus'
     | 'calculatingProjection'
     | 'backToDashboard'
+    | 'appearance'
+    | 'theme'
+    | 'chooseTheme'
+    | 'chooseLanguage'
+    | 'preferencesAndAccount'
     ;
 
 export const translations: Record<string, Record<TranslationKeys, string>> = {
@@ -1182,6 +1187,11 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         profile: 'פרופיל',
         notifications: 'התראות',
         privacySecurity: 'פרטיות ואבטחה',
+        appearance: 'נראות אפליקציה',
+        chooseTheme: 'בחר ערכת נושא להצגה',
+        chooseLanguage: 'בחר שפת ממשק',
+        preferencesAndAccount: 'העדפות וחשבון',
+        theme: 'עיצוב',
 
         // Upgrade / Pricing
         unlockPotential: 'ממש את הפוטנציאל המלא של RentMate',
@@ -1978,6 +1988,11 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         profile: 'Profile',
         notifications: 'Notifications',
         privacySecurity: 'Privacy & Security',
+        appearance: 'App Appearance',
+        theme: 'Theme',
+        chooseTheme: 'Choose your preferred theme',
+        chooseLanguage: 'Choose your interface language',
+        preferencesAndAccount: 'Preferences & Account',
 
         // Legacy Migrated
         sendMessage: 'Send Message',

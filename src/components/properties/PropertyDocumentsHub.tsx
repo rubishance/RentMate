@@ -18,59 +18,68 @@ type TabType = 'media' | 'utilities' | 'maintenance' | 'documents' | 'checks';
 
 export function PropertyDocumentsHub({ property, readOnly }: PropertyDocumentsHubProps) {
     const { t } = useTranslation();
-    const [activeTab, setActiveTab] = useState<TabType>('media');
+    const [activeView, setActiveView] = useState<TabType | null>(null);
 
-    const tabs = [
-        { id: 'media' as TabType, label: t('mediaStorage'), icon: ImageIcon, color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-900/10' },
-        { id: 'utilities' as TabType, label: t('utilitiesStorage'), icon: FileText, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-900/10' },
-        { id: 'maintenance' as TabType, label: t('maintenanceStorage'), icon: Wrench, color: 'text-sky-600', bg: 'bg-sky-50 dark:bg-sky-900/10' },
-        { id: 'documents' as TabType, label: t('documentsStorage'), icon: FileStack, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-900/10' },
-        { id: 'checks' as TabType, label: t('checksStorage'), icon: Banknote, color: 'text-pink-600', bg: 'bg-pink-50 dark:bg-pink-900/10' },
+    const categories = [
+        { id: 'media' as TabType, label: t('mediaStorage'), icon: ImageIcon, color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-900/20', count: '12' },
+        { id: 'utilities' as TabType, label: t('utilitiesStorage'), icon: FileText, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-900/20', count: '3' },
+        { id: 'maintenance' as TabType, label: t('maintenanceStorage'), icon: Wrench, color: 'text-sky-600', bg: 'bg-sky-50 dark:bg-sky-900/20', count: '5' },
+        { id: 'documents' as TabType, label: t('documentsStorage'), icon: FileStack, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-900/20', count: '8' },
+        { id: 'checks' as TabType, label: t('checksStorage'), icon: Banknote, color: 'text-pink-600', bg: 'bg-pink-50 dark:bg-pink-900/20', count: '0' },
     ];
 
-    return (
-        <div className="flex flex-col h-full">
-            {/* Tab Navigation */}
-            <div className="flex border-b border-border dark:border-gray-700 bg-white dark:bg-gray-800 overflow-x-auto">
-                {tabs.map((tab) => {
-                    const Icon = tab.icon;
-                    const isActive = activeTab === tab.id;
-                    return (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`flex-1 min-w-[80px] flex flex-col items-center justify-center gap-1 group px-2 py-4 text-xs font-bold transition-all relative ${isActive
-                                ? 'text-primary dark:text-blue-400'
-                                : 'text-muted-foreground hover:text-gray-900 dark:hover:text-gray-200'
-                                }`}
-                        >
-                            <div className={`p-2.5 rounded-2xl transition-all duration-300 ${isActive ? `${tab.bg} scale-110 shadow-sm` : 'bg-transparent group-hover:bg-muted'}`}>
-                                <Icon className={`w-5 h-5 ${isActive ? tab.color : 'text-muted-foreground'}`} />
-                            </div>
-                            <span className="hidden sm:inline mt-1 font-semibold">{tab.label}</span>
-                            {isActive && (
-                                <div className="absolute bottom-0 left-0 w-full h-1 bg-primary dark:bg-blue-400 rounded-t-full shadow-[0_-2px_6px_rgba(59,130,246,0.2)]" />
-                            )}
-                        </button>
-                    );
-                })}
+    if (activeView) {
+        return (
+            <div className="h-full flex flex-col">
+                <div className="flex items-center gap-2 p-4 border-b border-border dark:border-gray-700 bg-white dark:bg-gray-800">
+                    <button
+                        onClick={() => setActiveView(null)}
+                        className="flex items-center gap-1 text-sm font-bold text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                        ← {t('back')}
+                    </button>
+                    <div className="h-4 w-[1px] bg-border mx-2" />
+                    <span className="font-bold">{categories.find(c => c.id === activeView)?.label}</span>
+                </div>
+                <div className="flex-1 overflow-y-auto bg-gray-50/50 dark:bg-foreground/50">
+                    {activeView === 'media' && <MediaGallery property={property} readOnly={readOnly} />}
+                    {activeView === 'utilities' && <UtilityBillsManager property={property} readOnly={readOnly} />}
+                    {activeView === 'maintenance' && <MaintenanceRecords property={property} readOnly={readOnly} />}
+                    {activeView === 'documents' && <MiscDocuments property={property} readOnly={readOnly} />}
+                    {activeView === 'checks' && <ChecksManager property={property} readOnly={readOnly} />}
+                </div>
             </div>
+        );
+    }
 
-            {/* Storage Usage Info */}
+    return (
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+            {categories.map((cat) => {
+                const Icon = cat.icon;
+                return (
+                    <button
+                        key={cat.id}
+                        onClick={() => setActiveView(cat.id)}
+                        className="flex flex-col items-start p-5 rounded-3xl border border-slate-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:shadow-lg transition-all text-left gap-4 group"
+                    >
+                        <div className={`p-3 rounded-2xl ${cat.bg} group-hover:scale-110 transition-transform duration-300`}>
+                            <Icon className={`w-6 h-6 ${cat.color}`} />
+                        </div>
+                        <div>
+                            <div className="font-black text-lg tracking-tight text-foreground">{cat.label}</div>
+                            <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider opacity-60">
+                                {t('viewDetails') || 'View Details'}
+                            </div>
+                        </div>
+                    </button>
+                );
+            })}
+            {/* Storage Usage Widget as a full-width card at bottom if needed, or keep separate */}
             {!readOnly && (
-                <div className="p-4 bg-white dark:bg-gray-800 border-b border-border dark:border-gray-700">
+                <div className="col-span-2 lg:col-span-3 mt-4">
                     <StorageUsageWidget />
                 </div>
             )}
-
-            {/* Tab Content */}
-            <div className="flex-1 overflow-y-auto bg-gray-50/50 dark:bg-foreground/50">
-                {activeTab === 'media' && <MediaGallery property={property} readOnly={readOnly} />}
-                {activeTab === 'utilities' && <UtilityBillsManager property={property} readOnly={readOnly} />}
-                {activeTab === 'maintenance' && <MaintenanceRecords property={property} readOnly={readOnly} />}
-                {activeTab === 'documents' && <MiscDocuments property={property} readOnly={readOnly} />}
-                {activeTab === 'checks' && <ChecksManager property={property} readOnly={readOnly} />}
-            </div>
         </div>
     );
 }

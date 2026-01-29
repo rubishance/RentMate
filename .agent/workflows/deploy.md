@@ -34,6 +34,7 @@ Before any deployment:
 ## 🚀 Pre-Deploy Checklist
 
 ### Code Quality
+- [ ] Code review performed and marked as "OK"
 - [ ] No TypeScript errors (`npx tsc --noEmit`)
 - [ ] ESLint passing (`npx eslint .`)
 - [ ] All tests passing (`npm test`)
@@ -85,6 +86,7 @@ Before any deployment:
 ┌─────────────────┐
 │  Deploy to      │
 │  platform       │
+│  (WAIT FOR USER) │
 └────────┬────────┘
          │
          ▼

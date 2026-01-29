@@ -17,7 +17,7 @@ export interface DatePickerProps {
     minDate?: Date;
     maxDate?: Date;
     placeholder?: string;
-    label?: string;
+    label?: React.ReactNode;
     className?: string;
     error?: boolean;
     readonly?: boolean;

@@ -133,6 +133,14 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete }:
         }
     };
 
+    const scrollToSection = (id: string) => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            setActiveTab(id as TabType); // Use activeTab state to track current section for visual feedback
+        }
+    };
+
     return (
         <div className="flex flex-col h-full bg-slate-50 dark:bg-black">
             {/* 1. Header & Cover */}
@@ -153,34 +161,74 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete }:
                 <div className="px-6 -mt-12 relative z-10 space-y-4">
                     <div className="flex justify-between items-start">
                         <div className="flex-1">
+                            {/* Status Badge */}
                             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/50 dark:bg-black/50 backdrop-blur-md rounded-full border border-white/20 dark:border-white/10 text-[10px] font-black uppercase tracking-widest mb-2">
                                 <div className={cn("w-1.5 h-1.5 rounded-full", property.status === 'Occupied' ? "bg-emerald-500" : "bg-amber-500")} />
                                 {property.status}
                             </div>
+
                             {isEditing ? (
-                                <div className="space-y-2">
-                                    <input
-                                        type="text"
-                                        className="text-3xl font-black tracking-tighter text-foreground bg-white/50 dark:bg-black/50 border border-primary/20 rounded-xl px-2 w-full outline-none focus:ring-2 ring-primary/20"
-                                        value={editedProperty.address}
-                                        onChange={e => setEditedProperty(prev => ({ ...prev, address: e.target.value }))}
-                                        placeholder={t('address')}
-                                    />
-                                    <input
-                                        type="text"
-                                        className="text-muted-foreground font-medium bg-white/50 dark:bg-black/50 border border-primary/20 rounded-xl px-2 w-full outline-none focus:ring-2 ring-primary/20"
-                                        value={editedProperty.city}
-                                        onChange={e => setEditedProperty(prev => ({ ...prev, city: e.target.value }))}
-                                        placeholder={t('city')}
-                                    />
+                                <div className="space-y-4 bg-white/80 dark:bg-black/80 p-4 rounded-2xl border border-primary/20 backdrop-blur-xl">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Address</label>
+                                        <input
+                                            type="text"
+                                            className="text-xl font-black tracking-tighter text-foreground bg-transparent border-b border-primary/20 w-full outline-none focus:border-primary"
+                                            value={editedProperty.address}
+                                            onChange={e => setEditedProperty(prev => ({ ...prev, address: e.target.value }))}
+                                            placeholder={t('address')}
+                                        />
+                                        <input
+                                            type="text"
+                                            className="text-sm font-medium text-muted-foreground bg-transparent border-b border-primary/20 w-full outline-none focus:border-primary"
+                                            value={editedProperty.city}
+                                            onChange={e => setEditedProperty(prev => ({ ...prev, city: e.target.value }))}
+                                            placeholder={t('city')}
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4 pt-2">
+                                        <div>
+                                            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">{t('rooms')}</label>
+                                            <input
+                                                type="number"
+                                                step="0.5"
+                                                className="text-lg font-black bg-transparent border-b border-primary/20 w-full outline-none focus:border-primary"
+                                                value={editedProperty.rooms ?? ''}
+                                                onChange={e => setEditedProperty(prev => ({ ...prev, rooms: parseFloat(e.target.value) || 0 }))}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">{t('sqm')}</label>
+                                            <input
+                                                type="number"
+                                                className="text-lg font-black bg-transparent border-b border-primary/20 w-full outline-none focus:border-primary"
+                                                value={editedProperty.size_sqm ?? ''}
+                                                onChange={e => setEditedProperty(prev => ({ ...prev, size_sqm: parseFloat(e.target.value) || 0 }))}
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             ) : (
-                                <>
-                                    <h1 className="text-3xl font-black tracking-tighter text-foreground leading-none">
-                                        {property.address}
-                                    </h1>
+                                <div className="flex flex-col gap-1">
+                                    <div className="flex flex-col md:flex-row md:items-end gap-2 md:gap-4">
+                                        <h1 className="text-3xl font-black tracking-tighter text-foreground leading-none">
+                                            {property.address}
+                                        </h1>
+                                        {/* Snapshot Info - Inline with Address on Desktop, Below on Mobile */}
+                                        <div className="flex items-center gap-3 text-sm font-bold text-muted-foreground bg-white/50 dark:bg-neutral-900/50 px-3 py-1 rounded-lg border border-slate-100 dark:border-neutral-800 backdrop-blur-sm self-start md:self-auto md:mb-1">
+                                            <div className="flex items-center gap-1.5">
+                                                <span>{property.rooms}</span>
+                                                <span className="text-[10px] uppercase tracking-wider opacity-70">{t('rooms')}</span>
+                                            </div>
+                                            <div className="w-[1px] h-3 bg-current opacity-20" />
+                                            <div className="flex items-center gap-1.5">
+                                                <span>{property.size_sqm}</span>
+                                                <span className="text-[10px] uppercase tracking-wider opacity-70">{t('sqm')}</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <p className="text-muted-foreground font-medium">{property.city}</p>
-                                </>
+                                </div>
                             )}
                         </div>
 
@@ -256,47 +304,61 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete }:
                 </div>
             </div>
 
-            {/* 2. Sticky Tab Bar */}
-            <div className="sticky top-0 z-20 bg-slate-50/80 dark:bg-black/80 backdrop-blur-xl border-b border-border px-6 mt-6">
-                <div className="flex gap-6 overflow-x-auto no-scrollbar">
-                    {tabs.map(tab => {
-                        const Icon = tab.icon;
-                        const isActive = activeTab === tab.id;
-                        return (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id as TabType)}
-                                className={cn(
-                                    "flex items-center gap-2 py-4 text-xs font-black uppercase tracking-widest transition-all border-b-2 relative shrink-0",
-                                    isActive
-                                        ? "text-foreground border-foreground"
-                                        : "text-muted-foreground border-transparent hover:text-foreground/80"
-                                )}
-                            >
-                                <Icon className={cn("w-4 h-4", isActive ? "text-primary" : "opacity-50")} />
-                                {tab.label}
-                            </button>
-                        );
-                    })}
-                </div>
-            </div>
-
-            {/* 3. Content Area */}
-            <div className="flex-1 overflow-y-auto bg-white dark:bg-neutral-900 min-h-0">
-                {activeTab === 'snapshot' && (
-                    <SnapshotTab
-                        property={isEditing ? editedProperty : property}
-                        isEditing={isEditing}
-                        onPropertyChange={setEditedProperty}
-                    />
-                )}
-                {activeTab === 'contracts' && <ContractsTab propertyId={propertyId} />}
-                {activeTab === 'wallet' && <WalletTab property={property} />}
-                {activeTab === 'files' && (
-                    <div className="h-full">
-                        <PropertyDocumentsHub property={property} />
+            {/* 2. Sticky Pill Navigation */}
+            {!isEditing && (
+                <div className="sticky top-0 z-30 px-6 py-4 bg-slate-50/90 dark:bg-black/90 backdrop-blur-xl pointer-events-none">
+                    <div className="flex items-center gap-2 p-1.5 bg-white dark:bg-neutral-900 rounded-full border border-slate-100 dark:border-neutral-800 shadow-sm w-fit pointer-events-auto">
+                        <button onClick={() => scrollToSection('contracts')} className={cn("px-4 py-1.5 rounded-full text-xs font-bold transition-all", activeTab === 'contracts' ? "bg-black dark:bg-white text-white dark:text-black" : "text-muted-foreground hover:text-foreground")}>
+                            {t('contracts')}
+                        </button>
+                        <button onClick={() => scrollToSection('wallet')} className={cn("px-4 py-1.5 rounded-full text-xs font-bold transition-all", activeTab === 'wallet' ? "bg-black dark:bg-white text-white dark:text-black" : "text-muted-foreground hover:text-foreground")}>
+                            {t('financials')}
+                        </button>
+                        <button onClick={() => scrollToSection('files')} className={cn("px-4 py-1.5 rounded-full text-xs font-bold transition-all", activeTab === 'files' ? "bg-black dark:bg-white text-white dark:text-black" : "text-muted-foreground hover:text-foreground")}>
+                            {t('documents')}
+                        </button>
                     </div>
-                )}
+                </div>
+            )}
+
+            {/* 3. Content Area - Scrollable Feed */}
+            <div className="flex-1 overflow-y-auto min-h-0 pb-20">
+                <div className="px-6 space-y-12">
+                    {/* Contracts Section */}
+                    <section id="contracts" className="scroll-mt-24">
+                        <div className="flex items-center gap-2 mb-4 opacity-50">
+                            <FileText className="w-4 h-4" />
+                            <span className="text-xs font-black uppercase tracking-widest">{t('contracts')}</span>
+                        </div>
+                        <ContractsTab propertyId={propertyId} />
+                    </section>
+
+                    {/* Divider */}
+                    <div className="h-[1px] bg-slate-200 dark:bg-neutral-800" />
+
+                    {/* Financials Section */}
+                    <section id="wallet" className="scroll-mt-24">
+                        <div className="flex items-center gap-2 mb-4 opacity-50">
+                            <WalletIcon className="w-4 h-4" />
+                            <span className="text-xs font-black uppercase tracking-widest">{t('financials')}</span>
+                        </div>
+                        <WalletTab property={property} />
+                    </section>
+
+                    {/* Divider */}
+                    <div className="h-[1px] bg-slate-200 dark:bg-neutral-800" />
+
+                    {/* Documents Section */}
+                    <section id="files" className="scroll-mt-24">
+                        <div className="flex items-center gap-2 mb-4 opacity-50">
+                            <FolderIcon className="w-4 h-4" />
+                            <span className="text-xs font-black uppercase tracking-widest">{t('documents')}</span>
+                        </div>
+                        <div className="bg-slate-100/50 dark:bg-neutral-900/50 rounded-3xl border border-slate-200/60 dark:border-neutral-800">
+                            <PropertyDocumentsHub property={property} />
+                        </div>
+                    </section>
+                </div>
             </div>
 
             <ConfirmDeleteModal

@@ -1,5 +1,5 @@
 import { WidgetConfig, DashboardData, WIDGET_REGISTRY } from './WidgetRegistry';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Reorder, useDragControls } from 'framer-motion';
 import { cn } from '../../lib/utils';
 import { GripVertical } from 'lucide-react';
 
@@ -13,9 +13,22 @@ interface DashboardGridProps {
 export function DashboardGrid({ layout, data, isEditing = false, onLayoutChange }: DashboardGridProps) {
     const sortedLayout = [...layout].sort((a, b) => a.order - b.order);
 
+    const handleReorder = (newOrder: WidgetConfig[]) => {
+        if (!onLayoutChange) return;
+        // Update the 'order' property for each widget based on its new index
+        const updatedLayout = newOrder.map((config, index) => ({
+            ...config,
+            order: index
+        }));
+        // Merge back with any widgets that weren't in the reorderable list (e.g. hidden ones)
+        const invisibleWidgets = layout.filter(w => !w.visible);
+        onLayoutChange([...updatedLayout, ...invisibleWidgets]);
+    };
+
     const getSizeClass = (size: string) => {
+        if (isEditing) return 'col-span-1'; // Force single column in edit mode for reliable reordering
         switch (size) {
-            case 'large': return 'col-span-1 lg:col-span-2'; // Full width on large
+            case 'large': return 'col-span-1 lg:col-span-2';
             case 'medium': return 'col-span-1';
             case 'small': return 'col-span-1';
             default: return 'col-span-1';
@@ -23,42 +36,64 @@ export function DashboardGrid({ layout, data, isEditing = false, onLayoutChange 
     };
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-20">
-            <AnimatePresence>
+        <Reorder.Group
+            axis="y"
+            values={sortedLayout.filter(w => w.visible)}
+            onReorder={handleReorder}
+            className={cn(
+                "grid gap-6 pb-20",
+                isEditing ? "grid-cols-1 max-w-2xl mx-auto" : "grid-cols-1 lg:grid-cols-2"
+            )}
+        >
+            <AnimatePresence mode="popLayout">
                 {sortedLayout.filter(w => w.visible).map((widget) => {
                     const WidgetComponent = WIDGET_REGISTRY[widget.widgetId];
                     if (!WidgetComponent) return null;
 
                     return (
-                        <motion.div
+                        <WidgetRow
                             key={widget.id}
-                            layout
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.9 }}
-                            transition={{ duration: 0.3 }}
-                            className={cn(
-                                "relative",
-                                getSizeClass(widget.size)
-                            )}
-                        >
-                            {isEditing && (
-                                <div className="absolute top-4 right-4 z-10 p-2 bg-white/80 dark:bg-black/80 backdrop-blur rounded-full cursor-grab active:cursor-grabbing shadow-sm border border-slate-100 dark:border-neutral-800">
-                                    <GripVertical className="w-4 h-4 text-muted-foreground" />
-                                </div>
-                            )}
-
-                            {/* Widget Container - Can add common styles here if needed */}
-                            <div className={cn(
-                                "h-full",
-                                isEditing && "ring-2 ring-primary ring-offset-2 rounded-[2rem]"
-                            )}>
-                                {WidgetComponent(data)}
-                            </div>
-                        </motion.div>
+                            widget={widget}
+                            data={data}
+                            isEditing={isEditing}
+                            sizeClass={getSizeClass(widget.size)}
+                            onRender={() => WidgetComponent(data)}
+                        />
                     );
                 })}
             </AnimatePresence>
-        </div>
+        </Reorder.Group>
+    );
+}
+
+function WidgetRow({ widget, data, isEditing, sizeClass, onRender }: any) {
+    const controls = useDragControls();
+
+    return (
+        <Reorder.Item
+            value={widget}
+            dragListener={false}
+            dragControls={controls}
+            className={cn(
+                "relative list-none",
+                sizeClass
+            )}
+        >
+            {isEditing && (
+                <div
+                    onPointerDown={(e) => controls.start(e)}
+                    className="absolute top-4 right-4 z-50 p-2 bg-white/95 dark:bg-black/95 backdrop-blur rounded-full cursor-grab active:cursor-grabbing shadow-xl border border-primary/20 dark:border-primary/20 touch-none hover:scale-110 transition-transform"
+                >
+                    <GripVertical className="w-5 h-5 text-primary" />
+                </div>
+            )}
+
+            <div className={cn(
+                "h-full transition-all duration-300",
+                isEditing && "ring-2 ring-primary ring-offset-8 dark:ring-offset-black rounded-[2.5rem] opacity-95 scale-[0.98] pointer-events-none select-none shadow-2xl bg-white dark:bg-neutral-900"
+            )}>
+                {onRender()}
+            </div>
+        </Reorder.Item>
     );
 }

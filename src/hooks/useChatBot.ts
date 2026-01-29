@@ -12,7 +12,7 @@ export function useChatBot() {
     const [isLoading, setIsLoading] = useState(false);
     const [conversationId, setConversationId] = useState<string | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
-    const [isAiMode, setIsAiMode] = useState(false); // Default to menu mode if hybrid is enabled
+    const [isAiMode, setIsAiMode] = useState(true); // Default to chat mode directly
 
     useEffect(() => {
         const initChat = async () => {

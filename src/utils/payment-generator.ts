@@ -168,9 +168,12 @@ export async function generatePaymentSchedule(params: GenerationParams): Promise
                 const effectiveFloor = linkageFloor ?? currentBaseRent;
                 if (amount < effectiveFloor) amount = effectiveFloor;
 
-                // Ceiling
-                if (linkageCeiling && amount > linkageCeiling) {
-                    amount = linkageCeiling;
+                // Ceiling (Maximum % Rise)
+                if (linkageCeiling !== null && linkageCeiling !== undefined) {
+                    const maxAmount = currentBaseRent * (1 + linkageCeiling / 100);
+                    if (amount > maxAmount) {
+                        amount = maxAmount;
+                    }
                 }
             }
         }

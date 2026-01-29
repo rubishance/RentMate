@@ -28,7 +28,9 @@ async function fetchWithRetry(
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
         try {
-            const response = await fetch(url);
+            const response = await fetch(url, {
+                headers: { 'User-Agent': 'RentMate/1.0 (https://rentmate.co.il)' }
+            });
             if (response.ok) {
                 return response;
             }

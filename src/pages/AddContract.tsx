@@ -132,6 +132,7 @@ export function AddContract() {
 
         // UI State
         hasLinkage: false,
+        hasLinkageCeiling: false,
         needsPainting: false,
     });
 
@@ -327,7 +328,11 @@ export function AddContract() {
                 return;
             }
         }
-        if (step === 2 && formData.startDate && formData.endDate) {
+        if (step === 2) {
+            if (!formData.startDate || !formData.endDate) {
+                alert('תאריך התחלה ותאריך סיום הם שדות חובה');
+                return;
+            }
             await checkOverlap(selectedPropertyId, formData.startDate, formData.endDate);
             // The checkOverlap function sets showOverlapWarning internally if needed.
         }
@@ -392,7 +397,7 @@ export function AddContract() {
                     payment_day: parseInt(formData.paymentDay) || 1,
                     linkage_type: (!formData.linkageType || formData.linkageType === 'none') ? 'none' : formData.linkageType,
                     linkage_sub_type: formData.linkageType === 'cpi' ? formData.linkageSubType : null,
-                    linkage_ceiling: parseFloat(formData.linkageCeiling) || null,
+                    linkage_ceiling: formData.hasLinkageCeiling ? parseFloat(formData.linkageCeiling) || null : null,
                     linkage_floor: parseFloat(formData.linkageFloor) || null,
                     base_index_date: formData.baseIndexDate || null,
                     base_index_value: parseFloat(formData.baseIndexValue) || null,
@@ -431,7 +436,7 @@ export function AddContract() {
                         linkageSubType: formData.linkageSubType as any,
                         baseIndexDate: formData.baseIndexDate || null,
                         baseIndexValue: parseFloat(formData.baseIndexValue) || null,
-                        linkageCeiling: parseFloat(formData.linkageCeiling) || null,
+                        linkageCeiling: formData.hasLinkageCeiling ? parseFloat(formData.linkageCeiling) || null : null,
 
                         linkageFloor: parseFloat(formData.linkageFloor) || null,
                         rent_periods: formData.rentSteps.map(s => ({
@@ -670,6 +675,10 @@ export function AddContract() {
                 case 'indexCalculationMethod': newFormData.linkageSubType = val; break;
                 case 'baseIndexDate': newFormData.baseIndexDate = val; break;
                 case 'baseIndexValue': newFormData.baseIndexValue = val; break;
+                case 'linkageCeiling':
+                    newFormData.linkageCeiling = val;
+                    newFormData.hasLinkageCeiling = !!val && val !== '0';
+                    break;
 
                 // Security
                 case 'securityDeposit': newFormData.securityDeposit = val; break;
@@ -1189,6 +1198,82 @@ export function AddContract() {
                                                 />
                                             </div>
                                         </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <DatePicker
+                                                    label={<span>{t('startDate')} <span className="text-red-500">*</span></span>}
+                                                    value={formData.startDate ? parseISO(formData.startDate) : undefined}
+                                                    onChange={(date) => {
+                                                        const startDateStr = date ? format(date, 'yyyy-MM-dd') : '';
+                                                        const prevStartDateStr = formData.startDate;
+                                                        const prevEndDateStr = formData.endDate;
+
+                                                        let newEndDateStr = prevEndDateStr;
+
+                                                        // Check if the current end date was auto-calculated from the previous start date
+                                                        let wasAutoCalculated = false;
+                                                        if (prevStartDateStr && prevEndDateStr) {
+                                                            const prevStart = parseISO(prevStartDateStr);
+                                                            if (isValid(prevStart)) {
+                                                                const expectedPrevEnd = format(subDays(addYears(prevStart, 1), 1), 'yyyy-MM-dd');
+                                                                wasAutoCalculated = expectedPrevEnd === prevEndDateStr;
+                                                            }
+                                                        }
+
+                                                        // Update end date if it's empty OR it was auto-calculated previously
+                                                        if (date && (!prevEndDateStr || wasAutoCalculated)) {
+                                                            const calculatedEnd = subDays(addYears(date, 1), 1);
+                                                            newEndDateStr = format(calculatedEnd, 'yyyy-MM-dd');
+                                                        }
+
+                                                        setFormData({
+                                                            ...formData,
+                                                            startDate: startDateStr,
+                                                            endDate: newEndDateStr
+                                                        });
+                                                    }}
+                                                    disabledDays={blockedIntervals}
+                                                    error={hasOverlap}
+                                                    placeholder={t('selectDate')}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <DatePicker
+                                                    label={<span>{t('endDate')} <span className="text-red-500">*</span></span>}
+                                                    value={formData.endDate ? parseISO(formData.endDate) : undefined}
+                                                    onChange={(date) => setFormData({ ...formData, endDate: date ? format(date, 'yyyy-MM-dd') : '' })}
+                                                    minDate={formData.startDate ? parseISO(formData.startDate) : undefined}
+                                                    disabledDays={blockedIntervals}
+                                                    placeholder={t('selectDate')}
+                                                />
+                                                {formData.startDate && formData.endDate && (
+                                                    <div className="text-xs text-muted-foreground bg-secondary/30 p-2 rounded-lg flex items-center gap-2">
+                                                        <Calendar className="w-3 h-3" />
+                                                        <span>
+                                                            {t('contractDuration')}:
+                                                            <span className="font-bold text-foreground">
+                                                                {(() => {
+                                                                    const start = new Date(formData.startDate);
+                                                                    const end = new Date(formData.endDate);
+                                                                    const diffTime = Math.abs(end.getTime() - start.getTime());
+                                                                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Include end date
+
+                                                                    const months = Math.floor(diffDays / 30);
+                                                                    const years = Math.floor(months / 12);
+                                                                    const remainingMonths = months % 12;
+
+                                                                    if (years > 0) return ` ${years} ${t('years')}${remainingMonths > 0 ? ` ו-${remainingMonths} ${t('months')}` : ''}`;
+                                                                    if (months > 0) return ` ${months} ${t('months')}`;
+                                                                    return ` ${diffDays} ימים`;
+                                                                })()}
+                                                            </span>
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
                                         <div className="space-y-3">
                                             <div className="flex items-center justify-between">
                                                 <label className="text-sm font-medium flex items-center gap-2">
@@ -1299,81 +1384,6 @@ export function AddContract() {
                                                         </div>
                                                     </div>
                                                 ))}
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <DatePicker
-                                                    label={t('startDate')}
-                                                    value={formData.startDate ? parseISO(formData.startDate) : undefined}
-                                                    onChange={(date) => {
-                                                        const startDateStr = date ? format(date, 'yyyy-MM-dd') : '';
-                                                        const prevStartDateStr = formData.startDate;
-                                                        const prevEndDateStr = formData.endDate;
-
-                                                        let newEndDateStr = prevEndDateStr;
-
-                                                        // Check if the current end date was auto-calculated from the previous start date
-                                                        let wasAutoCalculated = false;
-                                                        if (prevStartDateStr && prevEndDateStr) {
-                                                            const prevStart = parseISO(prevStartDateStr);
-                                                            if (isValid(prevStart)) {
-                                                                const expectedPrevEnd = format(subDays(addYears(prevStart, 1), 1), 'yyyy-MM-dd');
-                                                                wasAutoCalculated = expectedPrevEnd === prevEndDateStr;
-                                                            }
-                                                        }
-
-                                                        // Update end date if it's empty OR it was auto-calculated previously
-                                                        if (date && (!prevEndDateStr || wasAutoCalculated)) {
-                                                            const calculatedEnd = subDays(addYears(date, 1), 1);
-                                                            newEndDateStr = format(calculatedEnd, 'yyyy-MM-dd');
-                                                        }
-
-                                                        setFormData({
-                                                            ...formData,
-                                                            startDate: startDateStr,
-                                                            endDate: newEndDateStr
-                                                        });
-                                                    }}
-                                                    disabledDays={blockedIntervals}
-                                                    error={hasOverlap}
-                                                    placeholder={t('selectDate')}
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <DatePicker
-                                                    label={t('endDate')}
-                                                    value={formData.endDate ? parseISO(formData.endDate) : undefined}
-                                                    onChange={(date) => setFormData({ ...formData, endDate: date ? format(date, 'yyyy-MM-dd') : '' })}
-                                                    minDate={formData.startDate ? parseISO(formData.startDate) : undefined}
-                                                    disabledDays={blockedIntervals}
-                                                    placeholder={t('selectDate')}
-                                                />
-                                                {formData.startDate && formData.endDate && (
-                                                    <div className="text-xs text-muted-foreground bg-secondary/30 p-2 rounded-lg flex items-center gap-2">
-                                                        <Calendar className="w-3 h-3" />
-                                                        <span>
-                                                            {t('contractDuration')}:
-                                                            <span className="font-bold text-foreground">
-                                                                {(() => {
-                                                                    const start = new Date(formData.startDate);
-                                                                    const end = new Date(formData.endDate);
-                                                                    const diffTime = Math.abs(end.getTime() - start.getTime());
-                                                                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Include end date
-
-                                                                    const months = Math.floor(diffDays / 30);
-                                                                    const years = Math.floor(months / 12);
-                                                                    const remainingMonths = months % 12;
-
-                                                                    if (years > 0) return ` ${years} ${t('years')}${remainingMonths > 0 ? ` ו-${remainingMonths} ${t('months')}` : ''}`;
-                                                                    if (months > 0) return ` ${months} ${t('months')}`;
-                                                                    return ` ${diffDays} ימים`;
-                                                                })()}
-                                                            </span>
-                                                        </span>
-                                                    </div>
-                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -1558,7 +1568,7 @@ export function AddContract() {
                                                         animate={{ height: 'auto', opacity: 1 }}
                                                         className="space-y-4 pt-4 border-t border-border/50"
                                                     >
-                                                        {formData.linkageType === 'cpi' && (
+                                                        {['cpi', 'housing', 'construction'].includes(formData.linkageType) && (
                                                             <div className="space-y-2">
                                                                 <label className="text-sm font-medium">{t('indexType')}</label>
                                                                 <div className="flex bg-secondary/30 p-1 rounded-xl gap-1">
@@ -1644,30 +1654,51 @@ export function AddContract() {
                                                             )}
                                                         </div>
 
-                                                        <div className="grid grid-cols-2 gap-4">
-                                                            <div className="space-y-2">
-                                                                <label className="text-sm font-medium flex items-center gap-2">{t('ceiling')} <ConfidenceDot field="linkageCeiling" /></label>
-                                                                <div className="relative">
-                                                                    <input
-                                                                        type="number"
-                                                                        value={formData.linkageCeiling}
-                                                                        onChange={(e) => setFormData({ ...formData, linkageCeiling: e.target.value })}
-                                                                        className="w-full p-2.5 pl-8 bg-background border border-border rounded-xl text-sm"
-                                                                    />
-                                                                    <span className="absolute left-3 top-2.5 text-muted-foreground text-xs">%</span>
+                                                        <div className="space-y-4">
+                                                            <div className="flex gap-4">
+                                                                <div className="flex-1 space-y-2 pt-7">
+                                                                    <label className="flex items-center gap-2 cursor-pointer p-2 border border-border rounded-xl hover:bg-secondary/50 transition-colors">
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            checked={formData.hasLinkageCeiling}
+                                                                            onChange={(e) => setFormData({ ...formData, hasLinkageCeiling: e.target.checked, linkageCeiling: e.target.checked ? formData.linkageCeiling : '' })}
+                                                                            className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                                                        />
+                                                                        <span className="text-sm font-medium flex items-center gap-2">תקרה (מקסימום %)</span>
+                                                                    </label>
+                                                                </div>
+                                                                <div className="flex-1 space-y-2 pt-7">
+                                                                    <label className="flex items-center gap-2 cursor-pointer p-2 border border-border rounded-xl hover:bg-secondary/50 transition-colors">
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            checked={formData.linkageFloor === '0'}
+                                                                            onChange={(e) => setFormData({ ...formData, linkageFloor: e.target.checked ? '0' : '' })}
+                                                                            className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                                                        />
+                                                                        <span className="text-sm font-medium flex items-center gap-2">{t('floorIndex')} <ConfidenceDot field="linkageFloor" /></span>
+                                                                    </label>
                                                                 </div>
                                                             </div>
-                                                            <div className="space-y-2 pt-7">
-                                                                <label className="flex items-center gap-2 cursor-pointer p-2 border border-border rounded-xl hover:bg-secondary/50 transition-colors">
-                                                                    <input
-                                                                        type="checkbox"
-                                                                        checked={formData.linkageFloor === '0'}
-                                                                        onChange={(e) => setFormData({ ...formData, linkageFloor: e.target.checked ? '0' : '' })}
-                                                                        className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-                                                                    />
-                                                                    <span className="text-sm font-medium flex items-center gap-2">{t('floorIndex')} <ConfidenceDot field="linkageFloor" /></span>
-                                                                </label>
-                                                            </div>
+
+                                                            {formData.hasLinkageCeiling && (
+                                                                <motion.div
+                                                                    initial={{ height: 0, opacity: 0 }}
+                                                                    animate={{ height: 'auto', opacity: 1 }}
+                                                                    className="space-y-2"
+                                                                >
+                                                                    <label className="text-sm font-medium flex items-center gap-2">אחוז עליה מקסימלי <ConfidenceDot field="linkageCeiling" /></label>
+                                                                    <div className="relative">
+                                                                        <input
+                                                                            type="number"
+                                                                            value={formData.linkageCeiling}
+                                                                            onChange={(e) => setFormData({ ...formData, linkageCeiling: e.target.value })}
+                                                                            className="w-full p-2.5 pl-8 bg-background border border-border rounded-xl text-sm"
+                                                                            placeholder="5"
+                                                                        />
+                                                                        <span className="absolute left-3 top-2.5 text-muted-foreground text-xs">%</span>
+                                                                    </div>
+                                                                </motion.div>
+                                                            )}
                                                         </div>
                                                     </motion.div>
                                                 )}

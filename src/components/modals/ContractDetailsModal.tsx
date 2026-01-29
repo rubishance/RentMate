@@ -496,7 +496,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                 <option value="eur">{t('linkedToEur')}</option>
                                             </select>
                                         </div>
-                                        {formData.linkage_type !== 'none' && (
+                                        {['cpi', 'housing', 'construction'].includes(formData.linkage_type) && (
                                             <div className="space-y-1.5">
                                                 <label className="text-xs font-medium text-muted-foreground uppercase">Sub-Type</label>
                                                 <select

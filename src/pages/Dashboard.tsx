@@ -48,7 +48,18 @@ export function Dashboard() {
     const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
 
     // Widget Layout State
-    const [layout, setLayout] = useState<WidgetConfig[]>(DEFAULT_WIDGET_LAYOUT);
+    const [layout, setLayout] = useState<WidgetConfig[]>(() => {
+        const saved = localStorage.getItem('dashboard_layout_v1');
+        if (saved) {
+            try {
+                return JSON.parse(saved);
+            } catch (e) {
+                return DEFAULT_WIDGET_LAYOUT;
+            }
+        }
+        return DEFAULT_WIDGET_LAYOUT;
+    });
+
     const [isEditingLayout, setIsEditingLayout] = useState(false);
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [reportsEnabled, setReportsEnabled] = useState(false);
@@ -58,10 +69,16 @@ export function Dashboard() {
         const recoveryDone = localStorage.getItem('recovery_done_v4');
         if (!recoveryDone) {
             clear();
+            localStorage.removeItem('dashboard_layout_v1');
             localStorage.setItem('recovery_done_v4', 'true');
         }
         loadDashboardData();
     }, []);
+
+    const handleLayoutChange = (newLayout: WidgetConfig[]) => {
+        setLayout(newLayout);
+        localStorage.setItem('dashboard_layout_v1', JSON.stringify(newLayout));
+    };
 
     async function loadDashboardData() {
         const cached = get<any>(CACHE_KEY);
@@ -261,7 +278,7 @@ export function Dashboard() {
                 layout={layout}
                 data={dashboardData}
                 isEditing={isEditingLayout}
-                onLayoutChange={setLayout}
+                onLayoutChange={handleLayoutChange}
             />
 
             {/* Bottom System Status Section */}

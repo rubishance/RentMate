@@ -9,6 +9,9 @@ import { useTranslation } from '../hooks/useTranslation';
 import { PrivacySecurityModal } from '../components/modals/PrivacySecurityModal';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ThemeToggle } from '../components/common/ThemeToggle';
+import { LanguageToggle } from '../components/common/LanguageToggle';
+import { Palette } from 'lucide-react';
 
 export function Settings() {
     const { t } = useTranslation();
@@ -175,6 +178,42 @@ export function Settings() {
                         </div>
                     </div>
                 ))}
+            </div>
+
+            {/* App Appearance Section (New) */}
+            <div className="space-y-8">
+                <div className="px-4">
+                    <span className="text-[10px] font-black text-muted-foreground uppercase opacity-40 tracking-[0.5em] block mb-2">{t('appearance')}</span>
+                </div>
+                <div className="bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[3rem] p-10 shadow-minimal space-y-10">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div className="flex items-center gap-6">
+                            <div className="w-14 h-14 rounded-2xl bg-slate-50 dark:bg-neutral-800 flex items-center justify-center border border-slate-100 dark:border-neutral-700">
+                                <Palette className="w-6 h-6 text-foreground" />
+                            </div>
+                            <div>
+                                <div className="font-black text-xl tracking-tighter text-foreground lowercase">{t('theme')}</div>
+                                <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-40">{t('chooseTheme')}</div>
+                            </div>
+                        </div>
+                        <ThemeToggle className="w-full md:w-auto" />
+                    </div>
+
+                    <div className="h-[1px] bg-slate-50 dark:bg-neutral-800/10" />
+
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div className="flex items-center gap-6">
+                            <div className="w-14 h-14 rounded-2xl bg-slate-50 dark:bg-neutral-800 flex items-center justify-center border border-slate-100 dark:border-neutral-700">
+                                <div className="text-[10px] font-black">EN/עב</div>
+                            </div>
+                            <div>
+                                <div className="font-black text-xl tracking-tighter text-foreground lowercase">{t('language')}</div>
+                                <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-40">{t('chooseLanguage')}</div>
+                            </div>
+                        </div>
+                        <LanguageToggle className="w-full md:w-auto justify-center" />
+                    </div>
+                </div>
             </div>
 
             {/* Support Section */}

@@ -49,12 +49,6 @@ export function StreamHeader({ title }: StreamHeaderProps) {
 
             {/* Right: Actions */}
             <div className="flex items-center gap-4">
-                <div className="hidden md:flex gap-4">
-                    <ThemeToggle className="scale-[0.8]" />
-                    <LanguageToggle className="scale-[0.8]" />
-                </div>
-                <div className="h-8 w-[1px] bg-slate-100 dark:bg-neutral-800 hidden md:block" />
-
                 <NotificationCenter />
 
                 <button
