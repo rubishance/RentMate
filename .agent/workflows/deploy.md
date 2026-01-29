@@ -86,7 +86,6 @@ Before any deployment:
 ┌─────────────────┐
 │  Deploy to      │
 │  platform       │
-│  (WAIT FOR USER) │
 └────────┬────────┘
          │
          ▼

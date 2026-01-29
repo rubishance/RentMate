@@ -33,7 +33,7 @@
 - **Mandatory Deployment Protocol**:
     - **Step 1: Code Review**: Every deployment MUST be preceded by a comprehensive code review and marked as "OK".
     - **Step 2: Pre-flight Verification**: Run all tests and build checks.
-    - **Step 3: User Confirmation**: NEVER deploy automatically. Always notify the user and obtain explicit confirmation before production push.
+    - **Step 3: Execution**: If the code review is "OK" and pre-flight checks pass, proceed to deployment. If issues are found, stop and consult the user.
     - **Step 4: Post-Deployment Verification**: Every push/deployment must be verified immediately.
     - Check `version.json` and key features on production.
     - **Update the user** with success/failure status immediately after verification.

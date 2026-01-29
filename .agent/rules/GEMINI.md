@@ -72,8 +72,8 @@ When user's prompt is NOT in English:
 - **Global Testing Mandate:** Every agent is responsible for writing and running tests for their changes. Follow the "Testing Pyramid" (Unit > Integration > E2E) and the "AAA Pattern" (Arrange, Act, Assert).
 - **Global Performance Mandate:** "Measure first, optimize second." Every agent must ensure their changes adhere to 2025 performance standards (Core Web Vitals for Web, query optimization for DB, bundle limits for FS).
 - **Infrastructure & Safety Mandate:** Every agent is responsible for the deployability and operational safety of their changes. Follow the "5-Phase Deployment Process" (Prepare, Backup, Deploy, Verify, Confirm/Rollback). Always verify environment variables and secrets security.
-    - **MANDATORY:** Every deployment request MUST be preceded by a comprehensive code review. Only proceed if the review is "OK".
-    - **MANDATORY:** NEVER deploy automatically to Netlify. You MUST notify the user and obtain explicit confirmation before executing any deployment command.
+    - **MANDATORY:** Every deployment request MUST be preceded by a comprehensive code review. If the review is "OK", proceed to deploy automatically. If issues are found, notify the user and obtain explicit confirmation/fixes before proceeding.
+    - **MANDATORY:** NEVER deploy to Netlify without a preceding successful code review.
 
 ### 📁 File Dependency Awareness
 
