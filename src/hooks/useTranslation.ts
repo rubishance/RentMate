@@ -156,6 +156,54 @@ export type TranslationKeys =
     | 'last12Months'
     | 'vsLastYear'
 
+    // Missing Keys
+    | 'manualRate'
+    | 'byDate'
+    | 'linkageCeiling'
+    | 'maxRisePercentage'
+    | 'needsPainting'
+    | 'contractReadySummary'
+    | 'contractReadySummaryDesc'
+    | 'dataSummary'
+    | 'linkedToIndex'
+    | 'linkedToDollar'
+    | 'knownIndexLabel'
+    | 'respectOfLabel'
+    | 'restrictions'
+    | 'ceilingLabel'
+    | 'floorLabel'
+    | 'payment'
+    | 'guaranteesLabel'
+    | 'petsLabel'
+    | 'saveContractFileQuery'
+    | 'storageRentMateCloud'
+    | 'storageRentMateCloudDesc'
+    | 'storageThisDevice'
+    | 'storageThisDeviceDesc'
+    | 'storageBoth'
+    | 'storageBothDesc'
+    | 'storageCloudPolicy'
+    | 'storageDevicePolicy'
+    | 'storageBothPolicy'
+    | 'originalContract'
+    | 'openInNewWindow'
+    | 'goBack'
+    | 'savingEllipsis'
+    | 'next'
+    | 'overlapWarningTitle'
+    | 'overlapWarningDesc'
+    | 'existingContract'
+    | 'rentyMantra'
+    | 'generateReport'
+    | 'done'
+    | 'customize'
+    | 'myPortfolio'
+    | 'leaseEnds'
+    | 'deleteAsset'
+    | 'deleteAssetConfirm'
+    | 'rentmateUser'
+    | 'rentmateDashboard'
+
     // Payments Page
     | 'paymentsTitle'
     | 'trackFuturePayments'
@@ -185,13 +233,6 @@ export type TranslationKeys =
     | 'method'
     | 'allMethods'
     | 'transfer'
-    | 'bankTransfer'
-    | 'bit'
-    | 'paybox'
-    | 'check'
-    | 'cash'
-    | 'creditCard'
-    | 'other'
 
     // Calculator & Reconciliation
     | 'indexCalculator'
@@ -254,7 +295,6 @@ export type TranslationKeys =
     | 'updateFrequency'
     | 'everyMonth'
     | 'quarterly'
-    | 'semiannually'
     | 'annually'
     | 'updateFrequencyHelp'
     | 'linkageFloor'
@@ -365,6 +405,20 @@ export type TranslationKeys =
     | 'limitReached'
     | 'limitReachedDesc'
     | 'backToContracts'
+    | 'transfer'
+    | 'check'
+    | 'cash'
+    | 'bit'
+    | 'paybox'
+    | 'creditCard'
+    | 'other'
+    | 'semiAnnually'
+    | 'bimonthly'
+    | 'contractIsIndexed'
+    | 'and'
+    | 'days'
+    | 'enterAddressAndCityFirst'
+    | 'needsPaintingMsg'
 
     // Tenant Modal & Limits
     | 'viewTenantDetails'
@@ -856,13 +910,6 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         allAssets: 'כל הנכסים',
         method: 'שיטה',
         allMethods: 'כל השיטות',
-        transfer: 'העברה בנקאית',
-        bit: 'ביט',
-        paybox: 'פייבוקס',
-        check: 'צ\'ק',
-        cash: 'מזומן',
-        creditCard: 'אשראי',
-        other: 'אחר',
         period: 'תקופה',
         from: 'מ-',
         to: 'עד-',
@@ -982,7 +1029,13 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         monthly: 'חודשי',
         bimonthly: 'דו חודשי',
         paymentMethod: 'אמצעי תשלום',
-        bankTransfer: 'העברה בנקאית',
+        transfer: 'העברה בנקאית',
+        check: 'צ\'ק',
+        cash: 'מזומן',
+        bit: 'Bit',
+        paybox: 'PayBox',
+        creditCard: 'כרטיס אשראי',
+        other: 'אחר',
         securityAndAppendices: 'בטוחות ונספחים',
         securityDeposit: 'פיקדון כספי (מזומן/ערבות)',
         guarantors: 'ערבים',
@@ -1058,7 +1111,7 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         updateFrequency: 'תדירות עדכון',
         everyMonth: 'כל חודש',
         quarterly: 'רבעוני',
-        semiannually: 'חצי-שנתי',
+        semiAnnually: 'חצי-שנתי',
         annually: 'שנתי',
         updateFrequencyHelp: 'כל כמה זמן מתעדכנת ההצמדה.',
         linkageFloor: 'רצפת הצמדה',
@@ -1530,7 +1583,58 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         backToDashboard: 'חזרה ללוח הבקרה',
         stepOptionRent: 'שכר דירה באופציה',
         extensionEndDate: 'תאריך סיום האופציה',
-        extensionRent: 'שכר דירה באופציה'
+        extensionRent: 'שכר דירה באופציה',
+        manualRate: 'שער ידני',
+        byDate: 'לפי תאריך',
+        linkageCeiling: 'תקרת הצמדה',
+        maxRisePercentage: 'מקסימום עלייה (%)',
+        needsPainting: 'האם נדרש צבע?',
+        contractReadySummary: 'החוזה מוכן!',
+        contractReadySummaryDesc: 'כל הפרטים הוזנו ונסרקו בהצלחה. ניתן לצפות בסיכום הנתונים למטה.',
+        dataSummary: 'סיכום נתונים',
+        linkedToIndex: 'צמוד למדד',
+        linkedToDollar: 'צמוד לדולר',
+        knownIndexLabel: 'מדד ידוע',
+        respectOfLabel: 'מדד בגין',
+        restrictions: 'מגבלות',
+        ceilingLabel: 'תקרה',
+        floorLabel: 'רצפה',
+        payment: 'תשלום',
+        guaranteesLabel: 'ערבויות',
+        petsLabel: 'בעלי חיים',
+        saveContractFileQuery: 'היכן תרצה לשמור את קובץ החוזה?',
+        storageRentMateCloud: 'ענן RentMate',
+        storageRentMateCloudDesc: 'גישה מכל מקום, גיבוי מאובטח',
+        storageThisDevice: 'מכשיר זה בלבד',
+        storageThisDeviceDesc: 'פרטיות מקסימלית, ללא גיבוי ענן',
+        storageBoth: 'גם וגם',
+        storageBothDesc: 'הכי בטוח, נגיש ופרטי',
+        storageCloudPolicy: 'צפייה וגישה מכל מכשיר. הקובץ מוצפן מקצה לקצה.',
+        storageDevicePolicy: 'הקובץ יישמר במאגר המקומי של הדפדפן שלך בלבד.',
+        storageBothPolicy: 'גיבוי מאובטח בענן בתוספת עותק מקומי למהירות מרבית.',
+        originalContract: 'חוזה מקורי',
+        openInNewWindow: 'פתח בחלון חדש',
+        goBack: 'חזור',
+        savingEllipsis: 'שומר...',
+        next: 'הבא',
+        overlapWarningTitle: 'שימו לב: חפיפת תאריכים',
+        overlapWarningDesc: 'קיימים חוזים אחרים באותם תאריכים עבור נכס זה.',
+        existingContract: 'חוזה קיים',
+        rentyMantra: 'ניהול נכסים חכם עם Renty',
+        generateReport: 'הפקת דוח',
+        done: 'סיום',
+        customize: 'התאמה אישית',
+        myPortfolio: 'הפורטפוליו שלי',
+        leaseEnds: 'סיום חוזה',
+        deleteAsset: 'מחיקת נכס',
+        deleteAssetConfirm: 'האם אתה בטוח שברצונך למחוק נכס זה? כל החוזים והתשלומים הקשורים יימחקו.',
+        rentmateUser: 'משתמש RentMate',
+        rentmateDashboard: 'לוח הבקרה של RentMate',
+        contractIsIndexed: 'החוזה מוצמד למדד?',
+        needsPaintingMsg: 'הדירה דורשת צביעה?',
+        and: 'ו-',
+        days: 'ימים',
+        enterAddressAndCityFirst: 'נא להזין כתובת ועיר קודם',
     },
 
     en: {
@@ -1656,13 +1760,6 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         allAssets: 'All Assets',
         method: 'Method',
         allMethods: 'All Methods',
-        transfer: 'Transfer',
-        bit: 'Bit',
-        paybox: 'Paybox',
-        check: 'Check',
-        cash: 'Cash',
-        creditCard: 'Credit Card',
-        other: 'Other',
         period: 'Period',
         from: 'From',
         to: 'To',
@@ -1789,7 +1886,13 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         monthly: 'Monthly',
         bimonthly: 'Bi-monthly',
         paymentMethod: 'Payment Method',
-        bankTransfer: 'Bank Transfer',
+        transfer: 'Bank Transfer',
+        check: 'Check',
+        cash: 'Cash',
+        bit: 'Bit',
+        paybox: 'PayBox',
+        creditCard: 'Credit Card',
+        other: 'Other',
         securityAndAppendices: 'Security & Appendices',
         securityDeposit: 'Security Deposit',
         guarantors: 'Guarantors',
@@ -1862,7 +1965,7 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         updateFrequency: 'Update Frequency',
         everyMonth: 'Every Month',
         quarterly: 'Quarterly',
-        semiannually: 'Semiannually',
+        semiAnnually: 'Semiannually',
         annually: 'Annually',
         updateFrequencyHelp: 'How often the rent linkage is recalculated.',
         linkageFloor: 'Linkage Floor',
@@ -2344,7 +2447,58 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         backToDashboard: 'Back to Dashboard',
         stepOptionRent: 'Option Rent',
         extensionEndDate: 'Extension End Date',
-        extensionRent: 'Extension Rent'
+        extensionRent: 'Extension Rent',
+        contractIsIndexed: 'Contract Is Indexed?',
+        needsPaintingMsg: 'Needs Painting?',
+        and: 'and',
+        days: 'days',
+        enterAddressAndCityFirst: 'Please enter address and city first',
+        manualRate: 'Manual Rate',
+        byDate: 'By Date',
+        linkageCeiling: 'Linkage Ceiling',
+        maxRisePercentage: 'Max Rise (%)',
+        needsPainting: 'Needs Painting?',
+        contractReadySummary: 'Contract Ready!',
+        contractReadySummaryDesc: 'All details have been successfully entered and scanned.',
+        dataSummary: 'Data Summary',
+        linkedToIndex: 'Linked to Index',
+        linkedToDollar: 'Linked to Dollar',
+        knownIndexLabel: 'Known Index',
+        respectOfLabel: 'Respect of Index',
+        restrictions: 'Restrictions',
+        ceilingLabel: 'Ceiling',
+        floorLabel: 'Floor',
+        payment: 'Payment',
+        guaranteesLabel: 'Guarantees',
+        petsLabel: 'Pets',
+        saveContractFileQuery: 'Where would you like to save the contract file?',
+        storageRentMateCloud: 'RentMate Cloud',
+        storageRentMateCloudDesc: 'Access anywhere, secure backup',
+        storageThisDevice: 'This Device Only',
+        storageThisDeviceDesc: 'Max privacy, no cloud backup',
+        storageBoth: 'Both',
+        storageBothDesc: 'Safest, accessible & private',
+        storageCloudPolicy: 'View and access from any device. File is encrypted end-to-end.',
+        storageDevicePolicy: 'File will be saved only in your local browser storage.',
+        storageBothPolicy: 'Secure cloud backup plus a local copy for maximum speed.',
+        originalContract: 'Original Contract',
+        openInNewWindow: 'Open in New Window',
+        goBack: 'Go Back',
+        savingEllipsis: 'Saving...',
+        next: 'Next',
+        overlapWarningTitle: 'Note: Date Overlap',
+        overlapWarningDesc: 'Other contracts exist for this property during these dates.',
+        existingContract: 'Existing Contract',
+        rentyMantra: 'Smart property management with Renty',
+        generateReport: 'Generate Report',
+        done: 'Done',
+        customize: 'Customize',
+        myPortfolio: 'My Portfolio',
+        leaseEnds: 'Lease Ends',
+        deleteAsset: 'Delete Asset',
+        deleteAssetConfirm: 'Are you sure you want to delete this asset? All related contracts and payments will be deleted.',
+        rentmateUser: 'RentMate User',
+        rentmateDashboard: 'RentMate Dashboard',
     },
 };
 
