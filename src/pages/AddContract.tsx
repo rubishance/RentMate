@@ -408,16 +408,31 @@ export function AddContract() {
                 // NEW: Recursive sanitation to prevent NaN/Infinity in JSON columns
                 const sanitizePayload = (obj: any): any => {
                     if (obj === null || obj === undefined) return obj;
-                    if (typeof obj === 'number') {
-                        return isFinite(obj) ? obj : null;
+
+                    // Handle Date objects by converting to ISO string
+                    if (obj instanceof Date) {
+                        return obj.toISOString();
                     }
+
+                    if (typeof obj === 'number') {
+                        return (isNaN(obj) || !isFinite(obj)) ? null : obj;
+                    }
+
                     if (Array.isArray(obj)) {
                         return obj.map(sanitizePayload);
                     }
+
                     if (typeof obj === 'object') {
+                        // Avoid trauma with File/Blob objects if they somehow leaked in
+                        if (obj.constructor && obj.constructor.name !== 'Object') {
+                            return null;
+                        }
+
                         const sanitized: any = {};
                         for (const key in obj) {
-                            sanitized[key] = sanitizePayload(obj[key]);
+                            if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                                sanitized[key] = sanitizePayload(obj[key]);
+                            }
                         }
                         return sanitized;
                     }
@@ -425,12 +440,11 @@ export function AddContract() {
                 };
 
                 // Linkage Sub Type Mapping (Ensure valid enum value)
-                let linkageSubTypeVal = null;
+                let linkageSubTypeVal: 'known' | 'respect_of' | 'base' | null = null;
                 if (formData.linkageType !== 'none') {
                     if (formData.linkageSubType === 'known' || formData.linkageSubType === 'respect_of' || formData.linkageSubType === 'base') {
                         linkageSubTypeVal = formData.linkageSubType;
                     } else {
-                        // Default to known if manual or other UI value is set
                         linkageSubTypeVal = 'known';
                     }
                 }
@@ -438,6 +452,7 @@ export function AddContract() {
                 // 3. Create Contract
                 const contractPayload = {
                     property_id: propertyId,
+                    tenant_id: null as any, // Explicitly null as we now use embedded 'tenants' array
                     tenants: (formData.tenants || []).filter(t => t.name.trim() !== '').map(t => ({
                         name: t.name || '',
                         id_number: t.id_number || '',
@@ -494,7 +509,10 @@ export function AddContract() {
 
                 const { data: newContract, error: contractError } = await supabase.from('contracts').insert(sanitizedPayload).select().single();
 
-                if (contractError) throw new Error(`Contract Error: ${contractError.message} `);
+                if (contractError) {
+                    console.error('[CRITICAL] Supabase Insert Error:', contractError);
+                    throw new Error(`[${contractError.code}] ${contractError.message}: ${contractError.details || ''}`);
+                }
 
                 // 3.5 Generate Expected Payments
                 if (newContract) {
@@ -1436,23 +1454,7 @@ export function AddContract() {
                                                                 className="w-full"
                                                             />
                                                         </div>
-                                                        <div className="w-24 space-y-1">
-                                                            <label className="text-[10px] text-muted-foreground font-bold">{t('optionRent')}</label>
-                                                            <input
-                                                                type="text"
-                                                                value={formatNumber(period.rentAmount)}
-                                                                onChange={e => {
-                                                                    const val = parseNumber(e.target.value);
-                                                                    if (/^\d*\.?\d*$/.test(val)) {
-                                                                        const newPeriods = [...formData.optionPeriods];
-                                                                        newPeriods[idx].rentAmount = val;
-                                                                        setFormData({ ...formData, optionPeriods: newPeriods });
-                                                                    }
-                                                                }}
-                                                                className="w-full p-2 text-xs bg-background border border-border rounded-lg no-spinner font-bold"
-                                                                placeholder={formData.currency === 'ILS' ? '₪' : formData.currency === 'USD' ? '$' : '€'}
-                                                            />
-                                                        </div>
+
                                                         <button
                                                             type="button"
                                                             onClick={() => {
@@ -1501,6 +1503,35 @@ export function AddContract() {
                                                     />
                                                 </div>
                                             </div>
+
+                                            {/* Extension Rent Amount(s) - Moved here from Step 3 */}
+                                            {formData.optionPeriods.map((period, idx) => (
+                                                <div key={idx} className="space-y-3 p-4 bg-secondary/10 rounded-2xl border border-dashed border-border animate-in fade-in slide-in-from-top-2 duration-300">
+                                                    <label className="text-sm font-medium flex items-center gap-2">
+                                                        {t('stepOptionRent')} {formData.optionPeriods.length > 1 ? idx + 1 : ''}
+                                                        <span className="text-xs text-muted-foreground font-normal">
+                                                            ({period.endDate ? formatDate(period.endDate) : t('noEndDate')})
+                                                        </span>
+                                                    </label>
+                                                    <div className="relative">
+                                                        <span className="absolute left-4 top-3 text-muted-foreground">{formData.currency === 'ILS' ? '₪' : formData.currency === 'USD' ? '$' : '€'}</span>
+                                                        <input
+                                                            type="text"
+                                                            value={formatNumber(period.rentAmount)}
+                                                            onChange={e => {
+                                                                const val = parseNumber(e.target.value);
+                                                                if (/^\d*\.?\d*$/.test(val)) {
+                                                                    const newPeriods = [...formData.optionPeriods];
+                                                                    newPeriods[idx].rentAmount = val;
+                                                                    setFormData({ ...formData, optionPeriods: newPeriods });
+                                                                }
+                                                            }}
+                                                            className="w-full pl-8 p-3 bg-background border border-border rounded-xl font-bold text-lg no-spinner"
+                                                            placeholder="0"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            ))}
 
                                             {/* 2. Frequency & Method Grid */}
                                             <div className="grid grid-cols-2 gap-4">

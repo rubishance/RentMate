@@ -1,5 +1,13 @@
 import { useEffect, useState } from 'react';
-import { PlusIcon as Plus, HomeIcon as Home, BedIcon as BedDouble, RulerIcon as Ruler } from '../components/icons/NavIcons';
+import {
+    PlusIcon as Plus,
+    HomeIcon as Home,
+    BedIcon as BedDouble,
+    RulerIcon as Ruler,
+    PaymentsIcon as PaymentIcon,
+    ContractsIcon as ContractIcon,
+    AssetsIcon as AssetIcon
+} from '../components/icons/NavIcons';
 import { supabase } from '../lib/supabase';
 import { formatDate } from '../lib/utils';
 import { ConfirmDeleteModal } from '../components/modals/ConfirmDeleteModal';
@@ -27,11 +35,14 @@ const getPlaceholder = (type?: string | null) => {
 import { PageHeader } from '../components/common/PageHeader';
 import { GlassCard } from '../components/common/GlassCard';
 import UpgradeRequestModal from '../components/modals/UpgradeRequestModal';
+import { AddPaymentModal } from '../components/modals/AddPaymentModal';
 import { useDataCache } from '../contexts/DataCacheContext';
 import { Card, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { cn } from '../lib/utils';
 import { useStack } from '../contexts/StackContext';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 
 type ExtendedProperty = Property & {
     contracts: {
@@ -65,6 +76,9 @@ export function Properties() {
 
     const [indexedRentContract, setIndexedRentContract] = useState<any>(null); // Contract to show calculation for
     const [affectedItems, setAffectedItems] = useState<any[]>([]);
+    const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
+    const [isAddPaymentModalOpen, setIsAddPaymentModalOpen] = useState(false);
+    const navigate = useNavigate();
 
     const handleAdd = () => {
         push('wizard', {
@@ -226,13 +240,81 @@ export function Properties() {
                     </h1>
                 </div>
 
-                <button
-                    onClick={handleAdd}
-                    className="h-16 px-10 bg-foreground text-background font-black text-xs uppercase tracking-[0.2em] rounded-[1.5rem] hover:scale-105 active:scale-95 transition-all shadow-premium-dark flex items-center justify-center gap-4 group"
-                >
-                    <Plus className="w-5 h-5 transition-transform group-hover:rotate-90" />
-                    {t('addProperty')}
-                </button>
+                <div className="relative">
+                    <button
+                        onClick={() => setIsAddMenuOpen(!isAddMenuOpen)}
+                        className={cn(
+                            "h-16 w-16 bg-foreground text-background rounded-[1.5rem] hover:scale-105 active:scale-95 transition-all shadow-premium-dark flex items-center justify-center group z-20 relative",
+                            isAddMenuOpen && "scale-110 rotate-45 bg-primary"
+                        )}
+                    >
+                        <Plus className="w-8 h-8 transition-transform" />
+                    </button>
+
+                    <AnimatePresence>
+                        {isAddMenuOpen && (
+                            <>
+                                {/* Simple hidden backdrop to close menu on click outside */}
+                                <div
+                                    className="fixed inset-0 z-10"
+                                    onClick={() => setIsAddMenuOpen(false)}
+                                />
+
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.8, y: 10, x: lang === 'he' ? 20 : -20 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
+                                    exit={{ opacity: 0, scale: 0.8, y: 10, x: lang === 'he' ? 20 : -20 }}
+                                    className={cn(
+                                        "absolute top-20 z-20 w-56 p-3 bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[2rem] shadow-premium-dark flex flex-col gap-2",
+                                        lang === 'he' ? "left-0 origin-top-left" : "right-0 origin-top-right"
+                                    )}
+                                >
+                                    {/* Option 1: Payment */}
+                                    <button
+                                        onClick={() => {
+                                            setIsAddMenuOpen(false);
+                                            setIsAddPaymentModalOpen(true);
+                                        }}
+                                        className="flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors group"
+                                    >
+                                        <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
+                                            <PaymentIcon className="w-5 h-5" />
+                                        </div>
+                                        <span className="text-sm font-black lowercase tracking-tight">{t('payment')}</span>
+                                    </button>
+
+                                    {/* Option 2: Contract */}
+                                    <button
+                                        onClick={() => {
+                                            setIsAddMenuOpen(false);
+                                            navigate('/contracts/new');
+                                        }}
+                                        className="flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors group"
+                                    >
+                                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+                                            <ContractIcon className="w-5 h-5" />
+                                        </div>
+                                        <span className="text-sm font-black lowercase tracking-tight">{t('contract')}</span>
+                                    </button>
+
+                                    {/* Option 3: Asset */}
+                                    <button
+                                        onClick={() => {
+                                            setIsAddMenuOpen(false);
+                                            handleAdd();
+                                        }}
+                                        className="flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors group"
+                                    >
+                                        <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform">
+                                            <AssetIcon className="w-5 h-5" />
+                                        </div>
+                                        <span className="text-sm font-black lowercase tracking-tight">{t('asset')}</span>
+                                    </button>
+                                </motion.div>
+                            </>
+                        )}
+                    </AnimatePresence>
+                </div>
             </div>
 
             {/* Empty State */}
@@ -396,6 +478,15 @@ export function Properties() {
                 isOpen={isUpgradeModalOpen}
                 onClose={() => setIsUpgradeModalOpen(false)}
                 source="properties_export"
+            />
+
+            <AddPaymentModal
+                isOpen={isAddPaymentModalOpen}
+                onClose={() => setIsAddPaymentModalOpen(false)}
+                onSuccess={() => {
+                    clear();
+                    fetchProperties();
+                }}
             />
         </div>
     );

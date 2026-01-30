@@ -173,6 +173,8 @@ export type TranslationKeys =
     | 'ceilingLabel'
     | 'floorLabel'
     | 'payment'
+    | 'contract'
+    | 'asset'
     | 'guaranteesLabel'
     | 'petsLabel'
     | 'saveContractFileQuery'
@@ -893,6 +895,7 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         contracts: 'חוזים',
         payments: 'תשלומים',
         calculator: 'מחשבון',
+        contract: 'חוזה',
 
         paymentsTitle: 'תשלומים',
         trackFuturePayments: 'מעקב תשלומים',
@@ -1754,6 +1757,8 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         contracts: 'Contracts',
         payments: 'Payments',
         calculator: 'Calculator',
+
+        contract: 'Contract',
 
         paymentsTitle: 'Payments',
         trackFuturePayments: 'Track future payments',
