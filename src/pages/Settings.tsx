@@ -320,7 +320,7 @@ export function Settings() {
                     fetchUserData();
                     setIsEditProfileOpen(false);
                 }}
-                initialData={{ first_name: userData.first_name || '', last_name: userData.last_name || '' }}
+                initialData={{ full_name: userData.full_name || '' }}
             />
 
             <NotificationsSettingsModal
