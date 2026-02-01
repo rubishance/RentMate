@@ -8,6 +8,7 @@ import { UrlCompression } from '../lib/url-compression';
 import { StandardCalculator } from '../components/calculator/StandardCalculator';
 import { ReconciliationCalculator } from '../components/calculator/ReconciliationCalculator';
 import { format } from 'date-fns';
+import { supabase } from '../lib/supabase';
 
 type TabType = 'standard' | 'reconciliation';
 
@@ -50,30 +51,40 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
 
     // 2. Handle Navigation State (from Contract List etc.)
     useEffect(() => {
-        if (location.state?.contractData) {
-            const data = location.state.contractData;
+        async function verifyAndSet() {
+            if (location.state?.contractData) {
+                const data = location.state.contractData;
 
-            // Prepare Standard Data
-            const sData: any = {};
-            if (data.baseRent) sData.baseRent = data.baseRent.toString();
-            if (data.linkageType) sData.linkageType = data.linkageType;
-            if (data.baseIndexDate) sData.baseDate = data.baseIndexDate;
-            if (data.linkageCeiling) sData.linkageCeiling = data.linkageCeiling.toString();
-            if (data.linkageFloor !== undefined) sData.isIndexBaseMinimum = data.linkageFloor === 0;
+                // STRICT: Verification of ownership if we have user context
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user && data.user_id && data.user_id !== user.id) {
+                    console.error("Ownership mismatch in calculator state");
+                    return;
+                }
 
-            // Prepare Rec Data
-            const rData: any = {};
-            if (data.baseRent) rData.baseRent = data.baseRent.toString();
-            if (data.linkageType) rData.linkageType = data.linkageType;
-            if (data.baseIndexDate) rData.contractStartDate = data.baseIndexDate;
-            if (data.startDate) rData.periodStart = data.startDate;
-            const now = format(new Date(), 'yyyy-MM-dd');
-            rData.periodEnd = now;
+                // Prepare Standard Data
+                const sData: any = {};
+                if (data.baseRent) sData.baseRent = data.baseRent.toString();
+                if (data.linkageType) sData.linkageType = data.linkageType;
+                if (data.baseIndexDate) sData.baseDate = data.baseIndexDate;
+                if (data.linkageCeiling) sData.linkageCeiling = data.linkageCeiling.toString();
+                if (data.linkageFloor !== undefined) sData.isIndexBaseMinimum = data.linkageFloor === 0;
 
-            setStandardValues(sData);
-            setRecValues(rData);
-            setKey(prev => prev + 1);
+                // Prepare Rec Data
+                const rData: any = {};
+                if (data.baseRent) rData.baseRent = data.baseRent.toString();
+                if (data.linkageType) rData.linkageType = data.linkageType;
+                if (data.baseIndexDate) rData.contractStartDate = data.baseIndexDate;
+                if (data.startDate) rData.periodStart = data.startDate;
+                const now = format(new Date(), 'yyyy-MM-dd');
+                rData.periodEnd = now;
+
+                setStandardValues(sData);
+                setRecValues(rData);
+                setKey(prev => prev + 1);
+            }
         }
+        verifyAndSet();
     }, [location.state]);
 
     return (

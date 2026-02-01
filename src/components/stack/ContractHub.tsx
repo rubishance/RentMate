@@ -161,7 +161,7 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
 
             // Sync property occupancy status if status changed
             if (formData.status !== contract.status) {
-                await propertyService.syncOccupancyStatus(contract.property_id);
+                await propertyService.syncOccupancyStatus(contract.property_id, contract.user_id);
             }
 
             setReadOnly(true);
@@ -289,6 +289,8 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                             {contract?.properties?.image_url && (
                                 <div className="w-full h-40 rounded-xl overflow-hidden mt-4">
                                     <img
+                                        loading="lazy"
+                                        decoding="async"
                                         src={contract.properties.image_url || getPropertyPlaceholder(contract.properties.property_type)}
                                         alt="Property"
                                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"

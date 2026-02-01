@@ -10,9 +10,9 @@ export class PropertyService {
      * - 'Occupied' if at least one active contract exists.
      * - 'Vacant' if no active contracts exist.
      */
-    async syncOccupancyStatus(propertyId: string): Promise<'Occupied' | 'Vacant' | null> {
-        if (!propertyId) {
-            console.warn('[PropertyService] Skipping syncOccupancyStatus: No propertyId provided');
+    async syncOccupancyStatus(propertyId: string, userId: string): Promise<'Occupied' | 'Vacant' | null> {
+        if (!propertyId || !userId) {
+            console.warn('[PropertyService] Skipping syncOccupancyStatus: Missing propertyId or userId');
             return null;
         }
         try {
@@ -22,6 +22,7 @@ export class PropertyService {
                 .from('contracts')
                 .select('*', { count: 'exact', head: true })
                 .eq('property_id', propertyId)
+                .eq('user_id', userId)
                 .eq('status', 'active')
                 .lte('start_date', today)
                 .gte('end_date', today);
@@ -36,6 +37,7 @@ export class PropertyService {
                 .from('properties')
                 .select('status')
                 .eq('id', propertyId)
+                .eq('user_id', userId)
                 .single();
 
             if (fetchError) throw fetchError;
@@ -45,7 +47,8 @@ export class PropertyService {
                 const { error: updateError } = await supabase
                     .from('properties')
                     .update({ status: correctStatus })
-                    .eq('id', propertyId);
+                    .eq('id', propertyId)
+                    .eq('user_id', userId);
 
                 if (updateError) throw updateError;
                 return correctStatus;

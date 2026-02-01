@@ -294,6 +294,7 @@ export function Settings() {
                 <button
                     onClick={async () => {
                         await supabase.auth.signOut();
+                        localStorage.clear();
                         window.location.href = '/login';
                     }}
                     className="w-full h-20 bg-rose-500/5 text-rose-500 rounded-full font-black uppercase text-xs tracking-[0.4em] hover:bg-rose-500/10 active:scale-[0.98] transition-all border border-rose-500/10 shadow-minimal flex items-center justify-center gap-4 group"

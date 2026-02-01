@@ -198,7 +198,7 @@ export function Properties() {
             } else if (data) {
                 const propertiesData = data as unknown as ExtendedProperty[];
                 setProperties(propertiesData);
-                set(CACHE_KEY, propertiesData);
+                set(CACHE_KEY, propertiesData, { persist: true });
             }
         } catch (error) {
             console.error('Error fetching properties:', error);
@@ -365,6 +365,8 @@ export function Properties() {
                                 {/* Image Section */}
                                 <div className="relative h-72 bg-slate-50 dark:bg-neutral-800 overflow-hidden">
                                     <img
+                                        loading="lazy"
+                                        decoding="async"
                                         src={property.image_url || getPropertyPlaceholder(property.property_type)}
                                         alt={`${property.address}, ${property.city}`}
                                         className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 filter saturate-50 group-hover:saturate-100"

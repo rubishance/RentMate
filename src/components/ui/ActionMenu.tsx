@@ -48,7 +48,7 @@ export function ActionMenu({ onView, onEdit, onDelete, onCalculate, onSnooze, al
                     <MenuItems
                         anchor={{ to: align === 'right' ? 'bottom end' : 'bottom start', gap: 4 }}
                         className={cn(
-                            "z-[100] min-w-[180px] bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-neutral-800 p-2 focus:outline-none",
+                            "z-[100] min-w-[180px] bg-card rounded-2xl shadow-premium border border-border/40 p-2 focus:outline-none",
                             "animate-in fade-in zoom-in-95 duration-100"
                         )}>
                         <div className="py-1">
@@ -126,7 +126,7 @@ export function ActionMenu({ onView, onEdit, onDelete, onCalculate, onSnooze, al
                                                     }}
                                                     className={cn(
                                                         "w-full flex items-center gap-2 px-4 py-2 text-sm rounded-xl transition-colors",
-                                                        focus ? "bg-slate-50 dark:bg-neutral-800 text-foreground" : "text-muted-foreground"
+                                                        focus ? "bg-primary/5 text-foreground" : "text-muted-foreground"
                                                     )}
                                                 >
                                                     <Bell className="w-4 h-4 text-blue-500" />

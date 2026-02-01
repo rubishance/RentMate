@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { useUserPreferences } from '../contexts/UserPreferencesContext';
 import { useTranslation } from '../hooks/useTranslation';
@@ -48,41 +48,45 @@ export function Dashboard() {
     const [activeContracts, setActiveContracts] = useState<any[]>([]);
     const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
 
-    // Widget Layout State
-    const [layout, setLayout] = useState<WidgetConfig[]>(() => {
-        const saved = localStorage.getItem('dashboard_layout_v1');
-        if (saved) {
-            try {
-                return JSON.parse(saved);
-            } catch (e) {
-                return DEFAULT_WIDGET_LAYOUT;
-            }
-        }
-        return DEFAULT_WIDGET_LAYOUT;
-    });
+    const [layout, setLayout] = useState<WidgetConfig[]>(DEFAULT_WIDGET_LAYOUT);
 
     const [isEditingLayout, setIsEditingLayout] = useState(false);
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [reportsEnabled, setReportsEnabled] = useState(false);
 
     useEffect(() => {
-        // Force clear cache once to resolve any corrupted structure issues from previous turns
-        const recoveryDone = localStorage.getItem('recovery_done_v4');
-        if (!recoveryDone) {
-            clear();
-            localStorage.removeItem('dashboard_layout_v1');
-            localStorage.setItem('recovery_done_v4', 'true');
+        async function init() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const layoutKey = `dashboard_layout_${user.id}_v1`;
+                const saved = localStorage.getItem(layoutKey);
+                if (saved) {
+                    try {
+                        setLayout(JSON.parse(saved));
+                    } catch (e) {
+                        setLayout(DEFAULT_WIDGET_LAYOUT);
+                    }
+                }
+            }
+            loadDashboardData();
         }
-        loadDashboardData();
+        init();
     }, []);
 
-    const handleLayoutChange = (newLayout: WidgetConfig[]) => {
+    const handleLayoutChange = async (newLayout: WidgetConfig[]) => {
         setLayout(newLayout);
-        localStorage.setItem('dashboard_layout_v1', JSON.stringify(newLayout));
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            localStorage.setItem(`dashboard_layout_${user.id}_v1`, JSON.stringify(newLayout));
+        }
     };
 
     async function loadDashboardData() {
-        const cached = get<any>(CACHE_KEY);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const USER_CACHE_KEY = `dashboard_data_v4_${user.id}_${preferences.language}`;
+        const cached = get<any>(USER_CACHE_KEY);
         if (cached) {
             setProfile(cached.profile);
             setStats(cached.stats);
@@ -91,11 +95,7 @@ export function Dashboard() {
             setFeedItems(cached.feedItems);
             setLoading(false);
         }
-
         try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return;
-
             const { data: profileData } = await supabase
                 .from('user_profiles')
                 .select('full_name, first_name')
@@ -146,17 +146,16 @@ export function Dashboard() {
 
             setReportsEnabled(reportSetting?.value === true);
 
-            set(CACHE_KEY, {
+            set(USER_CACHE_KEY, {
                 profile: profileData,
                 stats: currentStats,
                 storageCounts: currentCounts,
                 activeContracts: contracts || [],
-                feedItems: currentFeed,
-                reportsEnabled: reportSetting?.value === true
-            });
+                feedItems: currentFeed
+            }, { persist: true });
+            setLoading(false);
         } catch (error) {
-            console.error(error);
-        } finally {
+            console.error('Error fetching dashboard info:', error);
             setLoading(false);
         }
     }
@@ -212,13 +211,13 @@ export function Dashboard() {
 
     const firstName = profile?.first_name || profile?.full_name?.split(' ')[0] || '';
 
-    const dashboardData: DashboardData = {
+    const dashboardData = useMemo<DashboardData>(() => ({
         profile,
         stats,
-        storageCounts: storageCounts,
+        storageCounts,
         activeContracts,
         feedItems
-    };
+    }), [profile, stats, storageCounts, activeContracts, feedItems]);
 
 
     return (

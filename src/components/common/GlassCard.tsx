@@ -14,8 +14,8 @@ export const GlassCard: React.FC<GlassCardProps> = ({
     minimal = false,
     ...props
 }) => {
-    const baseClasses = "relative bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 rounded-lg overflow-hidden";
-    const hoverClasses = hoverEffect ? "transition-all duration-200 hover:shadow-md hover:border-gray-200 dark:hover:border-neutral-700" : "shadow-sm dark:shadow-none";
+    const baseClasses = "relative bg-background/60 backdrop-blur-xl border border-white/20 dark:border-white/10 rounded-2xl overflow-hidden";
+    const hoverClasses = hoverEffect ? "transition-all duration-300 hover:shadow-premium hover:-translate-y-1" : "shadow-sm";
     const minimalClasses = minimal ? "border-0 shadow-none" : "";
 
     return (

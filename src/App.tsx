@@ -115,6 +115,8 @@ function App() {
 
                         {/* Redirect old contracts route to properties */}
                         <Route path="/contracts" element={<Navigate to="/properties" replace />} />
+                        <Route path="/assets" element={<Navigate to="/properties" replace />} />
+                        <Route path="/properties-new" element={<Navigate to="/properties" replace />} />
 
                         <Route path="/contracts/new" element={<AddContract />} />
                         <Route path="/contracts/:id" element={<ContractDetails />} />

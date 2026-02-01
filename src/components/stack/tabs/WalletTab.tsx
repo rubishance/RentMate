@@ -47,11 +47,15 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
     const fetchData = async () => {
         setLoading(true);
         try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
             // 1. Fetch Contracts
             const { data: contractsData } = await supabase
                 .from('contracts')
                 .select('*')
                 .eq('property_id', propertyId)
+                .eq('user_id', user.id)
                 .order('start_date', { ascending: false });
 
             setContracts(contractsData || []);
@@ -66,6 +70,7 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
             const { data: paymentsData } = await supabase
                 .from('payments')
                 .select('*')
+                .eq('user_id', user.id)
                 .in('contract_id', (contractsData || []).map(c => c.id));
 
             // 3. Fetch Bills (property_documents marked as paid)
@@ -73,6 +78,7 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
                 .from('property_documents')
                 .select('*')
                 .eq('property_id', propertyId)
+                .eq('user_id', user.id)
                 .eq('paid', true)
                 .not('amount', 'is', null)
                 .ilike('category', 'utility_%');

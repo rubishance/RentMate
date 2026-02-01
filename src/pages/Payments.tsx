@@ -10,10 +10,11 @@ import { DatePicker } from '../components/ui/DatePicker';
 import { useTranslation } from '../hooks/useTranslation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDataCache } from '../contexts/DataCacheContext';
+import { Skeleton } from '../components/ui/Skeleton';
 
 export function Payments() {
     const { t } = useTranslation();
-    const { clear } = useDataCache();
+    const { get, set, clear } = useDataCache();
     const [payments, setPayments] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [periodFilter, setPeriodFilter] = useState<'all' | '3m' | '6m' | '1y'>('all');
@@ -40,6 +41,16 @@ export function Payments() {
     }, []);
 
     async function fetchPayments() {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const CACHE_KEY = `payments_list_v1_${user.id}`;
+        const cached = get<any[]>(CACHE_KEY);
+        if (cached) {
+            setPayments(cached);
+            setLoading(false);
+        }
+
         try {
             const { data, error } = await supabase
                 .from('payments')
@@ -51,7 +62,7 @@ export function Payments() {
                         properties (id, title, address, city)
                     )
                 `)
-                .eq('user_id', (await supabase.auth.getUser()).data.user?.id) // STRICTLY enforce ownership
+                .eq('user_id', user.id) // STRICTLY enforce ownership
                 .order('due_date', { ascending: true });
 
             if (error) {
@@ -68,7 +79,7 @@ export function Payments() {
                 const { data: bills } = await supabase
                     .from('property_documents')
                     .select('*, properties(id, title, address, city)')
-                    .eq('user_id', (await supabase.auth.getUser()).data.user?.id) // STRICTLY enforce ownership
+                    .eq('user_id', user.id) // STRICTLY enforce ownership
                     .eq('paid', true)
                     .not('amount', 'is', null)
                     .ilike('category', 'utility_%');
@@ -94,6 +105,7 @@ export function Payments() {
                 allItems.sort((a, b) => new Date(b.due_date).getTime() - new Date(a.due_date).getTime());
 
                 setPayments(allItems);
+                set(CACHE_KEY, allItems, { persist: true });
                 calculateStats(rentPayments);
             }
         } catch (error) {
@@ -165,8 +177,32 @@ export function Payments() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-[50vh]">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground"></div>
+            <div className="pb-40 pt-16 space-y-20">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 px-8">
+                    <div className="space-y-2">
+                        <Skeleton className="h-6 w-32 rounded-full" />
+                        <Skeleton className="h-16 w-64 rounded-xl" />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10 px-8">
+                    <Skeleton className="h-44 w-full rounded-[3rem]" />
+                    <Skeleton className="h-44 w-full rounded-[3rem]" />
+                </div>
+
+                <div className="px-8 space-y-8">
+                    <div className="bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[3rem] overflow-hidden">
+                        {[1, 2, 3].map(i => (
+                            <div key={i} className="p-10 flex border-b border-slate-50 last:border-0 gap-10">
+                                <Skeleton className="w-20 h-20 rounded-2xl flex-shrink-0" />
+                                <div className="flex-1 space-y-4">
+                                    <Skeleton className="h-8 w-1/3" />
+                                    <Skeleton className="h-4 w-1/2" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
         );
     }

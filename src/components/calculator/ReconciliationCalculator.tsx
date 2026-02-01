@@ -355,7 +355,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                                 </button>
                             </div>
                             <div className="border border-slate-100 dark:border-neutral-800 rounded-[2rem] overflow-hidden bg-slate-50/50 dark:bg-neutral-800/30">
-                                <div className="bg-white dark:bg-neutral-900/50 p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground grid grid-cols-12 gap-2 px-6 border-b border-slate-100 dark:border-neutral-800">
+                                <div className="bg-white dark:bg-neutral-900/50 p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground grid grid-cols-12 gap-4 px-6 border-b border-slate-100 dark:border-neutral-800">
                                     <span className="col-span-7">{t('date')}</span>
                                     <span className="col-span-4 text-center">{t('amount')}</span>
                                     <span className="col-span-1"></span>
@@ -363,16 +363,17 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                                 <div className="max-h-80 overflow-y-auto scrollbar-thin">
                                     <div className="divide-y divide-slate-100/50 dark:divide-neutral-800/50">
                                         {expectedHistory.map((payment) => (
-                                            <div key={payment.id} className="grid grid-cols-12 gap-2 items-center py-3 px-4 text-sm hover:bg-white dark:hover:bg-neutral-800/80 transition-colors group">
-                                                <div className="col-span-6">
+                                            <div key={payment.id} className="grid grid-cols-12 gap-4 items-center py-3 px-4 text-sm hover:bg-white dark:hover:bg-neutral-800/80 transition-colors group">
+                                                <div className="col-span-7">
                                                     <DatePicker
+                                                        variant="inline"
                                                         value={payment.due_date ? parseISO(payment.due_date) : undefined}
                                                         onChange={(date) => handleExpectedChange(payment.id, 'due_date', date ? format(date, 'yyyy-MM-dd') : '')}
                                                         placeholder={t('date')}
                                                         className="w-full bg-transparent border-none shadow-none focus:ring-0 font-bold"
                                                     />
                                                 </div>
-                                                <div className="col-span-5 relative">
+                                                <div className="col-span-4 relative">
                                                     <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-sm">₪</span>
                                                     <input
                                                         type="number"
@@ -389,16 +390,17 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                                             </div>
                                         ))}
                                         {/* Draft */}
-                                        <div className="grid grid-cols-12 gap-2 items-center py-4 px-4 text-sm bg-white/40 dark:bg-neutral-900/40">
-                                            <div className="col-span-6">
+                                        <div className="grid grid-cols-12 gap-4 items-center py-4 px-4 text-sm bg-white/40 dark:bg-neutral-900/40">
+                                            <div className="col-span-7">
                                                 <DatePicker
+                                                    variant="inline"
                                                     value={draftExpected.due_date ? parseISO(draftExpected.due_date) : undefined}
                                                     onChange={(date) => setDraftExpected({ ...draftExpected, due_date: date ? format(date, 'yyyy-MM-dd') : '' })}
                                                     placeholder={t('date')}
                                                     className="w-full bg-transparent border-none shadow-none"
                                                 />
                                             </div>
-                                            <div className="col-span-5 relative">
+                                            <div className="col-span-4 relative">
                                                 <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-xs">₪</span>
                                                 <input
                                                     type="number"
@@ -433,7 +435,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                         <div className="space-y-6">
                             <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground block ml-1">{t('actualPayments')}</label>
                             <div className="border border-slate-100 dark:border-neutral-800 rounded-[2rem] overflow-hidden bg-slate-50/50 dark:bg-neutral-800/30">
-                                <div className="bg-white dark:bg-neutral-900/50 p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground grid grid-cols-12 gap-2 px-6 border-b border-slate-100 dark:border-neutral-800">
+                                <div className="bg-white dark:bg-neutral-900/50 p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground grid grid-cols-12 gap-4 px-6 border-b border-slate-100 dark:border-neutral-800">
                                     <span className="col-span-7">{t('date')}</span>
                                     <span className="col-span-4 text-center">{t('amount')}</span>
                                     <span className="col-span-1"></span>
@@ -441,16 +443,17 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                                 <div className="max-h-80 overflow-y-auto scrollbar-thin">
                                     <div className="divide-y divide-slate-100/50 dark:divide-neutral-800/50">
                                         {paymentHistory.map((payment) => (
-                                            <div key={payment.id} className="grid grid-cols-12 gap-2 items-center py-3 px-4 text-sm hover:bg-white dark:hover:bg-neutral-800/80 transition-colors group">
-                                                <div className="col-span-6">
+                                            <div key={payment.id} className="grid grid-cols-12 gap-4 items-center py-3 px-4 text-sm hover:bg-white dark:hover:bg-neutral-800/80 transition-colors group">
+                                                <div className="col-span-7">
                                                     <DatePicker
+                                                        variant="inline"
                                                         value={payment.due_date ? parseISO(payment.due_date) : undefined}
                                                         onChange={(date) => handlePaymentChange(payment.id, 'due_date', date ? format(date, 'yyyy-MM-dd') : '')}
                                                         placeholder={t('date')}
                                                         className="w-full bg-transparent border-none shadow-none focus:ring-0 font-bold"
                                                     />
                                                 </div>
-                                                <div className="col-span-5 relative">
+                                                <div className="col-span-4 relative">
                                                     <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-sm">₪</span>
                                                     <input
                                                         type="number"
@@ -467,16 +470,17 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                                             </div>
                                         ))}
                                         {/* Draft */}
-                                        <div className="grid grid-cols-12 gap-2 items-center py-4 px-4 text-sm bg-white/40 dark:bg-neutral-900/40">
-                                            <div className="col-span-6">
+                                        <div className="grid grid-cols-12 gap-4 items-center py-4 px-4 text-sm bg-white/40 dark:bg-neutral-900/40">
+                                            <div className="col-span-7">
                                                 <DatePicker
+                                                    variant="inline"
                                                     value={draftPayment.due_date ? parseISO(draftPayment.due_date) : undefined}
                                                     onChange={(date) => setDraftPayment({ ...draftPayment, due_date: date ? format(date, 'yyyy-MM-dd') : '' })}
                                                     placeholder={t('date')}
                                                     className="w-full bg-transparent border-none shadow-none"
                                                 />
                                             </div>
-                                            <div className="col-span-5 relative">
+                                            <div className="col-span-4 relative">
                                                 <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-xs">₪</span>
                                                 <input
                                                     type="number"
@@ -660,21 +664,21 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                                         <table className="w-full text-sm">
                                             <thead>
                                                 <tr className="bg-slate-50 dark:bg-neutral-800/80 border-b border-slate-100 dark:border-neutral-800">
-                                                    <th className="p-6 text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('month')}</th>
-                                                    <th className="p-6 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('shouldPay')}</th>
-                                                    <th className="p-6 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('paid')}</th>
-                                                    <th className="p-6 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('gap')}</th>
+                                                    <th className="p-6 text-start text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('month')}</th>
+                                                    <th className="p-6 text-end text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('shouldPay')}</th>
+                                                    <th className="p-6 text-end text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('paid')}</th>
+                                                    <th className="p-6 text-end text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('gap')}</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-slate-50 dark:divide-neutral-800">
                                                 {result.monthlyBreakdown.map((month) => (
                                                     <tr key={month.month} className="hover:bg-slate-50/50 dark:hover:bg-neutral-800/30 transition-colors">
-                                                        <td className="p-6 font-black text-xs uppercase tracking-tight">
+                                                        <td className="p-6 text-start font-black text-xs uppercase tracking-tight">
                                                             {month.month.split('-').reverse().join('/') || t('now')}
                                                         </td>
-                                                        <td className="p-6 text-right font-black">₪{month.shouldHavePaid.toLocaleString()}</td>
-                                                        <td className="p-6 text-right font-bold text-muted-foreground/60">₪{month.actuallyPaid.toLocaleString()}</td>
-                                                        <td className={cn("p-6 text-right font-black", month.difference > 0 ? "text-red-500" : "text-emerald-500")}>
+                                                        <td className="p-6 text-end font-black">₪{month.shouldHavePaid.toLocaleString()}</td>
+                                                        <td className="p-6 text-end font-bold text-muted-foreground/60">₪{month.actuallyPaid.toLocaleString()}</td>
+                                                        <td className={cn("p-6 text-end font-black", month.difference > 0 ? "text-red-500" : "text-emerald-500")}>
                                                             {month.difference > 0 ? '+' : ''}₪{month.difference.toLocaleString()}
                                                         </td>
                                                     </tr>

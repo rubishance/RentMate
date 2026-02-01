@@ -495,7 +495,7 @@ export function AddContract() {
                 }
             }
 
-            await propertyService.syncOccupancyStatus(propertyId);
+            await propertyService.syncOccupancyStatus(propertyId, user.id);
             clearCache();
             success(t('success'), t('contractCreated'));
             navigate('/properties');

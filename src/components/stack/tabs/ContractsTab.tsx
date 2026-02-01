@@ -19,10 +19,14 @@ export function ContractsTab({ propertyId }: ContractsTabProps) {
 
     useEffect(() => {
         const fetchContracts = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
             const { data, error } = await supabase
                 .from('contracts')
                 .select('*')
                 .eq('property_id', propertyId)
+                .eq('user_id', user.id)
                 .order('start_date', { ascending: false });
 
             if (error) {

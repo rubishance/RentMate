@@ -287,7 +287,8 @@ export interface UserPreferences {
 
 export type UserRole = 'user' | 'admin' | 'manager';
 export type SubscriptionStatus = 'active' | 'suspended';
-// Legacy enum, keeping for type safety in old code until migrated
+// DEPRECATED: Legacy enum, keeping for type safety in old code until migrated.
+// Use 'plan_id' (UUID) for actual subscription linkage.
 export type SubscriptionPlan = 'free_forever' | 'custom_enterprise' | 'free' | 'pro' | 'enterprise';
 
 export interface SubscriptionPlanDef {

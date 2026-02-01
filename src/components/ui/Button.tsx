@@ -23,11 +23,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({
     ...props
 }, ref) => {
     const variants = {
-        primary: 'bg-black dark:bg-white text-white dark:text-black font-black uppercase tracking-widest hover:bg-black/90 dark:hover:bg-white/90 shadow-lg',
-        secondary: 'bg-gray-100 dark:bg-neutral-900 text-black dark:text-white font-black uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-neutral-800',
-        outline: 'border-2 border-black/10 dark:border-white/10 bg-transparent hover:border-black dark:hover:border-white font-black uppercase tracking-widest',
-        ghost: 'hover:bg-gray-100 dark:hover:bg-neutral-900 font-bold',
-        destructive: 'bg-red-600 text-white font-black uppercase tracking-widest hover:bg-red-700'
+        primary: 'bg-primary text-primary-foreground font-black uppercase tracking-wide hover:opacity-90 shadow-lg hover:shadow-xl bg-gradient-to-b from-white/10 to-transparent',
+        secondary: 'bg-secondary text-secondary-foreground font-black uppercase tracking-wide hover:bg-secondary/80 shadow-sm',
+        outline: 'border-2 border-primary/10 bg-transparent hover:border-primary text-primary font-black uppercase tracking-wide',
+        ghost: 'hover:bg-accent hover:text-accent-foreground font-bold tracking-wide',
+        destructive: 'bg-destructive text-destructive-foreground font-black uppercase tracking-wide hover:opacity-90 shadow-lg'
     };
 
     const sizes = {

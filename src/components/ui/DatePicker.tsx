@@ -21,6 +21,7 @@ export interface DatePickerProps {
     className?: string;
     error?: boolean;
     readonly?: boolean;
+    variant?: 'default' | 'inline' | 'compact';
 }
 
 export function DatePicker({
@@ -33,7 +34,8 @@ export function DatePicker({
     label,
     className,
     error,
-    readonly
+    readonly,
+    variant = 'default'
 }: DatePickerProps) {
     const [isOpen, setIsOpen] = React.useState(false);
     const [month, setMonth] = React.useState<Date | undefined>(value || new Date());
@@ -60,21 +62,23 @@ export function DatePicker({
                     type="button"
                     onClick={() => !readonly && setIsOpen(true)}
                     className={cn(
-                        "w-full p-3 flex items-center justify-between bg-background/50 backdrop-blur-sm border rounded-xl transition-all duration-300 group",
+                        "w-full flex items-center justify-between bg-background/50 backdrop-blur-sm border rounded-xl transition-all duration-300 group",
+                        variant === 'default' ? "p-3" : (variant === 'compact' ? "p-2" : "p-1"),
                         error ? "border-red-500 ring-1 ring-red-500" : "border-border hover:border-primary/50 hover:bg-secondary/30",
                         isOpen && "ring-2 ring-primary/20 border-primary",
                         readonly && "cursor-default opacity-60 bg-secondary/20 hover:border-border hover:bg-secondary/20"
                     )}
                 >
-                    <div className="flex items-center gap-3">
+                    <div className={cn("flex items-center", variant === 'default' ? "gap-3" : "gap-2")}>
                         <div className={cn(
-                            "p-2 rounded-lg transition-colors",
+                            "rounded-lg transition-colors",
+                            variant === 'default' ? "p-2" : "p-1.5",
                             value ? "bg-primary/10 text-primary" : "bg-secondary text-muted-foreground group-hover:bg-white"
                         )}>
-                            <CalendarIcon className="w-5 h-5" />
+                            <CalendarIcon className={variant === 'default' ? "w-5 h-5" : "w-4 h-4"} />
                         </div>
                         <span className={cn(
-                            "text-sm font-medium",
+                            variant === 'default' ? "text-sm font-medium" : (variant === 'compact' ? "text-xs font-semibold" : "text-[11px] font-bold"),
                             value ? "text-foreground" : "text-muted-foreground"
                         )}>
                             {value ? format(value, 'dd/MM/yyyy') : placeholder}

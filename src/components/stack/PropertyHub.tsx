@@ -58,8 +58,11 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
     // Self-healing synchronization: Ensure property status matches active contracts
     useEffect(() => {
         const sync = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
             // 1. Sync status
-            const newStatus = await propertyService.syncOccupancyStatus(propertyId);
+            const newStatus = await propertyService.syncOccupancyStatus(propertyId, user.id);
             if (newStatus && newStatus !== property.status) {
                 console.log(`[PropertyHub] Status out of sync for ${propertyId}. Updating: ${property.status} -> ${newStatus}`);
                 setProperty(prev => ({ ...prev, status: newStatus }));
@@ -71,6 +74,7 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
                 .from('contracts')
                 .select('*')
                 .eq('property_id', propertyId)
+                .eq('user_id', user.id)
                 .eq('status', 'active')
                 .order('start_date', { ascending: false })
                 .limit(1);
@@ -262,6 +266,8 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
             setActiveTab(id as TabType); // Use activeTab state to track current section for visual feedback
         }
     };
+
+    const [refreshKey, setRefreshKey] = useState(0);
 
     return (
         <div className="flex flex-col h-full bg-slate-50 dark:bg-black">
@@ -685,9 +691,9 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
             {/* 3. Tab Content */}
             <div className="flex-1 overflow-y-auto min-h-0 pt-6 pb-20">
                 <div className="px-6 h-full">
-                    {activeTab === 'contracts' && <ContractsTab propertyId={propertyId} />}
-                    {activeTab === 'wallet' && <WalletTab propertyId={propertyId} property={property} />}
-                    {activeTab === 'files' && <PropertyDocumentsHub property={property} />}
+                    {activeTab === 'contracts' && <ContractsTab key={refreshKey} propertyId={propertyId} />}
+                    {activeTab === 'wallet' && <WalletTab key={refreshKey} propertyId={propertyId} property={property} />}
+                    {activeTab === 'files' && <PropertyDocumentsHub key={refreshKey} property={property} />}
                 </div>
             </div>
 
@@ -711,6 +717,7 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
                 onSuccess={() => {
                     // Update cache/lists
                     clear();
+                    setRefreshKey(prev => prev + 1);
                 }}
                 initialData={{
                     contract_id: (property as any).contracts?.find((c: any) => c.status === 'active')?.id

@@ -269,10 +269,14 @@ class PropertyDocumentsService {
      * Get folders for a property and category
      */
     async getFolders(propertyId: string, category?: string): Promise<DocumentFolder[]> {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+
         let query = supabase
             .from('document_folders')
             .select('*')
             .eq('property_id', propertyId)
+            .eq('user_id', user.id)
             .order('folder_date', { ascending: false });
 
         if (category) {
@@ -288,11 +292,15 @@ class PropertyDocumentsService {
      * Delete a folder and all its contents (files + DB records)
      */
     async deleteFolder(folderId: string): Promise<void> {
-        // 1. Get all documents in this folder
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+
+        // 1. Get all documents in this folder and verify ownership
         const { data: docs, error: fetchError } = await supabase
             .from('property_documents')
-            .select('id, storage_bucket, storage_path')
-            .eq('folder_id', folderId);
+            .select('id, storage_bucket, storage_path, user_id')
+            .eq('folder_id', folderId)
+            .eq('user_id', user.id); // Verify ownership
 
         if (fetchError) throw fetchError;
 
@@ -309,11 +317,12 @@ class PropertyDocumentsService {
             if (storageError) console.error('Error deleting folder files from storage:', storageError);
         }
 
-        // 3. Delete folder from DB (Cascade will delete property_documents rows)
+        // 3. Delete folder from DB (Cascade will delete property_documents rows if RLS permits)
         const { error: dbError } = await supabase
             .from('document_folders')
             .delete()
-            .eq('id', folderId);
+            .eq('id', folderId)
+            .eq('user_id', user.id); // Verify ownership
 
         if (dbError) throw dbError;
     }
@@ -425,10 +434,14 @@ class PropertyDocumentsService {
             paid?: boolean;
         }
     ): Promise<PropertyDocument[]> {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+
         let query = supabase
             .from('property_documents')
             .select('*')
             .eq('property_id', propertyId)
+            .eq('user_id', user.id)
             .order('created_at', { ascending: false });
 
         if (filters?.folderId) {
@@ -483,10 +496,14 @@ class PropertyDocumentsService {
      * Mark bill as paid
      */
     async markAsPaid(documentId: string, paymentDate: string): Promise<void> {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+
         const { error } = await supabase
             .from('property_documents')
             .update({ paid: true, payment_date: paymentDate })
-            .eq('id', documentId);
+            .eq('id', documentId)
+            .eq('user_id', user.id); // Enforce ownership
 
         if (error) throw error;
     }
@@ -495,10 +512,14 @@ class PropertyDocumentsService {
      * Mark bill as unpaid
      */
     async markAsUnpaid(documentId: string): Promise<void> {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+
         const { error } = await supabase
             .from('property_documents')
             .update({ paid: false, payment_date: null })
-            .eq('id', documentId);
+            .eq('id', documentId)
+            .eq('user_id', user.id); // Enforce ownership
 
         if (error) throw error;
     }
@@ -507,11 +528,15 @@ class PropertyDocumentsService {
      * Delete a document
      */
     async deleteDocument(documentId: string): Promise<void> {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+
         // Get document info
         const { data: doc, error: fetchError } = await supabase
             .from('property_documents')
             .select('*')
             .eq('id', documentId)
+            .eq('user_id', user.id) // Enforce ownership
             .single();
 
         if (fetchError) throw fetchError;
@@ -528,7 +553,8 @@ class PropertyDocumentsService {
         const { error: dbError } = await supabase
             .from('property_documents')
             .delete()
-            .eq('id', documentId);
+            .eq('id', documentId)
+            .eq('user_id', user.id); // Enforce ownership
 
         if (dbError) throw dbError;
     }

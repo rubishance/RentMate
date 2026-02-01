@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { supabase, isSupabaseConfigured } from '../../lib/supabase';
+import * as Sentry from "@sentry/react";
 
 const AuthGuard = () => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -88,13 +89,52 @@ const AuthGuard = () => {
 
             if (!mounted) return;
 
-            if (error || !profile || profile.subscription_status === 'suspended') {
+            // Handle Missing Profile (Fallback Recovery)
+            if (error || !profile) {
+                console.warn('Profile missing for user, attempting recovery...', userId);
+                const { data: { user } } = await supabase.auth.getUser();
+
+                if (user) {
+                    // Try to create profile manually if it's missing (Defense in depth)
+                    const { error: repairError } = await supabase
+                        .from('user_profiles')
+                        .upsert({
+                            id: user.id,
+                            email: user.email,
+                            full_name: user.user_metadata?.full_name || user.email,
+                            first_name: user.user_metadata?.first_name || 'User',
+                            last_name: user.user_metadata?.last_name || '',
+                            role: 'user',
+                            subscription_status: 'active'
+                        });
+
+                    if (!repairError) {
+                        console.log('Profile recovered successfully');
+                        setIsAuthenticated(true);
+                        return;
+                    }
+                    console.error('Profile recovery failed:', repairError);
+                }
+
                 await supabase.auth.signOut();
+                Sentry.setUser(null);
+                setIsAuthenticated(false);
+                return;
+            }
+
+            // Check Status
+            if (profile.subscription_status === 'suspended') {
+                console.error('Account suspended:', userId);
+                await supabase.auth.signOut();
+                Sentry.setUser(null);
                 setIsAuthenticated(false);
             } else {
+                // Sentry Context (PII Safe: ID Only)
+                Sentry.setUser({ id: userId });
                 setIsAuthenticated(true);
             }
         } catch (err) {
+            console.error('Unexpected AuthGuard error:', err);
             if (mounted) setIsAuthenticated(false);
         }
     };

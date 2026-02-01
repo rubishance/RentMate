@@ -200,6 +200,7 @@ export function IndexCalculator() {
                     <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">{t('baseDate')}</label>
                     <div className="relative group">
                         <DatePicker
+                            variant="compact"
                             value={baseDate ? parseISO(baseDate) : undefined}
                             onChange={(date) => setBaseDate(date ? format(date, 'yyyy-MM-dd') : '')}
                         />
@@ -218,6 +219,7 @@ export function IndexCalculator() {
                     <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">{t('paymentDate')}</label>
                     <div className="relative group">
                         <DatePicker
+                            variant="compact"
                             value={currentDate ? parseISO(currentDate) : undefined}
                             onChange={(date) => setCurrentDate(date ? format(date, 'yyyy-MM-dd') : '')}
                         />

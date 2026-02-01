@@ -69,7 +69,7 @@ export const Modal: React.FC<ModalProps> = ({
                         }}
                         exit={{ opacity: 0, scale: 0.95, y: 10, transition: { duration: 0.2 } }}
                         className={cn(
-                            "relative w-full bg-white dark:bg-neutral-900 shadow-2xl rounded-3xl overflow-hidden flex flex-col",
+                            "relative w-full bg-background/95 dark:bg-neutral-900/95 shadow-premium rounded-3xl overflow-hidden flex flex-col border border-border/50",
                             sizes[size],
                             className
                         )}

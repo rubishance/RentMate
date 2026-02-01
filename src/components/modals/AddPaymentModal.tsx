@@ -68,9 +68,9 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
             contract_id: '',
             amount: '',
             due_date: new Date().toISOString().split('T')[0],
-            status: 'pending',
+            status: 'paid',
             payment_method: 'bank_transfer',
-            paid_date: '',
+            paid_date: new Date().toISOString().split('T')[0],
         }
     });
 
@@ -86,9 +86,9 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                     contract_id: initialData.contract_id || '',
                     amount: initialData.amount ? initialData.amount.toString() : '',
                     due_date: initialData.due_date || new Date().toISOString().split('T')[0],
-                    status: initialData.status || 'pending',
+                    status: initialData.status || 'paid',
                     payment_method: initialData.payment_method || 'bank_transfer',
-                    paid_date: '',
+                    paid_date: initialData.status === 'paid' ? (initialData.due_date || new Date().toISOString().split('T')[0]) : new Date().toISOString().split('T')[0],
                 });
             }
         } else {
@@ -235,39 +235,6 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                     </div>
                 </div>
 
-                <div className="p-6 bg-gray-50 dark:bg-neutral-800/50 rounded-[2rem] space-y-4 border border-black/5 dark:border-white/5">
-                    <div className="flex items-center justify-between">
-                        <span className="text-xs font-black uppercase tracking-widest text-black dark:text-white">{t('isPaid')}</span>
-                        <Controller
-                            name="status"
-                            control={control}
-                            render={({ field }) => (
-                                <Switch
-                                    checked={field.value === 'paid'}
-                                    onChange={(checked) => field.onChange(checked ? 'paid' : 'pending')}
-                                />
-                            )}
-                        />
-                    </div>
-
-                    <AnimatePresence>
-                        {currentStatus === 'paid' && (
-                            <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="pt-4 border-t border-black/5 dark:border-white/5"
-                            >
-                                <Input
-                                    {...register('paid_date')}
-                                    label={t('paidDate')}
-                                    type="date"
-                                />
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
-
                 <div className="space-y-4">
                     <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">{t('method')}</label>
                     <div className="grid grid-cols-3 gap-2">
@@ -309,7 +276,8 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                         onClick={handleSubmit((v) => onFormSubmit(v, true))}
                         disabled={loading}
                         isLoading={loading}
-                        className="flex-1"
+                        className="flex-1 !text-white"
+                        style={{ color: 'white' }}
                     >
                         {t('createAndClose')}
                     </Button>
