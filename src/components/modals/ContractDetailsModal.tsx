@@ -66,7 +66,8 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
             startDate: string;
             amount: number;
             currency: 'ILS' | 'USD' | 'EUR';
-        }[]
+        }[],
+        option_notice_days: null as number | null
     });
 
     useEffect(() => {
@@ -92,7 +93,8 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                 status: contract.status || 'active',
 
                 option_periods: contract.option_periods || [],
-                rent_periods: contract.rent_periods || []
+                rent_periods: contract.rent_periods || [],
+                option_notice_days: contract.option_notice_days || null
             });
             setReadOnly(initialReadOnly);
         }
@@ -116,6 +118,13 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!contract?.id) {
+            console.error('[ContractDetailsModal] Critical: Missing contract.id for update.');
+            alert(t('error_missing_id') || 'System Error: Missing Contract ID');
+            return;
+        }
+
         setLoading(true);
         try {
             const updates: any = {
@@ -137,7 +146,8 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                 security_deposit_amount: Number(formData.security_deposit_amount),
                 status: formData.status,
                 option_periods: formData.option_periods,
-                rent_periods: formData.rent_periods
+                rent_periods: formData.rent_periods,
+                option_notice_days: formData.option_periods.length > 0 ? formData.option_notice_days : null
             };
 
             const { error } = await supabase
@@ -175,9 +185,9 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                 }, 300);
             }
 
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error updating contract:', error);
-            alert('Failed to update contract');
+            alert(`Failed to update contract: ${error.message || 'Unknown error'}`);
         } finally {
             setLoading(false);
         }
@@ -649,6 +659,26 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                         </button>
                                     )}
                                 </div>
+
+                                {/* Extension Notice Days */}
+                                {formData.option_periods.length > 0 && (
+                                    <div className="pt-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                                        <label className="text-xs font-medium text-muted-foreground uppercase block mb-1">
+                                            {t('extensionNoticeDays')}
+                                        </label>
+                                        <div className="relative">
+                                            <Clock className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                                            <input
+                                                type="number"
+                                                disabled={readOnly}
+                                                value={formData.option_notice_days || ''}
+                                                onChange={e => setFormData({ ...formData, option_notice_days: e.target.value ? Number(e.target.value) : null })}
+                                                className="w-full pl-8 pr-3 py-1.5 text-xs border border-border dark:border-gray-700 rounded-lg bg-white dark:bg-foreground disabled:bg-secondary disabled:text-muted-foreground no-spinner focus:ring-1 focus:ring-primary"
+                                                placeholder="e.g. 60"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
                             </section>
 
                             {/* Security Deposit */}

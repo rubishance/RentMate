@@ -6,10 +6,15 @@ import {
     RulerIcon as Ruler,
     PaymentsIcon as PaymentIcon,
     ContractsIcon as ContractIcon,
-    AssetsIcon as AssetIcon
+    AssetsIcon as AssetIcon,
+    BalconyIcon,
+    SafeRoomIcon,
+    StorageIcon,
+    CarIcon as Car
 } from '../components/icons/NavIcons';
 import { supabase } from '../lib/supabase';
 import { formatDate } from '../lib/utils';
+import { format } from 'date-fns';
 import { ConfirmDeleteModal } from '../components/modals/ConfirmDeleteModal';
 import { IndexedRentModal } from '../components/modals/IndexedRentModal';
 import type { Property } from '../types/database';
@@ -48,6 +53,7 @@ type ExtendedProperty = Property & {
     contracts: {
         base_rent: number;
         status: string;
+        start_date: string;
         end_date: string | null;
         linkage_type: string;
         base_index_date: string | null;
@@ -92,11 +98,7 @@ export function Properties() {
     const { push } = useStack();
 
     const handleView = (property: Property) => {
-        push('property_hub', {
-            propertyId: property.id,
-            property: property,
-            onDelete: () => fetchProperties()
-        }, { title: property.address });
+        navigate(`/properties/${property.id}`);
     };
 
     const handleDelete = async (property: Property) => {
@@ -200,7 +202,7 @@ export function Properties() {
 
             const { data, error } = await supabase
                 .from('properties')
-                .select('*, contracts(id, base_rent, status, end_date, linkage_type, base_index_date, base_index_value, option_periods)')
+                .select('*, contracts(id, base_rent, status, start_date, end_date, linkage_type, base_index_date, base_index_value, option_periods)')
                 .eq('user_id', user.id) // STRICTLY enforce ownership
                 .order('created_at', { ascending: false });
 
@@ -340,7 +342,12 @@ export function Properties() {
                 /* Properties Grid */
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 px-8">
                     {properties.map((property) => {
-                        const activeContract = property.contracts?.find(c => c.status === 'active');
+                        const today = format(new Date(), 'yyyy-MM-dd');
+                        const activeContract = property.contracts?.find(c =>
+                            c.status === 'active' &&
+                            c.start_date <= today &&
+                            (!c.end_date || c.end_date >= today)
+                        );
                         return (
                             <div
                                 key={property.id}
@@ -360,11 +367,11 @@ export function Properties() {
                                     <div className={`absolute top-8 ${lang === 'he' ? 'left-8' : 'right-8'} flex gap-3`}>
                                         <span className={cn(
                                             "px-4 py-2 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] backdrop-blur-3xl shadow-2xl border transition-all duration-500",
-                                            property.status === 'Occupied'
+                                            activeContract
                                                 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                                                 : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
                                         )}>
-                                            {property.status === 'Occupied' ? t('occupied') : t('vacant')}
+                                            {activeContract ? t('occupied') : t('vacant')}
                                         </span>
                                     </div>
 
@@ -388,7 +395,8 @@ export function Properties() {
                                     </div>
 
                                     {/* Detailed Specs Row */}
-                                    <div className="grid grid-cols-3 gap-4 py-6 border-y border-slate-50 dark:border-neutral-800/50">
+                                    <div className="grid grid-cols-3 md:grid-cols-6 gap-4 py-6 border-y border-slate-50 dark:border-neutral-800/50">
+                                        {/* Rooms */}
                                         <div className="flex flex-col items-center gap-1">
                                             <div className="w-10 h-10 rounded-2xl bg-slate-50 dark:bg-neutral-800 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
                                                 <BedDouble className="w-5 h-5 text-slate-400" />
@@ -396,6 +404,7 @@ export function Properties() {
                                             <span className="text-sm font-black text-foreground tracking-tighter">{property.rooms}</span>
                                             <span className="text-[8px] font-black uppercase tracking-widest text-slate-300">{t('rooms')}</span>
                                         </div>
+                                        {/* SQM */}
                                         <div className="flex flex-col items-center gap-1">
                                             <div className="w-10 h-10 rounded-2xl bg-slate-50 dark:bg-neutral-800 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
                                                 <Ruler className="w-5 h-5 text-slate-400" />
@@ -403,12 +412,53 @@ export function Properties() {
                                             <span className="text-sm font-black text-foreground tracking-tighter">{property.size_sqm}</span>
                                             <span className="text-[8px] font-black uppercase tracking-widest text-slate-300">{t('sqm')}</span>
                                         </div>
+
+                                        {/* Parking */}
                                         <div className="flex flex-col items-center gap-1">
-                                            <div className="w-10 h-10 rounded-2xl bg-slate-50 dark:bg-neutral-800 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
-                                                <Home className="w-5 h-5 text-slate-400 opacity-40" />
+                                            <div className={cn(
+                                                "w-10 h-10 rounded-2xl flex items-center justify-center mb-1 group-hover:scale-110 transition-transform",
+                                                property.has_parking ? "bg-primary/10 text-primary" : "bg-slate-50 dark:bg-neutral-800 text-slate-400 opacity-40"
+                                            )}>
+                                                <Car className="w-5 h-5" />
                                             </div>
-                                            <span className="text-sm font-black text-foreground tracking-tighter">1</span>
+                                            <span className="text-sm font-black text-foreground tracking-tighter">{property.has_parking ? '✓' : ''}</span>
                                             <span className="text-[8px] font-black uppercase tracking-widest text-slate-300">{t('parking')}</span>
+                                        </div>
+
+                                        {/* Balcony */}
+                                        <div className="flex flex-col items-center gap-1">
+                                            <div className={cn(
+                                                "w-10 h-10 rounded-2xl flex items-center justify-center mb-1 group-hover:scale-110 transition-transform",
+                                                property.has_balcony ? "bg-primary/10 text-primary" : "bg-slate-50 dark:bg-neutral-800 text-slate-400 opacity-40"
+                                            )}>
+                                                <BalconyIcon className="w-5 h-5" />
+                                            </div>
+                                            <span className="text-sm font-black text-foreground tracking-tighter">{property.has_balcony ? '✓' : ''}</span>
+                                            <span className="text-[8px] font-black uppercase tracking-widest text-slate-300">{t('balcony')}</span>
+                                        </div>
+
+                                        {/* Mamad (Safe Room) */}
+                                        <div className="flex flex-col items-center gap-1">
+                                            <div className={cn(
+                                                "w-10 h-10 rounded-2xl flex items-center justify-center mb-1 group-hover:scale-110 transition-transform",
+                                                property.has_safe_room ? "bg-primary/10 text-primary" : "bg-slate-50 dark:bg-neutral-800 text-slate-400 opacity-40"
+                                            )}>
+                                                <SafeRoomIcon className="w-5 h-5" />
+                                            </div>
+                                            <span className="text-sm font-black text-foreground tracking-tighter">{property.has_safe_room ? '✓' : ''}</span>
+                                            <span className="text-[8px] font-black uppercase tracking-widest text-slate-300">{t('safe_room')}</span>
+                                        </div>
+
+                                        {/* Storage */}
+                                        <div className="flex flex-col items-center gap-1">
+                                            <div className={cn(
+                                                "w-10 h-10 rounded-2xl flex items-center justify-center mb-1 group-hover:scale-110 transition-transform",
+                                                property.has_storage ? "bg-primary/10 text-primary" : "bg-slate-50 dark:bg-neutral-800 text-slate-400 opacity-40"
+                                            )}>
+                                                <StorageIcon className="w-5 h-5" />
+                                            </div>
+                                            <span className="text-sm font-black text-foreground tracking-tighter">{property.has_storage ? '✓' : ''}</span>
+                                            <span className="text-[8px] font-black uppercase tracking-widest text-slate-300">{t('storage')}</span>
                                         </div>
                                     </div>
 
@@ -430,7 +480,7 @@ export function Properties() {
                                                     property.contracts?.some(c => c.status === 'active' && c.linkage_type && c.linkage_type !== 'none') && "cursor-pointer hover:text-primary underline decoration-2 decoration-primary/10 hover:decoration-primary underline-offset-8"
                                                 )}
                                             >
-                                                ₪{(activeContract?.base_rent || property.rent_price || 0).toLocaleString()}
+                                                ₪{(activeContract?.base_rent || 0).toLocaleString()}
                                             </div>
                                         </div>
 

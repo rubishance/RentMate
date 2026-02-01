@@ -39,6 +39,7 @@ export type TranslationKeys =
     | 'from'
     | 'to'
     | 'month'
+    | 'extensionNoticeDays'
     | 'note'
     | 'vendorName'
     | 'optionalFolderNote'
@@ -80,6 +81,16 @@ export type TranslationKeys =
     | 'visuals'
     | 'saveRequired'
     | 'savePropertyToAttachDocs'
+    | 'batchCompleteMsg'
+    | 'paymentCreationFailed'
+    | 'bank_transfer'
+    | 'daysLeft'
+    | 'allContracts'
+    | 'financeActual'
+    | 'financeExpected'
+    | 'financeAll'
+    | 'financeRent'
+    | 'financeBills'
 
     // Auth & Navigation
     | 'login'
@@ -778,6 +789,12 @@ export type TranslationKeys =
     | 'floorIndex'
     | 'indexBaseMin'
     | 'monthlyRent'
+    | 'balcony'
+    | 'safeRoom'
+    | 'fillAllFields'
+    | 'manualIndexEntries'
+    | 'target'
+    | 'unknownProperty'
     ;
 
 export const translations: Record<string, Record<TranslationKeys, string>> = {
@@ -871,6 +888,9 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         visuals: 'תמונות',
         saveRequired: 'יש לשמור קודם',
         savePropertyToAttachDocs: 'שמור את הנכס כדי לצרף מסמכים',
+        batchCompleteMsg: 'הפעולה הושלמה: נוספו {count} תשלומים בסך כולל של ₪{total}',
+        paymentCreationFailed: 'יצירת התשלום נכשלה',
+        bank_transfer: 'העברה בנקאית',
         knowledgeBaseDesc: 'מאגר ידע חכם לניהול נכסים',
         indexWatcherTitle: 'מעקב מדדים חי',
         liveUpdate: 'עדכון חי',
@@ -997,7 +1017,7 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
 
         rooms: 'מס\' חדרים',
         sizeSqm: 'גודל (מ"ר)',
-        parking: 'חניה פרטית',
+        parking: 'חניה',
         storage: 'מחסן',
         propertyImage: 'תמונת הנכס',
         uploadFile: 'העלאת קובץ',
@@ -1149,6 +1169,7 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         partiesInvolved: 'הצדדים לחוזה',
         option: 'אופציה',
         periods: 'תקופות',
+        extensionNoticeDays: 'הודעה מראש למימוש האופציה (בימים)',
 
         name: 'שם',
         address: 'כתובת',
@@ -1439,6 +1460,8 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         breakdownUtilities: 'חשבונות',
         breakdownMaintenance: 'תחזוקה',
         breakdownDocuments: 'מסמכים',
+        balcony: 'מרפסת',
+        safeRoom: 'ממ"ד',
 
         // Media Gallery
         newAlbum: 'אלבום חדש',
@@ -1568,6 +1591,10 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         pricing_billed_yearly: 'מחויב ${price}/שנה',
         pricing_properties: 'נכסים',
         pricing_tenants: 'דיירים',
+        fillAllFields: 'נא למלא את כל שדות החובה',
+        manualIndexEntries: 'הזנת מדדים ידנית',
+        target: 'יעד',
+        unknownProperty: 'נכס לא ידוע',
         pricing_data_export: 'ייצוא נתונים (CSV/PDF)',
         pricing_priority_support: 'תמיכה בעדיפות',
         pricing_api_access: 'גישת API',
@@ -1659,7 +1686,14 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         needsPaintingMsg: 'הדירה דורשת צביעה?',
         and: 'ו-',
         days: 'ימים',
+        daysLeft: 'עוד {count} ימים',
         enterAddressAndCityFirst: 'נא להזין כתובת ועיר קודם',
+        allContracts: 'כל החוזים',
+        financeActual: 'שולם',
+        financeExpected: 'צפוי',
+        financeAll: 'הכל',
+        financeRent: 'שכירות',
+        financeBills: 'חשבונות',
     },
 
     en: {
@@ -1840,6 +1874,7 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         paidAmount: 'Paid Amount',
         reconciliationTable: 'Reconciliation Table',
         month: 'Month',
+        extensionNoticeDays: 'Option Notice Period (Days)',
         expected: 'Expected',
         index: 'Index (Change)',
         due: 'Due',
@@ -2305,6 +2340,8 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         breakdownUtilities: 'Utilities',
         breakdownMaintenance: 'Maintenance',
         breakdownDocuments: 'Documents',
+        balcony: 'Balcony',
+        safeRoom: 'Safe Room (MAMAD)',
 
         // Media Gallery
         newAlbum: 'New Album',
@@ -2434,6 +2471,10 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         pricing_billed_yearly: 'Billed ${price}/year',
         pricing_properties: 'Properties',
         pricing_tenants: 'Tenants',
+        fillAllFields: 'Please fill all required fields',
+        manualIndexEntries: 'Manual Index Entry',
+        target: 'Target',
+        unknownProperty: 'Unknown Property',
         pricing_data_export: 'Data Export (CSV/PDF)',
         pricing_priority_support: 'Priority Support',
         pricing_api_access: 'API Access',
@@ -2537,6 +2578,16 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         deleteAssetConfirm: 'Are you sure you want to delete this asset? All related contracts and payments will be deleted.',
         rentmateUser: 'RentMate User',
         rentmateDashboard: 'RentMate Dashboard',
+        batchCompleteMsg: 'Action Complete: Added {count} payments totaling ₪{total}',
+        paymentCreationFailed: 'Failed to create payment',
+        bank_transfer: 'Bank Transfer',
+        daysLeft: '{count} days left',
+        allContracts: 'All Contracts',
+        financeActual: 'Actual',
+        financeExpected: 'Expected',
+        financeAll: 'All',
+        financeRent: 'Rent',
+        financeBills: 'Bills',
     },
 };
 
