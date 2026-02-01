@@ -7,6 +7,7 @@ import { CompressionService } from '../../services/compression.service';
 import { format, parseISO } from 'date-fns';
 import { DocumentTimeline } from './DocumentTimeline';
 import { DocumentDetailsModal } from '../modals/DocumentDetailsModal';
+import { DatePicker } from '../ui/DatePicker';
 
 interface ChecksManagerProps {
     property: Property;
@@ -66,7 +67,7 @@ export function ChecksManager({ property, readOnly }: ChecksManagerProps) {
                 file,
                 description: '',
                 amount: '',
-                documentDate: new Date().toISOString().split('T')[0]
+                documentDate: format(new Date(), 'yyyy-MM-dd')
             }));
             setStagedFiles(prev => [...prev, ...newFiles]);
         }
@@ -90,7 +91,7 @@ export function ChecksManager({ property, readOnly }: ChecksManagerProps) {
                     property_id: property.id,
                     category: 'other',
                     name: FOLDER_NAME,
-                    folder_date: new Date().toISOString().split('T')[0],
+                    folder_date: format(new Date(), 'yyyy-MM-dd'),
                     description: 'Checks and Payment Proofs'
                 });
                 folderId = folder.id;
@@ -196,11 +197,10 @@ export function ChecksManager({ property, readOnly }: ChecksManagerProps) {
                                             <button onClick={() => removeStagedFile(file.id)} className="text-red-500"><X className="w-4 h-4" /></button>
                                         </div>
                                         <div className="grid grid-cols-2 gap-2">
-                                            <input
-                                                type="date"
-                                                value={file.documentDate}
-                                                onChange={(e) => updateStagedFile(file.id, 'documentDate', e.target.value)}
-                                                className="text-xs p-1 rounded border"
+                                            <DatePicker
+                                                value={file.documentDate ? parseISO(file.documentDate) : undefined}
+                                                onChange={(date) => updateStagedFile(file.id, 'documentDate', date ? format(date, 'yyyy-MM-dd') : '')}
+                                                className="w-full"
                                             />
                                             <input
                                                 type="number"

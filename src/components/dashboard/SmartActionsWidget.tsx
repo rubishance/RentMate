@@ -28,18 +28,6 @@ export function SmartActionsWidget({ stats, loading }: SmartActionsWidgetProps) 
     const actions: SmartAction[] = useMemo(() => {
         const list: SmartAction[] = [];
 
-        // 1. Pending Payments Logic
-        if (stats.pendingMoney > 0) {
-            list.push({
-                id: 'collect_rent',
-                type: 'payment',
-                title: t('paymentPendingTitle'),
-                description: t('paymentPendingDesc', { amount: (stats.pendingMoney || 0).toLocaleString() }),
-                actionLabel: t('sendReminder'),
-                priority: 'high',
-                onAction: () => navigate('/payments?filter=pending')
-            });
-        }
 
         // 2. Open Maintenance
         if (stats.openMaintenance > 0) {

@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, ArrowRight, Building, Check, User, Calendar, Settings as SettingsIcon, Shield, FileText, ChevronDown, Cloud, HardDrive, Download, Car, Box, Plus, Trash2, MapPin, Image as ImageIcon, Loader2, Upload, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Building, Check, User, Calendar, Settings as SettingsIcon, Shield, FileText, ChevronDown, Cloud, HardDrive, Download, Car, Box, Plus, Trash2, MapPin, Image as ImageIcon, Loader2, Upload, AlertTriangle, Clock, Wind, ShieldCheck, CheckCircle } from 'lucide-react';
 import { ContractScanner } from '../components/ContractScanner';
 import { PropertyIcon } from '../components/common/PropertyIcon';
 import { PropertyTypeSelect } from '../components/common/PropertyTypeSelect';
 import { Tooltip } from '../components/Tooltip';
+import { GoogleAutocomplete } from '../components/common/GoogleAutocomplete';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn, formatDate, formatNumber, parseNumber } from '../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,8 +16,13 @@ import { supabase } from '../lib/supabase';
 import { useTranslation } from '../hooks/useTranslation';
 import { generatePaymentSchedule } from '../utils/payment-generator';
 import { useSubscription } from '../hooks/useSubscription';
+import { useForm, Controller, useFieldArray } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { contractSchema, type ContractFormData } from '../schemas/contract.schema';
+import { useToast } from '../hooks/useToast';
 import { CompressionService } from '../services/compression.service';
 import { useDataCache } from '../contexts/DataCacheContext';
+import { propertyService } from '../services/property.service';
 
 const STEPS = [
     { id: 1, labelKey: 'stepAsset', icon: Building },
@@ -33,37 +39,69 @@ export function AddContract() {
     const { lang, t } = useTranslation();
     const { clear: clearCache } = useDataCache();
 
+    const { success, error: toastError } = useToast();
+    const {
+        register,
+        handleSubmit,
+        control,
+        watch,
+        setValue,
+        reset,
+        trigger,
+        formState: { errors }
+    } = useForm<ContractFormData>({
+        resolver: zodResolver(contractSchema) as any,
+        defaultValues: {
+            isExistingProperty: false,
+            property_type: 'apartment',
+            tenants: [{ name: '', id_number: '', email: '', phone: '' }],
+            rent: 0,
+            currency: 'ILS',
+            paymentFrequency: 'Monthly',
+            paymentDay: 1,
+            paymentMethod: 'Checks',
+            linkageType: 'none',
+            linkageSubType: 'known',
+            petsAllowed: 'true',
+            hasLinkage: false,
+            hasLinkageCeiling: false,
+            needsPainting: false,
+            optionPeriods: [],
+            rentSteps: []
+        }
+    });
+
+    const formData: ContractFormData = watch(); // Compatibility bridge
+
     useEffect(() => {
         const prefill = (location.state as any)?.prefill;
         if (prefill) {
-            setFormData(prev => ({
-                ...prev,
+            const updatedData = {
+                ...formData,
                 tenants: [{
                     name: prefill.tenant_name || '',
                     id_number: '',
                     email: '',
-                    phone: ''
+                    phone: '',
                 }],
-                rent: prefill.monthly_rent ? prefill.monthly_rent.toString() : prev.rent
-            }));
+                rent: prefill.monthly_rent || 0,
+                image_url: prefill?.image ? prefill.image : '',
+                hasParking: !!prefill?.parking,
+                hasStorage: !!prefill?.storage,
+                hasBalcony: !!prefill?.balcony,
+                hasSafeRoom: !!prefill?.safe_room,
+                property_type: (prefill?.property_type || 'apartment') as any,
+            };
+
             if (prefill.property_id) {
-                setIsExistingProperty(true);
-                setSelectedPropertyId(prefill.property_id);
+                setValue('isExistingProperty', true);
+                setValue('selectedPropertyId', prefill.property_id);
                 setIsPropertyLocked(true);
                 setStep(2);
             }
+            reset(updatedData);
             // Clear state after reading to prevent re-fill on refresh
             window.history.replaceState({}, document.title);
-        } else {
-            // Default dates: Today and 1 year minus 1 day
-            const today = new Date();
-            const startStr = format(today, 'yyyy-MM-dd');
-            const endStr = format(subDays(addYears(today, 1), 1), 'yyyy-MM-dd');
-            setFormData(prev => ({
-                ...prev,
-                startDate: prev.startDate || startStr,
-                endDate: prev.endDate || endStr
-            }));
         }
 
         const propertyLocked = (location.state as any)?.propertyLocked;
@@ -71,84 +109,22 @@ export function AddContract() {
             setIsPropertyLocked(true);
         }
     }, [location.state]);
+
     const { canAddContract, loading: subLoading, plan } = useSubscription();
 
     const [step, setStep] = useState(1);
     const [isSaving, setIsSaving] = useState(false);
-    const [formData, setFormData] = useState({
-        // Property
-        city: '',
-        address: '',
-        rooms: '',
-        size: '',
-        image_url: '',
-        hasParking: false,
-        hasStorage: false,
-        property_type: 'apartment',
-
-        // Tenants
-        tenants: [{ name: '', id_number: '', email: '', phone: '' }],
-
-        // Financials
-        rent: '',
-        currency: 'ILS',
-        paymentFrequency: 'Monthly',
-        paymentDay: '1',
-        paymentMethod: 'Checks',
-
-        // Dates
-        signingDate: '',
-        startDate: '',
-        endDate: '',
-
-        optionPeriods: [] as {
-            endDate: string;
-            rentAmount?: string;
-            currency?: 'ILS' | 'USD' | 'EUR';
-        }[],
-
-        // Variable Rent (Rent Steps)
-        rentSteps: [] as {
-            startDate: string;
-            amount: string;
-            currency: 'ILS' | 'USD' | 'EUR';
-        }[],
-
-        // Linkage
-        linkageType: 'none',
-        linkageSubType: 'known', // 'known' | 'respect_of' | 'base'
-        baseIndexDate: '',
-        baseIndexValue: '',
-        linkageCeiling: '',
-        linkageFloor: '',
-
-        // Security
-        securityDeposit: '',
-        guarantees: '',
-        guarantorsInfo: '',
-
-        // Specs
-        petsAllowed: 'true',
-        specialClauses: '',
-
-        // UI State
-        hasLinkage: false,
-        hasLinkageCeiling: false,
-        needsPainting: false,
-    });
 
     const [uploadMode, setUploadMode] = useState<'url' | 'upload'>('upload');
     const [isUploading, setIsUploading] = useState(false);
     const [imageError, setImageError] = useState<string | null>(null);
 
     const [existingProperties, setExistingProperties] = useState<Property[]>([]);
-    const [isExistingProperty, setIsExistingProperty] = useState(false);
-    const [selectedPropertyId, setSelectedPropertyId] = useState<string>('');
+    const [isPropertyLocked, setIsPropertyLocked] = useState(false);
     const [storagePreference, setStoragePreference] = useState<'cloud' | 'device' | 'both'>('device');
     const [saveContractFile, setSaveContractFile] = useState(false);
     const [hasOverlap, setHasOverlap] = useState(false);
     const [blockedIntervals, setBlockedIntervals] = useState<{ from: Date; to: Date }[]>([]);
-    const [isPropertyLocked, setIsPropertyLocked] = useState(false);
 
     useEffect(() => {
         // Fetch properties for selection
@@ -193,12 +169,11 @@ export function AddContract() {
             publicationDate = new Date(date.getFullYear(), date.getMonth() + 1, 15);
         }
 
-        // Adjust for timezone offset to avoid date shifting
-        publicationDate.setMinutes(publicationDate.getMinutes() - publicationDate.getTimezoneOffset());
-        const newBaseDate = publicationDate.toISOString().split('T')[0];
+        // Use format instead of toISOString to avoid timezone shifting
+        const newBaseDate = format(publicationDate, 'yyyy-MM-dd');
 
         if (formData.baseIndexDate !== newBaseDate) {
-            setFormData(prev => ({ ...prev, baseIndexDate: newBaseDate }));
+            setValue('baseIndexDate', newBaseDate);
         }
 
     }, [formData.signingDate, formData.startDate, formData.linkageSubType, formData.linkageType]);
@@ -206,6 +181,13 @@ export function AddContract() {
     // Split Screen State
     const [splitRatio, setSplitRatio] = useState(50); // percentage for top pane
     const [isContractViewerOpen, setIsContractViewerOpen] = useState(false); // Start closed until scan
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+    useEffect(() => {
+        const handleResize = () => setWindowWidth(window.innerWidth);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
     const [scannedContractUrl, setScannedContractUrl] = useState<string | null>(null);
     const [contractFile, setContractFile] = useState<File | null>(null);
     const [isScanning, setIsScanning] = useState(false);
@@ -218,7 +200,7 @@ export function AddContract() {
 
     // Fetch Active Contract Intervals for Blocking
     useEffect(() => {
-        if (!selectedPropertyId) {
+        if (!formData.selectedPropertyId) {
             setBlockedIntervals([]);
             return;
         }
@@ -228,7 +210,7 @@ export function AddContract() {
                 const { data, error } = await supabase
                     .from('contracts')
                     .select('start_date, end_date')
-                    .eq('property_id', selectedPropertyId)
+                    .eq('property_id', formData.selectedPropertyId)
                     .eq('status', 'active');
 
                 if (error) {
@@ -249,7 +231,7 @@ export function AddContract() {
         }
 
         fetchBlockedIntervals();
-    }, [selectedPropertyId]);
+    }, [formData.selectedPropertyId]);
 
     // Block access if limit reached
     if (!subLoading && !canAddContract) {
@@ -307,7 +289,7 @@ export function AddContract() {
                 .from('property-images')
                 .getPublicUrl(filePath);
 
-            setFormData(prev => ({ ...prev, image_url: data.publicUrl }));
+            setValue('image_url', data.publicUrl);
         } catch (err: any) {
             console.error('Error uploading image:', err);
             setImageError('Failed to upload image: ' + err.message);
@@ -318,302 +300,257 @@ export function AddContract() {
 
 
 
-    const nextStep = async () => {
-        if (step === 1) {
-            if (!formData.address && !selectedPropertyId) {
-                alert('נא לבחור או להזין כתובת נכס');
-                return;
-            }
-        }
-        if (step === 2) {
-            if (!formData.tenants[0]?.name) {
-                alert('נא להזין לפחות דייר אחד');
-                return;
-            }
-        }
-        if (step === 3) {
-            if (!formData.startDate || !formData.endDate) {
-                alert('תאריך התחלה ותאריך סיום הם שדות חובה');
-                return;
-            }
-            await checkOverlap(selectedPropertyId, formData.startDate, formData.endDate);
-        }
+    const onSubmit = async (data: ContractFormData) => {
+        setIsSaving(true);
+        try {
+            // Get current user
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error('You must be logged in to save a contract');
 
-        if (step === 4) {
-            if (!formData.rent || parseFloat(formData.rent) <= 0) {
-                alert('שכר דירה חודשי הוא שדה חובה');
-                return;
-            }
-        }
+            let propertyId = '';
 
-        if (step === 6) {
-            setIsSaving(true);
-            try {
-                // Get current user
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) throw new Error('You must be logged in to save a contract');
+            // 1. Handle Property (Existing or New)
+            if (data.isExistingProperty && data.selectedPropertyId) {
+                propertyId = data.selectedPropertyId;
+            } else {
+                // Create New Property
+                const constructedAddress = data.address || '';
+                const { data: existingProp } = await supabase
+                    .from('properties')
+                    .select('id')
+                    .eq('address', constructedAddress)
+                    .eq('city', data.city || '')
+                    .eq('user_id', user.id)
+                    .maybeSingle();
 
-                let propertyId = '';
-
-                // 1. Handle Property (Existing or New)
-                if (isExistingProperty && selectedPropertyId) {
-                    propertyId = selectedPropertyId;
-                    // Optional: Update property rent price if changed? Keeping it simple for now.
+                if (existingProp) {
+                    propertyId = existingProp.id;
                 } else {
-                    // Create New Property
-                    // Check for existing property first
-                    const constructedAddress = formData.address.trim();
-                    const { data: existingProp } = await supabase
+                    const { data: propData, error: propErr } = await supabase
                         .from('properties')
-                        .select('id')
-                        .eq('address', constructedAddress)
-                        .eq('city', formData.city)
-                        .eq('user_id', user.id)
-                        .maybeSingle();
-
-                    if (existingProp) {
-                        propertyId = existingProp.id;
-                    } else {
-                        const { data: propData, error: propError } = await supabase.from('properties').insert({
-                            title: `${constructedAddress}, ${formData.city}`,
-                            address: constructedAddress,
-                            city: formData.city,
-                            rooms: parseFloat(formData.rooms) || 0,
-                            size_sqm: parseInt(formData.size) || 0,
-                            has_parking: formData.hasParking,
-                            has_storage: formData.hasStorage,
-                            property_type: formData.property_type,
+                        .insert({
+                            title: `${data.address || ''}, ${data.city || ''}`,
+                            address: data.address || '',
+                            city: data.city || '',
+                            rooms: data.rooms || 0,
+                            size_sqm: data.size || 0,
+                            has_parking: data.hasParking,
+                            has_storage: data.hasStorage,
+                            has_balcony: data.hasBalcony,
+                            has_safe_room: data.hasSafeRoom,
+                            property_type: data.property_type,
                             status: 'Occupied',
-                            image_url: formData.image_url || null,
+                            image_url: data.image_url || null,
                             user_id: user.id
                         }).select().single();
 
-                        if (propError) throw new Error(`Property Error: ${propError.message}`);
-                        propertyId = propData.id;
-                    }
+                    if (propErr) throw new Error(`Property Error: ${propErr.message}`);
+                    propertyId = propData.id;
                 }
-
-                // Helper to safely parse numbers and return null instead of NaN
-                const safeFloat = (val: any) => {
-                    const parsed = parseFloat(val);
-                    return (!isNaN(parsed) && isFinite(parsed)) ? parsed : null;
-                };
-
-                // Helper to safely parse integers
-                const safeInt = (val: any, fallback = 0) => {
-                    const parsed = parseInt(val);
-                    return (!isNaN(parsed) && isFinite(parsed)) ? parsed : fallback;
-                };
-
-                // NEW: Recursive sanitation to prevent NaN/Infinity in JSON columns
-                const sanitizePayload = (obj: any): any => {
-                    if (obj === null || obj === undefined) return obj;
-
-                    // Handle Date objects by converting to ISO string
-                    if (obj instanceof Date) {
-                        return obj.toISOString();
-                    }
-
-                    if (typeof obj === 'number') {
-                        return (isNaN(obj) || !isFinite(obj)) ? null : obj;
-                    }
-
-                    if (Array.isArray(obj)) {
-                        return obj.map(sanitizePayload);
-                    }
-
-                    if (typeof obj === 'object') {
-                        // Avoid trauma with File/Blob objects if they somehow leaked in
-                        if (obj.constructor && obj.constructor.name !== 'Object') {
-                            return null;
-                        }
-
-                        const sanitized: any = {};
-                        for (const key in obj) {
-                            if (Object.prototype.hasOwnProperty.call(obj, key)) {
-                                sanitized[key] = sanitizePayload(obj[key]);
-                            }
-                        }
-                        return sanitized;
-                    }
-                    return obj;
-                };
-
-                // Linkage Sub Type Mapping (Ensure valid enum value)
-                let linkageSubTypeVal: 'known' | 'respect_of' | 'base' | null = null;
-                if (formData.linkageType !== 'none') {
-                    if (formData.linkageSubType === 'known' || formData.linkageSubType === 'respect_of' || formData.linkageSubType === 'base') {
-                        linkageSubTypeVal = formData.linkageSubType;
-                    } else {
-                        linkageSubTypeVal = 'known';
-                    }
-                }
-
-                // 3. Create Contract
-                const contractPayload = {
-                    property_id: propertyId,
-                    tenant_id: null as any, // Explicitly null as we now use embedded 'tenants' array
-                    tenants: (formData.tenants || []).filter(t => t.name.trim() !== '').map(t => ({
-                        name: t.name || '',
-                        id_number: t.id_number || '',
-                        email: t.email || '',
-                        phone: t.phone || ''
-                    })),
-                    signing_date: formData.signingDate || null,
-                    start_date: formData.startDate || null,
-                    end_date: formData.endDate || null,
-                    base_rent: safeFloat(formData.rent) || 0,
-                    currency: (['ILS', 'USD', 'EUR'].includes(formData.currency)) ? formData.currency : 'ILS',
-                    payment_frequency: (formData.paymentFrequency || 'monthly').toLowerCase(),
-                    payment_day: safeInt(formData.paymentDay, 1),
-                    linkage_type: (!formData.linkageType || formData.linkageType === 'none') ? 'none' : formData.linkageType,
-                    linkage_sub_type: linkageSubTypeVal,
-                    linkage_ceiling: formData.hasLinkageCeiling ? safeFloat(formData.linkageCeiling) : null,
-                    linkage_floor: safeFloat(formData.linkageFloor),
-                    base_index_date: formData.baseIndexDate || null,
-                    base_index_value: safeFloat(formData.baseIndexValue),
-                    security_deposit_amount: safeFloat(formData.securityDeposit) || 0,
-                    status: 'active',
-                    option_periods: (formData.optionPeriods || []).map((p, idx) => {
-                        const prevDateStr = idx === 0 ? formData.endDate : formData.optionPeriods[idx - 1].endDate;
-                        const prevDate = prevDateStr ? new Date(prevDateStr) : null;
-                        const currDate = p.endDate ? new Date(p.endDate) : null;
-
-                        let months = 0;
-                        if (prevDate && currDate && !isNaN(prevDate.getTime()) && !isNaN(currDate.getTime())) {
-                            const diffTime = Math.abs(currDate.getTime() - prevDate.getTime());
-                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                            months = Math.round(diffDays / 30);
-                        }
-
-                        return {
-                            length: months || 0,
-                            unit: 'months' as const,
-                            rentAmount: safeFloat(p.rentAmount),
-                            currency: p.currency || 'ILS'
-                        };
-                    }),
-                    rent_periods: (formData.rentSteps || []).map(s => ({
-                        startDate: s.startDate || formData.startDate,
-                        amount: safeFloat(s.amount) || 0,
-                        currency: s.currency || 'ILS'
-                    })),
-                    contract_file_url: null as string | null,
-                    user_id: user.id,
-                    needs_painting: !!formData.needsPainting
-                };
-
-                const sanitizedPayload = sanitizePayload(contractPayload);
-
-                console.log('[DEBUG] Saving sanitized contract payload:', JSON.stringify(sanitizedPayload, null, 2));
-
-                const { data: newContract, error: contractError } = await supabase.from('contracts').insert(sanitizedPayload).select().single();
-
-                if (contractError) {
-                    console.error('[CRITICAL] Supabase Insert Error:', contractError);
-                    throw new Error(`[${contractError.code}] ${contractError.message}: ${contractError.details || ''}`);
-                }
-
-                // 3.5 Generate Expected Payments
-                if (newContract) {
-                    const schedule = await generatePaymentSchedule({
-                        startDate: formData.startDate,
-                        endDate: formData.endDate,
-                        baseRent: safeFloat(formData.rent) || 0,
-                        currency: 'ILS',
-                        paymentFrequency: (formData.paymentFrequency || 'monthly').toLowerCase() as any,
-                        paymentDay: safeInt(formData.paymentDay, 1),
-                        linkageType: (!formData.linkageType || formData.linkageType === 'none') ? 'none' : formData.linkageType as any,
-                        linkageSubType: linkageSubTypeVal as any,
-                        baseIndexDate: formData.baseIndexDate || null,
-                        baseIndexValue: safeFloat(formData.baseIndexValue),
-                        linkageCeiling: formData.hasLinkageCeiling ? safeFloat(formData.linkageCeiling) : null,
-
-                        linkageFloor: safeFloat(formData.linkageFloor),
-                        rent_periods: (formData.rentSteps || []).map(s => ({
-                            startDate: s.startDate || formData.startDate,
-                            amount: safeFloat(s.amount) || 0,
-                            currency: s.currency || 'ILS',
-                        }))
-                    });
-
-                    if (schedule.length > 0) {
-                        const { error: paymentError } = await supabase.from('payments').insert(
-                            schedule.map(p => ({
-                                ...p,
-                                contract_id: newContract.id
-                            }))
-                        );
-                        if (paymentError) console.error('Error generating payments:', paymentError);
-                    }
-                }
-
-                // 4. Handle File Storage
-                if (contractFile && saveContractFile) {
-                    let fileToUpload = contractFile;
-                    if (CompressionService.isImage(fileToUpload)) {
-                        try {
-                            fileToUpload = await CompressionService.compressImage(fileToUpload);
-                        } catch (e) {
-                            console.warn('Compression failed', e);
-                        }
-                    }
-
-                    // Cloud Upload (RentMate)
-                    if (storagePreference === 'cloud' || storagePreference === 'both') {
-                        const fileExt = fileToUpload.name.split('.').pop();
-                        const fileName = `contract_${Date.now()}.${fileExt}`;
-                        const filePath = `${propertyId}/${fileName}`;
-
-                        const { error: uploadError } = await supabase.storage
-                            .from('contracts')
-                            .upload(filePath, fileToUpload);
-
-                        if (uploadError) {
-                            console.error('Upload failed:', uploadError);
-                            alert("החוזה נוצר אך העלאת הקובץ נכשלה.");
-                        } else {
-                            const { data: { publicUrl } } = supabase.storage
-                                .from('contracts')
-                                .getPublicUrl(filePath);
-
-                            // Update contract with file URL
-                            await supabase.from('contracts')
-                                .update({ contract_file_url: publicUrl })
-                                .eq('id', newContract.id);
-                        }
-                    }
-
-
-                    // Device Download
-                    if (storagePreference === 'device' || storagePreference === 'both') {
-                        const url = URL.createObjectURL(contractFile);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        const tenantSafeName = formData.tenants[0]?.name.trim().replace(/\s+/g, '_') || 'tenant';
-                        a.download = `contract_${tenantSafeName}_${new Date().toISOString().split('T')[0]}.pdf`;
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(url);
-                    }
-
-                }
-
-
-
-                clearCache(); // Invalidate all cache on success
-                navigate('/properties');
-
-            } catch (err: any) {
-                console.error(err);
-                alert(`Failed to save: ${err.message} `);
-            } finally {
-                setIsSaving(false);
             }
-            return;
+
+            // 2. Create Contract
+            // Helper to safely parse numbers and return null instead of NaN
+            const safeFloat = (val: any) => {
+                const parsed = parseFloat(val);
+                return (!isNaN(parsed) && isFinite(parsed)) ? parsed : null;
+            };
+
+            const sanitizePayload = (obj: any): any => {
+                if (obj === null || obj === undefined) return obj;
+                if (obj instanceof Date) return obj.toISOString();
+                if (typeof obj === 'number') return (isNaN(obj) || !isFinite(obj)) ? null : obj;
+                if (Array.isArray(obj)) return obj.map(sanitizePayload);
+                if (typeof obj === 'object') {
+                    if (obj.constructor && obj.constructor.name !== 'Object') return null;
+                    const sanitized: any = {};
+                    for (const key in obj) {
+                        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                            sanitized[key] = sanitizePayload(obj[key]);
+                        }
+                    }
+                    return sanitized;
+                }
+                return obj;
+            };
+
+            const contractPayload = {
+                property_id: propertyId,
+                tenants: (data.tenants || []).filter(t => t.name.trim() !== '').map(t => ({
+                    name: t.name || '',
+                    id_number: t.id_number || '',
+                    email: t.email || '',
+                    phone: t.phone || ''
+                })),
+                signing_date: data.signingDate || null,
+                start_date: data.startDate || null,
+                end_date: data.endDate || null,
+                base_rent: data.rent || 0,
+                currency: data.currency,
+                payment_frequency: data.paymentFrequency,
+                payment_day: data.paymentDay,
+                linkage_type: data.linkageType,
+                linkage_sub_type: (data.linkageType === 'none') ? null : data.linkageSubType,
+                linkage_ceiling: data.hasLinkageCeiling ? data.linkageCeiling : null,
+                linkage_floor: data.linkageFloor,
+                base_index_date: data.baseIndexDate || null,
+                base_index_value: data.baseIndexValue,
+                security_deposit_amount: data.securityDeposit || 0,
+                status: 'active',
+                option_notice_days: data.optionNoticeDays || null,
+                option_periods: (data.optionPeriods || []).map((p, idx) => {
+                    const prevDateStr = idx === 0 ? data.endDate : data.optionPeriods[idx - 1].endDate;
+                    const prevDate = prevDateStr ? parseISO(prevDateStr) : null;
+                    const currDate = p.endDate ? parseISO(p.endDate) : null;
+                    let months = 0;
+                    if (prevDate && isValid(prevDate) && currDate && isValid(currDate)) {
+                        const diffTime = Math.abs(currDate.getTime() - prevDate.getTime());
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        months = Math.round(diffDays / 30);
+                    }
+                    return {
+                        length: months || 0,
+                        unit: 'months' as const,
+                        rentAmount: p.rentAmount,
+                        currency: p.currency || 'ILS'
+                    };
+                }),
+                rent_periods: (data.rentSteps || []).map(s => ({
+                    startDate: s.startDate || data.startDate,
+                    amount: s.amount || 0,
+                    currency: s.currency || 'ILS'
+                })),
+                user_id: user.id,
+                needs_painting: !!data.needsPainting,
+                pets_allowed: data.petsAllowed === 'true',
+                special_clauses: data.specialClauses,
+                guarantees: data.guarantees,
+                guarantors_info: data.guarantorsInfo
+            };
+
+            const sanitizedPayload = sanitizePayload(contractPayload);
+            const { data: newContract, error: contractError } = await supabase.from('contracts').insert(sanitizedPayload).select().single();
+
+            if (contractError) throw new Error(`[${contractError.code}] ${contractError.message}`);
+
+            // 3. Generate Expected Payments
+            if (newContract) {
+                const schedule = await generatePaymentSchedule({
+                    startDate: data.startDate,
+                    endDate: data.endDate,
+                    baseRent: data.rent || 0,
+                    currency: data.currency as any,
+                    paymentFrequency: data.paymentFrequency as any,
+                    paymentDay: data.paymentDay,
+                    linkageType: data.linkageType as any,
+                    linkageSubType: data.linkageSubType as any,
+                    baseIndexDate: data.baseIndexDate || null,
+                    baseIndexValue: data.baseIndexValue,
+                    linkageCeiling: data.hasLinkageCeiling ? data.linkageCeiling : null,
+                    linkageFloor: data.linkageFloor,
+                    rent_periods: (data.rentSteps || []).map(s => ({
+                        startDate: s.startDate || data.startDate,
+                        amount: s.amount || 0,
+                        currency: s.currency || 'ILS',
+                    }))
+                });
+
+                if (schedule.length > 0) {
+                    await supabase.from('payments').insert(
+                        schedule.map(p => ({
+                            ...p,
+                            contract_id: newContract.id,
+                            user_id: user.id
+                        }))
+                    );
+                }
+            }
+
+            // 4. Handle File Storage
+            if (contractFile && saveContractFile) {
+                let fileToUpload = contractFile;
+                if (CompressionService.isImage(fileToUpload)) {
+                    fileToUpload = await CompressionService.compressImage(fileToUpload);
+                }
+
+                if (storagePreference === 'cloud' || storagePreference === 'both') {
+                    const fileName = `contract_${Date.now()}.${fileToUpload.name.split('.').pop()}`;
+                    const filePath = `${propertyId}/${fileName}`;
+                    const { error: uploadError } = await supabase.storage.from('contracts').upload(filePath, fileToUpload);
+                    if (!uploadError) {
+                        const { data: { publicUrl } } = supabase.storage.from('contracts').getPublicUrl(filePath);
+                        await supabase.from('contracts').update({ contract_file_url: publicUrl }).eq('id', newContract.id);
+                    }
+                }
+
+                if (storagePreference === 'device' || storagePreference === 'both') {
+                    const url = URL.createObjectURL(contractFile);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `contract_${data.tenants[0]?.name.trim().replace(/\s+/g, '_') || 'tenant'}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }
+            }
+
+            await propertyService.syncOccupancyStatus(propertyId);
+            clearCache();
+            success(t('success'), t('contractCreated'));
+            navigate('/properties');
+        } catch (err: any) {
+            console.error('Save error:', err);
+            toastError(t('error'), err.message);
+        } finally {
+            setIsSaving(false);
         }
-        setStep(s => Math.min(s + 1, 6));
+    };
+
+    const nextStep = async () => {
+        if (step === 1) {
+            if (!formData.address && !formData.selectedPropertyId) {
+                toastError(t('stepAsset'), t('propertyRequired'));
+                return;
+            }
+
+            if (!formData.selectedPropertyId) {
+                const title = `${formData.address || ''}, ${formData.city || ''}`;
+                const { data: propData } = await supabase.from('properties').select('id').eq('title', title).maybeSingle();
+                if (propData) setValue('selectedPropertyId', propData.id);
+            }
+
+            const isStepValid = await trigger(['selectedPropertyId', 'address', 'city']);
+            if (!isStepValid) return;
+        }
+
+        if (step === 2) {
+            const isStepValid = await trigger('tenants');
+            if (!isStepValid) return;
+        }
+
+        if (step === 3) {
+            const isStepValid = await trigger(['startDate', 'endDate']);
+            if (!isStepValid) return;
+            await checkOverlap(formData.selectedPropertyId || '', formData.startDate || '', formData.endDate || '');
+        }
+
+        if (step === 4) {
+            const isStepValid = await trigger('rent');
+            if (!isStepValid) return;
+        }
+
+        if (step === 5) {
+            const isStepValid = await trigger();
+            if (!isStepValid) return;
+        }
+
+        if (step < 6) {
+            setStep(s => s + 1);
+            window.scrollTo(0, 0);
+        } else {
+            handleSubmit(onSubmit as any)();
+        }
     };
 
     const prevStep = () => {
@@ -654,11 +591,14 @@ export function AddContract() {
 
 
     const handleDragStart = () => {
+        const isDesktop = window.innerWidth >= 1024;
         const moveHandler = (e: MouseEvent | TouchEvent) => {
             e.preventDefault();
-            const clientY = 'touches' in e ? e.touches[0].clientY : (e as MouseEvent).clientY;
-            const totalHeight = window.innerHeight;
-            const newRatio = Math.min(Math.max((clientY / totalHeight) * 100, 20), 80);
+            const clientVal = isDesktop
+                ? ('touches' in e ? e.touches[0].clientX : (e as MouseEvent).clientX)
+                : ('touches' in e ? e.touches[0].clientY : (e as MouseEvent).clientY);
+            const totalSize = isDesktop ? window.innerWidth : window.innerHeight;
+            const newRatio = Math.min(Math.max((clientVal / totalSize) * 100, 25), 75);
             setSplitRatio(newRatio);
         };
         const upHandler = () => {
@@ -686,7 +626,7 @@ export function AddContract() {
         const confidences: Record<string, 'high' | 'medium' | 'low'> = {};
         const newFormData: any = { ...formData };
 
-        let scannedStreet = '';
+        const scannedStreet = '';
         let scannedBuilding = '';
 
         extractedData.forEach(field => {
@@ -727,8 +667,8 @@ export function AddContract() {
                     break;
                 case 'hasParking': // Note: Scanner maps 'has_parking' -> 'hasParking'? No, let's check Scanner.
                     // Scanner mapping: 'has_parking': (undefined in previous edit? Let's assume standard camelCase or manual)
-                    // Re-reading Scanner: 'has_parking': undefined in list! 
-                    // Wait, I didn't add has_parking to Scanner mapping! 
+                    // Re-reading Scanner: 'has_parking': undefined in list!
+                    // Wait, I didn't add has_parking to Scanner mapping!
                     // I need to be careful. I will stick to what I DEFINED in Scanner.
                     // Scanner has: tenantName, tenantId, tenantEmail, tenantPhone, landlordName...
                     // address, city, street, buildingNum, aptNum, size, rooms, floor
@@ -797,18 +737,17 @@ export function AddContract() {
 
             const matchedProp = existingProperties.find(p => {
                 if (!p.address) return false;
-                const pAddr = p.address.replace(/\s/g, '');
-                return pAddr.includes(scanAddrNorm) || scanAddrNorm.includes(pAddr);
             });
 
             if (matchedProp) {
-                setIsExistingProperty(true);
-                setSelectedPropertyId(matchedProp.id);
-                newFormData.city = matchedProp.city || newFormData.city;
-                newFormData.address = matchedProp.address || newFormData.address;
-            }
+                setValue('isExistingProperty', true);
+                setValue('selectedPropertyId', matchedProp.id);
 
-            setFormData(newFormData);
+                if (matchedProp.address && matchedProp.city) {
+                    setValue('address', matchedProp.address);
+                    setValue('city', matchedProp.city);
+                }
+            }
             setScannedQuotes(quotes);
             setFieldConfidence(confidences);
             setStep(1);
@@ -828,7 +767,10 @@ export function AddContract() {
     };
 
     return (
-        <div className="relative h-screen overflow-hidden bg-background">
+        <div className={cn(
+            "relative h-screen overflow-hidden bg-background flex",
+            isContractViewerOpen ? "flex-col lg:flex-row-reverse" : "flex-col"
+        )}>
             {/* Floating Toggle Button */}
             <AnimatePresence>
                 {scannedContractUrl && !isScanning && (
@@ -840,7 +782,7 @@ export function AddContract() {
                         className="fixed top-24 left-4 z-50 bg-white shadow-lg border border-border p-2 rounded-full flex items-center gap-2 hover:bg-slate-50 transition-colors"
                     >
                         {isContractViewerOpen ? <ChevronDown className="w-5 h-5 text-primary" /> : <FileText className="w-5 h-5 text-primary" />}
-                        <span className="text-xs font-bold pl-1 text-foreground">{isContractViewerOpen ? t('hideContract') : t('showContract')}</span>
+                        <span className="text-xs font-bold pl-1 text-foreground">{t('hideContract')}</span>
                     </motion.button>
                 )}
             </AnimatePresence>
@@ -848,10 +790,14 @@ export function AddContract() {
             {/* Top Pane: Wizard Form */}
             <div
                 className={cn(
-                    "w-full overflow-y-auto custom-scrollbar",
-                    isContractViewerOpen ? "border-b border-border/50" : "h-full"
+                    "flex-1 overflow-y-auto custom-scrollbar transition-all duration-300",
+                    isContractViewerOpen ? "border-b lg:border-b-0 lg:border-r border-border/50" : "h-full w-full"
                 )}
-                style={{ height: isContractViewerOpen ? `${splitRatio}%` : '100%' }}
+                style={{
+                    height: (isContractViewerOpen && windowWidth < 1024) ? `${splitRatio}%` : '100%',
+                    width: (isContractViewerOpen && windowWidth >= 1024) ? `${splitRatio}%` : '100%',
+                    flex: (isContractViewerOpen) ? 'none' : '1'
+                }}
             >
                 <div className={cn("max-w-2xl mx-auto p-6 transition-all", isContractViewerOpen ? "pb-20" : "pb-40")}>
                     {/* Header */}
@@ -934,19 +880,19 @@ export function AddContract() {
                                                 {!isPropertyLocked && (
                                                     <div className="flex bg-secondary/50 p-1 rounded-lg">
                                                         <button
-                                                            onClick={() => setIsExistingProperty(false)}
+                                                            onClick={() => setValue('isExistingProperty', false)}
                                                             className={cn(
                                                                 "px-3 py-1 text-xs font-medium rounded-md transition-all",
-                                                                !isExistingProperty ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                                                                !formData.isExistingProperty ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
                                                             )}
                                                         >
                                                             {t('newProperty')}
                                                         </button>
                                                         <button
-                                                            onClick={() => setIsExistingProperty(true)}
+                                                            onClick={() => setValue('isExistingProperty', true)}
                                                             className={cn(
                                                                 "px-3 py-1 text-xs font-medium rounded-md transition-all",
-                                                                isExistingProperty ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                                                                formData.isExistingProperty ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
                                                             )}
                                                         >
                                                             {t('existingProperty')}
@@ -955,35 +901,36 @@ export function AddContract() {
                                                 )}
                                             </div>
 
-                                            {isExistingProperty ? (
+                                            {formData.isExistingProperty ? (
                                                 <div className="space-y-2">
                                                     <label className="text-sm font-medium">{t('chooseProperty')}</label>
-                                                    <select
-                                                        className="w-full p-3 bg-background border border-border rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                                                        disabled={isPropertyLocked}
-                                                        value={selectedPropertyId}
-                                                        onChange={(e) => {
-                                                            const newId = e.target.value;
-                                                            setSelectedPropertyId(newId);
-                                                            const prop = existingProperties.find(p => p.id === newId);
-                                                            if (prop) {
-                                                                setFormData({
-                                                                    ...formData,
-                                                                    city: prop.city || '',
-
-
-                                                                    address: prop.address || ''
-                                                                });
-                                                            }
-                                                        }}
-                                                    >
-                                                        <option value="">{t('selectProperty')}</option>
-                                                        {existingProperties.map(p => (
-                                                            <option key={p.id} value={p.id}>
-                                                                {p.city}, {p.address}
-                                                            </option>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {existingProperties.map((p) => (
+                                                            <button
+                                                                key={p.id}
+                                                                onClick={() => {
+                                                                    setValue('selectedPropertyId', p.id);
+                                                                    if (p.address && p.city) {
+                                                                        setValue('address', p.address);
+                                                                        setValue('city', p.city);
+                                                                    }
+                                                                }}
+                                                                className={cn(
+                                                                    "p-4 rounded-xl border-2 text-right transition-all group",
+                                                                    formData.selectedPropertyId === p.id
+                                                                        ? "border-primary bg-primary/5 shadow-md"
+                                                                        : "border-secondary dark:border-gray-800 hover:border-primary/50"
+                                                                )}
+                                                            >
+                                                                <div className="flex items-center justify-between mb-2">
+                                                                    <span className="text-xs font-semibold text-primary">{t('property')}</span>
+                                                                    {formData.selectedPropertyId === p.id && <CheckCircle className="w-5 h-5 text-primary" />}
+                                                                </div>
+                                                                <p className="font-bold text-lg text-foreground">{p.address}</p>
+                                                                <p className="text-sm text-muted-foreground">{p.city}</p>
+                                                            </button>
                                                         ))}
-                                                    </select>
+                                                    </div>
                                                 </div>
                                             ) : (
                                                 <div className="space-y-4">
@@ -993,29 +940,36 @@ export function AddContract() {
                                                             <label className="text-sm font-medium flex items-center gap-2">{t('propertyType')} <ConfidenceDot field="property_type" /></label>
                                                             <PropertyTypeSelect
                                                                 value={formData.property_type as any}
-                                                                onChange={(val) => setFormData({ ...formData, property_type: val })}
+                                                                onChange={(val) => setValue('property_type', val as any)}
                                                             />
                                                         </div>
 
                                                         {/* City */}
                                                         <div className="space-y-2">
-                                                            <label className="text-sm font-medium flex items-center gap-2">{t('city')} {scannedQuotes.city && <Tooltip quote={scannedQuotes.city} />} <ConfidenceDot field="city" /></label>
-                                                            <input
-                                                                value={formData.city}
-                                                                onChange={e => setFormData({ ...formData, city: e.target.value })}
-                                                                className="w-full p-3 bg-background border border-border rounded-xl" />
+                                                            <label className="text-sm font-medium flex items-center gap-2">{t('city')} <span className="text-red-500">*</span> {scannedQuotes.city && <Tooltip quote={scannedQuotes.city} />} <ConfidenceDot field="city" /></label>
+                                                            <GoogleAutocomplete
+                                                                value={formData.city || ''}
+                                                                onChange={val => setValue('city', val)}
+                                                                className="w-full p-3 bg-background border border-border rounded-xl"
+                                                                type="cities"
+                                                                error={!!errors.city}
+                                                            />
                                                         </div>
                                                     </div>
 
                                                     {/* Address */}
                                                     <div className="space-y-2">
-                                                        <label className="text-sm font-medium flex items-center gap-2">{t('address')} {scannedQuotes.street && <Tooltip quote={scannedQuotes.street} />} <ConfidenceDot field="address" /></label>
+                                                        <label className="text-sm font-medium flex items-center gap-2">{t('address')} <span className="text-red-500">*</span> {scannedQuotes.street && <Tooltip quote={scannedQuotes.street} />} <ConfidenceDot field="address" /></label>
                                                         <div className="relative">
-                                                            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                                            <input
-                                                                value={formData.address}
-                                                                onChange={e => setFormData({ ...formData, address: e.target.value })}
+                                                            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
+                                                            <GoogleAutocomplete
+                                                                value={formData.address || ''}
+                                                                onChange={(val) => setValue('address', val)}
                                                                 className="w-full p-3 bg-background border border-border rounded-xl pl-10"
+                                                                type="address"
+                                                                biasCity={formData.city}
+                                                                placeholder={t('searchProperty')}
+                                                                error={!!errors.address}
                                                             />
                                                         </div>
                                                     </div>
@@ -1026,10 +980,10 @@ export function AddContract() {
                                                             <label className="text-sm font-medium flex items-center gap-2">{t('rooms')} <ConfidenceDot field="rooms" /></label>
                                                             <input
                                                                 type="text"
-                                                                value={formatNumber(formData.rooms)}
+                                                                value={formData.rooms?.toString() || ''}
                                                                 onChange={e => {
-                                                                    const val = parseNumber(e.target.value);
-                                                                    if (/^\d*$/.test(val)) setFormData({ ...formData, rooms: val });
+                                                                    const val = e.target.value;
+                                                                    setValue('rooms', val === '' ? undefined : parseFloat(val) as any);
                                                                 }}
                                                                 className="w-full p-3 bg-background border border-border rounded-xl no-spinner"
                                                             />
@@ -1038,10 +992,10 @@ export function AddContract() {
                                                             <label className="text-sm font-medium flex items-center gap-2">{t('sizeSqm')} <ConfidenceDot field="size" /></label>
                                                             <input
                                                                 type="text"
-                                                                value={formatNumber(formData.size)}
+                                                                value={formData.size?.toString() || ''}
                                                                 onChange={e => {
-                                                                    const val = parseNumber(e.target.value);
-                                                                    if (/^\d*\.?\d*$/.test(val)) setFormData({ ...formData, size: val });
+                                                                    const val = e.target.value;
+                                                                    setValue('size', val === '' ? undefined : parseFloat(val) as any);
                                                                 }}
                                                                 className="w-full p-3 bg-background border border-border rounded-xl no-spinner"
                                                             />
@@ -1052,9 +1006,27 @@ export function AddContract() {
                                                     <div className="grid grid-cols-2 gap-4">
                                                         <label className={cn(
                                                             "flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer",
+                                                            formData.hasBalcony ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                                                        )}>
+                                                            <input type="checkbox" className="hidden" checked={formData.hasBalcony} onChange={e => setValue('hasBalcony', e.target.checked)} />
+                                                            <div className="p-2 bg-secondary rounded-full text-foreground"><Wind className="w-5 h-5" /></div>
+                                                            <span className="font-medium flex items-center gap-2">{t('balcony')} <ConfidenceDot field="hasBalcony" /></span>
+                                                        </label>
+
+                                                        <label className={cn(
+                                                            "flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer",
+                                                            formData.hasSafeRoom ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                                                        )}>
+                                                            <input type="checkbox" className="hidden" checked={formData.hasSafeRoom} onChange={e => setValue('hasSafeRoom', e.target.checked)} />
+                                                            <div className="p-2 bg-secondary rounded-full text-foreground"><ShieldCheck className="w-5 h-5" /></div>
+                                                            <span className="font-medium flex items-center gap-2">{t('safeRoom')} <ConfidenceDot field="hasSafeRoom" /></span>
+                                                        </label>
+
+                                                        <label className={cn(
+                                                            "flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer",
                                                             formData.hasParking ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
                                                         )}>
-                                                            <input type="checkbox" className="hidden" checked={formData.hasParking} onChange={e => setFormData({ ...formData, hasParking: e.target.checked })} />
+                                                            <input type="checkbox" className="hidden" checked={formData.hasParking} onChange={e => setValue('hasParking', e.target.checked)} />
                                                             <div className="p-2 bg-secondary rounded-full text-foreground"><Car className="w-5 h-5" /></div>
                                                             <span className="font-medium flex items-center gap-2">{t('parking')} <ConfidenceDot field="hasParking" /></span>
                                                         </label>
@@ -1063,7 +1035,7 @@ export function AddContract() {
                                                             "flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer",
                                                             formData.hasStorage ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
                                                         )}>
-                                                            <input type="checkbox" className="hidden" checked={formData.hasStorage} onChange={e => setFormData({ ...formData, hasStorage: e.target.checked })} />
+                                                            <input type="checkbox" className="hidden" checked={formData.hasStorage} onChange={e => setValue('hasStorage', e.target.checked)} />
                                                             <div className="p-2 bg-secondary rounded-full text-foreground"><Box className="w-5 h-5" /></div>
                                                             <span className="font-medium flex items-center gap-2">{t('storage')} <ConfidenceDot field="hasStorage" /></span>
                                                         </label>
@@ -1099,7 +1071,7 @@ export function AddContract() {
                                                                         <input
                                                                             type="url"
                                                                             value={formData.image_url}
-                                                                            onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                                                                            onChange={(e) => setValue('image_url', e.target.value)}
                                                                             className="w-full pl-9 pr-4 py-2 border border-border rounded-lg bg-background"
                                                                         />
                                                                     </div>
@@ -1117,7 +1089,7 @@ export function AddContract() {
                                                                             const location = `${formData.address}, ${formData.city}`;
                                                                             const imageUrl = `https://maps.googleapis.com/maps/api/streetview?size=600x400&location=${encodeURIComponent(location)}&key=${apiKey}`;
 
-                                                                            setFormData(prev => ({ ...prev, image_url: imageUrl }));
+                                                                            setValue('image_url', imageUrl);
                                                                         }}
                                                                         className="px-4 py-2 bg-primary/10 text-primary hover:bg-primary/10 rounded-lg text-sm font-medium transition-colors flex-shrink-0"
                                                                     >
@@ -1165,7 +1137,7 @@ export function AddContract() {
                                                                 />
                                                                 <button
                                                                     type="button"
-                                                                    onClick={() => setFormData(prev => ({ ...prev, image_url: '' }))}
+                                                                    onClick={() => setValue('image_url', '')}
                                                                     className="absolute top-2 right-2 p-1.5 bg-white/90 text-red-500 rounded-full shadow-sm hover:bg-white"
                                                                 >
                                                                     <Trash2 className="w-4 h-4" />
@@ -1223,7 +1195,7 @@ export function AddContract() {
                                                             onClick={() => {
                                                                 const newTenants = [...formData.tenants];
                                                                 newTenants.splice(index, 1);
-                                                                setFormData({ ...formData, tenants: newTenants });
+                                                                setValue('tenants', newTenants);
                                                             }}
                                                             className="absolute top-3 left-3 p-1.5 text-red-500 hover:bg-red-50 rounded-full transition-colors opacity-0 group-hover:opacity-100"
                                                         >
@@ -1233,7 +1205,7 @@ export function AddContract() {
 
                                                     <div className="space-y-2">
                                                         <label className="text-sm font-medium flex items-center gap-2">
-                                                            {t('fullName')}
+                                                            {t('fullName')} <span className="text-red-500">*</span>
                                                             {index === 0 && scannedQuotes.tenantName && <Tooltip quote={scannedQuotes.tenantName} />}
                                                             {index === 0 && <ConfidenceDot field="tenants" />}
                                                         </label>
@@ -1242,9 +1214,12 @@ export function AddContract() {
                                                             onChange={e => {
                                                                 const newTenants = [...formData.tenants];
                                                                 newTenants[index].name = e.target.value;
-                                                                setFormData({ ...formData, tenants: newTenants });
+                                                                setValue('tenants', newTenants);
                                                             }}
-                                                            className="w-full p-3 bg-background border border-border rounded-xl"
+                                                            className={cn(
+                                                                "w-full p-3 bg-background border rounded-xl transition-all duration-300",
+                                                                (!tenant.name && index === 0 && step === 2) ? "border-red-500 ring-1 ring-red-500" : "border-border"
+                                                            )}
                                                         />
                                                     </div>
 
@@ -1256,7 +1231,7 @@ export function AddContract() {
                                                                 onChange={e => {
                                                                     const newTenants = [...formData.tenants];
                                                                     newTenants[index].id_number = e.target.value;
-                                                                    setFormData({ ...formData, tenants: newTenants });
+                                                                    setValue('tenants', newTenants);
                                                                 }}
                                                                 className="w-full p-3 bg-background border border-border rounded-xl font-mono"
                                                             />
@@ -1268,7 +1243,7 @@ export function AddContract() {
                                                                 onChange={e => {
                                                                     const newTenants = [...formData.tenants];
                                                                     newTenants[index].phone = e.target.value;
-                                                                    setFormData({ ...formData, tenants: newTenants });
+                                                                    setValue('tenants', newTenants);
                                                                 }}
                                                                 className="w-full p-3 bg-background border border-border rounded-xl"
                                                                 dir="ltr"
@@ -1283,7 +1258,7 @@ export function AddContract() {
                                                             onChange={e => {
                                                                 const newTenants = [...formData.tenants];
                                                                 newTenants[index].email = e.target.value;
-                                                                setFormData({ ...formData, tenants: newTenants });
+                                                                setValue('tenants', newTenants);
                                                             }}
                                                             className="w-full p-3 bg-background border border-border rounded-xl"
                                                             type="email"
@@ -1296,7 +1271,6 @@ export function AddContract() {
                                     </div>
                                 </motion.div>
                             )}
-
                             {step === 3 && (
                                 <motion.div
                                     key="step3"
@@ -1311,12 +1285,11 @@ export function AddContract() {
                                                     value={formData.signingDate ? parseISO(formData.signingDate) : undefined}
                                                     onChange={(date) => {
                                                         const dateStr = date ? format(date, 'yyyy-MM-dd') : '';
-                                                        setFormData(prev => ({
-                                                            ...prev,
-                                                            signingDate: dateStr,
-                                                            // Pre-fill base index date if it's empty
-                                                            baseIndexDate: (!prev.baseIndexDate || prev.baseIndexDate === '') ? dateStr : prev.baseIndexDate
-                                                        }));
+                                                        setValue('signingDate', dateStr);
+                                                        // Pre-fill base index date if it's empty
+                                                        if (dateStr && !formData.baseIndexDate) {
+                                                            setValue('baseIndexDate', dateStr);
+                                                        }
                                                     }}
                                                     placeholder={t('selectDate')}
                                                 />
@@ -1351,14 +1324,11 @@ export function AddContract() {
                                                             newEndDateStr = format(calculatedEnd, 'yyyy-MM-dd');
                                                         }
 
-                                                        setFormData({
-                                                            ...formData,
-                                                            startDate: startDateStr,
-                                                            endDate: newEndDateStr
-                                                        });
+                                                        setValue('startDate', startDateStr);
+                                                        setValue('endDate', newEndDateStr);
                                                     }}
                                                     disabledDays={blockedIntervals}
-                                                    error={hasOverlap}
+                                                    error={hasOverlap || (!formData.startDate && step === 3)}
                                                     placeholder={t('selectDate')}
                                                 />
                                             </div>
@@ -1366,9 +1336,10 @@ export function AddContract() {
                                                 <DatePicker
                                                     label={<span>{t('endDate')} <span className="text-red-500">*</span></span>}
                                                     value={formData.endDate ? parseISO(formData.endDate) : undefined}
-                                                    onChange={(date) => setFormData({ ...formData, endDate: date ? format(date, 'yyyy-MM-dd') : '' })}
+                                                    onChange={(date) => setValue('endDate', date ? format(date, 'yyyy-MM-dd') : '')}
                                                     minDate={formData.startDate ? parseISO(formData.startDate) : undefined}
                                                     disabledDays={blockedIntervals}
+                                                    error={!formData.endDate && step === 3}
                                                     placeholder={t('selectDate')}
                                                 />
                                                 {formData.startDate && formData.endDate && (
@@ -1418,10 +1389,7 @@ export function AddContract() {
                                                             }
                                                         }
 
-                                                        setFormData(prev => ({
-                                                            ...prev,
-                                                            optionPeriods: [...prev.optionPeriods, { endDate: defaultDate, rentAmount: '', currency: 'ILS' }]
-                                                        }));
+                                                        setValue('optionPeriods', [...formData.optionPeriods, { endDate: defaultDate, rentAmount: null as any, currency: 'ILS' }]);
                                                     }}
                                                     className="text-xs text-primary hover:text-primary font-medium flex items-center gap-1"
                                                 >
@@ -1445,7 +1413,7 @@ export function AddContract() {
                                                                 onChange={(date) => {
                                                                     const newPeriods = [...formData.optionPeriods];
                                                                     newPeriods[idx].endDate = date ? format(date, 'yyyy-MM-dd') : '';
-                                                                    setFormData({ ...formData, optionPeriods: newPeriods });
+                                                                    setValue('optionPeriods', newPeriods);
                                                                 }}
                                                                 minDate={idx === 0
                                                                     ? (formData.endDate ? parseISO(formData.endDate) : undefined)
@@ -1459,7 +1427,7 @@ export function AddContract() {
                                                             type="button"
                                                             onClick={() => {
                                                                 const newPeriods = formData.optionPeriods.filter((_, i) => i !== idx);
-                                                                setFormData({ ...formData, optionPeriods: newPeriods });
+                                                                setValue('optionPeriods', newPeriods);
                                                             }}
                                                             className="p-3 text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-border/50 h-[46px]"
                                                         >
@@ -1468,11 +1436,34 @@ export function AddContract() {
                                                     </div>
                                                 ))}
                                             </div>
+
+                                            {/* Extension Notice Days */}
+                                            {formData.optionPeriods.length > 0 && (
+                                                <div className="pt-4 border-t border-border/50 animate-in fade-in slide-in-from-top-2 duration-300">
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium flex items-center gap-2">
+                                                            {t('extensionNoticeDays')}
+                                                        </label>
+                                                        <div className="relative">
+                                                            <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                                            <input
+                                                                type="text"
+                                                                value={formatNumber(formData.optionNoticeDays)}
+                                                                onChange={e => {
+                                                                    const val = parseNumber(e.target.value);
+                                                                    if (/^\d*$/.test(val)) setValue('optionNoticeDays', val as any);
+                                                                }}
+                                                                className="w-full p-3 pl-10 bg-background border border-border rounded-xl no-spinner"
+                                                                placeholder="e.g. 60"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </motion.div>
-                            )
-                            }
+                            )}
 
                             {
                                 step === 4 && (
@@ -1497,9 +1488,12 @@ export function AddContract() {
                                                         value={formatNumber(formData.rent)}
                                                         onChange={e => {
                                                             const val = parseNumber(e.target.value);
-                                                            if (/^\d*\.?\d*$/.test(val)) setFormData({ ...formData, rent: val });
+                                                            if (/^\d*\.?\d*$/.test(val)) setValue('rent', val as any);
                                                         }}
-                                                        className="w-full pl-8 p-3 bg-background border border-border rounded-xl font-bold text-lg no-spinner"
+                                                        className={cn(
+                                                            "w-full pl-8 p-3 bg-background border rounded-xl font-bold text-lg no-spinner transition-all duration-300",
+                                                            ((!formData.rent || formData.rent <= 0) && step === 4) ? "border-red-500 ring-1 ring-red-500" : "border-border"
+                                                        )}
                                                     />
                                                 </div>
                                             </div>
@@ -1522,8 +1516,8 @@ export function AddContract() {
                                                                 const val = parseNumber(e.target.value);
                                                                 if (/^\d*\.?\d*$/.test(val)) {
                                                                     const newPeriods = [...formData.optionPeriods];
-                                                                    newPeriods[idx].rentAmount = val;
-                                                                    setFormData({ ...formData, optionPeriods: newPeriods });
+                                                                    newPeriods[idx].rentAmount = val as any;
+                                                                    setValue('optionPeriods', newPeriods);
                                                                 }
                                                             }}
                                                             className="w-full pl-8 p-3 bg-background border border-border rounded-xl font-bold text-lg no-spinner"
@@ -1540,14 +1534,12 @@ export function AddContract() {
                                                     <div className="relative">
                                                         <select
                                                             value={formData.paymentFrequency}
-                                                            onChange={e => setFormData({ ...formData, paymentFrequency: e.target.value })}
+                                                            onChange={e => setValue('paymentFrequency', e.target.value as any)}
                                                             className="w-full p-3 bg-background border border-border rounded-xl appearance-none pr-10"
                                                         >
-                                                            <option value="monthly">{t('monthly')}</option>
-                                                            <option value="bimonthly">{t('bimonthly')}</option>
-                                                            <option value="quarterly">{t('quarterly')}</option>
-                                                            <option value="semi_annually">{t('semiAnnually')}</option>
-                                                            <option value="yearly">{t('annually')}</option>
+                                                            <option value="Monthly">{t('monthly')}</option>
+                                                            <option value="Quarterly">{t('quarterly')}</option>
+                                                            <option value="Annually">{t('annually')}</option>
                                                         </select>
                                                         <ChevronDown className="absolute left-3 top-3.5 w-4 h-4 text-muted-foreground pointer-events-none" />
                                                     </div>
@@ -1558,16 +1550,13 @@ export function AddContract() {
                                                     <div className="relative">
                                                         <select
                                                             value={formData.paymentMethod}
-                                                            onChange={e => setFormData({ ...formData, paymentMethod: e.target.value })}
+                                                            onChange={e => setValue('paymentMethod', e.target.value as any)}
                                                             className="w-full p-3 bg-background border border-border rounded-xl appearance-none pr-10"
                                                         >
-                                                            <option value="bank_transfer">{t('transfer')}</option>
-                                                            <option value="check">{t('check')}</option>
-                                                            <option value="cash">{t('cash')}</option>
-                                                            <option value="bit">{t('bit')}</option>
-                                                            <option value="paybox">{t('paybox')}</option>
-                                                            <option value="credit_card">{t('creditCard')}</option>
-                                                            <option value="other">{t('other')}</option>
+                                                            <option value="Transfer">{t('transfer')}</option>
+                                                            <option value="Checks">{t('checks')}</option>
+                                                            <option value="Cash">{t('cash')}</option>
+                                                            <option value="Other">{t('other')}</option>
                                                         </select>
                                                         <ChevronDown className="absolute left-3 top-3.5 w-4 h-4 text-muted-foreground pointer-events-none" />
                                                     </div>
@@ -1580,10 +1569,7 @@ export function AddContract() {
                                                     <label className="text-sm font-medium flex items-center gap-2">{t('rentSteps')} {t('optional')} <ConfidenceDot field="rentSteps" /></label>
                                                     <button
                                                         type="button"
-                                                        onClick={() => setFormData(prev => ({
-                                                            ...prev,
-                                                            rentSteps: [...prev.rentSteps, { startDate: '', amount: '', currency: 'ILS' }]
-                                                        }))}
+                                                        onClick={() => setValue('rentSteps', [...formData.rentSteps, { startDate: '', amount: null as any, currency: 'ILS' }])}
                                                         className="text-xs text-primary hover:text-primary font-bold flex items-center gap-1 bg-primary/5 px-2 py-1 rounded-lg"
                                                     >
                                                         <Plus className="w-3 h-3" /> {t('addStep')}
@@ -1601,7 +1587,7 @@ export function AddContract() {
                                                                         onChange={(date) => {
                                                                             const newSteps = [...formData.rentSteps];
                                                                             newSteps[idx].startDate = date ? format(date, 'yyyy-MM-dd') : '';
-                                                                            setFormData({ ...formData, rentSteps: newSteps });
+                                                                            setValue('rentSteps', newSteps);
                                                                         }}
                                                                         className="w-full"
                                                                     />
@@ -1617,8 +1603,8 @@ export function AddContract() {
                                                                                 const val = parseNumber(e.target.value);
                                                                                 if (/^\d*\.?\d*$/.test(val)) {
                                                                                     const newSteps = [...formData.rentSteps];
-                                                                                    newSteps[idx].amount = val;
-                                                                                    setFormData({ ...formData, rentSteps: newSteps });
+                                                                                    newSteps[idx].amount = val as any;
+                                                                                    setValue('rentSteps', newSteps);
                                                                                 }
                                                                             }}
                                                                             className="w-full p-2 pl-6 text-xs bg-background border border-border rounded-lg no-spinner font-bold"
@@ -1629,7 +1615,7 @@ export function AddContract() {
                                                                     type="button"
                                                                     onClick={() => {
                                                                         const newSteps = formData.rentSteps.filter((_, i) => i !== idx);
-                                                                        setFormData({ ...formData, rentSteps: newSteps });
+                                                                        setValue('rentSteps', newSteps);
                                                                     }}
                                                                     className="p-2 mb-[1px] text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                                                                 >
@@ -1649,12 +1635,9 @@ export function AddContract() {
                                                         checked={formData.hasLinkage}
                                                         onChange={(e) => {
                                                             const checked = e.target.checked;
-                                                            setFormData(prev => ({
-                                                                ...prev,
-                                                                hasLinkage: checked,
-                                                                linkageType: checked ? (prev.linkageType === 'none' ? 'cpi' : prev.linkageType) : 'none',
-                                                                baseIndexDate: (checked && (!prev.baseIndexDate || prev.baseIndexDate === '')) ? prev.signingDate : prev.baseIndexDate
-                                                            }));
+                                                            setValue('hasLinkage', checked);
+                                                            setValue('linkageType', checked ? (formData.linkageType === 'none' ? 'cpi' : formData.linkageType) : 'none');
+                                                            setValue('baseIndexDate', (checked && (!formData.baseIndexDate || formData.baseIndexDate === '')) ? formData.signingDate : formData.baseIndexDate);
                                                         }}
                                                         className="w-5 h-5 rounded-lg border-gray-300 text-primary focus:ring-primary"
                                                     />
@@ -1685,11 +1668,10 @@ export function AddContract() {
                                                                         type="button"
                                                                         onClick={() => {
                                                                             const isNewCurrency = cat.val === 'currency';
-                                                                            setFormData(prev => ({
-                                                                                ...prev,
-                                                                                linkageType: isNewCurrency ? 'usd' : 'cpi',
-                                                                                baseIndexDate: (!prev.baseIndexDate || prev.baseIndexDate === '') ? prev.signingDate : prev.baseIndexDate
-                                                                            }));
+                                                                            setValue('linkageType', isNewCurrency ? 'usd' : 'cpi');
+                                                                            if (!formData.baseIndexDate) {
+                                                                                setValue('baseIndexDate', formData.signingDate);
+                                                                            }
                                                                         }}
                                                                         className={cn(
                                                                             "flex-1 py-2 text-xs font-bold rounded-lg transition-all border-none",
@@ -1711,7 +1693,7 @@ export function AddContract() {
                                                                 <div className="relative">
                                                                     <select
                                                                         value={formData.linkageType}
-                                                                        onChange={(e) => setFormData({ ...formData, linkageType: e.target.value as any })}
+                                                                        onChange={(e) => setValue('linkageType', e.target.value as any)}
                                                                         className="w-full p-3 bg-background border border-border rounded-xl appearance-none"
                                                                     >
                                                                         <option value="usd">{t('linkedToUsd')}</option>
@@ -1728,7 +1710,7 @@ export function AddContract() {
                                                                     <div className="relative">
                                                                         <select
                                                                             value={formData.linkageType}
-                                                                            onChange={(e) => setFormData({ ...formData, linkageType: e.target.value as any })}
+                                                                            onChange={(e) => setValue('linkageType', e.target.value as any)}
                                                                             className="w-full p-3 bg-background border border-border rounded-xl appearance-none"
                                                                         >
                                                                             <option value="cpi">{t('linkedToCpi')}</option>
@@ -1741,33 +1723,38 @@ export function AddContract() {
 
                                                                 {/* Base Index Rate & Date */}
                                                                 <div className="bg-background/80 p-4 rounded-xl border border-border/50 space-y-4">
-                                                                    <div className="flex items-center justify-between">
-                                                                        <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('baseIndexMethod')}</label>
+                                                                    <div className="space-y-3">
                                                                         <div className="flex bg-secondary/30 p-1 rounded-lg gap-1">
                                                                             <button
                                                                                 type="button"
-                                                                                onClick={() => setFormData(p => ({ ...p, linkageSubType: 'known', baseIndexValue: '' }))}
+                                                                                onClick={() => {
+                                                                                    setValue('linkageSubType', 'base');
+                                                                                    setValue('baseIndexValue', '' as any);
+                                                                                }}
                                                                                 className={cn(
                                                                                     "px-3 py-1 text-[10px] font-bold rounded-md transition-all border-none",
-                                                                                    formData.linkageSubType !== 'manual' ? "bg-white dark:bg-black shadow-sm" : "bg-transparent opacity-60"
+                                                                                    formData.linkageSubType !== 'known' ? "bg-white dark:bg-black shadow-sm" : "bg-transparent opacity-60"
                                                                                 )}
                                                                             >
-                                                                                {t('byDate')}
+                                                                                {t('monthIndex')}
                                                                             </button>
                                                                             <button
                                                                                 type="button"
-                                                                                onClick={() => setFormData(p => ({ ...p, linkageSubType: 'manual', baseIndexDate: '' }))}
+                                                                                onClick={() => {
+                                                                                    setValue('linkageSubType', 'known');
+                                                                                    setValue('baseIndexDate', '');
+                                                                                }}
                                                                                 className={cn(
                                                                                     "px-3 py-1 text-[10px] font-bold rounded-md transition-all border-none",
-                                                                                    formData.linkageSubType === 'manual' ? "bg-white dark:bg-black shadow-sm" : "bg-transparent opacity-60"
+                                                                                    formData.linkageSubType === 'known' ? "bg-white dark:bg-black shadow-sm" : "bg-transparent opacity-60"
                                                                                 )}
                                                                             >
-                                                                                {t('manualRate')}
+                                                                                {t('manualValue')}
                                                                             </button>
                                                                         </div>
                                                                     </div>
 
-                                                                    {formData.linkageSubType === 'manual' ? (
+                                                                    {formData.linkageSubType === 'known' ? (
                                                                         <div className="space-y-1">
                                                                             <label className="text-xs font-medium flex items-center gap-2">
                                                                                 {t('baseIndexValue')} <ConfidenceDot field="baseIndexValue" />
@@ -1777,7 +1764,7 @@ export function AddContract() {
                                                                                 value={formatNumber(formData.baseIndexValue)}
                                                                                 onChange={(e) => {
                                                                                     const val = parseNumber(e.target.value);
-                                                                                    if (/^\d*\.?\d*$/.test(val)) setFormData({ ...formData, baseIndexValue: val });
+                                                                                    if (/^\d*\.?\d*$/.test(val)) setValue('baseIndexValue', val as any);
                                                                                 }}
                                                                                 className="w-full p-2.5 bg-background border border-border rounded-lg no-spinner font-mono text-sm"
                                                                                 placeholder="e.g. 105.2"
@@ -1791,7 +1778,7 @@ export function AddContract() {
                                                                             </label>
                                                                             <DatePicker
                                                                                 value={formData.baseIndexDate ? parseISO(formData.baseIndexDate) : undefined}
-                                                                                onChange={(date) => setFormData({ ...formData, baseIndexDate: date ? format(date, 'yyyy-MM-dd') : '' })}
+                                                                                onChange={(date) => setValue('baseIndexDate', date ? format(date, 'yyyy-MM-dd') : '')}
                                                                                 className="w-full text-sm"
                                                                             />
                                                                         </div>
@@ -1809,15 +1796,13 @@ export function AddContract() {
                                                                             <button
                                                                                 key={type.val}
                                                                                 type="button"
-                                                                                onClick={() => setFormData({ ...formData, linkageSubType: type.val as any })}
+                                                                                onClick={() => setValue('linkageSubType', type.val as any)}
                                                                                 className={cn(
                                                                                     "flex-1 py-1.5 text-xs font-bold rounded-lg transition-all border-none",
                                                                                     (formData.linkageSubType === type.val)
                                                                                         ? "bg-white dark:bg-black text-foreground shadow-sm"
-                                                                                        : "text-muted-foreground hover:text-foreground bg-transparent",
-                                                                                    formData.linkageSubType === 'manual' && "opacity-50 cursor-not-allowed"
+                                                                                        : "text-muted-foreground hover:text-foreground bg-transparent hover:opacity-100"
                                                                                 )}
-                                                                                disabled={formData.linkageSubType === 'manual'}
                                                                             >
                                                                                 {type.label}
                                                                             </button>
@@ -1832,7 +1817,10 @@ export function AddContract() {
                                                                             <input
                                                                                 type="checkbox"
                                                                                 checked={formData.hasLinkageCeiling}
-                                                                                onChange={(e) => setFormData({ ...formData, hasLinkageCeiling: e.target.checked, linkageCeiling: e.target.checked ? formData.linkageCeiling : '' })}
+                                                                                onChange={(e) => {
+                                                                                    setValue('hasLinkageCeiling', e.target.checked);
+                                                                                    if (!e.target.checked) setValue('linkageCeiling', undefined);
+                                                                                }}
                                                                                 className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
                                                                             />
                                                                             <span className="text-xs font-bold">{t('linkageCeiling')}</span>
@@ -1844,7 +1832,7 @@ export function AddContract() {
                                                                                     value={formatNumber(formData.linkageCeiling)}
                                                                                     onChange={(e) => {
                                                                                         const val = parseNumber(e.target.value);
-                                                                                        if (/^\d*\.?\d*$/.test(val)) setFormData({ ...formData, linkageCeiling: val });
+                                                                                        if (/^\d*\.?\d*$/.test(val)) setValue('linkageCeiling', val as any);
                                                                                     }}
                                                                                     className="w-full p-2 bg-background border border-border rounded-lg text-xs no-spinner"
                                                                                     placeholder="%"
@@ -1858,8 +1846,8 @@ export function AddContract() {
                                                                         <label className="flex items-center gap-2 cursor-pointer p-2 border border-border rounded-xl hover:bg-secondary/50 transition-colors h-[38px]">
                                                                             <input
                                                                                 type="checkbox"
-                                                                                checked={formData.linkageFloor === '0'}
-                                                                                onChange={(e) => setFormData({ ...formData, linkageFloor: e.target.checked ? '0' : '' })}
+                                                                                checked={formData.linkageFloor === 0}
+                                                                                onChange={(e) => setValue('linkageFloor', e.target.checked ? 0 : undefined)}
                                                                                 className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
                                                                             />
                                                                             <span className="text-xs font-bold">{t('floorIndex')}</span>
@@ -1896,7 +1884,7 @@ export function AddContract() {
                                                         value={formatNumber(formData.securityDeposit)}
                                                         onChange={e => {
                                                             const val = parseNumber(e.target.value);
-                                                            if (/^\d*\.?\d*$/.test(val)) setFormData({ ...formData, securityDeposit: val });
+                                                            if (/^\d*\.?\d*$/.test(val)) setValue('securityDeposit', val as any);
                                                         }}
                                                         className="w-full p-3 pl-8 bg-background border border-border rounded-xl no-spinner font-bold"
                                                     />
@@ -1908,7 +1896,7 @@ export function AddContract() {
                                                 <label className="text-sm font-medium flex items-center gap-2">{t('guarantors')} {scannedQuotes.guarantees && <Tooltip quote={scannedQuotes.guarantees} />} <ConfidenceDot field="guarantees" /></label>
                                                 <textarea
                                                     value={formData.guarantees}
-                                                    onChange={e => setFormData({ ...formData, guarantees: e.target.value })}
+                                                    onChange={e => setValue('guarantees', e.target.value)}
                                                     className="w-full p-3 bg-background border border-border rounded-xl min-h-[100px]"
                                                 />
                                             </div>
@@ -1917,7 +1905,7 @@ export function AddContract() {
                                                 <label className="text-sm font-medium flex items-center gap-2">{t('pets')} <ConfidenceDot field="petsAllowed" /></label>
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <button
-                                                        onClick={() => setFormData({ ...formData, petsAllowed: 'true' })}
+                                                        onClick={() => setValue('petsAllowed', 'true')}
                                                         className={cn(
                                                             "p-3 rounded-xl border text-sm font-medium transition-all",
                                                             formData.petsAllowed === 'true' ? "bg-green-50 border-green-500 text-green-700" : "border-border hover:bg-secondary/50"
@@ -1926,7 +1914,7 @@ export function AddContract() {
                                                         {t('allowed')}
                                                     </button>
                                                     <button
-                                                        onClick={() => setFormData({ ...formData, petsAllowed: 'false' })}
+                                                        onClick={() => setValue('petsAllowed', 'false')}
                                                         className={cn(
                                                             "p-3 rounded-xl border text-sm font-medium transition-all",
                                                             formData.petsAllowed === 'false' ? "bg-red-50 border-red-500 text-red-700" : "border-border hover:bg-secondary/50"
@@ -1941,7 +1929,7 @@ export function AddContract() {
                                                     "flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer",
                                                     formData.needsPainting ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
                                                 )}>
-                                                    <input type="checkbox" className="hidden" checked={formData.needsPainting} onChange={e => setFormData({ ...formData, needsPainting: e.target.checked })} />
+                                                    <input type="checkbox" className="hidden" checked={formData.needsPainting} onChange={e => setValue('needsPainting', e.target.checked)} />
                                                     <div className="p-2 bg-secondary rounded-full text-foreground"><Box className="w-5 h-5" /></div>
                                                     <span className="font-medium flex items-center gap-2">הדירה דורשת צביעה?</span>
                                                 </label>
@@ -2218,23 +2206,47 @@ export function AddContract() {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onMouseDown={handleDragStart}
-                            className="fixed w-full h-4 -mt-2 z-40 cursor-row-resize flex items-center justify-center group"
-                            style={{ top: `${splitRatio}%` }}
+                            className={cn(
+                                "fixed z-40 flex items-center justify-center group",
+                                "lg:h-full lg:w-4 lg:-mr-2 lg:flex-col lg:cursor-col-resize",
+                                "h-4 w-full -mt-2 cursor-row-resize flex-row"
+                            )}
+                            style={{
+                                top: windowWidth < 1024 ? `${splitRatio}%` : '0',
+                                right: windowWidth >= 1024 ? `${splitRatio}%` : '0',
+                                height: windowWidth >= 1024 ? '100%' : '16px',
+                                width: windowWidth >= 1024 ? '16px' : '100%'
+                            }}
                         >
-                            <div className="w-full h-px bg-border group-hover:bg-primary/50 transition-colors" />
-                            <div className="absolute bg-white border border-border shadow-sm rounded-full px-2 py-0.5 pointer-events-none">
-                                <div className="w-8 h-1 bg-slate-200 rounded-full" />
+                            <div className={cn(
+                                "bg-border group-hover:bg-primary/50 transition-colors",
+                                "lg:h-full lg:w-px h-px w-full"
+                            )} />
+                            <div className={cn(
+                                "absolute bg-white border border-border shadow-sm rounded-full pointer-events-none",
+                                "lg:px-0.5 lg:py-2 px-2 py-0.5"
+                            )}>
+                                <div className={cn(
+                                    "bg-slate-200 rounded-full",
+                                    "lg:w-1 lg:h-8 w-8 h-1"
+                                )} />
                             </div>
                         </motion.div>
 
                         {/* Viewer Pane */}
                         <motion.div
-                            initial={{ y: "100%" }}
-                            animate={{ y: 0 }}
-                            exit={{ y: "100%" }}
-                            transition={{ y: { type: "spring", bounce: 0, duration: 0.4 } }}
-                            className="fixed bottom-0 left-0 right-0 bg-slate-100 border-t border-border shadow-[0_-5px_30px_rgba(0,0,0,0.1)] z-30 flex flex-col"
-                            style={{ height: `${100 - splitRatio}%` }}
+                            initial={windowWidth >= 1024 ? { x: "-100%" } : { y: "100%" }}
+                            animate={windowWidth >= 1024 ? { x: 0 } : { y: 0 }}
+                            exit={windowWidth >= 1024 ? { x: "-100%" } : { y: "100%" }}
+                            transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+                            className={cn(
+                                "bg-slate-100 shadow-[0_-5px_30px_rgba(0,0,0,0.1)] z-30 flex flex-col",
+                                "lg:h-full lg:border-r border-t lg:border-t-0 border-border"
+                            )}
+                            style={{
+                                height: windowWidth >= 1024 ? '100%' : `${100 - splitRatio}%`,
+                                width: windowWidth >= 1024 ? `${100 - splitRatio}%` : '100%'
+                            }}
                         >
                             <div className="flex items-center justify-between px-4 py-2 bg-white border-b border-border/50 shrink-0">
                                 <span className="text-xs font-bold text-muted-foreground flex items-center gap-1">
@@ -2270,7 +2282,14 @@ export function AddContract() {
                     </>
                 )}
             </AnimatePresence>
-            <div className="fixed bottom-[74px] left-0 right-0 p-4 bg-background/95 backdrop-blur-md border-t border-border z-40 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+            <div className={cn(
+                "fixed bottom-[74px] p-4 bg-background/95 backdrop-blur-md border-t border-border z-40 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] transition-all duration-300",
+                isContractViewerOpen ? "left-0 lg:left-auto" : "left-0 right-0"
+            )}
+                style={{
+                    width: (isContractViewerOpen && windowWidth >= 1024) ? `${splitRatio}%` : '100%',
+                    right: (isContractViewerOpen && windowWidth >= 1024) ? '0' : '0'
+                }}>
                 <div className="flex gap-3 max-w-2xl mx-auto">
                     {step > 1 && (
                         <button
@@ -2282,16 +2301,28 @@ export function AddContract() {
                     )}
                     <button
                         onClick={nextStep}
-                        disabled={isSaving}
+                        disabled={isSaving || (
+                            step === 1 ? (!formData.address && !formData.selectedPropertyId) :
+                                step === 2 ? !formData.tenants[0]?.name :
+                                    step === 3 ? (!formData.startDate || !formData.endDate) :
+                                        step === 4 ? (!formData.rent || formData.rent <= 0) :
+                                            false
+                        )}
                         className={cn(
                             "flex-[2] flex items-center justify-center gap-2 py-3 rounded-xl font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20",
-                            isSaving && "opacity-70 cursor-not-allowed"
+                            (isSaving || (
+                                step === 1 ? (!formData.address && !formData.selectedPropertyId) :
+                                    step === 2 ? !formData.tenants[0]?.name :
+                                        step === 3 ? (!formData.startDate || !formData.endDate) :
+                                            step === 4 ? (!formData.rent || formData.rent <= 0) :
+                                                false
+                            )) && "opacity-50 cursor-not-allowed"
                         )}
                     >
                         {isSaving ? (
                             <>
-                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                שומר...
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                <span>{t('saving')}...</span>
                             </>
                         ) : (
                             <>

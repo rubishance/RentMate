@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { CalendarIcon as CalendarCheck, ClockIcon as Clock, AlertCircleIcon as AlertCircle, FilterIcon as SlidersHorizontal, ArrowRightIcon as ArrowRight, PlusIcon as Plus } from '../components/icons/NavIcons';
-import { format } from 'date-fns';
+import { format, subMonths } from 'date-fns';
 import { supabase } from '../lib/supabase';
 import { cn } from '../lib/utils';
 import type { Payment } from '../types/database';
@@ -16,7 +16,7 @@ export function Payments() {
     const { clear } = useDataCache();
     const [payments, setPayments] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [periodFilter, setPeriodFilter] = useState<'all' | '3m' | '6m' | '1y'>('3m');
+    const [periodFilter, setPeriodFilter] = useState<'all' | '3m' | '6m' | '1y'>('all');
     const [stats, setStats] = useState({
         monthlyExpected: 0,
         pending: 0,
@@ -47,8 +47,8 @@ export function Payments() {
                     *,
                     contracts (
                         id,
-                        properties (id, title, address, city),
-                        tenants (id, name)
+                        tenants,
+                        properties (id, title, address, city)
                     )
                 `)
                 .eq('user_id', (await supabase.auth.getUser()).data.user?.id) // STRICTLY enforce ownership
@@ -133,7 +133,14 @@ export function Payments() {
     const filteredPayments = payments.filter(payment => {
         const p = payment as any;
         if (filters.type !== 'all' && p.displayType !== filters.type) return false;
-        if (filters.tenantId !== 'all' && p.contracts?.tenants?.id !== filters.tenantId) return false;
+        if (filters.tenantId !== 'all') {
+            const tenantsArray = p.contracts?.tenants;
+            if (Array.isArray(tenantsArray)) {
+                if (!tenantsArray.some((t: any) => t.id_number === filters.tenantId || t.name === filters.tenantId)) return false;
+            } else if (p.contracts?.tenants?.id !== filters.tenantId) {
+                return false;
+            }
+        }
         if (filters.propertyId !== 'all' && p.contracts?.properties?.id !== filters.propertyId) return false;
         if (filters.paymentMethod !== 'all' && p.payment_method !== filters.paymentMethod) return false;
         if (filters.startDate && p.due_date < filters.startDate) return false;
@@ -143,15 +150,17 @@ export function Payments() {
             const dueDate = new Date(p.due_date);
             const now = new Date();
             const months = periodFilter === '3m' ? 3 : periodFilter === '6m' ? 6 : 12;
-            const threshold = new Date();
-            threshold.setMonth(now.getMonth() - months);
+            const threshold = subMonths(new Date(), months);
             if (dueDate < threshold) return false;
         }
 
         return true;
     });
 
-    const uniqueTenants = Array.from(new Set(payments.map(p => (p as any).contracts?.tenants).filter(Boolean).map(t => JSON.stringify(t)))).map(s => JSON.parse(s as string));
+    const uniqueTenants = Array.from(new Set(payments.flatMap(p => {
+        const t = (p as any).contracts?.tenants;
+        return Array.isArray(t) ? t : [t];
+    }).filter(Boolean).map(t => JSON.stringify(t)))).map(s => JSON.parse(s as string));
     const uniqueProperties = Array.from(new Set(payments.map(p => (p as any).contracts?.properties).filter(Boolean).map(pr => JSON.stringify(pr)))).map(s => JSON.parse(s as string));
 
     if (loading) {
@@ -364,7 +373,9 @@ export function Payments() {
                                         <div className="text-center md:text-left rtl:md:text-right space-y-3">
                                             <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
                                                 <h3 className="text-2xl font-black tracking-tighter text-foreground lowercase">
-                                                    {payment.contracts?.tenants?.name || t('unnamedTenant')}
+                                                    {Array.isArray(payment.contracts?.tenants)
+                                                        ? (payment.contracts.tenants[0]?.name || t('unnamedTenant'))
+                                                        : (payment.contracts?.tenants?.name || t('unnamedTenant'))}
                                                 </h3>
                                                 <span className={cn(
                                                     "text-[8px] px-3 py-1 rounded-full uppercase font-black tracking-[0.2em] shadow-minimal border",

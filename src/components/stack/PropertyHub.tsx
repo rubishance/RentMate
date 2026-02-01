@@ -23,6 +23,7 @@ import { AddPaymentModal } from '../modals/AddPaymentModal';
 import { DollarSign } from 'lucide-react';
 import { propertyService } from '../../services/property.service';
 import { CompressionService } from '../../services/compression.service';
+import { getPropertyPlaceholder } from '../../lib/property-placeholders';
 
 interface PropertyHubProps {
     propertyId: string;
@@ -273,15 +274,18 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
                     >
                         <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
                     </button>
-                    {property.image_url ? (
-                        <img
-                            src={property.image_url}
-                            alt={property.address}
-                            className="w-full h-full object-cover opacity-80"
-                        />
-                    ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-indigo-500/20 to-purple-500/20" />
-                    )}
+                    <img
+                        src={property.image_url || getPropertyPlaceholder(property.property_type)}
+                        alt={property.address}
+                        className="w-full h-full object-cover opacity-80"
+                        onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            const placeholder = getPropertyPlaceholder(property.property_type);
+                            if (target.src !== placeholder) {
+                                target.src = placeholder;
+                            }
+                        }}
+                    />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-50 dark:from-black via-transparent to-transparent" />
                 </div>
 
@@ -419,15 +423,15 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
                                                 <button
                                                     type="button"
                                                     onClick={() => {
-                                                        const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+                                                        const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || (process?.env?.VITE_GOOGLE_MAPS_API_KEY);
                                                         if (!apiKey || !editedProperty.address) return;
                                                         const location = `${editedProperty.address}, ${editedProperty.city}`;
                                                         const imageUrl = `https://maps.googleapis.com/maps/api/streetview?size=600x400&location=${encodeURIComponent(location)}&key=${apiKey}`;
                                                         setEditedProperty(prev => ({ ...prev, image_url: imageUrl }));
                                                     }}
-                                                    className="px-3 py-2 bg-primary/10 text-primary rounded-xl text-[10px] font-bold uppercase"
+                                                    className="px-3 py-2 bg-primary/10 text-primary rounded-xl text-[10px] font-bold uppercase transition-all hover:bg-primary/20"
                                                 >
-                                                    Auto
+                                                    {lang === 'he' ? 'אוטומטי' : 'Auto'}
                                                 </button>
                                             </div>
                                         ) : (
@@ -455,9 +459,16 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
                                         {editedProperty.image_url && (
                                             <div className="relative w-full h-32 rounded-2xl overflow-hidden border border-slate-100 dark:border-neutral-800 group">
                                                 <img
-                                                    src={editedProperty.image_url}
+                                                    src={editedProperty.image_url || getPropertyPlaceholder(editedProperty.property_type)}
                                                     alt="Preview"
                                                     className="w-full h-full object-cover"
+                                                    onError={(e) => {
+                                                        const target = e.target as HTMLImageElement;
+                                                        const placeholder = getPropertyPlaceholder(editedProperty.property_type);
+                                                        if (target.src !== placeholder) {
+                                                            target.src = placeholder;
+                                                        }
+                                                    }}
                                                 />
                                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
                                                     <button
@@ -482,18 +493,22 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
                                         </h1>
                                         {/* Snapshot Info - Inline with Address on Desktop, Below on Mobile */}
                                         <div className="flex items-center gap-3 text-sm font-bold text-muted-foreground bg-white/50 dark:bg-neutral-900/50 px-3 py-1 rounded-lg border border-slate-100 dark:border-neutral-800 backdrop-blur-sm self-start md:self-auto md:mb-1">
-                                            <div className="flex items-center gap-1.5">
-                                                <span>{property.rooms}</span>
-                                                <span className="text-[10px] uppercase tracking-wider opacity-70">{t('rooms')}</span>
-                                            </div>
-                                            <div className="w-[1px] h-3 bg-current opacity-20" />
-                                            <div className="flex items-center gap-1.5">
-                                                <span>{property.size_sqm}</span>
-                                                <span className="text-[10px] uppercase tracking-wider opacity-70">{t('sqm')}</span>
-                                            </div>
+                                            {property.rooms ? (
+                                                <div className="flex items-center gap-1.5">
+                                                    <span>{property.rooms}</span>
+                                                    <span className="text-[10px] uppercase tracking-wider opacity-70">{t('rooms')}</span>
+                                                </div>
+                                            ) : null}
+                                            {property.rooms && property.size_sqm ? <div className="w-[1px] h-3 bg-current opacity-20" /> : null}
+                                            {property.size_sqm ? (
+                                                <div className="flex items-center gap-1.5">
+                                                    <span>{property.size_sqm}</span>
+                                                    <span className="text-[10px] uppercase tracking-wider opacity-70">{t('sqm')}</span>
+                                                </div>
+                                            ) : null}
                                             {(property.has_parking || property.has_storage || property.has_balcony || property.has_safe_room) && (
                                                 <>
-                                                    <div className="w-[1px] h-3 bg-current opacity-20" />
+                                                    {(property.rooms || property.size_sqm) && <div className="w-[1px] h-3 bg-current opacity-20" />}
                                                     <div className="flex items-center gap-2">
                                                         {property.has_balcony && <BalconyIcon className="w-3.5 h-3.5" />}
                                                         {property.has_safe_room && <SafeRoomIcon className="w-3.5 h-3.5" />}
@@ -685,6 +700,8 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
                 message={lang === 'he'
                     ? `האם את/ה בטוח/ה לגמרי שברצונך למחוק את הנכס "${property.address}"? כל המידע כולל חוזים ותשלומים ימחק לצמיתות.`
                     : `Are you sure you want to delete "${property.address}"? All data including contracts and payments will be permanently deleted.`}
+                verificationText={property.address}
+                verificationLabel={lang === 'he' ? `הקלד את כתובת הנכס (${property.address}) לאישור` : `Type the property address (${property.address}) to confirm`}
                 isDeleting={isDeleting}
             />
 

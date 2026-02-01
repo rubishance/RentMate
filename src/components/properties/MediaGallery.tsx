@@ -8,6 +8,7 @@ import { format, parseISO } from 'date-fns';
 
 import { DocumentTimeline } from './DocumentTimeline';
 import { DocumentDetailsModal } from '../modals/DocumentDetailsModal';
+import { DatePicker } from '../ui/DatePicker';
 
 interface MediaGalleryProps {
     property: Property;
@@ -269,14 +270,11 @@ export function MediaGallery({ property, readOnly }: MediaGalleryProps) {
                             </div>
                             <div className="space-y-1.5">
                                 <label className="text-sm font-semibold text-gray-700 dark:text-gray-200 ml-1">{t('date')}</label>
-                                <div className="relative">
-                                    <input
-                                        type="date"
-                                        value={albumDate}
-                                        onChange={(e) => setAlbumDate(e.target.value)}
-                                        className="w-full px-4 py-3 bg-white/50 dark:bg-gray-800/50 border border-border/60 dark:border-gray-700/60 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-primary transition-all backdrop-blur-sm outline-none dark:text-white"
-                                    />
-                                </div>
+                                <DatePicker
+                                    value={albumDate ? parseISO(albumDate) : undefined}
+                                    onChange={(date) => setAlbumDate(date ? format(date, 'yyyy-MM-dd') : '')}
+                                    className="w-full"
+                                />
                             </div>
                         </div>
                         <div className="space-y-1.5">

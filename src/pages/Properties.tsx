@@ -21,21 +21,7 @@ import type { Property } from '../types/database';
 import { useTranslation } from '../hooks/useTranslation';
 import { useUserPreferences } from '../contexts/UserPreferencesContext';
 import { PropertyIcon } from '../components/common/PropertyIcon';
-import placeholderApartment from '../assets/placeholder-apartment.png';
-import placeholderPenthouse from '../assets/placeholder-penthouse.png';
-import placeholderGarden from '../assets/placeholder-garden.png';
-import placeholderHouse from '../assets/placeholder-house.png';
-import placeholderGeneric from '../assets/placeholder-generic.png';
-
-const getPlaceholder = (type?: string | null) => {
-    switch (type) {
-        case 'apartment': return placeholderApartment;
-        case 'penthouse': return placeholderPenthouse;
-        case 'garden': return placeholderGarden;
-        case 'house': return placeholderHouse;
-        default: return placeholderGeneric;
-    }
-};
+import { getPropertyPlaceholder } from '../lib/property-placeholders';
 
 import { PageHeader } from '../components/common/PageHeader';
 import { GlassCard } from '../components/common/GlassCard';
@@ -48,6 +34,7 @@ import { cn } from '../lib/utils';
 import { useStack } from '../contexts/StackContext';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Skeleton } from '../components/ui/Skeleton';
 
 type ExtendedProperty = Property & {
     contracts: {
@@ -222,8 +209,29 @@ export function Properties() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-[50vh]">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <div className="pb-40 pt-16 space-y-24">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 px-8">
+                    <div className="space-y-2">
+                        <Skeleton className="h-6 w-32 rounded-full" />
+                        <Skeleton className="h-16 w-64 rounded-xl" />
+                    </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 px-8">
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                        <div key={i} className="h-[500px] rounded-[3rem] overflow-hidden border border-slate-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+                            <Skeleton className="h-72 w-full" />
+                            <div className="p-10 space-y-8">
+                                <Skeleton className="h-8 w-3/4" />
+                                <div className="grid grid-cols-3 gap-4">
+                                    <Skeleton className="h-12 w-full rounded-2xl" />
+                                    <Skeleton className="h-12 w-full rounded-2xl" />
+                                    <Skeleton className="h-12 w-full rounded-2xl" />
+                                </div>
+                                <Skeleton className="h-10 w-1/2 mt-auto" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
         );
     }
@@ -357,9 +365,16 @@ export function Properties() {
                                 {/* Image Section */}
                                 <div className="relative h-72 bg-slate-50 dark:bg-neutral-800 overflow-hidden">
                                     <img
-                                        src={property.image_url || getPlaceholder(property.property_type)}
+                                        src={property.image_url || getPropertyPlaceholder(property.property_type)}
                                         alt={`${property.address}, ${property.city}`}
                                         className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 filter saturate-50 group-hover:saturate-100"
+                                        onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            const placeholder = getPropertyPlaceholder(property.property_type);
+                                            if (target.src !== placeholder) {
+                                                target.src = placeholder;
+                                            }
+                                        }}
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
 

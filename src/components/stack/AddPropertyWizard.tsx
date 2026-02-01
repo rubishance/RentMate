@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Button } from '../ui/Button';
-import { CheckIcon, ArrowRightIcon, MapPin, Building2, Info, Upload, Image as ImageIcon, Loader2, Trash2 } from 'lucide-react';
+import { CheckIcon, ArrowRightIcon, MapPin, Building2, Info, Upload, Image as ImageIcon, Loader2, Trash2, Wind, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PropertyTypeSelect } from '../common/PropertyTypeSelect';
 import type { Property } from '../../types/database';
@@ -9,6 +9,8 @@ import { useStack } from '../../contexts/StackContext';
 import { supabase } from '../../lib/supabase';
 import { CompressionService } from '../../services/compression.service';
 import { cn } from '../../lib/utils';
+import { GoogleAutocomplete } from '../common/GoogleAutocomplete';
+import { getPropertyPlaceholder } from '../../lib/property-placeholders';
 
 // Wizard Steps Configuration
 const STEPS = [
@@ -34,11 +36,10 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
         city: initialData?.city || '',
         rooms: initialData?.rooms, // Empty as default
         size_sqm: initialData?.size_sqm, // Also empty by default for consistency
-        rent_price: 0, // Removed from UI, default to 0
-        status: 'Vacant', // Removed from UI, default to Vacant
-        title: '', // Removed from UI
         has_parking: initialData?.has_parking || false,
         has_storage: initialData?.has_storage || false,
+        has_balcony: initialData?.has_balcony || false,
+        has_safe_room: initialData?.has_safe_room || false,
         image_url: initialData?.image_url || ''
     });
 
@@ -94,24 +95,36 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                 const { data: { user } } = await supabase.auth.getUser();
                 if (!user) throw new Error('User not authenticated');
 
-                const startData = {
+                const startData: any = {
                     address: (formData.address || '').trim(),
                     city: (formData.city || '').trim(),
-                    title: formData.address && formData.city ? `${formData.address}, ${formData.city}` : (formData.address || formData.city || ''),
                     property_type: formData.property_type,
                     rooms: Number(formData.rooms) || 0,
                     size_sqm: Number(formData.size_sqm) || 0,
                     has_parking: !!formData.has_parking,
                     has_storage: !!formData.has_storage,
-                    rent_price: Number(formData.rent_price) || 0,
-                    status: formData.status || 'Vacant',
+                    has_balcony: !!formData.has_balcony,
+                    has_safe_room: !!formData.has_safe_room,
                     image_url: formData.image_url || null,
                     user_id: user.id
                 };
 
-                const { error } = await supabase
+                let { error } = await supabase
                     .from('properties')
                     .insert(startData);
+
+                // Resilience for schema cache mismatches
+                if (error && (error.message?.includes('schema cache') || error.message?.includes('column'))) {
+                    console.warn('[AddPropertyWizard] Modern schema columns missing. Retrying with legacy fields...');
+                    const legacyData = { ...startData };
+                    delete legacyData.has_balcony;
+                    delete legacyData.has_safe_room;
+
+                    const { error: retryError } = await supabase
+                        .from('properties')
+                        .insert(legacyData);
+                    error = retryError;
+                }
 
                 if (error) throw error;
 
@@ -213,24 +226,20 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
 
                                             {/* City above Address */}
                                             <div className="p-5 rounded-2xl bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700 focus-within:ring-2 ring-primary/20 transition-all">
-                                                <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">{t('city')}</label>
-                                                <input
-                                                    type="text"
-                                                    autoFocus
-                                                    placeholder="Tel Aviv"
-                                                    className="bg-transparent font-black text-2xl text-foreground w-full outline-none placeholder:opacity-30"
-                                                    value={formData.city}
-                                                    onChange={e => setFormData({ ...formData, city: e.target.value })}
+                                                <GoogleAutocomplete
+                                                    label={t('city')}
+                                                    value={formData.city || ''}
+                                                    onChange={(val: string) => setFormData({ ...formData, city: val })}
+                                                    type="cities"
                                                 />
                                             </div>
                                             <div className="p-5 rounded-2xl bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700 focus-within:ring-2 ring-primary/20 transition-all">
-                                                <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">{t('address')}</label>
-                                                <input
-                                                    type="text"
-                                                    placeholder="Herzl 123, Apt 4"
-                                                    className="bg-transparent font-black text-2xl text-foreground w-full outline-none placeholder:opacity-30"
-                                                    value={formData.address}
-                                                    onChange={e => setFormData({ ...formData, address: e.target.value })}
+                                                <GoogleAutocomplete
+                                                    label={t('address')}
+                                                    value={formData.address || ''}
+                                                    onChange={(val: string) => setFormData({ ...formData, address: val })}
+                                                    type="address"
+                                                    biasCity={formData.city}
                                                 />
                                             </div>
                                         </div>
@@ -263,8 +272,34 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                 />
                                             </div>
 
-                                            {/* Features: Parking & Storage */}
+                                            {/* Features: Balcony, Safe Room, Parking & Storage */}
                                             <div className="col-span-1 md:col-span-2 grid grid-cols-2 gap-4">
+                                                <button
+                                                    onClick={() => setFormData(p => ({ ...p, has_balcony: !p.has_balcony }))}
+                                                    className={`p-4 rounded-2xl border flex items-center justify-between transition-all ${formData.has_balcony
+                                                        ? 'bg-primary/10 border-primary text-primary'
+                                                        : 'bg-white dark:bg-neutral-900 border-slate-200 dark:border-neutral-800 text-muted-foreground'
+                                                        }`}
+                                                >
+                                                    <span className="font-bold">{t('balcony')}</span>
+                                                    <div className={`w-6 h-6 rounded-full border flex items-center justify-center ${formData.has_balcony ? 'bg-primary border-primary' : 'border-slate-300'}`}>
+                                                        {formData.has_balcony && <CheckIcon className="w-4 h-4 text-white" />}
+                                                    </div>
+                                                </button>
+
+                                                <button
+                                                    onClick={() => setFormData(p => ({ ...p, has_safe_room: !p.has_safe_room }))}
+                                                    className={`p-4 rounded-2xl border flex items-center justify-between transition-all ${formData.has_safe_room
+                                                        ? 'bg-primary/10 border-primary text-primary'
+                                                        : 'bg-white dark:bg-neutral-900 border-slate-200 dark:border-neutral-800 text-muted-foreground'
+                                                        }`}
+                                                >
+                                                    <span className="font-bold">{t('safe_room')}</span>
+                                                    <div className={`w-6 h-6 rounded-full border flex items-center justify-center ${formData.has_safe_room ? 'bg-primary border-primary' : 'border-slate-300'}`}>
+                                                        {formData.has_safe_room && <CheckIcon className="w-4 h-4 text-white" />}
+                                                    </div>
+                                                </button>
+
                                                 <button
                                                     onClick={() => setFormData(p => ({ ...p, has_parking: !p.has_parking }))}
                                                     className={`p-4 rounded-2xl border flex items-center justify-between transition-all ${formData.has_parking
@@ -327,7 +362,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                                     alert('Please enter city and address first');
                                                                     return;
                                                                 }
-                                                                const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+                                                                const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || (process?.env?.VITE_GOOGLE_MAPS_API_KEY);
                                                                 if (!apiKey) return;
                                                                 const location = `${formData.address}, ${formData.city}`;
                                                                 const imageUrl = `https://maps.googleapis.com/maps/api/streetview?size=600x400&location=${encodeURIComponent(location)}&key=${apiKey}`;
@@ -370,9 +405,16 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                             className="relative w-full h-48 rounded-[2rem] overflow-hidden border border-slate-100 dark:border-neutral-800 shadow-lg group"
                                                         >
                                                             <img
-                                                                src={formData.image_url}
+                                                                src={formData.image_url || getPropertyPlaceholder(formData.property_type)}
                                                                 alt="Preview"
                                                                 className="w-full h-full object-cover"
+                                                                onError={(e) => {
+                                                                    const target = e.target as HTMLImageElement;
+                                                                    const placeholder = getPropertyPlaceholder(formData.property_type);
+                                                                    if (target.src !== placeholder) {
+                                                                        target.src = placeholder;
+                                                                    }
+                                                                }}
                                                             />
                                                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
                                                                 <button

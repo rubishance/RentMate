@@ -60,9 +60,14 @@ export const Modal: React.FC<ModalProps> = ({
 
                     {/* Modal Content */}
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                        animate={{
+                            opacity: 1,
+                            scale: 1,
+                            y: 0,
+                            transition: { type: 'spring', stiffness: 300, damping: 30 }
+                        }}
+                        exit={{ opacity: 0, scale: 0.95, y: 10, transition: { duration: 0.2 } }}
                         className={cn(
                             "relative w-full bg-white dark:bg-neutral-900 shadow-2xl rounded-3xl overflow-hidden flex flex-col",
                             sizes[size],

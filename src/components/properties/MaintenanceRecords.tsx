@@ -10,6 +10,7 @@ import UpgradeRequestModal from '../modals/UpgradeRequestModal';
 import { format, parseISO } from 'date-fns';
 import { DocumentTimeline } from './DocumentTimeline';
 import { DocumentDetailsModal } from '../modals/DocumentDetailsModal';
+import { DatePicker } from '../ui/DatePicker';
 
 interface MaintenanceRecordsProps {
     property: Property;
@@ -293,11 +294,10 @@ export function MaintenanceRecords({ property, readOnly }: MaintenanceRecordsPro
                             </div>
                             <div className="space-y-1.5">
                                 <label className="text-sm font-semibold text-gray-700 dark:text-gray-200 ml-1">{t('date')}</label>
-                                <input
-                                    type="date"
-                                    value={newFolderDate}
-                                    onChange={(e) => setNewFolderDate(e.target.value)}
-                                    className="w-full px-4 py-3 bg-white/50 dark:bg-gray-800/50 border border-border/60 dark:border-gray-700/60 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all backdrop-blur-sm outline-none dark:text-white"
+                                <DatePicker
+                                    value={newFolderDate ? parseISO(newFolderDate) : undefined}
+                                    onChange={(date) => setNewFolderDate(date ? format(date, 'yyyy-MM-dd') : '')}
+                                    className="w-full"
                                 />
                             </div>
                         </div>
@@ -427,11 +427,10 @@ export function MaintenanceRecords({ property, readOnly }: MaintenanceRecordsPro
                                             </div>
                                             <div className="space-y-1">
                                                 <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">{t('date')}</label>
-                                                <input
-                                                    type="date"
-                                                    value={file.documentDate}
-                                                    onChange={(e) => updateStagedFile(file.id, 'documentDate', e.target.value)}
-                                                    className="w-full px-3 py-1.5 text-xs border border-border dark:border-gray-700 rounded-lg bg-white/50 dark:bg-foreground/50 outline-none focus:border-orange-500 transition-colors"
+                                                <DatePicker
+                                                    value={file.documentDate ? parseISO(file.documentDate) : undefined}
+                                                    onChange={(date) => updateStagedFile(file.id, 'documentDate', date ? format(date, 'yyyy-MM-dd') : '')}
+                                                    className="w-full"
                                                 />
                                             </div>
                                         </div>

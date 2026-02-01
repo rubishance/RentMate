@@ -3,8 +3,13 @@ import { Calculator, Loader2 } from 'lucide-react';
 import { calculateStandard } from '../services/calculator.service';
 import { getIndexValue } from '../services/index-data.service';
 import { DatePicker } from './ui/DatePicker';
+import { Button } from './ui/Button';
+import { Input } from './ui/Input';
+import { Switch } from './ui/Switch';
+import { SegmentedControl } from './ui/SegmentedControl';
 import { format, parseISO } from 'date-fns';
 import { useTranslation } from '../hooks/useTranslation';
+import { cn } from '../lib/utils';
 
 
 export function IndexCalculator() {
@@ -153,116 +158,105 @@ export function IndexCalculator() {
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <Calculator className="w-5 h-5 text-primary" />
-                    <h3 className="font-bold text-lg">Index Calculator</h3>
+                    <h3 className="font-black text-xs uppercase tracking-widest text-muted-foreground">{t('indexCalculator')}</h3>
                 </div>
                 {loading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {/* Index Type */}
-                <div className="space-y-1">
-                    <label className="text-xs font-medium text-muted-foreground">Linkage Type</label>
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">{t('linkageType')}</label>
                     <select
                         value={indexType}
                         onChange={(e) => setIndexType(e.target.value as any)}
-                        className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:ring-1 focus:ring-primary"
+                        className="w-full px-4 py-3 bg-gray-50 dark:bg-neutral-800 border-2 border-transparent focus:border-black dark:focus:border-white rounded-[1.25rem] text-sm font-bold outline-none appearance-none transition-all"
                     >
-                        <option value="cpi">Consumer Price Index (CPI)</option>
-                        <option value="housing">Housing Price Index</option>
-                        <option value="construction">Construction Inputs</option>
-                        <option value="usd">USD Exchange Rate</option>
-                        <option value="eur">EUR Exchange Rate</option>
+                        <option value="cpi">{t('cpi')}</option>
+                        <option value="housing">{t('housingServices')}</option>
+                        <option value="construction">{t('constructionInputs')}</option>
+                        <option value="usd">{t('usdRate')}</option>
+                        <option value="eur">{t('eurRate')}</option>
                     </select>
                 </div>
 
-                {/* Linkage Sub Type (Israeli Standard) */}
+                {/* Linkage Sub Type */}
                 {(indexType === 'cpi' || indexType === 'housing' || indexType === 'construction') && (
-                    <div className="space-y-1">
-                        <label className="text-xs font-medium text-muted-foreground">Index Calculation</label>
-                        <select
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">{t('linkageCalculationMethod')}</label>
+                        <SegmentedControl
+                            options={[
+                                { label: t('knownIndex'), value: 'known' },
+                                { label: t('inRespectOf'), value: 'respect_of' }
+                            ]}
                             value={linkageSubType}
-                            onChange={(e) => setLinkageSubType(e.target.value as any)}
-                            className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:ring-1 focus:ring-primary"
-                        >
-                            <option value="known">Known Index (מדד ידוע)</option>
-                            <option value="respect_of">In Respect Of (מדד בגין)</option>
-                        </select>
+                            onChange={(val) => setLinkageSubType(val as any)}
+                        />
                     </div>
                 )}
 
                 {/* Base Date */}
-                <div className="space-y-1">
-                    <label className="text-xs font-medium text-muted-foreground">Base Date</label>
-                    <div className="relative">
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">{t('baseDate')}</label>
+                    <div className="relative group">
                         <DatePicker
                             value={baseDate ? parseISO(baseDate) : undefined}
                             onChange={(date) => setBaseDate(date ? format(date, 'yyyy-MM-dd') : '')}
-                            className="w-full"
                         />
                         {baseIndexValue !== null ? (
-                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-mono text-green-600 font-bold">
+                            <span className="absolute right-12 top-1/2 -translate-y-1/2 text-[10px] font-black bg-black dark:bg-white text-white dark:text-black px-2 py-1 rounded-full shadow-sm z-10">
                                 {baseIndexValue.toFixed(1)}
                             </span>
                         ) : (
-                            !loading && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-red-400">N/A</span>
+                            !loading && <span className="absolute right-12 top-1/2 -translate-y-1/2 text-[10px] font-black text-red-500 z-10">N/A</span>
                         )}
                     </div>
                 </div>
 
                 {/* Current Date */}
-                <div className="space-y-1">
-                    <label className="text-xs font-medium text-muted-foreground">Payment Date</label>
-                    <div className="relative">
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">{t('paymentDate')}</label>
+                    <div className="relative group">
                         <DatePicker
                             value={currentDate ? parseISO(currentDate) : undefined}
                             onChange={(date) => setCurrentDate(date ? format(date, 'yyyy-MM-dd') : '')}
-                            className="w-full"
                         />
                         {currentIndexValue !== null ? (
-                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-mono text-green-600 font-bold">
+                            <span className="absolute right-12 top-1/2 -translate-y-1/2 text-[10px] font-black bg-black dark:bg-white text-white dark:text-black px-2 py-1 rounded-full shadow-sm z-10">
                                 {currentIndexValue.toFixed(1)}
                             </span>
                         ) : (
-                            !loading && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-red-400">N/A</span>
+                            !loading && <span className="absolute right-12 top-1/2 -translate-y-1/2 text-[10px] font-black text-red-500 z-10">N/A</span>
                         )}
                     </div>
                 </div>
 
-                {/* Base Rent */}
-                <div className="space-y-1">
-                    <label className="text-xs font-medium text-muted-foreground">{t('monthlyRent')}</label>
-                    <input
-                        type="number"
-                        value={baseRent}
-                        onChange={(e) => setBaseRent(e.target.value)}
-                        className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:ring-1 focus:ring-primary"
-                        placeholder="0"
-                    />
-                </div>
+                <Input
+                    label={t('baseRent')}
+                    type="number"
+                    value={baseRent}
+                    onChange={(e) => setBaseRent(e.target.value)}
+                    placeholder="5,000"
+                    leftIcon={<span className="font-bold text-slate-300">₪</span>}
+                />
+                <Input
+                    label={t('maxIncrease')}
+                    type="number"
+                    value={annualCeiling}
+                    onChange={(e) => setAnnualCeiling(e.target.value)}
+                    placeholder="5"
+                    rightIcon={<span className="font-bold text-slate-300">%</span>}
+                />
 
-                {/* Annual Ceiling */}
-                <div className="space-y-1">
-                    <label className="text-xs font-medium text-muted-foreground">Annual Ceiling (%)</label>
-                    <input
-                        type="number"
-                        value={annualCeiling}
-                        onChange={(e) => setAnnualCeiling(e.target.value)}
-                        className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:ring-1 focus:ring-primary"
-                        placeholder="e.g. 5"
-                    />
-                </div>
-
-                {/* Floor Checkbox */}
-                <div className="flex items-end pb-2">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                            type="checkbox"
+                {/* Floor Switch */}
+                <div className="flex flex-col justify-end gap-3 pb-2 px-2">
+                    <div className="flex items-center justify-between gap-4">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-black dark:text-white">{t('floorIndex')}</span>
+                        <Switch
                             checked={isFloorChecked}
-                            onChange={(e) => setIsFloorChecked(e.target.checked)}
-                            className="w-4 h-4 rounded border-border text-primary focus:ring-primary"
+                            onChange={setIsFloorChecked}
                         />
-                        <span className="text-xs font-medium text-muted-foreground">{t('floorIndex')}</span>
-                    </label>
+                    </div>
                 </div>
             </div>
 
@@ -272,15 +266,15 @@ export function IndexCalculator() {
 
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <span>Total Increase:</span>
-                            <span className={`font-bold ${calculatedResult.percentageChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            <span className="font-black uppercase text-[10px] tracking-widest">{t('change')}:</span>
+                            <span className={`font-bold ${calculatedResult.percentageChange >= 0 ? 'text-red-500' : 'text-emerald-500'}`}>
                                 {calculatedResult.percentageChange > 0 ? '+' : ''}{calculatedResult.percentageChange.toFixed(2)}%
                             </span>
                         </div>
 
-                        <div className="flex items-center gap-3 bg-primary/5 px-4 py-2 rounded-xl border border-primary/10">
-                            <span className="text-sm font-medium">New Rent:</span>
-                            <span className="text-2xl font-bold text-primary font-mono">
+                        <div className="flex items-center gap-3 bg-primary/5 px-6 py-3 rounded-2xl border border-primary/10">
+                            <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">{t('newRent')}:</span>
+                            <span className="text-2xl font-black text-foreground">
                                 ₪{calculatedResult.newRent.toLocaleString()}
                             </span>
                         </div>

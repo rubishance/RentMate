@@ -33,7 +33,7 @@ export function TimelineWidget({ contracts, loading }: TimelineWidgetProps) {
         return contracts.map(contract => {
             const startDate = contract.start_date ? new Date(contract.start_date) : null;
             const endDate = contract.end_date ? new Date(contract.end_date) : null;
-            const today = new Date();
+            const today = new Date(format(new Date(), 'yyyy-MM-dd'));
 
             if (!startDate || isNaN(startDate.getTime()) || !endDate || isNaN(endDate.getTime())) {
                 return null;
@@ -113,7 +113,7 @@ export function TimelineWidget({ contracts, loading }: TimelineWidgetProps) {
                     <div key={item.id} className="relative group">
                         <div className="flex justify-between items-start mb-3">
                             <div>
-                                <h4 className="font-bold text-black dark:text-white group-hover:underline cursor-pointer" onClick={() => navigate('/properties')}>{item.address}</h4>
+                                <h4 className="font-bold text-black dark:text-white group-hover:underline cursor-pointer" onClick={() => navigate((item as any).properties?.id ? `/properties/${(item as any).properties.id}` : '/properties')}>{item.address}</h4>
                                 <p className="text-xs font-medium text-gray-400 dark:text-gray-500 mt-1">
                                     {item.daysLeft > 0
                                         ? t('daysLeft', { count: item.daysLeft })

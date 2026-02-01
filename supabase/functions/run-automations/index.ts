@@ -112,7 +112,7 @@ serve(async (req) => {
     try {
         if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error("Supabase config missing.");
         const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-        let logs = [];
+        const logs = [];
 
         const { data: systemSettings } = await adminClient.from('system_settings').select('key, value');
         const getSetting = (key) => systemSettings?.find(s => s.key === key)?.value;

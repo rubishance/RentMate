@@ -7,6 +7,7 @@ import { CompressionService } from '../../services/compression.service';
 import { format, parseISO } from 'date-fns';
 import { DocumentTimeline } from './DocumentTimeline';
 import { DocumentDetailsModal } from '../modals/DocumentDetailsModal';
+import { DatePicker } from '../ui/DatePicker';
 
 interface MiscDocumentsProps {
     property: Property;
@@ -261,14 +262,11 @@ export function MiscDocuments({ property, readOnly }: MiscDocumentsProps) {
                             </div>
                             <div className="space-y-1.5">
                                 <label className="text-sm font-semibold text-gray-700 dark:text-gray-200 ml-1">{t('date')}</label>
-                                <div className="relative">
-                                    <input
-                                        type="date"
-                                        value={newFolderDate}
-                                        onChange={(e) => setNewFolderDate(e.target.value)}
-                                        className="w-full px-4 py-3 bg-white/50 dark:bg-gray-800/50 border border-border/60 dark:border-gray-700/60 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-primary transition-all backdrop-blur-sm outline-none dark:text-white"
-                                    />
-                                </div>
+                                <DatePicker
+                                    value={newFolderDate ? parseISO(newFolderDate) : undefined}
+                                    onChange={(date) => setNewFolderDate(date ? format(date, 'yyyy-MM-dd') : '')}
+                                    className="w-full"
+                                />
                             </div>
                         </div>
                         <div className="space-y-1.5">
@@ -340,11 +338,10 @@ export function MiscDocuments({ property, readOnly }: MiscDocumentsProps) {
                                         <div className="grid grid-cols-2 gap-4 mb-3">
                                             <div>
                                                 <label className="text-xs font-medium text-muted-foreground mb-1 block">{t('date')}</label>
-                                                <input
-                                                    type="date"
-                                                    value={file.documentDate}
-                                                    onChange={(e) => updateStagedFile(file.id, 'documentDate', e.target.value)}
-                                                    className="w-full px-2 py-1.5 text-xs bg-white dark:bg-foreground border border-border dark:border-gray-700 rounded-lg focus:ring-1 focus:ring-indigo-500 outline-none"
+                                                <DatePicker
+                                                    value={file.documentDate ? parseISO(file.documentDate) : undefined}
+                                                    onChange={(date) => updateStagedFile(file.id, 'documentDate', date ? format(date, 'yyyy-MM-dd') : '')}
+                                                    className="w-full"
                                                 />
                                             </div>
                                             <div>

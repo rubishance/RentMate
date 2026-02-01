@@ -115,26 +115,27 @@ export function DatePicker({
 
                                     <div className="p-4 pt-0">
                                         <style>{`
-                                        .rdp { --rdp-cell-size: 40px; --rdp-accent-color: #3b82f6; --rdp-background-color: #eff6ff; margin: 0; width: 100%; }
+                                        .rdp { --rdp-cell-size: 40px; --rdp-accent-color: #000; --rdp-background-color: #f3f4f6; margin: 0; width: 100%; }
+                                        .dark .rdp { --rdp-accent-color: #fff; --rdp-background-color: #262626; }
                                         .rdp-month { width: 100%; }
                                         .rdp-table { width: 100%; max-width: none; display: table; border-collapse: collapse; }
                                         .rdp-tbody { display: table-row-group; }
                                         .rdp-row { display: table-row; }
-                                        .rdp-cell { display: table-cell; text-align: center; vertical-align: middle; padding: 0; }
-                                        .rdp-day_selected:not([disabled]) { font-weight: bold; color: white; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.4); }
-                                        .rdp-day_selected:hover:not([disabled]) { background-color: #2563eb; }
+                                        .rdp-cell { display: table-cell; text-align: center; vertical-align: middle; padding: 2px; }
+                                        .rdp-day_selected:not([disabled]) { font-weight: 900; color: var(--rdp-background-color); background: var(--rdp-accent-color); border-radius: 12px; }
+                                        .rdp-day_selected:hover:not([disabled]) { opacity: 0.9; }
                                         .rdp-button:hover:not([disabled]):not(.rdp-day_selected) { background-color: rgba(0,0,0,0.05); }
-                                        .rdp-day_today:not(.rdp-day_selected) { border: 2px solid #3b82f6; color: #3b82f6; font-weight: 700; }
-                                        .rdp-nav_button { width: 32px; height: 32px; border-radius: 8px; }
-                                        .rdp-nav_button:hover { background-color: rgba(0,0,0,0.05); }
-                                        .rdp-head_cell { color: #64748b; font-weight: 600; font-size: 0.875rem; }
-                                        .rdp-day { border-radius: 12px; font-size: 0.9rem; transition: all 0.2s; }
-                                        .rdp-day_disabled { opacity: 0.25; text-decoration: none; cursor: not-allowed; }
+                                        .dark .rdp-button:hover:not([disabled]):not(.rdp-day_selected) { background-color: rgba(255,255,255,0.05); }
+                                        .rdp-day_today:not(.rdp-day_selected) { border: 2px solid var(--rdp-accent-color); color: var(--rdp-accent-color); font-weight: 900; }
+                                        .rdp-nav_button { width: 32px; height: 32px; border-radius: 10px; background: rgba(0,0,0,0.03); }
+                                        .dark .rdp-nav_button { background: rgba(255,255,255,0.03); }
+                                        .rdp-nav_button:hover { background-color: rgba(0,0,0,0.1); }
+                                        .rdp-head_cell { color: #94a3b8; font-weight: 900; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; }
+                                        .rdp-day { border-radius: 12px; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+                                        .rdp-day_disabled { opacity: 0.15; cursor: not-allowed; }
                                         .rdp-caption_dropdowns { display: flex; gap: 0.5rem; flex-grow: 1; justify-content: center; }
-                                        .rdp-dropdown_year, .rdp-dropdown_month { position: relative; display: inline-flex; align-items: center; }
-                                        .rdp-dropdown { background: transparent; border: 1px solid transparent; font-weight: 600; font-size: 1rem; color: #1e293b; padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer; }
-                                        .rdp-dropdown:hover { background-color: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.1); }
-                                        /* Removed display:none from caption_label to ensure visibility if structure differs */
+                                        .rdp-dropdown { background: transparent; border: 1px solid transparent; font-weight: 900; font-size: 14px; text-transform: uppercase; color: var(--rdp-accent-color); padding: 4px 8px; border-radius: 8px; cursor: pointer; }
+                                        .rdp-dropdown:hover { background-color: rgba(0,0,0,0.05); }
                                     `}</style>
 
                                         <DayPicker

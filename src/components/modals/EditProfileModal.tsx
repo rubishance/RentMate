@@ -8,29 +8,26 @@ interface EditProfileModalProps {
     onClose: () => void;
     onSuccess: () => void;
     initialData: {
-        first_name: string;
-        last_name: string;
+        full_name: string;
     };
 }
 
 export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: EditProfileModalProps) {
     const { t, lang } = useTranslation();
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
+    const [fullName, setFullName] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isReadOnly, setIsReadOnly] = useState(true);
 
     useEffect(() => {
         if (isOpen) {
-            setFirstName(initialData.first_name || '');
-            setLastName(initialData.last_name || '');
+            setFullName(initialData.full_name || '');
             setIsReadOnly(true); // Always start in view mode
         }
     }, [isOpen, initialData]);
 
     const handleSave = async () => {
-        if (!firstName.trim() || !lastName.trim()) {
-            alert(lang === 'he' ? 'שם פרטי ושם משפחה הם שדות חובה' : 'Both First Name and Last Name are required.');
+        if (!fullName.trim()) {
+            alert(lang === 'he' ? 'שם הוא שדה חובה' : 'Full Name is required.');
             return;
         }
 
@@ -43,9 +40,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
             const updates = {
                 id: user.id,
                 email: user.email,
-                first_name: firstName.trim(),
-                last_name: lastName.trim(),
-                full_name: `${firstName} ${lastName}`.trim(),
+                full_name: fullName.trim(),
                 updated_at: new Date().toISOString(),
             };
 
@@ -93,24 +88,11 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
 
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block ml-1">{lang === 'he' ? 'שם פרטי' : 'First Name'}</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block ml-1">{lang === 'he' ? 'שם מלא' : 'Full Name'}</label>
                             <input
                                 type="text"
-                                value={firstName}
-                                onChange={(e) => setFirstName(e.target.value)}
-                                readOnly={isReadOnly}
-                                className={`w-full p-3 border rounded-xl outline-none transition-all ${isReadOnly
-                                    ? 'bg-muted border-border cursor-default'
-                                    : 'bg-secondary border-border focus:ring-2 focus:ring-indigo-500'
-                                    }`}
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block ml-1">{lang === 'he' ? 'שם משפחה' : 'Last Name'}</label>
-                            <input
-                                type="text"
-                                value={lastName}
-                                onChange={(e) => setLastName(e.target.value)}
+                                value={fullName}
+                                onChange={(e) => setFullName(e.target.value)}
                                 readOnly={isReadOnly}
                                 className={`w-full p-3 border rounded-xl outline-none transition-all ${isReadOnly
                                     ? 'bg-muted border-border cursor-default'
@@ -143,8 +125,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                             <button
                                 onClick={() => {
                                     setIsReadOnly(true);
-                                    setFirstName(initialData.first_name || '');
-                                    setLastName(initialData.last_name || '');
+                                    setFullName(initialData.full_name || '');
                                 }}
                                 className="flex-1 py-3 px-4 bg-background border border-border text-foreground font-medium rounded-xl hover:bg-secondary active:scale-[0.98] transition-all"
                             >
@@ -293,36 +274,6 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
                                 )}
                             </div>
 
-                            {/* Rent Due */}
-                            <div className="space-y-3 pb-4 border-b border-border">
-                                <div className="flex items-center gap-3">
-                                    <input
-                                        type="checkbox"
-                                        id="rent-due-enabled"
-                                        checked={rentDueDays > 0}
-                                        onChange={(e) => setRentDueDays(e.target.checked ? 3 : 0)}
-                                        className="w-5 h-5 text-primary rounded focus:ring-2 focus:ring-indigo-500 cursor-pointer"
-                                    />
-                                    <label htmlFor="rent-due-enabled" className="text-sm font-bold text-foreground cursor-pointer">
-                                        {lang === 'he' ? 'התראה לפני תשלום שכירות' : 'Rent Due Warning'}
-                                    </label>
-                                </div>
-                                {rentDueDays > 0 && (
-                                    <div className="mr-8 space-y-2">
-                                        <p className="text-xs text-muted-foreground">
-                                            {lang === 'he' ? 'קבל התראה כמה ימים לפני מועד תשלום השכירות' : 'Days before rent is due'}
-                                        </p>
-                                        <input
-                                            type="number"
-                                            min="1"
-                                            max="180"
-                                            value={rentDueDays}
-                                            onChange={(e) => setRentDueDays(Math.max(1, parseInt(e.target.value) || 1))}
-                                            className="w-full p-3 border border-border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"
-                                        />
-                                    </div>
-                                )}
-                            </div>
 
                             {/* Extension Option */}
                             <div className="space-y-3">

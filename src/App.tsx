@@ -22,10 +22,12 @@ import { Login } from './pages/Login';
 // Lazy load Main Pages (Named Exports)
 const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })));
 const Properties = lazy(() => import('./pages/Properties').then(module => ({ default: module.Properties })));
+const PropertyDetails = lazy(() => import('./pages/PropertyDetails'));
 
 
 const Payments = lazy(() => import('./pages/Payments').then(module => ({ default: module.Payments })));
 const AddContract = lazy(() => import('./pages/AddContract').then(module => ({ default: module.AddContract })));
+const ContractDetails = lazy(() => import('./pages/ContractDetails'));
 const Calculator = lazy(() => import('./pages/Calculator').then(module => ({ default: module.Calculator })));
 const SharedCalculation = lazy(() => import('./pages/SharedCalculation').then(module => ({ default: module.SharedCalculation })));
 const Settings = lazy(() => import('./pages/Settings').then(module => ({ default: module.Settings })));
@@ -109,11 +111,13 @@ function App() {
                       <Route element={<AppShell />}>
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/properties" element={<Properties />} />
+                        <Route path="/properties/:id" element={<PropertyDetails />} />
 
                         {/* Redirect old contracts route to properties */}
                         <Route path="/contracts" element={<Navigate to="/properties" replace />} />
 
                         <Route path="/contracts/new" element={<AddContract />} />
+                        <Route path="/contracts/:id" element={<ContractDetails />} />
                         <Route path="/calculator" element={<Calculator />} />
                         <Route path="/settings" element={<Settings />} />
                         <Route path="/analytics" element={<Analytics />} />

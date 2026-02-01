@@ -15,6 +15,7 @@ import {
     Cell
 } from 'recharts';
 import { TrendingUp, DollarSign, Home, BarChart2 } from 'lucide-react';
+import { subMonths, startOfMonth, format } from 'date-fns';
 
 export function Analytics({ embedMode = false }: { embedMode?: boolean }) {
     const { t } = useTranslation();
@@ -39,9 +40,7 @@ export function Analytics({ embedMode = false }: { embedMode?: boolean }) {
             if (!user) return;
 
             // 1. Fetch Payments for Revenue Trend
-            const oneYearAgo = new Date();
-            oneYearAgo.setMonth(oneYearAgo.getMonth() - 11);
-            oneYearAgo.setDate(1);
+            const oneYearAgo = startOfMonth(subMonths(new Date(), 11));
 
             const { data: payments } = await supabase
                 .from('payments')
@@ -104,18 +103,23 @@ export function Analytics({ embedMode = false }: { embedMode?: boolean }) {
 
             const { data: contracts } = await supabase
                 .from('contracts')
-                .select('rent_amount, property_id, status')
+                .select('base_rent, property_id, status, start_date, end_date')
                 .eq('user_id', user.id);
 
             const totalProps = properties?.length || 0;
-            const activeContracts = contracts?.filter(c => c.status === 'active') || [];
+            const today = format(new Date(), 'yyyy-MM-dd');
+            const activeContracts = contracts?.filter(c =>
+                c.status === 'active' &&
+                c.start_date <= today &&
+                (!c.end_date || c.end_date >= today)
+            ) || [];
             const occupiedProps = new Set(activeContracts.map(c => c.property_id)).size;
             const occupancyRate = totalProps > 0 ? Math.round((occupiedProps / totalProps) * 100) : 0;
 
             // 5. Calculate Avg Rent
             let totalRent = 0;
             activeContracts.forEach(c => {
-                totalRent += Number(c.rent_amount);
+                totalRent += Number(c.base_rent);
             });
 
             setMetrics({

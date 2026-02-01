@@ -10,16 +10,20 @@ export interface Property {
     id: string;
     address: string;
     city: string;
-    title?: string;
     rooms: number;
     size_sqm: number;
-    rent_price: number;
-    status: 'Occupied' | 'Vacant';
     image_url?: string;
     has_parking?: boolean;
     has_storage?: boolean;
+    has_balcony?: boolean;
+    has_safe_room?: boolean;
+    has_elevator?: boolean;
+    is_accessible?: boolean;
     property_type?: 'apartment' | 'penthouse' | 'garden' | 'house' | 'other';
+    status: 'Occupied' | 'Vacant';
+    user_id: string;
     created_at?: string;
+    updated_at?: string;
 }
 
 export type DocumentCategory =
@@ -119,15 +123,16 @@ export interface Tenant {
     phone?: string;
     id_number?: string;
     property_id?: string | null;
+    user_id: string;
     status?: 'active' | 'past' | 'lead';
     created_at?: string;
 }
 
 export interface Contract {
     id: string; // UUID
+    user_id: string;
     created_at: string;
     property_id: string;
-    tenant_id: string;
     status: 'active' | 'archived';
 
     // Dates
@@ -177,6 +182,10 @@ export interface Contract {
         email?: string;
         phone?: string;
     }[];
+    pets_allowed?: boolean;
+    special_clauses?: string;
+    guarantees?: string;
+    guarantors_info?: string;
 }
 
 // ============================================
@@ -297,8 +306,6 @@ export interface UserProfile {
     id: string; // UUID from auth.users
     email: string;
     full_name: string;
-    first_name: string;
-    last_name: string;
     role: UserRole;
     phone?: string;
 
@@ -307,7 +314,6 @@ export interface UserProfile {
 
     // Subscription & Plan
     subscription_status: SubscriptionStatus;
-    subscription_plan?: SubscriptionPlan; // Legacy
     plan_id?: string; // New DB reference
 
     // Notification Settings
@@ -379,6 +385,7 @@ export interface SubscriptionHistory {
 
 export interface Payment {
     id: string; // UUID
+    user_id: string;
     contract_id: string;
     amount: number;
     currency: 'ILS' | 'USD' | 'EUR';

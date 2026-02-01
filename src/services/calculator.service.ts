@@ -4,114 +4,126 @@ import type {
     ReconciliationInput,
     ReconciliationResult,
     MonthlyPayment,
-    IndexBase
 } from '../types/database';
-import { getIndexValue, getIndexRange, getMonthsBetween, getAvailableRange, getIndexBases } from './index-data.service';
+import { getIndexValue, getIndexRange, getMonthsBetween } from './index-data.service';
 import { ChainingFactorService } from './chaining-factor.service';
+import { subMonths, format, parseISO, differenceInDays } from 'date-fns';
+import { z } from 'zod';
 
 /**
- * Calculator Service
- * Implements two calculation modes:
- * 1. Standard: Calculate updated rent based on index change
+ * Validation Schemas
+ */
+export const standardCalculationSchema = z.object({
+    baseRent: z.number().positive(),
+    linkageType: z.enum(['cpi', 'housing', 'construction', 'usd', 'eur']),
+    baseDate: z.string().regex(/^\d{4}-\d{2}$/),
+    targetDate: z.string().regex(/^\d{4}-\d{2}$/),
+    partialLinkage: z.number().min(0).max(100).optional().default(100),
+    manualBaseIndex: z.number().optional(),
+    manualTargetIndex: z.number().optional(),
+    isIndexBaseMinimum: z.boolean().optional().default(false),
+    linkageCeiling: z.number().min(0).optional(),
+    linkageSubType: z.enum(['known', 'respect_of']).optional().default('known'),
+});
+
+/**
+ * Pure Logic: Calculate Prorated Ceiling
+ */
+export function calculateProratedCeiling(annualCeiling: number, startDate: string, endDate: string): number {
+    const start = parseISO(startDate + '-01');
+    const end = parseISO(endDate + '-01');
+    const days = Math.max(0, differenceInDays(end, start));
+    const years = days / 365.25;
+    return (annualCeiling / 100) * years;
+}
+
+/**
+ * Pure Logic: Calculate Effective Change
+ */
+export function calculateEffectiveChange(params: {
+    linkageCoefficient: number;
+    partialLinkage: number;
+    isIndexBaseMinimum: boolean;
+    proratedCeiling?: number;
+}): number {
+    let effectiveChange = (params.linkageCoefficient / 100) * (params.partialLinkage / 100);
+
+    if (params.proratedCeiling !== undefined) {
+        effectiveChange = Math.min(effectiveChange, params.proratedCeiling);
+    }
+
+    if (params.isIndexBaseMinimum && effectiveChange < 0) {
+        effectiveChange = 0;
+    }
+
+    return effectiveChange;
+}
+
 /**
  * Mode 1: Standard Calculation
  * Calculate new rent based on index change between two dates
  */
 export async function calculateStandard(
-    input: StandardCalculationInput
+    rawInput: StandardCalculationInput
 ): Promise<StandardCalculationResult | null> {
     try {
-        // Apply "Known Index" date logic if specified
-        // Israeli contracts use "מדד ידוע" (published before payment) vs "מדד בגין" (for payment month)
-        // Rule: If payment date <= 15th, use previous month's index
+        const input = standardCalculationSchema.parse(rawInput);
+
+        // Apply "Known Index" date logic
         let adjustedBaseDate = input.baseDate;
         let adjustedTargetDate = input.targetDate;
 
         if (input.linkageSubType === 'known') {
-            // For Known Index, shift dates based on 15th-of-month threshold
-            // This ensures we use the index published BEFORE the payment date
-            const baseDateObj = new Date(input.baseDate + '-15'); // Use 15th as threshold
-            const targetDateObj = new Date(input.targetDate + '-15');
+            const baseDateObj = parseISO(input.baseDate + '-01');
+            const targetDateObj = parseISO(input.targetDate + '-01');
 
-            // Shift to previous month
-            baseDateObj.setMonth(baseDateObj.getMonth() - 1);
-            targetDateObj.setMonth(targetDateObj.getMonth() - 1);
-
-            adjustedBaseDate = baseDateObj.toISOString().slice(0, 7);
-            adjustedTargetDate = targetDateObj.toISOString().slice(0, 7);
+            adjustedBaseDate = format(subMonths(baseDateObj, 1), 'yyyy-MM');
+            adjustedTargetDate = format(subMonths(targetDateObj, 1), 'yyyy-MM');
         }
 
-        // Fetch index values (or use manual overrides)
+        // Fetch index values
         const baseIndexValue = input.manualBaseIndex ?? await getIndexValue(input.linkageType, adjustedBaseDate);
         const targetIndexValue = input.manualTargetIndex ?? await getIndexValue(input.linkageType, adjustedTargetDate);
 
         if (baseIndexValue === null || targetIndexValue === null) {
-            console.error('Missing index data for calculation');
-            return null;
+            throw new Error(`Missing index data for ${input.linkageType} at ${adjustedBaseDate} or ${adjustedTargetDate}`);
         }
 
-        // Calculate Chaining Factor using new service
-        // -------------------------
-        // Note: Chaining only applies to CBS indices (CPI, Housing, Construction)
-        // Currency exchange rates (USD, EUR) don't have base year transitions
+        // Apply Chaining
         let adjustedTargetValue = targetIndexValue;
+        const chainableTypes = ['cpi', 'housing', 'construction'] as const;
+        const linkageType = input.linkageType as any;
 
-        if (input.linkageType === 'cpi' || input.linkageType === 'housing' || input.linkageType === 'construction') {
+        if (chainableTypes.includes(linkageType)) {
             const chainingResult = await ChainingFactorService.getChainingFactor(
-                input.linkageType,
+                linkageType,
                 adjustedBaseDate,
                 adjustedTargetDate
             );
-
-            // Apply chaining to target index
-            adjustedTargetValue = ChainingFactorService.applyChaining(
-                targetIndexValue,
-                chainingResult
-            );
+            adjustedTargetValue = ChainingFactorService.applyChaining(targetIndexValue, chainingResult);
         }
 
-        // Calculate Linkage Ratio with Chain Factor
-        // Ratio = (Adjusted Target) / Base
+        // Calculate Linkage
         const rawRatio = adjustedTargetValue / baseIndexValue;
-
-        // Calculate מקדם קישור (linkage coefficient) in percentage change
-        // e.g. 1.05 -> 5%
         const linkageCoefficient = (rawRatio - 1) * 100;
 
-        // Apply partial linkage if specified
-        const partialLinkage = input.partialLinkage ?? 100;
-        let effectiveChange = (linkageCoefficient / 100) * (partialLinkage / 100);
+        const proratedCeiling = input.linkageCeiling
+            ? calculateProratedCeiling(input.linkageCeiling, adjustedBaseDate, adjustedTargetDate)
+            : undefined;
 
-        // Apply annualized ceiling if specified (Prorated Cap)
-        if (input.linkageCeiling !== undefined && input.linkageCeiling > 0) {
-            const bDate = new Date(adjustedBaseDate + '-01');
-            const tDate = new Date(adjustedTargetDate + '-01');
-            const diffTime = Math.max(0, tDate.getTime() - bDate.getTime());
-            const diffDays = diffTime / (1000 * 60 * 60 * 24);
-            const years = diffDays / 365.25;
+        const effectiveChange = calculateEffectiveChange({
+            linkageCoefficient,
+            partialLinkage: input.partialLinkage,
+            isIndexBaseMinimum: input.isIndexBaseMinimum,
+            proratedCeiling
+        });
 
-            // Prorated ceiling: e.g., 5% annual cap -> 7.5% after 18 months
-            const cumulativeCeiling = (input.linkageCeiling / 100) * years;
-            effectiveChange = Math.min(effectiveChange, cumulativeCeiling);
-        }
-
-        // Apply index floor if specified (base index is minimum)
-        if (input.isIndexBaseMinimum && effectiveChange < 0) {
-            effectiveChange = 0; // Prevent rent from dropping below base
-        }
-
-        // Calculate new rent
         const newRent = input.baseRent * (1 + effectiveChange);
 
-        // Calculate changes
-        const absoluteChange = newRent - input.baseRent;
-        const percentageChange = (absoluteChange / input.baseRent) * 100;
-
         // Generate formula string
-        let formula = '';
         const hasChaining = adjustedTargetValue !== targetIndexValue;
-
-        if (partialLinkage === 100) {
+        let formula = '';
+        if (input.partialLinkage === 100) {
             if (hasChaining) {
                 const chainingFactor = adjustedTargetValue / targetIndexValue;
                 formula = `New Rent = ₪${input.baseRent.toLocaleString()} × ((${targetIndexValue} × ${chainingFactor.toFixed(4)}) / ${baseIndexValue}) = ₪${Math.round(newRent).toLocaleString()}`;
@@ -119,221 +131,116 @@ export async function calculateStandard(
                 formula = `New Rent = ₪${input.baseRent.toLocaleString()} × (${adjustedTargetValue} / ${baseIndexValue}) = ₪${Math.round(newRent).toLocaleString()}`;
             }
         } else {
-            // Partial Linkage
-            formula = `New Rent = ₪${input.baseRent.toLocaleString()} × (1 + (${linkageCoefficient.toFixed(2)}% × ${partialLinkage}%)) = ₪${Math.round(newRent).toLocaleString()}`;
+            formula = `New Rent = ₪${input.baseRent.toLocaleString()} × (1 + (${linkageCoefficient.toFixed(2)}% × ${input.partialLinkage}%)) = ₪${Math.round(newRent).toLocaleString()}`;
         }
-
-        const indexSource = input.manualBaseIndex
-            ? 'Manual Entry'
-            : `${input.linkageType.toUpperCase()} Index`;
 
         return {
             newRent: Math.round(newRent),
             baseIndexValue,
             targetIndexValue: adjustedTargetValue,
             linkageCoefficient,
-            percentageChange,
-            absoluteChange,
+            percentageChange: effectiveChange * 100,
+            absoluteChange: newRent - input.baseRent,
             formula,
-            indexSource
+            indexSource: input.manualBaseIndex ? 'Manual' : `${input.linkageType.toUpperCase()} Index`
         };
     } catch (error) {
-        console.error('Error in calculateStandard:', error);
+        console.error('calculateStandard failed:', error);
         return null;
     }
 }
 
 /**
  * Mode 2: Payment Reconciliation
- * Calculate difference between actual payments and index-adjusted payments
  */
 export async function calculateReconciliation(
     input: ReconciliationInput
 ): Promise<ReconciliationResult | null> {
-    // Get all months in the payment period
-    const months = getMonthsBetween(input.periodStart, input.periodEnd);
+    try {
+        const months = getMonthsBetween(input.periodStart, input.periodEnd);
+        const indices = await getIndexRange(input.linkageType, input.contractStartDate, input.periodEnd);
 
-    // Fetch index values for all months
-    // We need indices from BEFORE the start date to calculate the first revaluation if needed,
-    // or at least from contract start.
-    const indices = await getIndexRange(
-        input.linkageType,
-        input.contractStartDate,
-        input.periodEnd
-    );
+        if (indices.length === 0) throw new Error('No index data found');
 
-    if (indices.length === 0) {
-        const { min } = await getAvailableRange(input.linkageType);
-        if (!min) throw new Error('No index data available in the database. Please populate the index table with real data.');
-    }
+        const baseIndex = indices.find(idx => idx.date === input.contractStartDate) ||
+            indices.filter(idx => idx.date <= input.contractStartDate).pop();
 
-    // Base Index (Start of Contract)
-    let baseIndex = indices.find(idx => idx.date === input.contractStartDate);
-    if (!baseIndex) {
-        const previousIndices = indices.filter(idx => idx.date <= input.contractStartDate);
-        if (previousIndices.length > 0) {
-            baseIndex = previousIndices[previousIndices.length - 1];
-        } else {
-            throw new Error(`Base index not found for date: ${input.contractStartDate}.`);
-        }
-    }
+        if (!baseIndex) throw new Error(`Base index not found for ${input.contractStartDate}`);
 
-    const monthlyBreakdown: MonthlyPayment[] = [];
-    let runningBalance = 0;
+        const monthlyBreakdown: MonthlyPayment[] = [];
+        let runningBalance = 0;
+        let previousIndexValue = 0;
+        let lastCalculatedBaseRent = input.baseRent;
 
-    // Track the last used index value to calculate monthly revaluation
-    // Initial state: No revaluation on the very first moment before any debt exists?
-    // Actually, revaluation happens to the debt carried OVER.
-    // For the loop, we need the index of month (i) and month (i-1).
-    let previousIndexValue = 0;
+        const frequencyMonths = input.updateFrequency === 'quarterly' ? 3
+            : input.updateFrequency === 'semiannually' ? 6
+                : input.updateFrequency === 'annually' ? 12 : 1;
 
-    // Determine the "Previous Index" for the first iteration.
-    // If we start at periodStart, the "balance" is 0, so revaluation doesn't matter for specific step 1.
-    // BUT, we need to know the index for the RENT calculation immediately.
+        for (let i = 0; i < months.length; i++) {
+            const month = months[i];
+            let indexDateStr = month;
 
-    const frequencyMonths = input.updateFrequency === 'quarterly' ? 3
-        : input.updateFrequency === 'semiannually' ? 6
-            : input.updateFrequency === 'annually' ? 12 : 1;
-
-    let lastCalculatedBaseRent = input.baseRent;
-
-    for (let i = 0; i < months.length; i++) {
-        const month = months[i];
-
-        // 1. Determine Index Value for this Month
-        // ---------------------------------------
-        let indexDateStr = month;
-        if (input.linkageSubType !== 'respect_of') { // 'known'
-            const mDate = new Date(month + '-01');
-            mDate.setMonth(mDate.getMonth() - 1);
-            indexDateStr = mDate.toISOString().slice(0, 7);
-        }
-
-        const indexForMonth = indices.find(idx => idx.date === indexDateStr);
-        let currentIndexValue = indexForMonth?.value;
-
-        // Fallback or Estimation
-        if (!currentIndexValue) {
-            const pastIndices = indices.filter(idx => idx.date < indexDateStr);
-            if (pastIndices.length > 0) {
-                currentIndexValue = pastIndices[pastIndices.length - 1].value;
-            } else {
-                currentIndexValue = baseIndex.value;
-            }
-        }
-
-        // 2. Revalue Existing Balance (Linkage/Interest)
-        // ----------------------------------------------
-        let linkageChange = 0;
-        let balanceRevaluation = 0;
-
-        if (i > 0) {
-            // Calculate change from previous month's index to current month's index
-            // Formula: (Current / Prev) - 1
-            const rawChange = (currentIndexValue / previousIndexValue) - 1;
-
-            // Apply Partial Linkage to the CHANGE
-            const partialLinkage = input.partialLinkage ?? 100;
-            linkageChange = rawChange * (partialLinkage / 100);
-
-            // Apply Revaluation to Running Balance
-            // Note: If balance is negative (Debt), positive index increase makes it MORE negative (Higher Debt).
-            // Logic: NewBalance = OldBalance * (1 + Change)
-            // Example: Balance -5000. Index +1%. Change +0.01.
-            // New = -5000 * 1.01 = -5050. Correct.
-
-            balanceRevaluation = runningBalance * linkageChange;
-            runningBalance += balanceRevaluation;
-        }
-
-        // Update tracker for next iteration
-        previousIndexValue = currentIndexValue;
-
-        // 3. Calculate New Monthly Rent (Charge)
-        // --------------------------------------
-        // Logic: Checks if update is required this month or if using monthly override
-        let currentMonthRent = lastCalculatedBaseRent;
-
-        // Check if we need to update the base rent calculation due to frequency or manual overrides
-        const manualBase = input.monthlyBaseRent?.[month];
-        if (manualBase !== undefined || i % frequencyMonths === 0) {
-            const baseToUse = manualBase ?? input.baseRent;
-
-            // Calculate standard linkage from Contract Base Index
-            const rawRentRatio = (currentIndexValue / baseIndex.value) - 1;
-            const partialLinkage = input.partialLinkage ?? 100;
-            let effectiveRentChange = rawRentRatio * (partialLinkage / 100);
-
-            if (input.isIndexBaseMinimum) {
-                effectiveRentChange = Math.max(effectiveRentChange, 0);
+            if (input.linkageSubType !== 'respect_of') {
+                indexDateStr = format(subMonths(parseISO(month + '-01'), 1), 'yyyy-MM');
             }
 
-            if (input.maxIncreasePercentage !== undefined && input.maxIncreasePercentage > 0) {
-                // Determine years since contractStartDate for THIS month
-                const bDateStart = new Date(input.contractStartDate + '-01');
-                const mDateCurrent = new Date(month + '-01');
-                const diffTime = Math.max(0, mDateCurrent.getTime() - bDateStart.getTime());
-                const diffDays = diffTime / (1000 * 60 * 60 * 24);
-                const years = diffDays / 365.25;
+            const indexForMonth = indices.find(idx => idx.date === indexDateStr) ||
+                indices.filter(idx => idx.date < indexDateStr).pop() ||
+                baseIndex;
 
-                const cumulativeCeiling = (input.maxIncreasePercentage / 100) * years;
-                effectiveRentChange = Math.min(effectiveRentChange, cumulativeCeiling);
+            const currentIndexValue = indexForMonth.value;
+
+            // Balance Revaluation
+            let linkageChange = 0;
+            if (i > 0) {
+                const rawChange = (currentIndexValue / previousIndexValue) - 1;
+                linkageChange = rawChange * ((input.partialLinkage ?? 100) / 100);
+                runningBalance *= (1 + linkageChange);
             }
 
-            currentMonthRent = baseToUse * (1 + effectiveRentChange);
-            lastCalculatedBaseRent = currentMonthRent;
+            previousIndexValue = currentIndexValue;
+
+            // Monthly Rent Calculation
+            let currentMonthRent = lastCalculatedBaseRent;
+            if (input.monthlyBaseRent?.[month] !== undefined || i % frequencyMonths === 0) {
+                const baseToUse = input.monthlyBaseRent?.[month] ?? input.baseRent;
+                const rawRentRatio = (currentIndexValue / baseIndex.value) - 1;
+
+                const proratedCeiling = input.maxIncreasePercentage
+                    ? calculateProratedCeiling(input.maxIncreasePercentage, input.contractStartDate, month)
+                    : undefined;
+
+                const effectiveRentChange = calculateEffectiveChange({
+                    linkageCoefficient: rawRentRatio * 100,
+                    partialLinkage: input.partialLinkage ?? 100,
+                    isIndexBaseMinimum: input.isIndexBaseMinimum ?? false,
+                    proratedCeiling
+                });
+
+                currentMonthRent = baseToUse * (1 + effectiveRentChange);
+                lastCalculatedBaseRent = currentMonthRent;
+            }
+
+            const actuallyPaid = input.monthlyActuals?.[month] ?? input.actualPaidPerMonth ?? 0;
+            runningBalance += actuallyPaid - currentMonthRent;
+
+            monthlyBreakdown.push({
+                month,
+                shouldHavePaid: Math.round(currentMonthRent),
+                actuallyPaid,
+                difference: Math.round(runningBalance),
+                indexValue: currentIndexValue,
+                linkageCoefficient: linkageChange * 100
+            });
         }
 
-        // 4. Determine Actual Payment
-        // ---------------------------
-        let actuallyPaid = 0;
-        if (input.monthlyActuals) {
-            actuallyPaid = input.monthlyActuals[month] || 0;
-        } else {
-            actuallyPaid = input.actualPaidPerMonth || 0;
-        }
-
-        // 5. Update Running Balance
-        // -------------------------
-        // Expected Rent is a DEBIT (Negative in accounting, or we subtract it)
-        // Payment is a CREDIT (Positive)
-        // Let's stick to User's mental model: "Every expected payment is minus... difference is also indexed"
-        // So Balance is typical "Account Balance".
-        // Start 0.
-        // Add Rent (Negative).
-        // Add Payment (Positive).
-
-        const expectedRentDebit = -Math.abs(currentMonthRent); // Ensure negative
-
-        runningBalance += expectedRentDebit;
-        runningBalance += actuallyPaid;
-
-        monthlyBreakdown.push({
-            month,
-            shouldHavePaid: Math.round(Math.abs(currentMonthRent)), // Display as positive number for UI
-            actuallyPaid: actuallyPaid,
-            difference: Math.round(runningBalance), // The running balance at end of this month
-            indexValue: currentIndexValue,
-            linkageCoefficient: linkageChange * 100 // Show the monthly change %
-        });
+        return {
+            totalBackPayOwed: Math.round(-runningBalance),
+            monthlyBreakdown,
+            totalMonths: months.length
+        };
+    } catch (error) {
+        console.error('calculateReconciliation failed:', error);
+        return null;
     }
-
-    const totalBackPayOwed = runningBalance; // Final balance
-    // Invert for "Owed" display if negative means debt
-    // UI expects positive "Owed" if tenant owes money?
-    // User: "Balance: -2,100 (Remaining Debt)".
-    // So distinct Negative = Debt. Positive = Credit.
-    // Return raw balance. UI logic should handle "You owe X" vs "Tenant owes X".
-
-    // Note: The original interface might expect "totalBackPayOwed" to be positive if debt exists.
-    // Let's check usage. Usually "Owed" implies Debt.
-    // If result is -2000, that is "Debt of 2000".
-    // I will return the raw signed balance but ensure the UI interprets it correctly.
-    // Or, to be safe with existing types, I'll pass it as is and let UI show negative.
-
-    return {
-        totalBackPayOwed: Math.round(-runningBalance),
-        monthlyBreakdown,
-        totalMonths: months.length
-    };
 }

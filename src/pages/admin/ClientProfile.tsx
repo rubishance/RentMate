@@ -180,6 +180,12 @@ const ClientProfile = () => {
 
     const { profile, invoices } = data;
 
+    const getEffectivePlanName = () => {
+        const plan = availablePlans.find(p => p.id === profile.plan_id);
+        if (plan) return plan.name;
+        return profile.subscription_plan || 'Free';
+    };
+
     return (
         <div className="space-y-8 pb-20">
             {/* Header / Breadcrumb */}
@@ -244,7 +250,7 @@ const ClientProfile = () => {
                             ) : (
                                 <div className="flex items-center gap-2">
                                     <span className="px-3 py-1 bg-brand-50 text-brand-700 dark:bg-brand-900/20 dark:text-brand-400 rounded-lg text-xs font-black uppercase tracking-widest">
-                                        {profile.subscription_plan?.replace('_', ' ')}
+                                        {getEffectivePlanName().replace('_', ' ')}
                                     </span>
                                     <button
                                         onClick={() => { setNewPlanId(profile.plan_id || ''); setIsEditingPlan(true); }}

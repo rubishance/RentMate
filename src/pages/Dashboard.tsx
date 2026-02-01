@@ -11,6 +11,7 @@ import { DashboardGrid } from '../components/dashboard/DashboardGrid';
 import { DEFAULT_WIDGET_LAYOUT, WidgetConfig, DashboardData } from '../components/dashboard/WidgetRegistry';
 import { Edit3Icon, CheckIcon, FileSearch } from 'lucide-react';
 import { ConciergeWidget } from '../components/dashboard/ConciergeWidget';
+import { format } from 'date-fns';
 import { ReportGenerationModal } from '../components/modals/ReportGenerationModal';
 
 interface FeedItem {
@@ -125,7 +126,7 @@ export function Dashboard() {
             // Contracts
             const { data: contracts } = await supabase
                 .from('contracts')
-                .select('*, properties(city, address)')
+                .select('*, properties(id, city, address)')
                 .eq('user_id', user.id) // STRICTLY enforce ownership
                 .eq('status', 'active')
                 .order('end_date', { ascending: true })
@@ -162,7 +163,7 @@ export function Dashboard() {
 
     async function loadFeedItems(userId: string): Promise<FeedItem[]> {
         const items: FeedItem[] = [];
-        const today = new Date().toISOString().split('T')[0];
+        const today = format(new Date(), 'yyyy-MM-dd');
 
         try {
             const { data: expired } = await supabase
@@ -188,24 +189,6 @@ export function Dashboard() {
                 });
             });
 
-            const { data: overdue } = await supabase
-                .from('payments')
-                .select('*, contracts(properties(address))')
-                .eq('user_id', userId)
-                .eq('status', 'pending')
-                .lt('due_date', today)
-                .limit(3);
-
-            overdue?.forEach((p: any) => {
-                items.push({
-                    id: `overdue-${p.id}`,
-                    type: 'urgent',
-                    title: t('paymentOverdue'),
-                    desc: `₪${(p.amount || 0).toLocaleString()}`,
-                    date: formatDate(p.due_date),
-                    onAction: () => navigate('/payments')
-                });
-            });
         } catch (err) {
             console.error(err);
         }

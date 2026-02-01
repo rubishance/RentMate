@@ -297,8 +297,8 @@ async function getFinancialSummary(period: string, userId: string, currency: str
         return { success: false, message: "AI access to personal data is disabled. Please enable 'AI Data Access' in Settings > Privacy." };
     }
 
-    let startDate = new Date();
-    let endDate = new Date();
+    const startDate = new Date();
+    const endDate = new Date();
 
     if (period === 'current_month') {
         startDate.setDate(1);

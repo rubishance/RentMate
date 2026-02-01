@@ -129,11 +129,9 @@ export class CalculatorService {
      * e.g. In May (05), the known index is usually from April (04) or March (03).
      */
     getPreviousKnownMonth(): string {
-        const date = new Date();
-        date.setMonth(date.getMonth() - 1); // Previous month (often latest published)
-        // If today is early in the month (e.g. 1st-15th), might need date.setMonth(date.getMonth() - 2);
-        // keeping it simple for now: previous month.
-        return date.toISOString().slice(0, 7); // 'YYYY-MM'
+        const { subMonths, format } = require('date-fns'); // Dynamic import if not available at top level, or I'll add to top
+        const date = subMonths(new Date(), 1);
+        return format(date, 'yyyy-MM');
     }
 }
 

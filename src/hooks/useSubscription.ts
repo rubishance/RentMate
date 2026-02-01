@@ -38,16 +38,18 @@ export function useSubscription() {
             setPlan(planData);
 
             // 2. Get Usage Counts
-            const [props, tenants, contracts] = await Promise.all([
+            const [props, contractsRes] = await Promise.all([
                 supabase.from('properties').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
-                supabase.from('tenants').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
-                supabase.from('contracts').select('*', { count: 'exact', head: true }).eq('user_id', user.id)
+                supabase.from('contracts').select('tenants', { count: 'exact' }).eq('user_id', user.id)
             ]);
+
+            const contractList = (contractsRes.data as any[]) || [];
+            const tenantCount = contractList.reduce((acc, c) => acc + (Array.isArray(c.tenants) ? c.tenants.length : 1), 0);
 
             setUsage({
                 properties: props.count || 0,
-                tenants: tenants.count || 0,
-                contracts: contracts.count || 0
+                tenants: tenantCount,
+                contracts: contractsRes.count || 0
             });
 
         } catch (error) {

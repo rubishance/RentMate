@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { FileText, Download, Calendar, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react';
 import { GlassCard } from '../common/GlassCard';
 import { Modal } from '../ui/Modal';
+import { DatePicker } from '../ui/DatePicker';
+import { format, parseISO } from 'date-fns';
 import { ReportService } from '../../services/reporting.service';
 import { supabase } from '../../lib/supabase';
 import type { Property } from '../../types/database';
@@ -84,20 +86,18 @@ export function ReportGenerationModal({ isOpen, onClose, propertyId }: ReportGen
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">Start Date</label>
-                        <input
-                            type="date"
-                            value={dateRange.start}
-                            onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-                            className="w-full h-14 px-6 bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-2xl font-bold"
+                        <DatePicker
+                            value={dateRange.start ? parseISO(dateRange.start) : undefined}
+                            onChange={(date) => setDateRange(prev => ({ ...prev, start: date ? format(date, 'yyyy-MM-dd') : '' }))}
+                            className="w-full"
                         />
                     </div>
                     <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">End Date</label>
-                        <input
-                            type="date"
-                            value={dateRange.end}
-                            onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-                            className="w-full h-14 px-6 bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-2xl font-bold"
+                        <DatePicker
+                            value={dateRange.end ? parseISO(dateRange.end) : undefined}
+                            onChange={(date) => setDateRange(prev => ({ ...prev, end: date ? format(date, 'yyyy-MM-dd') : '' }))}
+                            className="w-full"
                         />
                     </div>
                 </div>

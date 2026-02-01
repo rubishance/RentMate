@@ -14,6 +14,12 @@ const AuthGuard = () => {
                 return;
             }
 
+            // E2E Test Bypass (Dev Only)
+            if (import.meta.env.DEV && window.localStorage.getItem('rentmate_e2e_bypass') === 'true') {
+                if (mounted) setIsAuthenticated(true);
+                return;
+            }
+
             try {
                 // 1. Initial Session Check with refresh
                 const { data: { session }, error: sessionError } = await supabase.auth.getSession();

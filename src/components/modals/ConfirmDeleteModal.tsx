@@ -20,6 +20,8 @@ interface ConfirmDeleteModalProps {
     isDeleting?: boolean;
     requireDoubleConfirm?: boolean;
     affectedItems?: AffectedItem[];
+    verificationText?: string;
+    verificationLabel?: string;
 }
 
 export function ConfirmDeleteModal({
@@ -30,19 +32,30 @@ export function ConfirmDeleteModal({
     message,
     isDeleting,
     requireDoubleConfirm,
-    affectedItems
+    affectedItems,
+    verificationText,
+    verificationLabel
 }: ConfirmDeleteModalProps) {
     const { t, lang } = useTranslation();
     const [step, setStep] = useState(1);
+    const [inputValue, setInputValue] = useState('');
 
-    // Reset step when modal opens
+    // Reset state when modal opens
     useEffect(() => {
-        if (isOpen) setStep(1);
+        if (isOpen) {
+            setStep(1);
+            setInputValue('');
+        }
     }, [isOpen]);
 
     if (!isOpen) return null;
 
+    const isVerificationMatched = !verificationText || inputValue === verificationText;
+    const canConfirm = isVerificationMatched;
+
     const handleConfirm = () => {
+        if (!canConfirm) return;
+
         if (requireDoubleConfirm && step === 1) {
             setStep(2);
         } else {
@@ -100,6 +113,23 @@ export function ConfirmDeleteModal({
                                     </div>
                                 )}
 
+                                {verificationText && (
+                                    <div className="space-y-2 pt-2">
+                                        <label className="text-sm font-bold text-foreground block">
+                                            {verificationLabel || (lang === 'he' ? `אנא הקלד "${verificationText}" לאישור` : `Type "${verificationText}" to confirm`)}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={inputValue}
+                                            onChange={(e) => setInputValue(e.target.value)}
+                                            placeholder={verificationText}
+                                            className="w-full p-3 border border-border rounded-xl bg-background outline-none focus:ring-2 focus:ring-red-500/50 transition-all font-mono text-sm"
+                                            autoComplete="off"
+                                            onPaste={(e) => e.preventDefault()}
+                                        />
+                                    </div>
+                                )}
+
                                 <div className="p-3 text-sm text-muted-foreground bg-secondary dark:bg-gray-700/50 rounded-lg">
                                     {lang === 'he'
                                         ? 'פעולה זו אינה הפיכה. המידע ימחק לצמיתות ולא ניתן יהיה לשחזר אותו.'
@@ -131,8 +161,11 @@ export function ConfirmDeleteModal({
                             </button>
                             <button
                                 onClick={handleConfirm}
-                                disabled={isDeleting}
-                                className="flex-1 px-4 py-2.5 bg-red-600 text-white hover:bg-red-700 rounded-xl font-medium transition-colors shadow-lg shadow-red-500/30 flex items-center justify-center gap-2"
+                                disabled={isDeleting || !canConfirm}
+                                className={`flex-1 px-4 py-2.5 text-white rounded-xl font-medium transition-colors shadow-lg flex items-center justify-center gap-2 ${isDeleting || !canConfirm
+                                        ? 'bg-gray-400 cursor-not-allowed opacity-70'
+                                        : 'bg-red-600 hover:bg-red-700 shadow-red-500/30'
+                                    }`}
                             >
                                 {isDeleting ? (
                                     <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

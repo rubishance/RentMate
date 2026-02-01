@@ -11,6 +11,7 @@ import { Sparkles } from 'lucide-react';
 import UpgradeRequestModal from '../modals/UpgradeRequestModal';
 import { DocumentTimeline } from './DocumentTimeline';
 import { DocumentDetailsModal } from '../modals/DocumentDetailsModal';
+import { DatePicker } from '../ui/DatePicker';
 
 interface UtilityBillsManagerProps {
     property: Property;
@@ -39,7 +40,7 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
 
     // New Folder / Upload Form State
     const [newFolderName, setNewFolderName] = useState('');
-    const [newFolderDate, setNewFolderDate] = useState(new Date().toISOString().split('T')[0]);
+    const [newFolderDate, setNewFolderDate] = useState(format(new Date(), 'yyyy-MM-dd'));
     const [newFolderNote, setNewFolderNote] = useState('');
     const [stagedFiles, setStagedFiles] = useState<Array<{
         id: string;
@@ -198,7 +199,7 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                 property_id: property.id,
                 category,
                 name: folderName,
-                folder_date: newFolderDate || new Date().toISOString().split('T')[0],
+                folder_date: newFolderDate || format(new Date(), 'yyyy-MM-dd'),
                 description: newFolderNote
             });
 
@@ -231,7 +232,7 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
             }
 
             setNewFolderName('');
-            setNewFolderDate(new Date().toISOString().split('T')[0]);
+            setNewFolderDate(format(new Date(), 'yyyy-MM-dd'));
             setNewFolderNote('');
             setStagedFiles([]);
             setShowUploadForm(false);
@@ -396,11 +397,10 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="text-sm font-semibold text-gray-700 dark:text-gray-200 ml-1">{t('date')}</label>
-                                        <input
-                                            type="date"
-                                            value={newFolderDate}
-                                            onChange={(e) => setNewFolderDate(e.target.value)}
-                                            className="w-full px-4 py-3 bg-white/50 dark:bg-gray-800/50 border border-border/60 dark:border-gray-700/60 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-primary transition-all backdrop-blur-sm outline-none dark:text-white"
+                                        <DatePicker
+                                            value={newFolderDate ? parseISO(newFolderDate) : undefined}
+                                            onChange={(date) => setNewFolderDate(date ? format(date, 'yyyy-MM-dd') : '')}
+                                            className="w-full"
                                         />
                                     </div>
                                 </div>
@@ -524,29 +524,26 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                                                     </div>
                                                     <div className="space-y-1">
                                                         <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">{t('date')}</label>
-                                                        <input
-                                                            type="date"
-                                                            value={file.date}
-                                                            onChange={(e) => updateStagedFile(file.id, 'date', e.target.value)}
-                                                            className="w-full px-3 py-1.5 text-xs border border-border dark:border-gray-700 rounded-lg bg-white/50 dark:bg-foreground/50 outline-none focus:border-primary transition-colors"
+                                                        <DatePicker
+                                                            value={file.date ? parseISO(file.date) : undefined}
+                                                            onChange={(date) => updateStagedFile(file.id, 'date', date ? format(date, 'yyyy-MM-dd') : '')}
+                                                            className="w-full"
                                                         />
                                                     </div>
                                                     <div className="space-y-1">
                                                         <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">{t('periodStart')}</label>
-                                                        <input
-                                                            type="date"
-                                                            value={file.periodStart}
-                                                            onChange={(e) => updateStagedFile(file.id, 'periodStart', e.target.value)}
-                                                            className="w-full px-3 py-1.5 text-xs border border-border dark:border-gray-700 rounded-lg bg-white/50 dark:bg-foreground/50 outline-none focus:border-primary transition-colors"
+                                                        <DatePicker
+                                                            value={file.periodStart ? parseISO(file.periodStart) : undefined}
+                                                            onChange={(date) => updateStagedFile(file.id, 'periodStart', date ? format(date, 'yyyy-MM-dd') : '')}
+                                                            className="w-full"
                                                         />
                                                     </div>
                                                     <div className="space-y-1">
                                                         <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">{t('periodEnd')}</label>
-                                                        <input
-                                                            type="date"
-                                                            value={file.periodEnd}
-                                                            onChange={(e) => updateStagedFile(file.id, 'periodEnd', e.target.value)}
-                                                            className="w-full px-3 py-1.5 text-xs border border-border dark:border-gray-700 rounded-lg bg-white/50 dark:bg-foreground/50 outline-none focus:border-primary transition-colors"
+                                                        <DatePicker
+                                                            value={file.periodEnd ? parseISO(file.periodEnd) : undefined}
+                                                            onChange={(date) => updateStagedFile(file.id, 'periodEnd', date ? format(date, 'yyyy-MM-dd') : '')}
+                                                            className="w-full"
                                                         />
                                                     </div>
                                                 </div>

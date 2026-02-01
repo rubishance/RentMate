@@ -1,12 +1,37 @@
 import { useState, useEffect } from 'react';
-import { DollarSignIcon as DollarSign, ContractsIcon as FileText } from '../icons/NavIcons';
+import { ContractsIcon as FileText } from '../icons/NavIcons';
 import { CloseIcon as X, LoaderIcon as Loader2 } from '../icons/MessageIcons';
-import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '../../lib/supabase';
+import { Modal } from '../ui/Modal';
+import { Switch } from '../ui/Switch';
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
 import { DatePicker } from '../ui/DatePicker';
-import { format, parseISO } from 'date-fns';
+import { supabase } from '../../lib/supabase';
+import { motion, AnimatePresence } from 'framer-motion';
+import { format, parseISO, addMonths } from 'date-fns';
 import { useTranslation } from '../../hooks/useTranslation';
-// import type { Contract } from '../../types/database';
+import { cn } from '../../lib/utils';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useToast } from '../../hooks/useToast';
+
+/**
+ * Payment Form Schema
+ * Strictly defines the structure and validation rules for a payment.
+ */
+const paymentSchema = z.object({
+    contract_id: z.string().min(1, 'selectContract'),
+    amount: z.string().refine(val => !isNaN(parseFloat(val)) && parseFloat(val) > 0, {
+        message: 'amountGreaterThanZero'
+    }),
+    due_date: z.string().min(1, 'dueDateRequired'),
+    status: z.enum(['pending', 'paid', 'overdue']),
+    payment_method: z.string().min(1, 'methodRequired'),
+    paid_date: z.string().optional().or(z.literal('')),
+});
+
+type PaymentFormValues = z.infer<typeof paymentSchema>;
 
 interface AddPaymentModalProps {
     isOpen: boolean;
@@ -23,34 +48,53 @@ interface AddPaymentModalProps {
 
 export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: AddPaymentModalProps) {
     const { t } = useTranslation();
+    const toast = useToast();
     const [loading, setLoading] = useState(false);
     const [contracts, setContracts] = useState<any[]>([]);
     const [fetchingContracts, setFetchingContracts] = useState(true);
+    const [sessionStats, setSessionStats] = useState({ count: 0, total: 0 });
 
-    const [formData, setFormData] = useState({
-        contract_id: '',
-        amount: '',
-        due_date: new Date().toISOString().split('T')[0],
-        status: 'pending' as 'pending' | 'paid' | 'overdue',
-        payment_method: 'bank_transfer',
-        paid_date: '', // For paid date if status is paid
+    const {
+        register,
+        handleSubmit,
+        control,
+        setValue,
+        watch,
+        reset,
+        formState: { errors }
+    } = useForm<PaymentFormValues>({
+        resolver: zodResolver(paymentSchema),
+        defaultValues: {
+            contract_id: '',
+            amount: '',
+            due_date: new Date().toISOString().split('T')[0],
+            status: 'pending',
+            payment_method: 'bank_transfer',
+            paid_date: '',
+        }
     });
+
+    const currentStatus = watch('status');
+    const currentDueDate = watch('due_date');
+    const currentAmount = watch('amount');
 
     useEffect(() => {
         if (isOpen) {
             fetchContracts();
             if (initialData) {
-                setFormData(prev => ({
-                    ...prev,
-                    contract_id: initialData.contract_id || prev.contract_id,
-                    amount: initialData.amount ? initialData.amount.toString() : prev.amount,
-                    due_date: initialData.due_date || prev.due_date,
-                    status: initialData.status || prev.status,
-                    payment_method: initialData.payment_method || prev.payment_method,
-                }));
+                reset({
+                    contract_id: initialData.contract_id || '',
+                    amount: initialData.amount ? initialData.amount.toString() : '',
+                    due_date: initialData.due_date || new Date().toISOString().split('T')[0],
+                    status: initialData.status || 'pending',
+                    payment_method: initialData.payment_method || 'bank_transfer',
+                    paid_date: '',
+                });
             }
+        } else {
+            setSessionStats({ count: 0, total: 0 });
         }
-    }, [isOpen, initialData]);
+    }, [isOpen, initialData, reset]);
 
     async function fetchContracts() {
         try {
@@ -59,265 +103,224 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                 .select(`
                     id, 
                     status,
-                    properties (address), 
-                    tenants (name)
+                    tenants,
+                    properties (address)
                 `)
                 .in('status', ['active', 'archived']);
 
             if (error) throw error;
             setContracts(data || []);
-            // If only one contract, auto-select
             if (data && data.length === 1) {
-                setFormData(prev => ({ ...prev, contract_id: data[0].id }));
+                setValue('contract_id', data[0].id);
             }
         } catch (error) {
             console.error('Error fetching contracts:', error);
+            toast.error(t('errorFetchingContracts'));
         } finally {
             setFetchingContracts(false);
         }
     }
 
-    const [sessionStats, setSessionStats] = useState({ count: 0, total: 0 });
-
-    useEffect(() => {
-        if (!isOpen) {
-            if (sessionStats.count > 0) {
-                alert(`Batch Complete: Added ${sessionStats.count} payments totaling ₪${sessionStats.total.toLocaleString()}`);
-            }
-            setSessionStats({ count: 0, total: 0 });
-        }
-    }, [isOpen]);
-
-    async function handleSave(shouldClose: boolean) {
-        if (!formData.contract_id || !formData.amount || !formData.due_date) return;
-
+    const onFormSubmit = async (values: PaymentFormValues, shouldClose: boolean = true) => {
         setLoading(true);
+        const toastId = toast.loading(t('savingPayment'));
 
         try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error('Not authenticated');
+
             const { error } = await supabase
                 .from('payments')
                 .insert({
-                    contract_id: formData.contract_id,
-                    amount: parseFloat(formData.amount),
-                    currency: 'ILS', // Default for now
-                    due_date: formData.due_date,
-                    status: formData.status,
-                    payment_method: formData.payment_method,
-                    paid_date: formData.status === 'paid' ? (formData.paid_date || new Date().toISOString()) : null,
+                    contract_id: values.contract_id,
+                    user_id: user.id,
+                    amount: parseFloat(values.amount),
+                    currency: 'ILS',
+                    due_date: values.due_date,
+                    status: values.status,
+                    payment_method: values.payment_method,
+                    paid_date: values.status === 'paid' ? (values.paid_date || new Date().toISOString()) : null,
                 });
 
             if (error) throw error;
 
-            onSuccess();
+            toast.dismiss(toastId);
+            toast.success(t('paymentSavedSuccess'));
 
-            // Update stats
+            onSuccess();
             setSessionStats(prev => ({
                 count: prev.count + 1,
-                total: prev.total + parseFloat(formData.amount)
+                total: prev.total + parseFloat(values.amount)
             }));
 
             if (shouldClose) {
                 onClose();
-                // Reset form completely
-                setFormData({
-                    contract_id: '',
-                    amount: '',
-                    due_date: new Date().toISOString().split('T')[0],
-                    status: 'pending',
-                    payment_method: 'bank_transfer',
-                    paid_date: ''
-                });
+                reset();
             } else {
-                // Prepare for next payment
-                const nextDate = new Date(formData.due_date);
-                nextDate.setMonth(nextDate.getMonth() + 1);
-
-                setFormData(prev => ({
-                    ...prev,
-                    due_date: nextDate.toISOString().split('T')[0]
-                    // Keep contract, amount, status same
-                }));
-                // Optional: Show a small toast or visual feedback here?
+                // Prepare for "Add Another" by incrementing month
+                const nextDate = addMonths(parseISO(values.due_date), 1);
+                setValue('due_date', format(nextDate, 'yyyy-MM-dd'));
+                toast.info(t('addAnotherReady'));
             }
-
-        } catch (error) {
+        } catch (error: any) {
+            toast.dismiss(toastId);
             console.error('Error creating payment:', error);
-            alert('Failed to create payment');
+            toast.error(t('errorSavingPayment'), error.message);
         } finally {
             setLoading(false);
         }
-    }
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        handleSave(true);
     };
 
     return (
-        <AnimatePresence>
-            {isOpen && (
-                <>
-                    {/* Backdrop */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={onClose}
-                        className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[60]"
-                    />
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title={t('addPaymentTitle')}
+            size="md"
+        >
+            <form onSubmit={handleSubmit((v) => onFormSubmit(v, true))} className="space-y-6">
+                <div className="space-y-4">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">
+                        {t('contracts')}
+                        {errors.contract_id && <span className="text-red-500 ml-2">({t(errors.contract_id.message as any)})</span>}
+                    </label>
+                    {fetchingContracts ? (
+                        <div className="h-12 bg-gray-50 dark:bg-neutral-800 rounded-2xl animate-pulse" />
+                    ) : (
+                        <div className="relative group">
+                            <FileText className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
+                            <select
+                                {...register('contract_id')}
+                                className={cn(
+                                    "w-full pl-12 pr-4 py-4 bg-gray-50 dark:bg-neutral-800 border-2 border-transparent focus:border-black dark:focus:border-white rounded-[1.25rem] text-sm font-bold outline-none appearance-none transition-all",
+                                    errors.contract_id && "border-red-500/50 bg-red-50/10"
+                                )}
+                            >
+                                <option value="">{t('selectContract')}</option>
+                                {contracts.map(c => (
+                                    <option key={c.id} value={c.id}>
+                                        {c.properties?.address} - {Array.isArray(c.tenants) ? c.tenants[0]?.name : (c.tenants?.name || t('unnamed'))}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+                </div>
 
-                    {/* Modal */}
-                    <div className="fixed inset-0 flex items-center justify-center z-[60] p-4 pointer-events-none">
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-white rounded-2xl shadow-xl w-full max-w-md pointer-events-auto overflow-hidden flex flex-col max-h-[90vh]"
-                        >
-                            {/* Header */}
-                            <div className="flex items-center justify-between p-4 border-b border-border">
-                                <h2 className="text-lg font-bold text-foreground">{t('addPaymentTitle')}</h2>
-                                <button
-                                    onClick={onClose}
-                                    className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground"
-                                >
-                                    <X className="w-5 h-5" />
-                                </button>
-                            </div>
-
-                            {/* Content */}
-                            <form onSubmit={handleSubmit} className="p-4 space-y-4 overflow-y-auto">
-
-                                {/* Contract Selection */}
-                                <div className="space-y-1.5">
-                                    <label className="text-sm font-semibold text-gray-700 ml-1">{t('contracts')}</label>
-                                    {fetchingContracts ? (
-                                        <div className="h-10 bg-muted rounded-xl animate-pulse" />
-                                    ) : (
-                                        <div className="relative">
-                                            <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                            <select
-                                                required
-                                                value={formData.contract_id}
-                                                onChange={(e) => setFormData(prev => ({ ...prev, contract_id: e.target.value }))}
-                                                className="w-full pl-9 pr-4 py-3 bg-secondary border border-border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none appearance-none"
-                                            >
-                                                <option value="">{t('selectContract')}</option>
-                                                {contracts.map(c => (
-                                                    <option key={c.id} value={c.id}>
-                                                        {c.properties?.address} - {c.tenants?.name} {c.status === 'archived' ? `(${t('archived')})` : ''}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Amount */}
-                                <div className="space-y-1.5">
-                                    <label className="text-sm font-semibold text-gray-700 ml-1">{t('amount')}</label>
-                                    <div className="relative">
-                                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                        <input
-                                            type="number"
-                                            required
-                                            placeholder="0.00"
-                                            value={formData.amount}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
-                                            className="w-full pl-9 pr-4 py-3 bg-secondary border border-border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Date */}
-                                <div className="space-y-1.5">
-                                    <label className="text-sm font-semibold text-gray-700 ml-1">{t('dueDate')}</label>
-                                    <div className="relative">
-                                        <DatePicker
-                                            value={formData.due_date ? parseISO(formData.due_date) : undefined}
-                                            onChange={(date) => setFormData(prev => ({ ...prev, due_date: date ? format(date, 'yyyy-MM-dd') : '' }))}
-                                            className="w-full"
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Payment Method */}
-                                <div className="space-y-1.5">
-                                    <label className="text-sm font-semibold text-gray-700 ml-1">{t('method')}</label>
-                                    <div className="grid grid-cols-4 gap-2">
-                                        {[
-                                            { label: 'Transfer', value: 'bank_transfer' },
-                                            { label: 'Bit', value: 'bit' },
-                                            { label: 'Paybox', value: 'paybox' },
-                                            { label: 'Check', value: 'check' },
-                                            { label: 'Cash', value: 'cash' },
-                                            { label: 'Credit Card', value: 'credit_card' },
-                                            { label: 'Other', value: 'other' }
-                                        ].map(method => (
-                                            <button
-                                                key={method.value}
-                                                type="button"
-                                                onClick={() => setFormData(prev => ({ ...prev, payment_method: method.value }))}
-                                                className={`py-2 px-1 rounded-xl text-xs font-medium capitalize transition-all border ${formData.payment_method === method.value
-                                                    ? 'bg-primary/10 border-primary text-primary'
-                                                    : 'bg-white border-border text-muted-foreground hover:bg-secondary'
-                                                    }`}
-                                            >
-                                                {t(method.value)}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Status */}
-                                <div className="space-y-1.5">
-                                    <label className="text-sm font-semibold text-gray-700 ml-1">{t('status')}</label>
-                                    <div className="grid grid-cols-3 gap-2">
-                                        {(['pending', 'paid', 'overdue'] as const).map(status => (
-                                            <button
-                                                key={status}
-                                                type="button"
-                                                onClick={() => setFormData(prev => ({ ...prev, status }))}
-                                                className={`py-2 px-3 rounded-xl text-sm font-medium capitalize transition-all border ${formData.status === status
-                                                    ? status === 'paid'
-                                                        ? 'bg-green-100 border-green-200 text-green-700'
-                                                        : status === 'overdue'
-                                                            ? 'bg-red-100 border-red-200 text-red-700'
-                                                            : 'bg-primary/10 border-blue-200 text-blue-700'
-                                                    : 'bg-white border-border text-muted-foreground hover:bg-secondary'
-                                                    }`}
-                                            >
-                                                {t(status)}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                            </form>
-
-                            {/* Footer */}
-                            <div className="p-4 border-t border-border bg-gray-50/50 flex">
-                                <button
-                                    type="button"
-                                    onClick={() => handleSave(false)}
-                                    disabled={loading}
-                                    className="flex-1 py-3.5 px-4 bg-white border border-border hover:bg-secondary text-gray-700 font-bold rounded-xl transform transition-all active:scale-[0.98] disabled:opacity-70 mr-3"
-                                >
-                                    {t('saveAndAddAnother')}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => handleSave(true)}
-                                    disabled={loading}
-                                    className="flex-1 flex items-center justify-center py-3.5 px-4 bg-foreground hover:bg-gray-800 text-white font-bold rounded-xl shadow-lg shadow-gray-900/10 transform transition-all active:scale-[0.98] disabled:opacity-70"
-                                >
-                                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : t('createAndClose')}
-                                </button>
-                            </div>
-                        </motion.div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                        <Input
+                            {...register('amount')}
+                            label={t('amount')}
+                            type="number"
+                            placeholder="0.00"
+                            error={errors.amount?.message ? t(errors.amount.message as any) : undefined}
+                        />
                     </div>
-                </>
-            )}
-        </AnimatePresence>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">
+                            {t('dueDate')}
+                            {errors.due_date && <span className="text-red-500 ml-2">*</span>}
+                        </label>
+                        <Controller
+                            name="due_date"
+                            control={control}
+                            render={({ field }) => (
+                                <DatePicker
+                                    value={field.value ? parseISO(field.value) : undefined}
+                                    onChange={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
+                                />
+                            )}
+                        />
+                    </div>
+                </div>
+
+                <div className="p-6 bg-gray-50 dark:bg-neutral-800/50 rounded-[2rem] space-y-4 border border-black/5 dark:border-white/5">
+                    <div className="flex items-center justify-between">
+                        <span className="text-xs font-black uppercase tracking-widest text-black dark:text-white">{t('isPaid')}</span>
+                        <Controller
+                            name="status"
+                            control={control}
+                            render={({ field }) => (
+                                <Switch
+                                    checked={field.value === 'paid'}
+                                    onChange={(checked) => field.onChange(checked ? 'paid' : 'pending')}
+                                />
+                            )}
+                        />
+                    </div>
+
+                    <AnimatePresence>
+                        {currentStatus === 'paid' && (
+                            <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="pt-4 border-t border-black/5 dark:border-white/5"
+                            >
+                                <Input
+                                    {...register('paid_date')}
+                                    label={t('paidDate')}
+                                    type="date"
+                                />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+                <div className="space-y-4">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">{t('method')}</label>
+                    <div className="grid grid-cols-3 gap-2">
+                        {[
+                            { label: 'transfer', value: 'bank_transfer' },
+                            { label: 'bit', value: 'bit' },
+                            { label: 'paybox', value: 'paybox' },
+                            { label: 'check', value: 'check' },
+                            { label: 'cash', value: 'cash' },
+                            { label: 'other', value: 'other' }
+                        ].map(method => (
+                            <button
+                                key={method.value}
+                                type="button"
+                                onClick={() => setValue('payment_method', method.value)}
+                                className={cn(
+                                    "py-3 px-2 rounded-2xl text-[10px] font-black uppercase tracking-tighter transition-all border-2",
+                                    watch('payment_method') === method.value
+                                        ? 'bg-black dark:bg-white border-black dark:border-white text-white dark:text-black shadow-lg'
+                                        : 'bg-white dark:bg-neutral-900 border-black/5 dark:border-white/5 text-gray-400 hover:border-black/20 dark:hover:border-white/20'
+                                )}
+                            >
+                                {t(method.label)}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="p-8 border-t border-black/5 dark:border-white/5 bg-gray-50 dark:bg-neutral-900/50 flex gap-4 -mx-6 -mb-6 mt-6">
+                    <Button
+                        variant="outline"
+                        onClick={handleSubmit((v) => onFormSubmit(v, false))}
+                        disabled={loading}
+                        className="flex-1"
+                    >
+                        {t('addAnother')}
+                    </Button>
+                    <Button
+                        onClick={handleSubmit((v) => onFormSubmit(v, true))}
+                        disabled={loading}
+                        isLoading={loading}
+                        className="flex-1"
+                    >
+                        {t('createAndClose')}
+                    </Button>
+                </div>
+
+                {sessionStats.count > 0 && (
+                    <div className="pt-4 text-[10px] font-black uppercase tracking-widest text-center text-primary animate-in fade-in slide-in-from-bottom-2">
+                        {t('sessionAdded')}: {sessionStats.count} ({t('total')}: ₪{sessionStats.total.toLocaleString()})
+                    </div>
+                )}
+            </form>
+        </Modal >
     );
 }

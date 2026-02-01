@@ -17,7 +17,8 @@ BEGIN
             AND (c.end_date IS NULL OR c.end_date >= CURRENT_DATE)
         ) THEN 'Occupied'
         ELSE 'Vacant'
-    END;
+    END
+    WHERE p.id IS NOT NULL; -- Added safe WHERE clause
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 

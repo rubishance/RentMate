@@ -4,7 +4,7 @@ import {
     Plus, Trash2, Edit2, Calendar, Clock, AlertCircle, Filter, ArrowRight,
     TrendingUp, Activity, Bell, BellOff, Sparkles, Database, Image, Receipt,
     MoreVertical, Eye, Phone, Mail, User, Search, MapPin, Car, Box, Upload,
-    DollarSign, BedDouble, Ruler
+    DollarSign, BedDouble, Ruler, GalleryVertical
 } from 'lucide-react';
 
 const baseProps = {
@@ -55,3 +55,5 @@ export const CreditCardIcon = (props: React.SVGProps<SVGSVGElement>) => IconWrap
 export const DollarSignIcon = (props: React.SVGProps<SVGSVGElement>) => IconWrapper(DollarSign, props);
 export const BedIcon = (props: React.SVGProps<SVGSVGElement>) => IconWrapper(BedDouble, props);
 export const RulerIcon = (props: React.SVGProps<SVGSVGElement>) => IconWrapper(Ruler, props);
+export const BalconyIcon = (props: React.SVGProps<SVGSVGElement>) => IconWrapper(GalleryVertical, props);
+export const SafeRoomIcon = (props: React.SVGProps<SVGSVGElement>) => IconWrapper(ShieldCheck, props);

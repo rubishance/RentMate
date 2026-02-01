@@ -4,6 +4,11 @@ import { supabase } from '../../lib/supabase';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
+import { DatePicker } from '../ui/DatePicker';
+import { format, parseISO } from 'date-fns';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { maintenanceSchema, type MaintenanceFormData, type MaintenanceFormInput } from '../../schemas/maintenance.schema';
 
 interface AddMaintenanceModalProps {
     isOpen: boolean;
@@ -21,34 +26,57 @@ interface AddMaintenanceModalProps {
 
 export function AddMaintenanceModal({ isOpen, onClose, onSuccess, initialData }: AddMaintenanceModalProps) {
     const { t } = useTranslation();
-    const [loading, setLoading] = useState(false);
     const [properties, setProperties] = useState<any[]>([]);
     const [fetchingProperties, setFetchingProperties] = useState(true);
 
-    const [formData, setFormData] = useState({
-        property_id: '',
-        amount: '',
-        description: '',
-        vendor_name: '',
-        issue_type: '',
-        date: new Date().toISOString().split('T')[0],
+    const {
+        register,
+        handleSubmit,
+        reset,
+        setValue,
+        watch,
+        formState: { errors, isSubmitting }
+    } = useForm<MaintenanceFormInput, any, MaintenanceFormData>({
+        resolver: zodResolver(maintenanceSchema),
+        defaultValues: {
+            property_id: '',
+            amount: '' as any,
+            description: '',
+            vendor_name: '',
+            issue_type: '',
+            date: format(new Date(), 'yyyy-MM-dd'),
+        }
     });
+
+    // Watch values for controlled components if needed, or relying on register
+    // specifically properties selector might need manual wiring if it was custom, but it's a native select.
 
     useEffect(() => {
         if (isOpen) {
             fetchProperties();
             if (initialData) {
-                setFormData({
+                reset({
                     property_id: initialData.property_id || '',
-                    amount: initialData.amount ? initialData.amount.toString() : '',
+                    amount: initialData.amount || '' as any,
                     description: initialData.description || '',
                     vendor_name: initialData.vendor_name || '',
                     issue_type: initialData.issue_type || '',
-                    date: initialData.date || new Date().toISOString().split('T')[0],
+                    date: initialData.date || format(new Date(), 'yyyy-MM-dd'),
+                });
+            } else {
+                reset({
+                    property_id: '',
+                    amount: '' as any,
+                    description: '',
+                    vendor_name: '',
+                    issue_type: '',
+                    date: format(new Date(), 'yyyy-MM-dd'),
                 });
             }
         }
-    }, [isOpen, initialData]);
+    }, [isOpen, initialData, reset]);
+
+    const formData = watch(); // For controlled DatePicker
 
     async function fetchProperties() {
         try {
@@ -62,7 +90,7 @@ export function AddMaintenanceModal({ isOpen, onClose, onSuccess, initialData }:
 
             // If only one property, auto-select
             if (data && data.length === 1 && !formData.property_id) {
-                setFormData(prev => ({ ...prev, property_id: data[0].id }));
+                setValue('property_id', data[0].id);
             }
         } catch (error) {
             console.error('Error fetching properties:', error);
@@ -71,12 +99,7 @@ export function AddMaintenanceModal({ isOpen, onClose, onSuccess, initialData }:
         }
     }
 
-    const handleSave = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!formData.property_id || !formData.amount || !formData.description) return;
-
-        setLoading(true);
-
+    const onSubmit: SubmitHandler<MaintenanceFormData> = async (data) => {
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error('User not authenticated');
@@ -85,13 +108,13 @@ export function AddMaintenanceModal({ isOpen, onClose, onSuccess, initialData }:
                 .from('property_documents')
                 .insert({
                     user_id: user.id,
-                    property_id: formData.property_id,
+                    property_id: data.property_id,
                     category: 'maintenance',
-                    amount: parseFloat(formData.amount),
-                    description: formData.description,
-                    vendor_name: formData.vendor_name,
-                    issue_type: formData.issue_type,
-                    document_date: formData.date,
+                    amount: data.amount, // already number via coercion
+                    description: data.description,
+                    vendor_name: data.vendor_name,
+                    issue_type: data.issue_type,
+                    document_date: data.date,
                     storage_bucket: 'secure_documents',
                     storage_path: 'manual_entry',
                     file_name: 'Manual Entry (AI Prepared)'
@@ -101,21 +124,9 @@ export function AddMaintenanceModal({ isOpen, onClose, onSuccess, initialData }:
 
             onSuccess();
             onClose();
-            // Reset form
-            setFormData({
-                property_id: '',
-                amount: '',
-                description: '',
-                vendor_name: '',
-                issue_type: '',
-                date: new Date().toISOString().split('T')[0],
-            });
-
         } catch (error) {
             console.error('Error logging maintenance:', error);
             alert('Failed to log expense');
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -128,7 +139,7 @@ export function AddMaintenanceModal({ isOpen, onClose, onSuccess, initialData }:
                 type="submit"
                 form="add-maintenance-form"
                 className="flex-1"
-                isLoading={loading}
+                isLoading={isSubmitting}
             >
                 {t('saveRecord')}
             </Button>
@@ -144,7 +155,7 @@ export function AddMaintenanceModal({ isOpen, onClose, onSuccess, initialData }:
             footer={modalFooter}
             size="md"
         >
-            <form id="add-maintenance-form" onSubmit={handleSave} className="space-y-4">
+            <form id="add-maintenance-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 {/* Property Selection */}
                 <div className="space-y-1.5">
                     <label className="text-sm font-semibold text-gray-700 ml-1">{t('assignedAsset')}</label>
@@ -154,10 +165,8 @@ export function AddMaintenanceModal({ isOpen, onClose, onSuccess, initialData }:
                         <div className="relative">
                             <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                             <select
-                                required
-                                value={formData.property_id}
-                                onChange={(e) => setFormData(prev => ({ ...prev, property_id: e.target.value }))}
-                                className="w-full pl-9 pr-4 py-3 bg-secondary border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none appearance-none"
+                                {...register('property_id')}
+                                className={`w-full pl-9 pr-4 py-3 bg-secondary border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none appearance-none ${errors.property_id ? 'border-red-500' : 'border-border'}`}
                             >
                                 <option value="">{t('selectProperty')}</option>
                                 {properties.map(p => (
@@ -166,6 +175,7 @@ export function AddMaintenanceModal({ isOpen, onClose, onSuccess, initialData }:
                                     </option>
                                 ))}
                             </select>
+                            {errors.property_id && <p className="text-xs text-red-500 mt-1 ml-1">{t(errors.property_id.message as string)}</p>}
                         </div>
                     )}
                 </div>
@@ -177,12 +187,11 @@ export function AddMaintenanceModal({ isOpen, onClose, onSuccess, initialData }:
                         <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                         <input
                             type="number"
-                            required
                             placeholder="0.00"
-                            value={formData.amount}
-                            onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
-                            className="w-full pl-9 pr-4 py-3 bg-secondary border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                            {...register('amount')}
+                            className={`w-full pl-9 pr-4 py-3 bg-secondary border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none ${errors.amount ? 'border-red-500' : 'border-border'}`}
                         />
+                        {errors.amount && <p className="text-xs text-red-500 mt-1 ml-1">{t(errors.amount.message as string)}</p>}
                     </div>
                 </div>
 
@@ -191,12 +200,11 @@ export function AddMaintenanceModal({ isOpen, onClose, onSuccess, initialData }:
                     <label className="text-sm font-semibold text-gray-700 ml-1">{t('description')}</label>
                     <input
                         type="text"
-                        required
                         placeholder={t('e.g. Kitchen Renovation')}
-                        value={formData.description}
-                        onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                        className="w-full px-4 py-3 bg-secondary border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                        {...register('description')}
+                        className={`w-full px-4 py-3 bg-secondary border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none ${errors.description ? 'border-red-500' : 'border-border'}`}
                     />
+                    {errors.description && <p className="text-xs text-red-500 mt-1 ml-1">{t(errors.description.message as string)}</p>}
                 </div>
 
                 {/* Vendor & Issue Type */}
@@ -207,8 +215,7 @@ export function AddMaintenanceModal({ isOpen, onClose, onSuccess, initialData }:
                             <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                             <input
                                 type="text"
-                                value={formData.vendor_name}
-                                onChange={(e) => setFormData(prev => ({ ...prev, vendor_name: e.target.value }))}
+                                {...register('vendor_name')}
                                 className="w-full pl-9 pr-4 py-3 bg-secondary border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-sm"
                                 placeholder={t('vendor')}
                             />
@@ -219,8 +226,7 @@ export function AddMaintenanceModal({ isOpen, onClose, onSuccess, initialData }:
                         <div className="relative">
                             <Wrench className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                             <select
-                                value={formData.issue_type}
-                                onChange={(e) => setFormData(prev => ({ ...prev, issue_type: e.target.value }))}
+                                {...register('issue_type')}
                                 className="w-full pl-9 pr-4 py-3 bg-secondary border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none appearance-none text-sm"
                             >
                                 <option value="">{t('selectType')}</option>
@@ -239,12 +245,12 @@ export function AddMaintenanceModal({ isOpen, onClose, onSuccess, initialData }:
                 {/* Date */}
                 <div className="space-y-1.5">
                     <label className="text-sm font-semibold text-gray-700 ml-1">{t('date')}</label>
-                    <input
-                        type="date"
-                        value={formData.date}
-                        onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
-                        className="w-full px-4 py-3 bg-secondary border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                    <DatePicker
+                        value={formData.date ? parseISO(formData.date) : undefined}
+                        onChange={(date) => setValue('date', date ? format(date, 'yyyy-MM-dd') : '')}
+                        className="w-full"
                     />
+                    {errors.date && <p className="text-xs text-red-500 mt-1 ml-1">{t(errors.date.message as string)}</p>}
                 </div>
             </form>
         </Modal>

@@ -11,13 +11,20 @@ export class PropertyService {
      * - 'Vacant' if no active contracts exist.
      */
     async syncOccupancyStatus(propertyId: string): Promise<'Occupied' | 'Vacant' | null> {
+        if (!propertyId) {
+            console.warn('[PropertyService] Skipping syncOccupancyStatus: No propertyId provided');
+            return null;
+        }
         try {
-            // 1. Count active contracts for this property
+            // 1. Count active contracts for this property that are currently "effective"
+            const today = new Date().toISOString().split('T')[0];
             const { count, error: countError } = await supabase
                 .from('contracts')
                 .select('*', { count: 'exact', head: true })
                 .eq('property_id', propertyId)
-                .eq('status', 'active');
+                .eq('status', 'active')
+                .lte('start_date', today)
+                .gte('end_date', today);
 
             if (countError) throw countError;
 

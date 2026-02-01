@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import type { IndexData } from '../types/database';
+import { addMonths, format } from 'date-fns';
 
 /**
  * Service for fetching index data from Supabase
@@ -107,12 +108,10 @@ export function getMonthsBetween(startDate: string, endDate: string): string[] {
     const start = new Date(startDate + '-01');
     const end = new Date(endDate + '-01');
 
-    let current = new Date(start);
+    let current = start;
     while (current <= end) {
-        const year = current.getFullYear();
-        const month = String(current.getMonth() + 1).padStart(2, '0');
-        months.push(`${year}-${month}`);
-        current.setMonth(current.getMonth() + 1);
+        months.push(format(current, 'yyyy-MM'));
+        current = addMonths(current, 1);
     }
 
     return months;

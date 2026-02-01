@@ -62,6 +62,7 @@ const UserManagement = () => {
 
     // Edit Modal State
     const [selectedUser, setSelectedUser] = useState<UserWithStats | null>(null);
+    const [currentUser, setCurrentUser] = useState<{ id: string } | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [actionLoading, setActionLoading] = useState(false);
@@ -76,6 +77,10 @@ const UserManagement = () => {
         setLoading(true);
         setError(null);
         try {
+            // Fetch Current User
+            const { data: { user: authedUser } } = await supabase.auth.getUser();
+            setCurrentUser(authedUser);
+
             // Fetch Plans
             const { data: plansData } = await supabase.from('subscription_plans').select('*');
             setPlans(plansData || []);
@@ -134,8 +139,7 @@ const UserManagement = () => {
                 .update({
                     role: editRole,
                     subscription_status: editStatus,
-                    plan_id: editPlan,
-                    subscription_plan: planName
+                    plan_id: editPlan
                 })
                 .eq('id', selectedUser.id);
 
@@ -144,8 +148,11 @@ const UserManagement = () => {
             setModalMessage({ type: 'success', text: 'User updated successfully!' });
             fetchData();
             setTimeout(() => setIsEditModalOpen(false), 1500);
-        } catch (err: unknown) {
-            setModalMessage({ type: 'error', text: err instanceof Error ? err.message : 'An unknown error occurred' });
+        } catch (err: any) {
+            setModalMessage({
+                type: 'error',
+                text: err.message || err.error_description || (typeof err === 'string' ? err : 'An unknown error occurred')
+            });
         } finally {
             setActionLoading(false);
         }
@@ -162,8 +169,11 @@ const UserManagement = () => {
             });
             if (error) throw error;
             setModalMessage({ type: 'success', text: 'Reset email sent!' });
-        } catch (err: unknown) {
-            setModalMessage({ type: 'error', text: err instanceof Error ? err.message : 'An unknown error occurred' });
+        } catch (err: any) {
+            setModalMessage({
+                type: 'error',
+                text: err.message || err.error_description || (typeof err === 'string' ? err : 'An unknown error occurred')
+            });
         } finally {
             setActionLoading(false);
         }
@@ -181,9 +191,12 @@ const UserManagement = () => {
             setModalMessage({ type: 'success', text: 'User deleted successfully.' });
             setIsEditModalOpen(false);
             fetchData();
-        } catch (err: unknown) {
-            console.error(err);
-            setModalMessage({ type: 'error', text: 'Error deleting user: ' + (err instanceof Error ? err.message : 'Unknown error') });
+        } catch (err: any) {
+            console.error('Delete error:', err);
+            setModalMessage({
+                type: 'error',
+                text: 'Error deleting user: ' + (err.message || err.error_description || (typeof err === 'string' ? err : 'Unknown error'))
+            });
         } finally {
             setActionLoading(false);
         }
@@ -217,8 +230,10 @@ const UserManagement = () => {
         }
     };
 
-    const getPlanName = (planId: string) => {
-        return plans.find(p => p.id === planId)?.name || (planId === 'free' ? 'Free Forever' : planId);
+    const getPlanName = (user: UserWithStats) => {
+        const plan = plans.find(p => p.id === user.plan_id);
+        if (plan) return plan.name;
+        return (user.plan_id === 'free' ? 'Free Forever' : user.plan_id);
     };
 
     if (loading) return (
@@ -392,7 +407,7 @@ const UserManagement = () => {
                                                     {user.role}
                                                 </span>
                                                 <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">
-                                                    {getPlanName(user.plan_id)}
+                                                    {getPlanName(user)}
                                                 </span>
                                             </div>
                                         </td>
@@ -552,8 +567,9 @@ const UserManagement = () => {
                                     </button>
                                     <button
                                         onClick={handleDeleteUser}
-                                        disabled={actionLoading}
+                                        disabled={actionLoading || selectedUser?.id === currentUser?.id}
                                         className="w-full flex items-center justify-center rounded-xl bg-red-50 text-red-600 border border-red-100 px-4 py-2.5 text-xs font-bold hover:bg-red-100 transition-all disabled:opacity-50"
+                                        title={selectedUser?.id === currentUser?.id ? "You cannot delete your own account" : ""}
                                     >
                                         {actionLoading ? 'Deleting...' : 'Delete User & All Linked Data'}
                                     </button>

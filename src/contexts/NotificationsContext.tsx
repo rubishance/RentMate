@@ -75,7 +75,12 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
                 .limit(50);
 
             if (!error && data) {
-                setNotifications(data);
+                // Filter out automated payment notifications as requested
+                const filtered = data.filter((n: any) => {
+                    const event = n.metadata?.event;
+                    return event !== 'payment_warning' && event !== 'payment_due';
+                });
+                setNotifications(filtered);
             }
         } catch (err) {
             console.error('Error fetching notifications:', err);

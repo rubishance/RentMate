@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { UrlCompression } from '../lib/url-compression';
 import { StandardCalculator } from '../components/calculator/StandardCalculator';
 import { ReconciliationCalculator } from '../components/calculator/ReconciliationCalculator';
+import { format } from 'date-fns';
 
 type TabType = 'standard' | 'reconciliation';
 
@@ -66,7 +67,7 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
             if (data.linkageType) rData.linkageType = data.linkageType;
             if (data.baseIndexDate) rData.contractStartDate = data.baseIndexDate;
             if (data.startDate) rData.periodStart = data.startDate;
-            const now = new Date().toISOString().split('T')[0];
+            const now = format(new Date(), 'yyyy-MM-dd');
             rData.periodEnd = now;
 
             setStandardValues(sData);

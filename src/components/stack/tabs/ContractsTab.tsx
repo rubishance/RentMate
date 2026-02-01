@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../../lib/supabase';
 import { Contract } from '../../../types/database';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { CalendarIcon, UserIcon, FileTextIcon, ArchiveIcon, CheckCircle2Icon, ClockIcon } from 'lucide-react';
 import { cn, formatDate } from '../../../lib/utils';
-import { useStack } from '../../../contexts/StackContext';
+import { Skeleton } from '../../ui/Skeleton';
 
 interface ContractsTabProps {
     propertyId: string;
@@ -12,7 +13,7 @@ interface ContractsTabProps {
 
 export function ContractsTab({ propertyId }: ContractsTabProps) {
     const { t, lang } = useTranslation();
-    const { push } = useStack();
+    const navigate = useNavigate();
     const [contracts, setContracts] = useState<Contract[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -20,13 +21,7 @@ export function ContractsTab({ propertyId }: ContractsTabProps) {
         const fetchContracts = async () => {
             const { data, error } = await supabase
                 .from('contracts')
-                .select(`
-                    *,
-                    tenants (
-                        name,
-                        full_name
-                    )
-                `)
+                .select('*')
                 .eq('property_id', propertyId)
                 .order('start_date', { ascending: false });
 
@@ -45,13 +40,33 @@ export function ContractsTab({ propertyId }: ContractsTabProps) {
     const archivedContracts = contracts.filter(c => c.status === 'archived');
 
     const handleViewContract = (contract: Contract) => {
-        push('contract_viewer', { contractId: contract.id }, { title: t('contractDetails') });
+        navigate(`/contracts/${contract.id}`);
     };
 
     if (loading) {
         return (
-            <div className="p-12 flex justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <div className="p-6 space-y-4">
+                {[1, 2, 3].map((i) => (
+                    <div key={i} className="w-full h-32 rounded-2xl bg-white dark:bg-neutral-800 border border-slate-100 dark:border-neutral-700 p-5 space-y-4">
+                        <div className="flex justify-between items-start">
+                            <div className="flex items-center gap-3">
+                                <Skeleton className="w-10 h-10 rounded-xl" />
+                                <div className="space-y-2">
+                                    <Skeleton className="w-16 h-3" />
+                                    <Skeleton className="w-32 h-5" />
+                                </div>
+                            </div>
+                            <div className="flex flex-col items-end gap-2">
+                                <Skeleton className="w-20 h-6" />
+                                <Skeleton className="w-12 h-3" />
+                            </div>
+                        </div>
+                        <div className="pt-4 border-t border-slate-50 dark:border-neutral-700/50 flex justify-between">
+                            <Skeleton className="w-32 h-4" />
+                            <Skeleton className="w-16 h-4" />
+                        </div>
+                    </div>
+                ))}
             </div>
         );
     }

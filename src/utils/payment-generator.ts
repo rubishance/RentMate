@@ -1,4 +1,5 @@
 import { getIndexRange } from '../services/index-data.service';
+import { addMonths, addYears, format, parseISO } from 'date-fns';
 
 interface PaymentScheduleItem {
     contract_id?: string;
@@ -57,7 +58,7 @@ export async function generatePaymentSchedule(params: GenerationParams): Promise
     let current = new Date(start);
 
     // 1. Fetch relevant index data if linkage is active
-    let indexMap: Record<string, number> = {};
+    const indexMap: Record<string, number> = {};
     if (linkageType !== 'none' && baseIndexValue) {
         // Fetch indices from a few months before start date (buffer for 'known' index) to end date
         const fetchStart = new Date(start);
@@ -93,7 +94,7 @@ export async function generatePaymentSchedule(params: GenerationParams): Promise
 
         const dueDate = new Date(year, month, actualDay);
 
-        const dueStr = dueDate.toISOString().split('T')[0];
+        const dueStr = format(dueDate, 'yyyy-MM-dd');
         const monthKey = dueStr.substring(0, 7); // YYYY-MM of the payment
 
         // Determine Base Rent for this period (Handle Rent Steps)
@@ -131,7 +132,7 @@ export async function generatePaymentSchedule(params: GenerationParams): Promise
                 // Ex: On Jan 10th. Known index is Nov index (pub Dec 15).
 
                 const dayOfMonth = dueDate.getDate();
-                let indexDate = new Date(dueDate);
+                const indexDate = new Date(dueDate);
 
                 if (dayOfMonth < 15) {
                     // Go back 2 months for the index context (Nov index for Jan 10 payment)
@@ -189,11 +190,11 @@ export async function generatePaymentSchedule(params: GenerationParams): Promise
 
         // Advance to next period
         if (paymentFrequency === 'monthly') {
-            current.setMonth(current.getMonth() + 1);
+            current = addMonths(current, 1);
         } else if (paymentFrequency === 'quarterly') {
-            current.setMonth(current.getMonth() + 3);
+            current = addMonths(current, 3);
         } else if (paymentFrequency === 'annually') {
-            current.setFullYear(current.getFullYear() + 1);
+            current = addYears(current, 1);
         }
     }
 
