@@ -234,30 +234,8 @@ export function AddContract() {
     }, [formData.selectedPropertyId]);
 
     // Block access if limit reached
-    if (!subLoading && !canAddContract) {
-        return (
-            <div className="h-screen flex items-center justify-center p-4 bg-secondary dark:bg-foreground">
-                <div className="max-w-md w-full bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl text-center space-y-4">
-                    <div className="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <AlertTriangle className="w-8 h-8" />
-                    </div>
-                    <h2 className="text-2xl font-bold text-foreground dark:text-white">
-                        {t('limitReached')}
-                    </h2>
-                    <p className="text-muted-foreground dark:text-muted-foreground">
-                        {t('limitReachedDesc', { plan: plan?.name || 'Free' })}
-                    </p>
-                    <button
-                        onClick={() => navigate('/properties')}
-                        className="w-full py-2.5 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-colors"
-                    >
-                        {t('backToContracts')}
-                    </button>
-                    {/* Placeholder for Upgrade Button */}
-                </div>
-            </div>
-        );
-    }
+    // Moving the Limit Reached early return to AFTER all hooks
+    // to prevent "Rendered more hooks than during the previous render" error
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || e.target.files.length === 0) return;
@@ -769,6 +747,31 @@ export function AddContract() {
             <div className={`w-2 h-2 rounded-full ${color} inline-block ml-2 mb-0.5`} title={`AI Confidence: ${conf}`} />
         );
     };
+
+    if (!subLoading && !canAddContract) {
+        return (
+            <div className="h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-black">
+                <div className="max-w-md w-full bg-white dark:bg-neutral-900 rounded-[2.5rem] p-10 border border-slate-100 dark:border-neutral-800 shadow-2xl space-y-8 text-center animate-in fade-in zoom-in duration-500">
+                    <div className="w-20 h-20 bg-amber-500/10 rounded-[2rem] flex items-center justify-center mx-auto">
+                        <AlertTriangle className="w-10 h-10 text-amber-500" />
+                    </div>
+                    <div className="space-y-2">
+                        <h2 className="text-3xl font-black tracking-tighter text-foreground">{t('limitReached')}</h2>
+                        <p className="text-muted-foreground font-medium">
+                            {t('limitReachedDesc')}
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => navigate('/properties')}
+                        className="w-full py-2.5 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-colors"
+                    >
+                        {t('backToContracts')}
+                    </button>
+                    {/* Placeholder for Upgrade Button */}
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={cn(

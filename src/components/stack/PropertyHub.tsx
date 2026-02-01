@@ -1,6 +1,8 @@
 import { useState, useEffect, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../hooks/useTranslation';
+import { rentalTrendService } from '../../services/rental-trend.service';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 import { Property } from '../../types/database';
 import { cn } from '../../lib/utils';
 import { HomeIcon, WalletIcon, FolderIcon, PhoneIcon, MapPinIcon, PlusIcon, MoreVertical, Edit2, Trash2, CheckIcon, FilePlus, FileText, Car, Archive, ShieldCheck, ArrowUpDown, Accessibility, Upload, Loader2, Calendar, ArrowLeft } from 'lucide-react';
@@ -54,6 +56,7 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
     const [isDeleting, setIsDeleting] = useState(false);
     const [saving, setSaving] = useState(false);
     const [activeContract, setActiveContract] = useState<Contract | null>(null);
+    const [marketTrend, setMarketTrend] = useState<any>(null);
 
     // Self-healing synchronization: Ensure property status matches active contracts
     useEffect(() => {
@@ -84,7 +87,11 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
             }
         };
         sync();
-    }, [propertyId]);
+
+        // 3. Fetch market trend
+        const trend = rentalTrendService.getRegionalTrend(property.city);
+        setMarketTrend(trend);
+    }, [propertyId, property.city]);
 
     const tabs = [
         { id: 'contracts', label: t('contracts'), icon: FileText },
@@ -319,6 +326,20 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
                                     );
                                 })()}
                             </div>
+
+                            {/* Market Trend Badge */}
+                            {marketTrend && (
+                                <div className={cn(
+                                    "inline-flex items-center gap-1.5 px-3 py-1 ml-2 backdrop-blur-md rounded-full border text-[10px] font-black uppercase tracking-widest mb-2 transition-all",
+                                    marketTrend.annualGrowth > 0
+                                        ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600"
+                                        : "bg-red-500/10 border-red-500/20 text-red-600"
+                                )}>
+                                    {marketTrend.annualGrowth > 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                                    {marketTrend.annualGrowth > 0 ? '+' : ''}{marketTrend.annualGrowth}%
+                                    {lang === 'he' ? 'שכירות בעיר (למ"ס)' : 'Market Rent (CBS)'}
+                                </div>
+                            )}
 
                             {isEditing ? (
                                 <div className="space-y-4 bg-white/80 dark:bg-black/80 p-4 rounded-2xl border border-primary/20 backdrop-blur-xl">

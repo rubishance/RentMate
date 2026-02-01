@@ -47,13 +47,11 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
                 {
                     event: 'INSERT',
                     schema: 'public',
-                    table: 'notifications',
-                    filter: `user_id=eq.${supabase.auth.getUser().then(({ data }) => data.user?.id)}` // This prevents cross-user noise but better to filter in callback if unsure
+                    table: 'notifications'
                 },
-                (payload) => {
-                    // We need to double check ownership if filter isn't strict (RLS handles fetch, but realtime sends all broadcast if not filtered)
-                    // Simply refetching is safest to respect RLS
-                    handleNewNotification(payload.new as Notification);
+                () => {
+                    // Refetch notifications on insert - RLS will handle the user scoping
+                    fetchNotifications();
                 }
             )
             .subscribe();

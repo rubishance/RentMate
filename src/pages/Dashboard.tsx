@@ -13,6 +13,7 @@ import { Edit3Icon, CheckIcon, FileSearch } from 'lucide-react';
 import { ConciergeWidget } from '../components/dashboard/ConciergeWidget';
 import { format } from 'date-fns';
 import { ReportGenerationModal } from '../components/modals/ReportGenerationModal';
+import { cn } from '../lib/utils';
 
 interface FeedItem {
     id: string;
@@ -26,7 +27,6 @@ interface FeedItem {
 
 interface UserProfile {
     full_name: string;
-    first_name: string;
 }
 
 export function Dashboard() {
@@ -34,8 +34,7 @@ export function Dashboard() {
     const navigate = useNavigate();
     const { preferences } = useUserPreferences();
     const [loading, setLoading] = useState(true);
-    const { get, set, clear } = useDataCache();
-    const CACHE_KEY = `dashboard_data_v3_${preferences.language}`;
+    const { get, set } = useDataCache();
 
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [stats, setStats] = useState({
@@ -56,7 +55,9 @@ export function Dashboard() {
 
     useEffect(() => {
         async function init() {
+            console.log('Dashboard init: checking user');
             const { data: { user } } = await supabase.auth.getUser();
+            console.log('Dashboard init: user found:', !!user);
             if (user) {
                 const layoutKey = `dashboard_layout_${user.id}_v1`;
                 const saved = localStorage.getItem(layoutKey);
@@ -73,90 +74,112 @@ export function Dashboard() {
         init();
     }, []);
 
-    const handleLayoutChange = async (newLayout: WidgetConfig[]) => {
-        setLayout(newLayout);
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-            localStorage.setItem(`dashboard_layout_${user.id}_v1`, JSON.stringify(newLayout));
-        }
-    };
-
     async function loadDashboardData() {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+        console.log('loadDashboardData: starting');
 
-        const USER_CACHE_KEY = `dashboard_data_v4_${user.id}_${preferences.language}`;
-        const cached = get<any>(USER_CACHE_KEY);
+        // Developer Bypass Logic for Dashboard logic
+        const isBypass = import.meta.env.DEV && localStorage.getItem('rentmate_e2e_bypass') === 'true';
+
+        let user;
+        try {
+            const { data } = await supabase.auth.getUser();
+            user = data.user;
+        } catch (e) {
+            console.error('loadDashboardData: Auth check failed', e);
+        }
+
+        console.log('loadDashboardData: user:', !!user, 'bypass:', isBypass);
+
+        if (!user && !isBypass) {
+            console.log('loadDashboardData: No user and no bypass, stopping.');
+            setLoading(false);
+            return;
+        }
+
+        const effectiveUserId = user?.id || 'demo-user-id';
+        const cacheKey = `dashboard_data_v4_${effectiveUserId}_${preferences.language}`;
+
+        // Try load from cache first for instant UI
+        const cached = get<any>(cacheKey);
         if (cached) {
+            console.log('loadDashboardData: Using cached data');
             setProfile(cached.profile);
             setStats(cached.stats);
             setStorageCounts(cached.storageCounts);
-            setActiveContracts(cached.activeContracts);
-            setFeedItems(cached.feedItems);
+            setActiveContracts(cached.activeContracts || []);
+            setFeedItems(cached.feedItems || []);
             setLoading(false);
+
+            // Check if layout is empty and rescue if needed
+            if (!layout || layout.filter(w => w.visible).length === 0) {
+                console.warn('loadDashboardData: Layout rescue triggered from cache check');
+                setLayout(DEFAULT_WIDGET_LAYOUT);
+            }
         }
+
         try {
-            const { data: profileData } = await supabase
-                .from('user_profiles')
-                .select('full_name') // first_name dropped in cleanup
-                .eq('id', user.id)
-                .single();
+            console.log('loadDashboardData: Fetching fresh data for:', effectiveUserId);
 
-            if (profileData) setProfile(profileData as any);
-
-            // Fetch summary
-            const { data: summary } = await supabase.rpc('get_dashboard_summary', {
-                p_user_id: user.id
-            });
-
-            let currentStats = stats;
-            let currentCounts = storageCounts;
-
-            if (summary) {
-                currentStats = {
-                    monthlyIncome: summary.income.monthlyTotal,
-                    collected: summary.income.collected,
-                    pending: summary.income.pending
-                };
-                currentCounts = summary.storage;
-                setStats(currentStats);
-                setStorageCounts(currentCounts);
+            // If bypass and no real user, use mock profile
+            let profileData = null;
+            if (user) {
+                const { data } = await supabase
+                    .from('user_profiles')
+                    .select('full_name')
+                    .eq('id', user.id)
+                    .single();
+                profileData = data;
+            } else if (isBypass) {
+                profileData = { full_name: 'Developer (Bypass)' };
             }
 
-            // Contracts
-            const { data: contracts } = await supabase
-                .from('contracts')
-                .select('*, properties(id, city, address)')
-                .eq('user_id', user.id) // STRICTLY enforce ownership
-                .eq('status', 'active')
-                .order('end_date', { ascending: true })
-                .limit(5);
+            // Parallel fetch remaining data
+            const [summaryResponse, feedItemsData, reportSetting] = await Promise.all([
+                user ? supabase.rpc('get_dashboard_summary', { p_user_id: user.id }) : Promise.resolve({ data: null }),
+                loadFeedItems(effectiveUserId),
+                supabase.from('system_settings').select('value').eq('key', 'auto_monthly_reports_enabled').single()
+            ]);
 
-            if (contracts) setActiveContracts(contracts);
+            const summary = summaryResponse.data;
 
-            // Feed
-            const currentFeed = await loadFeedItems(user.id);
+            // Update state
+            if (profileData) setProfile(profileData);
+            if (summary) {
+                setStats({
+                    monthlyIncome: summary.monthly_income || 0,
+                    collected: summary.collected_this_month || 0,
+                    pending: summary.pending_payments || 0
+                });
+                setStorageCounts(summary.storage_counts || {});
+                setActiveContracts(summary.active_contracts || []);
+            }
+            setFeedItems(feedItemsData);
+            setReportsEnabled(reportSetting?.data?.value === true);
 
-            // Fetch settings
-            const { data: reportSetting } = await supabase
-                .from('system_settings')
-                .select('value')
-                .eq('key', 'auto_monthly_reports_enabled')
-                .single();
-
-            setReportsEnabled(reportSetting?.value === true);
-
-            set(USER_CACHE_KEY, {
+            // Persist
+            set(cacheKey, {
                 profile: profileData,
-                stats: currentStats,
-                storageCounts: currentCounts,
-                activeContracts: contracts || [],
-                feedItems: currentFeed
+                stats: summary ? {
+                    monthlyIncome: summary.monthly_income,
+                    collected: summary.collected_this_month,
+                    pending: summary.pending_payments
+                } : stats,
+                storageCounts: summary?.storage_counts || storageCounts,
+                activeContracts: summary?.active_contracts || [],
+                feedItems: feedItemsData
             }, { persist: true });
-            setLoading(false);
+
+            console.log('loadDashboardData: completed successfully');
         } catch (error) {
-            console.error('Error fetching dashboard info:', error);
+            console.error('loadDashboardData: error:', error);
+        } finally {
             setLoading(false);
+
+            // Final layout rescue check
+            if (!layout || layout.filter(w => w.visible).length === 0) {
+                console.warn('loadDashboardData: Final layout rescue check triggered');
+                setLayout(DEFAULT_WIDGET_LAYOUT);
+            }
         }
     }
 
@@ -168,7 +191,7 @@ export function Dashboard() {
             const { data: expired } = await supabase
                 .from('contracts')
                 .select('*, properties(city, address)')
-                .eq('user_id', userId) // STRICTLY enforce ownership
+                .eq('user_id', userId)
                 .eq('status', 'active')
                 .lt('end_date', today);
 
@@ -196,11 +219,10 @@ export function Dashboard() {
             items.push({ id: 'welcome', type: 'success', title: t('welcomeMessage'), desc: t('allLooksQuiet'), date: t('now') });
         }
 
-        setFeedItems(items);
         return items;
     }
 
-    const firstName = profile?.first_name || profile?.full_name?.split(' ')[0] || '';
+    const firstName = profile?.full_name?.split(' ')[0] || '';
 
     const dashboardData = useMemo<DashboardData>(() => ({
         profile,
@@ -209,6 +231,17 @@ export function Dashboard() {
         activeContracts,
         feedItems
     }), [profile, stats, storageCounts, activeContracts, feedItems]);
+
+    const handleLayoutChange = (newLayout: WidgetConfig[]) => {
+        setLayout(newLayout);
+        const persistLayout = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                localStorage.setItem(`dashboard_layout_${user.id}_v1`, JSON.stringify(newLayout));
+            }
+        };
+        persistLayout();
+    };
 
     if (loading) {
         return (
@@ -219,7 +252,6 @@ export function Dashboard() {
         );
     }
 
-
     return (
         <div className="pb-40 pt-6 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-700">
             {/* Hero Section */}
@@ -229,39 +261,48 @@ export function Dashboard() {
                 <ConciergeWidget />
             </div>
 
-            {/* Dashboard Controls */}
-            <div className="flex justify-end px-4 gap-4">
-                {reportsEnabled && (
-                    <button
-                        onClick={() => setIsReportModalOpen(true)}
-                        className="flex items-center gap-2 px-6 py-2 text-[10px] font-black uppercase tracking-widest rounded-full bg-indigo-500/10 text-indigo-600 border border-indigo-100 dark:border-indigo-900/30 hover:bg-indigo-500/20 transition-colors shadow-minimal"
-                    >
-                        <FileSearch className="w-3.5 h-3.5" />
-                        {lang === 'he' ? 'הפקת דוח' : 'Generate Report'}
-                    </button>
-                )}
+            {/* Content Section */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
+                <div className="flex items-center justify-between mb-10">
+                    <div className="flex items-center gap-6">
+                        <h2 className="text-sm font-black uppercase tracking-widest text-muted-foreground/40">{t('overview')}</h2>
+                        <div className="h-px w-12 bg-slate-100" />
+                    </div>
 
-                <button
-                    onClick={() => setIsEditingLayout(!isEditingLayout)}
-                    className="flex items-center gap-2 px-6 py-2 text-[10px] font-black uppercase tracking-widest rounded-full bg-slate-100 dark:bg-neutral-900 hover:bg-slate-200 transition-colors"
-                >
-                    {isEditingLayout ? <CheckIcon className="w-3.5 h-3.5" /> : <Edit3Icon className="w-3.5 h-3.5" />}
-                    {isEditingLayout ? 'Done' : 'Customize'}
-                </button>
+                    <div className="flex items-center gap-4">
+                        {reportsEnabled && (
+                            <button
+                                onClick={() => setIsReportModalOpen(true)}
+                                className="flex items-center gap-2 px-6 py-3 text-[10px] font-black uppercase tracking-widest rounded-2xl bg-indigo-500/10 text-indigo-600 border border-indigo-100 dark:border-indigo-900/30 hover:bg-indigo-500/20 transition-all shadow-minimal"
+                            >
+                                <FileSearch className="w-3.5 h-3.5" />
+                                {lang === 'he' ? 'הפקת דוח' : 'Generate Report'}
+                            </button>
+                        )}
+
+                        <button
+                            onClick={() => setIsEditingLayout(!isEditingLayout)}
+                            className={cn(
+                                "flex items-center gap-3 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500",
+                                isEditingLayout
+                                    ? "bg-primary text-primary-foreground shadow-premium ring-4 ring-primary/10"
+                                    : "bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 text-muted-foreground hover:border-primary/30 hover:text-primary shadow-minimal"
+                            )}
+                        >
+                            {isEditingLayout ? <CheckIcon className="w-3.5 h-3.5" /> : <Edit3Icon className="w-3.5 h-3.5" />}
+                            {isEditingLayout ? t('saveLayout') : t('customize')}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Grid */}
+                <DashboardGrid
+                    layout={layout}
+                    data={dashboardData}
+                    isEditing={isEditingLayout}
+                    onLayoutChange={handleLayoutChange}
+                />
             </div>
-
-            <ReportGenerationModal
-                isOpen={isReportModalOpen}
-                onClose={() => setIsReportModalOpen(false)}
-            />
-
-            {/* Widget Grid */}
-            <DashboardGrid
-                layout={layout}
-                data={dashboardData}
-                isEditing={isEditingLayout}
-                onLayoutChange={handleLayoutChange}
-            />
 
             {/* Bottom System Status Section */}
             <section className="pt-12 border-t border-slate-100 dark:border-neutral-900 flex flex-col items-center text-center space-y-10">
@@ -277,6 +318,10 @@ export function Dashboard() {
                 </div>
             </section>
 
+            <ReportGenerationModal
+                isOpen={isReportModalOpen}
+                onClose={() => setIsReportModalOpen(false)}
+            />
         </div>
     );
 }

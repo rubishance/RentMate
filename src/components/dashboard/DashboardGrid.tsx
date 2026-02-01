@@ -46,21 +46,33 @@ export function DashboardGrid({ layout, data, isEditing = false, onLayoutChange 
             )}
         >
             <AnimatePresence mode="popLayout">
-                {sortedLayout.filter(w => w.visible).map((widget) => {
-                    const WidgetComponent = WIDGET_REGISTRY[widget.widgetId];
-                    if (!WidgetComponent) return null;
+                {sortedLayout.filter(w => w.visible).length > 0 ? (
+                    sortedLayout.filter(w => w.visible).map((widget) => {
+                        const WidgetComponent = WIDGET_REGISTRY[widget.widgetId];
+                        if (!WidgetComponent) return null;
 
-                    return (
-                        <WidgetRow
-                            key={widget.id}
-                            widget={widget}
-                            data={data}
-                            isEditing={isEditing}
-                            sizeClass={getSizeClass(widget.size)}
-                            onRender={() => WidgetComponent(data)}
-                        />
-                    );
-                })}
+                        return (
+                            <WidgetRow
+                                key={widget.id}
+                                widget={widget}
+                                data={data}
+                                isEditing={isEditing}
+                                sizeClass={getSizeClass(widget.size)}
+                                onRender={() => WidgetComponent(data)}
+                            />
+                        );
+                    })
+                ) : (
+                    <div className="lg:col-span-2 py-20 text-center space-y-4">
+                        <p className="text-muted-foreground font-medium">המבט המהיר שלך ריק. התאם אישית כדי להוסיף ווידג'טים.</p>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="text-primary font-bold hover:underline"
+                        >
+                            שחזר הגדרות ברירת מחדל
+                        </button>
+                    </div>
+                )}
             </AnimatePresence>
         </Reorder.Group>
     );
