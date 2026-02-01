@@ -98,11 +98,11 @@ export function Dashboard() {
         try {
             const { data: profileData } = await supabase
                 .from('user_profiles')
-                .select('full_name, first_name')
+                .select('full_name') // first_name dropped in cleanup
                 .eq('id', user.id)
                 .single();
 
-            if (profileData) setProfile(profileData);
+            if (profileData) setProfile(profileData as any);
 
             // Fetch summary
             const { data: summary } = await supabase.rpc('get_dashboard_summary', {
@@ -200,15 +200,6 @@ export function Dashboard() {
         return items;
     }
 
-    if (loading) {
-        return (
-            <div className="px-6 py-20 max-w-5xl mx-auto space-y-12">
-                <div className="h-8 w-48 bg-slate-100 animate-pulse rounded-2xl" />
-                <div className="h-96 w-full bg-slate-100 animate-pulse rounded-[3rem]" />
-            </div>
-        );
-    }
-
     const firstName = profile?.first_name || profile?.full_name?.split(' ')[0] || '';
 
     const dashboardData = useMemo<DashboardData>(() => ({
@@ -218,6 +209,15 @@ export function Dashboard() {
         activeContracts,
         feedItems
     }), [profile, stats, storageCounts, activeContracts, feedItems]);
+
+    if (loading) {
+        return (
+            <div className="px-6 py-20 max-w-5xl mx-auto space-y-12">
+                <div className="h-8 w-48 bg-slate-100 animate-pulse rounded-2xl" />
+                <div className="h-96 w-full bg-slate-100 animate-pulse rounded-[3rem]" />
+            </div>
+        );
+    }
 
 
     return (

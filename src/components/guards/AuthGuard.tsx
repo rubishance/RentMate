@@ -102,8 +102,6 @@ const AuthGuard = () => {
                             id: user.id,
                             email: user.email,
                             full_name: user.user_metadata?.full_name || user.email,
-                            first_name: user.user_metadata?.first_name || 'User',
-                            last_name: user.user_metadata?.last_name || '',
                             role: 'user',
                             subscription_status: 'active'
                         });

@@ -59,8 +59,8 @@ export function Payments() {
                     contracts (
                         id,
                         tenants,
-                        properties (id, title, address, city)
-                    )
+                    properties (id, address, city)
+                )
                 `)
                 .eq('user_id', user.id) // STRICTLY enforce ownership
                 .order('due_date', { ascending: true });
@@ -78,7 +78,7 @@ export function Payments() {
                 // Fetch Paid Bills
                 const { data: bills } = await supabase
                     .from('property_documents')
-                    .select('*, properties(id, title, address, city)')
+                    .select('*, properties(id, address, city)')
                     .eq('user_id', user.id) // STRICTLY enforce ownership
                     .eq('paid', true)
                     .not('amount', 'is', null)

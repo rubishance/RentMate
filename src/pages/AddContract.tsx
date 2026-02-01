@@ -387,7 +387,7 @@ export function AddContract() {
                 end_date: data.endDate || null,
                 base_rent: data.rent || 0,
                 currency: data.currency,
-                payment_frequency: data.paymentFrequency,
+                payment_frequency: data.paymentFrequency.toLowerCase(),
                 payment_day: data.paymentDay,
                 linkage_type: data.linkageType,
                 linkage_sub_type: (data.linkageType === 'none') ? null : data.linkageSubType,
@@ -515,8 +515,12 @@ export function AddContract() {
             }
 
             if (!formData.selectedPropertyId) {
-                const title = `${formData.address || ''}, ${formData.city || ''}`;
-                const { data: propData } = await supabase.from('properties').select('id').eq('title', title).maybeSingle();
+                const { data: propData } = await supabase
+                    .from('properties')
+                    .select('id')
+                    .eq('address', formData.address)
+                    .eq('city', formData.city)
+                    .maybeSingle();
                 if (propData) setValue('selectedPropertyId', propData.id);
             }
 

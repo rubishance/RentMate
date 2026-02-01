@@ -189,12 +189,17 @@ export async function generatePaymentSchedule(params: GenerationParams): Promise
         });
 
         // Advance to next period
-        if (paymentFrequency === 'monthly') {
+        const freq = paymentFrequency.toLowerCase();
+        if (freq === 'monthly') {
             current = addMonths(current, 1);
-        } else if (paymentFrequency === 'quarterly') {
+        } else if (freq === 'quarterly') {
             current = addMonths(current, 3);
-        } else if (paymentFrequency === 'annually') {
+        } else if (freq === 'annually') {
             current = addYears(current, 1);
+        } else {
+            // Safety: prevent infinite loop if frequency is unknown
+            console.error('[PaymentGenerator] Unknown frequency:', paymentFrequency);
+            break;
         }
     }
 

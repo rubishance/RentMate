@@ -271,8 +271,7 @@ export const crmService = {
         const { error } = await supabase
             .from('user_profiles')
             .update({
-                plan_id: planId,
-                subscription_plan: planName // Keep legacy for backward compatibility
+                plan_id: planId
             })
             .eq('id', userId);
 

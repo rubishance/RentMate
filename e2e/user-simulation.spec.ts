@@ -8,7 +8,7 @@ test.describe('User Journey Simulation', () => {
         });
 
         // 2. Navigate
-        await page.goto('http://localhost:5173/contracts/new');
+        await page.goto('http://localhost:5174/contracts/new');
         await page.waitForLoadState('networkidle');
 
         // 3. Diagnostic Log

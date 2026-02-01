@@ -26,7 +26,7 @@ interface UserUsage {
     tokens_used: number;
     last_reset_at: string;
     user_email?: string;
-    subscription_tier?: string;
+    subscription_tier?: string; // Maps to plan_id now
 }
 
 export default function AIUsageManagement() {
@@ -59,7 +59,7 @@ export default function AIUsageManagement() {
                 .from('ai_chat_usage')
                 .select(`
                     *,
-                    user_profiles!inner(email, subscription_tier)
+                    user_profiles!inner(email, plan_id)
                 `)
                 .order('message_count', { ascending: false })
                 .limit(50);
@@ -73,7 +73,7 @@ export default function AIUsageManagement() {
                 last_reset_at: string;
                 user_profiles: {
                     email: string;
-                    subscription_tier: string;
+                    plan_id: string;
                 } | null;
             }
 
@@ -83,7 +83,7 @@ export default function AIUsageManagement() {
                 tokens_used: u.tokens_used,
                 last_reset_at: u.last_reset_at,
                 user_email: u.user_profiles?.email,
-                subscription_tier: u.user_profiles?.subscription_tier
+                subscription_tier: u.user_profiles?.plan_id
             })) || [];
 
             setUsage(formattedUsage);

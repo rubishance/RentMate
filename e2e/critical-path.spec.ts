@@ -12,7 +12,7 @@ const MOCK_USER = {
 
 test.describe('Critical Path', () => {
     test('should load login page', async ({ page }) => {
-        await page.goto('http://localhost:5173/login');
+        await page.goto('http://localhost:5174/login');
         await expect(page).toHaveTitle(/RentMate/i);
         // Check for email input being visible (robust against i18n)
         await expect(page.locator('input[name="email"]')).toBeVisible();

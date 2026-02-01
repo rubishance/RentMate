@@ -237,7 +237,7 @@ When user's prompt is NOT in English:
 | `frontend-design` | Web UI patterns |
 | `mobile-design` | Mobile UI patterns |
 | `plan-writing` | {task-slug}.md format |
-| `threejs-mastery` | 2025 3D Web (R3F, WebGPU) |
+| `ui-ux-pro-max` | UI/UX design intelligence (50 styles, 21 palettes) |
 | `behavioral-modes` | Mode switching |
 
 ### Script Locations

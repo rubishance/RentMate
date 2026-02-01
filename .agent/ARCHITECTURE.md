@@ -35,7 +35,7 @@ Specialist AI personas for different domains.
 |-------|-------|-------------|
 | `orchestrator` | Multi-agent coordination | parallel-agents, behavioral-modes |
 | `project-planner` | Discovery, task planning | brainstorming, plan-writing, architecture |
-| `frontend-specialist` | Web UI/UX | frontend-design, react-patterns, tailwind-patterns |
+| `frontend-specialist` | Web UI/UX | frontend-design, ui-ux-pro-max, react-patterns, tailwind-patterns |
 | `backend-specialist` | API, business logic | api-patterns, nodejs-best-practices, database-design |
 | `database-architect` | Schema, SQL | database-design, prisma-expert |
 | `mobile-developer` | iOS, Android, RN | mobile-design |

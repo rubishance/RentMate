@@ -163,6 +163,11 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                 currency: data.currency,
                 payment_frequency: data.paymentFrequency.toLowerCase(),
                 payment_day: data.paymentDay,
+                needs_painting: !!data.needsPainting,
+                pets_allowed: data.petsAllowed === 'true',
+                special_clauses: data.specialClauses || null,
+                guarantees: data.guarantees || null,
+                guarantors_info: data.guarantorsInfo || null,
 
                 linkage_type: data.linkageType,
                 linkage_sub_type: data.linkageSubType || null,

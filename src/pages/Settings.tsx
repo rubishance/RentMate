@@ -18,11 +18,9 @@ export function Settings() {
     const navigate = useNavigate();
     const [isAdmin, setIsAdmin] = useState(false);
 
-    const [userData, setUserData] = useState<{ full_name: string | null; email: string | null; first_name?: string; last_name?: string }>({
+    const [userData, setUserData] = useState<{ full_name: string | null; email: string | null }>({
         full_name: '',
-        email: '',
-        first_name: '',
-        last_name: ''
+        email: ''
     });
 
     const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
@@ -45,7 +43,7 @@ export function Settings() {
 
             const { data } = await supabase
                 .from('user_profiles')
-                .select('full_name, first_name, last_name, role')
+                .select('full_name, role')
                 .eq('id', user.id)
                 .single();
 
@@ -56,9 +54,7 @@ export function Settings() {
 
             setUserData({
                 full_name: name || t('user_generic'),
-                email: email || '',
-                first_name: data?.first_name || (name ? name.split(' ')[0] : ''),
-                last_name: data?.last_name || (name ? name.split(' ').slice(1).join(' ') : '')
+                email: email || ''
             });
         }
     };
