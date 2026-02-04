@@ -31,7 +31,7 @@ interface SystemSetting {
 }
 
 export default function SystemSettings() {
-    const [activeTab, setActiveTab] = useState<'notifications' | 'general' | 'autopilot' | 'integrations'>('notifications');
+    const [activeTab, setActiveTab] = useState<'notifications' | 'general' | 'autopilot' | 'integrations' | 'email_reports'>('notifications');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [rules, setRules] = useState<NotificationRule[]>([]);
@@ -208,6 +208,45 @@ export default function SystemSettings() {
         }
     };
 
+    const initializeEmailReports = async () => {
+        setSaving(true);
+        setMessage(null);
+        try {
+            const defaultSettings = [
+                {
+                    key: 'admin_email_daily_summary_enabled',
+                    value: true,
+                    description: 'Master toggle for daily admin summary email'
+                },
+                {
+                    key: 'admin_email_content_preferences',
+                    value: {
+                        new_users: true,
+                        revenue: true,
+                        support_tickets: true,
+                        upgrades: true,
+                        active_properties: true
+                    },
+                    description: 'JSON object defining which sections to include in the daily summary'
+                }
+            ];
+
+            const { error } = await supabase
+                .from('system_settings')
+                .insert(defaultSettings);
+
+            if (error) throw error;
+
+            setMessage({ type: 'success', text: 'Email report settings initialized!' });
+            fetchData();
+        } catch (error: any) {
+            console.error('Error initializing email settings:', error);
+            setMessage({ type: 'error', text: 'Failed to initialize: ' + error.message });
+        } finally {
+            setSaving(false);
+        }
+    };
+
     if (loading) {
         return (
             <div className="flex h-96 items-center justify-center">
@@ -305,6 +344,18 @@ export default function SystemSettings() {
                     <div className="flex items-center gap-2">
                         <RefreshCw className="w-4 h-4" />
                         Integrations
+                    </div>
+                </button>
+                <button
+                    onClick={() => setActiveTab('email_reports')}
+                    className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'email_reports'
+                        ? 'bg-white dark:bg-gray-800 text-brand-600 shadow-sm border border-gray-100 dark:border-gray-700'
+                        : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                        }`}
+                >
+                    <div className="flex items-center gap-2">
+                        <Bell className="w-4 h-4" />
+                        Email Reports
                     </div>
                 </button>
             </div>
@@ -538,6 +589,88 @@ export default function SystemSettings() {
                             </button>
                         </div>
                     </div>
+                </div>
+            )}
+            {activeTab === 'email_reports' && (
+                <div className="space-y-10">
+                    {!settings.find(s => s.key === 'admin_email_daily_summary_enabled') ? (
+                        <div className="bg-white dark:bg-gray-800 p-12 rounded-[2.5rem] border-2 border-dashed border-gray-100 dark:border-gray-700 text-center space-y-6">
+                            <div className="w-20 h-20 bg-brand-50 rounded-full flex items-center justify-center mx-auto">
+                                <Bell className="w-10 h-10 text-brand-600" />
+                            </div>
+                            <div className="max-w-md mx-auto space-y-2">
+                                <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Email Reports Not Configured</h3>
+                                <p className="text-sm font-bold text-gray-500 dark:text-gray-400">
+                                    The periodic report system needs to be initialized. This will create the necessary configuration keys in the database.
+                                </p>
+                            </div>
+                            <button
+                                onClick={initializeEmailReports}
+                                disabled={saving}
+                                className="inline-flex items-center gap-2 px-8 py-4 bg-brand-600 text-white rounded-2xl hover:bg-brand-700 transition-all font-bold shadow-lg shadow-brand-600/20 disabled:opacity-50"
+                            >
+                                {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-5 h-5" />}
+                                Setup Email Reports System
+                            </button>
+                        </div>
+                    ) : (
+                        <>
+                            {/* Master Switch Section */}
+                            {settings.find(s => s.key === 'admin_email_daily_summary_enabled') && (
+                                <div className="bg-brand-600 p-8 rounded-[2.5rem] shadow-xl shadow-brand-600/20 text-white flex flex-col md:flex-row items-center justify-between gap-6 transition-all">
+                                    <div className="flex-1 space-y-2">
+                                        <h2 className="text-2xl font-black uppercase tracking-tight">Daily Summary Email</h2>
+                                        <p className="text-sm font-bold opacity-80 max-w-xl">
+                                            {settings.find(s => s.key === 'admin_email_daily_summary_enabled')?.description || 'Toggle the daily activity summary email sent to admins.'}
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={() => handleSettingChange('admin_email_daily_summary_enabled', !settings.find(s => s.key === 'admin_email_daily_summary_enabled')?.value)}
+                                        className={`flex items-center gap-4 px-8 py-4 rounded-2xl border-2 transition-all ${settings.find(s => s.key === 'admin_email_daily_summary_enabled')?.value
+                                            ? 'bg-white text-brand-600 border-white'
+                                            : 'bg-transparent border-white/30 text-white'
+                                            }`}
+                                    >
+                                        <span className="font-black uppercase tracking-widest text-xs">
+                                            {settings.find(s => s.key === 'admin_email_daily_summary_enabled')?.value ? 'Emails Active' : 'Emails Disabled'}
+                                        </span>
+                                        {settings.find(s => s.key === 'admin_email_daily_summary_enabled')?.value ? <ToggleRight className="w-10 h-10" /> : <ToggleLeft className="w-10 h-10" />}
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Content Preferences */}
+                            {settings.find(s => s.key === 'admin_email_content_preferences') && (
+                                <div className="bg-white dark:bg-gray-800 p-8 rounded-[2.5rem] border border-gray-200 dark:border-gray-700 shadow-sm">
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div className="p-3 bg-brand-50 rounded-2xl">
+                                            <Sparkles className="w-6 h-6 text-brand-600" />
+                                        </div>
+                                        <h2 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight">Report Content Configuration</h2>
+                                    </div>
+
+                                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                        {Object.entries(settings.find(s => s.key === 'admin_email_content_preferences')?.value as Record<string, boolean> || {}).map(([key, enabled]) => (
+                                            <div key={key} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-gray-700">
+                                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                                                    {key.replace(/_/g, ' ')}
+                                                </label>
+                                                <button
+                                                    onClick={() => {
+                                                        const currentPrefs = settings.find(s => s.key === 'admin_email_content_preferences')?.value as Record<string, boolean> || {};
+                                                        handleSettingChange('admin_email_content_preferences', { ...currentPrefs, [key]: !enabled });
+                                                    }}
+                                                    className={`transition-all ${enabled ? 'text-brand-600' : 'text-gray-300'}`}
+                                                >
+                                                    {enabled ? <ToggleRight className="w-8 h-8" /> : <ToggleLeft className="w-8 h-8" />}
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
                 </div>
             )}
         </div>

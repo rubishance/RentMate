@@ -5,15 +5,16 @@ import { KnowledgeBaseWidget } from './KnowledgeBaseWidget';
 import { SmartActionsWidget } from './SmartActionsWidget'; // Assuming this exists based on list_dir
 import { UsageOverviewWidget } from './UsageOverviewWidget'; // Assuming this exists
 import { IndexWatcherWidget } from './IndexWatcherWidget';
+import { PortfolioReadinessWidget } from './PortfolioReadinessWidget';
+// Importing DashboardHero to usage if needed, or keeping it separate as a "Header"
 // Importing DashboardHero to usage if needed, or keeping it separate as a "Header"
 
 export type WidgetId =
-    | 'timeline'
     | 'storage_stats'
-    | 'knowledge_base'
-    | 'smart_actions'
     | 'usage_overview'
-    | 'index_watcher';
+    | 'usage_overview'
+    | 'index_watcher'
+    | 'portfolio_readiness';
 
 export type WidgetSize = 'small' | 'medium' | 'large';
 
@@ -23,6 +24,7 @@ export interface WidgetConfig {
     size: WidgetSize;
     visible: boolean;
     order: number;
+    settings?: Record<string, any>;
 }
 
 export interface DashboardData {
@@ -33,23 +35,16 @@ export interface DashboardData {
     feedItems: any[];
 }
 
-export const WIDGET_REGISTRY: Record<WidgetId, (data: DashboardData) => ReactNode> = {
-    'timeline': (data) => <TimelineWidget contracts={data?.activeContracts || []} />,
+export const WIDGET_REGISTRY: Record<WidgetId, (data: DashboardData, config?: WidgetConfig) => ReactNode> = {
     'storage_stats': (data) => <StorageStatsWidget counts={data?.storageCounts || {}} />,
-    'knowledge_base': (data) => <KnowledgeBaseWidget />,
-    'smart_actions': (data) => <SmartActionsWidget stats={{
-        pendingMoney: data?.stats?.pending || 0,
-        openMaintenance: data?.storageCounts?.maintenance || 0
-    }} />,
     'usage_overview': (data) => <UsageOverviewWidget />,
-    'index_watcher': (data) => <IndexWatcherWidget contracts={data?.activeContracts || []} />,
+    'index_watcher': (data, config) => <IndexWatcherWidget contracts={data?.activeContracts || []} settings={config?.settings} />,
+    'portfolio_readiness': (data) => <PortfolioReadinessWidget profile={data?.profile} stats={data?.stats} />,
 };
 
 export const DEFAULT_WIDGET_LAYOUT: WidgetConfig[] = [
-    { id: '1', widgetId: 'timeline', size: 'large', visible: true, order: 0 },
-    { id: '2', widgetId: 'storage_stats', size: 'medium', visible: true, order: 1 },
-    { id: '3', widgetId: 'knowledge_base', size: 'medium', visible: true, order: 2 },
-    { id: '4', widgetId: 'smart_actions', size: 'small', visible: true, order: 3 },
-    { id: '5', widgetId: 'usage_overview', size: 'small', visible: true, order: 4 },
-    { id: '6', widgetId: 'index_watcher', size: 'medium', visible: true, order: 5 },
+    { id: '1', widgetId: 'portfolio_readiness', size: 'medium', visible: true, order: 0 },
+    { id: '2', widgetId: 'storage_stats', size: 'large', visible: true, order: 1 },
+    { id: '5', widgetId: 'usage_overview', size: 'small', visible: true, order: 2 },
+    { id: '6', widgetId: 'index_watcher', size: 'medium', visible: true, order: 3 },
 ];

@@ -25,22 +25,22 @@ export function StreamHeader({ title }: StreamHeaderProps) {
     };
 
     return (
-        <header className="fixed top-0 left-0 right-0 h-24 bg-background/60 backdrop-blur-xl z-40 flex items-center justify-between px-8 border-b border-border/40 transition-all duration-500">
+        <header className="fixed top-0 left-0 right-0 h-16 glass-premium z-[60] flex items-center justify-between px-4 md:px-10 border-b border-white/10 transition-all duration-500">
             {/* Left: Logo or Title */}
-            <div className="flex items-center gap-4 group cursor-pointer" onClick={() => navigate('/dashboard')}>
-                <div className="w-10 h-10 bg-primary rounded-[0.8rem] flex items-center justify-center group-hover:rotate-12 transition-transform duration-500 shadow-minimal">
+            <div className="flex items-center gap-3 group cursor-pointer" onClick={() => navigate('/dashboard')}>
+                <div className="w-8 h-8 button-jewel rounded-lg flex items-center justify-center group-hover:rotate-12 transition-transform duration-500">
                     <img
                         src={effectiveTheme === 'dark' ? logoIconDark : logoIconOnly}
                         alt="RentMate"
-                        className="w-6 h-6 invert dark:invert-0"
+                        className="w-5 h-5 invert dark:invert-0"
                     />
                 </div>
                 <div className="flex flex-col justify-center">
-                    <span className="text-3xl md:text-4xl font-black tracking-tighter text-foreground whitespace-nowrap lowercase leading-none">
+                    <span className="text-xl md:text-2xl font-black tracking-tighter text-foreground whitespace-nowrap lowercase leading-none">
                         {title || 'RentMate'}
                     </span>
                     {!title && (
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-60">
+                        <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground opacity-60 mt-0.5">
                             {getGreeting()}
                         </span>
                     )}
@@ -48,15 +48,15 @@ export function StreamHeader({ title }: StreamHeaderProps) {
             </div>
 
             {/* Right: Actions */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 md:gap-4">
                 <NotificationCenter />
 
                 <button
                     onClick={() => navigate('/settings')}
-                    className="w-10 h-10 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-xl transition-all"
+                    className="p-2 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-full transition-all"
                     aria-label="Settings"
                 >
-                    <SettingsIcon className="w-5 h-5" />
+                    <SettingsIcon className="w-6 h-6" />
                 </button>
             </div>
         </header>

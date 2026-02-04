@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { X, Save, User as UserIcon, Loader2, Edit } from 'lucide-react';
+import { MascotPopIn } from '../common/MascotPopIn';
 import { supabase } from '../../lib/supabase';
 import { useTranslation } from '../../hooks/useTranslation';
+import { Checkbox } from '../ui/Checkbox';
 
 interface EditProfileModalProps {
     isOpen: boolean;
@@ -14,20 +16,23 @@ interface EditProfileModalProps {
 
 export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: EditProfileModalProps) {
     const { t, lang } = useTranslation();
-    const [fullName, setFullName] = useState('');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isReadOnly, setIsReadOnly] = useState(true);
 
     useEffect(() => {
         if (isOpen) {
-            setFullName(initialData.full_name || '');
+            const parts = (initialData.full_name || '').trim().split(/\s+/);
+            setFirstName(parts[0] || '');
+            setLastName(parts.slice(1).join(' ') || '');
             setIsReadOnly(true); // Always start in view mode
         }
     }, [isOpen, initialData]);
 
     const handleSave = async () => {
-        if (!fullName.trim()) {
-            alert(lang === 'he' ? 'שם הוא שדה חובה' : 'Full Name is required.');
+        if (!firstName.trim() || !lastName.trim()) {
+            alert(lang === 'he' ? 'שם פרטי ושם משפחה הם שדות חובה' : 'First Name and Last Name are required.');
             return;
         }
 
@@ -37,10 +42,11 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
 
             if (!user) throw new Error('No user found');
 
+            const fullName = `${firstName.trim()} ${lastName.trim()}`;
             const updates = {
                 id: user.id,
                 email: user.email,
-                full_name: fullName.trim(),
+                full_name: fullName,
                 updated_at: new Date().toISOString(),
             };
 
@@ -52,12 +58,11 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
 
             // Also update auth metadata for faster initial load next time
             await supabase.auth.updateUser({
-                data: { full_name: updates.full_name }
+                data: { full_name: fullName }
             });
 
             onSuccess();
         } catch (error) {
-            console.error('Error updating profile:', error);
             console.error('Error updating profile:', error);
             alert(lang === 'he' ? `שגיאה בעדכון פרופיל: ${(error as any).message || 'שגיאה לא ידועה'}` : `Failed to update profile: ${(error as any).message || 'Unknown error'}`);
         } finally {
@@ -87,18 +92,35 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                     </div>
 
                     <div className="space-y-4">
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block ml-1">{lang === 'he' ? 'שם מלא' : 'Full Name'}</label>
-                            <input
-                                type="text"
-                                value={fullName}
-                                onChange={(e) => setFullName(e.target.value)}
-                                readOnly={isReadOnly}
-                                className={`w-full p-3 border rounded-xl outline-none transition-all ${isReadOnly
-                                    ? 'bg-muted border-border cursor-default'
-                                    : 'bg-secondary border-border focus:ring-2 focus:ring-indigo-500'
-                                    }`}
-                            />
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block ml-1">{lang === 'he' ? 'שם פרטי' : 'First Name'}</label>
+                                <input
+                                    type="text"
+                                    value={firstName}
+                                    onChange={(e) => setFirstName(e.target.value)}
+                                    readOnly={isReadOnly}
+                                    placeholder={lang === 'he' ? 'יוסי' : 'John'}
+                                    className={`w-full p-3 border rounded-xl outline-none transition-all ${isReadOnly
+                                        ? 'bg-muted border-border cursor-default'
+                                        : 'bg-secondary border-border focus:ring-2 focus:ring-indigo-500'
+                                        }`}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block ml-1">{lang === 'he' ? 'שם משפחה' : 'Last Name'}</label>
+                                <input
+                                    type="text"
+                                    value={lastName}
+                                    onChange={(e) => setLastName(e.target.value)}
+                                    readOnly={isReadOnly}
+                                    placeholder={lang === 'he' ? 'כהן' : 'Doe'}
+                                    className={`w-full p-3 border rounded-xl outline-none transition-all ${isReadOnly
+                                        ? 'bg-muted border-border cursor-default'
+                                        : 'bg-secondary border-border focus:ring-2 focus:ring-indigo-500'
+                                        }`}
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -125,7 +147,9 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                             <button
                                 onClick={() => {
                                     setIsReadOnly(true);
-                                    setFullName(initialData.full_name || '');
+                                    const parts = (initialData.full_name || '').trim().split(/\s+/);
+                                    setFirstName(parts[0] || '');
+                                    setLastName(parts.slice(1).join(' ') || '');
                                 }}
                                 className="flex-1 py-3 px-4 bg-background border border-border text-foreground font-medium rounded-xl hover:bg-secondary active:scale-[0.98] transition-all"
                             >
@@ -142,6 +166,9 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                         </>
                     )}
                 </div>
+
+                {/* Renty Pop-In */}
+                <MascotPopIn position="bottom-right" className="translate-x-4 translate-y-4" />
             </div>
         </div>
     );
@@ -172,18 +199,17 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
             if (!user) return;
 
             const { data, error } = await supabase
-                .from('user_automation_settings')
-                .select('*')
-                .eq('user_id', user.id)
+                .from('user_profiles')
+                .select('notification_preferences')
+                .eq('id', user.id)
                 .single();
 
-            if (!error && data) {
-                setContractExpiryDays(data.lease_expiry_days || 60);
-                setRentDueDays(data.rent_overdue_days || 3);
-                setExtensionOptionDays(data.extension_notice_days || 30);
-                // setExtensionOptionEndDays(data.extension_option_end_days || 7); // Not in DB yet, sticking to task plan columns
-            } else if (error && error.code === 'PGRST116') {
-                // No settings yet, defaults are fine
+            if (!error && data?.notification_preferences) {
+                const prefs = data.notification_preferences as any;
+                setContractExpiryDays(prefs.contract_expiry_days ?? 60);
+                setRentDueDays(prefs.rent_due_days ?? 3);
+                setExtensionOptionDays(prefs.extension_option_days ?? 30);
+                setExtensionOptionEndDays(prefs.extension_option_end_days ?? 7);
             }
         } catch (error) {
             console.error('Error loading notification preferences:', error);
@@ -198,18 +224,27 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error('No user found');
 
-            const updates = {
-                user_id: user.id,
-                lease_expiry_days: Math.min(Math.max(contractExpiryDays, 1), 365),
-                rent_overdue_days: Math.min(Math.max(rentDueDays, 1), 180),
-                extension_notice_days: Math.min(Math.max(extensionOptionDays, 1), 180),
-                // extension_option_end_days: ... 
-                updated_at: new Date().toISOString()
+            // Fetch current prefs to merge
+            const { data: currentData } = await supabase
+                .from('user_profiles')
+                .select('notification_preferences')
+                .eq('id', user.id)
+                .single();
+
+            const currentPrefs = (currentData?.notification_preferences as any) || {};
+
+            const newPrefs = {
+                ...currentPrefs,
+                contract_expiry_days: Math.min(Math.max(contractExpiryDays, 1), 365),
+                rent_due_days: Math.min(Math.max(rentDueDays, 1), 180),
+                extension_option_days: Math.min(Math.max(extensionOptionDays, 1), 180),
+                extension_option_end_days: Math.min(Math.max(extensionOptionEndDays, 1), 180)
             };
 
             const { error } = await supabase
-                .from('user_automation_settings')
-                .upsert(updates);
+                .from('user_profiles')
+                .update({ notification_preferences: newPrefs })
+                .eq('id', user.id);
 
             if (error) throw error;
 
@@ -245,18 +280,12 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
                         <div className="p-6 space-y-6 overflow-y-auto flex-1">
                             {/* Contract Expiry */}
                             <div className="space-y-3 pb-4 border-b border-border">
-                                <div className="flex items-center gap-3">
-                                    <input
-                                        type="checkbox"
-                                        id="contract-expiry-enabled"
-                                        checked={contractExpiryDays > 0}
-                                        onChange={(e) => setContractExpiryDays(e.target.checked ? 60 : 0)}
-                                        className="w-5 h-5 text-primary rounded focus:ring-2 focus:ring-indigo-500 cursor-pointer"
-                                    />
-                                    <label htmlFor="contract-expiry-enabled" className="text-sm font-bold text-foreground cursor-pointer">
-                                        {lang === 'he' ? 'התראה לפני סיום חוזה' : 'Contract Expiry Warning'}
-                                    </label>
-                                </div>
+                                <Checkbox
+                                    label={lang === 'he' ? 'התראה לפני סיום חוזה' : 'Contract Expiry Warning'}
+                                    checked={contractExpiryDays > 0}
+                                    onChange={(val) => setContractExpiryDays(val ? 60 : 0)}
+                                    className="border-none p-0 bg-transparent"
+                                />
                                 {contractExpiryDays > 0 && (
                                     <div className="mr-8 space-y-2">
                                         <p className="text-xs text-muted-foreground">
@@ -277,18 +306,12 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
 
                             {/* Extension Option */}
                             <div className="space-y-3">
-                                <div className="flex items-center gap-3">
-                                    <input
-                                        type="checkbox"
-                                        id="extension-option-enabled"
-                                        checked={extensionOptionDays > 0}
-                                        onChange={(e) => setExtensionOptionDays(e.target.checked ? 30 : 0)}
-                                        className="w-5 h-5 text-primary rounded focus:ring-2 focus:ring-indigo-500 cursor-pointer"
-                                    />
-                                    <label htmlFor="extension-option-enabled" className="text-sm font-bold text-foreground cursor-pointer">
-                                        {lang === 'he' ? 'התראה לפני תחילת אופציית הארכה' : 'Extension Option Starting'}
-                                    </label>
-                                </div>
+                                <Checkbox
+                                    label={lang === 'he' ? 'התראה לפני תחילת אופציית הארכה' : 'Extension Option Starting'}
+                                    checked={extensionOptionDays > 0}
+                                    onChange={(val) => setExtensionOptionDays(val ? 30 : 0)}
+                                    className="border-none p-0 bg-transparent"
+                                />
                                 {extensionOptionDays > 0 && (
                                     <div className="mr-8 space-y-2">
                                         <p className="text-xs text-muted-foreground">
@@ -308,18 +331,12 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
 
                             {/* Extension Option Deadline */}
                             <div className="space-y-3">
-                                <div className="flex items-center gap-3">
-                                    <input
-                                        type="checkbox"
-                                        id="extension-deadline-enabled"
-                                        checked={extensionOptionEndDays > 0}
-                                        onChange={(e) => setExtensionOptionEndDays(e.target.checked ? 7 : 0)}
-                                        className="w-5 h-5 text-primary rounded focus:ring-2 focus:ring-indigo-500 cursor-pointer"
-                                    />
-                                    <label htmlFor="extension-deadline-enabled" className="text-sm font-bold text-foreground cursor-pointer">
-                                        {lang === 'he' ? 'התראה לפני מועד הודעת הארכה' : 'Extension Deadline Warning'}
-                                    </label>
-                                </div>
+                                <Checkbox
+                                    label={lang === 'he' ? 'התראה לפני מועד הודעת הארכה' : 'Extension Deadline Warning'}
+                                    checked={extensionOptionEndDays > 0}
+                                    onChange={(val) => setExtensionOptionEndDays(val ? 7 : 0)}
+                                    className="border-none p-0 bg-transparent"
+                                />
                                 {extensionOptionEndDays > 0 && (
                                     <div className="mr-8 space-y-2">
                                         <p className="text-xs text-muted-foreground">

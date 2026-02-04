@@ -53,9 +53,9 @@ export function BottomDock() {
     ];
 
     return (
-        <div className="fixed bottom-10 left-0 right-0 z-[50] flex justify-center px-6 pointer-events-none">
+        <div className="fixed bottom-10 left-0 right-0 z-[50] flex justify-center px-3 pointer-events-none">
             <nav
-                className="bg-white/90 dark:bg-black/90 backdrop-blur-3xl border border-slate-100 dark:border-neutral-800 p-2.5 rounded-[2.5rem] shadow-premium flex gap-2 pointer-events-auto"
+                className="glass-premium p-2.5 rounded-[2.5rem] shadow-premium flex gap-2 pointer-events-auto"
                 role="navigation"
                 aria-label="Bottom Dock"
             >
@@ -71,8 +71,8 @@ export function BottomDock() {
                             className={cn(
                                 "relative flex items-center justify-center h-16 rounded-[1.8rem] transition-all duration-500",
                                 isActive
-                                    ? "text-foreground bg-slate-100 dark:bg-neutral-800 px-8 shadow-minimal ring-1 ring-slate-200 dark:ring-neutral-700"
-                                    : "text-muted-foreground hover:text-foreground hover:bg-slate-50 dark:hover:bg-neutral-900 px-5"
+                                    ? "text-primary-foreground button-jewel px-8"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-white/10 px-5"
                             )}
                         >
                             <Icon className={cn("w-6 h-6 transition-all duration-500", isActive && "scale-110")} />

@@ -37,12 +37,12 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
                         className={cn(
                             "relative flex-1 flex items-center justify-center gap-2 z-10 transition-colors duration-200",
                             size === 'sm' ? "px-3 py-1.5 text-[10px]" : "px-4 py-2.5 text-xs",
-                            "font-black uppercase tracking-widest",
+                            "font-bold uppercase tracking-wide whitespace-nowrap",
                             isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground/80"
                         )}
                     >
                         {option.icon && <span className="shrink-0">{option.icon}</span>}
-                        <span className="truncate">{option.label}</span>
+                        <span>{option.label}</span>
 
                         {isActive && (
                             <motion.div

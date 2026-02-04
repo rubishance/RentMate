@@ -1,4 +1,5 @@
 import { AlertTriangle, Trash2, ArrowRight } from 'lucide-react';
+import { MascotPopIn } from '../common/MascotPopIn';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -40,13 +41,7 @@ export function ConfirmDeleteModal({
     const [step, setStep] = useState(1);
     const [inputValue, setInputValue] = useState('');
 
-    // Reset state when modal opens
-    useEffect(() => {
-        if (isOpen) {
-            setStep(1);
-            setInputValue('');
-        }
-    }, [isOpen]);
+    // State reset is handled by the parent component or via key prop to ensure clean state on open
 
     if (!isOpen) return null;
 
@@ -163,8 +158,8 @@ export function ConfirmDeleteModal({
                                 onClick={handleConfirm}
                                 disabled={isDeleting || !canConfirm}
                                 className={`flex-1 px-4 py-2.5 text-white rounded-xl font-medium transition-colors shadow-lg flex items-center justify-center gap-2 ${isDeleting || !canConfirm
-                                        ? 'bg-gray-400 cursor-not-allowed opacity-70'
-                                        : 'bg-red-600 hover:bg-red-700 shadow-red-500/30'
+                                    ? 'bg-gray-400 cursor-not-allowed opacity-70'
+                                    : 'bg-red-600 hover:bg-red-700 shadow-red-500/30'
                                     }`}
                             >
                                 {isDeleting ? (
@@ -184,6 +179,9 @@ export function ConfirmDeleteModal({
                             </button>
                         </div>
                     </div>
+
+                    {/* Renty Pop-In */}
+                    <MascotPopIn position="bottom-right" className="translate-x-4 translate-y-4" />
                 </motion.div>
             </div>
         </AnimatePresence>

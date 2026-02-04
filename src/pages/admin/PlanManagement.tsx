@@ -9,15 +9,21 @@ import {
     PlusIcon,
     TrashIcon,
 } from '@heroicons/react/24/outline';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Star, Zap, Shield, Check } from 'lucide-react';
+import { GlassCard } from '../../components/common/GlassCard';
+import { motion } from 'framer-motion';
 
 interface SubscriptionPlan {
     id: string;
     name: string;
+    description: string | null;
+    subtitle: string | null;
+    badge_text: string | null;
+    cta_text: string | null;
+    sort_order: number;
     price_monthly: number;
     price_yearly: number;
     max_properties: number;
-    max_tenants: number;
     max_contracts: number;
     max_sessions: number;
     max_storage_mb: number;
@@ -27,6 +33,7 @@ interface SubscriptionPlan {
     max_documents_mb: number;
     max_file_size_mb: number;
     features: Record<string, boolean>;
+    is_active: boolean;
     created_at?: string;
 }
 const PlanManagement = () => {
@@ -39,10 +46,14 @@ const PlanManagement = () => {
 
     const defaultPlan: Omit<SubscriptionPlan, 'id'> = {
         name: 'New Plan',
+        description: 'A brief description of the plan value.',
+        subtitle: 'Everything in Free plus...',
+        badge_text: '',
+        cta_text: 'Get Started',
+        sort_order: 10,
         price_monthly: 0,
         price_yearly: 0,
         max_properties: 1,
-        max_tenants: 1,
         max_contracts: 1,
         max_sessions: 10,
         max_storage_mb: 100,
@@ -56,7 +67,8 @@ const PlanManagement = () => {
             ai_analysis: false,
             priority_support: false,
             custom_reports: false
-        }
+        },
+        is_active: true
     };
 
     useEffect(() => {
@@ -108,10 +120,14 @@ const PlanManagement = () => {
         try {
             const planData = {
                 name: editForm.name || 'New Plan',
+                description: editForm.description || '',
+                subtitle: editForm.subtitle || '',
+                badge_text: editForm.badge_text || '',
+                cta_text: editForm.cta_text || 'Get Started',
+                sort_order: parseInt(String(editForm.sort_order || 0)),
                 price_monthly: parseFloat(String(editForm.price_monthly || 0)),
                 price_yearly: parseFloat(String(editForm.price_yearly || 0)),
                 max_properties: parseInt(String(editForm.max_properties || 0)),
-                max_tenants: parseInt(String(editForm.max_tenants || 0)),
                 max_contracts: parseInt(String(editForm.max_contracts || 0)),
                 max_sessions: parseInt(String(editForm.max_sessions || 0)),
                 max_storage_mb: parseInt(String(editForm.max_storage_mb || 0)),
@@ -120,10 +136,14 @@ const PlanManagement = () => {
                 max_maintenance_mb: parseInt(String(editForm.max_maintenance_mb || 0)),
                 max_documents_mb: parseInt(String(editForm.max_documents_mb || 0)),
                 max_file_size_mb: parseInt(String(editForm.max_file_size_mb || 0)),
-                features: editForm.features || defaultPlan.features
+                features: editForm.features || defaultPlan.features,
+                id: editForm.id || (isCreating ? (editForm.name || 'new-plan').toLowerCase().replace(/\s+/g, '-') : undefined),
+                is_active: editForm.is_active !== undefined ? editForm.is_active : true
             };
 
             if (isCreating) {
+                if (!planData.id) throw new Error('Plan ID is required');
+
                 const { data, error } = await supabase
                     .from('subscription_plans')
                     .insert([planData])
@@ -145,9 +165,10 @@ const PlanManagement = () => {
                 setEditingId(null);
                 alert('Plan updated successfully!');
             }
-        } catch (error: unknown) {
+        } catch (error: any) {
             console.error('Error saving plan:', error);
-            alert('Save failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
+            const message = error.message || error.details || (typeof error === 'string' ? error : 'Unknown error');
+            alert('Save failed: ' + message);
         } finally {
             setSaving(false);
         }
@@ -246,6 +267,79 @@ const PlanManagement = () => {
         </div>
     );
 
+    const PlanPreview = ({ plan }: { plan: Partial<SubscriptionPlan> }) => {
+        const id = (plan.id || '').toLowerCase();
+        const baseId = id.includes('solo') || id.includes('free') ? 'solo' :
+            id.includes('mate') || id.includes('pro') ? 'mate' :
+                id.includes('master') || id.includes('enterprise') ? 'master' : 'unlimited';
+
+        const ICON_MAP: Record<string, any> = { 'solo': Star, 'mate': Zap, 'master': Shield, 'unlimited': Lock };
+        const COLOR_MAP: Record<string, string> = { 'solo': 'text-slate-500', 'mate': 'text-blue-500', 'master': 'text-amber-500', 'unlimited': 'text-purple-500' };
+        const BG_MAP: Record<string, string> = { 'solo': 'bg-slate-50 dark:bg-slate-900/50', 'mate': 'bg-blue-50/50 dark:bg-blue-900/20', 'master': 'bg-amber-50/50 dark:bg-amber-900/20', 'unlimited': 'bg-purple-50/50 dark:bg-purple-900/20' };
+
+        const Icon = ICON_MAP[baseId] || Star;
+
+        return (
+            <div className="sticky top-8">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 text-center">Live Preview (Mobile/Desktop Card)</p>
+                <div className="max-w-sm mx-auto">
+                    <GlassCard
+                        className={`p-8 relative flex flex-col ${plan.id === 'mate' ? 'border-blue-500/50 ring-4 ring-blue-500/10' : ''} ${BG_MAP[baseId] || 'bg-white dark:bg-slate-800'}`}
+                        hoverEffect
+                    >
+                        {plan.badge_text && (
+                            <div className="absolute -top-4 inset-x-0 flex justify-center">
+                                <span className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg uppercase">
+                                    {plan.badge_text}
+                                </span>
+                            </div>
+                        )}
+
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className={`p-3 rounded-xl bg-white dark:bg-black/40 shadow-sm ${COLOR_MAP[baseId] || 'text-blue-500'}`}>
+                                <Icon className="w-6 h-6" />
+                            </div>
+                            <h3 className="text-2xl font-bold font-mono tracking-tight dark:text-white uppercase">{plan.name || 'Plan Name'}</h3>
+                        </div>
+
+                        <div className="mb-6">
+                            <div className="flex items-baseline gap-1">
+                                <span className="text-4xl font-black dark:text-white">₪{plan.price_monthly || 0}</span>
+                                <span className="text-slate-500 font-medium">/ unit</span>
+                            </div>
+                            <p className="text-sm text-slate-500 mt-1">billed monthly</p>
+                        </div>
+
+                        <p className="text-slate-600 dark:text-slate-300 font-medium mb-8 text-sm leading-relaxed">
+                            {plan.description || 'No description provided.'}
+                        </p>
+
+                        <div className="space-y-4 flex-1">
+                            <div className="flex items-center gap-3 text-sm">
+                                <div className="p-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600">
+                                    <Check className="w-3 h-3" />
+                                </div>
+                                <span className="text-slate-700 dark:text-slate-300 font-bold">{plan.max_properties === -1 ? 'Unlimited' : plan.max_properties} Property Units</span>
+                            </div>
+                            {Object.entries(plan.features || {}).map(([key, value]) => value ? (
+                                <div key={key} className="flex items-center gap-3 text-sm">
+                                    <div className="p-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600">
+                                        <Check className="w-3 h-3" />
+                                    </div>
+                                    <span className="text-slate-700 dark:text-slate-300 capitalize">{key.replace('_', ' ')}</span>
+                                </div>
+                            ) : null)}
+                        </div>
+
+                        <button className={`w-full mt-8 py-3 rounded-xl font-bold transition-all ${plan.id === 'mate' ? 'bg-blue-600 text-white shadow-lg' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white'}`}>
+                            {plan.cta_text || 'Start Free Trial'}
+                        </button>
+                    </GlassCard>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className="space-y-8 pb-20">
             {/* Header */}
@@ -253,10 +347,10 @@ const PlanManagement = () => {
                 <div>
                     <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
                         <TagIcon className="w-8 h-8 text-brand-600" />
-                        Plan Management
+                        Plan Management <span className="text-xs bg-brand-100 text-brand-600 px-2 py-1 rounded-md ml-2 uppercase tracking-widest">v2.0</span>
                     </h1>
                     <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mt-1">
-                        Configure pricing, limits, and features for each subscription tier.
+                        Configure pricing, marketing content, and resource limits.
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -278,93 +372,134 @@ const PlanManagement = () => {
                 </div>
             </div>
 
-            {/* Editing / Creating Card */}
+            {/* Editing / Creating Area */}
             {(isCreating || editingId) && (
-                <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-brand-500 shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300">
-                    <div className="p-6 border-b border-gray-100 dark:border-gray-700 bg-brand-50/50 dark:bg-brand-900/10 flex justify-between items-center">
-                        <div>
-                            <h2 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">
-                                {isCreating ? '📦 Create New Plan' : '✏️ Edit Subscription Plan'}
-                            </h2>
-                            <p className="text-xs font-bold text-brand-600 dark:text-brand-400 mt-1">
-                                {isCreating ? 'Define a new tier for your users' : `Modifying settings for ${editForm.name}`}
-                            </p>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-in fade-in slide-in-from-top-4 duration-500">
+                    {/* Left: Editor Form */}
+                    <div className="lg:col-span-8 bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-xl overflow-hidden">
+                        <div className="p-6 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/10 flex justify-between items-center">
+                            <div>
+                                <h2 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">
+                                    {isCreating ? '📦 New Tier' : '✏️ Edit Tier'}
+                                </h2>
+                            </div>
+                            <button onClick={handleCancel} className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors">
+                                <XCircleIcon className="w-6 h-6" />
+                            </button>
                         </div>
-                        <button onClick={handleCancel} className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors">
-                            <XCircleIcon className="w-8 h-8" />
-                        </button>
+
+                        <div className="p-8 space-y-12">
+                            {/* Marketing Section */}
+                            <section>
+                                <h3 className="text-[10px] font-black text-brand-600 uppercase tracking-[0.2em] mb-6 flex items-center gap-4">
+                                    Marketing & Content
+                                    <div className="h-px bg-brand-100 dark:bg-brand-900/30 flex-1"></div>
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="md:col-span-2">
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Internal Name</label>
+                                        <input
+                                            type="text"
+                                            value={editForm.name || ''}
+                                            onChange={e => handleChange('name', e.target.value)}
+                                            className="block w-full rounded-2xl border-gray-100 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-brand-500 focus:ring-brand-500 font-bold text-gray-900 dark:text-white"
+                                            placeholder="e.g. ULTIMATE"
+                                        />
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Marketing Description</label>
+                                        <textarea
+                                            rows={2}
+                                            value={editForm.description || ''}
+                                            onChange={e => handleChange('description', e.target.value)}
+                                            className="block w-full rounded-2xl border-gray-100 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-brand-500 focus:ring-brand-500 font-medium text-gray-800 dark:text-gray-200"
+                                            placeholder="Catchy value proposition..."
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Badge Text</label>
+                                        <input
+                                            type="text"
+                                            value={editForm.badge_text || ''}
+                                            onChange={e => handleChange('badge_text', e.target.value)}
+                                            className="block w-full rounded-2xl border-gray-100 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-brand-500 focus:ring-brand-500 font-bold text-gray-900 dark:text-white"
+                                            placeholder="e.g. MOST POPULAR"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Button CTA</label>
+                                        <input
+                                            type="text"
+                                            value={editForm.cta_text || ''}
+                                            onChange={e => handleChange('cta_text', e.target.value)}
+                                            className="block w-full rounded-2xl border-gray-100 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-brand-500 focus:ring-brand-500 font-bold text-gray-900 dark:text-white"
+                                            placeholder="Default: Start Free Trial"
+                                        />
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Economics Section */}
+                            <section>
+                                <h3 className="text-[10px] font-black text-brand-600 uppercase tracking-[0.2em] mb-6 flex items-center gap-4">
+                                    Economics & Position
+                                    <div className="h-px bg-brand-100 dark:bg-brand-900/30 flex-1"></div>
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    {renderPriceField('Monthly Price', 'price_monthly')}
+                                    {renderPriceField('Yearly Total', 'price_yearly')}
+                                    {renderLimitField('Sort Order', 'sort_order')}
+                                </div>
+                            </section>
+
+                            {/* Limits & Quotas */}
+                            <section>
+                                <h3 className="text-[10px] font-black text-brand-600 uppercase tracking-[0.2em] mb-6 flex items-center gap-4">
+                                    Quotas & Feature Set
+                                    <div className="h-px bg-brand-100 dark:bg-brand-900/30 flex-1"></div>
+                                </h3>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-8">
+                                    {renderLimitField('Max Asset Units', 'max_properties')}
+                                    {renderLimitField('Max Contracts', 'max_contracts')}
+                                    {renderLimitField('Cloud Storage (MB)', 'max_storage_mb')}
+                                </div>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <FeatureToggle featureKey="ai_analysis" label="AI Analysis" />
+                                    <FeatureToggle featureKey="export_data" label="Data Export" />
+                                    <FeatureToggle featureKey="custom_reports" label="Reports" />
+                                    <FeatureToggle featureKey="priority_support" label="Priority" />
+                                </div>
+                            </section>
+
+                            {/* Status */}
+                            <div className="pt-8 border-t border-gray-50 dark:border-gray-700 flex justify-between items-center">
+                                <label className="flex items-center gap-3 cursor-pointer group">
+                                    <div className={`w-12 h-6 rounded-full p-1 transition-colors ${editForm.is_active ? 'bg-brand-600' : 'bg-gray-300'}`} onClick={() => handleChange('is_active', !editForm.is_active)}>
+                                        <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${editForm.is_active ? 'translate-x-6' : 'translate-x-0'}`} />
+                                    </div>
+                                    <span className="text-xs font-black uppercase tracking-widest text-gray-500 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                                        {editForm.is_active ? 'Active' : 'Paused (Hidden from users)'}
+                                    </span>
+                                </label>
+
+                                <div className="flex gap-4">
+                                    <button onClick={handleCancel} className="text-xs font-black text-gray-400 uppercase tracking-widest hover:text-gray-600">Cancel</button>
+                                    <button
+                                        onClick={handleSave}
+                                        disabled={saving}
+                                        className="flex items-center gap-2 px-8 py-3 bg-brand-600 text-white rounded-2xl hover:bg-brand-700 transition-all font-black uppercase tracking-widest shadow-lg shadow-brand-600/20"
+                                    >
+                                        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircleIcon className="w-4 h-4" />}
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div className="p-8 space-y-10">
-                        {/* Basic Info Section */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            <div className="md:col-span-1">
-                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Display Name</label>
-                                <input
-                                    type="text"
-                                    value={editForm.name || ''}
-                                    onChange={e => handleChange('name', e.target.value)}
-                                    className="block w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-brand-500 focus:ring-brand-500 font-black text-lg text-gray-900 dark:text-white"
-                                    placeholder="e.g. ULTIMATE"
-                                />
-                            </div>
-                            {renderPriceField('Monthly Billing', 'price_monthly')}
-                            {renderPriceField('Yearly Billing', 'price_yearly')}
-                        </div>
-
-                        {/* Limits Section */}
-                        <div>
-                            <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-                                <span className="h-px bg-gray-100 dark:bg-gray-700 flex-1"></span>
-                                Usage Quotas & Limits
-                                <span className="h-px bg-gray-100 dark:bg-gray-700 flex-1"></span>
-                            </h3>
-                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                                {renderLimitField('Max Assets', 'max_properties')}
-                                {renderLimitField('Max Tenants', 'max_tenants')}
-                                {renderLimitField('Max Contracts', 'max_contracts')}
-                                {renderLimitField('Max AI Sessions', 'max_sessions')}
-                                {renderLimitField('Cloud Storage', 'max_storage_mb', 'MB')}
-                                {renderLimitField('Media Limit', 'max_media_mb', 'MB')}
-                                {renderLimitField('Utility Docs', 'max_utilities_mb', 'MB')}
-                                {renderLimitField('Maint. Records', 'max_maintenance_mb', 'MB')}
-                                {renderLimitField('Misc Docs', 'max_documents_mb', 'MB')}
-                                {renderLimitField('Single File Size', 'max_file_size_mb', 'MB')}
-                            </div>
-                        </div>
-
-                        {/* Features Section */}
-                        <div>
-                            <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-                                <span className="h-px bg-gray-100 dark:bg-gray-700 flex-1"></span>
-                                Premium Features
-                                <span className="h-px bg-gray-100 dark:bg-gray-700 flex-1"></span>
-                            </h3>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <FeatureToggle featureKey="export_data" label="Data Export" />
-                                <FeatureToggle featureKey="ai_analysis" label="AI Analysis" />
-                                <FeatureToggle featureKey="priority_support" label="Priority Support" />
-                                <FeatureToggle featureKey="custom_reports" label="Custom Reports" />
-                            </div>
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 dark:border-gray-700">
-                            <button
-                                onClick={handleCancel}
-                                className="px-8 py-3 text-sm font-black text-gray-400 uppercase tracking-widest hover:text-gray-900 dark:hover:text-white transition-all"
-                            >
-                                Discard Changes
-                            </button>
-                            <button
-                                onClick={handleSave}
-                                disabled={saving}
-                                className="flex items-center gap-3 px-10 py-3 bg-brand-600 text-white rounded-2xl hover:bg-brand-700 transition-all font-black uppercase tracking-widest shadow-xl shadow-brand-600/20 disabled:opacity-50"
-                            >
-                                {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircleIcon className="w-5 h-5" />}
-                                {isCreating ? 'Publish Plan' : 'Update Plan'}
-                            </button>
-                        </div>
+                    {/* Right: Preview Pane */}
+                    <div className="lg:col-span-4 lg:block hidden">
+                        <PlanPreview plan={editForm} />
                     </div>
                 </div>
             )}
@@ -397,6 +532,13 @@ const PlanManagement = () => {
                                     <div className="text-[10px] font-black text-brand-600 mt-1 uppercase tracking-widest">
                                         ₪{plan.price_yearly} Yearly Billing
                                     </div>
+                                    <div className={`mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${plan.is_active
+                                        ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 dark:bg-emerald-900/20'
+                                        : 'bg-amber-50 text-amber-600 border border-amber-100 dark:bg-amber-900/20'
+                                        }`}>
+                                        <div className={`w-1.5 h-1.5 rounded-full ${plan.is_active ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                                        {plan.is_active ? 'Active' : 'Paused'}
+                                    </div>
                                 </div>
                                 <div className="flex gap-2">
                                     <button
@@ -421,10 +563,6 @@ const PlanManagement = () => {
                                     <div className="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-gray-700">
                                         <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Assets</div>
                                         <div className="text-sm font-black text-gray-900 dark:text-white">{plan.max_properties === -1 ? 'Unlimited' : plan.max_properties}</div>
-                                    </div>
-                                    <div className="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-gray-700">
-                                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Tenants</div>
-                                        <div className="text-sm font-black text-gray-900 dark:text-white">{plan.max_tenants === -1 ? 'Unlimited' : plan.max_tenants}</div>
                                     </div>
                                     <div className="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-gray-700">
                                         <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Cloud</div>

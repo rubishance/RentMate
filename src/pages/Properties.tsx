@@ -23,13 +23,13 @@ import { useUserPreferences } from '../contexts/UserPreferencesContext';
 import { PropertyIcon } from '../components/common/PropertyIcon';
 import { getPropertyPlaceholder } from '../lib/property-placeholders';
 
-import { PageHeader } from '../components/common/PageHeader';
-import { GlassCard } from '../components/common/GlassCard';
 import UpgradeRequestModal from '../components/modals/UpgradeRequestModal';
 import { AddPaymentModal } from '../components/modals/AddPaymentModal';
 import { useDataCache } from '../contexts/DataCacheContext';
-import { Card, CardContent } from '../components/ui/Card';
-import { Button } from '../components/ui/Button';
+import { PortfolioVisualizer } from '../components/analytics/PortfolioVisualizer';
+import { useSubscription } from '../hooks/useSubscription';
+
+
 import { cn } from '../lib/utils';
 import { useStack } from '../contexts/StackContext';
 import { useNavigate } from 'react-router-dom';
@@ -55,6 +55,7 @@ type ExtendedProperty = Property & {
 export function Properties() {
     const { t, lang } = useTranslation();
     const { preferences } = useUserPreferences();
+    const { plan } = useSubscription();
     const [properties, setProperties] = useState<ExtendedProperty[]>([]);
     const [loading, setLoading] = useState(true);
     const { get, set, clear } = useDataCache();
@@ -210,7 +211,7 @@ export function Properties() {
     if (loading) {
         return (
             <div className="pb-40 pt-16 space-y-24">
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 px-8">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 px-4 md:px-8">
                     <div className="space-y-2">
                         <Skeleton className="h-6 w-32 rounded-full" />
                         <Skeleton className="h-16 w-64 rounded-xl" />
@@ -237,15 +238,17 @@ export function Properties() {
     }
 
     return (
-        <div className="pb-40 pt-16 space-y-24 animate-in fade-in slide-in-from-bottom-6 duration-700">
+        <div className="pb-40 pt-8 space-y-16 animate-in fade-in slide-in-from-bottom-6 duration-700">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 px-8">
-                <div className="space-y-2">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 dark:bg-neutral-900 rounded-full border border-slate-100 dark:border-neutral-800 shadow-minimal">
-                        <Home className="w-3 h-3 text-muted-foreground" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">{lang === 'he' ? 'הפורטפוליו שלי' : 'my portfolio'}</span>
+            <div className="flex items-center justify-between gap-8 px-4 md:px-8">
+                <div className="space-y-1">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/5 dark:bg-indigo-500/10 backdrop-blur-md rounded-full border border-indigo-500/10 shadow-sm mb-2">
+                        <Home className="w-3 h-3 text-indigo-500" />
+                        <span className="text-[9px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                            {lang === 'he' ? 'הפורטפוליו שלי' : 'my portfolio'}
+                        </span>
                     </div>
-                    <h1 className="text-6xl font-black tracking-tighter text-foreground lowercase">
+                    <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-foreground leading-tight lowercase">
                         {lang === 'he' ? 'נכסים' : 'properties'}
                     </h1>
                 </div>
@@ -254,11 +257,11 @@ export function Properties() {
                     <button
                         onClick={() => setIsAddMenuOpen(!isAddMenuOpen)}
                         className={cn(
-                            "h-16 w-16 bg-foreground text-background rounded-[1.5rem] hover:scale-105 active:scale-95 transition-all shadow-premium-dark flex items-center justify-center group z-20 relative",
-                            isAddMenuOpen && "scale-110 rotate-45 bg-primary"
+                            "h-12 w-12 md:h-14 md:w-14 button-jewel rounded-[1.2rem] md:rounded-[1.5rem] hover:scale-[1.05] active:scale-95 transition-all shadow-jewel flex items-center justify-center group z-20 relative",
+                            isAddMenuOpen && "rotate-45"
                         )}
                     >
-                        <Plus className="w-8 h-8 transition-transform" />
+                        <Plus className="w-5 h-5 md:w-7 md:h-7 transition-transform" />
                     </button>
 
                     <AnimatePresence>
@@ -275,7 +278,7 @@ export function Properties() {
                                     animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
                                     exit={{ opacity: 0, scale: 0.8, y: 10, x: lang === 'he' ? 20 : -20 }}
                                     className={cn(
-                                        "absolute top-20 z-20 w-56 p-3 bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[2rem] shadow-premium-dark flex flex-col gap-2",
+                                        "absolute top-20 z-20 w-56 p-3 glass-premium border-white/10 rounded-[2rem] shadow-jewel flex flex-col gap-2",
                                         lang === 'he' ? "left-0 origin-top-left" : "right-0 origin-top-right"
                                     )}
                                 >
@@ -329,7 +332,7 @@ export function Properties() {
 
             {/* Empty State */}
             {properties.length === 0 ? (
-                <div className="px-8 flex flex-col items-center justify-center py-40 rounded-[3rem] border border-slate-100 dark:border-neutral-800 bg-slate-50/50 dark:bg-neutral-900/50 mx-8">
+                <div className="px-4 md:px-8 flex flex-col items-center justify-center py-40 rounded-[3rem] border border-slate-100 dark:border-neutral-800 bg-slate-50/50 dark:bg-neutral-900/50 mx-4 md:mx-8">
                     <div className="w-32 h-32 bg-white dark:bg-neutral-900 rounded-[3rem] flex items-center justify-center mx-auto shadow-minimal mb-10">
                         <Home className="w-12 h-12 text-slate-200" />
                     </div>
@@ -348,178 +351,184 @@ export function Properties() {
                 </div>
             ) : (
                 /* Properties Grid */
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 px-8">
-                    {properties.map((property) => {
-                        const today = format(new Date(), 'yyyy-MM-dd');
-                        const activeContract = property.contracts?.find(c =>
-                            c.status === 'active' &&
-                            c.start_date <= today &&
-                            (!c.end_date || c.end_date >= today)
-                        );
-                        return (
-                            <div
-                                key={property.id}
-                                onClick={() => handleView(property)}
-                                className="bg-white dark:bg-neutral-900 group flex flex-col h-full border border-slate-100 dark:border-neutral-800 overflow-hidden rounded-[3rem] shadow-minimal hover:shadow-premium transition-all duration-700 cursor-pointer relative"
-                            >
-                                {/* Image Section */}
-                                <div className="relative h-72 bg-slate-50 dark:bg-neutral-800 overflow-hidden">
-                                    <img
-                                        loading="lazy"
-                                        decoding="async"
-                                        src={property.image_url || getPropertyPlaceholder(property.property_type)}
-                                        alt={`${property.address}, ${property.city}`}
-                                        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 filter saturate-50 group-hover:saturate-100"
-                                        onError={(e) => {
-                                            const target = e.target as HTMLImageElement;
-                                            const placeholder = getPropertyPlaceholder(property.property_type);
-                                            if (target.src !== placeholder) {
-                                                target.src = placeholder;
-                                            }
-                                        }}
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
+                <>
+                    <PortfolioVisualizer
+                        properties={properties}
+                        isLocked={!plan?.name?.toLowerCase().includes('master')}
+                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 px-8">
+                        {properties.map((property) => {
+                            const today = format(new Date(), 'yyyy-MM-dd');
+                            const activeContract = property.contracts?.find(c =>
+                                c.status === 'active' &&
+                                c.start_date <= today &&
+                                (!c.end_date || c.end_date >= today)
+                            );
+                            return (
+                                <div
+                                    key={property.id}
+                                    onClick={() => handleView(property)}
+                                    className="glass-premium dark:bg-neutral-900/60 group flex flex-col h-full border-white/10 overflow-hidden rounded-[3rem] shadow-minimal hover:shadow-jewel transition-all duration-700 cursor-pointer relative"
+                                >
+                                    {/* Image Section */}
+                                    <div className="relative h-72 bg-slate-50 dark:bg-neutral-800 overflow-hidden">
+                                        <img
+                                            loading="lazy"
+                                            decoding="async"
+                                            src={property.image_url || getPropertyPlaceholder(property.property_type)}
+                                            alt={`${property.address}, ${property.city}`}
+                                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 filter saturate-50 group-hover:saturate-100"
+                                            onError={(e) => {
+                                                const target = e.target as HTMLImageElement;
+                                                const placeholder = getPropertyPlaceholder(property.property_type);
+                                                if (target.src !== placeholder) {
+                                                    target.src = placeholder;
+                                                }
+                                            }}
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
 
-                                    {/* Status Badge - Top Left as per reference */}
-                                    <div className={`absolute top-8 ${lang === 'he' ? 'left-8' : 'right-8'} flex gap-3`}>
-                                        <span className={cn(
-                                            "px-4 py-2 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] backdrop-blur-3xl shadow-2xl border transition-all duration-500",
-                                            activeContract
-                                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                                                : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                                        )}>
-                                            {activeContract ? t('occupied') : t('vacant')}
-                                        </span>
-                                    </div>
-
-                                    {/* Property Type Badge - Bottom Right as per reference */}
-                                    <div className={`absolute bottom-8 ${lang === 'he' ? 'right-8' : 'left-8'}`}>
-                                        <div className="flex items-center gap-4 px-5 py-3 bg-white/10 backdrop-blur-3xl rounded-[2rem] border border-white/20 shadow-2xl transition-transform duration-500 group-hover:scale-105">
-                                            <span className="text-[10px] font-black uppercase tracking-[0.15em] text-white">
-                                                {property.property_type ? t(property.property_type as any) : t('apartment')}
+                                        {/* Status Badge - Top Left as per reference */}
+                                        <div className={`absolute top-6 ${lang === 'he' ? 'left-6' : 'right-6'} flex gap-3`}>
+                                            <span className={cn(
+                                                "px-4 py-2 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] backdrop-blur-3xl shadow-2xl border transition-all duration-500",
+                                                activeContract
+                                                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                                                    : 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+                                            )}>
+                                                {activeContract ? t('occupied') : t('vacant')}
                                             </span>
-                                            <PropertyIcon type={property.property_type} className="w-10 h-10 rounded-xl" />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Content */}
-                                <div className="p-10 flex-1 flex flex-col space-y-8">
-                                    <div className="min-h-[3.5rem]">
-                                        <h3 className="text-2xl font-black tracking-tighter text-foreground lowercase leading-tight group-hover:text-primary transition-colors truncate">
-                                            {[property.address, property.city].filter(Boolean).join(', ')}
-                                        </h3>
-                                    </div>
-
-                                    {/* Detailed Specs Row */}
-                                    <div className="grid grid-cols-3 md:grid-cols-6 gap-4 py-6 border-y border-slate-50 dark:border-neutral-800/50">
-                                        {/* Rooms */}
-                                        <div className="flex flex-col items-center gap-1">
-                                            <div className="w-10 h-10 rounded-2xl bg-slate-50 dark:bg-neutral-800 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
-                                                <BedDouble className="w-5 h-5 text-slate-400" />
-                                            </div>
-                                            <span className="text-sm font-black text-foreground tracking-tighter">{property.rooms}</span>
-                                            <span className="text-[8px] font-black uppercase tracking-widest text-slate-300">{t('rooms')}</span>
-                                        </div>
-                                        {/* SQM */}
-                                        <div className="flex flex-col items-center gap-1">
-                                            <div className="w-10 h-10 rounded-2xl bg-slate-50 dark:bg-neutral-800 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
-                                                <Ruler className="w-5 h-5 text-slate-400" />
-                                            </div>
-                                            <span className="text-sm font-black text-foreground tracking-tighter">{property.size_sqm}</span>
-                                            <span className="text-[8px] font-black uppercase tracking-widest text-slate-300">{t('sqm')}</span>
                                         </div>
 
-                                        {/* Parking */}
-                                        <div className="flex flex-col items-center gap-1">
-                                            <div className={cn(
-                                                "w-10 h-10 rounded-2xl flex items-center justify-center mb-1 group-hover:scale-110 transition-transform",
-                                                property.has_parking ? "bg-primary/10 text-primary" : "bg-slate-50 dark:bg-neutral-800 text-slate-400 opacity-40"
-                                            )}>
-                                                <Car className="w-5 h-5" />
-                                            </div>
-                                            <span className="text-sm font-black text-foreground tracking-tighter">{property.has_parking ? '✓' : ''}</span>
-                                            <span className="text-[8px] font-black uppercase tracking-widest text-slate-300">{t('parking')}</span>
-                                        </div>
-
-                                        {/* Balcony */}
-                                        <div className="flex flex-col items-center gap-1">
-                                            <div className={cn(
-                                                "w-10 h-10 rounded-2xl flex items-center justify-center mb-1 group-hover:scale-110 transition-transform",
-                                                property.has_balcony ? "bg-primary/10 text-primary" : "bg-slate-50 dark:bg-neutral-800 text-slate-400 opacity-40"
-                                            )}>
-                                                <BalconyIcon className="w-5 h-5" />
-                                            </div>
-                                            <span className="text-sm font-black text-foreground tracking-tighter">{property.has_balcony ? '✓' : ''}</span>
-                                            <span className="text-[8px] font-black uppercase tracking-widest text-slate-300">{t('balcony')}</span>
-                                        </div>
-
-                                        {/* Mamad (Safe Room) */}
-                                        <div className="flex flex-col items-center gap-1">
-                                            <div className={cn(
-                                                "w-10 h-10 rounded-2xl flex items-center justify-center mb-1 group-hover:scale-110 transition-transform",
-                                                property.has_safe_room ? "bg-primary/10 text-primary" : "bg-slate-50 dark:bg-neutral-800 text-slate-400 opacity-40"
-                                            )}>
-                                                <SafeRoomIcon className="w-5 h-5" />
-                                            </div>
-                                            <span className="text-sm font-black text-foreground tracking-tighter">{property.has_safe_room ? '✓' : ''}</span>
-                                            <span className="text-[8px] font-black uppercase tracking-widest text-slate-300">{t('safe_room')}</span>
-                                        </div>
-
-                                        {/* Storage */}
-                                        <div className="flex flex-col items-center gap-1">
-                                            <div className={cn(
-                                                "w-10 h-10 rounded-2xl flex items-center justify-center mb-1 group-hover:scale-110 transition-transform",
-                                                property.has_storage ? "bg-primary/10 text-primary" : "bg-slate-50 dark:bg-neutral-800 text-slate-400 opacity-40"
-                                            )}>
-                                                <StorageIcon className="w-5 h-5" />
-                                            </div>
-                                            <span className="text-sm font-black text-foreground tracking-tighter">{property.has_storage ? '✓' : ''}</span>
-                                            <span className="text-[8px] font-black uppercase tracking-widest text-slate-300">{t('storage')}</span>
-                                        </div>
-                                    </div>
-
-                                    {/* Rent & Contract Section */}
-                                    <div className="flex items-center justify-between pt-4 mt-auto">
-                                        <div onClick={(e) => e.stopPropagation()} className="space-y-1">
-                                            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40 block">
-                                                {t('monthlyRentLabel')}
-                                            </span>
-                                            <div
-                                                onClick={() => {
-                                                    const active = property.contracts?.find(c => c.status === 'active');
-                                                    if (active && active.linkage_type && active.linkage_type !== 'none') {
-                                                        setIndexedRentContract(active);
-                                                    }
-                                                }}
-                                                className={cn(
-                                                    "text-4xl font-black text-foreground tracking-tighter transition-all duration-500",
-                                                    property.contracts?.some(c => c.status === 'active' && c.linkage_type && c.linkage_type !== 'none') && "cursor-pointer hover:text-primary underline decoration-2 decoration-primary/10 hover:decoration-primary underline-offset-8"
-                                                )}
-                                            >
-                                                ₪{(activeContract?.base_rent || 0).toLocaleString()}
-                                            </div>
-                                        </div>
-
-                                        {/* Contract Badge */}
-                                        {activeContract && (
-                                            <div className="flex flex-col items-end gap-2">
-                                                <span className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40">
-                                                    {lang === 'he' ? 'סיום חוזה' : 'lease ends'}
+                                        {/* Property Type Badge - Bottom Right as per reference */}
+                                        <div className={`absolute bottom-6 ${lang === 'he' ? 'right-6' : 'left-6'}`}>
+                                            <div className="flex items-center gap-4 px-4 py-2 bg-white/10 backdrop-blur-3xl rounded-[2rem] border border-white/20 shadow-2xl transition-transform duration-500 group-hover:scale-[1.02]">
+                                                <span className="text-[10px] font-black uppercase tracking-[0.15em] text-white">
+                                                    {property.property_type ? t(property.property_type as any) : t('apartment')}
                                                 </span>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="px-4 py-2 rounded-xl bg-slate-50 dark:bg-neutral-800 text-[10px] font-black text-foreground border border-slate-100 dark:border-neutral-700 shadow-minimal group-hover:bg-white dark:group-hover:bg-neutral-700 transition-colors">
-                                                        {formatDate(activeContract.end_date)}
-                                                    </span>
+                                                <PropertyIcon type={property.property_type} className="w-8 h-8 rounded-xl" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Content */}
+                                    <div className="p-10 flex-1 flex flex-col space-y-8">
+                                        <div className="min-h-[3.5rem]">
+                                            <h3 className="text-2xl font-black tracking-tighter text-foreground lowercase leading-tight group-hover:text-primary transition-colors truncate">
+                                                {[property.address, property.city].filter(Boolean).join(', ')}
+                                            </h3>
+                                        </div>
+
+                                        {/* Detailed Specs Row */}
+                                        <div className="grid grid-cols-3 md:grid-cols-6 gap-4 py-6 border-y border-white/5">
+                                            {/* Rooms */}
+                                            <div className="flex flex-col items-center gap-1">
+                                                <div className="w-10 h-10 rounded-2xl bg-white/5 dark:bg-neutral-800/40 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform duration-500">
+                                                    <BedDouble className="w-5 h-5 text-muted-foreground opacity-60" />
+                                                </div>
+                                                <span className="text-sm font-black text-foreground tracking-tighter">{property.rooms}</span>
+                                                <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground opacity-40">{t('rooms')}</span>
+                                            </div>
+                                            {/* SQM */}
+                                            <div className="flex flex-col items-center gap-1">
+                                                <div className="w-10 h-10 rounded-2xl bg-white/5 dark:bg-neutral-800/40 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform duration-500">
+                                                    <Ruler className="w-5 h-5 text-muted-foreground opacity-60" />
+                                                </div>
+                                                <span className="text-sm font-black text-foreground tracking-tighter">{property.size_sqm}</span>
+                                                <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground opacity-40">{t('sqm')}</span>
+                                            </div>
+
+                                            {/* Parking */}
+                                            <div className="flex flex-col items-center gap-1">
+                                                <div className={cn(
+                                                    "w-10 h-10 rounded-2xl flex items-center justify-center mb-1 group-hover:scale-110 transition-transform duration-500",
+                                                    property.has_parking ? "bg-indigo-500/20 text-indigo-500" : "bg-white/5 dark:bg-neutral-800/40 text-muted-foreground opacity-20"
+                                                )}>
+                                                    <Car className="w-5 h-5" />
+                                                </div>
+                                                <span className="text-sm font-black text-foreground tracking-tighter">{property.has_parking ? '✓' : ''}</span>
+                                                <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground opacity-40">{t('parking')}</span>
+                                            </div>
+
+                                            {/* Balcony */}
+                                            <div className="flex flex-col items-center gap-1">
+                                                <div className={cn(
+                                                    "w-10 h-10 rounded-2xl flex items-center justify-center mb-1 group-hover:scale-110 transition-transform duration-500",
+                                                    property.has_balcony ? "bg-indigo-500/20 text-indigo-500" : "bg-white/5 dark:bg-neutral-800/40 text-muted-foreground opacity-20"
+                                                )}>
+                                                    <BalconyIcon className="w-5 h-5" />
+                                                </div>
+                                                <span className="text-sm font-black text-foreground tracking-tighter">{property.has_balcony ? '✓' : ''}</span>
+                                                <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground opacity-40">{t('balcony')}</span>
+                                            </div>
+
+                                            {/* Mamad (Safe Room) */}
+                                            <div className="flex flex-col items-center gap-1">
+                                                <div className={cn(
+                                                    "w-10 h-10 rounded-2xl flex items-center justify-center mb-1 group-hover:scale-110 transition-transform duration-500",
+                                                    property.has_safe_room ? "bg-indigo-500/20 text-indigo-500" : "bg-white/5 dark:bg-neutral-800/40 text-muted-foreground opacity-20"
+                                                )}>
+                                                    <SafeRoomIcon className="w-5 h-5" />
+                                                </div>
+                                                <span className="text-sm font-black text-foreground tracking-tighter">{property.has_safe_room ? '✓' : ''}</span>
+                                                <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground opacity-40">{t('safe_room')}</span>
+                                            </div>
+
+                                            {/* Storage */}
+                                            <div className="flex flex-col items-center gap-1">
+                                                <div className={cn(
+                                                    "w-10 h-10 rounded-2xl flex items-center justify-center mb-1 group-hover:scale-110 transition-transform duration-500",
+                                                    property.has_storage ? "bg-indigo-500/20 text-indigo-500" : "bg-white/5 dark:bg-neutral-800/40 text-muted-foreground opacity-20"
+                                                )}>
+                                                    <StorageIcon className="w-5 h-5" />
+                                                </div>
+                                                <span className="text-sm font-black text-foreground tracking-tighter">{property.has_storage ? '✓' : ''}</span>
+                                                <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground opacity-40">{t('storage')}</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Rent & Contract Section */}
+                                        <div className="flex items-center justify-between pt-4 mt-auto">
+                                            <div onClick={(e) => e.stopPropagation()} className="space-y-1">
+                                                <span className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40 block">
+                                                    {t('monthlyRentLabel')}
+                                                </span>
+                                                <div
+                                                    onClick={() => {
+                                                        const active = property.contracts?.find(c => c.status === 'active');
+                                                        if (active && active.linkage_type && active.linkage_type !== 'none') {
+                                                            setIndexedRentContract(active);
+                                                        }
+                                                    }}
+                                                    className={cn(
+                                                        "text-4xl font-black text-foreground tracking-tighter transition-all duration-500",
+                                                        property.contracts?.some(c => c.status === 'active' && c.linkage_type && c.linkage_type !== 'none') && "cursor-pointer hover:text-primary underline decoration-2 decoration-primary/10 hover:decoration-primary underline-offset-8"
+                                                    )}
+                                                >
+                                                    ₪{(activeContract?.base_rent || 0).toLocaleString()}
                                                 </div>
                                             </div>
-                                        )}
+
+                                            {/* Contract Badge */}
+                                            {activeContract && (
+                                                <div className="flex flex-col items-end gap-2">
+                                                    <span className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40">
+                                                        {lang === 'he' ? 'סיום חוזה' : 'lease ends'}
+                                                    </span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="px-4 py-2 rounded-xl glass-premium text-[10px] font-black text-foreground border border-white/5 shadow-minimal group-hover:shadow-jewel transition-all">
+                                                            {formatDate(activeContract.end_date)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        );
-                    })}
-                </div>
+                            );
+                        })}
+                    </div>
+                </>
             )}
 
             <IndexedRentModal

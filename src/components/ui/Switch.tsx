@@ -27,19 +27,27 @@ export const Switch: React.FC<SwitchProps> = ({
                 disabled={disabled}
                 onClick={() => !disabled && onChange(!checked)}
                 className={cn(
-                    "relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-                    checked ? "bg-primary" : "bg-muted"
+                    "relative inline-flex h-8 w-14 shrink-0 cursor-pointer items-center rounded-full transition-all duration-700 glass-premium border-white/5 shadow-minimal",
+                    checked ? "dark:bg-indigo-500/20 bg-indigo-50/50" : "bg-white/5 dark:bg-black/40",
+                    disabled && "opacity-50 cursor-not-allowed"
                 )}
             >
                 <motion.span
-                    animate={{ x: checked ? 20 : 2 }}
+                    animate={{
+                        x: checked ? 28 : 4,
+                        scale: checked ? 1 : 0.9,
+                        backgroundColor: checked ? "#ffffff" : "rgba(255,255,255,0.2)"
+                    }}
                     initial={false}
                     className={cn(
-                        "pointer-events-none block h-5 w-5 rounded-full shadow-lg ring-0 transition-transform",
+                        "pointer-events-none block h-6 w-6 rounded-full transition-all duration-700",
                         checked
-                            ? "bg-primary-foreground"
-                            : "bg-background"
+                            ? "shadow-jewel bg-white"
+                            : "bg-white/20"
                     )}
+                    style={{
+                        boxShadow: checked ? '0 0 15px rgba(99, 102, 241, 0.5)' : 'none'
+                    }}
                 />
             </button>
         </div>

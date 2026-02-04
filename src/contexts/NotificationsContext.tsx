@@ -73,10 +73,15 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
                 .limit(50);
 
             if (!error && data) {
-                // Filter out automated payment notifications as requested
+                // Filter out automated notifications as requested (reminders and receipts)
                 const filtered = data.filter((n: any) => {
                     const event = n.metadata?.event;
-                    return event !== 'payment_warning' && event !== 'payment_due';
+                    return (
+                        event !== 'payment_warning' &&
+                        event !== 'payment_due' &&
+                        event !== 'payment_receipt' &&
+                        event !== 'rent_reminder'
+                    );
                 });
                 setNotifications(filtered);
             }

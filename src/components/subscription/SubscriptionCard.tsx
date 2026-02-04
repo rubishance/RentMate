@@ -68,7 +68,7 @@ export const SubscriptionCard: FC = () => {
                 </div>
 
                 {/* Footer / Upgrade CTA */}
-                {isFree && (
+                {isFree && plan.name !== 'Beta Access (Unlimited)' && (
                     <div className="mt-6 pt-6 border-t border-border dark:border-gray-700">
                         <div className="flex items-center justify-between">
                             <div className="text-sm text-muted-foreground dark:text-muted-foreground">

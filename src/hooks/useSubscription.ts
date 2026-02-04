@@ -35,7 +35,27 @@ export function useSubscription() {
                 .eq('id', planId)
                 .single();
 
-            setPlan(planData);
+            // Mock Unlimited Plan for 'unlimited' ID
+            if (planId === 'unlimited') {
+                setPlan({
+                    id: 'unlimited',
+                    name: 'UNLIMITED',
+                    max_properties: -1,
+                    max_tenants: -1,
+                    max_contracts: -1,
+                    max_sessions: -1,
+                    price_monthly: 0,
+                    features: {
+                        'legal_library': true,
+                        'whatsapp_bot': true,
+                        'maintenance_tracker': true,
+                        'portfolio_visualizer': true
+                    },
+                    created_at: new Date().toISOString()
+                });
+            } else {
+                setPlan(planData);
+            }
 
             // 2. Get Usage Counts
             const [props, contractsRes] = await Promise.all([

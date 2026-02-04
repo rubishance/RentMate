@@ -57,7 +57,12 @@ export function ReportGenerationModal({ isOpen, onClose, propertyId }: ReportGen
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={lang === 'he' ? 'הפקת דוח ביצועים' : 'Generate Performance Report'}>
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title={lang === 'he' ? 'הפקת דוח ביצועים' : 'Generate Performance Report'}
+            modeless={true}
+        >
             <div className="p-8 space-y-8">
                 <div className="flex items-center gap-4 p-4 bg-indigo-500/10 rounded-[1.5rem] border border-indigo-500/20">
                     <FileText className="w-8 h-8 text-indigo-500" />

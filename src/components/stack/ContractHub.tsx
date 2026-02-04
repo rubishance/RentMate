@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    FileText, Calendar, DollarSign, Wallet, User, Building2,
-    Loader2, Save, ExternalLink, TrendingUp, Shield, Clock, Pen, X,
-    Wind, ShieldCheck, Car, Box, ArrowUpDown, Accessibility,
+    FileText, Calendar, User, Building2,
+    Loader2, Save, ExternalLink, TrendingUp, Shield, Clock, Pen,
+    Wind, ShieldCheck, Car, Box,
     Mail, Phone, CreditCard, GitBranch, Coins, ArrowLeft
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-import type { Contract } from '../../types/database';
 import { useTranslation } from '../../hooks/useTranslation';
 import { DatePicker } from '../ui/DatePicker';
 import { format, parseISO } from 'date-fns';
@@ -15,6 +14,8 @@ import { cn } from '../../lib/utils';
 import { useDataCache } from '../../contexts/DataCacheContext';
 import { propertyService } from '../../services/property.service';
 import { getPropertyPlaceholder } from '../../lib/property-placeholders';
+import { generatePaymentSchedule } from '../../utils/payment-generator';
+import { addDays } from 'date-fns';
 
 interface ContractHubProps {
     contractId: string;
@@ -49,7 +50,7 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
         option_periods: [] as any[],
         rent_periods: [] as any[],
         tenants: [] as any[],
-        pets_allowed: true,
+
         special_clauses: '',
         guarantees: '',
         guarantors_info: '',
@@ -93,7 +94,7 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                     option_periods: data.option_periods || [],
                     rent_periods: data.rent_periods || [],
                     tenants: data.tenants || [],
-                    pets_allowed: data.pets_allowed ?? true,
+
                     special_clauses: data.special_clauses || '',
                     guarantees: data.guarantees || '',
                     guarantors_info: data.guarantors_info || '',
@@ -137,7 +138,7 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                 option_periods: formData.option_periods,
                 rent_periods: formData.rent_periods,
                 tenants: formData.tenants,
-                pets_allowed: formData.pets_allowed,
+
                 special_clauses: formData.special_clauses,
                 guarantees: formData.guarantees,
                 guarantors_info: formData.guarantors_info,
@@ -158,6 +159,64 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                 .eq('id', contractId);
 
             if (error) throw error;
+
+            // --- Payment Synchronization Logic ---
+            const originalEndDate = contract.end_date;
+            const newEndDate = formData.end_date;
+
+            console.log('[DEBUG] Syncing payments. Original end date:', originalEndDate, 'New end date:', newEndDate);
+
+            if (newEndDate < originalEndDate) {
+                // Case 1: Early Termination - Cleanup future pending payments
+                console.log('[DEBUG] Early termination detected. Cleaning up future payments.');
+                const { error: deleteError } = await supabase
+                    .from('payments')
+                    .delete()
+                    .eq('contract_id', contractId)
+                    .eq('status', 'pending')
+                    .gt('due_date', newEndDate);
+
+                if (deleteError) console.error('[ContractHub] Error cleaning up payments:', deleteError);
+            } else if (newEndDate > originalEndDate) {
+                // Case 2: Extension - Generate new expected payments
+                console.log('[DEBUG] Extension detected. Generating new payments.');
+                // Gap starts the day after original end date
+                const gapStart = format(addDays(parseISO(originalEndDate), 1), 'yyyy-MM-dd');
+
+                try {
+                    const schedule = await generatePaymentSchedule({
+                        startDate: gapStart,
+                        endDate: newEndDate,
+                        baseRent: Number(formData.base_rent),
+                        currency: formData.currency as any,
+                        paymentFrequency: formData.payment_frequency as any,
+                        paymentDay: Number(formData.payment_day),
+                        linkageType: formData.linkage_type as any,
+                        linkageSubType: formData.linkage_sub_type as any,
+                        baseIndexDate: formData.base_index_date || null,
+                        baseIndexValue: Number(formData.base_index_value),
+                        linkageCeiling: formData.linkage_ceiling ? Number(formData.linkage_ceiling) : null,
+                        linkageFloor: formData.linkage_floor ? Number(formData.linkage_floor) : null,
+                        rent_periods: formData.rent_periods
+                    });
+
+                    if (schedule.length > 0) {
+                        const { error: insertError } = await supabase
+                            .from('payments')
+                            .insert(schedule.map(p => ({
+                                ...p,
+                                contract_id: contractId,
+                                user_id: contract.user_id
+                            })));
+
+                        if (insertError) throw insertError;
+                        console.log(`[DEBUG] Inserted ${schedule.length} new payments for extension.`);
+                    }
+                } catch (genError) {
+                    console.error('[ContractHub] Error generating extension payments:', genError);
+                }
+            }
+            // -------------------------------------
 
             // Sync property occupancy status if status changed
             if (formData.status !== contract.status) {
@@ -207,16 +266,16 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
     return (
         <div className="flex flex-col bg-slate-50 dark:bg-black min-h-full" dir={lang === 'he' ? 'rtl' : 'ltr'}>
             {/* Header Content */}
-            <div className="px-6 py-6 border-b border-slate-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm">
+            <div className="px-3 md:px-6 py-6 border-b border-slate-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm">
                 <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => navigate(-1)}
-                            className="p-2 -ml-2 rounded-xl text-muted-foreground hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors"
+                            className="w-10 h-10 glass-premium dark:bg-neutral-800/40 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground transition-all border border-white/5 group"
                         >
-                            <ArrowLeft className="w-6 h-6" />
+                            <ArrowLeft className={cn("w-4 h-4 group-hover:-translate-x-1 transition-transform", lang === 'he' ? 'rotate-180 group-hover:translate-x-1' : '')} />
                         </button>
-                        <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                        <div className="w-12 h-12 rounded-2xl glass-premium dark:bg-neutral-800/40 border border-white/5 flex items-center justify-center text-primary shadow-minimal">
                             <FileText className="w-6 h-6" />
                         </div>
                         <div>
@@ -232,7 +291,7 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                     {readOnly && (
                         <button
                             onClick={() => setReadOnly(false)}
-                            className="p-3 bg-white dark:bg-neutral-800 rounded-2xl border border-slate-100 dark:border-neutral-700 text-primary shadow-sm hover:scale-105 active:scale-95 transition-all"
+                            className="w-12 h-12 button-jewel text-white rounded-[1.2rem] shadow-jewel hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
                         >
                             <Pen className="w-5 h-5" />
                         </button>
@@ -241,10 +300,10 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
 
                 <div className="flex flex-wrap gap-2 mt-4">
                     <div className={cn(
-                        "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2",
-                        contract.status === 'active' ? "bg-emerald-500/10 text-emerald-600" : "bg-slate-500/10 text-slate-500"
+                        "px-3 py-1 glass-premium dark:bg-white/5 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-2 border border-white/5 shadow-minimal",
+                        contract.status === 'active' ? "text-emerald-500" : "text-slate-500"
                     )}>
-                        <div className={cn("w-1.5 h-1.5 rounded-full", contract.status === 'active' ? "bg-emerald-500" : "bg-slate-500")} />
+                        <div className={cn("w-1.5 h-1.5 rounded-full shadow-[0_0_5px_rgba(var(--status-color),0.5)]", contract.status === 'active' ? "bg-emerald-500" : "bg-slate-500")} />
                         {t(contract.status)}
                     </div>
                     {contract.contract_file_url && (
@@ -252,7 +311,7 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                             href={contract.contract_file_url}
                             target="_blank"
                             rel="noreferrer"
-                            className="px-3 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-primary/20 transition-all"
+                            className="px-3 py-1 glass-premium dark:bg-white/5 text-primary rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-white/10 transition-all border border-white/5 shadow-minimal"
                         >
                             <ExternalLink className="w-3.5 h-3.5" />
                             {lang === 'he' ? 'צפייה בחוזה' : 'View PDF'}
@@ -262,7 +321,7 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
             </div>
 
             {/* Form Content */}
-            <form onSubmit={handleSave} className="flex-1 p-6 space-y-8 pb-32">
+            <form onSubmit={handleSave} className="flex-1 p-3 md:p-6 space-y-8 pb-32">
                 {/* 1. Property Details Section */}
                 <div className="space-y-4">
                     <div className="flex items-center gap-2 pb-2 border-b border-border/50">
@@ -506,7 +565,7 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                                                     <div className="text-right">
                                                         <span className="text-xs text-muted-foreground block">{t('monthlyRent')}</span>
                                                         <span className="font-bold">
-                                                            {option.currency === 'USD' ? '$' : '₪'}{Number(option.rentAmount).toLocaleString()}
+                                                            {option.currency === 'USD' ? '₪' : '₪'}{Number(option.rentAmount).toLocaleString()}
                                                         </span>
                                                     </div>
                                                 )}
@@ -547,7 +606,7 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                                     <label className="text-xs font-bold text-muted-foreground">{t('amount')}</label>
                                     <div className="relative">
                                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-bold">
-                                            {formData.currency === 'USD' ? '$' : '₪'}
+                                            {formData.currency === 'USD' ? '₪' : '₪'}
                                         </span>
                                         <input
                                             type="number"
@@ -567,7 +626,7 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                                         className="w-full h-10 px-3 border border-slate-100 dark:border-neutral-700 rounded-xl bg-slate-50 dark:bg-neutral-900"
                                     >
                                         <option value="ILS">₪ ILS</option>
-                                        <option value="USD">$ USD</option>
+                                        <option value="USD">₪ USD</option>
                                         <option value="EUR">€ EUR</option>
                                     </select>
                                 </div>
@@ -682,7 +741,7 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                                         <div className="text-right">
                                             <span className="text-xs text-muted-foreground block">{t('newRentAmount')}</span>
                                             <span className="font-bold text-lg text-primary">
-                                                {step.currency === 'USD' ? '$' : '₪'}{Number(step.amount).toLocaleString()}
+                                                {step.currency === 'USD' ? '₪' : '₪'}{Number(step.amount).toLocaleString()}
                                             </span>
                                         </div>
                                     </div>
@@ -708,7 +767,7 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                                         <label className="text-xs font-bold text-muted-foreground uppercase">{t('securityDeposit')}</label>
                                         <div className="relative">
                                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-bold">
-                                                {formData.currency === 'USD' ? '$' : '₪'}
+                                                {formData.currency === 'USD' ? '₪' : '₪'}
                                             </span>
                                             <input
                                                 type="number"
@@ -737,23 +796,9 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                         )}
 
                         {/* Additional Clauses */}
-                        {(!readOnly || formData.pets_allowed || formData.needs_painting || formData.special_clauses) && (
+                        {(!readOnly || formData.needs_painting || formData.special_clauses) && (
                             <div className="bg-white dark:bg-neutral-800 rounded-2xl p-6 border border-slate-100 dark:border-neutral-700 shadow-sm space-y-4">
-                                {(!readOnly || formData.pets_allowed) && (
-                                    <div className="flex items-start justify-between border-b border-slate-100 dark:border-neutral-700 pb-4">
-                                        <div className="space-y-0.5">
-                                            <label className="text-sm font-bold">{t('petsAllowed')}</label>
-                                            <p className="text-xs text-muted-foreground">{t('petsAllowedDesc')}</p>
-                                        </div>
-                                        <input
-                                            type="checkbox"
-                                            disabled={readOnly}
-                                            checked={formData.pets_allowed}
-                                            onChange={e => setFormData({ ...formData, pets_allowed: e.target.checked })}
-                                            className="w-5 h-5 rounded-md border-slate-300 text-primary focus:ring-primary"
-                                        />
-                                    </div>
-                                )}
+
 
                                 {(!readOnly || formData.needs_painting) && (
                                     <div className="flex items-start justify-between border-b border-slate-100 dark:border-neutral-700 pb-4">

@@ -19,7 +19,7 @@ export function ThemeToggle({ className = '' }: { className?: string }) {
             value={theme}
             onChange={(val) => setTheme(val as any)}
             size="sm"
-            className={cn("w-48", className)}
+            className={cn("w-56", className)}
         />
     );
 }

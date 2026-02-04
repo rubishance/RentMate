@@ -16,12 +16,13 @@ export type StackLayer = {
     props: Record<string, any>;
     title?: string;
     isExpanded?: boolean; // If true, takes up more space / full screen
+    modeless?: boolean;   // If true, allows clicking background
 };
 
 interface StackContextType {
     stack: StackLayer[];
     activeLayer: StackLayer | null;
-    push: (type: StackLayerType, props?: any, options?: { title?: string, isExpanded?: boolean }) => void;
+    push: (type: StackLayerType, props?: any, options?: { title?: string, isExpanded?: boolean, modeless?: boolean }) => void;
     pop: () => void;
     clear: () => void;
     update: (id: string, updates: Partial<StackLayer>) => void;
@@ -36,13 +37,14 @@ const StackContext = createContext<StackContextType | undefined>(undefined);
 export function StackProvider({ children }: { children: ReactNode }) {
     const [stack, setStack] = useState<StackLayer[]>([]);
 
-    const push = useCallback((type: StackLayerType, props: any = {}, options: { title?: string, isExpanded?: boolean } = {}) => {
+    const push = useCallback((type: StackLayerType, props: any = {}, options: { title?: string, isExpanded?: boolean, modeless?: boolean } = {}) => {
         const newLayer: StackLayer = {
             id: crypto.randomUUID(),
             type,
             props,
             title: options.title,
-            isExpanded: options.isExpanded || false
+            isExpanded: options.isExpanded || false,
+            modeless: options.modeless || false
         };
         setStack(prev => [...prev, newLayer]);
     }, []);

@@ -21,7 +21,7 @@ export class UsageLimitExceededError extends Error {
 }
 
 export interface ExtractedBillData {
-    category: 'water' | 'electric' | 'gas' | 'municipality' | 'management' | 'internet' | 'other';
+    category: 'water' | 'electric' | 'gas' | 'municipality' | 'management' | 'internet' | 'cable' | 'other';
     amount: number;
     date: string; // YYYY-MM-DD
     vendor: string;
@@ -31,6 +31,8 @@ export interface ExtractedBillData {
     billingPeriodStart?: string;
     billingPeriodEnd?: string;
     summary?: string;
+    propertyId?: string | null;
+    propertyAddress?: string | null;
 }
 
 export const BillAnalysisService = {
@@ -60,8 +62,10 @@ export const BillAnalysisService = {
     /**
      * Analyzes one or more files (images/PDFs) using Gemini Flash to extract bill details.
      * Supports multi-page bills (e.g. multiple photos of the same bill).
+     * @param files The file(s) to analyze.
+     * @param properties Optional list of user properties to attempt address matching.
      */
-    async analyzeBill(files: File | File[]): Promise<ExtractedBillData> {
+    async analyzeBill(files: File | File[], properties: { id: string, address: string }[] = []): Promise<ExtractedBillData> {
         if (!GEN_AI_KEY) {
             throw new Error('AI Service not configured. Please add API key.');
         }
@@ -75,7 +79,9 @@ export const BillAnalysisService = {
             // 2. Initialize Model
             const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-            // 3. Define Prompt with Israeli Context
+            // 3. Define Prompt with Israeli Context & Property Matching
+            const propertyListString = properties.map(p => `- ID: ${p.id}, Address: ${p.address}`).join('\n');
+
             const prompt = `
                 You are a senior financial auditor specializing in the Israeli utility and property market.
                 Analyze the provided document(s) and extract data into a pure JSON object.
@@ -83,12 +89,23 @@ export const BillAnalysisService = {
                 
                 LANGUAGES: The bill might be in Hebrew. Extract names in the language they appear or English equivalent.
                 
+                CONTEXT: The user has the following properties:
+                ${propertyListString}
+                
+                TASK:
+                1. Extract bill details (amount, date, vendor, etc.).
+                2. Attempt to match the address on the bill to one of the properties provided above.
+                   * NOTE: If only ONE property is listed above, it is ALMOST CERTAINLY the correct property. Use its ID even if the address match is not exact.
+                
                 FIELDS TO EXTRACT:
-                - category: Strictly one of ['water', 'electric', 'gas', 'municipality', 'management', 'internet', 'other'].
-                  * water: Mei Aviv (מי אביב), Mei Shikma (מי שקמה), Hagihon (הגיחון), etc.
-                  * electric: Israel Electric Corp (חברת החשמל), or private providers like Electra Power (אלקטרה), Amisragas (אמישרגז), Cellcom Energy (סלקום), Bezeq Energy (בזק), Paza (פז).
-                  * municipality: Arnona (ארנונה), City of Tel Aviv, Jerusalem, Haifa, etc.
+                - category: Strictly one of ['water', 'electric', 'gas', 'municipality', 'management', 'internet', 'cable', 'other'].
+                  * water: Mei Aviv (מי אביב), Mei Shikma (מי שקמה), Hagihon (הגיחון), Mei Raanana, etc.
+                  * electric: Israel Electric Corp (חברת החשמל), or private providers like Electra Power (אלקטרה), Amisragas (אמישרגז), Cellcom Energy (סלקום), Bezeq Energy (בזק), Paza (פז), Edeltech.
+                  * municipality: Arnona (ארנונה), City of Tel Aviv, Jerusalem, Haifa, Ramat Gan, Givatayim, etc.
                   * gas: Pazgas (פזגז), Amisragas (אמישרגז), Supergas (סופרגז).
+                  * management: Vaad Bayit (ועד בית), Management companies (חברת ניהול), building maintenance.
+                  * internet: Fiber, Bezeq (בזק), Partner (פרטנר), Cellcom (סלקום), Unlimited.
+                  * cable: HOT (הוט), YES, StingTV, NextTV.
                 - amount: The total sum to be paid for the current period (numeric).
                 - date: Billing/Invoice date (YYYY-MM-DD).
                 - vendor: Service provider name.
@@ -97,8 +114,10 @@ export const BillAnalysisService = {
                 - billingPeriodStart: Service start date (YYYY-MM-DD).
                 - billingPeriodEnd: Service end date (YYYY-MM-DD).
                 - summary: One sentence description of the bill contents.
-                - confidence: 0.0 to 1.0.
-
+                - propertyId: The ID of the matched property from the provided list, or null if no match found.
+                - propertyAddress: The address of the matched property, or null if no match found.
+                - confidence: 0.0 to 1.0 (Overall confidence including property match accuracy).
+                
                 Return ONLY the JSON.
             `;
 
@@ -121,7 +140,9 @@ export const BillAnalysisService = {
                 currency: data.currency || 'ILS',
                 billingPeriodStart: data.billingPeriodStart,
                 billingPeriodEnd: data.billingPeriodEnd,
-                summary: data.summary
+                summary: data.summary,
+                propertyId: data.propertyId || null,
+                propertyAddress: data.propertyAddress || null
             };
 
         } catch (error) {

@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { ContractsIcon as FileText } from '../icons/NavIcons';
 import { CloseIcon as X, LoaderIcon as Loader2 } from '../icons/MessageIcons';
 import { Modal } from '../ui/Modal';
-import { Switch } from '../ui/Switch';
+
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { DatePicker } from '../ui/DatePicker';
 import { supabase } from '../../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
-import { format, parseISO, addMonths } from 'date-fns';
+import { format, parseISO, addMonths, differenceInDays } from 'date-fns';
+import { CheckCircle2 } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { cn } from '../../lib/utils';
 import { useForm, Controller } from 'react-hook-form';
@@ -53,6 +54,9 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
     const [contracts, setContracts] = useState<any[]>([]);
     const [fetchingContracts, setFetchingContracts] = useState(true);
     const [sessionStats, setSessionStats] = useState({ count: 0, total: 0 });
+    const [pendingPayments, setPendingPayments] = useState<any[]>([]);
+    const [matchedPayment, setMatchedPayment] = useState<any | null>(null);
+    const [isMatchConfirmed, setIsMatchConfirmed] = useState(false);
 
     const {
         register,
@@ -121,6 +125,66 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
         }
     }
 
+    // Fetch pending payments when contract is selected
+    useEffect(() => {
+        const contractId = watch('contract_id');
+        if (contractId) {
+            fetchPendingPayments(contractId);
+        } else {
+            setPendingPayments([]);
+        }
+    }, [watch('contract_id')]);
+
+    async function fetchPendingPayments(contractId: string) {
+        const { data } = await supabase
+            .from('payments')
+            .select('*')
+            .eq('contract_id', contractId)
+            .eq('status', 'pending');
+
+        if (data) setPendingPayments(data);
+    }
+
+    // Smart Matching Logic
+    useEffect(() => {
+        if (isMatchConfirmed) return; // Don't re-match if already confirmed
+
+        const amount = parseFloat(currentAmount);
+        const date = currentDueDate ? parseISO(currentDueDate) : null;
+
+        if (amount && date && pendingPayments.length > 0) {
+            const match = pendingPayments.find(p => {
+                const pDate = parseISO(p.due_date);
+                const pAmount = p.amount;
+
+                const daysDiff = Math.abs(differenceInDays(pDate, date));
+                const amountDiff = Math.abs(pAmount - amount);
+                const amountTolerance = pAmount * 0.03; // 3% tolerance
+
+                return daysDiff <= 3 && amountDiff <= amountTolerance;
+            });
+
+            if (match && match.id !== matchedPayment?.id) {
+                setMatchedPayment(match);
+            } else if (!match) {
+                setMatchedPayment(null);
+            }
+        }
+    }, [currentAmount, currentDueDate, pendingPayments, isMatchConfirmed]);
+
+    const confirmMatch = () => {
+        if (matchedPayment) {
+            setIsMatchConfirmed(true);
+            setValue('status', 'paid');
+            setValue('amount', matchedPayment.amount.toString()); // Align amount to exact due? Or keep user amount? 
+            // Plan says "filling in paid_amount". User input is likely the paid amount.
+            // If we merge, we should probably record the user's input as the PAID amount, but keep the original DUE amount?
+            // But existing table structure: amount is DUE amount, paid_amount is PAID amount.
+            // So if we pay an existing payment, we update `paid_amount` with `currentAmount`.
+            toast.success(t('paymentLinkedToPending'));
+        }
+    };
+
     const onFormSubmit = async (values: PaymentFormValues, shouldClose: boolean = true) => {
         setLoading(true);
         const toastId = toast.loading(t('savingPayment'));
@@ -129,20 +193,36 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error('Not authenticated');
 
-            const { error } = await supabase
-                .from('payments')
-                .insert({
-                    contract_id: values.contract_id,
-                    user_id: user.id,
-                    amount: parseFloat(values.amount),
-                    currency: 'ILS',
-                    due_date: values.due_date,
-                    status: values.status,
-                    payment_method: values.payment_method,
-                    paid_date: values.status === 'paid' ? (values.paid_date || new Date().toISOString()) : null,
-                });
+            // Handle Smart Match Update OR New Insert
+            if (isMatchConfirmed && matchedPayment) {
+                const { error: updateError } = await supabase
+                    .from('payments')
+                    .update({
+                        status: 'paid',
+                        paid_amount: parseFloat(values.amount),
+                        paid_date: values.paid_date || new Date().toISOString(),
+                        payment_method: values.payment_method,
+                        // Append reference? or just overwrite? Let's overwrite/set if empty
+                    })
+                    .eq('id', matchedPayment.id);
 
-            if (error) throw error;
+                if (updateError) throw updateError;
+            } else {
+                // Standard Insert
+                const { error: insertError } = await supabase
+                    .from('payments')
+                    .insert({
+                        contract_id: values.contract_id,
+                        user_id: user.id,
+                        amount: parseFloat(values.amount),
+                        currency: 'ILS',
+                        due_date: values.due_date,
+                        status: values.status,
+                        payment_method: values.payment_method,
+                        paid_date: values.status === 'paid' ? (values.paid_date || new Date().toISOString()) : null,
+                    });
+                if (insertError) throw insertError;
+            }
 
             toast.dismiss(toastId);
             toast.success(t('paymentSavedSuccess'));
@@ -155,12 +235,17 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
 
             if (shouldClose) {
                 onClose();
+                onClose();
                 reset();
+                setIsMatchConfirmed(false);
+                setMatchedPayment(null);
             } else {
-                // Prepare for "Add Another" by incrementing month
+                // Prepare for "Add Another"
                 const nextDate = addMonths(parseISO(values.due_date), 1);
                 setValue('due_date', format(nextDate, 'yyyy-MM-dd'));
                 toast.info(t('addAnotherReady'));
+                setIsMatchConfirmed(false);
+                setMatchedPayment(null);
             }
         } catch (error: any) {
             toast.dismiss(toastId);
@@ -206,6 +291,65 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                         </div>
                     )}
                 </div>
+
+
+                {/* Smart Match Alert */}
+                <AnimatePresence>
+                    {matchedPayment && !isMatchConfirmed && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="bg-brand-50/50 dark:bg-brand-900/10 border border-brand-100 dark:border-brand-900/20 rounded-2xl overflow-hidden"
+                        >
+                            <div className="p-4 flex gap-4">
+                                <div className="w-10 h-10 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center shrink-0">
+                                    <Loader2 className="w-5 h-5 text-brand-600 animate-pulse" />
+                                </div>
+                                <div className="flex-1 space-y-2">
+                                    <div>
+                                        <h4 className="text-xs font-black uppercase tracking-wider text-brand-700 dark:text-brand-300">
+                                            {t('possibleMatchFound')}
+                                        </h4>
+                                        <p className="text-xs text-brand-600/80 dark:text-brand-400/80 mt-1">
+                                            {t('matchFoundDesc').replace('{date}', format(parseISO(matchedPayment.due_date), 'dd/MM')).replace('{amount}', matchedPayment.amount)}
+                                        </p>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={confirmMatch}
+                                            className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-colors"
+                                        >
+                                            {t('yesLinkPayment')}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setMatchedPayment(null)}
+                                            className="px-4 py-2 bg-transparent hover:bg-brand-100/50 text-brand-600 dark:text-brand-400 text-[10px] font-black uppercase tracking-widest rounded-xl transition-colors"
+                                        >
+                                            {t('noCreateNew')}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {isMatchConfirmed && (
+                    <div className="p-4 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/20 rounded-2xl flex items-center gap-3 animate-in fade-in">
+                        <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                        </div>
+                        <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                            {t('linkedToPaymentOf')} ₪{matchedPayment?.amount} ({format(parseISO(matchedPayment?.due_date), 'dd/MM')})
+                        </span>
+                        <button type="button" onClick={() => setIsMatchConfirmed(false)} className="ml-auto text-emerald-600 hover:text-emerald-800">
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+                )}
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">

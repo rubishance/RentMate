@@ -34,6 +34,8 @@ export type DocumentCategory =
     | 'utility_gas'
     | 'utility_municipality'
     | 'utility_management'
+    | 'utility_internet'
+    | 'utility_cable'
     | 'maintenance'
     | 'invoice'
     | 'receipt'
@@ -97,7 +99,7 @@ export interface UserStorageUsage {
 export type ConfidenceLevel = 'high' | 'medium' | 'low';
 
 export interface ExtractedField {
-    fieldName: keyof Omit<Contract, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'status' | 'contract_file_url' | 'contract_file_name' | 'ai_extracted' | 'ai_extraction_data'> | 'linkageCeiling' | 'buildingNum' | 'aptNum' | 'paymentFrequency' | 'tenantName' | 'tenantId' | 'tenantEmail' | 'tenantPhone' | 'landlordName' | 'landlordId' | 'landlordPhone' | 'address' | 'city' | 'street' | 'rooms' | 'floor' | 'hasParking' | 'hasStorage' | 'size' | 'rent' | 'paymentDay' | 'securityDeposit' | 'guaranteeType' | 'startDate' | 'endDate' | 'signingDate' | 'linkageType' | 'indexCalculationMethod' | 'baseIndexDate' | 'baseIndexValue' | 'indexLimitType' | 'renewalOption' | 'petsAllowed' | 'guarantorsInfo' | 'specialClauses';
+    fieldName: keyof Omit<Contract, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'status' | 'contract_file_url' | 'contract_file_name' | 'ai_extracted' | 'ai_extraction_data'> | 'linkageCeiling' | 'buildingNum' | 'aptNum' | 'paymentFrequency' | 'tenantName' | 'tenantId' | 'tenantEmail' | 'tenantPhone' | 'landlordName' | 'landlordId' | 'landlordPhone' | 'address' | 'city' | 'street' | 'rooms' | 'floor' | 'hasParking' | 'hasStorage' | 'size' | 'rent' | 'paymentDay' | 'securityDeposit' | 'guaranteeType' | 'startDate' | 'endDate' | 'signingDate' | 'linkageType' | 'indexCalculationMethod' | 'baseIndexDate' | 'baseIndexValue' | 'indexLimitType' | 'renewalOption' | 'guarantorsInfo' | 'specialClauses';
     extractedValue: string | number | null | boolean | any;
     sourceText?: string; // Actual excerpt from contract
     confidence: ConfidenceLevel;
@@ -182,7 +184,7 @@ export interface Contract {
         email?: string;
         phone?: string;
     }[];
-    pets_allowed?: boolean;
+
     special_clauses?: string;
     guarantees?: string;
     guarantors_info?: string;
@@ -199,6 +201,19 @@ export interface IndexData {
     value: number;
     source: 'cbs' | 'exchange-api' | 'manual';
     created_at?: string;
+}
+
+export interface RentalMarketData {
+    region_name: string;
+    avg_rent: number;
+    growth_1y: number;
+    growth_2y: number;
+    growth_5y: number;
+    month_over_month: number;
+    room_adjustments: Record<number, number>;
+    type_adjustments: Record<string, number>;
+    created_at?: string;
+    updated_at?: string;
 }
 
 export interface IndexBase {
@@ -279,6 +294,9 @@ export interface UserPreferences {
     gender: Gender | null; // null when language is not Hebrew
     theme: Theme;
     ai_data_consent?: boolean;
+    pinned_cities?: string[];
+    has_seen_welcome_v1?: boolean;
+    seen_features?: string[];
 }
 
 // ============================================

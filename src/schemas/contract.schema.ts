@@ -62,7 +62,7 @@ export const contractSchema = z.object({
     currency: z.enum(['ILS', 'USD', 'EUR']).default('ILS'),
     paymentFrequency: z.enum(['Monthly', 'Quarterly', 'Annually']).default('Monthly'),
     paymentDay: z.coerce.number().min(1).max(31).default(1),
-    paymentMethod: z.enum(['Checks', 'Transfer', 'Cash', 'Other']).default('Checks'),
+    paymentMethod: z.enum(['Checks', 'Transfer', 'Cash', 'bit', 'paybox', 'Other']).default('Checks'),
     rentSteps: z.array(rentStepSchema).default([]),
 
     // Linkage
@@ -78,7 +78,7 @@ export const contractSchema = z.object({
     securityDeposit: z.coerce.number().optional(),
     guarantees: z.string().optional(),
     guarantorsInfo: z.string().optional(),
-    petsAllowed: z.enum(['true', 'false']).default('true'),
+
     specialClauses: z.string().optional(),
     needsPainting: z.boolean().default(false),
 

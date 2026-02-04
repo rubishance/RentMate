@@ -8,9 +8,10 @@ interface DashboardGridProps {
     data: DashboardData;
     isEditing?: boolean;
     onLayoutChange?: (newLayout: WidgetConfig[]) => void;
+    onUpdateWidgetSettings?: (widgetId: string, settings: any) => void;
 }
 
-export function DashboardGrid({ layout, data, isEditing = false, onLayoutChange }: DashboardGridProps) {
+export function DashboardGrid({ layout, data, isEditing = false, onLayoutChange, onUpdateWidgetSettings }: DashboardGridProps) {
     const sortedLayout = [...layout].sort((a, b) => a.order - b.order);
 
     const handleReorder = (newOrder: WidgetConfig[]) => {
@@ -58,7 +59,10 @@ export function DashboardGrid({ layout, data, isEditing = false, onLayoutChange 
                                 data={data}
                                 isEditing={isEditing}
                                 sizeClass={getSizeClass(widget.size)}
-                                onRender={() => WidgetComponent(data)}
+                                onRender={() => WidgetComponent(data, {
+                                    ...widget,
+                                    onUpdateSettings: (settings: any) => onUpdateWidgetSettings?.(widget.id, settings)
+                                } as any)}
                             />
                         );
                     })

@@ -24,9 +24,11 @@ interface PaymentDetailsModalProps {
     onClose: () => void;
     payment: Payment | null;
     onSuccess: () => void;
+    initialEditMode?: boolean;
+    initialStatus?: Payment['status'];
 }
 
-export function PaymentDetailsModal({ isOpen, onClose, payment, onSuccess }: PaymentDetailsModalProps) {
+export function PaymentDetailsModal({ isOpen, onClose, payment, onSuccess, initialEditMode = false, initialStatus }: PaymentDetailsModalProps) {
     const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -43,15 +45,15 @@ export function PaymentDetailsModal({ isOpen, onClose, payment, onSuccess }: Pay
     useEffect(() => {
         if (payment) {
             setFormData({
-                status: payment.status,
+                status: (initialStatus && isOpen) ? initialStatus : payment.status,
                 paid_amount: payment.paid_amount || payment.amount,
                 payment_method: payment.payment_method || 'bank_transfer',
                 paid_date: payment.paid_date || new Date().toISOString().split('T')[0],
                 reference: payment.reference || ''
             });
-            setEditMode(false);
+            setEditMode(initialEditMode && isOpen);
         }
-    }, [payment]);
+    }, [payment, isOpen, initialEditMode, initialStatus]);
 
     const handleUpdate = async () => {
         if (!payment) return;

@@ -37,8 +37,13 @@ export function GoogleAutocomplete({
     const { loaded, error: mapError } = useGoogleMaps();
     const { lang } = useTranslation();
     const inputRef = useRef<HTMLInputElement>(null);
-    // @ts-ignore
-    const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+    const autocompleteRef = useRef<any>(null);
+    const onChangeRef = useRef(onChange);
+
+    // Keep onChangeRef updated
+    useEffect(() => {
+        onChangeRef.current = onChange;
+    }, [onChange]);
 
     useEffect(() => {
         if (loaded && inputRef.current && !autocompleteRef.current) {
@@ -46,21 +51,34 @@ export function GoogleAutocomplete({
             const options: google.maps.places.AutocompleteOptions = {
                 types: type === 'cities' ? ['(cities)'] : ['address'],
                 componentRestrictions: { country: 'il' },
-                fields: ['address_components', 'formatted_address', 'name']
+                // Use a more standard fields list for reliability
+                fields: ['address_components', 'formatted_address', 'geometry', 'name']
             };
 
             // @ts-ignore
             autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, options);
 
-            autocompleteRef.current.addListener('place_changed', () => {
+            const listener = autocompleteRef.current.addListener('place_changed', () => {
                 const place = autocompleteRef.current?.getPlace();
-                if (place?.name) {
-                    // For addresses, we might want the formatted address or just the name
-                    onChange(type === 'address' ? (place.formatted_address || place.name) : place.name);
+                if (place?.formatted_address || place?.name) {
+                    const value = type === 'address'
+                        ? (place.formatted_address || place.name)
+                        : (place.address_components?.find((c: any) => c.types.includes('locality'))?.long_name || place.name);
+                    onChangeRef.current(value);
                 }
             });
+
+            return () => {
+                if (google && google.maps && google.maps.event && autocompleteRef.current) {
+                    google.maps.event.removeListener(listener);
+                    // No direct 'destroy' for Autocomplete, but we can clear the pac-container
+                    const containers = document.querySelectorAll('.pac-container');
+                    containers.forEach(container => container.remove());
+                    autocompleteRef.current = null;
+                }
+            };
         }
-    }, [loaded, type, onChange]);
+    }, [loaded, type]);
 
     // Update bounds if biasCity changes
     useEffect(() => {
@@ -93,6 +111,9 @@ export function GoogleAutocomplete({
                     onChange={handleInputChange}
                     placeholder={placeholder}
                     autoFocus={autoFocus}
+                    autoComplete="one-time-code"
+                    autoCorrect="off"
+                    spellCheck="false"
                     className={cn(
                         "bg-transparent font-black text-2xl text-foreground w-full outline-none placeholder:opacity-30 transition-all duration-300",
                         hasError && "border-red-500 ring-1 ring-red-500",

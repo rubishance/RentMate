@@ -86,7 +86,19 @@ export type TranslationKeys =
     | 'safe_room'
     | 'storage'
     | 'yes'
-    | 'no';
+    | 'no'
+    | 'marketIntelligence'
+    | 'manageCities'
+    | 'noCitiesPinnedDescription'
+    | 'chooseCities'
+    | 'avgRent'
+    | 'manageTrackedCities'
+    | 'searchCities'
+    | 'currentlyTracking'
+    | 'availableCities'
+    | 'done'
+    | 'noResultsFound'
+    | 'performanceTracking';
 
 export const translations: Record<string, Record<TranslationKeys, string>> = {
     he: {
@@ -169,7 +181,19 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         safe_room: 'ממ"ד',
         storage: 'מחסן',
         yes: 'כן',
-        no: 'לא'
+        no: 'לא',
+        marketIntelligence: 'מודיעין שוק',
+        manageCities: 'ניהול ערים',
+        noCitiesPinnedDescription: 'טרם בחרתם ערים למעקב. בחרו את הערים המעניינות אתכם כדי לראות מגמות מחירים.',
+        chooseCities: 'בחר ערים',
+        avgRent: 'שכירות ממוצעת',
+        manageTrackedCities: 'ניהול ערים למעקב',
+        searchCities: 'חפש עיר...',
+        currentlyTracking: 'ערים במעקב',
+        availableCities: 'ערים זמינות',
+        done: 'סיום',
+        noResultsFound: 'לא נמצאו תוצאות',
+        performanceTracking: 'מעקב ביצועים'
     },
     en: {
         appName: 'RentMate',
@@ -251,6 +275,18 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         safe_room: 'Safe Room',
         storage: 'Storage',
         yes: 'Yes',
-        no: 'No'
+        no: 'No',
+        marketIntelligence: 'Market Intelligence',
+        manageCities: 'Manage Cities',
+        noCitiesPinnedDescription: 'You haven\'t pinned any cities yet. Select cities to track their rental trends at a glance.',
+        chooseCities: 'Choose Cities',
+        avgRent: 'Average Rent',
+        manageTrackedCities: 'Manage Tracked Cities',
+        searchCities: 'Search cities...',
+        currentlyTracking: 'Currently Tracking',
+        availableCities: 'Available Cities',
+        done: 'Done',
+        noResultsFound: 'No results found',
+        performanceTracking: 'Performance Tracking'
     }
 };

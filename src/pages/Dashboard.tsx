@@ -3,27 +3,18 @@ import { supabase } from '../lib/supabase';
 import { useUserPreferences } from '../contexts/UserPreferencesContext';
 import { useTranslation } from '../hooks/useTranslation';
 import { useNavigate } from 'react-router-dom';
-import { DashboardHero } from '../components/dashboard/DashboardHero';
+import { RentyCommandCenter } from '../components/dashboard/RentyCommandCenter';
 import { useDataCache } from '../contexts/DataCacheContext';
-import { RentyRagdoll } from '../components/chat/RentyRagdoll';
-import { formatDate } from '../lib/utils';
 import { DashboardGrid } from '../components/dashboard/DashboardGrid';
-import { DEFAULT_WIDGET_LAYOUT, WidgetConfig, DashboardData } from '../components/dashboard/WidgetRegistry';
-import { Edit3Icon, CheckIcon, FileSearch } from 'lucide-react';
-import { ConciergeWidget } from '../components/dashboard/ConciergeWidget';
-import { format } from 'date-fns';
+import { DEFAULT_WIDGET_LAYOUT, WidgetConfig, DashboardData, WIDGET_REGISTRY } from '../components/dashboard/WidgetRegistry';
+import { Edit3Icon, CheckIcon, FileSearch, ArrowRight, Crown, Sparkles } from 'lucide-react';
 import { ReportGenerationModal } from '../components/modals/ReportGenerationModal';
 import { cn } from '../lib/utils';
-
-interface FeedItem {
-    id: string;
-    type: 'warning' | 'info' | 'success' | 'urgent' | 'action';
-    title: string;
-    desc: string;
-    date: string;
-    actionLabel?: string;
-    onAction?: () => void;
-}
+import { userScoringService } from '../services/user-scoring.service';
+import { useSubscription } from '../hooks/useSubscription';
+import { BriefingService, FeedItem } from '../services/briefing.service';
+import { BionicWelcomeOverlay } from '../components/onboarding/BionicWelcomeOverlay';
+import { BionicSpotlight } from '../components/onboarding/BionicSpotlight';
 
 interface UserProfile {
     full_name: string;
@@ -52,18 +43,20 @@ export function Dashboard() {
     const [isEditingLayout, setIsEditingLayout] = useState(false);
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [reportsEnabled, setReportsEnabled] = useState(false);
+    const [showProBanner, setShowProBanner] = useState(false);
+    const { plan } = useSubscription();
 
     useEffect(() => {
         async function init() {
-            console.log('Dashboard init: checking user');
             const { data: { user } } = await supabase.auth.getUser();
-            console.log('Dashboard init: user found:', !!user);
             if (user) {
                 const layoutKey = `dashboard_layout_${user.id}_v1`;
                 const saved = localStorage.getItem(layoutKey);
                 if (saved) {
                     try {
-                        setLayout(JSON.parse(saved));
+                        const parsed = JSON.parse(saved);
+                        const validLayout = parsed.filter((w: any) => Object.keys(WIDGET_REGISTRY).includes(w.widgetId));
+                        setLayout(validLayout.length > 0 ? validLayout : DEFAULT_WIDGET_LAYOUT);
                     } catch (e) {
                         setLayout(DEFAULT_WIDGET_LAYOUT);
                     }
@@ -75,11 +68,7 @@ export function Dashboard() {
     }, []);
 
     async function loadDashboardData() {
-        console.log('loadDashboardData: starting');
-
-        // Developer Bypass Logic for Dashboard logic
         const isBypass = import.meta.env.DEV && localStorage.getItem('rentmate_e2e_bypass') === 'true';
-
         let user;
         try {
             const { data } = await supabase.auth.getUser();
@@ -88,39 +77,28 @@ export function Dashboard() {
             console.error('loadDashboardData: Auth check failed', e);
         }
 
-        console.log('loadDashboardData: user:', !!user, 'bypass:', isBypass);
-
         if (!user && !isBypass) {
-            console.log('loadDashboardData: No user and no bypass, stopping.');
             setLoading(false);
             return;
         }
 
         const effectiveUserId = user?.id || 'demo-user-id';
         const cacheKey = `dashboard_data_v4_${effectiveUserId}_${preferences.language}`;
-
-        // Try load from cache first for instant UI
         const cached = get<any>(cacheKey);
+
         if (cached) {
-            console.log('loadDashboardData: Using cached data');
             setProfile(cached.profile);
             setStats(cached.stats);
             setStorageCounts(cached.storageCounts);
             setActiveContracts(cached.activeContracts || []);
             setFeedItems(cached.feedItems || []);
             setLoading(false);
-
-            // Check if layout is empty and rescue if needed
             if (!layout || layout.filter(w => w.visible).length === 0) {
-                console.warn('loadDashboardData: Layout rescue triggered from cache check');
                 setLayout(DEFAULT_WIDGET_LAYOUT);
             }
         }
 
         try {
-            console.log('loadDashboardData: Fetching fresh data for:', effectiveUserId);
-
-            // If bypass and no real user, use mock profile
             let profileData = null;
             if (user) {
                 const { data } = await supabase
@@ -133,16 +111,15 @@ export function Dashboard() {
                 profileData = { full_name: 'Developer (Bypass)' };
             }
 
-            // Parallel fetch remaining data
-            const [summaryResponse, feedItemsData, reportSetting] = await Promise.all([
+            const [summaryResponse, feedItemsData, reportSetting, shouldShowBanner] = await Promise.all([
                 user ? supabase.rpc('get_dashboard_summary', { p_user_id: user.id }) : Promise.resolve({ data: null }),
-                loadFeedItems(effectiveUserId),
-                supabase.from('system_settings').select('value').eq('key', 'auto_monthly_reports_enabled').single()
+                BriefingService.getBriefingItems(effectiveUserId, t),
+                supabase.from('system_settings').select('value').eq('key', 'auto_monthly_reports_enabled').single(),
+                user ? userScoringService.shouldShowUpsell(user.id, plan?.name || '') : Promise.resolve(false)
             ]);
 
             const summary = summaryResponse.data;
 
-            // Update state
             if (profileData) setProfile(profileData);
             if (summary) {
                 setStats({
@@ -155,8 +132,8 @@ export function Dashboard() {
             }
             setFeedItems(feedItemsData);
             setReportsEnabled(reportSetting?.data?.value === true);
+            setShowProBanner(shouldShowBanner);
 
-            // Persist
             set(cacheKey, {
                 profile: profileData,
                 stats: summary ? {
@@ -169,57 +146,14 @@ export function Dashboard() {
                 feedItems: feedItemsData
             }, { persist: true });
 
-            console.log('loadDashboardData: completed successfully');
         } catch (error) {
             console.error('loadDashboardData: error:', error);
         } finally {
             setLoading(false);
-
-            // Final layout rescue check
             if (!layout || layout.filter(w => w.visible).length === 0) {
-                console.warn('loadDashboardData: Final layout rescue check triggered');
                 setLayout(DEFAULT_WIDGET_LAYOUT);
             }
         }
-    }
-
-    async function loadFeedItems(userId: string): Promise<FeedItem[]> {
-        const items: FeedItem[] = [];
-        const today = format(new Date(), 'yyyy-MM-dd');
-
-        try {
-            const { data: expired } = await supabase
-                .from('contracts')
-                .select('*, properties(city, address)')
-                .eq('user_id', userId)
-                .eq('status', 'active')
-                .lt('end_date', today);
-
-            expired?.forEach((c: any) => {
-                const endDate = c.end_date ? new Date(c.end_date) : null;
-                const property = Array.isArray(c.properties) ? c.properties[0] : c.properties;
-                const address = property?.address || property?.[0]?.address || t('unknownProperty');
-
-                items.push({
-                    id: `expired-${c.id}`,
-                    type: 'warning',
-                    title: t('contractEnded'),
-                    desc: address,
-                    date: endDate && !isNaN(endDate.getTime()) ? formatDate(endDate) : t('unknown'),
-                    actionLabel: t('calculate'),
-                    onAction: () => navigate('/calculator', { state: { contractData: c } })
-                });
-            });
-
-        } catch (err) {
-            console.error(err);
-        }
-
-        if (items.length === 0) {
-            items.push({ id: 'welcome', type: 'success', title: t('welcomeMessage'), desc: t('allLooksQuiet'), date: t('now') });
-        }
-
-        return items;
     }
 
     const firstName = profile?.full_name?.split(' ')[0] || '';
@@ -245,78 +179,117 @@ export function Dashboard() {
 
     if (loading) {
         return (
-            <div className="px-6 py-20 max-w-5xl mx-auto space-y-12">
+            <div className="px-3 py-20 max-w-5xl mx-auto space-y-12">
                 <div className="h-8 w-48 bg-slate-100 animate-pulse rounded-2xl" />
                 <div className="h-96 w-full bg-slate-100 animate-pulse rounded-[3rem]" />
             </div>
         );
     }
 
+    // Stitch Design V3: Final Polish, Bionic Density, Micro-interactions
     return (
-        <div className="pb-40 pt-6 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-700">
-            {/* Hero Section */}
-            <DashboardHero firstName={firstName} feedItems={feedItems} />
+        <div className="min-h-screen bg-slate-50 dark:bg-neutral-950 pb-40 space-y-4 animate-in fade-in slide-in-from-bottom-6 duration-700">
+            {/* Hero Section - V3: Sticky, Blurred 2xl, integrated seamlessly */}
+            <div className="sticky top-0 z-20 backdrop-blur-2xl bg-white/50 dark:bg-neutral-950/50 border-b border-white/20 dark:border-neutral-800/50 pt-2 pb-2 transition-all duration-300">
+                <RentyCommandCenter firstName={firstName} feedItems={feedItems} />
+            </div>
+
+            {/* Bionic Welcome Overlay - Only for users with 0 active contracts and who haven't seen it */}
+            {activeContracts.length === 0 && !preferences.has_seen_welcome_v1 && (
+                <BionicWelcomeOverlay firstName={firstName} />
+            )}
+
+            {/* Bionic Spotlight: Point to Add Asset if user has 0 properties but has cleared welcome */}
+            {activeContracts.length === 0 && preferences.has_seen_welcome_v1 && (
+                <BionicSpotlight
+                    targetId="portfolio-add-asset-btn"
+                    featureId="spotlight_add_asset_v1"
+                    title={lang === 'he' ? 'הצעד הבא שלך' : 'Your Next Step'}
+                    description={lang === 'he'
+                        ? 'בוא נוסיף את הנכס הראשון שלך למערכת כדי להתחיל לנהל אותו בחוכמה.'
+                        : 'Let\'s add your first property to the system to start managing it efficiently.'}
+                    position="bottom"
+                />
+            )}
 
             <div className="max-w-6xl mx-auto px-4">
-                <ConciergeWidget />
-            </div>
-
-            {/* Content Section */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
-                <div className="flex items-center justify-between mb-10">
-                    <div className="flex items-center gap-6">
-                        <h2 className="text-sm font-black uppercase tracking-widest text-muted-foreground/40">{t('overview')}</h2>
-                        <div className="h-px w-12 bg-slate-100" />
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                        {reportsEnabled && (
+                {showProBanner && (
+                    /* V3: Reduced padding (p-6 -> p-4), tighter corner radius, jewel shadow */
+                    <div className="mt-6 relative overflow-hidden rounded-[1.5rem] bg-gradient-to-r from-indigo-600 via-indigo-600 to-violet-600 p-[1px] shadow-2xl shadow-indigo-500/20 animate-in zoom-in-95 duration-500">
+                        <div className="absolute top-0 right-0 p-4 opacity-10">
+                            <Crown className="w-24 h-24 rotate-12" />
+                        </div>
+                        <div className="relative bg-neutral-950/20 backdrop-blur-sm rounded-[1.5rem] p-4 md:p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                            <div className="flex items-center gap-4">
+                                <div className="p-2.5 bg-white/20 rounded-xl shadow-inner hidden md:block">
+                                    <Sparkles className="w-6 h-6 text-yellow-300" />
+                                </div>
+                                <div className="space-y-0.5 text-center md:text-start">
+                                    <h3 className="text-lg font-bold text-white tracking-tight">
+                                        {lang === 'he' ? 'זיהינו שאתם מנהלים מקצוענים!' : 'Pro Manager Detected!'}
+                                    </h3>
+                                    <p className="text-indigo-100 max-w-xl text-xs leading-relaxed opacity-90">
+                                        {lang === 'he'
+                                            ? 'רוצים לנהל תיק נכסים שלם עם אוטומציות מתקדמות? שדרגו ל-MATE.'
+                                            : 'Scale your portfolio with MATE automation.'}
+                                    </p>
+                                </div>
+                            </div>
                             <button
-                                onClick={() => setIsReportModalOpen(true)}
-                                className="flex items-center gap-2 px-6 py-3 text-[10px] font-black uppercase tracking-widest rounded-2xl bg-indigo-500/10 text-indigo-600 border border-indigo-100 dark:border-indigo-900/30 hover:bg-indigo-500/20 transition-all shadow-minimal"
+                                onClick={() => navigate('/pricing')}
+                                className="whitespace-nowrap px-5 py-2.5 bg-white text-indigo-600 font-bold text-sm rounded-xl shadow-lg hover:bg-indigo-50 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2 group"
                             >
-                                <FileSearch className="w-3.5 h-3.5" />
-                                {lang === 'he' ? 'הפקת דוח' : 'Generate Report'}
+                                {lang === 'he' ? 'שדרגו ל-MATE' : 'Upgrade to MATE'}
+                                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                             </button>
-                        )}
-
-                        <button
-                            onClick={() => setIsEditingLayout(!isEditingLayout)}
-                            className={cn(
-                                "flex items-center gap-3 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500",
-                                isEditingLayout
-                                    ? "bg-primary text-primary-foreground shadow-premium ring-4 ring-primary/10"
-                                    : "bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 text-muted-foreground hover:border-primary/30 hover:text-primary shadow-minimal"
-                            )}
-                        >
-                            {isEditingLayout ? <CheckIcon className="w-3.5 h-3.5" /> : <Edit3Icon className="w-3.5 h-3.5" />}
-                            {isEditingLayout ? t('saveLayout') : t('customize')}
-                        </button>
+                        </div>
                     </div>
-                </div>
-
-                {/* Grid */}
-                <DashboardGrid
-                    layout={layout}
-                    data={dashboardData}
-                    isEditing={isEditingLayout}
-                    onLayoutChange={handleLayoutChange}
-                />
+                )}
             </div>
 
-            {/* Bottom System Status Section */}
-            <section className="pt-12 border-t border-slate-100 dark:border-neutral-900 flex flex-col items-center text-center space-y-10">
-                <div className="space-y-4">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 dark:bg-neutral-900 rounded-full border border-slate-100 dark:border-neutral-800">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">{t('systemStatus')}</h3>
-                    </div>
-                    <p className="text-xs text-muted-foreground font-black uppercase tracking-widest opacity-40 italic">"Renty is keeping an eye on your universe."</p>
+            {/* Content Section - Main Grid */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                {/* V3 Toolbar: Tighter, cleaner */}
+                <div className="flex items-center justify-end mb-4 gap-3">
+                    {reportsEnabled && (
+                        <button
+                            onClick={() => setIsReportModalOpen(true)}
+                            className="flex items-center gap-1.5 px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 hover:border-indigo-500/30 text-muted-foreground hover:text-indigo-600 transition-all shadow-sm hover:shadow-md"
+                        >
+                            <FileSearch className="w-3 h-3" />
+                            {lang === 'he' ? 'הפקת דוח' : 'Report'}
+                        </button>
+                    )}
+
+                    <button
+                        onClick={() => setIsEditingLayout(!isEditingLayout)}
+                        className={cn(
+                            "flex items-center gap-1.5 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300",
+                            isEditingLayout
+                                ? "bg-primary text-primary-foreground shadow-lg scale-105"
+                                : "bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-muted-foreground hover:border-primary/30 hover:text-primary shadow-sm hover:shadow-md"
+                        )}
+                    >
+                        {isEditingLayout ? <CheckIcon className="w-3 h-3" /> : <Edit3Icon className="w-3 h-3" />}
+                        {isEditingLayout ? t('saveLayout') : t('customize')}
+                    </button>
                 </div>
-                <div className="scale-110">
-                    <RentyRagdoll />
+
+                {/* Grid - V3: Bionic Density implied via CSS var injection or just structure */}
+                <div className="relative">
+                    {/* Simulated Style Injection for Grid Density */}
+                    <DashboardGrid
+                        layout={layout}
+                        data={dashboardData}
+                        isEditing={isEditingLayout}
+                        onLayoutChange={handleLayoutChange}
+                        onUpdateWidgetSettings={(id, settings) => {
+                            const newLayout = layout.map(w => w.id === id ? { ...w, settings } : w);
+                            handleLayoutChange(newLayout);
+                        }}
+                    />
                 </div>
-            </section>
+            </div>
 
             <ReportGenerationModal
                 isOpen={isReportModalOpen}

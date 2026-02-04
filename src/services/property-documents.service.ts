@@ -472,6 +472,36 @@ class PropertyDocumentsService {
     }
 
     /**
+     * Get all documents for a user across ALL properties by category
+     * Used for Global Dashboards (e.g. Maintenance Hub)
+     */
+    async getAllDocumentsByCategory(
+        category: DocumentCategory,
+        limit: number = 20
+    ): Promise<PropertyDocument[]> {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+
+        const { data, error } = await supabase
+            .from('property_documents')
+            .select(`
+                *,
+                properties (
+                    id,
+                    address,
+                    city
+                )
+            `)
+            .eq('user_id', user.id)
+            .eq('category', category)
+            .order('document_date', { ascending: false })
+            .limit(limit);
+
+        if (error) throw error;
+        return data as PropertyDocument[];
+    }
+
+    /**
      * Get a secure signed URL for a document
      * Expiration set to 1 hour (3600 seconds)
      */

@@ -118,12 +118,19 @@ const FUNCTION_TOOLS = [
         type: "function",
         function: {
             name: "prepare_add_property",
-            description: "Prepare an 'Add Property' form. (Hebrew: הכן טופס הוספת נכס).",
+            description: "Prepare an 'Add Property' form. (Hebrew: הכן טופס הוספת נכס). Use this to extract property details from natural language.",
             parameters: {
                 type: "object",
                 properties: {
-                    title: { type: "string" },
-                    address: { type: "string" }
+                    address: { type: "string", description: "The street address and house number (e.g., 'רוטשילד 22')" },
+                    city: { type: "string", description: "The city name (e.g., 'תל אביב')" },
+                    property_type: { type: "string", enum: ["apartment", "house", "studio", "office", "warehouse", "parking"], description: "The type of asset" },
+                    rooms: { type: "number", description: "Number of rooms" },
+                    size_sqm: { type: "number", description: "Area in square meters" },
+                    has_parking: { type: "boolean" },
+                    has_storage: { type: "boolean" },
+                    has_balcony: { type: "boolean" },
+                    has_safe_room: { type: "boolean" }
                 }
             }
         }
@@ -152,9 +159,15 @@ const FUNCTION_TOOLS = [
             parameters: {
                 type: "object",
                 properties: {
-                    property_id: { type: "string" },
+                    property_id: { type: "string", description: "UUID of an existing property if known" },
                     tenant_name: { type: "string" },
-                    monthly_rent: { type: "number" }
+                    monthly_rent: { type: "number" },
+                    currency: { type: "string", enum: ["ILS", "USD", "EUR"] },
+                    start_date: { type: "string", description: "YYYY-MM-DD" },
+                    end_date: { type: "string", description: "YYYY-MM-DD" },
+                    signing_date: { type: "string", description: "YYYY-MM-DD" },
+                    payment_frequency: { type: "string", enum: ["monthly", "quarterly", "bi_annually", "annually"] },
+                    payment_day: { type: "number", description: "1-31" }
                 }
             }
         }
@@ -189,6 +202,24 @@ const FUNCTION_TOOLS = [
                     target_date: { type: "string", description: "YYYY-MM" }
                 },
                 required: ["base_rent", "linkage_type", "base_date", "target_date"]
+            }
+        }
+    },
+    {
+        type: "function",
+        function: {
+            name: "organize_document",
+            description: "Move an uploaded document to a specific property and folder/category. (Hebrew: ארגן מסמך).",
+            parameters: {
+                type: "object",
+                properties: {
+                    property_id: { type: "string" },
+                    folder_id: { type: "string", description: "Optional folder UUID" },
+                    storage_path: { type: "string", description: "The temporary path returned by the upload" },
+                    file_name: { type: "string" },
+                    category: { type: "string", description: "Target category (e.g., utility_water, maintenance)" }
+                },
+                required: ["property_id", "storage_path", "file_name"]
             }
         }
     },
@@ -433,6 +464,12 @@ async function getTenantDetails(nameOrEmail: string, userId: string) {
 
 async function listProperties(userId: string) {
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+
+    const hasConsent = await checkConsent(userId, supabase);
+    if (!hasConsent) {
+        return { success: false, message: "AI access to personal data is disabled. Please enable 'AI Data Access' in Settings > Privacy." };
+    }
+
     const { data, error } = await supabase
         .from('properties')
         .select('id, address, title')
@@ -444,6 +481,12 @@ async function listProperties(userId: string) {
 
 async function listFolders(propertyId: string, userId: string) {
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+
+    const hasConsent = await checkConsent(userId, supabase);
+    if (!hasConsent) {
+        return { success: false, message: "AI access to personal data is disabled. Please enable 'AI Data Access' in Settings > Privacy." };
+    }
+
     // Validation: make sure property belongs to user
     const { data: prop } = await supabase.from('properties').select('id').eq('id', propertyId).eq('user_id', userId).single();
     if (!prop) return { success: false, message: "Property not found or access denied." };
@@ -476,6 +519,11 @@ async function createFolder(propertyId: string, name: string, category: string, 
 async function organizeDocument(args: any, userId: string) {
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
     const { property_id, folder_id, storage_path, file_name, category } = args;
+
+    const hasConsent = await checkConsent(userId, supabase);
+    if (!hasConsent) {
+        return { success: false, message: "AI access to personal data is disabled. Please enable 'AI Data Access' in Settings > Privacy." };
+    }
 
     // Validation
     const { data: prop } = await supabase.from('properties').select('id').eq('id', property_id).eq('user_id', userId).single();
@@ -753,21 +801,26 @@ ROLE & TONE:
 - Expert in RentMate app features and property management.
 - LANGUAGE: Respond in the SAME language the user writes in (Hebrew or English).
 - **CRITICAL - NO ADVICE**: You are strictly prohibited from giving legal, tax, or financial advice. YOU ARE NOT A LAWYER OR ADVISOR.
-  - Never use words like "should", "recommend", "it's better to".
-  - If asked for advice, say: "I am an AI, not a professional advisor. I can show you your data, but I cannot recommend actions."
-  - Present raw data only.
-
-DOUBLE-GATE PROTOCOL (FOR ACTIONS):
-1. **GATE 1: CONFIRMATION**: For any action that modifies data, DESCRIBE what you will do and ASK FOR CONFIRMATION first.
-2. **GATE 2: MANUAL SAVE**: The tools will open forms. Tell the user to review and click Save.
+- **PRIVACY & PERMISSIONS**: 
+  - You have access to the user's properties, contracts, and tenants ONLY through the provided tools.
+  - If a tool returns an error saying "AI access to personal data is disabled", inform the user that they must enable "AI Data Access" in **Settings > Privacy** to proceed.
+  - NEVER assume access to data outside what the tools provide.
 
 CAPABILITIES:
 1. **Knowledge Base**: Answer app-related questions using context.
-2. **Contracts**: Search for contracts.
-3. **Finance**: Summarize income.
-4. **Tenants**: Find contact info.
-5. **UI Automation**: Prepare forms with pre-filled details.
-6. **Calculations**: Calculate rent linkage.
+2. **Data Management**: Search for contracts, summarize financials, and find tenant details using tools.
+3. **UI Automation**: Prepare forms for adding properties, tenants, contracts, or payments.
+4. **Linkage Calculations**: Calculate rent updates based on Israeli indices.
+4. **Extraction Accuracy**: 
+   - When adding a property, ALWAYS split Hebrew addresses into \`city\` (e.g., תל אביב) and \`address\` (street and number, e.g., הרצל 10).
+   - Extract extra details like rooms (חדרים), size (מ"ר), and features (parking, balcony, etc.) if mentioned.
+5. **Clarification Logic**:
+   - If the user wants to add a property/contract but CRITICAL information (like city/address or tenant name) is missing, ASK for it before calling the "prepare_" tool.
+   - If you have enough to start but some secondary details are missing, call the tool with what you have and tell the user they can finish the rest in the wizard.
+6. **Document Organization**: Move uploaded files to property-specific folders using \`organize_document\`.
+
+DIRECTIONS:
+- If the user asks about their assets, properties, or adding a bill, ALWAYS start by calling \`list_properties\` to get the available context. This is required even if they have only one asset.
 
 CONTEXT FROM KNOWLEDGE BASE:
 ${knowledgeBase}`;
@@ -940,6 +993,8 @@ ${knowledgeBase}`;
                         modal: functionName.replace("prepare_add_", "").replace("prepare_", ""),
                         data: functionArgs
                     };
+                } else if (functionName === "organize_document") {
+                    functionResult = await organizeDocument(functionArgs, userId);
                 } else if (functionName === "calculate_rent_linkage") {
                     functionResult = await calculateRentLinkage(functionArgs, userId);
                 } else {

@@ -26,10 +26,35 @@ const articlesMap = Object.entries(articleModules).reduce((acc, [path, content])
     return acc;
 }, {} as Record<string, string>);
 
+// Smart CTA Logic
+const getSmartCTATitle = (category: string, t: (key: string) => string) => {
+    if (category.includes('Legal') || category.includes('חוקים')) return t('hero_title_legal');
+    if (category.includes('Tax') || category.includes('Finance') || category.includes('מיסים')) return t('hero_title_tax');
+    return t('hero_title_generic');
+};
+
+const getSmartCTADesc = (category: string, t: (key: string) => string) => {
+    if (category.includes('Legal') || category.includes('חוקים')) return t('hero_desc_legal');
+    if (category.includes('Tax') || category.includes('Finance') || category.includes('מיסים')) return t('hero_desc_tax');
+    return t('hero_desc_generic');
+};
+
+const getSmartCTAButton = (category: string, t: (key: string) => string) => {
+    if (category.includes('Legal') || category.includes('חוקים')) return t('cta_button_legal');
+    if (category.includes('Tax') || category.includes('Finance') || category.includes('מיסים')) return t('cta_button_tax');
+    return t('cta_button_generic');
+};
+
+const getSmartCTALink = (category: string) => {
+    if (category.includes('Legal') || category.includes('חוקים')) return '/contracts/new';
+    if (category.includes('Tax') || category.includes('Finance') || category.includes('מיסים')) return '/calculator';
+    return '/properties';
+};
+
 export function ArticleViewer() {
     const { slug } = useParams<{ slug: string }>();
     const navigate = useNavigate();
-    const { lang } = useTranslation();
+    const { lang, t } = useTranslation();
     const [content, setContent] = useState<string | null>(null);
     const [metadata, setMetadata] = useState<ArticleMetadata | null>(null);
 
@@ -64,13 +89,13 @@ export function ArticleViewer() {
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="text-center">
                     <h1 className="text-2xl font-bold text-gray-900 mb-4">
-                        {lang === 'he' ? 'המאמר לא נמצא' : 'Article not found'}
+                        {t('article_not_found')}
                     </h1>
                     <button
                         onClick={() => navigate('/knowledge-base')}
                         className="text-primary hover:underline font-medium"
                     >
-                        {lang === 'he' ? 'חזרה למרכז הידע' : 'Back to Knowledge Base'}
+                        {t('back_to_knowledge_base')}
                     </button>
                 </div>
             </div>
@@ -96,13 +121,13 @@ export function ArticleViewer() {
         <div className="min-h-screen bg-white">
             {/* Navigation Bar */}
             <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100">
-                <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+                <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
                     <button
                         onClick={() => navigate('/knowledge-base')}
                         className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors text-sm font-medium"
                     >
                         {lang === 'he' ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
-                        {lang === 'he' ? 'חזרה למרכז הידע' : 'Back to Knowledge Base'}
+                        {t('back_to_knowledge_base')}
                     </button>
 
                     <div className="flex items-center gap-4">
@@ -112,7 +137,7 @@ export function ArticleViewer() {
             </div>
 
             {/* Article Content */}
-            <article className={`max-w-3xl mx-auto px-4 py-12 ${lang === 'he' ? 'text-right' : 'text-left'}`} dir={lang === 'he' ? 'rtl' : 'ltr'}>
+            <article className={`max-w-3xl mx-auto px-4 py-8 ${lang === 'he' ? 'text-right' : 'text-left'}`} dir={lang === 'he' ? 'rtl' : 'ltr'}>
                 <div className="prose prose-lg prose-indigo max-w-none">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                         {displayContent}
@@ -124,7 +149,7 @@ export function ArticleViewer() {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                         <div>
                             <p className="text-sm text-gray-500 mb-1">
-                                {lang === 'he' ? 'עודכן לאחרונה' : 'Last updated'}
+                                {t('last_updated')}
                             </p>
                             <p className="font-medium text-gray-900">
                                 {new Date('2026-01-19').toLocaleDateString(lang === 'he' ? 'he-IL' : 'en-US')}
@@ -136,9 +161,32 @@ export function ArticleViewer() {
                                 onClick={() => navigate('/login?mode=signup')}
                                 className="px-6 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 hover:scale-[1.02] transition-all"
                             >
-                                {lang === 'he' ? 'נסו את RentMate חינם' : 'Try RentMate for Free'}
+                                {t('try_rentmate_free')}
                             </button>
                         </div>
+                    </div>
+                </div>
+                {/* Smart Context CTA Card */}
+                <div className="mt-12 p-8 rounded-2xl bg-gradient-to-br from-primary/5 via-primary/10 to-transparent border border-primary/20 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none" />
+
+                    <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-start">
+                        <div className="space-y-2">
+                            <h3 className="text-xl font-bold text-gray-900">
+                                {getSmartCTATitle(metadata?.category || '', t)}
+                            </h3>
+                            <p className="text-gray-600 max-w-lg">
+                                {getSmartCTADesc(metadata?.category || '', t)}
+                            </p>
+                        </div>
+
+                        <button
+                            onClick={() => navigate(getSmartCTALink(metadata?.category || ''))}
+                            className="px-8 py-4 bg-primary text-white text-lg font-bold rounded-xl shadow-xl shadow-primary/25 hover:scale-105 hover:shadow-2xl transition-all flex items-center gap-2"
+                        >
+                            {getSmartCTAButton(metadata?.category || '', t)}
+                            {lang === 'he' ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
+                        </button>
                     </div>
                 </div>
             </article>

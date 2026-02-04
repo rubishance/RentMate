@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import logoIconOnly from '../../assets/rentmate-icon-only.png';
 import logoIconDark from '../../assets/rentmate-icon-only-dark.png';
 import { useUserPreferences } from '../../contexts/UserPreferencesContext';
-import { Sun, Moon, Monitor } from 'lucide-react';
+import { Sun, Moon, Monitor, Star } from 'lucide-react';
 
 export function TopBar() {
     const navigate = useNavigate();
@@ -30,18 +30,31 @@ export function TopBar() {
                 </span>
             </div>
 
-            {/* Right: Theme Toggle */}
-            <button
-                onClick={() => setTheme(effectiveTheme === 'dark' ? 'light' : 'dark')}
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
-                title={`Switch to ${effectiveTheme === 'dark' ? 'Light' : 'Dark'} Mode`}
-            >
-                {effectiveTheme === 'dark' ? (
-                    <Sun className="w-5 h-5 text-white" />
-                ) : (
-                    <Moon className="w-5 h-5 text-black" />
-                )}
-            </button>
+            {/* Right: Actions */}
+            <div className="flex items-center gap-3">
+                <button
+                    onClick={() => navigate('/pricing')}
+                    className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-600/10 to-cyan-600/10 hover:from-blue-600/20 hover:to-cyan-600/20 border border-blue-200 dark:border-blue-900 transition-all group"
+                >
+                    <Star className="w-3 h-3 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform" />
+                    <span className="text-xs font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-cyan-600">
+                        UPGRADE
+                    </span>
+                </button>
+
+                {/* Right: Theme Toggle */}
+                <button
+                    onClick={() => setTheme(effectiveTheme === 'dark' ? 'light' : 'dark')}
+                    className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
+                    title={`Switch to ${effectiveTheme === 'dark' ? 'Light' : 'Dark'} Mode`}
+                >
+                    {effectiveTheme === 'dark' ? (
+                        <Sun className="w-5 h-5 text-white" />
+                    ) : (
+                        <Moon className="w-5 h-5 text-black" />
+                    )}
+                </button>
+            </div>
         </header>
     );
 }

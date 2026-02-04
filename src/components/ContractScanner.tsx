@@ -161,7 +161,7 @@ export function ContractScanner({ onScanComplete, onCancel, mode = 'modal', skip
                 'limit_type': 'indexLimitType',
 
                 'renewal_option': 'renewalOption',
-                'pets_allowed': 'petsAllowed',
+
                 'guarantors_info': 'guarantorsInfo',
                 'special_clauses': 'specialClauses'
             };

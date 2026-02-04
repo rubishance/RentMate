@@ -1,15 +1,20 @@
 import { useRef, useEffect, useState } from 'react';
-import { MessageCircle, X, Send, Bot, Mic, MicOff, Paperclip, Loader2, User } from 'lucide-react';
+import { BotIcon, X, Send, Paperclip, Loader2, Mic, MicOff } from 'lucide-react';
+import { ActionCard } from '../dashboard/ActionCard';
 import { supabase } from '../../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useChatBot } from '../../hooks/useChatBot';
-import { BotIcon } from './BotIcon';
+import { BotIcon as CustomBotIcon } from './BotIcon'; // Renamed to avoid conflict
 import { useNavigate } from 'react-router-dom';
 import { useUserPreferences } from '../../contexts/UserPreferencesContext';
 import { crmService } from '../../services/crm.service';
 import { useStack } from '../../contexts/StackContext';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useDataCache } from '../../contexts/DataCacheContext';
+import { BillAnalysisService, ExtractedBillData } from '../../services/bill-analysis.service';
+import { propertyDocumentsService } from '../../services/property-documents.service';
+import { chatBus } from '../../events/chatEvents';
+import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
 
 // Modals
 import { AddPaymentModal } from '../modals/AddPaymentModal';
@@ -19,16 +24,15 @@ export function ChatWidget() {
     const { t } = useTranslation();
     const { preferences } = useUserPreferences();
     const isRtl = preferences.language === 'he';
-    const { isOpen, toggleChat, isLoading, messages: botMessages, sendMessage: sendBotMessage, uiAction, clearUiAction, isAiMode, activateAiMode, deactivateAiMode } = useChatBot();
+    const { isOpen, toggleChat, openChat, isLoading, messages: botMessages, sendMessage: sendBotMessage, uiAction, clearUiAction, isAiMode, activateAiMode, deactivateAiMode } = useChatBot();
     const navigate = useNavigate();
     const { push } = useStack();
     const { clear } = useDataCache();
     const inputRef = useRef<HTMLInputElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [isListening, setIsListening] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
-    const [recognition, setRecognition] = useState<any>(null);
+    const { isListening, transcript, startListening, stopListening, hasSupport: hasVoiceSupport } = useSpeechRecognition(isRtl ? 'he-IL' : 'en-US');
 
     // Hybrid Mode State
     const [isHybridEnabled, setIsHybridEnabled] = useState(true); // Default to true (safe)
@@ -43,6 +47,12 @@ export function ChatWidget() {
     const [modalData, setModalData] = useState<any>(null);
 
     const [user, setUser] = useState<any>(null);
+
+    // Bill Scan States
+    const [scannedBill, setScannedBill] = useState<any>(null);
+    const [analyzingBill, setAnalyzingBill] = useState(false);
+    const [properties, setProperties] = useState<any[]>([]);
+    const [selectedPropertyId, setSelectedPropertyId] = useState<string>('');
 
     // Check System Settings & Human Chat Status
     useEffect(() => {
@@ -66,6 +76,18 @@ export function ChatWidget() {
                 if (!hybridEnabled) {
                     activateAiMode();
                 }
+
+                // Fetch properties for bill association
+                const { data: props } = await supabase
+                    .from('properties')
+                    .select('id, address');
+                const propertiesList = props || [];
+                setProperties(propertiesList);
+
+                // Single Asset Intelligence
+                if (propertiesList.length === 1) {
+                    setSelectedPropertyId(propertiesList[0].id);
+                }
             } catch (err) {
                 console.error('Error checking chat settings:', err);
             } finally {
@@ -78,6 +100,29 @@ export function ChatWidget() {
     }, [isOpen]);
 
 
+
+    // Handle Global Chat Events
+    useEffect(() => {
+        const unsubscribe = chatBus.subscribe((event) => {
+            if (event.type === 'OPEN_CHAT') {
+                if (!isOpen) openChat();
+                if (event.payload?.message) {
+                    sendBotMessage(event.payload.message);
+                }
+            } else if (event.type === 'SEND_MESSAGE') {
+                if (!isOpen) openChat();
+                if (event.payload?.message) {
+                    sendBotMessage(event.payload.message);
+                }
+            } else if (event.type === 'FILE_UPLOADED') {
+                if (!isOpen) openChat();
+                if (event.payload?.file) {
+                    processFile(event.payload.file);
+                }
+            }
+        });
+        return unsubscribe;
+    }, [isOpen, openChat, sendBotMessage]);
 
     // Handle UI Actions from Bot
     useEffect(() => {
@@ -92,7 +137,9 @@ export function ChatWidget() {
                         onSuccess: () => clear()
                     }, { title: t('addProperty'), isExpanded: true });
                 } else if (uiAction.modal === 'maintenance' || uiAction.modal === 'add_maintenance') {
-                    push('maintenance_chat', { propertyAddress: uiAction.data?.address }, { title: t('maintenance'), isExpanded: true });
+                    // Force modal view for form preparation
+                    setModalData(uiAction.data);
+                    setActiveModal(uiAction.modal);
                 } else {
                     setModalData(uiAction.data);
                     setActiveModal(uiAction.modal);
@@ -111,34 +158,12 @@ export function ChatWidget() {
         scrollToBottom();
     }, [botMessages]);
 
-    // Initialize speech recognition
+    // Sync transcript to input
     useEffect(() => {
-        if (typeof window !== 'undefined' && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-            const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-            const recognitionInstance = new SpeechRecognition();
-            recognitionInstance.continuous = false;
-            recognitionInstance.interimResults = false;
-            recognitionInstance.lang = 'he-IL'; // Hebrew by default
-
-            recognitionInstance.onresult = (event: any) => {
-                const transcript = event.results[0][0].transcript;
-                if (inputRef.current) {
-                    inputRef.current.value = transcript;
-                }
-                setIsListening(false);
-            };
-
-            recognitionInstance.onerror = () => {
-                setIsListening(false);
-            };
-
-            recognitionInstance.onend = () => {
-                setIsListening(false);
-            };
-
-            setRecognition(recognitionInstance);
+        if (transcript && inputRef.current) {
+            inputRef.current.value = transcript;
         }
-    }, []);
+    }, [transcript]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -151,30 +176,19 @@ export function ChatWidget() {
     };
 
     const toggleVoiceInput = () => {
-        if (!recognition) {
+        if (!hasVoiceSupport) {
             alert('Voice input is not supported in your browser.');
             return;
         }
 
         if (isListening) {
-            recognition.stop();
-            setIsListening(false);
+            stopListening();
         } else {
-            recognition.start();
-            setIsListening(true);
+            startListening();
         }
     };
 
-    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        // Size check (5MB)
-        if (file.size > 5 * 1024 * 1024) {
-            alert('File is too large. Max size is 5MB.');
-            return;
-        }
-
+    const processFile = async (file: File) => {
         setIsUploading(true);
         try {
             const { data: { user } } = await supabase.auth.getUser();
@@ -190,8 +204,37 @@ export function ChatWidget() {
 
             if (uploadError) throw uploadError;
 
-            // Send message with file info
-            await sendBotMessage(`Uploaded file: ${file.name}`, { name: file.name, path });
+            // Trigger AI Bill Analysis
+            setAnalyzingBill(true);
+            let analysisResults: ExtractedBillData | null = null;
+            try {
+                // Pass properties list to AI for context matching
+                analysisResults = await BillAnalysisService.analyzeBill(file, properties);
+
+                if (analysisResults && analysisResults.confidence > 0.6) {
+                    setScannedBill({
+                        ...analysisResults,
+                        fileName: file.name,
+                        file: file
+                    });
+
+                    // Auto-select property if confidence is high and we have a match
+                    if (analysisResults?.propertyId && analysisResults?.confidence > 0.8) {
+                        const matchedProp = properties.find(p => p.id === analysisResults?.propertyId);
+                        if (matchedProp) {
+                            setSelectedPropertyId(matchedProp.id);
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error('Bill analysis failed:', err);
+            } finally {
+                setAnalyzingBill(false);
+            }
+
+            // Send message with file info AND analysis results
+            // This allows Renty to see the results before responding
+            await sendBotMessage(`Uploaded file: ${file.name}`, { name: file.name, path }, analysisResults);
 
             if (fileInputRef.current) fileInputRef.current.value = '';
         } catch (err: any) {
@@ -200,6 +243,77 @@ export function ChatWidget() {
         } finally {
             setIsUploading(false);
         }
+    };
+
+    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Size check (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File is too large. Max size is 5MB.');
+            return;
+        }
+
+        await processFile(file);
+    };
+
+    const handleSaveBill = async () => {
+        if (!scannedBill || !selectedPropertyId) return;
+
+        try {
+            // 1. Map category to system category
+            const categoryMap: Record<string, string> = {
+                'water': 'utility_water',
+                'electric': 'utility_electric',
+                'gas': 'utility_gas',
+                'municipality': 'utility_municipality',
+                'management': 'utility_management',
+                'internet': 'utility_internet',
+                'cable': 'utility_cable',
+                'other': 'other'
+            };
+
+            const systemCategory = (categoryMap[scannedBill.category] || 'other') as any;
+
+            // 2. Upload to property documents (this also handles storage)
+            await propertyDocumentsService.uploadDocument(scannedBill.file, {
+                propertyId: selectedPropertyId,
+                category: systemCategory,
+                amount: scannedBill.amount,
+                documentDate: scannedBill.date,
+                vendorName: scannedBill.vendor,
+                invoiceNumber: scannedBill.invoiceNumber,
+                title: `${scannedBill.vendor} Bill - ${scannedBill.date}`
+            });
+
+            // 3. Find active contract for this property to pre-fill ledger
+            const { data: contract } = await supabase
+                .from('contracts')
+                .select('id')
+                .eq('property_id', selectedPropertyId)
+                .eq('status', 'active')
+                .maybeSingle();
+
+            // 4. Open Modal for ledger entry
+            setModalData({
+                contract_id: contract?.id || '',
+                amount: scannedBill.amount,
+                due_date: scannedBill.date,
+                payment_method: 'bank_transfer',
+                status: 'paid'
+            });
+            setActiveModal('payment');
+            setScannedBill(null);
+            setSelectedPropertyId('');
+        } catch (err: any) {
+            console.error('Failed to save bill:', err);
+            alert(`Failed to save bill: ${err.message}`);
+        }
+    };
+    const handleAction = async (value: string) => {
+        // Send the selected action as a user message
+        await sendBotMessage(value);
     };
 
     const activeMessages = botMessages;
@@ -224,7 +338,12 @@ export function ChatWidget() {
                         <div className="p-4 border-b border-gray-200 dark:border-white/10 flex justify-between items-center cursor-move transition-colors bg-white dark:bg-black text-gray-900 dark:text-white">
                             <div className="flex items-center space-x-3 rtl:space-x-reverse">
                                 <div className="p-1.5 bg-white dark:bg-neutral-800 rounded-lg flex items-center justify-center overflow-hidden w-9 h-9 border border-white/20">
-                                    <BotIcon size={24} className="relative z-10" />
+                                    {/* <BotIcon size={24} className="relative z-10" /> */}
+                                    <img
+                                        src="/assets/icons/renty-chat-outline.png"
+                                        alt="Renty"
+                                        className="relative z-10 w-6 h-6 object-contain"
+                                    />
                                 </div>
                                 <div>
                                     <h3 className="font-semibold text-gray-900 dark:text-white">Renty - תמיכה חכמה</h3>
@@ -261,7 +380,16 @@ export function ChatWidget() {
                                                 }`}
                                             dir="auto"
                                         >
-                                            {msg.content}
+                                            {msg.type === 'action' && msg.actionData ? (
+                                                <ActionCard
+                                                    title={msg.actionData.title}
+                                                    description={msg.actionData.description}
+                                                    options={msg.actionData.options}
+                                                    onSelect={handleAction}
+                                                />
+                                            ) : (
+                                                msg.content
+                                            )}
                                         </div>
                                     </div>
                                 );
@@ -287,6 +415,92 @@ export function ChatWidget() {
                                     </div>
                                 </div>
                             )}
+
+                            {/* Analyzing Bill State */}
+                            {analyzingBill && (
+                                <div className="flex justify-start">
+                                    <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-500/30 p-4 rounded-2xl w-full flex flex-col items-center gap-3">
+                                        <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
+                                        <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">
+                                            {isRtl ? 'מנתח פרטי חשבון...' : 'Analyzing Bill Details...'}
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Scanned Bill Result */}
+                            {scannedBill && (
+                                <div className="flex justify-start">
+                                    <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-500/30 p-4 rounded-2xl w-full space-y-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-800 rounded-full flex items-center justify-center">
+                                                <Paperclip className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-bold text-emerald-900 dark:text-emerald-100">{t('billDetected')}</h4>
+                                                <p className="text-xs text-emerald-600 dark:text-emerald-400">{scannedBill.vendor} - {scannedBill.amount} {scannedBill.currency}</p>
+                                            </div>
+                                        </div>
+
+                                        {scannedBill.propertyId && selectedPropertyId === scannedBill.propertyId && scannedBill.confidence > 0.8 ? (
+                                            <div className="bg-emerald-100/50 dark:bg-emerald-900/30 p-3 rounded-xl border border-emerald-200 dark:border-emerald-500/30 mb-2">
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mb-1">
+                                                            {isRtl ? 'זוהה אוטומטית' : 'Auto-Detected'}
+                                                        </p>
+                                                        <p className="text-sm font-bold text-emerald-900 dark:text-emerald-100 line-clamp-1">
+                                                            {scannedBill.propertyAddress || properties.find(p => p.id === selectedPropertyId)?.address}
+                                                        </p>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => setSelectedPropertyId('')}
+                                                        className="text-xs text-emerald-500 underline hover:text-emerald-700 dark:hover:text-emerald-300"
+                                                    >
+                                                        {isRtl ? 'שנה' : 'Change'}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400">
+                                                    {scannedBill.confidence < 0.8
+                                                        ? (isRtl ? 'לא הצלחתי לזהות את הנכס. אנא בחר:' : 'Could not identify property. Please select:')
+                                                        : t('associateWithProperty')
+                                                    }
+                                                </label>
+                                                <select
+                                                    value={selectedPropertyId}
+                                                    onChange={(e) => setSelectedPropertyId(e.target.value)}
+                                                    className="w-full bg-white dark:bg-neutral-800 border-2 border-emerald-100 dark:border-emerald-500/30 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-500 transition-all"
+                                                >
+                                                    <option value="">{t('selectProperty')}</option>
+                                                    {properties.map(p => (
+                                                        <option key={p.id} value={p.id}>{p.address}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        )}
+
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => setScannedBill(null)}
+                                                className="flex-1 py-2 text-xs font-bold text-gray-500 hover:text-gray-700 transition-colors"
+                                            >
+                                                {t('cancel')}
+                                            </button>
+                                            <button
+                                                disabled={!selectedPropertyId}
+                                                onClick={handleSaveBill}
+                                                className="flex-1 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold shadow-lg shadow-emerald-600/20 disabled:opacity-50 disabled:grayscale transition-all"
+                                            >
+                                                {t('saveAndRecord')}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             <div ref={messagesEndRef} />
                         </div>
 
@@ -371,7 +585,12 @@ export function ChatWidget() {
                     {/* Aura Glow */}
                     <div className="absolute inset-0 blur-xl rounded-full scale-50 group-hover:scale-100 transition-transform duration-500 opacity-0 group-hover:opacity-100 bg-gold/20"></div>
 
-                    <BotIcon size={64} className="relative z-10" />
+                    {/* <BotIcon size={64} className="relative z-10" /> */}
+                    <img
+                        src="/assets/icons/renty-chat-outline.png"
+                        alt="Renty Chat"
+                        className="relative z-10 w-16 h-16 object-contain drop-shadow-md"
+                    />
                 </motion.button>
             )}
 

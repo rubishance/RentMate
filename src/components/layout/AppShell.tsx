@@ -9,6 +9,7 @@ import { useNotificationScheduler } from '../../hooks/useNotificationScheduler';
 import { SystemBroadcast } from '../common/SystemBroadcast';
 import { StreamHeader } from './StreamHeader';
 import { BottomDock } from './BottomDock';
+import { FloatingContactButton } from './FloatingContactButton';
 import { useStack } from '../../contexts/StackContext';
 
 export function AppShell() {
@@ -54,7 +55,7 @@ export function AppShell() {
     }, []);
 
     if (isMaintenance) {
-        navigate('/maintenance', { replace: true });
+        navigate('/system-maintenance', { replace: true });
         return null;
     }
 
@@ -80,11 +81,14 @@ export function AppShell() {
     };
 
     return (
-        <div className="min-h-screen bg-white dark:bg-black font-sans selection:bg-primary/10">
+        <div className="min-h-screen bg-background font-sans selection:bg-primary/10 relative">
+            {/* Ambient Depth Layer */}
+            <div className="ambient-depth" />
+
             {/* New Stream Header */}
             <StreamHeader title={activeLayer?.title} />
 
-            <div className="pt-24 min-h-screen flex flex-col relative overflow-hidden">
+            <div className="pt-16 min-h-screen flex flex-col relative overflow-hidden">
                 <div className="relative z-50">
                     <SystemBroadcast />
                 </div>
@@ -115,7 +119,7 @@ export function AppShell() {
                             animate="center"
                             exit="exit"
                             transition={{ type: 'spring', stiffness: 350, damping: 35 }}
-                            className="min-h-full px-6 md:px-10 max-w-7xl mx-auto"
+                            className="min-h-full px-3 md:px-10 max-w-7xl mx-auto"
                         >
                             <Outlet />
                         </motion.div>
@@ -128,6 +132,9 @@ export function AppShell() {
 
             {/* New Bottom Dock */}
             <BottomDock />
+
+            {/* Global Quick Contact FAB */}
+            <FloatingContactButton />
         </div>
     );
 }

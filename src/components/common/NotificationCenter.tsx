@@ -7,6 +7,7 @@ import { useNotifications } from '../../contexts/NotificationsContext';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../hooks/useTranslation';
+import { WhatsAppService } from '../../services/whatsapp.service';
 
 export function NotificationCenter() {
     const { notifications, unreadCount, markAsRead, markAllAsRead, requestPermission, permission } = useNotifications();
@@ -24,6 +25,26 @@ export function NotificationCenter() {
 
     const handleNotificationClick = (notification: any) => {
         markAsRead(notification.id);
+
+        // WhatsApp One-Tap Logic
+        if (notification.type === 'whatsapp_trigger' && notification.metadata) {
+            const { recipientPhone, messageType, context } = notification.metadata;
+
+            // Guard: Filter out automated receipts and reminders if they bypass context filter
+            if (
+                messageType === 'receipt' ||
+                messageType === 'rent_reminder' ||
+                (context && (context.includes('receiv') || context.includes('remind')))
+            ) {
+                console.log('Ignored automated WhatsApp trigger:', messageType);
+                return;
+            }
+
+            // Generate the deep link dynamically
+            const link = WhatsAppService.generateLink(recipientPhone, context || ''); // Context as message or use specific method
+            window.open(link, '_blank');
+            return;
+        }
 
         // Navigate based on metadata
         if (notification.metadata) {

@@ -61,7 +61,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
             property_type: 'apartment',
             hasLinkageCeiling: false,
             needsPainting: false,
-            petsAllowed: 'true',
+
             paymentMethod: 'Checks'
         }
     });
@@ -164,7 +164,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                 payment_frequency: data.paymentFrequency.toLowerCase(),
                 payment_day: data.paymentDay,
                 needs_painting: !!data.needsPainting,
-                pets_allowed: data.petsAllowed === 'true',
+
                 special_clauses: data.specialClauses || null,
                 guarantees: data.guarantees || null,
                 guarantors_info: data.guarantorsInfo || null,
@@ -413,7 +413,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                         className="w-full px-3 py-2 text-sm border border-border dark:border-gray-700 rounded-lg bg-white dark:bg-foreground disabled:bg-secondary disabled:text-muted-foreground"
                                     >
                                         <option value="ILS">ILS (₪)</option>
-                                        <option value="USD">USD ($)</option>
+                                        <option value="USD">USD (₪)</option>
                                         <option value="EUR">EUR (€)</option>
                                     </select>
                                 </div>

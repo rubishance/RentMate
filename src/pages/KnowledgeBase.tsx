@@ -12,7 +12,7 @@ export function KnowledgeBase() {
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
     useEffect(() => {
-        document.title = lang === 'he' ? 'מרכז ידע | RentMate' : 'Knowledge Base | RentMate';
+        document.title = `${t('knowledgeBaseTitle')} | RentMate`;
     }, [lang]);
 
     // Get unique categories
@@ -41,100 +41,106 @@ export function KnowledgeBase() {
     }, [searchQuery, selectedCategory, lang]);
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="pb-40 animate-in fade-in duration-500">
             {/* Header */}
-            <div className="bg-white border-b border-gray-200">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+            <div className="pt-16 pb-12">
+                <div className="max-w-7xl mx-auto px-4 md:px-8">
                     <button
                         onClick={() => navigate('/dashboard')}
-                        className="mb-8 flex items-center gap-2 text-gray-400 hover:text-black transition-colors group"
+                        className="mb-12 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all group px-4 py-2 glass-premium dark:bg-neutral-900/60 rounded-full border-white/5 shadow-minimal w-fit lowercase font-black text-[10px] uppercase tracking-widest"
                         dir={lang === 'he' ? 'rtl' : 'ltr'}
                     >
-                        <ArrowLeft className={`w-4 h-4 transition-transform ${lang === 'he' ? 'rotate-180 group-hover:translate-x-1' : 'group-hover:-translate-x-1'}`} />
-                        <span className="text-sm font-medium">{t('backToDashboard')}</span>
+                        <ArrowLeft className={`w-3 h-3 transition-transform ${lang === 'he' ? 'rotate-180 group-hover:translate-x-1' : 'group-hover:-translate-x-1'}`} />
+                        <span>{t('backToDashboard')}</span>
                     </button>
 
-                    <div className="text-center">
-                        <div className="flex items-center justify-center gap-3 mb-4">
-                            <Book className="w-10 h-10 text-primary" />
-                            <h1 className="text-4xl font-bold text-gray-900">
-                                {lang === 'he' ? 'מרכז הידע' : 'Knowledge Base'}
-                            </h1>
+                    <div className="space-y-4">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/5 dark:bg-indigo-500/10 backdrop-blur-md rounded-full border border-indigo-500/10 shadow-sm mb-2">
+                            <Book className="w-3 h-3 text-indigo-500" />
+                            <span className="text-[9px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                                {t('knowledgeBaseTitle')}
+                            </span>
                         </div>
-                        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                            {lang === 'he'
-                                ? 'מדריכים מקיפים על ניהול נכסים, חוקי שכירות ומיסוי בישראל'
-                                : 'Comprehensive guides on property management, rental laws, and taxation in Israel'}
+                        <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground leading-tight lowercase">
+                            {t('learnAndExplore')}
+                        </h1>
+                        <p className="text-muted-foreground text-lg font-medium leading-relaxed max-w-2xl opacity-60">
+                            {t('knowledgeBaseDesc')}
                         </p>
                     </div>
 
                     {/* Search and Filter */}
-                    <div className="mt-8 flex flex-col sm:flex-row gap-4">
-                        <div className="flex-1 relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <div className="mt-12 flex flex-col md:flex-row gap-6 relative z-10">
+                        <div className="flex-1 relative group">
+                            <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground opacity-30 group-focus-within:opacity-100 group-focus-within:text-indigo-500 transition-all" />
                             <input
                                 type="text"
-                                placeholder={lang === 'he' ? 'חפש מאמרים...' : 'Search articles...'}
+                                placeholder={t('search_articles')}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                                className="w-full pl-14 pr-6 py-5 glass-premium dark:bg-neutral-900/60 border-white/10 rounded-[2rem] text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 shadow-minimal transition-all"
                             />
                         </div>
-                        <select
-                            value={selectedCategory}
-                            onChange={(e) => setSelectedCategory(e.target.value)}
-                            className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
-                        >
-                            <option value="all">{lang === 'he' ? 'כל הקטגוריות' : 'All Categories'}</option>
-                            {categories.slice(1).map(cat => (
-                                <option key={cat} value={cat}>{cat}</option>
-                            ))}
-                        </select>
+                        <div className="relative group">
+                            <select
+                                value={selectedCategory}
+                                onChange={(e) => setSelectedCategory(e.target.value)}
+                                className="w-full md:w-64 px-8 py-5 glass-premium dark:bg-neutral-900/60 border-white/10 rounded-[2rem] text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/20 shadow-minimal transition-all appearance-none cursor-pointer font-black text-[10px] uppercase tracking-widest lowercase"
+                            >
+                                <option value="all">{t('all_categories')}</option>
+                                {categories.slice(1).map(cat => (
+                                    <option key={cat} value={cat}>{cat}</option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
 
             {/* Articles Grid */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div className="max-w-7xl mx-auto px-4 md:px-8 pb-32">
                 {filteredArticles.length === 0 ? (
-                    <div className="text-center py-12">
-                        <p className="text-gray-500 text-lg">
-                            {lang === 'he' ? 'לא נמצאו מאמרים' : 'No articles found'}
+                    <div className="text-center py-24 glass-premium dark:bg-neutral-900/40 border-white/5 rounded-[3rem] shadow-minimal">
+                        <p className="text-muted-foreground text-lg italic opacity-40 font-black tracking-tight">
+                            {t('no_articles_found')}
                         </p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {filteredArticles.map((article) => (
                             <article
                                 key={article.slug}
                                 onClick={() => navigate(`/knowledge-base/${article.slug}`)}
-                                className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-shadow cursor-pointer group"
+                                className="glass-premium dark:bg-neutral-900/60 border-white/10 rounded-[3rem] p-8 md:p-10 shadow-minimal hover:shadow-jewel transition-all duration-700 cursor-pointer group relative overflow-hidden flex flex-col h-full"
                             >
-                                <div className="flex items-start justify-between mb-3">
-                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
-                                        <Tag className="w-3.5 h-3.5" />
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 blur-[60px] rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-1000" />
+
+                                <div className="flex items-start justify-between mb-8 relative z-10">
+                                    <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-500/10 text-indigo-500 rounded-full text-[9px] font-black uppercase tracking-widest border border-indigo-500/20">
+                                        <Tag className="w-3 h-3" />
                                         {lang === 'he' ? article.category_he : article.category}
                                     </span>
-                                    <span className="flex items-center gap-1 text-sm text-gray-500">
-                                        <Clock className="w-4 h-4" />
-                                        {article.readTime} {lang === 'he' ? 'דק׳' : 'min'}
+                                    <span className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-40">
+                                        <Clock className="w-3 h-3" />
+                                        {t('read_min', { min: article.readTime })}
                                     </span>
                                 </div>
 
-                                <h2 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors line-clamp-2">
-                                    {lang === 'he' ? article.title_he : article.title_en}
-                                </h2>
+                                <div className="flex-1 space-y-4 relative z-10 mb-8">
+                                    <h2 className="text-2xl font-black text-foreground tracking-tighter leading-tight group-hover:text-indigo-500 transition-colors lowercase">
+                                        {lang === 'he' ? article.title_he : article.title_en}
+                                    </h2>
+                                    <p className="text-muted-foreground text-sm font-medium leading-relaxed opacity-60 line-clamp-3">
+                                        {lang === 'he' ? article.description_he : article.description_en}
+                                    </p>
+                                </div>
 
-                                <p className="text-gray-600 text-sm line-clamp-3 mb-4">
-                                    {lang === 'he' ? article.description_he : article.description_en}
-                                </p>
-
-                                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                                    <span className="text-sm text-gray-500">
+                                <div className="flex items-center justify-between pt-6 border-t border-white/5 relative z-10">
+                                    <span className="text-[10px] font-black text-muted-foreground opacity-30 uppercase tracking-widest">
                                         {new Date(article.date).toLocaleDateString(lang === 'he' ? 'he-IL' : 'en-US')}
                                     </span>
-                                    <span className="text-primary font-medium text-sm group-hover:underline">
-                                        {lang === 'he' ? 'קרא עוד ←' : 'Read more →'}
+                                    <span className="button-jewel px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest text-white shadow-sm group-hover:scale-105 transition-all">
+                                        {t('read_more')}
                                     </span>
                                 </div>
                             </article>

@@ -5,6 +5,12 @@ export interface Message {
     role: 'user' | 'assistant' | 'system';
     content: string;
     timestamp?: string;
+    type?: 'text' | 'action';
+    actionData?: {
+        title: string;
+        description?: string;
+        options: { label: string, value: string, variant?: 'default' | 'outline' | 'destructive' }[];
+    };
 }
 
 export function useChatBot() {
@@ -38,7 +44,7 @@ export function useChatBot() {
 
     const clearUiAction = () => setUiAction(null);
 
-    const sendMessage = async (content: string, fileInfo?: { name: string, path: string }) => {
+    const sendMessage = async (content: string, fileInfo?: { name: string, path: string }, analysisResults?: any) => {
         if (!content.trim() && !fileInfo) return;
 
         // Add user message with hidden file context if present
@@ -52,12 +58,18 @@ export function useChatBot() {
             timestamp: new Date().toISOString()
         };
 
-        // If file exists, we inject private context for the AI to know about the file
+        // If file or analysis exists, we inject private context for the AI to know about the file
         const apiMessages = [...messages];
         if (fileInfo) {
+            let context = `USER UPLOADED FILE: ${fileInfo.name}. Storage Path: ${fileInfo.path}.`;
+            if (analysisResults) {
+                context += ` ANALYSIS RESULTS: ${JSON.stringify(analysisResults)}.`;
+            }
+            context += ` Help the user organize this file using available tools.`;
+
             apiMessages.push({
                 role: 'system',
-                content: `USER UPLOADED FILE: ${fileInfo.name}. Storage Path: ${fileInfo.path}. Help the user organize this file using available tools.`
+                content: context
             });
         }
         apiMessages.push(userMessage);
@@ -131,5 +143,8 @@ export function useChatBot() {
     const activateAiMode = () => setIsAiMode(true);
     const deactivateAiMode = () => setIsAiMode(false);
 
-    return { isOpen, toggleChat, isLoading, messages, sendMessage, uiAction, clearUiAction, isAiMode, activateAiMode, deactivateAiMode };
+    const openChat = () => setIsOpen(true);
+    const closeChat = () => setIsOpen(false);
+
+    return { isOpen, toggleChat, openChat, closeChat, isLoading, messages, sendMessage, uiAction, clearUiAction, isAiMode, activateAiMode, deactivateAiMode };
 }

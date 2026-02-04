@@ -97,8 +97,49 @@
     box-shadow: 0 20px 40px -12px rgba(2, 6, 23, 0.5);
   }
 
+  .shadow-jewel {
+    box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.2), 0 4px 6px -2px rgba(99, 102, 241, 0.1);
+  }
+
+  /* Glassmorphism & Surfaces */
+  .glass-premium {
+    @apply bg-white/70 dark:bg-black/40 backdrop-blur-2xl border border-white/20 dark:border-white/10;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  }
+
   .glass-morphism {
     @apply bg-white/70 dark:bg-black/40 backdrop-blur-xl border border-white/20 dark:border-white/10;
+  }
+
+  /* Bionic Density Utilities */
+  .bionic-container {
+    @apply px-4 md:px-10 max-w-7xl mx-auto;
+  }
+
+  .bionic-grid {
+    @apply grid gap-6;
+  }
+
+  /* Jewel Button Utility */
+  .button-jewel {
+    @apply bg-primary text-primary-foreground bg-gradient-to-b from-white/10 to-transparent shadow-jewel hover:shadow-indigo-500/30 transition-all active:scale-95;
+  }
+
+  /* Checkbox-to-Button Standard */
+  .checkbox-button {
+    @apply flex items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer select-none;
+    @apply bg-white dark:bg-neutral-900 border-slate-200 dark:border-neutral-800 text-muted-foreground;
+  }
+
+  .checkbox-button[aria-checked="true"] {
+    @apply bg-indigo-500/10 border-indigo-500 text-indigo-600 dark:text-indigo-400 shadow-jewel;
+  }
+
+  /* Ambient Mesh Layers */
+  .ambient-depth {
+    @apply fixed inset-0 z-[-1] pointer-events-none overflow-hidden opacity-30 dark:opacity-20;
+    background: radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 40%);
   }
 
   /* Hide number input spinners */
@@ -244,4 +285,53 @@ a {
 [dir="rtl"] textarea,
 [dir="rtl"] select {
   text-align: right;
+}
+
+/* Google Maps Autocomplete Dropdown Fix */
+.pac-container {
+  z-index: 999999 !important;
+  border-radius: 1.5rem !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.15) !important;
+  margin-top: 8px !important;
+  background-color: white !important;
+  pointer-events: auto !important;
+}
+
+.dark .pac-container {
+  background-color: #171717 !important;
+  border-color: #262626 !important;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5) !important;
+}
+
+.pac-item {
+  padding: 12px 16px !important;
+  cursor: pointer !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.02) !important;
+}
+
+.dark .pac-item {
+  border-color: #262626 !important;
+  color: #a3a3a3 !important;
+}
+
+.pac-item:first-child {
+  border-top: none !important;
+}
+
+.pac-item:hover {
+  background-color: #f8fafc !important;
+}
+
+.dark .pac-item:hover {
+  background-color: #262626 !important;
+}
+
+.pac-item-query {
+  font-weight: 700 !important;
+  color: #0f172a !important;
+}
+
+.dark .pac-item-query {
+  color: white !important;
 }

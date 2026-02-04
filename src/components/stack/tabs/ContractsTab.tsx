@@ -9,9 +9,10 @@ import { Skeleton } from '../../ui/Skeleton';
 
 interface ContractsTabProps {
     propertyId: string;
+    onAddContract?: () => void;
 }
 
-export function ContractsTab({ propertyId }: ContractsTabProps) {
+export function ContractsTab({ propertyId, onAddContract }: ContractsTabProps) {
     const { t, lang } = useTranslation();
     const navigate = useNavigate();
     const [contracts, setContracts] = useState<Contract[]>([]);
@@ -78,13 +79,16 @@ export function ContractsTab({ propertyId }: ContractsTabProps) {
     if (contracts.length === 0) {
         return (
             <div className="p-6">
-                <div className="text-center py-12 bg-slate-50 dark:bg-neutral-800 rounded-3xl border border-dashed border-slate-200 dark:border-neutral-700">
-                    <div className="w-16 h-16 bg-white dark:bg-black rounded-2xl shadow-sm flex items-center justify-center mx-auto mb-4">
-                        <FileTextIcon className="w-8 h-8 text-slate-300" />
+                <button
+                    onClick={onAddContract}
+                    className="w-full text-center py-12 bg-slate-50 dark:bg-neutral-800 rounded-3xl border border-dashed border-slate-200 dark:border-neutral-700 hover:bg-slate-100 dark:hover:bg-neutral-700/50 transition-all group"
+                >
+                    <div className="w-16 h-16 bg-white dark:bg-black rounded-2xl shadow-sm flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                        <FileTextIcon className="w-8 h-8 text-slate-300 group-hover:text-primary transition-colors" />
                     </div>
                     <h3 className="text-lg font-bold text-foreground mb-1">{t('noActiveContracts')}</h3>
                     <p className="text-sm text-muted-foreground">{t('addContractDesc')}</p>
-                </div>
+                </button>
             </div>
         );
     }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Upload, Loader2, FileText, Check, X, Calendar, DollarSign, Folder, Trash2, ChevronDown, ChevronRight, Plus, Droplets, Zap, Flame, Building2, Landmark, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Upload, Loader2, FileText, Check, X, Calendar, DollarSign, Folder, Trash2, ChevronDown, ChevronRight, Plus, Droplets, Zap, Flame, Building2, Landmark, TrendingUp, TrendingDown, Minus, Wifi, Tv } from 'lucide-react';
 import type { Property, PropertyDocument, DocumentCategory, DocumentFolder } from '../../types/database';
 import { propertyDocumentsService } from '../../services/property-documents.service';
 import { format, parseISO } from 'date-fns';
@@ -18,7 +18,7 @@ interface UtilityBillsManagerProps {
     readOnly?: boolean;
 }
 
-type UtilityType = 'water' | 'electric' | 'gas' | 'municipality' | 'management';
+type UtilityType = 'water' | 'electric' | 'gas' | 'municipality' | 'management' | 'internet' | 'cable';
 
 interface AnalyticsData {
     averageMonthly: number;
@@ -68,6 +68,8 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
         { id: 'gas' as UtilityType, label: t('utilityGas'), icon: Flame, color: 'text-orange-500', bg: 'bg-orange-100 dark:bg-orange-900/30' },
         { id: 'management' as UtilityType, label: t('utilityManagement'), icon: Building2, color: 'text-purple-500', bg: 'bg-purple-100 dark:bg-purple-900/30' },
         { id: 'water' as UtilityType, label: t('utilityWater'), icon: Droplets, color: 'text-primary', bg: 'bg-primary/10 dark:bg-blue-900/30' },
+        { id: 'internet' as UtilityType, label: t('utilityInternet'), icon: Wifi, color: 'text-indigo-500', bg: 'bg-indigo-100 dark:bg-indigo-900/30' },
+        { id: 'cable' as UtilityType, label: t('utilityCable'), icon: Tv, color: 'text-rose-500', bg: 'bg-rose-100 dark:bg-rose-900/30' },
     ];
 
     useEffect(() => {
@@ -132,7 +134,7 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                     // Only analyze images for now (PDF support requires more complex handling or specific Gemini setup)
                     // But our service handles File, so let's try.
                     if (fileObj.file.type.startsWith('image/') || fileObj.file.type === 'application/pdf') {
-                        const result = await BillAnalysisService.analyzeBill(fileObj.file);
+                        const result = await BillAnalysisService.analyzeBill(fileObj.file, [{ id: property.id, address: property.address }]);
 
                         // Check for duplicate
                         const duplicate = await propertyDocumentsService.checkDuplicateBill(
@@ -371,7 +373,7 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                                         {t('newBillEntry')}
                                     </h4>
                                     <p className="text-sm text-muted-foreground dark:text-muted-foreground mt-1">
-                                        {t('uploadBillTitle', { type: utilities.find(u => u.id === activeUtility)?.label })}
+                                        {t('uploadBillTitle', { type: utilities.find(u => u.id === activeUtility)?.label || '' })}
                                     </p>
                                 </div>
                                 <button

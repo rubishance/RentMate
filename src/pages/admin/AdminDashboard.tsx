@@ -14,8 +14,18 @@ import {
     Loader2,
     Cpu,
     MessageSquare,
-    Sparkles
+    Sparkles,
+    Wallet
 } from 'lucide-react';
+import {
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer
+} from 'recharts';
 import { ActiveChatsWidget } from '../../components/crm/ActiveChatsWidget';
 import { ActionInbox } from '../../components/crm/ActionInbox';
 import { AutomationAnalytics } from '../../components/crm/AutomationAnalytics';
@@ -30,6 +40,7 @@ interface DashboardStats {
     stagnantTickets: number;
     avgSentiment: number;
     lastAutomationRun: string | null;
+    topCities: { name: string; count: number }[];
 }
 
 interface RecentActivity {
@@ -76,7 +87,8 @@ const AdminDashboard = () => {
         totalAutomatedActions: 0,
         stagnantTickets: 0,
         avgSentiment: 0,
-        lastAutomationRun: null
+        lastAutomationRun: null,
+        topCities: []
     });
     const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
     const [newUsers, setNewUsers] = useState<NewUser[]>([]);
@@ -110,14 +122,15 @@ const AdminDashboard = () => {
 
             setStats({
                 totalUsers: statsData?.totalUsers || 0,
-                activeUsers: statsData?.activeUsers || 0,
                 totalContracts: statsData?.totalContracts || 0,
                 totalRevenue: statsData?.totalRevenue || 0,
+                activeUsers: statsData?.activeUsers || 0,
                 totalAiCost: statsData?.totalAiCost || 0,
                 totalAutomatedActions: statsData?.totalAutomatedActions || 0,
                 stagnantTickets: statsData?.stagnantTickets || 0,
                 avgSentiment: statsData?.avgSentiment || 0,
-                lastAutomationRun: statsData?.lastAutomationRun || null
+                lastAutomationRun: statsData?.lastAutomationRun || null,
+                topCities: statsData?.topCities || []
             });
 
             setRecentActivity(logsReq.data as RecentActivity[] || []);
@@ -136,7 +149,7 @@ const AdminDashboard = () => {
     const statCards = [
         { name: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-brand-600', bg: 'bg-brand-50' },
         { name: 'Total Contracts', value: stats.totalContracts, icon: FileText, color: 'text-purple-600', bg: 'bg-purple-50' },
-        { name: 'Total Revenue', value: stats.totalRevenue ? `₪${stats.totalRevenue.toLocaleString()}` : '₪0', icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+        { name: 'Total Revenue', value: stats.totalRevenue ? `₪${stats.totalRevenue.toLocaleString()}` : '₪0', icon: Wallet, color: 'text-emerald-600', bg: 'bg-emerald-50' },
         { name: 'Active Users', value: stats.activeUsers, icon: Activity, color: 'text-orange-600', bg: 'bg-orange-50' },
         { name: 'AI Usage Cost', value: stats.totalAiCost ? `$${stats.totalAiCost.toFixed(2)}` : '$0.00', icon: Cpu, color: 'text-blue-600', bg: 'bg-blue-50' },
         { name: 'Autopilot Decisions', value: stats.totalAutomatedActions, icon: Sparkles, color: 'text-amber-600', bg: 'bg-amber-50' },
@@ -192,6 +205,41 @@ const AdminDashboard = () => {
             {/* AI Action Inbox (New) */}
             <div className="grid grid-cols-1 gap-8">
                 <ActionInbox />
+            </div>
+
+            {/* Top Cities Distribution */}
+            <div className="bg-white dark:bg-gray-800 shadow-sm rounded-xl border border-border dark:border-gray-700 p-6">
+                <div className="flex items-center gap-2 mb-6">
+                    <Activity className="w-5 h-5 text-brand-600" />
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">Top 10 Cities By Properties</h3>
+                </div>
+                <div className="h-80 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={stats.topCities} layout="vertical" margin={{ left: 40, right: 30, top: 0, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} strokeOpacity={0.1} />
+                            <XAxis type="number" hide />
+                            <YAxis
+                                dataKey="name"
+                                type="category"
+                                width={100}
+                                axisLine={false}
+                                tickLine={false}
+                                tick={{ fill: '#64748B', fontSize: 12, fontWeight: 600 }}
+                            />
+                            <Tooltip
+                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                                cursor={{ fill: 'rgba(0,0,0,0.05)' }}
+                            />
+                            <Bar
+                                dataKey="count"
+                                fill="#7C3AED"
+                                radius={[0, 4, 4, 0]}
+                                barSize={20}
+                                label={{ position: 'right', fill: '#64748B', fontSize: 11, fontWeight: 700 }}
+                            />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

@@ -9,7 +9,7 @@ const FIELD_TRANSLATIONS: Record<string, string> = {
     signingDate: 'תאריך חתימה', startDate: 'תאריך התחלה', endDate: 'תאריך סיום', optionPeriod: 'תקופת אופציה',
     linkageType: 'סוג הצמדה', baseIndexDate: 'תאריך מדד בסיס', baseIndexValue: 'מדד בסיס',
     securityDeposit: 'סכום פיקדון', guarantees: 'ערבויות',
-    petsAllowed: 'חיות מחמד', parking: 'חניה', furniture: 'ריהוט',
+    parking: 'חניה', furniture: 'ריהוט',
     guarantorsInfo: 'פרטי ערבים', specialClauses: 'סעיפים מיוחדים'
 };
 

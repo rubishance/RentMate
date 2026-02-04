@@ -1,37 +1,21 @@
 import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../hooks/useTranslation';
-import { useUserPreferences } from '../contexts/UserPreferencesContext';
 import { LanguageToggle } from '../components/common/LanguageToggle';
 import { ThemeToggle } from '../components/common/ThemeToggle';
 import {
-    ArrowRight, Check, X, Menu, Bell, Calculator, Mail,
-    Play, Search, Clock, Tag, Shield, FileText, Zap
+    ArrowRight, Check, X, Menu, Bell, Calculator,
+    Play, Clock, FileText, Zap, MapPin
 } from 'lucide-react';
 import { BillScanningAnimation } from '../components/animations/BillScanningAnimation';
-import logoIconOnly from '../assets/rentmate-icon-only.png';
-import logoIconDark from '../assets/rentmate-icon-only-dark.png';
 import { cn } from '../lib/utils';
-import { articles } from '../content/articleIndex';
 import { supabase } from '../lib/supabase';
 import { BotFullBody } from '../components/chat/BotFullBody';
-import { BotIcon } from '../components/chat/BotIcon';
-import { RentyRagdoll } from '../components/chat/RentyRagdoll';
 
-// --- STITCH DESIGN TOKENS ---
-// Radical Layouts, Sharp Edges, High Contrast
-const STITCH = {
-    card: "bg-white/5 backdrop-blur-md border border-black/5 dark:border-white/10 rounded-3xl overflow-hidden hover:border-gold/50 transition-colors duration-500",
-    buttonPrimary: "bg-black dark:bg-white text-white dark:text-black font-bold rounded-xl hover:bg-gold hover:text-black dark:hover:bg-gold dark:hover:text-black transition-all duration-300 shadow-lg hover:shadow-gold/20",
-    buttonSecondary: "bg-transparent border-2 border-black/10 dark:border-white/10 text-black dark:text-white font-bold rounded-xl hover:border-black dark:hover:border-white transition-all duration-300",
-    textGradient: "text-transparent bg-clip-text bg-gradient-to-r from-black to-gray-600 dark:from-white dark:to-gray-400",
-    goldGradient: "text-transparent bg-clip-text bg-gradient-to-r from-gold via-gold-light to-gold-dark"
-};
 
 export function WelcomeLanding() {
     const { lang } = useTranslation();
-    const { effectiveTheme } = useUserPreferences();
     const isRtl = lang === 'he';
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<'home' | 'blog' | 'demo' | 'calculator'>('home');
@@ -51,10 +35,23 @@ export function WelcomeLanding() {
         checkAuth();
     }, [navigate]);
 
+    // SEO Injection
+    useEffect(() => {
+        document.title = isRtl
+            ? "RentMate | ניהול נכסים על אוטומט"
+            : "RentMate | Property Management Software Israel";
+
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) {
+            metaDesc.setAttribute('content', isRtl
+                ? "התוכנה המובילה לניהול נכסים בחולון, תל אביב והמרכז. גבייה אוטומטית, חוזים חכמים והתראות בזמן אמת."
+                : "Premium property management software for landlords in Holon, Tel Aviv and Central Israel. Automated rent collection and contracts."
+            );
+        }
+    }, [isRtl]);
+
     // Scroll Animation for Hero Walking
     const containerRef = useRef(null);
-    const { scrollY } = useScroll();
-    const walkX = useTransform(scrollY, [0, 400], [0, isRtl ? -100 : 100]); // Bot walks slightly as you scroll
 
     const features = [
         {
@@ -103,7 +100,7 @@ export function WelcomeLanding() {
         >
             {/* --- HEADER --- */}
             <header className="fixed top-0 w-full z-50 bg-white/50 dark:bg-black/50 backdrop-blur-3xl border-b border-slate-100 dark:border-neutral-900 transition-all">
-                <div className="max-w-7xl mx-auto px-6 md:px-8 h-20 md:h-24 flex items-center justify-between">
+                <div className="max-w-7xl mx-auto px-3 md:px-8 h-20 md:h-24 flex items-center justify-between">
                     <div className="flex items-center cursor-pointer group" onClick={() => navigate('/')}>
                         <span className="text-2xl md:text-4xl font-black tracking-tighter text-foreground uppercase">
                             Rent<span className="opacity-40">Mate</span>
@@ -234,10 +231,10 @@ export function WelcomeLanding() {
                             className="space-y-0"
                         >
                             {/* --- HERO SECTION --- */}
-                            <section className="relative min-h-[90vh] flex items-center overflow-hidden px-8">
+                            <section className="relative min-h-[90vh] flex items-center overflow-hidden px-4">
                                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,#00000008,transparent)] dark:bg-[radial-gradient(circle_at_50%_50%,#ffffff08,transparent)] pointer-events-none" />
 
-                                <div className="max-w-7xl mx-auto w-full grid lg:grid-cols-2 gap-20 items-center relative z-10">
+                                <div className="max-w-7xl mx-auto w-full grid lg:grid-cols-2 gap-10 lg:gap-20 items-center relative z-10">
                                     {/* Text Column */}
                                     <div className="space-y-12 order-2 lg:order-1">
                                         <motion.div
@@ -254,16 +251,16 @@ export function WelcomeLanding() {
                                             </div>
 
                                             <h1 className="text-6xl lg:text-[7rem] font-black tracking-tighter leading-[0.85] text-foreground lowercase">
-                                                {isRtl ? 'ניהול חכם.' : 'Manage'} <br />
-                                                <span className="opacity-20 translate-x-4 inline-block">
-                                                    {isRtl ? 'בראש שקט' : 'Quietly.'}
+                                                {isRtl ? 'ניהול שכירות' : 'Rent Management'} <br />
+                                                <span className="opacity-40 translate-x-4 inline-block">
+                                                    {isRtl ? 'על אוטומט.' : 'On Autopilot.'}
                                                 </span>
                                             </h1>
 
                                             <p className="text-xl text-muted-foreground max-w-lg leading-relaxed font-medium opacity-80">
                                                 {isRtl
-                                                    ? 'עוזר ה-AI האישי שלך לניהול נכסים. חוזים, חשבונות, הצמדות ועוד - הכל במקום אחד, במינימום מאמץ.'
-                                                    : 'Your personal AI property assistant. Automate contracts, CPI calculations, and daily management - all in one high-end interface.'
+                                                    ? 'התוכנה המובילה לניהול נכסים בישראל. שירות לחולון, תל אביב והמרכז. נהל חוזים, צ׳קים והצמדות באופן אוטומטי.'
+                                                    : 'The #1 Property management software in Israel. Serving Holon and Central Israel. Automate automated rent collection, contracts, and linkage clauses.'
                                                 }
                                             </p>
                                         </motion.div>
@@ -305,7 +302,7 @@ export function WelcomeLanding() {
 
                             {/* --- FEATURES GRID --- */}
                             <section className="py-32 bg-slate-50 dark:bg-black/50 border-y border-slate-100 dark:border-neutral-900 relative">
-                                <div className="max-w-7xl mx-auto px-8">
+                                <div className="max-w-7xl mx-auto px-4 sm:px-8">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
                                         {features.map((f, i) => (
                                             <motion.div
@@ -333,8 +330,98 @@ export function WelcomeLanding() {
                                 </div>
                             </section>
 
+                            {/* --- STITCH LOOP 2: ZIG-ZAG DEEP DIVE --- */}
+                            <section className="py-32 relative overflow-hidden">
+                                <div className="max-w-7xl mx-auto px-4 sm:px-8 space-y-32">
+
+                                    {/* Feature 1: Automated Collection */}
+                                    <div className="flex flex-col lg:flex-row items-center gap-16">
+                                        <div className="lg:w-1/2 space-y-8">
+                                            <div className="inline-flex px-4 py-2 rounded-full glass-premium dark:bg-white/5 border border-black/5 dark:border-white/10 text-[10px] font-black uppercase tracking-widest text-gold shadow-jewel">
+                                                {isRtl ? 'גבייה אוטומטית' : 'Automated Collection'}
+                                            </div>
+                                            <h2 className="text-4xl lg:text-5xl font-black tracking-tighter text-foreground">
+                                                {isRtl ? 'תשלומים בזמן.' : 'Payments on Time.'} <br />
+                                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-500">
+                                                    {isRtl ? 'כל הזמן.' : 'Every Time.'}
+                                                </span>
+                                            </h2>
+                                            <p className="text-lg text-muted-foreground leading-relaxed max-w-md">
+                                                {isRtl
+                                                    ? 'מערכת הגבייה האוטומטית שלנו מסתנכרנת עם כל הבנקים בישראל. הפקדות צ׳קים דיגיטליות, מעקב העברות בנקאיות והתראות מיידיות על פיגורים.'
+                                                    : 'Our automated collection system syncs with all Israeli banks. Digital check deposits, wire transfer tracking, and instant late payment alerts.'}
+                                            </p>
+                                            <button
+                                                onClick={() => navigate('/login?mode=signup')}
+                                                className="px-8 py-4 button-jewel text-white rounded-2xl font-bold shadow-lg hover:scale-105 transition-transform flex items-center gap-3"
+                                            >
+                                                {isRtl ? 'התחל לגבות' : 'Start Collecting'}
+                                                <ArrowRight className={cn("w-5 h-5", isRtl && "rotate-180")} />
+                                            </button>
+                                        </div>
+                                        <div className="lg:w-1/2 relative group">
+                                            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 blur-[100px] rounded-full opacity-50 group-hover:opacity-75 transition-opacity" />
+                                            <div className="relative glass-premium dark:bg-black/40 border border-white/20 p-8 rounded-[2.5rem] shadow-2xl rotate-3 group-hover:rotate-1 transition-transform duration-700">
+                                                {/* Abstract UI Representation */}
+                                                <div className="space-y-4">
+                                                    {[1, 2, 3].map(i => (
+                                                        <div key={i} className="flex items-center justify-between p-4 bg-white/50 dark:bg-white/5 rounded-2xl border border-black/5 dark:border-white/5">
+                                                            <div className="flex items-center gap-4">
+                                                                <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                                                                    <Check className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                                                                </div>
+                                                                <div>
+                                                                    <div className="h-2 w-24 bg-black/10 dark:bg-white/10 rounded mb-2" />
+                                                                    <div className="h-2 w-16 bg-black/5 dark:bg-white/5 rounded" />
+                                                                </div>
+                                                            </div>
+                                                            <div className="font-mono text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                                                                ₪6,500
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Feature 2: Local Expertise (SEO) - Reverse Layout */}
+                                    <div className="flex flex-col lg:flex-row-reverse items-center gap-16">
+                                        <div className="lg:w-1/2 space-y-8">
+                                            <div className="inline-flex px-4 py-2 rounded-full glass-premium dark:bg-white/5 border border-black/5 dark:border-white/10 text-[10px] font-black uppercase tracking-widest text-indigo-500 shadow-jewel">
+                                                {isRtl ? 'דאטה מקומי' : 'Local Data'}
+                                            </div>
+                                            <h2 className="text-4xl lg:text-5xl font-black tracking-tighter text-foreground">
+                                                {isRtl ? 'שולטים במרכז.' : 'Mastering Central Israel.'} <br />
+                                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-violet-500">
+                                                    {isRtl ? 'חולון, ת״א והסביבה.' : 'Holon, TLV & Global.'}
+                                                </span>
+                                            </h2>
+                                            <p className="text-lg text-muted-foreground leading-relaxed max-w-md">
+                                                {isRtl
+                                                    ? 'אנחנו מכירים את השוק הישראלי. הצמדת מדדים אוטומטית לפי נתוני הלמ״ס, חוזים מותאמים לרגולציה הישראלית, ותמיכה מלאה בעברית.'
+                                                    : 'We know the Israeli market. Auto-linkage to CBS indices, contracts compliant with Israeli regulation, and native support for Holon, Tel Aviv, and Gush Dan.'}
+                                            </p>
+                                        </div>
+                                        <div className="lg:w-1/2 relative group">
+                                            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-violet-500/20 blur-[100px] rounded-full opacity-50 group-hover:opacity-75 transition-opacity" />
+                                            <div className="relative glass-premium dark:bg-black/40 border border-white/20 p-8 rounded-[2.5rem] shadow-2xl -rotate-3 group-hover:-rotate-1 transition-transform duration-700">
+                                                {/* Map Abstract */}
+                                                <div className="aspect-video bg-slate-100 dark:bg-neutral-800 rounded-2xl relative overflow-hidden flex items-center justify-center border border-black/5 dark:border-white/5">
+                                                    <MapPin className="w-16 h-16 text-indigo-500 animate-bounce" />
+                                                    <div className="absolute bottom-4 left-4 right-4 h-2 bg-indigo-500/10 rounded-full overflow-hidden">
+                                                        <div className="h-full w-2/3 bg-indigo-500 rounded-full" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </section>
+
                             {/* --- PREVIEW SECTION --- */}
-                            <section className="py-40 relative px-8">
+                            <section className="py-40 relative px-4 sm:px-8">
                                 <div className="max-w-5xl mx-auto text-center space-y-20">
                                     <div className="space-y-4">
                                         <h2 className="text-5xl lg:text-7xl font-black tracking-tighter text-foreground lowercase">
@@ -418,7 +505,10 @@ export function WelcomeLanding() {
                             >
                                 {isRtl ? 'תנאים' : 'Terms'}
                             </a>
-                            <button className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors">
+                            <button
+                                onClick={() => navigate('/contact')}
+                                className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+                            >
                                 {isRtl ? 'תמיכה' : 'Support'}
                             </button>
                         </div>

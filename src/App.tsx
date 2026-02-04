@@ -5,7 +5,6 @@ import { NotificationsProvider } from './contexts/NotificationsContext';
 import { DataCacheProvider } from './contexts/DataCacheContext';
 import { AppShell } from './components/layout/AppShell';
 import { Loader2 } from 'lucide-react';
-import { FeedbackWidget } from './components/common/FeedbackWidget';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { ChatWidget } from './components/chat/ChatWidget';
 
@@ -18,6 +17,8 @@ const PageLoader = () => (
 // Eager load critical pages
 import { WelcomeLanding } from './pages/WelcomeLanding';
 import { Login } from './pages/Login';
+const Signup = lazy(() => import('./pages/Signup').then(module => ({ default: module.Signup })));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword').then(module => ({ default: module.ForgotPassword })));
 
 // Lazy load Main Pages (Named Exports)
 const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })));
@@ -27,6 +28,7 @@ const PropertyDetails = lazy(() => import('./pages/PropertyDetails'));
 
 const Payments = lazy(() => import('./pages/Payments').then(module => ({ default: module.Payments })));
 const AddContract = lazy(() => import('./pages/AddContract').then(module => ({ default: module.AddContract })));
+const MaintenanceTracker = lazy(() => import('./pages/MaintenanceTracker').then(module => ({ default: module.MaintenanceTracker })));
 const ContractDetails = lazy(() => import('./pages/ContractDetails'));
 const Calculator = lazy(() => import('./pages/Calculator').then(module => ({ default: module.Calculator })));
 const SharedCalculation = lazy(() => import('./pages/SharedCalculation').then(module => ({ default: module.SharedCalculation })));
@@ -37,6 +39,7 @@ const ResetPassword = lazy(() => import('./pages/ResetPassword').then(module => 
 const AccessibilityStatement = lazy(() => import('./pages/AccessibilityStatement').then(module => ({ default: module.AccessibilityStatement })));
 const KnowledgeBase = lazy(() => import('./pages/KnowledgeBase').then(module => ({ default: module.KnowledgeBase })));
 const ArticleViewer = lazy(() => import('./pages/ArticleViewer').then(module => ({ default: module.ArticleViewer })));
+const Contact = lazy(() => import('./pages/Contact'));
 
 // Lazy load Admin Pages & Less Critical (Default Exports)
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -87,9 +90,12 @@ function App() {
                     <Route path="/" element={<WelcomeLanding />} />
                     <Route path="/pricing" element={<Pricing />} />
                     <Route path="/login" element={<Login />} />
+                    <Route path="/signup" element={<Signup />} />
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/s/:slug" element={<ShortLinkRedirect />} />
-                    <Route path="/maintenance" element={<MaintenancePage />} />
+                    <Route path="/system-maintenance" element={<MaintenancePage />} />
+                    <Route path="/contact" element={<Contact />} />
 
                     {/* MFA Routes - Accessible only if logged in */}
                     <Route element={<AuthGuard />}>
@@ -112,6 +118,7 @@ function App() {
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/properties" element={<Properties />} />
                         <Route path="/properties/:id" element={<PropertyDetails />} />
+                        <Route path="/maintenance" element={<MaintenanceTracker />} />
 
                         {/* Redirect old contracts route to properties */}
                         <Route path="/contracts" element={<Navigate to="/properties" replace />} />

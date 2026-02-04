@@ -21,51 +21,151 @@ serve(async (req: Request) => {
 
         const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
         const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        console.log(`Daily summary start: ${new Date().toISOString()}`);
 
-        // 1. Fetch Stats
-        // New Users
-        const { count: newUsers } = await supabase
-            .from('user_profiles')
-            .select('*', { count: 'exact', head: true })
-            .gte('created_at', last24h);
+        // 0. Fetch Configuration
+        console.log("Fetching email configuration...");
+        const { data: settingsData } = await supabase
+            .from('system_settings')
+            .select('key, value')
+            .in('key', ['admin_email_daily_summary_enabled', 'admin_email_content_preferences']);
 
-        // New Payments (Invoices)
-        const { data: newPayments } = await supabase
-            .from('invoices')
-            .select('amount, currency')
-            .eq('status', 'paid')
-            .gte('created_at', last24h);
+        const isEnabled = settingsData?.find(s => s.key === 'admin_email_daily_summary_enabled')?.value !== false;
+        const preferences = settingsData?.find(s => s.key === 'admin_email_content_preferences')?.value as Record<string, boolean> || {
+            new_users: true,
+            revenue: true,
+            support_tickets: true,
+            upgrades: true,
+            active_properties: true
+        };
 
-        const totalRevenue = newPayments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
-
-        // Support Tickets
-        const { count: newTickets } = await supabase
-            .from('crm_interactions')
-            .select('*', { count: 'exact', head: true })
-            .eq('type', 'support_ticket')
-            .gte('created_at', last24h);
-
-        // Plan Upgrade Requests
-        const { count: newUpgrades } = await supabase
-            .from('admin_notifications')
-            .select('*', { count: 'exact', head: true })
-            .eq('type', 'upgrade_request')
-            .eq('status', 'pending')
-            .gte('created_at', last24h);
-
-        // Active Properties
-        const { count: totalProperties } = await supabase
-            .from('properties')
-            .select('*', { count: 'exact', head: true });
-
-        // SILENT MODE CHECK: If no significant activity, skip email
-        if ((newUsers || 0) === 0 && (newTickets || 0) === 0 && (newUpgrades || 0) === 0 && totalRevenue === 0) {
-            console.log("Silent Mode: No activity in the last 24h. Skipping daily summary.");
-            return new Response(JSON.stringify({ skipped: true, message: "No significant activity to report." }), {
+        if (!isEnabled) {
+            console.log("Admin Email is disabled in system settings. Skipping.");
+            return new Response(JSON.stringify({ skipped: true, message: "Disabled by administrator." }), {
                 headers: { ...corsHeaders, "Content-Type": "application/json" },
                 status: 200,
             });
         }
+
+        // 1. Fetch Stats
+        console.log("Fetching stats based on preferences:", JSON.stringify(preferences));
+
+        // New Users
+        let newUsers = 0;
+        if (preferences.new_users) {
+            console.log("Fetching new users...");
+            const { count, error } = await supabase
+                .from('user_profiles')
+                .select('*', { count: 'exact', head: true })
+                .gte('created_at', last24h);
+            if (error) console.error("Error fetching users:", error);
+            newUsers = count || 0;
+        }
+
+        // New Payments
+        let totalRevenue = 0;
+        let paymentCount = 0;
+        if (preferences.revenue) {
+            console.log("Fetching new payments...");
+            const { data, error } = await supabase
+                .from('invoices')
+                .select('amount')
+                .eq('status', 'paid')
+                .gte('created_at', last24h);
+            if (error) console.error("Error fetching payments:", error);
+            totalRevenue = data?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
+            paymentCount = data?.length || 0;
+        }
+
+        // Support Tickets
+        let newTickets = 0;
+        if (preferences.support_tickets) {
+            console.log("Fetching support tickets...");
+            const { count, error } = await supabase
+                .from('crm_interactions')
+                .select('*', { count: 'exact', head: true })
+                .eq('type', 'support_ticket')
+                .gte('created_at', last24h);
+            if (error) console.error("Error fetching tickets:", error);
+            newTickets = count || 0;
+        }
+
+        // Plan Upgrade Requests
+        let newUpgrades = 0;
+        if (preferences.upgrades) {
+            console.log("Fetching upgrade requests...");
+            const { count, error } = await supabase
+                .from('admin_notifications')
+                .select('*', { count: 'exact', head: true })
+                .eq('type', 'upgrade_request')
+                .eq('status', 'pending')
+                .gte('created_at', last24h);
+            if (error) console.error("Error fetching upgrades:", error);
+            newUpgrades = count || 0;
+        }
+
+        // 1.1 Advanced Subscription Analytics
+        let planStats: any[] = [];
+        if (preferences.plan_breakdown) {
+            console.log("Fetching plan breakdown...");
+            const { data: plans } = await supabase.from('subscription_plans').select('id, name');
+            const { data: profiles } = await supabase.from('user_profiles').select('plan_id, subscription_status');
+
+            planStats = plans?.map(plan => {
+                const users = profiles?.filter(p => p.plan_id === plan.id) || [];
+                return {
+                    name: plan.name,
+                    count: users.length,
+                    active: users.filter(u => u.subscription_status === 'active').length
+                };
+            }) || [];
+        }
+
+        let cancellations = 0;
+        if (preferences.cancellations) {
+            console.log("Fetching cancellations...");
+            const { count } = await supabase
+                .from('user_profiles')
+                .select('*', { count: 'exact', head: true })
+                .eq('subscription_status', 'canceled')
+                .gte('updated_at', last24h);
+            cancellations = count || 0;
+        }
+
+        let planChanges: any[] = [];
+        if (preferences.plan_changes) {
+            console.log("Fetching plan changes from audit logs...");
+            const { data: logs } = await supabase
+                .from('audit_logs')
+                .select('details, created_at, user_id')
+                .eq('action', 'plan_change')
+                .gte('created_at', last24h);
+
+            // Optionally join with user_profiles if emails are needed
+            planChanges = logs || [];
+        }
+
+        let freeTrials = 0;
+        if (preferences.free_trials) {
+            console.log("Fetching free trials...");
+            const { count } = await supabase
+                .from('user_profiles')
+                .select('*', { count: 'exact', head: true })
+                .eq('subscription_status', 'trialing');
+            freeTrials = count || 0;
+        }
+
+        // Active Properties
+        let totalProperties = 0;
+        if (preferences.active_properties) {
+            console.log("Fetching total properties...");
+            const { count, error } = await supabase
+                .from('properties')
+                .select('*', { count: 'exact', head: true });
+            if (error) console.error("Error fetching properties:", error);
+            totalProperties = count || 0;
+        }
+
 
         // 2. Format Email
         const htmlBody = `
@@ -95,35 +195,90 @@ serve(async (req: Request) => {
         </div>
         <div class="content">
             <div class="grid">
+                ${preferences.new_users ? `
                 <div class="stat-card">
                     <div class="stat-label">משתמשים חדשים</div>
-                    <div class="stat-value">${newUsers || 0}</div>
-                </div>
+                    <div class="stat-value">${newUsers}</div>
+                </div>` : ''}
+                ${preferences.support_tickets ? `
                 <div class="stat-card">
                     <div class="stat-label">פניות תמיכה</div>
-                    <div class="stat-value">${newTickets || 0}</div>
-                </div>
+                    <div class="stat-value">${newTickets}</div>
+                </div>` : ''}
             </div>
 
+            ${preferences.upgrades ? `
             <div class="stat-card highlight-card">
                 <div class="stat-label">בקשות שדרוג תכנית</div>
-                <div class="stat-value highlight-value">${newUpgrades || 0}</div>
+                <div class="stat-value highlight-value">${newUpgrades}</div>
                 <div style="font-size:12px; color:#7C3AED;">בקשות חדשות שממתינות לטיפול המערכת</div>
+            </div>` : ''}
+
+            ${preferences.plan_breakdown ? `
+            <div class="stat-card">
+                <div class="stat-label">התפלגות תכניות</div>
+                <table style="width:100%; border-collapse:collapse; margin-top:10px; font-size:13px;">
+                    <thead>
+                        <tr style="border-bottom:1px solid #E2E8F0;">
+                            <th style="text-align:right; padding:8px;">תכנית</th>
+                            <th style="text-align:center; padding:8px;">משתמשים</th>
+                            <th style="text-align:center; padding:8px;">פעילים</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${planStats.map(s => `
+                        <tr style="border-bottom:1px solid #F1F5F9;">
+                            <td style="padding:8px; text-align:right;">${s.name}</td>
+                            <td style="padding:8px; text-align:center;">${s.count}</td>
+                            <td style="padding:8px; text-align:center; font-weight:bold; color:#10B981;">${s.active}</td>
+                        </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>` : ''}
+
+            <div class="grid">
+                ${preferences.cancellations ? `
+                <div class="stat-card" style="border:1px solid #FEE2E2; background:#FEF2F2;">
+                    <div class="stat-label" style="color:#EF4444;">ביטולי מנוי</div>
+                    <div class="stat-value" style="color:#B91C1C;">${cancellations}</div>
+                </div>` : ''}
+                ${preferences.free_trials ? `
+                <div class="stat-card" style="border:1px solid #DBEAFE; background:#EFF6FF;">
+                    <div class="stat-label" style="color:#3B82F6;">בנסיון חינם</div>
+                    <div class="stat-value" style="color:#1D4ED8;">${freeTrials}</div>
+                </div>` : ''}
             </div>
+
+            ${preferences.plan_changes && planChanges.length > 0 ? `
+            <div class="stat-card">
+                <div class="stat-label">שינויי תכנית אחרונים</div>
+                <div style="font-size:12px; margin-top:10px;">
+                    ${planChanges.map(log => `
+                        <div style="padding:5px 0; border-bottom:1px solid #F1F5F9; text-align:right;">
+                            שינוי תכנית: ${log.details?.old_plan || '?'} ➔ ${log.details?.new_plan || '?'}
+                        </div>
+                    `).join('')}
+                </div>
+            </div>` : ''}
             
+            ${preferences.revenue ? `
             <div class="stat-card">
                 <div class="stat-label">הכנסות חדשות</div>
                 <div class="stat-value">₪${totalRevenue.toLocaleString()}</div>
-                <div style="font-size:12px; color:#64748B;">מתוך ${newPayments?.length || 0} תשלומים</div>
-            </div>
+                <div style="font-size:12px; color:#64748B;">מתוך ${paymentCount} תשלומים</div>
+            </div>` : ''}
 
+            ${preferences.active_properties ? `
             <div class="stat-card" style="margin-bottom:0;">
                 <div class="stat-label">סה"כ נכסים במערכת</div>
-                <div class="stat-value">${totalProperties || 0}</div>
-            </div>
+                <div class="stat-value">${totalProperties}</div>
+            </div>` : ''}
         </div>
         <div class="footer">
             זהו דוח אוטומטי שנשלח למנהלי RentMate בכל בוקר בשעה 08:00
+            <br/>
+            <a href="${Deno.env.get('APP_URL')}/admin/settings" style="color:#94A3B8;">נהל הגדרות דוח</a>
         </div>
     </div>
 </body>

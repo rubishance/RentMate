@@ -2,8 +2,10 @@ import type { FC } from 'react';
 import { AlertTriangle, ArrowRight } from 'lucide-react';
 import { useSubscription } from '../../hooks/useSubscription';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export const UsageOverviewWidget: FC = () => {
+    const { lang } = useTranslation();
     const { plan, usage, loading } = useSubscription();
     const navigate = useNavigate();
 
@@ -22,26 +24,29 @@ export const UsageOverviewWidget: FC = () => {
     if (!propWarning && !tenantWarning && !contractWarning) return null;
 
     return (
-        <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/10 border border-orange-100 dark:border-orange-900/30 rounded-2xl p-4 mb-6 animate-in slide-in-from-top-4 duration-500">
-            <div className="flex items-start gap-4">
-                <div className="p-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm shrink-0">
-                    <AlertTriangle className="w-5 h-5 text-orange-500" />
+        <div className="glass-premium border-orange-500/20 bg-orange-500/5 rounded-3xl p-6 mb-8 animate-in slide-in-from-top-4 duration-700 shadow-minimal hover:shadow-jewel transition-all group">
+            <div className="flex items-start gap-6">
+                <div className="p-3 bg-white/10 dark:bg-orange-500/10 rounded-2xl shadow-sm shrink-0 group-hover:scale-110 transition-transform duration-500">
+                    <AlertTriangle className="w-6 h-6 text-orange-500" />
                 </div>
-                <div className="flex-1">
-                    <h3 className="font-semibold text-foreground dark:text-white">Approaching Plan Limits</h3>
-                    <p className="text-sm text-muted-foreground dark:text-muted-foreground mt-1">
-                        You are nearing the limits for your <b>{plan.name}</b> plan.
-                        Consider upgrading to add more {propWarning ? 'properties' : ''}
-                        {(propWarning && (tenantWarning || contractWarning)) ? ', ' : ''}
-                        {tenantWarning ? 'tenants' : ''}
-                        {((propWarning || tenantWarning) && contractWarning) ? ' and ' : ''}
-                        {contractWarning ? 'contracts' : ''}.
+                <div className="flex-1 space-y-2">
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-orange-600 dark:text-orange-400 opacity-60">Plan Advisory</span>
+                    </div>
+                    <h3 className="text-xl font-black tracking-tighter text-foreground leading-tight lowercase">
+                        {lang === 'he' ? 'מתקרבים למגבלות החבילה' : 'Approaching Plan Limits'}
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                        {lang === 'he'
+                            ? `אתם עומדים לסיים את המכסה בחבילת ה-${plan.name}. כדאי לשדרג כדי להוסיף עוד נכסים, דיירים וחוזים.`
+                            : `You are nearing the limits for your ${plan.name} plan. Consider upgrading to add more properties, tenants and contracts.`}
                     </p>
                     <button
                         onClick={() => navigate('/settings')}
-                        className="mt-3 text-sm font-medium text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 flex items-center gap-1"
+                        className="pt-2 text-[10px] font-black uppercase tracking-[0.2em] text-orange-600 dark:text-orange-400 hover:text-orange-700 flex items-center gap-2 transition-all group-hover:gap-3"
                     >
-                        View Plan Details <ArrowRight className="w-4 h-4" />
+                        {lang === 'he' ? 'צפייה בפרטי החבילה' : 'View Plan Details'}
+                        <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                 </div>
             </div>

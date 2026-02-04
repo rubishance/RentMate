@@ -14,8 +14,9 @@ import {
     Pie,
     Cell
 } from 'recharts';
-import { TrendingUp, DollarSign, Home, BarChart2 } from 'lucide-react';
+import { TrendingUp, DollarSign, BarChart2 } from 'lucide-react';
 import { subMonths, startOfMonth, format } from 'date-fns';
+import { RentalTrendWidget } from '../components/analytics/RentalTrendWidget';
 
 export function Analytics({ embedMode = false }: { embedMode?: boolean }) {
     const { t } = useTranslation();
@@ -151,42 +152,44 @@ export function Analytics({ embedMode = false }: { embedMode?: boolean }) {
         <div className={cn("pb-40 pt-16 space-y-20 animate-in fade-in slide-in-from-bottom-6 duration-700", !embedMode && "px-8")}>
             {/* Header */}
             {!embedMode && (
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-                    <div className="space-y-2">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 dark:bg-neutral-900 rounded-full border border-slate-100 dark:border-neutral-800 shadow-minimal">
-                            <BarChart2 className="w-3 h-3 text-muted-foreground" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">{t('performanceTracking')}</span>
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 px-4 md:px-0">
+                    <div className="space-y-1">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/5 dark:bg-indigo-500/10 backdrop-blur-md rounded-full border border-indigo-500/10 shadow-sm mb-2">
+                            <BarChart2 className="w-3 h-3 text-indigo-500" />
+                            <span className="text-[9px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                                {t('performanceTracking')}
+                            </span>
                         </div>
-                        <h1 className="text-6xl font-black tracking-tighter text-foreground lowercase">
+                        <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground leading-tight lowercase">
                             {t('analytics')}
                         </h1>
                     </div>
                 </div>
             )}
 
+            {/* Rental Trend Widget */}
+            <RentalTrendWidget />
+
             {/* Metrics Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
                 {[
                     { label: t('totalRevenueLTM'), value: metrics.totalRevenue, icon: TrendingUp, color: 'text-emerald-500', isCurrency: true, trend: '+12% vs last year' },
-                    { label: t('avgRentPerProperty'), value: metrics.avgRent, icon: DollarSign, color: 'text-primary', isCurrency: true },
-                    { label: t('occupancyRate'), value: metrics.occupancyRate, icon: Home, color: 'text-amber-500', isPercentage: true },
-                    { label: t('totalProperties'), value: metrics.totalProperties, icon: Home, color: 'text-foreground' }
+                    { label: t('avgRentPerProperty'), value: metrics.avgRent, icon: DollarSign, color: 'text-indigo-500', isCurrency: true }
                 ].map((m, i) => (
-                    <div key={i} className="p-10 bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[2.5rem] shadow-minimal group hover:shadow-premium transition-all duration-700 space-y-6">
+                    <div key={i} className="p-10 glass-premium dark:bg-neutral-900/60 border-white/10 rounded-[3rem] shadow-minimal group hover:shadow-jewel transition-all duration-700 space-y-6">
                         <div className="flex items-center justify-between">
-                            <div className="w-14 h-14 bg-slate-50 dark:bg-neutral-900 rounded-2xl flex items-center justify-center shadow-minimal group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
+                            <div className="w-14 h-14 bg-white/5 dark:bg-neutral-800/40 rounded-2xl flex items-center justify-center shadow-minimal group-hover:scale-110 group-hover:rotate-3 transition-all duration-700 border border-white/5">
                                 <m.icon className={cn("w-6 h-6", m.color)} />
                             </div>
                             {m.trend && (
-                                <span className="text-[9px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-3 py-1.5 rounded-full">{m.trend}</span>
+                                <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full">{m.trend}</span>
                             )}
                         </div>
                         <div>
-                            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40 block mb-2">{m.label}</span>
-                            <h3 className="text-4xl font-black text-foreground tracking-tighter lowercase">
+                            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40 block mb-2 lowercase">{m.label}</span>
+                            <h3 className="text-4xl font-black text-foreground tracking-tighter lowercase leading-none">
                                 {m.isCurrency && '₪'}
                                 {m.value.toLocaleString()}
-                                {m.isPercentage && '%'}
                             </h3>
                         </div>
                     </div>
@@ -196,13 +199,15 @@ export function Analytics({ embedMode = false }: { embedMode?: boolean }) {
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                 {/* Revenue Trend Chart */}
-                <div className="bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[3rem] p-12 shadow-minimal hover:shadow-premium transition-all duration-700 space-y-12">
-                    <div className="flex items-center justify-between">
+                <div className="glass-premium dark:bg-neutral-900/40 border-white/5 rounded-[3rem] p-12 shadow-minimal hover:shadow-jewel transition-all duration-700 space-y-12 overflow-hidden relative">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+
+                    <div className="flex items-center justify-between relative z-10">
                         <div>
-                            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-primary mb-2 block">{t('performance')}</span>
+                            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-indigo-500 mb-2 block lowercase">{t('performance')}</span>
                             <h3 className="text-3xl font-black text-foreground tracking-tighter lowercase">{t('revenueTrend')}</h3>
                         </div>
-                        <select className="bg-slate-50 dark:bg-neutral-800 text-[9px] font-black uppercase tracking-widest text-muted-foreground border-none outline-none cursor-pointer px-4 py-2 rounded-full shadow-minimal">
+                        <select className="glass-premium dark:bg-neutral-800/50 text-[9px] font-black uppercase tracking-widest text-muted-foreground border-white/5 outline-none cursor-pointer px-4 py-2 rounded-full shadow-minimal appearance-none">
                             <option>{t('last12Months')}</option>
                         </select>
                     </div>
@@ -215,28 +220,31 @@ export function Analytics({ embedMode = false }: { embedMode?: boolean }) {
                                         <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" opacity={0.5} />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" className="text-white/5" opacity={0.5} />
                                 <XAxis
                                     dataKey="name"
                                     axisLine={false}
                                     tickLine={false}
-                                    tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 900 }}
+                                    tick={{ fill: 'currentColor', fontSize: 10, fontWeight: 900 }}
+                                    className="text-muted-foreground opacity-40 lowercase"
                                     dy={10}
                                 />
                                 <YAxis
                                     axisLine={false}
                                     tickLine={false}
-                                    tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 900 }}
+                                    tick={{ fill: 'currentColor', fontSize: 10, fontWeight: 900 }}
+                                    className="text-muted-foreground opacity-40 lowercase"
                                     tickFormatter={(value) => `₪${value / 1000}k`}
                                 />
                                 <Tooltip
-                                    contentStyle={{ borderRadius: '2rem', border: 'none', boxShadow: '0 20px 50px -10px rgb(0 0 0 / 0.1)', background: '#fff' }}
+                                    contentStyle={{ borderRadius: '2rem', border: '1px solid rgba(255,255,255,0.05)', boxShadow: '0 20px 50px -10px rgb(0 0 0 / 0.1)', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(20px)' }}
+                                    itemStyle={{ color: '#fff', fontSize: '12px', fontWeight: 900, textTransform: 'lowercase' }}
                                     formatter={(value: any) => [`₪${Number(value).toLocaleString()}`, t('revenue')]}
                                 />
                                 <Area
                                     type="monotone"
                                     dataKey="revenue"
-                                    stroke="#3b82f6"
+                                    stroke="#6366f1"
                                     strokeWidth={4}
                                     fillOpacity={1}
                                     fill="url(#colorRevenue)"
@@ -248,10 +256,12 @@ export function Analytics({ embedMode = false }: { embedMode?: boolean }) {
                 </div>
 
                 {/* Status Breakdown Chart */}
-                <div className="bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[3rem] p-12 shadow-minimal hover:shadow-premium transition-all duration-700 space-y-12">
-                    <div className="flex items-center justify-between">
+                <div className="glass-premium dark:bg-neutral-900/40 border-white/5 rounded-[3rem] p-12 shadow-minimal hover:shadow-jewel transition-all duration-700 space-y-12 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+
+                    <div className="flex items-center justify-between relative z-10">
                         <div>
-                            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-amber-500 mb-2 block">{t('collection')}</span>
+                            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-amber-500 mb-2 block lowercase">{t('collection')}</span>
                             <h3 className="text-3xl font-black text-foreground tracking-tighter lowercase">{t('paymentStatus')}</h3>
                         </div>
                     </div>
@@ -273,15 +283,16 @@ export function Analytics({ embedMode = false }: { embedMode?: boolean }) {
                                     ))}
                                 </Pie>
                                 <Tooltip
-                                    contentStyle={{ borderRadius: '2rem', border: 'none', boxShadow: '0 20px 50px -10px rgb(0 0 0 / 0.1)', background: '#fff' }}
+                                    contentStyle={{ borderRadius: '2rem', border: '1px solid rgba(255,255,255,0.05)', boxShadow: '0 20px 50px -10px rgb(0 0 0 / 0.1)', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(20px)' }}
+                                    itemStyle={{ color: '#fff', fontSize: '12px', fontWeight: 900, textTransform: 'lowercase' }}
                                 />
                             </PieChart>
                         </ResponsiveContainer>
                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                            <span className="text-4xl font-black text-foreground tracking-tighter">
+                            <span className="text-5xl font-black text-foreground tracking-tighter leading-none">
                                 {paymentStatusData.reduce((acc, curr) => acc + curr.value, 0)}
                             </span>
-                            <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-40">{t('totalUnits')}</span>
+                            <span className="text-[9px] font-black uppercase tracking-[2px] text-muted-foreground opacity-40 mt-2">{t('totalUnits')}</span>
                         </div>
                     </div>
                     {/* Legend Custom */}

@@ -8,8 +8,10 @@ interface UserPreferencesContextType {
     setLanguage: (language: Language) => void;
     setGender: (gender: Gender | null) => void;
     setTheme: (theme: Theme) => void;
+    setPinnedCities: (cities: string[]) => void;
     effectiveTheme: 'light' | 'dark';
     isLoading: boolean;
+    refreshPreferences: () => Promise<void>;
 }
 
 const UserPreferencesContext = createContext<UserPreferencesContextType | undefined>(undefined);
@@ -29,16 +31,33 @@ export function UserPreferencesProvider({ children }: UserPreferencesProviderPro
 
     // Load preferences on mount
     useEffect(() => {
-        const loadedPreferences = userPreferencesService.getUserPreferences();
+        const initPreferences = async () => {
+            setIsLoading(true);
 
-        // Force migration to Hebrew if currently English (for launch)
-        if (loadedPreferences.language === 'en') {
-            const updated = userPreferencesService.setLanguage('he');
-            setPreferences(updated);
-        } else {
-            setPreferences(loadedPreferences);
-        }
+            // Try fetching from Supabase first
+            const remote = await userPreferencesService.fetchRemotePreferences();
+            if (remote) {
+                setPreferences(remote);
+            } else {
+                const loadedPreferences = userPreferencesService.getUserPreferences();
+                // Force migration to Hebrew if currently English (for launch)
+                if (loadedPreferences.language === 'en') {
+                    const updated = userPreferencesService.setLanguage('he');
+                    setPreferences(updated);
+                } else {
+                    setPreferences(loadedPreferences);
+                }
+            }
+            setIsLoading(false);
+        };
+
+        initPreferences();
     }, []);
+
+    const refreshPreferences = async () => {
+        const remote = await userPreferencesService.fetchRemotePreferences();
+        if (remote) setPreferences(remote);
+    };
 
     const handleSetLanguage = (language: Language) => {
         setIsLoading(true);
@@ -60,6 +79,11 @@ export function UserPreferencesProvider({ children }: UserPreferencesProviderPro
         setPreferences(updated);
         setEffectiveTheme(userPreferencesService.getEffectiveTheme());
         setIsLoading(false);
+    };
+
+    const handleSetPinnedCities = (cities: string[]) => {
+        const updated = userPreferencesService.setPinnedCities(cities);
+        setPreferences(updated);
     };
 
     // Sync language with DOM
@@ -119,8 +143,10 @@ export function UserPreferencesProvider({ children }: UserPreferencesProviderPro
                 setLanguage: handleSetLanguage,
                 setGender: handleSetGender,
                 setTheme: handleSetTheme,
+                setPinnedCities: handleSetPinnedCities,
                 effectiveTheme,
                 isLoading,
+                refreshPreferences,
             }}
         >
             {children}

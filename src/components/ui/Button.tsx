@@ -23,7 +23,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({
     ...props
 }, ref) => {
     const variants = {
-        primary: 'bg-primary text-primary-foreground font-black uppercase tracking-wide hover:opacity-90 shadow-lg hover:shadow-xl bg-gradient-to-b from-white/10 to-transparent',
+        primary: 'button-jewel',
         secondary: 'bg-secondary text-secondary-foreground font-black uppercase tracking-wide hover:bg-secondary/80 shadow-sm',
         outline: 'border-2 border-primary/10 bg-transparent hover:border-primary text-primary font-black uppercase tracking-wide',
         ghost: 'hover:bg-accent hover:text-accent-foreground font-bold tracking-wide',

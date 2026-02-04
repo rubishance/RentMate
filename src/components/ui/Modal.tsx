@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Button } from './Button';
+import { MascotPopIn } from '../common/MascotPopIn';
 
 interface ModalProps {
     isOpen: boolean;
@@ -14,6 +15,7 @@ interface ModalProps {
     footer?: React.ReactNode;
     size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
     className?: string;
+    modeless?: boolean;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -24,10 +26,11 @@ export const Modal: React.FC<ModalProps> = ({
     children,
     footer,
     size = 'md',
-    className
+    className,
+    modeless = false
 }) => {
     useEffect(() => {
-        if (isOpen) {
+        if (isOpen && !modeless) {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = 'unset';
@@ -48,15 +51,20 @@ export const Modal: React.FC<ModalProps> = ({
     return createPortal(
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+                <div className={cn(
+                    "fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6",
+                    modeless && "pointer-events-none"
+                )}>
                     {/* Backdrop */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={onClose}
-                        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-                    />
+                    {!modeless && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={onClose}
+                            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                        />
+                    )}
 
                     {/* Modal Content */}
                     <motion.div
@@ -71,6 +79,7 @@ export const Modal: React.FC<ModalProps> = ({
                         className={cn(
                             "relative w-full bg-background/95 dark:bg-neutral-900/95 shadow-premium rounded-3xl overflow-hidden flex flex-col border border-border/50",
                             sizes[size],
+                            modeless && "pointer-events-auto",
                             className
                         )}
                     >
@@ -103,6 +112,9 @@ export const Modal: React.FC<ModalProps> = ({
                                 {footer}
                             </div>
                         )}
+
+                        {/* Renty Pop-In */}
+                        <MascotPopIn position="bottom-right" className="translate-x-4 translate-y-4" />
                     </motion.div>
                 </div>
             )}

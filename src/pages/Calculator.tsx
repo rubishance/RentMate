@@ -88,7 +88,7 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
     }, [location.state]);
 
     return (
-        <div className="max-w-3xl mx-auto space-y-6">
+        <div className="max-w-3xl mx-auto space-y-6 px-4 md:px-0">
             {/* Shared Calculation Banner */}
             {isSharedCalculation && (
                 <motion.div
@@ -110,28 +110,35 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                 </motion.div>
             )}
 
-            {/* Header - Only check if NOT in embed mode */}
+            {/* Header */}
             {!embedMode && (
-                <div className="flex items-center justify-between mb-12">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-4">
                     <div className="space-y-1">
-                        <h1 className="text-4xl font-black tracking-tighter uppercase">{t('calculator')}</h1>
-                        <p className="text-sm font-bold text-muted-foreground tracking-tight">{t('calculateLinkageAndMore')}</p>
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/5 dark:bg-indigo-500/10 backdrop-blur-md rounded-full border border-indigo-500/10 shadow-sm mb-2">
+                            <CalcIcon className="w-3 h-3 text-indigo-500" />
+                            <span className="text-[9px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                                {t('smartCalculator')}
+                            </span>
+                        </div>
+                        <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground leading-tight lowercase">
+                            {t('calculator')}
+                        </h1>
                     </div>
-                    <div className="w-16 h-16 rounded-[2rem] bg-slate-50 dark:bg-neutral-800 flex items-center justify-center">
-                        <CalcIcon className="w-8 h-8 text-slate-300" />
+                    <div className="w-16 h-16 rounded-[2rem] glass-premium border-white/10 flex items-center justify-center shadow-minimal group hover:scale-110 group-hover:rotate-6 transition-all duration-700">
+                        <CalcIcon className="w-8 h-8 text-muted-foreground opacity-30 group-hover:opacity-100" />
                     </div>
                 </div>
             )}
 
             {/* Tabs */}
-            <div className="flex gap-2 bg-slate-50 dark:bg-neutral-800/50 p-1.5 rounded-[1.5rem] border border-slate-100 dark:border-neutral-800">
+            <div className="flex gap-2 glass-premium dark:bg-neutral-900/40 p-2 rounded-[2rem] border-white/5 shadow-minimal">
                 <button
                     onClick={() => setActiveTab('standard')}
                     className={cn(
-                        "flex-1 py-4 px-6 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all",
+                        "flex-1 py-4 px-6 rounded-[1.2rem] font-black text-[10px] uppercase tracking-[0.2em] transition-all",
                         activeTab === 'standard'
-                            ? "bg-white dark:bg-neutral-900 text-foreground shadow-premium"
-                            : "text-muted-foreground hover:text-foreground hover:bg-white/50 dark:hover:bg-neutral-800/50"
+                            ? "button-jewel text-white shadow-jewel"
+                            : "text-muted-foreground hover:text-foreground hover:bg-white/5"
                     )}
                 >
                     {t('standardCalculation')}
@@ -139,10 +146,10 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                 <button
                     onClick={() => setActiveTab('reconciliation')}
                     className={cn(
-                        "flex-1 py-4 px-6 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all",
+                        "flex-1 py-4 px-6 rounded-[1.2rem] font-black text-[10px] uppercase tracking-[0.2em] transition-all",
                         activeTab === 'reconciliation'
-                            ? "bg-white dark:bg-neutral-900 text-foreground shadow-premium"
-                            : "text-muted-foreground hover:text-foreground hover:bg-white/50 dark:hover:bg-neutral-800/50"
+                            ? "button-jewel text-white shadow-jewel"
+                            : "text-muted-foreground hover:text-foreground hover:bg-white/5"
                     )}
                 >
                     {t('paymentReconciliation')}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useStack } from '../../contexts/StackContext';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { X as CloseIcon } from 'lucide-react';
@@ -22,6 +22,21 @@ const LayerRegistry: Record<string, (props: any) => React.JSX.Element> = {
 export function StackContainer() {
     const { stack, pop } = useStack();
 
+    // Lock background scrolling when stack is active (unless top layer is modeless)
+    useEffect(() => {
+        const topLayer = stack[stack.length - 1];
+        if (stack.length > 0 && !topLayer?.modeless) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+
+        // Cleanup on unmount
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [stack.length, stack[stack.length - 1]?.modeless]);
+
     // Variants for the animations
     const overlayVariants: Variants = {
         hidden: { opacity: 0 },
@@ -43,16 +58,21 @@ export function StackContainer() {
                 if (!Component) return null;
 
                 return (
-                    <div key={layer.id} className="fixed inset-0 z-[100] flex items-end justify-center pointer-events-none">
-                        {/* Backdrop - Only show for the top layer or if we want stacking dimming */}
-                        <motion.div
-                            className="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto"
-                            initial="hidden"
-                            animate="visible"
-                            exit="hidden"
-                            variants={overlayVariants}
-                            onClick={() => pop()} // Close on click outside
-                        />
+                    <div key={layer.id} className={cn(
+                        "fixed inset-0 z-[100] flex items-end justify-center",
+                        layer.modeless ? "pointer-events-none" : "pointer-events-auto"
+                    )}>
+                        {/* Backdrop - Skip if modeless */}
+                        {!layer.modeless && (
+                            <motion.div
+                                className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                                initial="hidden"
+                                animate="visible"
+                                exit="hidden"
+                                variants={overlayVariants}
+                                onClick={() => pop()} // Close on click outside
+                            />
+                        )}
 
                         {/* Sheet / Layer */}
                         <motion.div

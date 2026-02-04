@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
-import { User, Bell, Shield, ChevronRight, Mail, Send, Check, LogOut } from 'lucide-react';
+import { User, Bell, Shield, ChevronRight, Mail, Send, Check, LogOut, MessageCircle } from 'lucide-react';
 import { useUserPreferences } from '../contexts/UserPreferencesContext';
 import type { Language, Gender } from '../types/database';
 import { EditProfileModal, NotificationsSettingsModal } from '../components/modals/EditProfileModal';
@@ -96,14 +96,16 @@ export function Settings() {
     ];
 
     return (
-        <div className="pb-40 pt-16 space-y-20 animate-in fade-in slide-in-from-bottom-6 duration-700 px-8">
+        <div className="pb-40 pt-8 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-700 px-4 md:px-8">
             {/* Header */}
-            <div className="space-y-2">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 dark:bg-neutral-900 rounded-full border border-slate-100 dark:border-neutral-800 shadow-minimal">
-                    <User className="w-3 h-3 text-muted-foreground" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">{t('preferencesAndAccount')}</span>
+            <div className="space-y-1">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/5 dark:bg-indigo-500/10 backdrop-blur-md rounded-full border border-indigo-500/10 shadow-sm mb-2">
+                    <User className="w-3 h-3 text-indigo-500" />
+                    <span className="text-[9px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                        {t('preferencesAndAccount')}
+                    </span>
                 </div>
-                <h1 className="text-6xl font-black tracking-tighter text-foreground lowercase">
+                <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground leading-tight lowercase">
                     {t('settings')}
                 </h1>
             </div>
@@ -111,18 +113,18 @@ export function Settings() {
             {/* User Profile Card */}
             <div
                 onClick={() => setIsEditProfileOpen(true)}
-                className="bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[3rem] p-10 flex items-center gap-10 cursor-pointer shadow-minimal hover:shadow-premium transition-all duration-700 group relative overflow-hidden"
+                className="glass-premium dark:bg-neutral-900/60 border-white/10 rounded-[3rem] p-10 flex items-center gap-10 cursor-pointer shadow-minimal hover:shadow-jewel transition-all duration-700 group relative overflow-hidden"
             >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 dark:bg-neutral-800/30 rounded-bl-[4rem] -translate-y-full group-hover:translate-y-0 transition-transform duration-1000 pointer-events-none" />
+                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-bl-[4rem] -translate-y-full group-hover:translate-y-0 transition-transform duration-1000 pointer-events-none" />
 
-                <div className="w-24 h-24 rounded-[2rem] bg-slate-50 dark:bg-neutral-800 flex items-center justify-center text-foreground font-black text-3xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-700 shadow-minimal border border-slate-100 dark:border-neutral-700">
+                <div className="w-24 h-24 rounded-[2rem] bg-white/5 dark:bg-neutral-800/40 flex items-center justify-center text-foreground font-black text-4xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-700 shadow-minimal border border-white/5">
                     {userData.full_name?.charAt(0) || userData.email?.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 space-y-2">
                     <h3 className="font-black text-3xl tracking-tighter text-foreground lowercase leading-none">{userData.full_name || 'rentmate user'}</h3>
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-40">{userData.email}</p>
                 </div>
-                <div className="w-14 h-14 rounded-2xl bg-slate-50 dark:bg-neutral-800 flex items-center justify-center text-slate-300 group-hover:bg-foreground group-hover:text-background group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 shadow-minimal">
+                <div className="w-14 h-14 rounded-2xl glass-premium border-white/10 flex items-center justify-center text-muted-foreground/30 group-hover:bg-foreground group-hover:text-background group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 shadow-minimal">
                     <ChevronRight className="w-7 h-7" />
                 </div>
             </div>
@@ -131,13 +133,13 @@ export function Settings() {
             {isAdmin && (
                 <div
                     onClick={() => window.location.href = '/admin'}
-                    className="bg-foreground text-background rounded-[3rem] p-10 shadow-premium-dark cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all group overflow-hidden relative"
+                    className="button-jewel rounded-[3rem] p-10 shadow-jewel cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all group overflow-hidden relative"
                 >
-                    <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl group-hover:scale-125 transition-transform duration-1000" />
-                    <div className="flex items-center justify-between relative z-10">
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-white/20 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl group-hover:scale-125 transition-transform duration-1000" />
+                    <div className="flex items-center justify-between relative z-10 text-white">
                         <div className="space-y-2 text-center md:text-left rtl:md:text-right w-full md:w-auto">
                             <h3 className="font-black text-2xl tracking-tighter uppercase mb-1">{t('settings_admin_dashboard')}</h3>
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50">{t('settings_admin_desc')}</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-60">{t('settings_admin_desc')}</p>
                         </div>
                         <Shield className="w-12 h-12 opacity-30 group-hover:rotate-12 transition-transform duration-500 hidden md:block" />
                     </div>
@@ -145,29 +147,29 @@ export function Settings() {
             )}
 
             {/* Settings Sections */}
-            <div className="grid grid-cols-1 lg:grid-cols-1 gap-12">
+            <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
                 {settingsSections.map((section) => (
                     <div key={section.title} className="space-y-8">
                         <div className="px-4">
                             <span className="text-[10px] font-black text-muted-foreground uppercase opacity-40 tracking-[0.5em] block mb-2">{section.title}</span>
                         </div>
-                        <div className="bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[3rem] overflow-hidden shadow-minimal divide-y divide-slate-50 dark:divide-neutral-800/10">
+                        <div className="glass-premium dark:bg-neutral-900/40 border-white/5 rounded-[3rem] overflow-hidden shadow-minimal divide-y divide-white/5">
                             {section.items.map((item) => {
                                 const Icon = item.icon;
                                 return (
                                     <button
                                         key={item.label}
                                         onClick={item.onClick}
-                                        className="w-full flex items-center gap-8 p-10 hover:bg-slate-50/50 dark:hover:bg-neutral-800/20 transition-all text-left group"
+                                        className="w-full flex items-center gap-8 p-10 hover:bg-white/5 transition-all text-left group"
                                     >
-                                        <div className="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-neutral-800 flex items-center justify-center border border-slate-100 dark:border-neutral-700 group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
-                                            <Icon className="w-7 h-7 text-foreground" />
+                                        <div className="w-16 h-16 rounded-2xl glass-premium border-white/10 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
+                                            <Icon className="w-7 h-7 text-foreground opacity-60 group-hover:opacity-100" />
                                         </div>
                                         <div className="flex-1 space-y-2">
                                             <div className="font-black text-xl tracking-tighter text-foreground lowercase">{item.label}</div>
                                             <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-40">{item.description}</div>
                                         </div>
-                                        <ChevronRight className="w-6 h-6 text-slate-200 group-hover:text-foreground group-hover:translate-x-2 transition-all duration-500" />
+                                        <ChevronRight className="w-6 h-6 text-muted-foreground/20 group-hover:text-primary group-hover:translate-x-2 transition-all duration-500" />
                                     </button>
                                 );
                             })}
@@ -177,15 +179,15 @@ export function Settings() {
             </div>
 
             {/* App Appearance Section (New) */}
-            <div className="space-y-8">
+            <div className="space-y-6">
                 <div className="px-4">
                     <span className="text-[10px] font-black text-muted-foreground uppercase opacity-40 tracking-[0.5em] block mb-2">{t('appearance')}</span>
                 </div>
-                <div className="bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[3rem] p-10 shadow-minimal space-y-10">
+                <div className="glass-premium dark:bg-neutral-900/40 border-white/5 rounded-[3rem] p-10 shadow-minimal space-y-10">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <div className="flex items-center gap-6">
-                            <div className="w-14 h-14 rounded-2xl bg-slate-50 dark:bg-neutral-800 flex items-center justify-center border border-slate-100 dark:border-neutral-700">
-                                <Palette className="w-6 h-6 text-foreground" />
+                            <div className="w-14 h-14 rounded-2xl glass-premium border-white/10 flex items-center justify-center">
+                                <Palette className="w-7 h-7 text-foreground opacity-60" />
                             </div>
                             <div>
                                 <div className="font-black text-xl tracking-tighter text-foreground lowercase">{t('theme')}</div>
@@ -195,12 +197,12 @@ export function Settings() {
                         <ThemeToggle className="w-full md:w-auto" />
                     </div>
 
-                    <div className="h-[1px] bg-slate-50 dark:bg-neutral-800/10" />
+                    <div className="h-[1px] bg-white/5" />
 
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <div className="flex items-center gap-6">
-                            <div className="w-14 h-14 rounded-2xl bg-slate-50 dark:bg-neutral-800 flex items-center justify-center border border-slate-100 dark:border-neutral-700">
-                                <div className="text-[10px] font-black">EN/עב</div>
+                            <div className="w-14 h-14 rounded-2xl glass-premium border-white/10 flex items-center justify-center">
+                                <div className="text-[10px] font-black opacity-60">EN/עב</div>
                             </div>
                             <div>
                                 <div className="font-black text-xl tracking-tighter text-foreground lowercase">{t('language')}</div>
@@ -213,7 +215,7 @@ export function Settings() {
             </div>
 
             {/* Support Section */}
-            <div className="space-y-8">
+            <div className="space-y-6">
                 <div className="px-4">
                     <span className="text-[10px] font-black text-muted-foreground uppercase opacity-40 tracking-[0.5em] block mb-2">{t('support')}</span>
                 </div>
@@ -255,6 +257,34 @@ export function Settings() {
                                         className="w-full min-h-[200px] p-10 bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[2.5rem] resize-none outline-none font-medium placeholder:font-black placeholder:uppercase placeholder:text-[10px] placeholder:tracking-widest transition-all focus:border-primary/20 shadow-minimal"
                                         disabled={isSendingMessage}
                                     />
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <button
+                                            onClick={() => navigate('/contact')}
+                                            className="p-6 bg-green-500/10 dark:bg-green-500/5 border border-green-500/20 rounded-[2rem] flex items-center gap-4 hover:bg-green-500/20 transition-all group"
+                                        >
+                                            <div className="w-12 h-12 rounded-xl bg-green-500 text-white flex items-center justify-center group-hover:scale-110 transition-transform">
+                                                <MessageCircle className="w-6 h-6" />
+                                            </div>
+                                            <div className="text-left rtl:text-right">
+                                                <div className="text-[10px] font-black uppercase tracking-widest text-green-600 dark:text-green-400">{t('whatsapp_support_title') || 'WhatsApp'}</div>
+                                                <div className="font-bold text-slate-900 dark:text-white">{t('whatsapp_support_desc') || 'Fast Response'}</div>
+                                            </div>
+                                        </button>
+
+                                        <button
+                                            onClick={() => window.location.href = 'mailto:support@rentmate.co.il'}
+                                            className="p-6 bg-blue-500/10 dark:bg-blue-500/5 border border-blue-500/20 rounded-[2rem] flex items-center gap-4 hover:bg-blue-500/20 transition-all group"
+                                        >
+                                            <div className="w-12 h-12 rounded-xl bg-blue-500 text-white flex items-center justify-center group-hover:scale-110 transition-transform">
+                                                <Mail className="w-6 h-6" />
+                                            </div>
+                                            <div className="text-left rtl:text-right">
+                                                <div className="text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400">{t('email_support_title') || 'Email'}</div>
+                                                <div className="font-bold text-slate-900 dark:text-white">support@rentmate.co.il</div>
+                                            </div>
+                                        </button>
+                                    </div>
+
                                     <div className="space-y-6">
                                         <button
                                             onClick={handleSendMessage}
@@ -274,9 +304,6 @@ export function Settings() {
                                                 <><Send className="w-6 h-6" /> {t('sendMessage')}</>
                                             )}
                                         </button>
-                                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground text-center opacity-40">
-                                            {t('orEmailDirectly')} <a href="mailto:support@rentmate.co.il" className="text-primary hover:underline hover:opacity-100">support@rentmate.co.il</a>
-                                        </p>
                                     </div>
                                 </div>
                             </motion.div>
