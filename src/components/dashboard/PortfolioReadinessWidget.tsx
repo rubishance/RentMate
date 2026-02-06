@@ -105,7 +105,7 @@ export function PortfolioReadinessWidget({ profile, stats }: PortfolioReadinessW
                         onClick={step.action}
                         disabled={step.isComplete}
                         className={cn(
-                            "w-full flex items-center p-3 rounded-2xl transition-all duration-300 text-right rtl:text-right ltr:text-left group/item relative overflow-hidden",
+                            "w-full flex items-center p-2.5 md:p-3 rounded-2xl transition-all duration-300 text-right rtl:text-right ltr:text-left group/item relative overflow-hidden",
                             step.isComplete
                                 ? "bg-emerald-50/50 dark:bg-emerald-900/10 opacity-60 hover:opacity-100"
                                 : "bg-white/50 dark:bg-white/5 hover:bg-white dark:hover:bg-neutral-800 border border-transparent hover:border-indigo-100 dark:hover:border-indigo-900 shadow-sm hover:shadow-md"

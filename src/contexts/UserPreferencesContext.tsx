@@ -32,7 +32,8 @@ export function UserPreferencesProvider({ children }: UserPreferencesProviderPro
     // Load preferences on mount
     useEffect(() => {
         const initPreferences = async () => {
-            setIsLoading(true);
+            // SILENT REVALIDATION: Don't set isLoading(true) here. 
+            // Use cached preferences immediately (set in useState) and update silently.
 
             // Try fetching from Supabase first
             const remote = await userPreferencesService.fetchRemotePreferences();
@@ -48,7 +49,6 @@ export function UserPreferencesProvider({ children }: UserPreferencesProviderPro
                     setPreferences(loadedPreferences);
                 }
             }
-            setIsLoading(false);
         };
 
         initPreferences();

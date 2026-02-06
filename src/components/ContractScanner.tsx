@@ -62,12 +62,13 @@ export function ContractScanner({ onScanComplete, onCancel, mode = 'modal', skip
         setProgress('בודק מכסת שימוש...');
 
         try {
-            // Check usage limits
+            // 1. Check usage limits (Still call for logging/analytics)
             const usage = await BillAnalysisService.checkAndLogUsage(1, 'contract_scan');
+
+            // UN-GATE: Contract scanning is free/unlimited (The "Magic Moment")
+            // We still log for analytics but don't block.
             if (!usage.allowed) {
-                setShowUpgradeModal(true);
-                setStep('upload');
-                return;
+                console.info('AI scan limit reached but allowed for contract (un-gated feature)');
             }
 
             setProgress('מעלה קבצים לענן המאובטח...');

@@ -17,6 +17,7 @@ import {
 import { TrendingUp, DollarSign, BarChart2 } from 'lucide-react';
 import { subMonths, startOfMonth, format } from 'date-fns';
 import { RentalTrendWidget } from '../components/analytics/RentalTrendWidget';
+import { ActivityWidget } from '../components/analytics/ActivityWidget';
 
 export function Analytics({ embedMode = false }: { embedMode?: boolean }) {
     const { t } = useTranslation();
@@ -166,6 +167,9 @@ export function Analytics({ embedMode = false }: { embedMode?: boolean }) {
                     </div>
                 </div>
             )}
+
+            {/* Activity Widget */}
+            <ActivityWidget />
 
             {/* Rental Trend Widget */}
             <RentalTrendWidget />

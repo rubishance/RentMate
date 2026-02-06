@@ -24,10 +24,10 @@ export const UsageOverviewWidget: FC = () => {
     if (!propWarning && !tenantWarning && !contractWarning) return null;
 
     return (
-        <div className="glass-premium border-orange-500/20 bg-orange-500/5 rounded-3xl p-6 mb-8 animate-in slide-in-from-top-4 duration-700 shadow-minimal hover:shadow-jewel transition-all group">
-            <div className="flex items-start gap-6">
-                <div className="p-3 bg-white/10 dark:bg-orange-500/10 rounded-2xl shadow-sm shrink-0 group-hover:scale-110 transition-transform duration-500">
-                    <AlertTriangle className="w-6 h-6 text-orange-500" />
+        <div className="glass-premium border-orange-500/20 bg-orange-500/5 rounded-3xl p-5 md:p-6 mb-6 md:mb-8 animate-in slide-in-from-top-4 duration-700 shadow-minimal hover:shadow-jewel transition-all group">
+            <div className="flex items-start gap-4 md:gap-6">
+                <div className="p-2 md:p-3 bg-white/10 dark:bg-orange-500/10 rounded-2xl shadow-sm shrink-0 group-hover:scale-110 transition-transform duration-500">
+                    <AlertTriangle className="w-5 md:w-6 h-5 md:h-6 text-orange-500" />
                 </div>
                 <div className="flex-1 space-y-2">
                     <div className="flex items-center gap-2">

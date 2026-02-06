@@ -24,6 +24,7 @@ export type TranslationKeys =
     | 'reset' | 'reset_female'
     | 'download' | 'download_female'
     | 'remove' | 'remove_female'
+    | 'copied'
     | 'yes'
     | 'no'
     | 'close'
@@ -293,6 +294,7 @@ export type TranslationKeys =
     | 'shareResult'
     | 'viewingSharedCalculation'
     | 'sharedCalculationDesc'
+    | 'shareMessage'
     | 'loadFromContract'
     | 'selectContractPlaceholder'
     | 'expectedBaseRent'
@@ -449,6 +451,10 @@ export type TranslationKeys =
     | 'enterAddressAndCityFirst'
     | 'needsPaintingMsg'
     | 'indexWatcherTitle'
+    | 'baseAmount'
+    | 'adjustedAmount'
+    | 'linkageCalculation'
+    | 'linkageImpact'
     | 'liveUpdate'
     | 'widgetSettings'
     | 'saveSettings'
@@ -470,6 +476,7 @@ export type TranslationKeys =
     | 'track'
     | 'baseDateOptional'
     | 'unknownProperty'
+    | 'selectDisplayedIndices'
 
     // Tenant Modal & Limits
     | 'viewTenantDetails'
@@ -502,9 +509,26 @@ export type TranslationKeys =
     | 'requestSentDesc' | 'requestSentDesc_female'
     | 'gotItThanks'
     | 'feature'
-    | 'free'
-    | 'pro'
+    | 'free' | 'solo'
+    | 'pro' | 'mate'
+    | 'master'
     | 'unlimited'
+    | 'ai_bills'
+    | 'cpi_autopilot'
+    | 'pricing_per_unit'
+    | 'pricing_billed_monthly'
+    | 'unlimited_properties'
+    | 'property_unit'
+    | 'property_units'
+    | 'curating_plans'
+    | 'api_access'
+    | 'priority_support'
+    | 'bill_analysis'
+    | 'maintenance_tracker'
+    | 'legal_library'
+    | 'portfolio_visualizer'
+    | 'whatsapp_bot'
+    | 'ai_assistant'
     | 'prioritySupport'
     | 'dataExport'
     | 'contactSupport' | 'contactSupport_female'
@@ -886,6 +910,7 @@ export const translations: Record<string, any> = {
         download_female: 'הורידי',
         remove: 'הסרה',
         remove_female: 'הסירי',
+        copied: 'הועתק!',
         yes: 'כן',
         no: 'לא',
         close: 'סגור',
@@ -1134,6 +1159,7 @@ export const translations: Record<string, any> = {
         shareResult: 'שתף תוצאה',
         viewingSharedCalculation: 'צופה בחישוב משותף',
         sharedCalculationDesc: 'חישוב זה שותף איתך. ניתן לשנות ערכים ולחשב מחדש.',
+        shareMessage: 'חישבתי את הצמדה למדד במחשבון של RentMate, אפשר לראות את התוצאה כאן:',
         loadFromContract: 'טען מחוזה (אופציונלי)',
         selectContractPlaceholder: 'בחר חוזה למילוי אוטומטי...',
         expectedBaseRent: 'שכירות בסיס צפויה',
@@ -1329,9 +1355,30 @@ export const translations: Record<string, any> = {
         requestSentDesc_female: 'נציג שלנו יחזור אלייך בהקדם',
         gotItThanks: 'הבנתי, תודה',
         feature: 'פיצ\'ר',
-        free: 'חינם',
-        pro: 'PRO',
-        unlimited: 'ללא הגבלה',
+        free: 'SOLO',
+        pro: 'MATE',
+        solo: 'SOLO',
+        mate: 'MATE',
+        master: 'MASTER',
+        unlimited: 'MASTER',
+        ai_bills: 'פיענוח חשבונות AI',
+        cpi_autopilot: 'Auto-Pilot הצמדות',
+        pricing_per_unit: 'ליחידה',
+        pricing_billed_monthly: 'בחיוב חודשי',
+        unlimited_properties: 'נכסים ללא הגבלה',
+        property_unit: 'נכס',
+        property_units: 'נכסים',
+        curating_plans: 'אוצר תוכניות...',
+        api_access: 'גישת API',
+        priority_support: 'תמיכה בעדיפות',
+        bill_analysis: 'ניתוח חשבונות AI',
+        maintenance_tracker: 'מעקב תחזוקה',
+        legal_library: 'מאגר משפטי',
+        portfolio_visualizer: 'ויזואליזציה של פורטפוליו',
+        whatsapp_bot: 'בוט וואטסאפ',
+        ai_assistant: 'עוזר AI',
+        can_export: 'ייצוא נתונים מלא',
+
         prioritySupport: 'תמיכה בעדיפות',
         dataExport: 'ייצוא נתונים',
         contactSupport: 'צור קשר עם התמיכה',
@@ -1423,6 +1470,14 @@ export const translations: Record<string, any> = {
         noDocumentsYet: 'אין עדיין מסמכים',
         deleteDocumentConfirmation: 'האם למחוק מסמך זה?',
         deleteDocumentConfirmation_female: 'האם למחוק מסמך זה?',
+        checksStorage: 'צ׳קים',
+        mediaStorage: 'מדיה',
+        utilitiesStorage: 'חשבונות ומונים',
+        maintenanceStorage: 'תחזוקה ותיקונים',
+        documentsStorage: 'מסמכים וחוזים',
+        photosAndVideos: 'תמונות וסרטונים',
+        mediaGalleryDesc: 'גלריית נכס ותיעוד ויזואלי',
+        vacant: 'פנוי',
         storageQuotaExceeded: 'חריגה ממכסת האחסון',
         storageLow: 'נפח אחסון נמוך',
         storageQuotaExceededDesc: 'שדרג את התוכנית להמשך העלאת קבצים',
@@ -1513,11 +1568,13 @@ export const translations: Record<string, any> = {
         passwordRequirementLowercase: 'אות קטנה אחת לפחות',
         passwordRequirementNumber: 'מספר אחד לפחות',
         passwordRequirementSpecial: 'תו מיוחד אחד לפחות',
-        passwordStrength: 'חוזק סיסמה',
+        passwordStrength: 'חוזר סיסמה',
         passwordWeak: 'חלשה',
         passwordMedium: 'בינונית',
         passwordStrong: 'חזקה',
         passwordVeryStrong: 'חזקה מאוד',
+
+
         shared_calc_loading: 'טוען חישוב...',
         shared_calc_not_found: 'החישוב לא נמצא',
         shared_calc_not_found_desc: 'הקישור שברשותך אינו תקין או שהחישוב הוסר.',
@@ -1587,6 +1644,10 @@ export const translations: Record<string, any> = {
         calculatingProjection: 'מחשב תחזית...',
         backToDashboard: 'חזרה ללוח הבקרה',
         indexWatcherTitle: 'מעקב מדדים והצמדות',
+        baseAmount: 'סכום בסיס',
+        adjustedAmount: 'סכום מתואם',
+        linkageCalculation: 'חישוב הצמדה',
+        linkageImpact: 'השפעת הצמדה',
         liveUpdate: 'עדכון חי',
         widgetSettings: 'הגדרות הווידג\'ט',
         saveSettings: 'שמור הגדרות',
@@ -1744,6 +1805,12 @@ export const translations: Record<string, any> = {
         guaranteesLabel: 'ערבויות',
 
         dataSummary: 'סיכום נתונים',
+        selectDisplayedIndices: 'בחר מדדים להצגה',
+        cpi: 'מדד המחירים',
+        housing: 'דיור',
+        construction: 'תשומות הבנייה',
+        usd: 'דולר',
+        eur: 'אירו',
     },
     en: {
         appName: 'RentMate',
@@ -1807,13 +1874,16 @@ export const translations: Record<string, any> = {
         storageDeviceSuccess: 'The contract will be downloaded to the current device.',
         storageBothSuccess: 'The contract will be saved in the cloud and downloaded.',
         indexWatcherTitle: 'Index Watcher',
+        baseAmount: 'Base Amount',
+        adjustedAmount: 'Adjusted Amount',
+        linkageCalculation: 'Linkage Calculation',
+        linkageImpact: 'Linkage Impact',
         liveUpdate: 'Live Update',
         widgetSettings: 'Widget Settings',
         saveSettings: 'Save Settings',
-        baseRate: 'Base Rate',
-        rate: 'Rate',
-        currentRate: 'Current Rate',
-        noLinkedContracts: 'No linked contracts found',
+        sharedCalculationDesc: 'This calculation has been shared with you. You can update values and recalculate.',
+        shareMessage: 'I calculated the rent adjustment using RentMate\'s CPI calculator. See the result here:',
+        loadFromContract: 'Load from contract (optional)',
         calculateLinkageAndMore: 'Open Calculator',
         currentRent: 'Current Rent',
         projectedRent: 'Projected Rent',
@@ -1823,11 +1893,37 @@ export const translations: Record<string, any> = {
         track: 'Track',
         baseDateOptional: 'Base Date (Optional)',
         unknownProperty: 'Unknown Property',
+        selectDisplayedIndices: 'Select Displayed Indices',
         cpi: 'CPI',
         housing: 'Housing',
         construction: 'Construction',
         usd: 'USD',
         eur: 'EUR',
+
+        // Plans
+        free: 'SOLO',
+        pro: 'MATE',
+        solo: 'SOLO',
+        mate: 'MATE',
+        master: 'MASTER',
+        unlimited: 'MASTER',
+        ai_bills: 'AI Bill Extraction',
+        cpi_autopilot: 'CPI Auto-Pilot',
+        pricing_per_unit: 'per unit',
+        pricing_billed_monthly: 'billed monthly',
+        unlimited_properties: 'Unlimited Properties',
+        property_unit: 'property',
+        property_units: 'properties',
+        curating_plans: 'Curating plans...',
+        api_access: 'API Access',
+        priority_support: 'Priority Support',
+        bill_analysis: 'AI Bill Analysis',
+        maintenance_tracker: 'Maintenance Tracker',
+        legal_library: 'Legal Library',
+        portfolio_visualizer: 'Portfolio Visualizer',
+        whatsapp_bot: 'WhatsApp Bot',
+        ai_assistant: 'AI Assistant',
+        can_export: 'Full Data Export',
     },
 };
 

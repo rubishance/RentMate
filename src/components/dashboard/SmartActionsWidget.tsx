@@ -43,27 +43,19 @@ export function SmartActionsWidget({ stats, loading }: SmartActionsWidgetProps) 
         }
 
         // 3. Document Upload Nudge (Generic "Good Practice" if quiet)
-        if (list.length === 0) {
-            list.push({
-                id: 'upload_bills',
-                type: 'upload',
-                title: t('organizeDocsTitle'),
-                description: t('organizeDocsDesc'),
-                actionLabel: t('uploadNow'),
-                priority: 'low',
-                onAction: () => navigate('/properties')
-            });
-        }
+        // Removed per user request to keep UI cleaner
+
+        return list;
 
         return list;
     }, [stats, t, navigate]);
 
     if (loading) {
         return (
-            <div className="bg-black dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 rounded-[2.5rem] p-8 shadow-lg text-white h-full flex items-center justify-center">
+            <div className="bg-black dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 rounded-[2.5rem] p-6 md:p-8 shadow-lg text-white h-full flex items-center justify-center">
                 <div className="animate-pulse flex flex-col items-center gap-3 w-full">
-                    <div className="h-6 w-1/2 bg-white/10 rounded"></div>
-                    <div className="h-4 w-3/4 bg-white/5 rounded"></div>
+                    <div className="h-5 md:h-6 w-1/2 bg-white/10 rounded"></div>
+                    <div className="h-3 md:h-4 w-3/4 bg-white/5 rounded"></div>
                 </div>
             </div>
         );
@@ -75,34 +67,34 @@ export function SmartActionsWidget({ stats, loading }: SmartActionsWidgetProps) 
     const topAction = actions[0];
 
     return (
-        <div className="bg-black dark:bg-neutral-900 rounded-[2.5rem] p-8 shadow-2xl text-white relative overflow-hidden group border border-gray-100 dark:border-neutral-800 h-full flex flex-col justify-between">
+        <div className="bg-black dark:bg-neutral-900 rounded-[2.5rem] p-6 md:p-8 shadow-2xl text-white relative overflow-hidden group border border-gray-100 dark:border-neutral-800 h-full flex flex-col justify-between">
             {/* Background Decoration */}
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                 <Sparkles className="w-48 h-48 transform rotate-12" />
             </div>
 
-            <div className="relative z-10 space-y-6">
-                <div className="flex items-center gap-2 bg-white/10 w-fit px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-md border border-white/10">
-                    <Sparkles className="w-3 h-3 text-white" />
+            <div className="relative z-10 space-y-4 md:space-y-6">
+                <div className="flex items-center gap-2 bg-white/10 w-fit px-2.5 py-1 md:px-3 md:py-1.5 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest backdrop-blur-md border border-white/10">
+                    <Sparkles className="w-2.5 md:w-3 h-2.5 md:h-3 text-white" />
                     {t('smartRecommendation')}
                 </div>
 
-                <div className="space-y-2">
-                    <h3 className="text-2xl font-black tracking-tight">{topAction.title}</h3>
-                    <p className="text-gray-400 text-sm max-w-[90%] leading-relaxed font-medium">
+                <div className="space-y-1 md:space-y-2">
+                    <h3 className="text-lg md:text-2xl font-black tracking-tight">{topAction.title}</h3>
+                    <p className="text-gray-400 text-[11px] md:text-sm max-w-[95%] md:max-w-[90%] leading-relaxed font-medium">
                         {topAction.description}
                     </p>
                 </div>
             </div>
 
-            <div className="relative z-10 mt-8">
+            <div className="relative z-10 mt-6 md:mt-8">
                 <button
                     onClick={topAction.onAction}
-                    className="w-full bg-white text-black px-6 py-4 rounded-2xl font-black text-sm hover:bg-gray-100 transition-all active:scale-95 shadow-xl flex items-center justify-center gap-2 group/btn"
+                    className="w-full bg-white text-black px-6 py-3 md:py-4 rounded-2xl font-black text-[12px] md:text-sm hover:bg-gray-100 transition-all active:scale-95 shadow-xl flex items-center justify-center gap-2 group/btn"
                     aria-label={topAction.actionLabel}
                 >
                     {topAction.actionLabel}
-                    <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
+                    <ArrowRight className="w-3.5 md:w-4 h-3.5 md:h-4 transition-transform group-hover/btn:translate-x-1" />
                 </button>
             </div>
         </div>

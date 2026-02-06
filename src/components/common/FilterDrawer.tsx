@@ -63,7 +63,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
                             transition: { duration: 0.3, ease: 'easeInOut' }
                         }}
                         className={cn(
-                            "relative w-full sm:max-w-md h-[85vh] sm:h-full bg-white dark:bg-neutral-900 shadow-premium flex flex-col sm:rounded-l-[3rem] rounded-t-[3rem] overflow-hidden border-t sm:border-t-0 sm:border-l border-border",
+                            "relative w-full sm:max-w-md max-h-[92dvh] sm:h-full bg-white dark:bg-neutral-900 shadow-premium flex flex-col sm:rounded-l-[3rem] rounded-t-[3rem] border-t sm:border-t-0 sm:border-l border-border",
                             className
                         )}
                     >

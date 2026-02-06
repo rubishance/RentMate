@@ -437,3 +437,12 @@ export interface SavedCalculation {
     result_data: any;
     created_at: string;
 }
+
+export interface UserActivity {
+    id: string;
+    user_id: string;
+    event_type: 'page_view' | 'action';
+    path: string;
+    metadata: any;
+    created_at: string;
+}

@@ -76,15 +76,15 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
-            <div className="relative w-full max-w-md bg-card border border-border rounded-[2.5rem] shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
-                <div className="p-4 border-b flex items-center justify-between">
+            <div className="relative w-full max-w-md bg-card border border-border rounded-[2.5rem] shadow-xl overflow-hidden flex flex-col max-h-[90dvh]">
+                <div className="p-4 border-b flex items-center justify-between shrink-0">
                     <h2 className="text-lg font-bold">{isReadOnly ? (lang === 'he' ? 'פרופיל' : 'Profile') : (lang === 'he' ? 'עריכת פרופיל' : 'Edit Profile')}</h2>
                     <button onClick={onClose} className="p-2 hover:bg-muted rounded-full">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
 
-                <div className="p-6 space-y-6">
+                <div className="p-6 space-y-6 overflow-y-auto flex-1">
                     <div className="flex justify-center">
                         <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-2">
                             <UserIcon className="w-10 h-10" />
@@ -125,7 +125,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                     </div>
                 </div>
 
-                <div className="p-4 border-t bg-secondary flex gap-3">
+                <div className="p-4 border-t bg-secondary flex gap-3 shrink-0">
                     {isReadOnly ? (
                         <>
                             <button
@@ -263,7 +263,7 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
     return createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-            <div className="relative w-full max-w-md bg-card border border-border rounded-[2rem] shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200 max-h-[85vh] flex flex-col">
+            <div className="relative w-full max-w-md bg-card border border-border rounded-[2rem] shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200 max-h-[90dvh] flex flex-col">
                 <div className="p-4 border-b flex items-center justify-between shrink-0">
                     <h2 className="text-lg font-bold">{lang === 'he' ? 'הגדרות התראות' : 'Notification Settings'}</h2>
                     <button onClick={onClose} className="p-2 hover:bg-muted rounded-full">

@@ -22,8 +22,9 @@ export const GlassCard: React.FC<GlassCardProps> = ({
         <motion.div
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
+            whileTap={hoverEffect ? { scale: 0.98 } : undefined}
             viewport={{ once: true }}
-            transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{ duration: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
             className={cn(baseClasses, hoverClasses, minimalClasses, className)}
             {...props as any}
         >

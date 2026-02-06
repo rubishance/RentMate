@@ -8,6 +8,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../hooks/useTranslation';
 import { WhatsAppService } from '../../services/whatsapp.service';
+import { cn } from '../../lib/utils';
 
 export function NotificationCenter() {
     const { notifications, unreadCount, markAsRead, markAllAsRead, requestPermission, permission } = useNotifications();
@@ -81,7 +82,12 @@ export function NotificationCenter() {
                         leaveFrom="opacity-100 translate-y-0"
                         leaveTo="opacity-0 translate-y-1"
                     >
-                        <Popover.Panel className={`fixed sm:absolute z-50 mt-2 top-24 sm:top-auto left-4 right-4 sm:left-auto sm:right-0 w-[calc(100vw-2rem)] sm:w-96 max-w-sm rounded-2xl bg-white dark:bg-foreground shadow-xl ring-1 ring-black/5 dark:ring-white/10 focus:outline-none overflow-hidden ${lang === 'he' ? 'sm:origin-top-left' : 'sm:origin-top-right'}`}>
+                        <Popover.Panel className={cn(
+                            "fixed sm:absolute z-50 mt-2 top-24 sm:top-auto w-[calc(100vw-2rem)] sm:w-96 max-w-sm rounded-2xl bg-white dark:bg-foreground shadow-xl ring-1 ring-black/5 dark:ring-white/10 focus:outline-none overflow-hidden",
+                            lang === 'he'
+                                ? "left-4 right-4 sm:left-0 sm:right-auto sm:origin-top-right"
+                                : "left-4 right-4 sm:right-0 sm:left-auto sm:origin-top-left"
+                        )}>
                             <div className="p-4 border-b border-border dark:border-gray-800 flex items-center justify-between">
                                 <h3 className="text-sm font-semibold text-foreground dark:text-white">{t('notificationsTitle')}</h3>
                                 <div className="flex items-center gap-4">

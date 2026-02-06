@@ -12,9 +12,10 @@ import { DatePicker } from '../ui/DatePicker';
 interface MiscDocumentsProps {
     property: Property;
     readOnly?: boolean;
+    autoOpenUpload?: boolean;
 }
 
-export function MiscDocuments({ property, readOnly }: MiscDocumentsProps) {
+export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocumentsProps) {
     const { t } = useTranslation();
     const [folders, setFolders] = useState<DocumentFolder[]>([]);
     const [documents, setDocuments] = useState<PropertyDocument[]>([]);
@@ -39,6 +40,12 @@ export function MiscDocuments({ property, readOnly }: MiscDocumentsProps) {
     useEffect(() => {
         loadData();
     }, [property.id]);
+
+    useEffect(() => {
+        if (autoOpenUpload) {
+            setShowUploadForm(true);
+        }
+    }, [autoOpenUpload]);
 
     async function loadData() {
         setLoading(true);

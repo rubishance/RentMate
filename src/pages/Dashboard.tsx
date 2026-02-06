@@ -5,7 +5,7 @@ import { useTranslation } from '../hooks/useTranslation';
 import { useNavigate } from 'react-router-dom';
 import { RentyCommandCenter } from '../components/dashboard/RentyCommandCenter';
 import { useDataCache } from '../contexts/DataCacheContext';
-import { DashboardGrid } from '../components/dashboard/DashboardGrid';
+import { DashboardHero } from '../components/dashboard/DashboardHero';
 import { DEFAULT_WIDGET_LAYOUT, WidgetConfig, DashboardData, WIDGET_REGISTRY } from '../components/dashboard/WidgetRegistry';
 import { Edit3Icon, CheckIcon, FileSearch, ArrowRight, Crown, Sparkles } from 'lucide-react';
 import { ReportGenerationModal } from '../components/modals/ReportGenerationModal';
@@ -15,169 +15,124 @@ import { useSubscription } from '../hooks/useSubscription';
 import { BriefingService, FeedItem } from '../services/briefing.service';
 import { BionicWelcomeOverlay } from '../components/onboarding/BionicWelcomeOverlay';
 import { BionicSpotlight } from '../components/onboarding/BionicSpotlight';
-
-interface UserProfile {
-    full_name: string;
-}
+import { useAuth } from '../contexts/AuthContext';
 
 export function Dashboard() {
     const { lang, t } = useTranslation();
     const navigate = useNavigate();
     const { preferences } = useUserPreferences();
-    const [loading, setLoading] = useState(true);
     const { get, set } = useDataCache();
+    const { user, profile: authProfile } = useAuth();
+    const { plan } = useSubscription();
 
-    const [profile, setProfile] = useState<UserProfile | null>(null);
-    const [stats, setStats] = useState({
-        monthlyIncome: 0,
-        collected: 0,
-        pending: 0
-    });
-
+    const [loading, setLoading] = useState(true);
+    const [stats, setStats] = useState({ monthlyIncome: 0, collected: 0, pending: 0 });
     const [storageCounts, setStorageCounts] = useState({ media: 0, utilities: 0, maintenance: 0, documents: 0 });
     const [activeContracts, setActiveContracts] = useState<any[]>([]);
     const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
-
     const [layout, setLayout] = useState<WidgetConfig[]>(DEFAULT_WIDGET_LAYOUT);
 
     const [isEditingLayout, setIsEditingLayout] = useState(false);
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
-    const [reportsEnabled, setReportsEnabled] = useState(false);
     const [showProBanner, setShowProBanner] = useState(false);
-    const { plan } = useSubscription();
 
+    const [mountId] = useState(() => Math.random().toString(36).substring(7));
+
+    // Initial Load & Layout Restoration
     useEffect(() => {
-        async function init() {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                const layoutKey = `dashboard_layout_${user.id}_v1`;
-                const saved = localStorage.getItem(layoutKey);
-                if (saved) {
-                    try {
-                        const parsed = JSON.parse(saved);
-                        const validLayout = parsed.filter((w: any) => Object.keys(WIDGET_REGISTRY).includes(w.widgetId));
-                        setLayout(validLayout.length > 0 ? validLayout : DEFAULT_WIDGET_LAYOUT);
-                    } catch (e) {
-                        setLayout(DEFAULT_WIDGET_LAYOUT);
-                    }
-                }
+        console.log(`[Dashboard] [${mountId}] Final Stabilization Mount`);
+        if (user) {
+            const layoutKey = `dashboard_layout_${user.id}_v2`;
+            const saved = localStorage.getItem(layoutKey);
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    const validLayout = parsed.filter((w: any) => Object.keys(WIDGET_REGISTRY).includes(w.widgetId));
+                    if (validLayout.length > 0) setLayout(validLayout);
+                } catch (e) { console.warn('Layout parse error', e); }
             }
-            loadDashboardData();
-        }
-        init();
-    }, []);
-
-    async function loadDashboardData() {
-        const isBypass = import.meta.env.DEV && localStorage.getItem('rentmate_e2e_bypass') === 'true';
-        let user;
-        try {
-            const { data } = await supabase.auth.getUser();
-            user = data.user;
-        } catch (e) {
-            console.error('loadDashboardData: Auth check failed', e);
-        }
-
-        if (!user && !isBypass) {
+            loadData();
+        } else {
             setLoading(false);
-            return;
         }
+    }, [user, mountId]);
 
-        const effectiveUserId = user?.id || 'demo-user-id';
-        const cacheKey = `dashboard_data_v4_${effectiveUserId}_${preferences.language}`;
+    async function loadData() {
+        if (!user) return;
+        const cacheKey = `dashboard_main_v1_${user.id}_${lang}`;
         const cached = get<any>(cacheKey);
 
         if (cached) {
-            setProfile(cached.profile);
             setStats(cached.stats);
             setStorageCounts(cached.storageCounts);
-            setActiveContracts(cached.activeContracts || []);
-            setFeedItems(cached.feedItems || []);
+            setActiveContracts(cached.activeContracts);
+            setFeedItems(cached.feedItems);
+            setLayout(cached.layout || layout);
             setLoading(false);
-            if (!layout || layout.filter(w => w.visible).length === 0) {
-                setLayout(DEFAULT_WIDGET_LAYOUT);
-            }
         }
 
         try {
-            let profileData = null;
-            if (user) {
-                const { data } = await supabase
-                    .from('user_profiles')
-                    .select('full_name')
-                    .eq('id', user.id)
-                    .single();
-                profileData = data;
-            } else if (isBypass) {
-                profileData = { full_name: 'Developer (Bypass)' };
-            }
-
-            const [summaryResponse, feedItemsData, reportSetting, shouldShowBanner] = await Promise.all([
-                user ? supabase.rpc('get_dashboard_summary', { p_user_id: user.id }) : Promise.resolve({ data: null }),
-                BriefingService.getBriefingItems(effectiveUserId, t),
-                supabase.from('system_settings').select('value').eq('key', 'auto_monthly_reports_enabled').single(),
-                user ? userScoringService.shouldShowUpsell(user.id, plan?.name || '') : Promise.resolve(false)
+            // v1.4.15 Race Timeout Logic
+            const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Dashboard timeout')), 6000));
+            const fetchPromise = Promise.all([
+                supabase.rpc('get_dashboard_summary', { p_user_id: user.id }),
+                BriefingService.getBriefingItems(user.id, t),
+                userScoringService.shouldShowUpsell(user.id, plan?.name || '')
             ]);
 
-            const summary = summaryResponse.data;
+            const responses = await Promise.race([fetchPromise, timeoutPromise]) as any;
+            const summary = responses[0]?.data;
+            const briefing = responses[1];
+            const shouldShowBanner = responses[2];
 
-            if (profileData) setProfile(profileData);
             if (summary) {
-                setStats({
+                const newStats = {
                     monthlyIncome: summary.monthly_income || 0,
                     collected: summary.collected_this_month || 0,
                     pending: summary.pending_payments || 0
-                });
-                setStorageCounts(summary.storage_counts || {});
+                };
+                setStats(newStats);
+                setStorageCounts(summary.storage_counts || storageCounts);
                 setActiveContracts(summary.active_contracts || []);
+                setShowProBanner(shouldShowBanner);
+
+                set(cacheKey, {
+                    stats: newStats,
+                    storageCounts: summary.storage_counts || storageCounts,
+                    activeContracts: summary.active_contracts || [],
+                    feedItems: briefing,
+                    layout
+                }, { persist: true });
             }
-            setFeedItems(feedItemsData);
-            setReportsEnabled(reportSetting?.data?.value === true);
-            setShowProBanner(shouldShowBanner);
-
-            set(cacheKey, {
-                profile: profileData,
-                stats: summary ? {
-                    monthlyIncome: summary.monthly_income,
-                    collected: summary.collected_this_month,
-                    pending: summary.pending_payments
-                } : stats,
-                storageCounts: summary?.storage_counts || storageCounts,
-                activeContracts: summary?.active_contracts || [],
-                feedItems: feedItemsData
-            }, { persist: true });
-
-        } catch (error) {
-            console.error('loadDashboardData: error:', error);
+            setFeedItems(briefing);
+        } catch (e) {
+            console.error('[Dashboard] Restore failed:', e);
         } finally {
             setLoading(false);
-            if (!layout || layout.filter(w => w.visible).length === 0) {
-                setLayout(DEFAULT_WIDGET_LAYOUT);
-            }
         }
     }
 
-    const firstName = profile?.full_name?.split(' ')[0] || '';
-
     const dashboardData = useMemo<DashboardData>(() => ({
-        profile,
+        profile: authProfile,
         stats,
         storageCounts,
         activeContracts,
         feedItems
-    }), [profile, stats, storageCounts, activeContracts, feedItems]);
+    }), [authProfile, stats, storageCounts, activeContracts, feedItems]);
 
     const handleLayoutChange = (newLayout: WidgetConfig[]) => {
         setLayout(newLayout);
-        const persistLayout = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                localStorage.setItem(`dashboard_layout_${user.id}_v1`, JSON.stringify(newLayout));
-            }
-        };
-        persistLayout();
+        if (user) {
+            localStorage.setItem(`dashboard_layout_${user.id}_v2`, JSON.stringify(newLayout));
+        }
     };
 
-    if (loading) {
+    const updateWidget = (id: string, updates: Partial<WidgetConfig>) => {
+        const newLayout = layout.map(w => w.id === id ? { ...w, ...updates } : w);
+        handleLayoutChange(newLayout);
+    };
+
+    if (loading && !feedItems.length) {
         return (
             <div className="px-3 py-20 max-w-5xl mx-auto space-y-12">
                 <div className="h-8 w-48 bg-slate-100 animate-pulse rounded-2xl" />
@@ -186,108 +141,74 @@ export function Dashboard() {
         );
     }
 
-    // Stitch Design V3: Final Polish, Bionic Density, Micro-interactions
+    const firstName = authProfile?.full_name?.split(' ')[0] || '';
+
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-neutral-950 pb-40 space-y-4 animate-in fade-in slide-in-from-bottom-6 duration-700">
-            {/* Hero Section - V3: Sticky, Blurred 2xl, integrated seamlessly */}
-            <div className="sticky top-0 z-20 backdrop-blur-2xl bg-white/50 dark:bg-neutral-950/50 border-b border-white/20 dark:border-neutral-800/50 pt-2 pb-2 transition-all duration-300">
-                <RentyCommandCenter firstName={firstName} feedItems={feedItems} />
-            </div>
+        <main className="min-h-screen bg-slate-50 dark:bg-neutral-950 transition-colors duration-300 pb-40">
+            <BionicWelcomeOverlay firstName={firstName} />
 
-            {/* Bionic Welcome Overlay - Only for users with 0 active contracts and who haven't seen it */}
-            {activeContracts.length === 0 && !preferences.has_seen_welcome_v1 && (
-                <BionicWelcomeOverlay firstName={firstName} />
-            )}
+            <div className="max-w-7xl mx-auto px-4 md:px-10 pt-8 md:pt-12 space-y-8 md:space-y-12">
+                <DashboardHero firstName={firstName} feedItems={feedItems} />
 
-            {/* Bionic Spotlight: Point to Add Asset if user has 0 properties but has cleared welcome */}
-            {activeContracts.length === 0 && preferences.has_seen_welcome_v1 && (
-                <BionicSpotlight
-                    targetId="portfolio-add-asset-btn"
-                    featureId="spotlight_add_asset_v1"
-                    title={lang === 'he' ? 'הצעד הבא שלך' : 'Your Next Step'}
-                    description={lang === 'he'
-                        ? 'בוא נוסיף את הנכס הראשון שלך למערכת כדי להתחיל לנהל אותו בחוכמה.'
-                        : 'Let\'s add your first property to the system to start managing it efficiently.'}
-                    position="bottom"
-                />
-            )}
-
-            <div className="max-w-6xl mx-auto px-4">
-                {showProBanner && (
-                    /* V3: Reduced padding (p-6 -> p-4), tighter corner radius, jewel shadow */
-                    <div className="mt-6 relative overflow-hidden rounded-[1.5rem] bg-gradient-to-r from-indigo-600 via-indigo-600 to-violet-600 p-[1px] shadow-2xl shadow-indigo-500/20 animate-in zoom-in-95 duration-500">
-                        <div className="absolute top-0 right-0 p-4 opacity-10">
-                            <Crown className="w-24 h-24 rotate-12" />
+                {/* Command Bar */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="flex flex-col gap-1 md:gap-2">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 backdrop-blur-md rounded-full border border-white/10 w-fit mb-2">
+                            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40">
+                                {lang === 'he' ? 'חיבור חי' : 'live connection'}
+                            </span>
                         </div>
-                        <div className="relative bg-neutral-950/20 backdrop-blur-sm rounded-[1.5rem] p-4 md:p-6 flex flex-col md:flex-row items-center justify-between gap-4">
-                            <div className="flex items-center gap-4">
-                                <div className="p-2.5 bg-white/20 rounded-xl shadow-inner hidden md:block">
-                                    <Sparkles className="w-6 h-6 text-yellow-300" />
-                                </div>
-                                <div className="space-y-0.5 text-center md:text-start">
-                                    <h3 className="text-lg font-bold text-white tracking-tight">
-                                        {lang === 'he' ? 'זיהינו שאתם מנהלים מקצוענים!' : 'Pro Manager Detected!'}
-                                    </h3>
-                                    <p className="text-indigo-100 max-w-xl text-xs leading-relaxed opacity-90">
-                                        {lang === 'he'
-                                            ? 'רוצים לנהל תיק נכסים שלם עם אוטומציות מתקדמות? שדרגו ל-MATE.'
-                                            : 'Scale your portfolio with MATE automation.'}
-                                    </p>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => navigate('/pricing')}
-                                className="whitespace-nowrap px-5 py-2.5 bg-white text-indigo-600 font-bold text-sm rounded-xl shadow-lg hover:bg-indigo-50 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2 group"
-                            >
-                                {lang === 'he' ? 'שדרגו ל-MATE' : 'Upgrade to MATE'}
-                                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                            </button>
-                        </div>
+                        <h1 className="text-2xl md:text-5xl font-black tracking-tighter text-white leading-[0.9] lowercase">
+                            {lang === 'he' ? 'ערב טוב,' : 'good evening,'}
+                            <br />
+                            <span className="text-white/40">{user?.user_metadata?.first_name || user?.email?.split('@')[0]}</span>
+                        </h1>
                     </div>
-                )}
-            </div>
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={() => setIsEditingLayout(!isEditingLayout)}
+                            className={cn(
+                                "flex items-center gap-2.5 px-6 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all duration-300",
+                                isEditingLayout
+                                    ? "bg-indigo-600 text-white shadow-premium scale-105"
+                                    : "bg-white dark:bg-neutral-900 text-slate-600 dark:text-slate-400 border border-slate-100 dark:border-neutral-800 shadow-minimal hover:shadow-premium"
+                            )}
+                        >
+                            {isEditingLayout ? <CheckIcon className="w-3.5 h-3.5" /> : <Edit3Icon className="w-3.5 h-3.5" />}
+                            {isEditingLayout ? t('saveLayout') : t('editLayout')}
+                        </button>
 
-            {/* Content Section - Main Grid */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                {/* V3 Toolbar: Tighter, cleaner */}
-                <div className="flex items-center justify-end mb-4 gap-3">
-                    {reportsEnabled && (
                         <button
                             onClick={() => setIsReportModalOpen(true)}
-                            className="flex items-center gap-1.5 px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 hover:border-indigo-500/30 text-muted-foreground hover:text-indigo-600 transition-all shadow-sm hover:shadow-md"
+                            className="flex items-center gap-2.5 px-6 py-3 bg-white dark:bg-neutral-900 text-slate-600 dark:text-slate-400 border border-slate-100 dark:border-neutral-800 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-minimal hover:shadow-premium transition-all duration-300"
                         >
-                            <FileSearch className="w-3 h-3" />
-                            {lang === 'he' ? 'הפקת דוח' : 'Report'}
+                            <FileSearch className="w-3.5 h-3.5" />
+                            {t('generateReport')}
                         </button>
-                    )}
-
-                    <button
-                        onClick={() => setIsEditingLayout(!isEditingLayout)}
-                        className={cn(
-                            "flex items-center gap-1.5 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300",
-                            isEditingLayout
-                                ? "bg-primary text-primary-foreground shadow-lg scale-105"
-                                : "bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-muted-foreground hover:border-primary/30 hover:text-primary shadow-sm hover:shadow-md"
-                        )}
-                    >
-                        {isEditingLayout ? <CheckIcon className="w-3 h-3" /> : <Edit3Icon className="w-3 h-3" />}
-                        {isEditingLayout ? t('saveLayout') : t('customize')}
-                    </button>
+                    </div>
                 </div>
 
-                {/* Grid - V3: Bionic Density implied via CSS var injection or just structure */}
-                <div className="relative">
-                    {/* Simulated Style Injection for Grid Density */}
-                    <DashboardGrid
-                        layout={layout}
-                        data={dashboardData}
-                        isEditing={isEditingLayout}
-                        onLayoutChange={handleLayoutChange}
-                        onUpdateWidgetSettings={(id, settings) => {
-                            const newLayout = layout.map(w => w.id === id ? { ...w, settings } : w);
-                            handleLayoutChange(newLayout);
-                        }}
-                    />
+                <div id="renty-command-center">
+                    <RentyCommandCenter firstName={firstName} feedItems={feedItems} />
+                </div>
+
+                {/* Stabilized Grid (Manual Mapping) */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
+                    {layout
+                        .filter(w => w.visible)
+                        .sort((a, b) => a.order - b.order)
+                        .map((widget) => {
+                            const WidgetComponent = WIDGET_REGISTRY[widget.widgetId];
+                            const sizeClass = widget.size === 'large' ? 'col-span-1 lg:col-span-2' : 'col-span-1';
+                            if (!WidgetComponent) return null;
+                            return (
+                                <div key={widget.id} className={cn("relative transition-all duration-300", sizeClass)}>
+                                    {WidgetComponent(dashboardData, widget as any, (updates) => updateWidget(widget.id, updates))}
+                                </div>
+                            );
+                        })
+                    }
                 </div>
             </div>
 
@@ -295,6 +216,16 @@ export function Dashboard() {
                 isOpen={isReportModalOpen}
                 onClose={() => setIsReportModalOpen(false)}
             />
-        </div>
+
+            <BionicSpotlight
+                targetId="renty-command-center"
+                featureId="command_center_intro_v1"
+                title={lang === 'he' ? 'מרכז הבקרה של רנטי' : 'Renty Command Center'}
+                description={lang === 'he'
+                    ? 'דבר עם רנטי, העלה קבצים ונהל את הכל במקום אחד.'
+                    : 'Talk to Renty, upload files, and manage everything in one place.'}
+                position="bottom"
+            />
+        </main>
     );
 }

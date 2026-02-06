@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Toaster } from 'sonner'
+import { HelmetProvider } from 'react-helmet-async';
 import * as Sentry from "@sentry/react";
 import './index.css'
 import App from './App.tsx'
@@ -31,19 +32,21 @@ try {
     // console.log('Root element found, attempting to mount...');
     createRoot(rootElement).render(
       <StrictMode>
-        <ErrorBoundary>
-          <Toaster
-            position="top-center"
-            richColors
-            closeButton
-            theme="system"
-            toastOptions={{
-              className: 'font-sans rounded-[1.25rem] shadow-premium',
-              style: { borderRadius: '1.25rem' }
-            }}
-          />
-          <App />
-        </ErrorBoundary>
+        <HelmetProvider>
+          <ErrorBoundary>
+            <Toaster
+              position="top-center"
+              richColors
+              closeButton
+              theme="system"
+              toastOptions={{
+                className: 'font-sans rounded-[1.25rem] shadow-premium',
+                style: { borderRadius: '1.25rem' }
+              }}
+            />
+            <App />
+          </ErrorBoundary>
+        </HelmetProvider>
       </StrictMode>,
     );
     // console.log('Mount called.');

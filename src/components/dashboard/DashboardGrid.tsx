@@ -59,10 +59,11 @@ export function DashboardGrid({ layout, data, isEditing = false, onLayoutChange,
                                 data={data}
                                 isEditing={isEditing}
                                 sizeClass={getSizeClass(widget.size)}
-                                onRender={() => WidgetComponent(data, {
-                                    ...widget,
-                                    onUpdateSettings: (settings: any) => onUpdateWidgetSettings?.(widget.id, settings)
-                                } as any)}
+                                onRender={() => WidgetComponent(data, widget, (updates) => {
+                                    if (updates.settings) {
+                                        onUpdateWidgetSettings?.(widget.id, updates.settings);
+                                    }
+                                })}
                             />
                         );
                     })

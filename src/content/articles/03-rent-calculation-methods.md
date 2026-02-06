@@ -86,6 +86,8 @@ This method uses the index from the **contract start date** as the base.
 
 Manual calculations are prone to errors. RentMate automatically fetches CBS data and calculates exact rent adjustments based on your contract terms, ensuring accuracy every time.
 
+> 🛠️ **Try it yourself:** Use our **[Free CPI Calculator](/tools/cpi-calculator)** to run these formulas automatically.
+
 ---
 
 ## עברית
@@ -142,7 +144,7 @@ Manual calculations are prone to errors. RentMate automatically fetches CBS data
 
 ### מלכודות נפוצות
 
-❌ **שימוש במדד של חודש לא נכון** - תמיד אמתו את התאריך המדויק  
+❌ **שימוש בממד של חודש לא נכון** - תמיד אמתו את התאריך המדויק  
 ❌ **שכחת הצמדה שלילית** - בדקו אם החוזה מאפשר ירידת שכר דירה  
 ❌ **טעויות עיגול** - השתמשו בעשרוניות מדויקות עד השלב הסופי  
 ❌ **נתוני למ"ס לא מעודכנים** - תמיד השתמשו בנתונים רשמיים ומעודכנים
@@ -157,3 +159,5 @@ Manual calculations are prone to errors. RentMate automatically fetches CBS data
 ### למה אוטומציה חשובה
 
 חישובים ידניים נוטים לטעויות. RentMate מביא אוטומטית נתוני למ"ס ומחשב התאמות שכר דירה מדויקות על בסיס תנאי החוזה שלכם, ומבטיח דיוק בכל פעם.
+
+> 🛠️ **נסו בעצמכם:** השתמשו ב**[מחשבון הצמדה למדד](/tools/cpi-calculator)** שלנו כדי לבצע את החישובים האלו באופן אוטומטי.

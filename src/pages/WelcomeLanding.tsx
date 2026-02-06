@@ -5,13 +5,15 @@ import { useTranslation } from '../hooks/useTranslation';
 import { LanguageToggle } from '../components/common/LanguageToggle';
 import { ThemeToggle } from '../components/common/ThemeToggle';
 import {
-    ArrowRight, Check, X, Menu, Bell, Calculator,
+    ArrowRight, X, Menu, Bell, Calculator,
     Play, Clock, FileText, Zap, MapPin
 } from 'lucide-react';
 import { BillScanningAnimation } from '../components/animations/BillScanningAnimation';
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
 import { BotFullBody } from '../components/chat/BotFullBody';
+import { SEO } from '../components/common/SEO';
+import { useAuth } from '../contexts/AuthContext';
 
 
 export function WelcomeLanding() {
@@ -20,35 +22,20 @@ export function WelcomeLanding() {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<'home' | 'blog' | 'demo' | 'calculator'>('home');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const { user, isLoading: isAuthLoading } = useAuth();
     const [checkingAuth, setCheckingAuth] = useState(true);
 
-    // Auto-redirect if logged in
+    // V1.4.15 Sync (Redirect Safety)
     useEffect(() => {
-        const checkAuth = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
+        if (!isAuthLoading) {
+            if (user) {
+                console.log('[WelcomeLanding] Authenticated, redirecting to dashboard...');
                 navigate('/dashboard', { replace: true });
             } else {
                 setCheckingAuth(false);
             }
-        };
-        checkAuth();
-    }, [navigate]);
-
-    // SEO Injection
-    useEffect(() => {
-        document.title = isRtl
-            ? "RentMate | ניהול נכסים על אוטומט"
-            : "RentMate | Property Management Software Israel";
-
-        const metaDesc = document.querySelector('meta[name="description"]');
-        if (metaDesc) {
-            metaDesc.setAttribute('content', isRtl
-                ? "התוכנה המובילה לניהול נכסים בחולון, תל אביב והמרכז. גבייה אוטומטית, חוזים חכמים והתראות בזמן אמת."
-                : "Premium property management software for landlords in Holon, Tel Aviv and Central Israel. Automated rent collection and contracts."
-            );
         }
-    }, [isRtl]);
+    }, [user, isAuthLoading, navigate]);
 
     // Scroll Animation for Hero Walking
     const containerRef = useRef(null);
@@ -72,7 +59,7 @@ export function WelcomeLanding() {
             icon: Zap,
             color: "text-gold",
             title: isRtl ? 'ניהול חשבונות' : 'Bill Management',
-            desc: isRtl ? 'סריקת חשבונות ואוטומציה של תשלומים' : 'Bill scanning and payment automation',
+            desc: isRtl ? 'סריקת חשבונות ומעקב הוצאות' : 'Bill scanning and expense tracking',
             stat: "24/7"
         },
         {
@@ -98,6 +85,13 @@ export function WelcomeLanding() {
             className={`min-h-screen bg-white dark:bg-black ${isRtl ? 'text-right' : 'text-left'} selection:bg-primary/20`}
             dir={isRtl ? 'rtl' : 'ltr'}
         >
+            <SEO
+                title={isRtl ? "ניהול נכסים, דיירים וחוזים | הכל במקום אחד" : "Smart Property Management Software"}
+                description={isRtl
+                    ? "התוכנה המובילה לניהול נכסים בחולון, תל אביב והמרכז. גבייה אוטומטית, חוזים חכמים והתראות בזמן אמת. נסה עכשיו חינם."
+                    : "Premium property management software for landlords in Holon, Tel Aviv and Central Israel. Automated rent collection and contracts."}
+                keywords={["ניהול נכסים", "ניהול נכס", "ניהול דירה", "תוכנה לניהול דירות", "השכרת דירה", "גביית שכר דירה", "חוזה שכירות דיגיטלי", "ניהול דיירים"]}
+            />
             {/* --- HEADER --- */}
             <header className="fixed top-0 w-full z-50 bg-white/50 dark:bg-black/50 backdrop-blur-3xl border-b border-slate-100 dark:border-neutral-900 transition-all">
                 <div className="max-w-7xl mx-auto px-3 md:px-8 h-20 md:h-24 flex items-center justify-between">
@@ -112,7 +106,13 @@ export function WelcomeLanding() {
                         {['home', 'blog', 'demo', 'calculator'].map((tab) => (
                             <button
                                 key={tab}
-                                onClick={() => setActiveTab(tab as any)}
+                                onClick={() => {
+                                    if (tab === 'calculator') {
+                                        navigate('/tools/cpi-calculator');
+                                        return;
+                                    }
+                                    setActiveTab(tab as any);
+                                }}
                                 className={cn(
                                     "px-6 py-2.5 text-[10px] font-black uppercase tracking-[0.2em] rounded-full transition-all duration-500",
                                     activeTab === tab
@@ -170,6 +170,11 @@ export function WelcomeLanding() {
                                         transition={{ delay: i * 0.1 }}
                                         key={tab}
                                         onClick={() => {
+                                            if (tab === 'calculator') {
+                                                navigate('/tools/cpi-calculator');
+                                                setIsMenuOpen(false);
+                                                return;
+                                            }
                                             setActiveTab(tab as any);
                                             setIsMenuOpen(false);
                                         }}
@@ -312,7 +317,13 @@ export function WelcomeLanding() {
                                                 transition={{ delay: i * 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                                                 viewport={{ once: true }}
                                                 className="group p-10 rounded-[3rem] bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 hover:shadow-premium transition-all duration-700 cursor-pointer relative overflow-hidden"
-                                                onClick={() => setActiveTab('demo')}
+                                                onClick={() => {
+                                                    if (f.icon === Calculator) {
+                                                        navigate('/tools/cpi-calculator');
+                                                    } else {
+                                                        setActiveTab('demo');
+                                                    }
+                                                }}
                                             >
                                                 <div className="absolute -top-4 -right-4 p-8 opacity-5 font-black text-8xl text-foreground select-none group-hover:scale-110 transition-transform duration-1000">
                                                     {f.stat}
@@ -334,59 +345,10 @@ export function WelcomeLanding() {
                             <section className="py-32 relative overflow-hidden">
                                 <div className="max-w-7xl mx-auto px-4 sm:px-8 space-y-32">
 
-                                    {/* Feature 1: Automated Collection */}
-                                    <div className="flex flex-col lg:flex-row items-center gap-16">
-                                        <div className="lg:w-1/2 space-y-8">
-                                            <div className="inline-flex px-4 py-2 rounded-full glass-premium dark:bg-white/5 border border-black/5 dark:border-white/10 text-[10px] font-black uppercase tracking-widest text-gold shadow-jewel">
-                                                {isRtl ? 'גבייה אוטומטית' : 'Automated Collection'}
-                                            </div>
-                                            <h2 className="text-4xl lg:text-5xl font-black tracking-tighter text-foreground">
-                                                {isRtl ? 'תשלומים בזמן.' : 'Payments on Time.'} <br />
-                                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-500">
-                                                    {isRtl ? 'כל הזמן.' : 'Every Time.'}
-                                                </span>
-                                            </h2>
-                                            <p className="text-lg text-muted-foreground leading-relaxed max-w-md">
-                                                {isRtl
-                                                    ? 'מערכת הגבייה האוטומטית שלנו מסתנכרנת עם כל הבנקים בישראל. הפקדות צ׳קים דיגיטליות, מעקב העברות בנקאיות והתראות מיידיות על פיגורים.'
-                                                    : 'Our automated collection system syncs with all Israeli banks. Digital check deposits, wire transfer tracking, and instant late payment alerts.'}
-                                            </p>
-                                            <button
-                                                onClick={() => navigate('/login?mode=signup')}
-                                                className="px-8 py-4 button-jewel text-white rounded-2xl font-bold shadow-lg hover:scale-105 transition-transform flex items-center gap-3"
-                                            >
-                                                {isRtl ? 'התחל לגבות' : 'Start Collecting'}
-                                                <ArrowRight className={cn("w-5 h-5", isRtl && "rotate-180")} />
-                                            </button>
-                                        </div>
-                                        <div className="lg:w-1/2 relative group">
-                                            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 blur-[100px] rounded-full opacity-50 group-hover:opacity-75 transition-opacity" />
-                                            <div className="relative glass-premium dark:bg-black/40 border border-white/20 p-8 rounded-[2.5rem] shadow-2xl rotate-3 group-hover:rotate-1 transition-transform duration-700">
-                                                {/* Abstract UI Representation */}
-                                                <div className="space-y-4">
-                                                    {[1, 2, 3].map(i => (
-                                                        <div key={i} className="flex items-center justify-between p-4 bg-white/50 dark:bg-white/5 rounded-2xl border border-black/5 dark:border-white/5">
-                                                            <div className="flex items-center gap-4">
-                                                                <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                                                                    <Check className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                                                                </div>
-                                                                <div>
-                                                                    <div className="h-2 w-24 bg-black/10 dark:bg-white/10 rounded mb-2" />
-                                                                    <div className="h-2 w-16 bg-black/5 dark:bg-white/5 rounded" />
-                                                                </div>
-                                                            </div>
-                                                            <div className="font-mono text-sm font-bold text-emerald-600 dark:text-emerald-400">
-                                                                ₪6,500
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+
 
                                     {/* Feature 2: Local Expertise (SEO) - Reverse Layout */}
-                                    <div className="flex flex-col lg:flex-row-reverse items-center gap-16">
+                                    <div className="flex flex-col lg:flex-row items-center gap-16">
                                         <div className="lg:w-1/2 space-y-8">
                                             <div className="inline-flex px-4 py-2 rounded-full glass-premium dark:bg-white/5 border border-black/5 dark:border-white/10 text-[10px] font-black uppercase tracking-widest text-indigo-500 shadow-jewel">
                                                 {isRtl ? 'דאטה מקומי' : 'Local Data'}

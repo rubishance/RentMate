@@ -124,9 +124,9 @@ export default function Pricing() {
                     price: plan.price_monthly,
                     priceYearly: plan.price_yearly || plan.price_monthly * 10, // Fallback if 0
                     description: plan.description || (
-                        plan.id === 'free' ? (isRtl ? 'שקט נפשי דיגיטלי לבעלי נכס יחיד.' : 'Digital peace of mind for the single-unit owner.') :
-                            plan.id === 'mate' ? (isRtl ? 'אופטימיזציית תשואה לבעלי נכסים בצמיחה.' : 'The Yield Optimizer for growth-minded owners.') :
-                                plan.id === 'enterprise' ? (isRtl ? 'מרכז בקרה עסקי למשקיעי נדל"ן.' : 'Business Command Center for portfolio investors.') :
+                        plan.id === 'free' || plan.id === 'solo' ? (isRtl ? 'שקט נפשי דיגיטלי לבעלי נכס יחיד.' : 'Digital peace of mind for the single-unit owner.') :
+                            plan.id === 'mate' || plan.id === 'pro' ? (isRtl ? 'אופטימיזציית תשואה לבעלי נכסים בצמיחה.' : 'The Yield Optimizer for growth-minded owners.') :
+                                plan.id === 'master' || plan.id === 'enterprise' ? (isRtl ? 'מרכז בקרה עסקי למשקיעי נדל"ן.' : 'Business Command Center for portfolio investors.') :
                                     (isRtl ? 'פיצ\'רים מתקדמים למקצוענים' : 'Advanced features for professionals')
                     ),
                     subtitle: plan.subtitle,

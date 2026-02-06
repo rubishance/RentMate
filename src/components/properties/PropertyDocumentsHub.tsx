@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FileText, Image as ImageIcon, Wrench, FileStack, Banknote } from 'lucide-react';
 import type { Property } from '../../types/database';
 import { MediaGallery } from './MediaGallery';
@@ -14,11 +14,13 @@ import { cn } from '../../lib/utils';
 interface PropertyDocumentsHubProps {
     property: Property;
     readOnly?: boolean;
+    requestedTab?: TabType;
+    autoOpenUpload?: boolean;
 }
 
 type TabType = 'media' | 'utilities' | 'maintenance' | 'documents' | 'checks';
 
-export function PropertyDocumentsHub({ property, readOnly }: PropertyDocumentsHubProps) {
+export function PropertyDocumentsHub({ property, readOnly, requestedTab, autoOpenUpload }: PropertyDocumentsHubProps) {
     const { t } = useTranslation();
     const categories = [
         { id: 'media' as TabType, label: t('mediaStorage'), icon: ImageIcon, color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-900/20' },
@@ -28,6 +30,12 @@ export function PropertyDocumentsHub({ property, readOnly }: PropertyDocumentsHu
         { id: 'checks' as TabType, label: t('checksStorage'), icon: Banknote, color: 'text-pink-600', bg: 'bg-pink-50 dark:bg-pink-900/20' },
     ];
     const [activeTab, setActiveTab] = useState<TabType>('media');
+
+    useEffect(() => {
+        if (requestedTab) {
+            setActiveTab(requestedTab);
+        }
+    }, [requestedTab]);
 
     return (
         <div className="flex flex-col h-full">
@@ -59,7 +67,7 @@ export function PropertyDocumentsHub({ property, readOnly }: PropertyDocumentsHu
                 {activeTab === 'media' && <MediaGallery property={property} readOnly={readOnly} />}
                 {activeTab === 'utilities' && <UtilityBillsManager property={property} readOnly={readOnly} />}
                 {activeTab === 'maintenance' && <MaintenanceRecords property={property} readOnly={readOnly} />}
-                {activeTab === 'documents' && <MiscDocuments property={property} readOnly={readOnly} />}
+                {activeTab === 'documents' && <MiscDocuments property={property} readOnly={readOnly} autoOpenUpload={autoOpenUpload} />}
                 {activeTab === 'checks' && <ChecksManager property={property} readOnly={readOnly} />}
             </div>
 

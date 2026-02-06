@@ -1,4 +1,5 @@
 import { Calculator as CalcIcon, Share2 } from 'lucide-react';
+import { SEO } from '../components/common/SEO';
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from '../hooks/useTranslation';
@@ -156,6 +157,26 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                 </button>
             </div>
 
+            {/* SEO Metadata */}
+            <SEO
+                title={t('calculator_seo_title') || "מחשבון הצמדה למדד | חישוב שכר דירה ומדד המחירים לצרכן"}
+                description={t('calculator_seo_desc') || "מחשבון הצמדה למדד המחירים לצרכן מתקדם לחישוב עדכון שכר דירה. כלי חובה לבעלי דירות ודיירים בישראל לחישוב הצמדות, עליות מדד ועדכוני חוזה מדויקים."}
+                keywords={["מחשבון מדד", "הצמדה למדד", "שכר דירה", "מדד המחירים לצרכן", "חישוב שכר דירה", "עליית מדד", "מחשבון שכירות", "הלמ\"ס מדד", "מחשבון הצמדה"]}
+                schema={{
+                    "@context": "https://schema.org",
+                    "@type": "SoftwareApplication",
+                    "name": "RentMate Index Calculator",
+                    "applicationCategory": "FinanceApplication",
+                    "operatingSystem": "Web",
+                    "offers": {
+                        "@type": "Offer",
+                        "price": "0",
+                        "priceCurrency": "ILS"
+                    },
+                    "description": "Professional CPI linkage calculator for Israeli rental contracts."
+                }}
+            />
+
             <div key={key}>
                 {activeTab === 'standard' ? (
                     <StandardCalculator
@@ -169,6 +190,39 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                     />
                 )}
             </div>
+
+            {/* SEO Content Section (Visible to users and crawlers) */}
+            {!embedMode && (
+                <div className="mt-16 pt-10 border-t border-white/10 text-right space-y-8 pb-12">
+                    <section className="space-y-3">
+                        <h2 className="text-2xl font-black text-foreground">איך עובד מחשבון מדד ושכר דירה?</h2>
+                        <p className="text-muted-foreground leading-relaxed">
+                            מחשבון המדד של RentMate מאפשר לבעלי דירות ודיירים לחשב בקלות את הפרשי ההצמדה למדד המחירים לצרכן.
+                            רוב חוזי השכירות בישראל מוצמדים למדד כדי לשמור על ערך הכסף הריאלי של דמי השכירות. המחשבון שלנו מתבסס על נתוני הלמ"ס (הלשכה המרכזית לסטטיסטיקה) ומבצע חישוב מדויק של אחוז השינוי בין מדד הבסיס למדד הנוכחי.
+                        </p>
+                    </section>
+
+                    <section className="space-y-3">
+                        <h2 className="text-2xl font-black text-foreground">מתי צריך לבצע הצמדה למדד?</h2>
+                        <p className="text-muted-foreground leading-relaxed">
+                            חישוב הצמדה למדד נדרש בדרך כלל באחת משתי נקודות זמן בחוזה השכירות:
+                            <br />
+                            1. <strong>בעת חידוש חוזה (אופציה):</strong> נהוג לעדכן את מחיר השכירות לפי עליית המדד בשנה החולפת.
+                            <br />
+                            2. <strong>במהלך תקופת השכירות:</strong> בחוזים ארוכי טווח או מסחריים, ייתכן עדכון רבעוני או שנתי של המחיר בהתאם לשינויי המדד.
+                        </p>
+                    </section>
+
+                    <section className="space-y-3">
+                        <h2 className="text-2xl font-black text-foreground">יתרונות מחשבון RentMate</h2>
+                        <ul className="list-disc list-inside text-muted-foreground leading-relaxed space-y-1">
+                            <li>נתונים רשמיים ומעודכנים ישירות מהלמ"ס.</li>
+                            <li>תמיכה בחישוב מדדים שליליים (ריצפת מדד).</li>
+                            <li>ממשק פשוט ונוח המותאם לחוזים סטנדרטיים.</li>
+                        </ul>
+                    </section>
+                </div>
+            )}
         </div>
     );
 }

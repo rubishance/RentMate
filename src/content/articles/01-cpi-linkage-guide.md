@@ -56,6 +56,10 @@ When you sign a rental contract, you establish a **base rent** and a **base inde
 
 Our platform automatically tracks CPI changes and calculates exact rent adjustments based on your contract terms, eliminating manual errors and saving you time.
 
+> [!TIP]
+> **Try it now for free!**  
+> Use our **[Free CPI Linkage Calculator](/tools/cpi-calculator)** to see exactly how much your rent should increase.
+
 ---
 
 ## עברית
@@ -97,3 +101,7 @@ Our platform automatically tracks CPI changes and calculates exact rent adjustme
 ### למה להשתמש ב-RentMate?
 
 הפלטפורמה שלנו עוקבת אוטומטית אחר שינויי המדד ומחשבת התאמות שכר דירה מדויקות על בסיס תנאי החוזה שלכם, מבטלת טעויות ידניות וחוסכת לכם זמן.
+
+> [!TIP]
+> **נסו עכשיו בחינם!**  
+> השתמשו ב**[מחשבון הצמדה למדד](/tools/cpi-calculator)** שלנו כדי לבדוק בדיוק כמה עלה שכר הדירה.

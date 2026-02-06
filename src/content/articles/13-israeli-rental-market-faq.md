@@ -44,3 +44,5 @@ The legal process for removing a tenant is known as **Pinui Muschar (פינוי 
 
 **How do I handle "Madad" (CPI) adjustments?**
 Many Israeli contracts are linked to the Consumer Price Index (**CPI/מדד**). RentMate’s Advanced Ledger automates this by comparing your **Base Rent (שכירות בסיס)** against the new index to determine the **Linked Rent (שכירות צמודה)**. It tracks your **Balance (יתרה)** to identify if a tenant has accumulated a **Debt (חוב)**.
+
+> 🛠️ **Tool Tip:** Need to check the current index? Try our **[Free CPI Calculator](/tools/cpi-calculator)**.

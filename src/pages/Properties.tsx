@@ -4,13 +4,10 @@ import {
     HomeIcon as Home,
     BedIcon as BedDouble,
     RulerIcon as Ruler,
-    PaymentsIcon as PaymentIcon,
-    ContractsIcon as ContractIcon,
-    AssetsIcon as AssetIcon,
     BalconyIcon,
     SafeRoomIcon,
     StorageIcon,
-    CarIcon as Car
+    CarIcon as Car,
 } from '../components/icons/NavIcons';
 import { supabase } from '../lib/supabase';
 import { formatDate } from '../lib/utils';
@@ -25,6 +22,7 @@ import { getPropertyPlaceholder } from '../lib/property-placeholders';
 
 import UpgradeRequestModal from '../components/modals/UpgradeRequestModal';
 import { AddPaymentModal } from '../components/modals/AddPaymentModal';
+import { SelectPropertyModal } from '../components/modals/SelectPropertyModal';
 import { useDataCache } from '../contexts/DataCacheContext';
 import { PortfolioVisualizer } from '../components/analytics/PortfolioVisualizer';
 import { useSubscription } from '../hooks/useSubscription';
@@ -32,7 +30,7 @@ import { useSubscription } from '../hooks/useSubscription';
 
 import { cn } from '../lib/utils';
 import { useStack } from '../contexts/StackContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Skeleton } from '../components/ui/Skeleton';
 
@@ -55,7 +53,7 @@ type ExtendedProperty = Property & {
 export function Properties() {
     const { t, lang } = useTranslation();
     const { preferences } = useUserPreferences();
-    const { plan } = useSubscription();
+    const { plan, canAddProperty, refreshSubscription } = useSubscription();
     const [properties, setProperties] = useState<ExtendedProperty[]>([]);
     const [loading, setLoading] = useState(true);
     const { get, set, clear } = useDataCache();
@@ -70,15 +68,30 @@ export function Properties() {
 
     const [indexedRentContract, setIndexedRentContract] = useState<any>(null); // Contract to show calculation for
     const [affectedItems, setAffectedItems] = useState<any[]>([]);
-    const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
-    const [isAddPaymentModalOpen, setIsAddPaymentModalOpen] = useState(false);
+    const [isSelectPropertyModalOpen, setIsSelectPropertyModalOpen] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
+
+    const handleQuickUpload = () => {
+        if (properties.length === 0) {
+            handleAdd();
+        } else if (properties.length === 1) {
+            navigate(`/properties/${properties[0].id}`, { state: { action: 'upload' } });
+        } else {
+            setIsSelectPropertyModalOpen(true);
+        }
+    };
 
     const handleAdd = () => {
+        if (!canAddProperty) {
+            setIsUpgradeModalOpen(true);
+            return;
+        }
         push('wizard', {
             onSuccess: () => {
                 clear();
                 fetchProperties();
+                refreshSubscription();
             }
         }, { isExpanded: true, title: t('addProperty') });
     };
@@ -177,6 +190,23 @@ export function Properties() {
         fetchProperties();
     }, []);
 
+    // Handle Global Actions
+    useEffect(() => {
+        if (location.state?.action === 'add') {
+            handleAdd();
+            // Clear state
+            window.history.replaceState({}, '');
+        } else if (location.state?.action === 'upload') {
+            // Need to wait for properties to load? 
+            // Actually properties might be loading.
+            if (!loading && properties.length > 0) {
+                handleQuickUpload();
+                window.history.replaceState({}, '');
+            }
+        }
+    }, [location.state, loading, properties.length]); // Dependencies important for upload logic
+
+
     async function fetchProperties() {
         const cached = get<ExtendedProperty[]>(CACHE_KEY);
         if (cached) {
@@ -238,96 +268,22 @@ export function Properties() {
     }
 
     return (
-        <div className="pb-40 pt-8 space-y-16 animate-in fade-in slide-in-from-bottom-6 duration-700">
+        <div className="pb-40 pt-8 space-y-16 animate-in fade-in slide-in-from-bottom-6 duration-300">
             {/* Header */}
             <div className="flex items-center justify-between gap-8 px-4 md:px-8">
                 <div className="space-y-1">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/5 dark:bg-indigo-500/10 backdrop-blur-md rounded-full border border-indigo-500/10 shadow-sm mb-2">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/5 dark:bg-indigo-500/10 backdrop-blur-md rounded-full border border-indigo-500/10 shadow-sm mb-1">
                         <Home className="w-3 h-3 text-indigo-500" />
                         <span className="text-[9px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
                             {lang === 'he' ? 'הפורטפוליו שלי' : 'my portfolio'}
                         </span>
                     </div>
-                    <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-foreground leading-tight lowercase">
+                    <h1 className="text-2xl md:text-5xl font-black tracking-tighter text-foreground leading-tight lowercase">
                         {lang === 'he' ? 'נכסים' : 'properties'}
                     </h1>
                 </div>
 
-                <div className="relative">
-                    <button
-                        onClick={() => setIsAddMenuOpen(!isAddMenuOpen)}
-                        className={cn(
-                            "h-12 w-12 md:h-14 md:w-14 button-jewel rounded-[1.2rem] md:rounded-[1.5rem] hover:scale-[1.05] active:scale-95 transition-all shadow-jewel flex items-center justify-center group z-20 relative",
-                            isAddMenuOpen && "rotate-45"
-                        )}
-                    >
-                        <Plus className="w-5 h-5 md:w-7 md:h-7 transition-transform" />
-                    </button>
 
-                    <AnimatePresence>
-                        {isAddMenuOpen && (
-                            <>
-                                {/* Simple hidden backdrop to close menu on click outside */}
-                                <div
-                                    className="fixed inset-0 z-10"
-                                    onClick={() => setIsAddMenuOpen(false)}
-                                />
-
-                                <motion.div
-                                    initial={{ opacity: 0, scale: 0.8, y: 10, x: lang === 'he' ? 20 : -20 }}
-                                    animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
-                                    exit={{ opacity: 0, scale: 0.8, y: 10, x: lang === 'he' ? 20 : -20 }}
-                                    className={cn(
-                                        "absolute top-20 z-20 w-56 p-3 glass-premium border-white/10 rounded-[2rem] shadow-jewel flex flex-col gap-2",
-                                        lang === 'he' ? "left-0 origin-top-left" : "right-0 origin-top-right"
-                                    )}
-                                >
-                                    {/* Option 1: Payment */}
-                                    <button
-                                        onClick={() => {
-                                            setIsAddMenuOpen(false);
-                                            setIsAddPaymentModalOpen(true);
-                                        }}
-                                        className="flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors group"
-                                    >
-                                        <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
-                                            <PaymentIcon className="w-5 h-5" />
-                                        </div>
-                                        <span className="text-sm font-black lowercase tracking-tight">{t('payment')}</span>
-                                    </button>
-
-                                    {/* Option 2: Contract */}
-                                    <button
-                                        onClick={() => {
-                                            setIsAddMenuOpen(false);
-                                            navigate('/contracts/new');
-                                        }}
-                                        className="flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors group"
-                                    >
-                                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
-                                            <ContractIcon className="w-5 h-5" />
-                                        </div>
-                                        <span className="text-sm font-black lowercase tracking-tight">{t('contract')}</span>
-                                    </button>
-
-                                    {/* Option 3: Asset */}
-                                    <button
-                                        onClick={() => {
-                                            setIsAddMenuOpen(false);
-                                            handleAdd();
-                                        }}
-                                        className="flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors group"
-                                    >
-                                        <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform">
-                                            <AssetIcon className="w-5 h-5" />
-                                        </div>
-                                        <span className="text-sm font-black lowercase tracking-tight">{t('asset')}</span>
-                                    </button>
-                                </motion.div>
-                            </>
-                        )}
-                    </AnimatePresence>
-                </div>
             </div>
 
             {/* Empty State */}
@@ -368,7 +324,7 @@ export function Properties() {
                                 <div
                                     key={property.id}
                                     onClick={() => handleView(property)}
-                                    className="glass-premium dark:bg-neutral-900/60 group flex flex-col h-full border-white/10 overflow-hidden rounded-[3rem] shadow-minimal hover:shadow-jewel transition-all duration-700 cursor-pointer relative"
+                                    className="glass-premium dark:bg-neutral-900/60 group flex flex-col h-full border-white/10 overflow-hidden rounded-[3rem] shadow-minimal hover:shadow-jewel transition-all duration-300 cursor-pointer relative"
                                 >
                                     {/* Image Section */}
                                     <div className="relative h-72 bg-slate-50 dark:bg-neutral-800 overflow-hidden">
@@ -377,7 +333,7 @@ export function Properties() {
                                             decoding="async"
                                             src={property.image_url || getPropertyPlaceholder(property.property_type)}
                                             alt={`${property.address}, ${property.city}`}
-                                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 filter saturate-50 group-hover:saturate-100"
+                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 filter saturate-50 group-hover:saturate-100"
                                             onError={(e) => {
                                                 const target = e.target as HTMLImageElement;
                                                 const placeholder = getPropertyPlaceholder(property.property_type);
@@ -556,12 +512,15 @@ export function Properties() {
                 source="properties_export"
             />
 
-            <AddPaymentModal
-                isOpen={isAddPaymentModalOpen}
-                onClose={() => setIsAddPaymentModalOpen(false)}
-                onSuccess={() => {
-                    clear();
-                    fetchProperties();
+
+
+            <SelectPropertyModal
+                isOpen={isSelectPropertyModalOpen}
+                onClose={() => setIsSelectPropertyModalOpen(false)}
+                properties={properties}
+                onSelect={(propertyId) => {
+                    setIsSelectPropertyModalOpen(false);
+                    navigate(`/properties/${propertyId}`, { state: { action: 'upload' } });
                 }}
             />
         </div>

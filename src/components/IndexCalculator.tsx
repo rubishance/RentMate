@@ -9,12 +9,16 @@ import { Switch } from './ui/Switch';
 import { SegmentedControl } from './ui/SegmentedControl';
 import { format, parseISO } from 'date-fns';
 import { useTranslation } from '../hooks/useTranslation';
-import { cn } from '../lib/utils';
+import { useSearchParams } from 'react-router-dom';
+import { UrlCompression } from '../lib/url-compression';
+import { Share2, Copy, Check } from 'lucide-react';
 
 
 export function IndexCalculator() {
     const { t, lang } = useTranslation();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [loading, setLoading] = useState(false);
+    const [copied, setCopied] = useState(false);
 
     // State
     const [indexType, setIndexType] = useState<'cpi' | 'housing' | 'construction' | 'usd' | 'eur'>('cpi');
@@ -35,18 +39,51 @@ export function IndexCalculator() {
         linkageCoefficient: number;
     } | null>(null);
 
-    // Initial load - set defaults
+    // Initial load - set defaults or load from share
     useEffect(() => {
+        const shareData = searchParams.get('share');
+        if (shareData) {
+            const data = UrlCompression.decompress(shareData);
+            if (data?.input) {
+                const i = data.input;
+                if (i.lt) setIndexType(i.lt as any);
+                if (i.lst) setLinkageSubType(i.lst as any);
+                if (i.bd) setBaseDate(i.bd);
+                if (i.td) setCurrentDate(i.td);
+                if (i.br) setBaseRent(i.br.toString());
+                if (i.mix) setAnnualCeiling(i.mix.toString());
+                if (i.ibm !== undefined) setIsFloorChecked(i.ibm);
+                return;
+            }
+        }
+
         const today = new Date();
-        const prevMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1); // e.g. 1st of last month
-        const yearAgo = new Date(today.getFullYear() - 1, today.getMonth() - 1, 1); // e.g. 1st of last month, last year
+        const prevMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        const yearAgo = new Date(today.getFullYear() - 1, today.getMonth() - 1, 1);
 
-        // Format YYYY-MM-DD
         const toDateStr = (d: Date) => d.toISOString().slice(0, 10);
-
         setCurrentDate(toDateStr(prevMonth));
         setBaseDate(toDateStr(yearAgo));
     }, []);
+
+    const handleShare = () => {
+        const input = {
+            lt: indexType,
+            lst: linkageSubType,
+            bd: baseDate,
+            td: currentDate,
+            br: baseRent ? parseFloat(baseRent) : 0,
+            mix: annualCeiling ? parseFloat(annualCeiling) : undefined,
+            ibm: isFloorChecked
+        };
+        const compressed = UrlCompression.compress({ input });
+        const url = `${window.location.origin}${window.location.pathname}?share=${compressed}`;
+        const fullMessage = `${t('shareMessage')}\n${url}`;
+
+        navigator.clipboard.writeText(fullMessage);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
 
     // Effect: Fetch indices when dates or types change
     useEffect(() => {
@@ -283,8 +320,17 @@ export function IndexCalculator() {
                     </div>
 
                     {/* Detailed Formula Display handled by Service */}
-                    <div className="bg-secondary/20 p-3 rounded-lg text-xs font-mono text-muted-foreground overflow-x-auto whitespace-nowrap">
-                        {calculatedResult.formula}
+                    <div className="bg-secondary/20 p-3 rounded-lg text-xs font-mono text-muted-foreground overflow-x-auto whitespace-nowrap flex items-center justify-between">
+                        <span>{calculatedResult.formula}</span>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleShare}
+                            className="h-8 gap-2 ml-4 flex-shrink-0"
+                        >
+                            {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Share2 className="w-3.5 h-3.5" />}
+                            {copied ? t('copied') : t('shareResult')}
+                        </Button>
                     </div>
                 </div>
             )}

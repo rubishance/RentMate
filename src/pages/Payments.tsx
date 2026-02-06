@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { CalendarIcon as CalendarCheck, ClockIcon as Clock, AlertCircleIcon as AlertCircle, FilterIcon as SlidersHorizontal, ArrowRightIcon as ArrowRight, PlusIcon as Plus } from '../components/icons/NavIcons';
 import { format, subMonths } from 'date-fns';
 import { supabase } from '../lib/supabase';
@@ -42,6 +43,14 @@ export function Payments() {
     useEffect(() => {
         fetchPayments();
     }, []);
+
+    const location = useLocation();
+    useEffect(() => {
+        if (location.state?.action === 'payment') {
+            setIsAddModalOpen(true);
+            window.history.replaceState({}, '');
+        }
+    }, [location.state]);
 
     async function fetchPayments() {
         const { data: { user } } = await supabase.auth.getUser();
@@ -228,17 +237,17 @@ export function Payments() {
     }
 
     return (
-        <div className="pb-40 pt-8 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-700">
+        <div className="pb-40 pt-8 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 px-4 md:px-8">
                 <div className="space-y-1">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/5 dark:bg-indigo-500/10 backdrop-blur-md rounded-full border border-indigo-500/10 shadow-sm mb-2">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/5 dark:bg-indigo-500/10 backdrop-blur-md rounded-full border border-indigo-500/10 shadow-sm mb-1">
                         <CalendarCheck className="w-3 h-3 text-indigo-500" />
                         <span className="text-[9px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
                             {t('financialOverview')}
                         </span>
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground leading-tight lowercase">
+                    <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-foreground leading-tight lowercase">
                         {t('payments')}
                     </h1>
                 </div>
@@ -285,8 +294,8 @@ export function Payments() {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10 px-4 md:px-8">
-                <div className="p-10 rounded-[3rem] glass-premium dark:bg-neutral-900/60 border-white/10 flex items-center gap-10 shadow-minimal group hover:shadow-jewel transition-all duration-700">
-                    <div className="w-20 h-20 rounded-3xl bg-white/5 dark:bg-neutral-800/40 flex items-center justify-center shadow-minimal group-hover:scale-110 group-hover:rotate-3 transition-all duration-700 border border-white/5">
+                <div className="p-10 rounded-[3rem] glass-premium dark:bg-neutral-900/60 border-white/10 flex items-center gap-10 shadow-minimal group hover:shadow-jewel transition-all duration-300">
+                    <div className="w-20 h-20 rounded-3xl bg-white/5 dark:bg-neutral-800/40 flex items-center justify-center shadow-minimal group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 border border-white/5">
                         <CalendarCheck className="w-9 h-9 text-indigo-500" />
                     </div>
                     <div>
@@ -296,7 +305,7 @@ export function Payments() {
                             <span className="text-5xl font-black text-foreground tracking-tighter lowercase leading-none">{stats.monthlyExpected.toLocaleString()}</span>
                         </div>
                         {stats.monthlyIndexSum > 0 && (
-                            <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 text-emerald-400 rounded-full border border-emerald-500/20 shadow-sm animate-in slide-in-from-left duration-700">
+                            <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 text-emerald-400 rounded-full border border-emerald-500/20 shadow-sm animate-in slide-in-from-left duration-300">
                                 <ArrowUpRight className="w-3.5 h-3.5" />
                                 <span className="text-[10px] font-black uppercase tracking-widest leading-none">
                                     + ₪{stats.monthlyIndexSum.toLocaleString()} {t('indexSum')}
@@ -306,8 +315,8 @@ export function Payments() {
                     </div>
                 </div>
 
-                <div className="p-10 rounded-[3rem] glass-premium dark:bg-orange-500/5 border-orange-500/10 flex items-center gap-10 shadow-minimal group hover:shadow-jewel transition-all duration-700">
-                    <div className="w-20 h-20 rounded-3xl bg-white/5 dark:bg-orange-500/10 flex items-center justify-center shadow-minimal group-hover:scale-110 group-hover:-rotate-3 transition-all duration-700 border border-orange-500/10">
+                <div className="p-10 rounded-[3rem] glass-premium dark:bg-orange-500/5 border-orange-500/10 flex items-center gap-10 shadow-minimal group hover:shadow-jewel transition-all duration-300">
+                    <div className="w-20 h-20 rounded-3xl bg-white/5 dark:bg-orange-500/10 flex items-center justify-center shadow-minimal group-hover:scale-110 group-hover:-rotate-3 transition-all duration-300 border border-orange-500/10">
                         <Clock className="w-9 h-9 text-orange-500" />
                     </div>
                     <div>
@@ -431,6 +440,12 @@ export function Payments() {
                                 <AlertCircle className="w-12 h-12 text-muted-foreground/20" />
                             </div>
                             <h3 className="text-2xl font-black tracking-tighter text-foreground lowercase opacity-40">{t('noPaymentsFound')}</h3>
+                            <button
+                                onClick={() => setIsAddModalOpen(true)}
+                                className="px-10 py-5 bg-foreground text-background rounded-full font-black uppercase text-[10px] tracking-widest hover:scale-105 active:scale-95 transition-all shadow-premium-dark"
+                            >
+                                {t('addFirstPayment')}
+                            </button>
                         </div>
                     ) : (
                         <div className="divide-y divide-slate-50 dark:divide-neutral-800">
@@ -446,10 +461,10 @@ export function Payments() {
                                     }}
                                     className="p-4 md:p-6 flex items-center justify-between gap-4 md:gap-8 hover:bg-slate-50/50 dark:hover:bg-neutral-800/10 transition-all group cursor-pointer relative overflow-hidden"
                                 >
-                                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-transparent translate-x-full group-hover:translate-x-0 transition-transform duration-1000 pointer-events-none" />
+                                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-transparent translate-x-full group-hover:translate-x-0 transition-transform duration-500 pointer-events-none" />
 
                                     <div className="flex items-center gap-4 md:gap-8 flex-1 min-w-0">
-                                        <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl glass-premium flex flex-col items-center justify-center shrink-0 border border-white/10 group-hover:scale-105 transition-all duration-700">
+                                        <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl glass-premium flex flex-col items-center justify-center shrink-0 border border-white/10 group-hover:scale-105 transition-all duration-300">
                                             <span className="text-xl font-black text-foreground leading-none">{format(new Date(payment.due_date), 'dd')}</span>
                                             <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground opacity-60 mt-0.5">{format(new Date(payment.due_date), 'MMM').toLowerCase()}</span>
                                         </div>
@@ -504,7 +519,7 @@ export function Payments() {
                                                 </button>
                                             )}
 
-                                            <button className="h-10 w-10 md:h-12 md:w-12 glass-premium border-white/10 rounded-xl text-muted-foreground opacity-30 group-hover:opacity-100 group-hover:bg-foreground group-hover:text-background transition-all duration-700 shadow-minimal flex items-center justify-center shrink-0">
+                                            <button className="h-10 w-10 md:h-12 md:w-12 glass-premium border-white/10 rounded-xl text-muted-foreground opacity-30 group-hover:opacity-100 group-hover:bg-foreground group-hover:text-background transition-all duration-300 shadow-minimal flex items-center justify-center shrink-0">
                                                 <ArrowRight className="w-5 h-5" />
                                             </button>
                                         </div>

@@ -75,29 +75,38 @@ export function StorageStatsWidget({ counts, loading }: StorageStatsWidgetProps)
     const totalFiles = Object.values(counts).reduce((a, b) => a + b, 0);
 
     return (
-        <div className="glass-premium rounded-[2.5rem] p-8 shadow-minimal hover:shadow-jewel transition-all duration-500 border-white/10 flex flex-col h-full group/widget">
-            <div className="flex items-center justify-between mb-6">
-                <h3 className="font-black text-xs uppercase tracking-widest text-gray-400 dark:text-gray-500 flex items-center gap-2">
-                    <Storage className="w-4 h-4" />
-                    {t('financeBills')}
-                </h3>
-                <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 bg-gray-50 dark:bg-neutral-800 rounded-lg text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-neutral-700">
+        <div className="glass-premium rounded-[2.5rem] p-6 md:p-8 shadow-minimal hover:shadow-jewel transition-all duration-500 border-white/10 flex flex-col h-full group/widget">
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-2 md:gap-0">
+                <div className="flex items-center gap-2">
+                    <h3 className="font-black text-[10px] md:text-xs uppercase tracking-widest text-gray-400 dark:text-gray-500 flex items-center gap-2">
+                        <Storage className="w-4 h-4" />
+                        {t('financeBills')}
+                    </h3>
+                    <span className="md:hidden text-[9px] font-black uppercase tracking-widest px-2 py-0.5 bg-gray-50 dark:bg-neutral-800 rounded-lg text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-neutral-700">
+                        {totalFiles}
+                    </span>
+                </div>
+                <span className="hidden md:block text-[10px] font-black uppercase tracking-widest px-2.5 py-1 bg-gray-50 dark:bg-neutral-800 rounded-lg text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-neutral-700">
                     {totalFiles} {t('items')}
                 </span>
             </div>
 
-            <div className="space-y-4 flex-1">
+            <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 md:gap-4 flex-1">
                 {categories.map((cat) => (
-                    <div key={cat.id} className="group cursor-pointer flex items-center justify-between" onClick={() => navigate(`/properties?tab=${cat.id === 'utilities' ? 'utility' : cat.id}`)}>
-                        <div className="flex items-center gap-3">
-                            <div className={`p-2 rounded-xl transition-all group-hover:scale-110 ${cat.bg}`}>
-                                <cat.icon className="w-4 h-4" />
+                    <div
+                        key={cat.id}
+                        className="group cursor-pointer flex flex-col lg:flex-row lg:items-center justify-between p-3 lg:p-0 bg-white/5 lg:bg-transparent rounded-2xl lg:rounded-none border border-white/5 lg:border-none"
+                        onClick={() => navigate(`/properties?tab=${cat.id === 'utilities' ? 'utility' : cat.id}`)}
+                    >
+                        <div className="flex items-center gap-2 md:gap-3 mb-1 lg:mb-0">
+                            <div className={`p-1.5 md:p-2 rounded-lg md:rounded-xl transition-all group-hover:scale-110 ${cat.bg}`}>
+                                <cat.icon className="w-3 md:w-4 h-3 md:h-4" />
                             </div>
-                            <span className="text-sm font-bold text-black dark:text-white transition-colors">
+                            <span className="text-[10px] md:text-sm font-bold text-black dark:text-white transition-colors truncate">
                                 {cat.label}
                             </span>
                         </div>
-                        <span className="text-sm font-black text-gray-400 dark:text-gray-500 uppercase">{cat.count}</span>
+                        <span className="text-xs md:text-sm font-black text-gray-400 dark:text-gray-500 uppercase">{cat.count}</span>
                     </div>
                 ))}
             </div>

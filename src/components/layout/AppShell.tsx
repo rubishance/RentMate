@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CookieConsent } from '../legal/CookieConsent';
@@ -10,15 +10,38 @@ import { SystemBroadcast } from '../common/SystemBroadcast';
 import { StreamHeader } from './StreamHeader';
 import { BottomDock } from './BottomDock';
 import { FloatingContactButton } from './FloatingContactButton';
+import { GlobalActionFab } from './GlobalActionFab';
 import { useStack } from '../../contexts/StackContext';
+import { useActivityTracking } from '../../hooks/useActivityTracking';
+import { useAuth } from '../../contexts/AuthContext';
 
 export function AppShell() {
-    const navigate = useNavigate();
+    useActivityTracking(); // Start tracking
     const location = useLocation();
+    const navigate = useNavigate();
     const { preferences } = useUserPreferences();
-    const [direction, setDirection] = useState(0);
+    const { language: lang } = preferences; // Match 'lang' usage in fallback
     const [isMaintenance, setIsMaintenance] = useState(false);
-    const { activeLayer } = useStack(); // Use stack state to update header title if needed
+    const { activeLayer } = useStack();
+    const { profile: authProfile } = useAuth();
+
+    useEffect(() => {
+        const timestamp = new Date().toISOString();
+        console.log(`[AppShell] [${timestamp}] Navigation to: ${location.pathname}`);
+        if (window.location.pathname !== location.pathname) {
+            console.error(`[AppShell] Router/Browser Mismatch: Router=${location.pathname}, Browser=${window.location.pathname}`);
+        }
+    }, [location.pathname]);
+
+    // GLOBAL CLICK LOGGER
+    useEffect(() => {
+        const handleGlobalClick = (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            console.log(`[AppShell] [CLICK] Tag: ${target.tagName}, ID: ${target.id}, Class: ${target.className.substring(0, 50)}`);
+        };
+        window.addEventListener('click', handleGlobalClick);
+        return () => window.removeEventListener('click', handleGlobalClick);
+    }, []);
 
     // Initial automated checks
     useNotificationScheduler();
@@ -33,37 +56,24 @@ export function AppShell() {
 
             const maintMode = settings?.find(s => s.key === 'maintenance_mode')?.value;
 
-            // 2. Check User Role
-            const { data: { user: authUser } } = await supabase.auth.getUser();
-            if (authUser) {
-                const { data: profile } = await supabase
-                    .from('user_profiles')
-                    .select('role, is_super_admin')
-                    .eq('id', authUser.id)
-                    .single();
-
-                // If maintenance is on and user is NOT super admin, redirect
-                if (maintMode === true && profile?.is_super_admin !== true) {
+            // 2. Check Permissions via AuthContext profile
+            if (maintMode === true) {
+                if (!authProfile || (authProfile.role !== 'admin' && !authProfile.is_super_admin)) {
                     setIsMaintenance(true);
                 }
-            } else if (maintMode === true) {
-                // If not logged in and maintenance is on
-                setIsMaintenance(true);
             }
         };
         checkSystemStatus();
-    }, []);
+    }, [authProfile]);
 
-    if (isMaintenance) {
-        navigate('/system-maintenance', { replace: true });
-        return null;
-    }
+    useEffect(() => {
+        if (isMaintenance) {
+            navigate('/system-maintenance', { replace: true });
+        }
+    }, [isMaintenance, navigate]);
 
-    // Determine swipe direction for animation logic (simplified for now as nav logic is in BottomDock)
-    const onDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-        // Swipe logic can be re-enabled here if we want gesture navigation between tabs
-        // For now, relying on BottomDock
-    };
+    // Simplified navigation
+    const onDragEnd = undefined;
 
     const variants = {
         enter: (direction: number) => ({
@@ -101,30 +111,19 @@ export function AppShell() {
                     {preferences.language === 'he' ? 'דלג לתוכן המרכזי' : 'Skip to main content'}
                 </a>
 
-                {/* Main Content Area */}
-                <motion.main
+                <main
                     id="main-content"
                     className="flex-1 overflow-y-auto overflow-x-hidden pb-40 scroll-smooth relative z-10"
-                    drag="x"
-                    dragConstraints={{ left: 0, right: 0 }}
-                    dragElastic={0.05}
-                    onDragEnd={onDragEnd}
                 >
-                    <AnimatePresence mode="wait" custom={direction} initial={false}>
-                        <motion.div
-                            key={location.pathname}
-                            custom={direction}
-                            variants={variants}
-                            initial="enter"
-                            animate="center"
-                            exit="exit"
-                            transition={{ type: 'spring', stiffness: 350, damping: 35 }}
-                            className="min-h-full px-3 md:px-10 max-w-7xl mx-auto"
-                        >
-                            <Outlet />
-                        </motion.div>
-                    </AnimatePresence>
-                </motion.main>
+                    {/* Debug Indicator (Always visible for deconstruction) */}
+                    <div className="fixed top-0 right-0 bg-indigo-600 text-white text-[10px] font-black px-3 py-2 z-[9999] opacity-100 shadow-2xl border-b border-l border-white animate-pulse">
+                        V1.4.14-STABLE | {new Date().toLocaleTimeString()}
+                    </div>
+
+                    <div className="min-h-full px-3 md:px-10 max-w-7xl mx-auto">
+                        <Outlet key={location.pathname} />
+                    </div>
+                </main>
             </div>
 
             {/* Cookie Consent */}
@@ -132,6 +131,9 @@ export function AppShell() {
 
             {/* New Bottom Dock */}
             <BottomDock />
+
+            {/* Global Actions FAB */}
+            <GlobalActionFab />
 
             {/* Global Quick Contact FAB */}
             <FloatingContactButton />

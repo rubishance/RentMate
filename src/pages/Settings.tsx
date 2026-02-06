@@ -96,16 +96,16 @@ export function Settings() {
     ];
 
     return (
-        <div className="pb-40 pt-8 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-700 px-4 md:px-8">
+        <div className="pb-40 pt-8 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300 px-4 md:px-8">
             {/* Header */}
             <div className="space-y-1">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/5 dark:bg-indigo-500/10 backdrop-blur-md rounded-full border border-indigo-500/10 shadow-sm mb-2">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/5 dark:bg-indigo-500/10 backdrop-blur-md rounded-full border border-indigo-500/10 shadow-sm mb-1">
                     <User className="w-3 h-3 text-indigo-500" />
                     <span className="text-[9px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
                         {t('preferencesAndAccount')}
                     </span>
                 </div>
-                <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground leading-tight lowercase">
+                <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-foreground leading-tight lowercase">
                     {t('settings')}
                 </h1>
             </div>
@@ -113,19 +113,19 @@ export function Settings() {
             {/* User Profile Card */}
             <div
                 onClick={() => setIsEditProfileOpen(true)}
-                className="glass-premium dark:bg-neutral-900/60 border-white/10 rounded-[3rem] p-10 flex items-center gap-10 cursor-pointer shadow-minimal hover:shadow-jewel transition-all duration-700 group relative overflow-hidden"
+                className="glass-premium dark:bg-neutral-900/60 border-white/10 rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-10 flex items-center gap-6 md:gap-10 cursor-pointer shadow-minimal hover:shadow-jewel transition-all duration-300 group relative overflow-hidden"
             >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-bl-[4rem] -translate-y-full group-hover:translate-y-0 transition-transform duration-1000 pointer-events-none" />
+                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-bl-[4rem] -translate-y-full group-hover:translate-y-0 transition-transform duration-500 pointer-events-none" />
 
-                <div className="w-24 h-24 rounded-[2rem] bg-white/5 dark:bg-neutral-800/40 flex items-center justify-center text-foreground font-black text-4xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-700 shadow-minimal border border-white/5">
+                <div className="w-16 h-16 md:w-24 md:h-24 rounded-2xl md:rounded-[2rem] bg-white/5 dark:bg-neutral-800/40 flex items-center justify-center text-foreground font-black text-2xl md:text-4xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-minimal border border-white/5">
                     {userData.full_name?.charAt(0) || userData.email?.charAt(0).toUpperCase()}
                 </div>
-                <div className="flex-1 space-y-2">
-                    <h3 className="font-black text-3xl tracking-tighter text-foreground lowercase leading-none">{userData.full_name || 'rentmate user'}</h3>
+                <div className="flex-1 space-y-1 md:space-y-2">
+                    <h3 className="font-black text-xl md:text-3xl tracking-tighter text-foreground lowercase leading-none">{userData.full_name || 'rentmate user'}</h3>
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-40">{userData.email}</p>
                 </div>
-                <div className="w-14 h-14 rounded-2xl glass-premium border-white/10 flex items-center justify-center text-muted-foreground/30 group-hover:bg-foreground group-hover:text-background group-hover:scale-110 group-hover:rotate-6 transition-all duration-700 shadow-minimal">
-                    <ChevronRight className="w-7 h-7" />
+                <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl glass-premium border-white/10 flex items-center justify-center text-muted-foreground/30 group-hover:bg-foreground group-hover:text-background group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-minimal">
+                    <ChevronRight className="w-5 h-5 md:w-7 md:h-7" />
                 </div>
             </div>
 
@@ -135,7 +135,7 @@ export function Settings() {
                     onClick={() => window.location.href = '/admin'}
                     className="button-jewel rounded-[3rem] p-10 shadow-jewel cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all group overflow-hidden relative"
                 >
-                    <div className="absolute top-0 right-0 w-48 h-48 bg-white/20 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl group-hover:scale-125 transition-transform duration-1000" />
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-white/20 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl group-hover:scale-125 transition-transform duration-500" />
                     <div className="flex items-center justify-between relative z-10 text-white">
                         <div className="space-y-2 text-center md:text-left rtl:md:text-right w-full md:w-auto">
                             <h3 className="font-black text-2xl tracking-tighter uppercase mb-1">{t('settings_admin_dashboard')}</h3>
@@ -162,7 +162,7 @@ export function Settings() {
                                         onClick={item.onClick}
                                         className="w-full flex items-center gap-8 p-10 hover:bg-white/5 transition-all text-left group"
                                     >
-                                        <div className="w-16 h-16 rounded-2xl glass-premium border-white/10 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
+                                        <div className="w-16 h-16 rounded-2xl glass-premium border-white/10 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                                             <Icon className="w-7 h-7 text-foreground opacity-60 group-hover:opacity-100" />
                                         </div>
                                         <div className="flex-1 space-y-2">
@@ -224,7 +224,7 @@ export function Settings() {
                         onClick={() => setIsContactOpen(!isContactOpen)}
                         className="w-full flex items-center gap-8 p-10 hover:bg-slate-50/50 dark:hover:bg-neutral-800/20 transition-all text-left group"
                     >
-                        <div className="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-neutral-800 flex items-center justify-center border border-slate-100 dark:border-neutral-700 group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
+                        <div className="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-neutral-800 flex items-center justify-center border border-slate-100 dark:border-neutral-700 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                             <Mail className="w-7 h-7 text-foreground" />
                         </div>
                         <div className="flex-1 space-y-2">
@@ -234,7 +234,7 @@ export function Settings() {
                             </div>
                         </div>
                         <div className={cn(
-                            "w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-700",
+                            "w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300",
                             isContactOpen ? 'bg-foreground text-background scale-110 rotate-90 shadow-premium-dark' : 'bg-slate-50 dark:bg-neutral-800 text-slate-300 group-hover:text-foreground'
                         )}>
                             <ChevronRight className="w-6 h-6" />

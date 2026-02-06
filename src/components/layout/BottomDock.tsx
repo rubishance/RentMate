@@ -1,11 +1,11 @@
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { HomeIcon, AssetsIcon, PaymentsIcon, ToolsIcon, AdminIcon } from '../icons/NavIcons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../../lib/utils';
-import { useTranslation } from '../../hooks/useTranslation';
 import { useUserPreferences } from '../../contexts/UserPreferencesContext';
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
+import { prefetchRoutes } from '../../utils/prefetch';
 
 // Navigation Labels Mapping
 const NAV_LABELS = {
@@ -63,19 +63,32 @@ export function BottomDock() {
                     const isActive = location.pathname === item.path;
                     const Icon = item.icon;
                     return (
-                        <button
+                        <Link
                             key={item.path}
-                            onClick={() => navigate(item.path)}
+                            to={item.path}
+                            onClick={() => {
+                                console.log(`[BottomDock] [NAV] Link clicked: ${item.path}`);
+                                if (isActive) {
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }
+                            }}
+                            onMouseEnter={() => {
+                                if (item.path === '/dashboard') prefetchRoutes.dashboard();
+                                if (item.path === '/properties') prefetchRoutes.properties();
+                                if (item.path === '/payments') prefetchRoutes.payments();
+                                if (item.path === '/tools') prefetchRoutes.settings();
+                                if (item.path === '/admin') prefetchRoutes.adminDashboard();
+                            }}
                             aria-label={item.label}
                             aria-current={isActive ? 'page' : undefined}
                             className={cn(
-                                "relative flex items-center justify-center h-16 rounded-[1.8rem] transition-all duration-500",
+                                "relative flex items-center justify-center h-16 rounded-[1.8rem] transition-all duration-300",
                                 isActive
                                     ? "text-primary-foreground button-jewel px-8"
                                     : "text-muted-foreground hover:text-foreground hover:bg-white/10 px-5"
                             )}
                         >
-                            <Icon className={cn("w-6 h-6 transition-all duration-500", isActive && "scale-110")} />
+                            <Icon className={cn("w-6 h-6 transition-all duration-300", isActive && "scale-110")} />
                             <AnimatePresence>
                                 {isActive && (
                                     <motion.span
@@ -88,7 +101,7 @@ export function BottomDock() {
                                     </motion.span>
                                 )}
                             </AnimatePresence>
-                        </button>
+                        </Link>
                     );
                 })}
             </nav>

@@ -9,6 +9,7 @@ import { CompressionService } from '../../services/compression.service';
 import { BillAnalysisService, ExtractedBillData } from '../../services/bill-analysis.service';
 import { Sparkles } from 'lucide-react';
 import UpgradeRequestModal from '../modals/UpgradeRequestModal';
+import { useSubscription } from '../../hooks/useSubscription';
 import { DocumentTimeline } from './DocumentTimeline';
 import { DocumentDetailsModal } from '../modals/DocumentDetailsModal';
 import { DatePicker } from '../ui/DatePicker';
@@ -29,6 +30,7 @@ interface AnalyticsData {
 
 export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerProps) {
     const { t } = useTranslation();
+    const { hasFeature } = useSubscription();
     const [activeUtility, setActiveUtility] = useState<UtilityType>('electric');
     const [folders, setFolders] = useState<DocumentFolder[]>([]);
     const [documents, setDocuments] = useState<PropertyDocument[]>([]);
@@ -102,6 +104,12 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
 
             // 1. Check AI Usage Limits before starting
             try {
+                // Check if user has AI Bills feature
+                if (!hasFeature('ai_bills')) {
+                    setShowUpgradeModal(true);
+                    return;
+                }
+
                 const usage = await BillAnalysisService.checkAndLogUsage(files.length);
                 if (!usage.allowed) {
                     setShowUpgradeModal(true);

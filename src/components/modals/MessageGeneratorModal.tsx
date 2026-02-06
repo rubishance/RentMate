@@ -184,7 +184,7 @@ rentmate.co.il`
 
     return createPortal(
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" dir={lang === 'he' ? 'rtl' : 'ltr'}>
-            <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md shadow-2xl scale-100 animate-in zoom-in-95 duration-200 overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md shadow-2xl scale-100 animate-in zoom-in-95 duration-200 overflow-hidden flex flex-col max-h-[90vh]">
                 {/* Header */}
                 <div className="p-6 border-b border-border dark:border-gray-700 flex items-center justify-between">
                     <div>
@@ -201,7 +201,7 @@ rentmate.co.il`
                     </button>
                 </div>
 
-                <div className="p-6">
+                <div className="p-6 overflow-y-auto">
                     <div className="space-y-4">
                         {/* Tone Selector */}
                         <div className="flex p-1 bg-muted dark:bg-gray-700/50 rounded-lg">

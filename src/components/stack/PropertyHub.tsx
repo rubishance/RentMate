@@ -1,5 +1,5 @@
 import { useState, useEffect, Fragment } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from '../../hooks/useTranslation';
 import { rentalTrendService } from '../../services/rental-trend.service';
 import { TrendingUp, TrendingDown } from 'lucide-react';
@@ -57,6 +57,22 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
     const [saving, setSaving] = useState(false);
     const [activeContract, setActiveContract] = useState<Contract | null>(null);
     const [marketTrend, setMarketTrend] = useState<any>(null);
+
+    // Auto-Navigation State
+    const location = useLocation();
+    const [requestedDocTab, setRequestedDocTab] = useState<'media' | 'utilities' | 'maintenance' | 'documents' | 'checks' | undefined>(undefined);
+    const [shouldAutoUpload, setShouldAutoUpload] = useState(false);
+
+    useEffect(() => {
+        if (location.state?.action === 'upload') {
+            setActiveTab('files');
+            setRequestedDocTab('documents');
+            setShouldAutoUpload(true);
+
+            // Clear location state
+            window.history.replaceState({}, '');
+        }
+    }, [location]);
 
     // Self-healing synchronization: Ensure property status matches active contracts
     useEffect(() => {
@@ -588,8 +604,6 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
                                     >
                                         <MoreVertical className="w-5 h-5" />
                                     </MenuButton>
-                                    Refining existing list item to use premium styling:
-
                                     <Portal>
                                         <Transition
                                             as={Fragment}
@@ -721,7 +735,7 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
                 <div className="px-3 md:px-6 h-full">
                     {activeTab === 'contracts' && <ContractsTab key={refreshKey} propertyId={propertyId} onAddContract={handleAddContract} />}
                     {activeTab === 'wallet' && <WalletTab key={refreshKey} propertyId={propertyId} property={property} />}
-                    {activeTab === 'files' && <PropertyDocumentsHub key={refreshKey} property={property} />}
+                    {activeTab === 'files' && <PropertyDocumentsHub key={refreshKey} property={property} requestedTab={requestedDocTab} autoOpenUpload={shouldAutoUpload} />}
                 </div>
             </div>
 

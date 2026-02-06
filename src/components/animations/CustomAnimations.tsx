@@ -95,7 +95,7 @@ export const CSSAnimations = () => {
 
             /* Apply animations with classes */
             .animate-fade-in-up {
-                animation: fadeInUp 0.6s ease-out forwards;
+                animation: fadeInUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
             }
 
             .animate-pulse {
@@ -109,7 +109,7 @@ export const CSSAnimations = () => {
             }
 
             .animate-slide-in-right {
-                animation: slideInRight 0.5s ease-out forwards;
+                animation: slideInRight 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
             }
 
             .animate-rotate-scale {
@@ -148,7 +148,7 @@ export const FadeIn = ({ children, delay = 0, direction = 'up' }: any) => {
         <motion.div
             initial={{ opacity: 0, ...directions[direction as keyof typeof directions] }}
             animate={{ opacity: 1, x: 0, y: 0 }}
-            transition={{ duration: 0.6, delay, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{ duration: 0.3, delay, ease: [0.2, 0.8, 0.2, 1] }}
         >
             {children}
         </motion.div>
@@ -156,7 +156,7 @@ export const FadeIn = ({ children, delay = 0, direction = 'up' }: any) => {
 };
 
 // Stagger children animation
-export const StaggerContainer = ({ children, staggerDelay = 0.1 }: any) => {
+export const StaggerContainer = ({ children, staggerDelay = 0.05 }: any) => {
     return (
         <motion.div
             initial="hidden"
@@ -312,9 +312,9 @@ export const ScrollReveal = ({ children, className = '' }: any) => {
     return (
         <div ref={ref} className={className}>
             <motion.div
-                initial={{ opacity: 0, y: 50 }}
-                animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-                transition={{ duration: 0.6, ease: 'easeOut' }}
+                initial={{ opacity: 0, y: 30 }}
+                animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+                transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
             >
                 {children}
             </motion.div>

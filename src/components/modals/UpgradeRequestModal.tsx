@@ -115,7 +115,7 @@ export default function UpgradeRequestModal({ isOpen, onClose, source }: Upgrade
                                             <div className="space-y-3">
                                                 <div className="grid grid-cols-3 gap-4 text-sm items-center">
                                                     <div className="font-medium">{t('properties')}</div>
-                                                    <div className="text-center text-muted-foreground dark:text-gray-300">2</div>
+                                                    <div className="text-center text-muted-foreground dark:text-gray-300">1</div>
                                                     <div className="text-center font-bold text-primary dark:text-blue-400">{t('unlimited')}</div>
                                                 </div>
                                                 <div className="grid grid-cols-3 gap-4 text-sm items-center">

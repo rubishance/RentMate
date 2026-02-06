@@ -22,12 +22,12 @@ export function FloatingContactButton() {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => navigate('/contact')}
-                className={`fixed bottom-24 ${isRtl ? 'left-8' : 'right-8'} z-[100] p-4 bg-green-500 hover:bg-green-600 text-white rounded-2xl shadow-2xl flex items-center gap-3 group overflow-hidden`}
+                className={`fixed bottom-32 sm:bottom-24 ${isRtl ? 'left-8' : 'right-8'} z-[100] p-4 bg-green-500 hover:bg-green-600 text-white rounded-2xl shadow-2xl flex items-center gap-3 group overflow-hidden`}
             >
-                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
 
                 <MessageCircle className="w-6 h-6 relative z-10" />
-                <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-500 ease-in-out whitespace-nowrap opacity-0 group-hover:opacity-100 font-bold text-sm relative z-10">
+                <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap opacity-0 group-hover:opacity-100 font-bold text-sm relative z-10">
                     {isRtl ? 'תמיכה ב-WhatsApp' : 'WhatsApp Support'}
                 </span>
 

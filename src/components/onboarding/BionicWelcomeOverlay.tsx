@@ -17,16 +17,22 @@ export function BionicWelcomeOverlay({ firstName }: BionicWelcomeOverlayProps) {
     const navigate = useNavigate();
 
     // Initialize visible based on preference to avoid useEffect flicker
-    const [isVisible, setIsVisible] = useState(() => preferences.has_seen_welcome_v1 !== true);
+    // FORCE CHECK: Prioritize localStorage to prevent zombie overlay
+    const [isVisible, setIsVisible] = useState(() => {
+        try {
+            const raw = localStorage.getItem('userPreferences');
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (parsed.has_seen_welcome_v1 === true) return false;
+            }
+        } catch (e) {
+            // ignore
+        }
+        return preferences.has_seen_welcome_v1 !== true;
+    });
     const isRtl = lang === 'he';
 
-    useEffect(() => {
-        // Just sync if it changes externally, though unlikely for this use case
-        if (preferences.has_seen_welcome_v1 !== true && !isVisible) {
-            // eslint-disable-next-line
-            setIsVisible(true);
-        }
-    }, [preferences.has_seen_welcome_v1, isVisible]);
+
 
     const handleDismiss = async () => {
         setIsVisible(false);
@@ -61,7 +67,7 @@ export function BionicWelcomeOverlay({ firstName }: BionicWelcomeOverlayProps) {
                         initial={{ scale: 0.9, y: 20, opacity: 0 }}
                         animate={{ scale: 1, y: 0, opacity: 1 }}
                         exit={{ scale: 0.95, opacity: 0 }}
-                        transition={{ type: "spring", duration: 0.8, bounce: 0.3 }}
+                        transition={{ type: "spring", duration: 0.4, bounce: 0.2 }}
                         className="relative w-full max-w-lg"
                     >
                         {/* Jewel Glow Effects */}

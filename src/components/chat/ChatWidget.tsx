@@ -1,11 +1,11 @@
 import { useRef, useEffect, useState } from 'react';
 import { BotIcon, X, Send, Paperclip, Loader2, Mic, MicOff } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ActionCard } from '../dashboard/ActionCard';
 import { supabase } from '../../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useChatBot } from '../../hooks/useChatBot';
 import { BotIcon as CustomBotIcon } from './BotIcon'; // Renamed to avoid conflict
-import { useNavigate } from 'react-router-dom';
 import { useUserPreferences } from '../../contexts/UserPreferencesContext';
 import { crmService } from '../../services/crm.service';
 import { useStack } from '../../contexts/StackContext';
@@ -26,6 +26,11 @@ export function ChatWidget() {
     const isRtl = preferences.language === 'he';
     const { isOpen, toggleChat, openChat, isLoading, messages: botMessages, sendMessage: sendBotMessage, uiAction, clearUiAction, isAiMode, activateAiMode, deactivateAiMode } = useChatBot();
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Hide Renty on Auth pages
+    const isAuthPage = ['/login', '/signup', '/forgot-password', '/reset-password'].includes(location.pathname);
+
     const { push } = useStack();
     const { clear } = useDataCache();
     const inputRef = useRef<HTMLInputElement>(null);
@@ -318,13 +323,15 @@ export function ChatWidget() {
 
     const activeMessages = botMessages;
 
+    if (isAuthPage) return null;
+
     return (
         <motion.div
             drag
             dragConstraints={{ left: -window.innerWidth + 80, right: 0, top: -window.innerHeight + 80, bottom: 0 }}
             dragElastic={0.1}
             dragTransition={{ bounceStiffness: 600, bounceDamping: 20 }}
-            className="fixed bottom-24 right-6 z-[60] flex flex-col items-end space-y-4"
+            className="fixed bottom-32 sm:bottom-24 right-6 z-[60] flex flex-col items-end space-y-4"
         >
             <AnimatePresence>
                 {isOpen && (

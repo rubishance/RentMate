@@ -135,6 +135,10 @@ Each has different legal and practical implications.
 - No legal limit on increase
 - Tenant can walk away
 
+> [!TIP]
+> **Need to calculate the new rent?**  
+> Use our **[Free CPI Calculator](/tools/cpi-calculator)** to see exactly how much your rent should increase based on the index.
+
 ### Tax Implications
 
 **For landlords:**
@@ -340,6 +344,10 @@ Track contract expiration dates, receive renewal reminders, generate extension a
 - תעריף שוק חל
 - אין מגבלה חוקית על עלייה
 - השוכר יכול לעזוב
+
+> [!TIP]
+> **רוצים לחשב את שכר הדירה החדש?**  
+> השתמשו ב**[מחשבון הצמדה למדד](/tools/cpi-calculator)** שלנו כדי לדעת בדיוק בכמה אמור לעלות שכר הדירה שלכם.
 
 ### השלכות מס
 

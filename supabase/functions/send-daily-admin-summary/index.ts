@@ -166,6 +166,41 @@ serve(async (req: Request) => {
             totalProperties = count || 0;
         }
 
+        // --- NEW: User Activity Metrics ---
+        console.log("Fetching user activity metrics...");
+        // 1. Total Page Views (Last 24h)
+        const { count: pageViewsCount } = await supabase
+            .from('user_activity')
+            .select('*', { count: 'exact', head: true })
+            .eq('event_type', 'page_view')
+            .gte('created_at', last24h);
+
+        // 2. Daily Active Users (DAU) - Last 24h
+        // Note: Supabase JS doesn't support distinct count easily without rpc, so we fetch and set.
+        // For scalability, this should be an RPC, but for now fetching IDs is fine for valid scale.
+        const { data: activityData } = await supabase
+            .from('user_activity')
+            .select('user_id, path')
+            .eq('event_type', 'page_view')
+            .gte('created_at', last24h);
+
+        const dauCount = new Set(activityData?.map(a => a.user_id)).size || 0;
+
+        // 3. Top Pages
+        const pageCounts = new Map<string, number>();
+        activityData?.forEach(a => {
+            // Clean path (remove UUIDs for aggregation if possible, or just raw path)
+            // Simple raw path for now
+            const p = a.path;
+            pageCounts.set(p, (pageCounts.get(p) || 0) + 1);
+        });
+
+        const topPages = Array.from(pageCounts.entries())
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 3)
+            .map(([path, count]) => ({ path, count }));
+        // ----------------------------------
+
 
         // 2. Format Email
         const htmlBody = `
@@ -274,6 +309,32 @@ serve(async (req: Request) => {
                 <div class="stat-label">סה"כ נכסים במערכת</div>
                 <div class="stat-value">${totalProperties}</div>
             </div>` : ''}
+
+            <!-- Activity Section -->
+            <div style="margin-top: 30px;">
+                <h3 style="font-size:16px; margin-bottom:15px; border-bottom:1px solid #E2E8F0; padding-bottom:10px;">פעילות משתמשים (24h)</h3>
+                <div class="grid">
+                    <div class="stat-card" style="background: #F0FDFA; border: 1px solid #CCFBF1;">
+                        <div class="stat-label" style="color: #0F766E;">צפיות בדפים</div>
+                        <div class="stat-value" style="color: #115E59;">${pageViewsCount || 0}</div>
+                    </div>
+                    <div class="stat-card" style="background: #F0FDFA; border: 1px solid #CCFBF1;">
+                        <div class="stat-label" style="color: #0F766E;">משתמשים פעילים</div>
+                        <div class="stat-value" style="color: #115E59;">${dauCount}</div>
+                    </div>
+                </div>
+                ${topPages.length > 0 ? `
+                <div style="background: #F8FAFC; border-radius: 12px; padding: 15px; font-size: 13px; border: 1px solid #E2E8F0;">
+                    <div style="font-weight: bold; margin-bottom: 10px; color: #64748B;">הדפים הנצפים ביותר:</div>
+                    ${topPages.map((p, i) => `
+                        <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: ${i < topPages.length - 1 ? '1px solid #E2E8F0' : 'none'};">
+                            <span style="direction: ltr; font-family: monospace;">${p.path}</span>
+                            <span style="font-weight: bold;">${p.count}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                ` : ''}
+            </div>
         </div>
         <div class="footer">
             זהו דוח אוטומטי שנשלח למנהלי RentMate בכל בוקר בשעה 08:00

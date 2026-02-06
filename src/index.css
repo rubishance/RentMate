@@ -161,6 +161,18 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  /* Snappy Transitions (Performance Upgrade) */
+  .transition-snappy {
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition-duration: 200ms;
+  }
+
+  .duration-snappy {
+    animation-duration: 200ms !important;
+    transition-duration: 200ms !important;
+  }
 }
 
 @layer base {
@@ -231,7 +243,8 @@
 
 /* Page Transition Animations */
 .animate-in {
-  animation-duration: 0.7s;
+  animation-duration: 0.3s;
+  /* Accelerated from 0.7s */
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   animation-fill-mode: both;
 }

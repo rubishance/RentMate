@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useUserPreferences } from '../../contexts/UserPreferencesContext';
 import { NotificationCenter } from '../common/NotificationCenter';
 import { SettingsIcon } from '../icons/NavIcons';
@@ -27,7 +27,11 @@ export function StreamHeader({ title }: StreamHeaderProps) {
     return (
         <header className="fixed top-0 left-0 right-0 h-16 glass-premium z-[60] flex items-center justify-between px-4 md:px-10 border-b border-white/10 transition-all duration-500">
             {/* Left: Logo or Title */}
-            <div className="flex items-center gap-3 group cursor-pointer" onClick={() => navigate('/dashboard')}>
+            <Link
+                to="/dashboard"
+                className="flex items-center gap-3 group cursor-pointer"
+                onClick={() => console.log('[StreamHeader] [NAV] Logo clicked')}
+            >
                 <div className="w-8 h-8 button-jewel rounded-lg flex items-center justify-center group-hover:rotate-12 transition-transform duration-500">
                     <img
                         src={effectiveTheme === 'dark' ? logoIconDark : logoIconOnly}
@@ -45,19 +49,20 @@ export function StreamHeader({ title }: StreamHeaderProps) {
                         </span>
                     )}
                 </div>
-            </div>
+            </Link>
 
             {/* Right: Actions */}
             <div className="flex items-center gap-2 md:gap-4">
                 <NotificationCenter />
 
-                <button
-                    onClick={() => navigate('/settings')}
+                <Link
+                    to="/settings"
                     className="p-2 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-full transition-all"
                     aria-label="Settings"
+                    onClick={() => console.log('[StreamHeader] [NAV] Settings clicked')}
                 >
                     <SettingsIcon className="w-6 h-6" />
-                </button>
+                </Link>
             </div>
         </header>
     );

@@ -1,5 +1,6 @@
 import { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate, Outlet, useLocation } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
 import { UserPreferencesProvider } from './contexts/UserPreferencesContext';
 import { NotificationsProvider } from './contexts/NotificationsContext';
 import { DataCacheProvider } from './contexts/DataCacheContext';
@@ -17,29 +18,28 @@ const PageLoader = () => (
 // Eager load critical pages
 import { WelcomeLanding } from './pages/WelcomeLanding';
 import { Login } from './pages/Login';
+import { Dashboard } from './pages/Dashboard';
+import { Properties } from './pages/Properties';
 const Signup = lazy(() => import('./pages/Signup').then(module => ({ default: module.Signup })));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword').then(module => ({ default: module.ForgotPassword })));
-
-// Lazy load Main Pages (Named Exports)
-const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })));
-const Properties = lazy(() => import('./pages/Properties').then(module => ({ default: module.Properties })));
 const PropertyDetails = lazy(() => import('./pages/PropertyDetails'));
 
 
-const Payments = lazy(() => import('./pages/Payments').then(module => ({ default: module.Payments })));
+import { Payments } from './pages/Payments';
+import { Calculator } from './pages/Calculator';
+import { Analytics } from './pages/Analytics';
 const AddContract = lazy(() => import('./pages/AddContract').then(module => ({ default: module.AddContract })));
 const MaintenanceTracker = lazy(() => import('./pages/MaintenanceTracker').then(module => ({ default: module.MaintenanceTracker })));
 const ContractDetails = lazy(() => import('./pages/ContractDetails'));
-const Calculator = lazy(() => import('./pages/Calculator').then(module => ({ default: module.Calculator })));
 const SharedCalculation = lazy(() => import('./pages/SharedCalculation').then(module => ({ default: module.SharedCalculation })));
 const Settings = lazy(() => import('./pages/Settings').then(module => ({ default: module.Settings })));
-const Analytics = lazy(() => import('./pages/Analytics').then(module => ({ default: module.Analytics })));
 const Tools = lazy(() => import('./pages/Tools').then(module => ({ default: module.Tools })));
 const ResetPassword = lazy(() => import('./pages/ResetPassword').then(module => ({ default: module.ResetPassword })));
 const AccessibilityStatement = lazy(() => import('./pages/AccessibilityStatement').then(module => ({ default: module.AccessibilityStatement })));
 const KnowledgeBase = lazy(() => import('./pages/KnowledgeBase').then(module => ({ default: module.KnowledgeBase })));
 const ArticleViewer = lazy(() => import('./pages/ArticleViewer').then(module => ({ default: module.ArticleViewer })));
 const Contact = lazy(() => import('./pages/Contact'));
+import { CPICalculatorPage } from './pages/tools/CPICalculatorPage';
 
 // Lazy load Admin Pages & Less Critical (Default Exports)
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -65,111 +65,284 @@ const PrivacyPolicy = lazy(() => import('./pages/legal/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./pages/legal/TermsOfService'));
 
 // Lazy load Guards & Layouts (Default Exports)
-const AuthGuard = lazy(() => import('./components/guards/AuthGuard'));
+import AuthGuard from './components/guards/AuthGuard';
 const AdminGuard = lazy(() => import('./components/guards/AdminGuard'));
 const AdminLayout = lazy(() => import('./components/layout/AdminLayout'));
 const MFAEnrollment = lazy(() => import('./components/auth/MFAEnrollment'));
 const MFAChallenge = lazy(() => import('./components/auth/MFAChallenge'));
 const SuperAdminGuard = lazy(() => import('./components/guards/SuperAdminGuard'));
 
+import { SEO } from './components/common/SEO';
 import { StackProvider } from './contexts/StackContext';
 import { StackContainer } from './components/layout/StackContainer';
 
 
 
+// Root Layout to provide router context to global widgets
+const RootLayout = () => {
+  const location = useLocation();
+  const hideChatPaths = ['/login', '/signup', '/forgot-password', '/reset-password'];
+  const shouldHideChat = hideChatPaths.includes(location.pathname);
+
+  return (
+    <>
+      <SEO />
+      <Suspense fallback={<PageLoader />}>
+        <Outlet />
+      </Suspense>
+      {!shouldHideChat && <ChatWidget />}
+      <StackContainer />
+    </>
+  );
+};
+
+// Define the static router configuration for guaranteed sync (V1.4.5)
+const router = createBrowserRouter([
+  {
+    element: <RootLayout />,
+    children: [
+      {
+        path: "/",
+        element: <WelcomeLanding />,
+      },
+      {
+        path: "/pricing",
+        element: <Pricing />,
+      },
+      {
+        path: "/login",
+        element: <Login />,
+      },
+      {
+        path: "/signup",
+        element: <Signup />,
+      },
+      {
+        path: "/forgot-password",
+        element: <ForgotPassword />,
+      },
+      {
+        path: "/reset-password",
+        element: <ResetPassword />,
+      },
+      {
+        path: "/s/:slug",
+        element: <ShortLinkRedirect />,
+      },
+      {
+        path: "/system-maintenance",
+        element: <MaintenancePage />,
+      },
+      {
+        path: "/contact",
+        element: <Contact />,
+      },
+      {
+        path: "/tools/cpi-calculator",
+        element: <CPICalculatorPage />,
+      },
+      {
+        path: "/calc/:id",
+        element: <SharedCalculation />,
+      },
+      {
+        path: "/accessibility",
+        element: <AccessibilityStatement />,
+      },
+      {
+        path: "/legal/privacy",
+        element: <PrivacyPolicy />,
+      },
+      {
+        path: "/legal/terms",
+        element: <TermsOfService />,
+      },
+      {
+        path: "/knowledge-base",
+        element: <KnowledgeBase />,
+      },
+      {
+        path: "/knowledge-base/:slug",
+        element: <ArticleViewer />,
+      },
+      // MFA Protected Routes
+      {
+        element: <AuthGuard />,
+        children: [
+          {
+            path: "/auth/mfa/enroll",
+            element: <MFAEnrollment />,
+          },
+          {
+            path: "/auth/mfa/challenge",
+            element: <MFAChallenge />,
+          },
+        ],
+      },
+      // Main App Shell Routes (Auth Protected)
+      {
+        element: <AuthGuard />,
+        children: [
+          {
+            element: <AppShell />,
+            children: [
+              {
+                path: "/dashboard",
+                element: <Dashboard />,
+              },
+              {
+                path: "/properties",
+                element: <Properties />,
+              },
+              {
+                path: "/properties/:id",
+                element: <PropertyDetails />,
+              },
+              {
+                path: "/maintenance",
+                element: <MaintenanceTracker />,
+              },
+              {
+                path: "/contracts",
+                element: <Navigate to="/properties" replace />,
+              },
+              {
+                path: "/assets",
+                element: <Navigate to="/properties" replace />,
+              },
+              {
+                path: "/properties-new",
+                element: <Navigate to="/properties" replace />,
+              },
+              {
+                path: "/contracts/new",
+                element: <AddContract />,
+              },
+              {
+                path: "/contracts/:id",
+                element: <ContractDetails />,
+              },
+              {
+                path: "/calculator",
+                element: <Calculator />,
+              },
+              {
+                path: "/settings",
+                element: <Settings />,
+              },
+              {
+                path: "/analytics",
+                element: <Analytics />,
+              },
+              {
+                path: "/tools",
+                element: <Tools />,
+              },
+              {
+                path: "/payments",
+                element: <Payments />,
+              },
+            ],
+          },
+        ],
+      },
+      // Admin Routes
+      {
+        element: <AdminGuard />,
+        children: [
+          {
+            path: "/admin",
+            element: <AdminLayout />,
+            children: [
+              {
+                index: true,
+                element: <AdminDashboard />,
+              },
+              {
+                path: "notifications",
+                element: <AdminNotifications />,
+              },
+              {
+                path: "settings",
+                element: <SystemSettings />,
+              },
+              {
+                path: "users",
+                element: <UserManagement />,
+              },
+              {
+                path: "plans",
+                element: <PlanManagement />,
+              },
+              {
+                path: "storage",
+                element: <StorageManagement />,
+              },
+              {
+                path: "invoices",
+                element: <AdminInvoices />,
+              },
+              {
+                path: "feedback",
+                element: <AdminFeedback />,
+              },
+              {
+                path: "audit-logs",
+                element: <AuditLogs />,
+              },
+              {
+                path: "ai-usage",
+                element: <AIUsageManagement />,
+              },
+              {
+                path: "automation",
+                element: <AutomationTracking />,
+              },
+              {
+                path: "client/:id",
+                element: <ClientProfile />,
+              },
+              {
+                path: "tickets",
+                element: <SupportTickets />,
+              },
+              // Super Admin Specific Sub-Routes
+              {
+                element: <SuperAdminGuard />,
+                children: [
+                  {
+                    path: "owner",
+                    element: <OwnerDashboard />,
+                  },
+                  {
+                    path: "broadcasts",
+                    element: <BroadcastManager />,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+]);
+
 function App() {
   return (
-    <UserPreferencesProvider>
-      <NotificationsProvider>
-        <DataCacheProvider>
-          <StackProvider>
-            <ErrorBoundary>
-              <BrowserRouter>
-                <Suspense fallback={<PageLoader />}>
-                  <Routes>
-                    <Route path="/" element={<WelcomeLanding />} />
-                    <Route path="/pricing" element={<Pricing />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/signup" element={<Signup />} />
-                    <Route path="/forgot-password" element={<ForgotPassword />} />
-                    <Route path="/reset-password" element={<ResetPassword />} />
-                    <Route path="/s/:slug" element={<ShortLinkRedirect />} />
-                    <Route path="/system-maintenance" element={<MaintenancePage />} />
-                    <Route path="/contact" element={<Contact />} />
-
-                    {/* MFA Routes - Accessible only if logged in */}
-                    <Route element={<AuthGuard />}>
-                      <Route path="/auth/mfa/enroll" element={<MFAEnrollment />} />
-                      <Route path="/auth/mfa/challenge" element={<MFAChallenge />} />
-                    </Route>
-
-                    <Route path="/calc/:id" element={<SharedCalculation />} />
-
-                    {/* Legal Routes */}
-                    <Route path="/accessibility" element={<AccessibilityStatement />} />
-                    <Route path="/legal/privacy" element={<PrivacyPolicy />} />
-                    <Route path="/legal/terms" element={<TermsOfService />} />
-                    <Route path="/knowledge-base" element={<KnowledgeBase />} />
-                    <Route path="/knowledge-base/:slug" element={<ArticleViewer />} />
-
-                    {/* Main App Routes - Protected by AuthGuard */}
-                    <Route element={<AuthGuard />}>
-                      <Route element={<AppShell />}>
-                        <Route path="/dashboard" element={<Dashboard />} />
-                        <Route path="/properties" element={<Properties />} />
-                        <Route path="/properties/:id" element={<PropertyDetails />} />
-                        <Route path="/maintenance" element={<MaintenanceTracker />} />
-
-                        {/* Redirect old contracts route to properties */}
-                        <Route path="/contracts" element={<Navigate to="/properties" replace />} />
-                        <Route path="/assets" element={<Navigate to="/properties" replace />} />
-                        <Route path="/properties-new" element={<Navigate to="/properties" replace />} />
-
-                        <Route path="/contracts/new" element={<AddContract />} />
-                        <Route path="/contracts/:id" element={<ContractDetails />} />
-                        <Route path="/calculator" element={<Calculator />} />
-                        <Route path="/settings" element={<Settings />} />
-                        <Route path="/analytics" element={<Analytics />} />
-                        <Route path="/tools" element={<Tools />} />
-
-                        <Route path="/payments" element={<Payments />} />
-                      </Route>
-                    </Route>
-
-                    {/* Admin Routes */}
-                    <Route element={<AdminGuard />}>
-                      <Route path="/admin" element={<AdminLayout />}>
-                        <Route element={<SuperAdminGuard />}>
-                          <Route path="owner" element={<OwnerDashboard />} />
-                          <Route path="broadcasts" element={<BroadcastManager />} />
-                        </Route>
-                        <Route index element={<AdminDashboard />} />
-                        <Route path="notifications" element={<AdminNotifications />} />
-                        <Route path="settings" element={<SystemSettings />} />
-                        <Route path="users" element={<UserManagement />} />
-
-                        <Route path="plans" element={<PlanManagement />} />
-                        <Route path="storage" element={<StorageManagement />} />
-                        <Route path="invoices" element={<AdminInvoices />} />
-                        <Route path="feedback" element={<AdminFeedback />} />
-                        <Route path="audit-logs" element={<AuditLogs />} />
-                        <Route path="ai-usage" element={<AIUsageManagement />} />
-                        <Route path="automation" element={<AutomationTracking />} />
-                        <Route path="client/:id" element={<ClientProfile />} />
-                        <Route path="tickets" element={<SupportTickets />} />
-                      </Route>
-                    </Route>
-                  </Routes>
-                </Suspense>
-                {/* Global Widgets */}
-                <ChatWidget />
-                <StackContainer />
-              </BrowserRouter>
-            </ErrorBoundary>
-          </StackProvider>
-        </DataCacheProvider>
-      </NotificationsProvider>
-    </UserPreferencesProvider>
+    <AuthProvider>
+      <UserPreferencesProvider>
+        <NotificationsProvider>
+          <DataCacheProvider>
+            <StackProvider>
+              <ErrorBoundary>
+                <RouterProvider router={router} />
+              </ErrorBoundary>
+            </StackProvider>
+          </DataCacheProvider>
+        </NotificationsProvider>
+      </UserPreferencesProvider>
+    </AuthProvider>
   );
 }
 
