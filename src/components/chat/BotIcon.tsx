@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { MessageSquare } from 'lucide-react';
+import { RentyMascot } from '../common/RentyMascot';
 
 export function BotIcon({ size = 40, className = "" }: { size?: number, className?: string }) {
     return (
@@ -22,10 +22,10 @@ export function BotIcon({ size = 40, className = "" }: { size?: number, classNam
                     ease: "easeInOut"
                 }}
             >
-                <MessageSquare
-                    size={size * 0.55}
-                    className="text-white drop-shadow-md"
-                    strokeWidth={1.5}
+                <RentyMascot
+                    size={size * 0.8}
+                    showBackground={false}
+                    className="drop-shadow-md"
                 />
             </motion.div>
 

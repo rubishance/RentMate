@@ -22,6 +22,9 @@ export type TranslationKeys =
     // Auth
     | 'login'
     | 'logout'
+    | 'logoutConfirmTitle'
+    | 'logoutConfirmMessage'
+    | 'confirmLogout'
     | 'welcomeBack'
 
     // Dashboard
@@ -115,6 +118,9 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
 
         login: 'התחברות',
         logout: 'התנתק',
+        logoutConfirmTitle: 'התנתקות?',
+        logoutConfirmMessage: 'האם אתה בטוח שברצונך להתנתק?',
+        confirmLogout: 'כן, התנתק',
         welcomeBack: 'ברוך שובך',
 
         dashboardTitle: 'לוח בקרה',
@@ -209,6 +215,9 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
 
         login: 'Login',
         logout: 'Logout',
+        logoutConfirmTitle: 'Logout?',
+        logoutConfirmMessage: 'Are you sure you want to log out?',
+        confirmLogout: 'Yes, Logout',
         welcomeBack: 'Welcome Back',
 
         dashboardTitle: 'Dashboard',

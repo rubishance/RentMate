@@ -85,10 +85,11 @@ const AdminLayout = () => {
         // Owner only
         ...(user?.is_super_admin ? [
             { name: 'Owner Control', href: '/admin/owner', icon: Squares2X2Icon },
-            { name: 'Broadcasts', href: '/admin/broadcasts', icon: MegaphoneIcon }
+            // { name: 'Broadcasts', href: '/admin/broadcasts', icon: MegaphoneIcon }
         ] : []),
 
         { name: 'Dashboard', href: '/admin', icon: Squares2X2Icon },
+        { name: 'WhatsApp Support', href: '/admin/chat', icon: ChatBubbleLeftRightIcon },
         { name: 'Notifications', href: '/admin/notifications', icon: BellIcon },
         { name: 'Feedback', href: '/admin/feedback', icon: ChatBubbleLeftRightIcon },
         { name: 'Users & CRM', href: '/admin/users', icon: UsersIcon },

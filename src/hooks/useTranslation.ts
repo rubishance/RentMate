@@ -101,6 +101,9 @@ export type TranslationKeys =
     // Auth & Navigation
     | 'login'
     | 'logout' | 'logout_female'
+    | 'logoutConfirmTitle'
+    | 'logoutConfirmMessage'
+    | 'confirmLogout'
     | 'welcomeBack' | 'welcomeBack_female'
     | 'welcome' | 'welcome_female'
     | 'dashboardTitle'
@@ -262,6 +265,23 @@ export type TranslationKeys =
     | 'allMethods'
     | 'transfer'
     | 'indexSum'
+    | 'bulkCheckEntryTitle'
+    | 'pleaseFillAllFields'
+    | 'amountPerCheck'
+    | 'firstDueDate'
+    | 'numberOfChecks'
+    | 'startCheckNumber'
+    | 'previewChecks'
+    | 'bulkCheckReviewDesc'
+    | 'bulkChecksAddedSuccess'
+    | 'errorSavingPayments'
+    | 'approveAndCreate'
+    | 'paymentMarkedPaid'
+    | 'paymentUndoSuccess'
+    | 'errorInUndo'
+    | 'undo'
+    | 'errorMarkingPaid'
+    | 'back'
 
     // Calculator & Reconciliation
     | 'indexCalculator'
@@ -589,6 +609,10 @@ export type TranslationKeys =
     | 'all'
     | 'active'
     | 'archived'
+    | 'legal_management'
+    | 'active_contract'
+    | 'archived_contract'
+    | 'view_details'
     | 'storageUsage'
     | 'totalStorage'
     | 'usedStorage'
@@ -992,6 +1016,9 @@ export const translations: Record<string, any> = {
         login: 'התחברות',
         logout: 'התנתק',
         logout_female: 'התנתקי',
+        logoutConfirmTitle: 'התנתקות?',
+        logoutConfirmMessage: 'האם אתה בטוח שברצונך להתנתק?',
+        confirmLogout: 'כן, התנתק',
         welcomeBack: 'ברוך שובך',
         welcomeBack_female: 'ברוכה השבה',
         welcome: 'ברוך הבא',
@@ -1003,6 +1030,10 @@ export const translations: Record<string, any> = {
         tenants_female: 'דיירים',
         contracts: 'חוזים',
         contracts_female: 'חוזים',
+        legal_management: 'ניהול משפטי',
+        active_contract: 'חוזה פעיל',
+        archived_contract: 'חוזה בארכיון',
+        view_details: 'צפייה בפרטים',
         payments: 'תשלומים',
         calculator: 'מחשבון',
         settings: 'הגדרות',
@@ -1130,6 +1161,23 @@ export const translations: Record<string, any> = {
         allMethods: 'כל השיטות',
         transfer: 'העברה בנקאית',
         indexSum: 'הפרשי הצמדה',
+        bulkCheckEntryTitle: 'הזנת פנקס צ\'קים',
+        pleaseFillAllFields: 'נא למלא את כל שדות החובה',
+        amountPerCheck: 'סכום לכל צ\'ק',
+        firstDueDate: 'תאריך פירעון ראשון',
+        numberOfChecks: 'מספר צ\'קים',
+        startCheckNumber: 'מספר צ\'ק ראשון (אופציונלי)',
+        previewChecks: 'תצוגה מקדימה',
+        bulkCheckReviewDesc: 'נא לעבור על הצ\'קים שנוצרו לפני האישור.',
+        bulkChecksAddedSuccess: 'נוספו {count} צ\'קים בהצלחה',
+        errorSavingPayments: 'שגיאה בשמירת התשלומים',
+        approveAndCreate: 'אישור ויצירה',
+        paymentMarkedPaid: 'התשלום סומן כנפרע',
+        paymentUndoSuccess: 'הפעולה בוטלה',
+        errorInUndo: 'שגיאה בביטול הפעולה',
+        undo: 'ביטול',
+        errorMarkingPaid: 'שגיאה בסימון כנפרע',
+        back: 'חזור',
 
         // Calculator & Reconciliation
         indexCalculator: 'מחשבון הצמדה',
@@ -1823,7 +1871,17 @@ export const translations: Record<string, any> = {
         conciergeLater: 'Remind me later',
         conciergeAiExtraction: 'Smart AI Extraction',
         conciergeLinkageMonitoring: 'Automatic Linkage Alerts',
+        all: 'All',
+        active: 'Active',
+        archived: 'Archived',
+        legal_management: 'Legal Management',
+        active_contract: 'Active Contract',
+        archived_contract: 'Archived Contract',
+        view_details: 'View Details',
         cancel: 'Cancel',
+        logoutConfirmTitle: 'Logout?',
+        logoutConfirmMessage: 'Are you sure you want to log out?',
+        confirmLogout: 'Yes, Logout',
         marketIntelligence: 'Market Intelligence',
         manageCities: 'Manage Cities',
         noCitiesPinnedDescription: 'You haven\'t pinned any cities yet. Select cities to track their rental trends at a glance.',
@@ -1924,6 +1982,23 @@ export const translations: Record<string, any> = {
         whatsapp_bot: 'WhatsApp Bot',
         ai_assistant: 'AI Assistant',
         can_export: 'Full Data Export',
+        bulkCheckEntryTitle: 'Bulk Check Entry',
+        pleaseFillAllFields: 'Please fill all required fields',
+        amountPerCheck: 'Amount per check',
+        firstDueDate: 'First due date',
+        numberOfChecks: 'Number of checks',
+        startCheckNumber: 'Start check number (Optional)',
+        previewChecks: 'Preview Checks',
+        bulkCheckReviewDesc: 'Please review the generated checks before creating them.',
+        bulkChecksAddedSuccess: 'Added {count} checks successfully',
+        errorSavingPayments: 'Error saving payments',
+        approveAndCreate: 'Approve & Create',
+        paymentMarkedPaid: 'Payment marked as paid',
+        paymentUndoSuccess: 'Action undone',
+        errorInUndo: 'Error undoing action',
+        undo: 'Undo',
+        errorMarkingPaid: 'Error marking as paid',
+        back: 'Back',
     },
 };
 

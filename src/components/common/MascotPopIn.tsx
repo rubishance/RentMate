@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { RentyMascot } from './RentyMascot';
 
 interface MascotPopInProps {
     className?: string;
@@ -27,10 +28,8 @@ export function MascotPopIn({ className = "", position = 'bottom-right' }: Masco
             }}
         >
             <div className="relative w-24 md:w-32 lg:w-40 h-auto">
-                <motion.img
-                    src="/assets/images/renty-droid-front.png"
+                <motion.div
                     className="w-full h-auto drop-shadow-2xl"
-                    alt="Renty"
                     animate={{
                         y: [0, -2, 0],
                         rotate: [-0.5, 0.5, -0.5]
@@ -40,7 +39,9 @@ export function MascotPopIn({ className = "", position = 'bottom-right' }: Masco
                         repeat: Infinity,
                         ease: "easeInOut"
                     }}
-                />
+                >
+                    <RentyMascot showBackground={false} />
+                </motion.div>
                 {/* Ground Shadow - Anchors the droid */}
                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-[70%] h-1.5 bg-black/20 blur-md rounded-full" />
             </div>

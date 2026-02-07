@@ -26,6 +26,7 @@ interface SubscriptionPlan {
     max_properties: number;
     max_contracts: number;
     max_sessions: number;
+    max_whatsapp_messages: number;
     max_storage_mb: number;
     max_media_mb: number;
     max_utilities_mb: number;
@@ -56,6 +57,7 @@ const PlanManagement = () => {
         max_properties: 1,
         max_contracts: 1,
         max_sessions: 10,
+        max_whatsapp_messages: 50,
         max_storage_mb: 100,
         max_media_mb: 50,
         max_utilities_mb: 20,
@@ -130,6 +132,7 @@ const PlanManagement = () => {
                 max_properties: parseInt(String(editForm.max_properties || 0)),
                 max_contracts: parseInt(String(editForm.max_contracts || 0)),
                 max_sessions: parseInt(String(editForm.max_sessions || 0)),
+                max_whatsapp_messages: parseInt(String(editForm.max_whatsapp_messages || 0)),
                 max_storage_mb: parseInt(String(editForm.max_storage_mb || 0)),
                 max_media_mb: parseInt(String(editForm.max_media_mb || 0)),
                 max_utilities_mb: parseInt(String(editForm.max_utilities_mb || 0)),
@@ -458,10 +461,11 @@ const PlanManagement = () => {
                                     Quotas & Feature Set
                                     <div className="h-px bg-brand-100 dark:bg-brand-900/30 flex-1"></div>
                                 </h3>
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-8">
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
                                     {renderLimitField('Max Asset Units', 'max_properties')}
                                     {renderLimitField('Max Contracts', 'max_contracts')}
-                                    {renderLimitField('Cloud Storage (MB)', 'max_storage_mb')}
+                                    {renderLimitField('AI Help (Sessions)', 'max_sessions')}
+                                    {renderLimitField('WhatsApp msgs', 'max_whatsapp_messages')}
                                 </div>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     <FeatureToggle featureKey="ai_analysis" label="AI Analysis" />
@@ -571,6 +575,10 @@ const PlanManagement = () => {
                                     <div className="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-gray-700">
                                         <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">AI Help</div>
                                         <div className="text-sm font-black text-gray-900 dark:text-white">{plan.max_sessions} SESS</div>
+                                    </div>
+                                    <div className="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-gray-700">
+                                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">WhatsApp</div>
+                                        <div className="text-sm font-black text-gray-900 dark:text-white">{plan.max_whatsapp_messages === -1 ? '∞' : plan.max_whatsapp_messages} MSG</div>
                                     </div>
                                 </div>
 

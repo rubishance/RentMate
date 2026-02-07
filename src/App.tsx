@@ -31,6 +31,7 @@ import { Analytics } from './pages/Analytics';
 const AddContract = lazy(() => import('./pages/AddContract').then(module => ({ default: module.AddContract })));
 const MaintenanceTracker = lazy(() => import('./pages/MaintenanceTracker').then(module => ({ default: module.MaintenanceTracker })));
 const ContractDetails = lazy(() => import('./pages/ContractDetails'));
+const Contracts = lazy(() => import('./pages/Contracts'));
 const SharedCalculation = lazy(() => import('./pages/SharedCalculation').then(module => ({ default: module.SharedCalculation })));
 const Settings = lazy(() => import('./pages/Settings').then(module => ({ default: module.Settings })));
 const Tools = lazy(() => import('./pages/Tools').then(module => ({ default: module.Tools })));
@@ -58,6 +59,7 @@ const AIUsageManagement = lazy(() => import('./pages/admin/AIUsageManagement'));
 const ClientProfile = lazy(() => import('./pages/admin/ClientProfile'));
 const AutomationTracking = lazy(() => import('./pages/admin/AutomationTracking'));
 const SupportTickets = lazy(() => import('./pages/admin/SupportTickets'));
+const SupportChat = lazy(() => import('./pages/admin/SupportChat'));
 
 const PlanManagement = lazy(() => import('./pages/admin/PlanManagement'));
 const Pricing = lazy(() => import('./pages/Pricing'));
@@ -204,7 +206,7 @@ const router = createBrowserRouter([
               },
               {
                 path: "/contracts",
-                element: <Navigate to="/properties" replace />,
+                element: <Contracts />,
               },
               {
                 path: "/assets",
@@ -305,6 +307,10 @@ const router = createBrowserRouter([
               {
                 path: "tickets",
                 element: <SupportTickets />,
+              },
+              {
+                path: "chat",
+                element: <SupportChat />,
               },
               // Super Admin Specific Sub-Routes
               {

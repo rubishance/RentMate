@@ -132,6 +132,35 @@ export function Dashboard() {
         handleLayoutChange(newLayout);
     };
 
+    const firstName = authProfile?.full_name?.split(' ')[0] || '';
+
+    const handleBriefingAction = (item: FeedItem) => {
+        if (!item.metadata) return;
+
+        console.log('[Dashboard] Action triggered:', item.metadata.type, item.metadata);
+
+        switch (item.metadata.type) {
+            case 'contract_expired':
+            case 'maintenance_active':
+            case 'onboarding_stalled':
+                navigate('/properties');
+                break;
+            case 'payment_overdue':
+                navigate('/payments');
+                break;
+            default:
+                // Default: toggle notifications if we don't know where to go
+                window.dispatchEvent(new CustomEvent('TOGGLE_NOTIFICATIONS'));
+        }
+    };
+
+    const feedItemsWithActions = useMemo(() => {
+        return feedItems.map(item => ({
+            ...item,
+            onAction: () => handleBriefingAction(item)
+        }));
+    }, [feedItems, navigate]);
+
     if (loading && !feedItems.length) {
         return (
             <div className="px-3 py-20 max-w-5xl mx-auto space-y-12">
@@ -141,14 +170,12 @@ export function Dashboard() {
         );
     }
 
-    const firstName = authProfile?.full_name?.split(' ')[0] || '';
-
     return (
         <main className="min-h-screen bg-slate-50 dark:bg-neutral-950 transition-colors duration-300 pb-40">
             <BionicWelcomeOverlay firstName={firstName} />
 
             <div className="max-w-7xl mx-auto px-4 md:px-10 pt-8 md:pt-12 space-y-8 md:space-y-12">
-                <DashboardHero firstName={firstName} feedItems={feedItems} />
+                <DashboardHero firstName={firstName} feedItems={feedItemsWithActions} />
 
                 {/* Command Bar */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -190,7 +217,7 @@ export function Dashboard() {
                 </div>
 
                 <div id="renty-command-center">
-                    <RentyCommandCenter firstName={firstName} feedItems={feedItems} />
+                    <RentyCommandCenter firstName={firstName} feedItems={feedItemsWithActions} />
                 </div>
 
                 {/* Stabilized Grid (Manual Mapping) */}

@@ -121,7 +121,7 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                                 {t('smartCalculator')}
                             </span>
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground leading-tight lowercase">
+                        <h1 className="h1-bionic">
                             {t('calculator')}
                         </h1>
                     </div>
@@ -195,16 +195,16 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
             {!embedMode && (
                 <div className="mt-16 pt-10 border-t border-white/10 text-right space-y-8 pb-12">
                     <section className="space-y-3">
-                        <h2 className="text-2xl font-black text-foreground">איך עובד מחשבון מדד ושכר דירה?</h2>
-                        <p className="text-muted-foreground leading-relaxed">
+                        <h2 className="h2-bionic">איך עובד מחשבון מדד ושכר דירה?</h2>
+                        <p className="text-muted-foreground leading-relaxed text-sm md:text-base">
                             מחשבון המדד של RentMate מאפשר לבעלי דירות ודיירים לחשב בקלות את הפרשי ההצמדה למדד המחירים לצרכן.
                             רוב חוזי השכירות בישראל מוצמדים למדד כדי לשמור על ערך הכסף הריאלי של דמי השכירות. המחשבון שלנו מתבסס על נתוני הלמ"ס (הלשכה המרכזית לסטטיסטיקה) ומבצע חישוב מדויק של אחוז השינוי בין מדד הבסיס למדד הנוכחי.
                         </p>
                     </section>
 
                     <section className="space-y-3">
-                        <h2 className="text-2xl font-black text-foreground">מתי צריך לבצע הצמדה למדד?</h2>
-                        <p className="text-muted-foreground leading-relaxed">
+                        <h2 className="h2-bionic">מתי צריך לבצע הצמדה למדד?</h2>
+                        <p className="text-muted-foreground leading-relaxed text-sm md:text-base">
                             חישוב הצמדה למדד נדרש בדרך כלל באחת משתי נקודות זמן בחוזה השכירות:
                             <br />
                             1. <strong>בעת חידוש חוזה (אופציה):</strong> נהוג לעדכן את מחיר השכירות לפי עליית המדד בשנה החולפת.
@@ -214,8 +214,8 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                     </section>
 
                     <section className="space-y-3">
-                        <h2 className="text-2xl font-black text-foreground">יתרונות מחשבון RentMate</h2>
-                        <ul className="list-disc list-inside text-muted-foreground leading-relaxed space-y-1">
+                        <h2 className="h2-bionic">יתרונות מחשבון RentMate</h2>
+                        <ul className="list-disc list-inside text-muted-foreground leading-relaxed space-y-2 text-sm md:text-base">
                             <li>נתונים רשמיים ומעודכנים ישירות מהלמ"ס.</li>
                             <li>תמיכה בחישוב מדדים שליליים (ריצפת מדד).</li>
                             <li>ממשק פשוט ונוח המותאם לחוזים סטנדרטיים.</li>

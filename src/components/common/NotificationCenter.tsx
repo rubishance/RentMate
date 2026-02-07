@@ -9,11 +9,22 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../hooks/useTranslation';
 import { WhatsAppService } from '../../services/whatsapp.service';
 import { cn } from '../../lib/utils';
+import { useEffect, useRef } from 'react';
 
 export function NotificationCenter() {
     const { notifications, unreadCount, markAsRead, markAllAsRead, requestPermission, permission } = useNotifications();
     const { t, lang } = useTranslation();
     const navigate = useNavigate();
+    const buttonRef = useRef<HTMLButtonElement>(null);
+
+    useEffect(() => {
+        const handleToggle = () => {
+            buttonRef.current?.click();
+        };
+
+        window.addEventListener('TOGGLE_NOTIFICATIONS', handleToggle);
+        return () => window.removeEventListener('TOGGLE_NOTIFICATIONS', handleToggle);
+    }, []);
 
     const getIcon = (type: string) => {
         switch (type) {
@@ -62,6 +73,7 @@ export function NotificationCenter() {
             {({ open }) => (
                 <>
                     <Popover.Button
+                        ref={buttonRef}
                         className={`p-2 rounded-full transition-colors relative outline-none ring-0 ${open
                             ? 'bg-muted dark:bg-gray-700 text-foreground dark:text-gray-100'
                             : 'text-muted-foreground hover:text-muted-foreground dark:text-muted-foreground dark:hover:text-gray-200 hover:bg-muted dark:hover:bg-gray-800'

@@ -137,8 +137,8 @@ export function ArticleViewer() {
             </div>
 
             {/* Article Content */}
-            <article className={`max-w-3xl mx-auto px-4 py-8 ${lang === 'he' ? 'text-right' : 'text-left'}`} dir={lang === 'he' ? 'rtl' : 'ltr'}>
-                <div className="prose prose-lg prose-indigo max-w-none">
+            <article className={`max-w-3xl mx-auto px-4 py-8 md:py-16 ${lang === 'he' ? 'text-right' : 'text-left'}`} dir={lang === 'he' ? 'rtl' : 'ltr'}>
+                <div className="prose prose-sm md:prose-lg prose-indigo max-w-none">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                         {displayContent}
                     </ReactMarkdown>

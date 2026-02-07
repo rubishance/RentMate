@@ -14,7 +14,7 @@ import { cn } from '../../lib/utils';
 import { useDataCache } from '../../contexts/DataCacheContext';
 import { propertyService } from '../../services/property.service';
 import { getPropertyPlaceholder } from '../../lib/property-placeholders';
-import { generatePaymentSchedule } from '../../utils/payment-generator';
+// import { generatePaymentSchedule } from '../../utils/payment-generator'; // Offloaded to Edge Function
 import { addDays } from 'date-fns';
 
 interface ContractHubProps {
@@ -30,6 +30,33 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
     const [readOnly, setReadOnly] = useState(initialReadOnly);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [signedUrl, setSignedUrl] = useState<string | null>(null);
+
+    useEffect(() => {
+        const getSignedUrl = async () => {
+            if (!contract?.contract_file_url) return;
+
+            // If it's already a full URL, use it (backward compatibility)
+            if (contract.contract_file_url.startsWith('http')) {
+                setSignedUrl(contract.contract_file_url);
+                return;
+            }
+
+            // It's a path - get a signed URL
+            try {
+                const { data, error } = await supabase.storage
+                    .from('contracts')
+                    .createSignedUrl(contract.contract_file_url, 3600);
+
+                if (error) throw error;
+                setSignedUrl(data.signedUrl);
+            } catch (err) {
+                console.error('Error fetching signed URL:', err);
+            }
+        };
+
+        getSignedUrl();
+    }, [contract?.contract_file_url]);
 
     const [formData, setFormData] = useState({
         signing_date: '',
@@ -184,26 +211,31 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                 const gapStart = format(addDays(parseISO(originalEndDate), 1), 'yyyy-MM-dd');
 
                 try {
-                    const schedule = await generatePaymentSchedule({
-                        startDate: gapStart,
-                        endDate: newEndDate,
-                        baseRent: Number(formData.base_rent),
-                        currency: formData.currency as any,
-                        paymentFrequency: formData.payment_frequency as any,
-                        paymentDay: Number(formData.payment_day),
-                        linkageType: formData.linkage_type as any,
-                        linkageSubType: formData.linkage_sub_type as any,
-                        baseIndexDate: formData.base_index_date || null,
-                        baseIndexValue: Number(formData.base_index_value),
-                        linkageCeiling: formData.linkage_ceiling ? Number(formData.linkage_ceiling) : null,
-                        linkageFloor: formData.linkage_floor ? Number(formData.linkage_floor) : null,
-                        rent_periods: formData.rent_periods
+                    const { data: genData, error: genError } = await supabase.functions.invoke('generate-payments', {
+                        body: {
+                            startDate: gapStart,
+                            endDate: newEndDate,
+                            baseRent: Number(formData.base_rent),
+                            currency: formData.currency,
+                            paymentFrequency: formData.payment_frequency,
+                            paymentDay: Number(formData.payment_day),
+                            linkageType: formData.linkage_type,
+                            linkageSubType: formData.linkage_type === 'none' ? null : formData.linkage_sub_type,
+                            baseIndexDate: formData.base_index_date || null,
+                            baseIndexValue: Number(formData.base_index_value),
+                            linkageCeiling: formData.linkage_ceiling ? Number(formData.linkage_ceiling) : null,
+                            linkageFloor: formData.linkage_floor ? Number(formData.linkage_floor) : null,
+                            rent_periods: formData.rent_periods
+                        }
                     });
+
+                    if (genError) throw new Error(`Extension Gen Error: ${genError.message}`);
+                    const schedule = genData?.payments || [];
 
                     if (schedule.length > 0) {
                         const { error: insertError } = await supabase
                             .from('payments')
-                            .insert(schedule.map(p => ({
+                            .insert(schedule.map((p: any) => ({
                                 ...p,
                                 contract_id: contractId,
                                 user_id: contract.user_id
@@ -306,9 +338,9 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                         <div className={cn("w-1.5 h-1.5 rounded-full shadow-[0_0_5px_rgba(var(--status-color),0.5)]", contract.status === 'active' ? "bg-emerald-500" : "bg-slate-500")} />
                         {t(contract.status)}
                     </div>
-                    {contract.contract_file_url && (
+                    {signedUrl && (
                         <a
-                            href={contract.contract_file_url}
+                            href={signedUrl}
                             target="_blank"
                             rel="noreferrer"
                             className="px-3 py-1 glass-premium dark:bg-white/5 text-primary rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-white/10 transition-all border border-white/5 shadow-minimal"

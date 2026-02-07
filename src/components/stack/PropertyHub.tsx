@@ -26,6 +26,7 @@ import { DollarSign } from 'lucide-react';
 import { propertyService } from '../../services/property.service';
 import { CompressionService } from '../../services/compression.service';
 import { getPropertyPlaceholder } from '../../lib/property-placeholders';
+import { useSignedUrl } from '../../hooks/useSignedUrl';
 
 interface PropertyHubProps {
     propertyId: string;
@@ -57,6 +58,9 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
     const [saving, setSaving] = useState(false);
     const [activeContract, setActiveContract] = useState<Contract | null>(null);
     const [marketTrend, setMarketTrend] = useState<any>(null);
+
+    // Resolve Signed URL for Property Image
+    const { url: signedImageUrl } = useSignedUrl('property_images', property.image_url);
 
     // Auto-Navigation State
     const location = useLocation();
@@ -167,11 +171,7 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
 
             if (uploadError) throw uploadError;
 
-            const { data } = supabase.storage
-                .from('property-images')
-                .getPublicUrl(filePath);
-
-            setEditedProperty(prev => ({ ...prev, image_url: data.publicUrl }));
+            setEditedProperty(prev => ({ ...prev, image_url: filePath }));
         } catch (err: any) {
             console.error('Error uploading image:', err);
             setImageError('Failed to upload image: ' + err.message);
@@ -304,7 +304,7 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
                         <ArrowLeft className={cn("w-4 h-4 group-hover:-translate-x-1 transition-transform", lang === 'he' ? 'rotate-180 group-hover:translate-x-1' : '')} />
                     </button>
                     <img
-                        src={property.image_url || getPropertyPlaceholder(property.property_type)}
+                        src={signedImageUrl || getPropertyPlaceholder(property.property_type)}
                         alt={property.address}
                         className="w-full h-full object-cover opacity-80"
                         onError={(e) => {
@@ -464,12 +464,24 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
                                                 />
                                                 <button
                                                     type="button"
-                                                    onClick={() => {
-                                                        const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || (process?.env?.VITE_GOOGLE_MAPS_API_KEY);
-                                                        if (!apiKey || !editedProperty.address) return;
-                                                        const location = `${editedProperty.address}, ${editedProperty.city}`;
-                                                        const imageUrl = `https://maps.googleapis.com/maps/api/streetview?size=600x400&location=${encodeURIComponent(location)}&key=${apiKey}`;
-                                                        setEditedProperty(prev => ({ ...prev, image_url: imageUrl }));
+                                                    onClick={async () => {
+                                                        if (!editedProperty.address || !editedProperty.city) return;
+
+                                                        try {
+                                                            const location = `${editedProperty.address}, ${editedProperty.city}`;
+                                                            const { data, error } = await supabase.functions.invoke('google-maps-proxy', {
+                                                                body: { action: 'streetview', location }
+                                                            });
+
+                                                            if (error) throw error;
+                                                            if (data?.publicUrl) {
+                                                                setEditedProperty(prev => ({ ...prev, image_url: data.publicUrl }));
+                                                            }
+                                                        } catch (err: any) {
+                                                            console.error('Street View Error:', err);
+                                                            console.error('Street View Error Details:', err.message || err.toString()); // Added detail log
+                                                            alert('Failed to generate image');
+                                                        }
                                                     }}
                                                     className="px-3 py-2 bg-primary/10 text-primary rounded-xl text-[10px] font-bold uppercase transition-all hover:bg-primary/20"
                                                 >
@@ -501,7 +513,7 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
                                         {editedProperty.image_url && (
                                             <div className="relative w-full h-32 rounded-2xl overflow-hidden border border-slate-100 dark:border-neutral-800 group">
                                                 <img
-                                                    src={editedProperty.image_url || getPropertyPlaceholder(editedProperty.property_type)}
+                                                    src={signedImageUrl || getPropertyPlaceholder(editedProperty.property_type)}
                                                     alt="Preview"
                                                     className="w-full h-full object-cover"
                                                     onError={(e) => {

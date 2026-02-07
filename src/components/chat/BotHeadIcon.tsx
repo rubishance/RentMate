@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { RentyMascot } from '../common/RentyMascot';
 
 export function BotHeadIcon({ className = "w-20 h-20" }: { className?: string }) {
     return (
@@ -7,11 +8,7 @@ export function BotHeadIcon({ className = "w-20 h-20" }: { className?: string })
             animate={{ y: [0, -2, 0] }}
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         >
-            <img
-                src="/assets/images/renty-head-clean.png"
-                alt="Renty Head"
-                className="w-full h-full object-contain pointer-events-none"
-            />
+            <RentyMascot size={80} showBackground={false} />
         </motion.div>
     );
 }

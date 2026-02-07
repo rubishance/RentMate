@@ -1,21 +1,27 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { CalendarIcon as CalendarCheck, ClockIcon as Clock, AlertCircleIcon as AlertCircle, FilterIcon as SlidersHorizontal, ArrowRightIcon as ArrowRight, PlusIcon as Plus } from '../components/icons/NavIcons';
+import { CalendarIcon as CalendarIconNav, ClockIcon as ClockIconNav, AlertCircleIcon as AlertCircleIconNav, FilterIcon as FilterIconNav, ArrowRightIcon as ArrowRightIconNav, PlusIcon as PlusIconNav } from '../components/icons/NavIcons';
 import { format, subMonths } from 'date-fns';
 import { supabase } from '../lib/supabase';
 import { cn } from '../lib/utils';
 import type { Payment } from '../types/database';
 import { AddPaymentModal } from '../components/modals/AddPaymentModal';
 import { PaymentDetailsModal } from '../components/modals/PaymentDetailsModal';
+import { BulkCheckModal } from '../components/modals/BulkCheckModal';
 import { DatePicker } from '../components/ui/DatePicker';
 import { useTranslation } from '../hooks/useTranslation';
 import { useDataCache } from '../contexts/DataCacheContext';
+import { useToast } from '../hooks/useToast';
 import { Skeleton } from '../components/ui/Skeleton';
 import { FilterDrawer } from '../components/common/FilterDrawer';
-import { RotateCcw, X, ArrowUpRight } from 'lucide-react';
+import {
+    RotateCcw, X, ArrowUpRight, Plus, CalendarCheck, Search, Filter,
+    Layout, Calendar, ChevronRight, CheckCircle2, AlertCircle, RefreshCw, Wallet
+} from 'lucide-react';
 
 export function Payments() {
     const { t } = useTranslation();
+    const toast = useToast();
     const { get, set, clear } = useDataCache();
     const [payments, setPayments] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -29,6 +35,7 @@ export function Payments() {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+    const [isBulkCheckModalOpen, setIsBulkCheckModalOpen] = useState(false);
     const [detailsModalProps, setDetailsModalProps] = useState<{ editMode: boolean, status?: any }>({ editMode: false });
     const [showFilters, setShowFilters] = useState(false);
     const [filters, setFilters] = useState({
@@ -124,6 +131,72 @@ export function Payments() {
             console.error('Error fetching payments:', error);
         } finally {
             setLoading(false);
+        }
+    }
+
+    async function handleInstaPay(payment: any) {
+        const originalStatus = payment.status;
+        const originalPaidAmount = payment.paid_amount;
+        const originalPaidDate = payment.paid_date;
+        const originalPaymentMethod = payment.payment_method;
+
+        // Use base amount (original_amount) if available, per user request
+        const paidAmount = payment.original_amount || payment.amount;
+        const paidDate = new Date().toISOString().split('T')[0];
+
+        // Optimistic Update
+        setPayments(prev => prev.map(p =>
+            p.id === payment.id
+                ? { ...p, status: 'paid', paid_amount: paidAmount, paid_date: paidDate }
+                : p
+        ));
+
+        try {
+            const { error } = await supabase
+                .from('payments')
+                .update({
+                    status: 'paid',
+                    paid_amount: paidAmount,
+                    paid_date: paidDate,
+                    payment_method: payment.payment_method || 'bank_transfer'
+                })
+                .eq('id', payment.id);
+
+            if (error) throw error;
+
+            toast.success(t('paymentMarkedPaid'), {
+                action: {
+                    label: t('undo'),
+                    onClick: async () => {
+                        try {
+                            const { error: undoError } = await supabase
+                                .from('payments')
+                                .update({
+                                    status: originalStatus,
+                                    paid_amount: originalPaidAmount,
+                                    paid_date: originalPaidDate,
+                                    payment_method: originalPaymentMethod
+                                })
+                                .eq('id', payment.id);
+
+                            if (undoError) throw undoError;
+                            toast.success(t('paymentUndoSuccess'));
+                            fetchPayments();
+                        } catch (err) {
+                            console.error('Undo failed:', err);
+                            toast.error(t('errorInUndo'));
+                        }
+                    }
+                }
+            });
+
+            // Recalculate stats locally if possible, or just refresh list
+            // For now, refresh list to ensure accuracy with DB
+            fetchPayments();
+        } catch (error) {
+            console.error('Error in Insta-Pay:', error);
+            toast.error(t('errorMarkingPaid'));
+            fetchPayments(); // Revert
         }
     }
 
@@ -247,30 +320,35 @@ export function Payments() {
                             {t('financialOverview')}
                         </span>
                     </div>
-                    <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-foreground leading-tight lowercase">
+                    <h1 className="h1-bionic">
                         {t('payments')}
                     </h1>
                 </div>
 
                 <div className="flex gap-4">
                     <button
-                        onClick={() => setShowFilters(!showFilters)}
-                        className={cn(
-                            "h-14 w-14 rounded-[1.5rem] transition-all flex items-center justify-center border border-white/10 group relative overflow-hidden",
-                            showFilters
-                                ? "button-jewel shadow-jewel"
-                                : "glass-premium hover:shadow-jewel text-muted-foreground"
-                        )}
+                        onClick={() => setShowFilters(true)}
+                        className="group p-2 -mr-2 text-muted-foreground hover:text-foreground transition-colors"
                     >
-                        <SlidersHorizontal className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                        <FilterIconNav className="w-6 h-6 group-hover:scale-110 transition-transform" />
                     </button>
-                    <button
-                        onClick={() => setIsAddModalOpen(true)}
-                        className="h-14 px-10 button-jewel font-black text-xs uppercase tracking-[0.2em] rounded-[1.5rem] hover:scale-105 active:scale-95 transition-all shadow-jewel flex items-center justify-center gap-4 group"
-                    >
-                        <Plus className="w-5 h-5 transition-transform group-hover:rotate-90" />
-                        {t('addPayment')}
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => setIsBulkCheckModalOpen(true)}
+                            className="h-10 md:h-12 px-4 md:px-6 glass-premium border-white/20 dark:border-white/10 rounded-xl md:rounded-2xl text-xs md:text-sm font-black hover:scale-105 active:scale-95 transition-all flex items-center gap-2 group"
+                            title={t('bulkCheckEntryTitle')}
+                        >
+                            <Wallet className="w-4 h-4 md:w-5 md:h-5 text-amber-500" />
+                            <span className="hidden sm:inline">{t('bulkCheckEntryTitle')}</span>
+                        </button>
+                        <button
+                            onClick={() => setIsAddModalOpen(true)}
+                            className="h-10 md:h-12 px-5 md:px-8 bg-black dark:bg-white text-white dark:text-black rounded-xl md:rounded-2xl text-xs md:text-sm font-black hover:scale-105 active:scale-95 transition-all shadow-lg flex items-center gap-2 group"
+                        >
+                            <Plus className="w-4 h-4 md:w-5 md:h-5 group-hover:rotate-90 transition-transform duration-500" />
+                            <span className="md:inline">{t('addPayment')}</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -302,7 +380,7 @@ export function Payments() {
                         <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40 mb-2 block lowercase">{t('monthlyExpected')}</span>
                         <div className="flex items-baseline gap-2">
                             <span className="text-sm font-black text-foreground opacity-40">₪</span>
-                            <span className="text-5xl font-black text-foreground tracking-tighter lowercase leading-none">{stats.monthlyExpected.toLocaleString()}</span>
+                            <span className="text-3xl md:text-5xl font-black text-foreground tracking-tighter lowercase leading-none">{stats.monthlyExpected.toLocaleString()}</span>
                         </div>
                         {stats.monthlyIndexSum > 0 && (
                             <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 text-emerald-400 rounded-full border border-emerald-500/20 shadow-sm animate-in slide-in-from-left duration-300">
@@ -317,13 +395,13 @@ export function Payments() {
 
                 <div className="p-10 rounded-[3rem] glass-premium dark:bg-orange-500/5 border-orange-500/10 flex items-center gap-10 shadow-minimal group hover:shadow-jewel transition-all duration-300">
                     <div className="w-20 h-20 rounded-3xl bg-white/5 dark:bg-orange-500/10 flex items-center justify-center shadow-minimal group-hover:scale-110 group-hover:-rotate-3 transition-all duration-300 border border-orange-500/10">
-                        <Clock className="w-9 h-9 text-orange-500" />
+                        <ClockIconNav className="w-9 h-9 text-orange-500" />
                     </div>
                     <div>
                         <span className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-400 opacity-60 mb-2 block lowercase">{t('pending')}</span>
                         <div className="flex items-baseline gap-2">
                             <span className="text-sm font-black text-orange-500 opacity-40">₪</span>
-                            <span className="text-5xl font-black text-orange-500 tracking-tighter lowercase leading-none">{stats.pending.toLocaleString()}</span>
+                            <span className="text-3xl md:text-5xl font-black text-orange-500 tracking-tighter lowercase leading-none">{stats.pending.toLocaleString()}</span>
                         </div>
                     </div>
                 </div>
@@ -508,9 +586,7 @@ export function Payments() {
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        setSelectedPayment(payment);
-                                                        setDetailsModalProps({ editMode: true, status: 'paid' });
-                                                        setIsDetailsModalOpen(true);
+                                                        handleInstaPay(payment);
                                                     }}
                                                     className="h-10 w-10 md:h-12 md:w-12 glass-premium border-emerald-500/20 rounded-xl text-emerald-500/80 hover:bg-emerald-500 hover:text-white transition-all duration-500 shadow-minimal flex items-center justify-center shrink-0 group/btn"
                                                     title={t('markAsPaid')}
@@ -520,7 +596,7 @@ export function Payments() {
                                             )}
 
                                             <button className="h-10 w-10 md:h-12 md:w-12 glass-premium border-white/10 rounded-xl text-muted-foreground opacity-30 group-hover:opacity-100 group-hover:bg-foreground group-hover:text-background transition-all duration-300 shadow-minimal flex items-center justify-center shrink-0">
-                                                <ArrowRight className="w-5 h-5" />
+                                                <ArrowRightIconNav className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                                             </button>
                                         </div>
                                     </div>
@@ -554,6 +630,11 @@ export function Payments() {
                     clear();
                     fetchPayments();
                 }}
+            />
+            <BulkCheckModal
+                isOpen={isBulkCheckModalOpen}
+                onClose={() => setIsBulkCheckModalOpen(false)}
+                onSuccess={fetchPayments}
             />
         </div>
     );

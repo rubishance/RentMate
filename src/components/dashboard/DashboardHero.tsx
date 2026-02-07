@@ -33,11 +33,6 @@ export function DashboardHero({ firstName, feedItems }: DashboardHeroProps) {
                 <h1 className="text-6xl font-black tracking-tighter text-foreground lowercase">
                     {firstName || t('user_generic')}
                 </h1>
-                <p className="text-base text-muted-foreground font-medium opacity-60">
-                    {feedItems.length > 0 && feedItems[0].id !== 'welcome'
-                        ? `${t('youHave')} ${feedItems.length} ${t('activeAlerts')}.`
-                        : t('allLooksQuiet')}
-                </p>
             </div>
 
             {/* High Impact Alert Card */}

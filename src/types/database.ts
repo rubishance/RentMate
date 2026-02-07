@@ -317,6 +317,7 @@ export interface SubscriptionPlanDef {
     max_tenants: number;
     max_contracts: number;
     max_sessions: number;
+    max_whatsapp_messages: number;
     features: Record<string, any>;
     created_at?: string;
 }
@@ -333,7 +334,8 @@ export interface UserProfile {
 
     // Subscription & Plan
     subscription_status: SubscriptionStatus;
-    plan_id?: string; // New DB reference
+    plan_id?: string;
+    whatsapp_limit_override?: number;
 
     // Notification Settings
     notification_preferences?: {
@@ -444,5 +446,30 @@ export interface UserActivity {
     event_type: 'page_view' | 'action';
     path: string;
     metadata: any;
+    created_at: string;
+}
+// ============================================
+// WhatsApp Integration Types
+// ============================================
+
+export interface WhatsAppConversation {
+    id: string;
+    user_id: string | null;
+    phone_number: string;
+    status: 'active' | 'archived' | 'bot_handling' | 'human_agent';
+    unread_count: number;
+    last_message_at: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface WhatsAppMessage {
+    id: string;
+    conversation_id: string;
+    direction: 'inbound' | 'outbound';
+    type: 'text' | 'image' | 'document' | 'template';
+    content: any; // JSONB
+    metadata?: any; // JSONB
+    status: 'sent' | 'delivered' | 'read' | 'failed';
     created_at: string;
 }

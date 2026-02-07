@@ -74,6 +74,12 @@ export function Signup() {
             return;
         }
 
+        if (!phone.trim()) {
+            setError(isRtl ? 'יש למלא מספר טלפון' : 'Phone number is required');
+            setLoading(false);
+            return;
+        }
+
         const passwordRequirements = {
             length: password.length >= 8,
             uppercase: /[A-Z]/.test(password),
@@ -234,8 +240,15 @@ const SignupFormView = ({
                 </div>
             </div>
             <div className="space-y-2">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block ml-1">{t('phone')} ({t('optional')})</label>
-                <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="block w-full px-4 py-3 sm:py-4 bg-gray-50 dark:bg-neutral-800 text-black dark:text-white rounded-2xl outline-none focus:bg-white dark:focus:bg-neutral-700 transition-all" placeholder="050-0000000" />
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block ml-1">{t('phone')}</label>
+                <input
+                    type="tel"
+                    required
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="block w-full px-4 py-3 sm:py-4 bg-gray-50 dark:bg-neutral-800 text-black dark:text-white rounded-2xl outline-none focus:bg-white dark:focus:bg-neutral-700 transition-all"
+                    placeholder="050-0000000"
+                />
             </div>
             <div className="space-y-2">
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block ml-1">{t('auth_email')}</label>

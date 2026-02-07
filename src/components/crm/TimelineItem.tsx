@@ -6,6 +6,7 @@ import {
     ClockIcon,
     TrashIcon,
     ArrowDownTrayIcon,
+    ArrowRightOnRectangleIcon,
     TicketIcon
 } from '@heroicons/react/24/outline';
 import { CRMInteraction } from '../../services/crm.service';
@@ -13,12 +14,14 @@ import { CRMInteraction } from '../../services/crm.service';
 interface TimelineItemProps {
     interaction: CRMInteraction;
     onDelete: (id: number | string) => void;
+    onReassign: (id: number | string, type: string) => void;
     onOpenBotChat: (metadata: any) => void;
 }
 
-export function TimelineItem({ interaction, onDelete, onOpenBotChat }: TimelineItemProps) {
+export function TimelineItem({ interaction, onDelete, onReassign, onOpenBotChat }: TimelineItemProps) {
     const isBot = interaction.type === 'chat';
     const isTicket = interaction.type === 'support_ticket';
+    const isWhatsApp = interaction.type === 'whatsapp';
 
     const getTypeStyles = (type: string) => {
         switch (type) {
@@ -27,7 +30,7 @@ export function TimelineItem({ interaction, onDelete, onOpenBotChat }: TimelineI
             case 'support_ticket': return 'bg-amber-50 text-amber-600 border-amber-100';
             case 'chat': return 'bg-purple-50 text-purple-600 border-purple-100';
             case 'human_chat': return 'bg-brand-50 text-brand-600 border-brand-100';
-            case 'whatsapp': return 'bg-green-50 text-green-600 border-green-100';
+            case 'whatsapp': return 'bg-[#25D366]/10 text-[#25D366] border-[#25D366]/20';
             default: return 'bg-gray-100 text-gray-600 border-gray-200';
         }
     };
@@ -47,7 +50,11 @@ export function TimelineItem({ interaction, onDelete, onOpenBotChat }: TimelineI
     return (
         <div className="py-6 first:pt-0 group relative pl-8 border-l-2 border-slate-100 dark:border-slate-800 ml-3">
             {/* Timeline Dot */}
-            <div className={`absolute -left-[9px] top-6 w-4 h-4 rounded-full border-2 border-white dark:border-gray-900 ${isBot ? 'bg-purple-400' : isTicket ? 'bg-amber-400' : interaction.type === 'human_chat' ? 'bg-brand-400' : 'bg-gray-300'
+            <div className={`absolute -left-[9px] top-6 w-4 h-4 rounded-full border-2 border-white dark:border-gray-900 ${isBot ? 'bg-purple-400' :
+                isTicket ? 'bg-amber-400' :
+                    interaction.type === 'human_chat' ? 'bg-brand-400' :
+                        isWhatsApp ? 'bg-[#25D366]' :
+                            'bg-gray-300'
                 }`} />
 
             <div className="flex justify-between items-start mb-2">
@@ -77,14 +84,24 @@ export function TimelineItem({ interaction, onDelete, onOpenBotChat }: TimelineI
                         </a>
                     )}
                     {/* Only allow deleting manual notes/logs */}
-                    {!isBot && !isTicket && interaction.type !== 'human_chat' && (
+                    {!isBot && !isTicket && interaction.type !== 'human_chat' && !isWhatsApp && (
                         <button
                             onClick={() => onDelete(interaction.id)}
                             className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-400 hover:text-red-500 transition-all"
+                            title="Delete Item"
                         >
                             <TrashIcon className="w-4 h-4" />
                         </button>
                     )}
+
+                    {/* Allow Reassigning for most types */}
+                    <button
+                        onClick={() => onReassign(interaction.id, interaction.type)}
+                        className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-400 hover:text-blue-500 transition-all"
+                        title="Move to another user"
+                    >
+                        <ArrowRightOnRectangleIcon className="w-4 h-4" />
+                    </button>
                 </div>
             </div>
 
@@ -122,8 +139,8 @@ export function TimelineItem({ interaction, onDelete, onOpenBotChat }: TimelineI
                     <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700/50 space-y-4">
                         <div className="flex flex-wrap gap-2">
                             <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest border ${interaction.metadata.ai_analysis.urgency_level === 'critical' ? 'bg-red-500 text-white border-red-600' :
-                                    interaction.metadata.ai_analysis.urgency_level === 'high' ? 'bg-orange-50 text-orange-600 border-orange-200' :
-                                        'bg-blue-50 text-blue-600 border-blue-200'
+                                interaction.metadata.ai_analysis.urgency_level === 'high' ? 'bg-orange-50 text-orange-600 border-orange-200' :
+                                    'bg-blue-50 text-blue-600 border-blue-200'
                                 }`}>
                                 AI Priority: {interaction.metadata.ai_analysis.urgency_level}
                             </span>
@@ -163,10 +180,13 @@ export function TimelineItem({ interaction, onDelete, onOpenBotChat }: TimelineI
                 )}
             </div>
 
-            {(isBot || interaction.type === 'human_chat') && (
+            {(isBot || interaction.type === 'human_chat' || isWhatsApp) && (
                 <button
                     onClick={() => onOpenBotChat(interaction.metadata)}
-                    className={`mt-3 text-[10px] font-black uppercase tracking-widest hover:underline flex items-center gap-1 group/btn ${isBot ? 'text-purple-600' : 'text-brand-600'}`}
+                    className={`mt-3 text-[10px] font-black uppercase tracking-widest hover:underline flex items-center gap-1 group/btn ${isBot ? 'text-purple-600' :
+                        isWhatsApp ? 'text-[#25D366]' :
+                            'text-brand-600'
+                        }`}
                 >
                     <ChatBubbleLeftEllipsisIcon className="w-3 h-3 group-hover/btn:translate-x-0.5 transition-transform" />
                     Open Transcript

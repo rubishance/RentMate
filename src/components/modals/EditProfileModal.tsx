@@ -11,6 +11,7 @@ interface EditProfileModalProps {
     onSuccess: () => void;
     initialData: {
         full_name: string;
+        phone: string;
     };
 }
 
@@ -18,6 +19,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
     const { t, lang } = useTranslation();
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
+    const [phone, setPhone] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isReadOnly, setIsReadOnly] = useState(true);
 
@@ -26,6 +28,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
             const parts = (initialData.full_name || '').trim().split(/\s+/);
             setFirstName(parts[0] || '');
             setLastName(parts.slice(1).join(' ') || '');
+            setPhone(initialData.phone || '');
             setIsReadOnly(true); // Always start in view mode
         }
     }, [isOpen, initialData]);
@@ -33,6 +36,11 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
     const handleSave = async () => {
         if (!firstName.trim() || !lastName.trim()) {
             alert(lang === 'he' ? 'שם פרטי ושם משפחה הם שדות חובה' : 'First Name and Last Name are required.');
+            return;
+        }
+
+        if (!phone.trim()) {
+            alert(lang === 'he' ? 'מספר טלפון הוא שדה חובה' : 'Phone number is required.');
             return;
         }
 
@@ -47,6 +55,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                 id: user.id,
                 email: user.email,
                 full_name: fullName,
+                phone: phone.trim(),
                 updated_at: new Date().toISOString(),
             };
 
@@ -122,6 +131,21 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                                 />
                             </div>
                         </div>
+
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block ml-1">{lang === 'he' ? 'טלפון' : 'Phone'}</label>
+                            <input
+                                type="tel"
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                                readOnly={isReadOnly}
+                                placeholder="050-0000000"
+                                className={`w-full p-3 border rounded-xl outline-none transition-all ${isReadOnly
+                                    ? 'bg-muted border-border cursor-default'
+                                    : 'bg-secondary border-border focus:ring-2 focus:ring-indigo-500'
+                                    }`}
+                            />
+                        </div>
                     </div>
                 </div>
 
@@ -150,6 +174,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                                     const parts = (initialData.full_name || '').trim().split(/\s+/);
                                     setFirstName(parts[0] || '');
                                     setLastName(parts.slice(1).join(' ') || '');
+                                    setPhone(initialData.phone || '');
                                 }}
                                 className="flex-1 py-3 px-4 bg-background border border-border text-foreground font-medium rounded-xl hover:bg-secondary active:scale-[0.98] transition-all"
                             >

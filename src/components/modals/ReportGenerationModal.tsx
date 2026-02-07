@@ -37,20 +37,20 @@ export function ReportGenerationModal({ isOpen, onClose, propertyId }: ReportGen
         if (data) setProperties(data);
     };
 
+
     const handleGenerate = async () => {
         if (!selectedPropertyId) return;
         setGenerating(true);
         try {
-            const data = await ReportService.fetchReportData(selectedPropertyId, dateRange.start, dateRange.end);
-            ReportService.generatePDF(data, lang);
+            await ReportService.generatePDF(selectedPropertyId, dateRange.start, dateRange.end, lang);
             setSuccess(true);
             setTimeout(() => {
                 setSuccess(false);
                 onClose();
-            }, 2000);
-        } catch (err) {
+            }, 2500); // Slightly more time for the bionic success animation
+        } catch (err: any) {
             console.error('Report Error:', err);
-            alert('Failed to generate report');
+            alert(`Failed to generate report: ${err.message || 'Unknown error'}`);
         } finally {
             setGenerating(false);
         }

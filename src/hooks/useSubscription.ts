@@ -44,6 +44,7 @@ export function useSubscription() {
                     max_tenants: -1,
                     max_contracts: -1,
                     max_sessions: -1,
+                    max_whatsapp_messages: -1,
                     price_monthly: 0,
                     features: {
                         'legal_library': true,

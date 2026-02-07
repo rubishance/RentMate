@@ -1,9 +1,10 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Mail, Phone, Camera, Loader2, Send, CheckCircle2, ArrowRight, ShieldCheck, Clock } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useTranslation } from '../hooks/useTranslation';
 import { useUserPreferences } from '../contexts/UserPreferencesContext';
+import { StorageUtils } from '../lib/storage-utils';
 import { WhatsAppService } from '../services/whatsapp.service';
 import { GlassCard } from '../components/common/GlassCard';
 import { PageHeader } from '../components/common/PageHeader';
@@ -46,12 +47,10 @@ export default function Contact() {
 
                 if (uploadError) throw uploadError;
 
-                const { data: { publicUrl } } = supabase.storage
-                    .from('feedback-screenshots')
-                    .getPublicUrl(fileName);
+                const signedUrl = await StorageUtils.getSignedUrl('feedback-screenshots', fileName);
 
-                finalUrl = publicUrl;
-                setScreenshotUrl(finalUrl);
+                finalUrl = signedUrl;
+                setScreenshotUrl(fileName); // Store the path/filename in state
             }
 
             // 3. Generate WA link

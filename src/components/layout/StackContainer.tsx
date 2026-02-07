@@ -59,7 +59,7 @@ export function StackContainer() {
 
                 return (
                     <div key={layer.id} className={cn(
-                        "fixed inset-0 z-[100] flex items-end justify-center",
+                        "fixed top-16 left-0 right-0 bottom-0 z-[100] flex items-end justify-center",
                         layer.modeless ? "pointer-events-none" : "pointer-events-auto"
                     )}>
                         {/* Backdrop - Skip if modeless */}
@@ -77,8 +77,8 @@ export function StackContainer() {
                         {/* Sheet / Layer */}
                         <motion.div
                             className={cn(
-                                "relative w-full bg-white dark:bg-neutral-900 shadow-2xl overflow-hidden pointer-events-auto flex flex-col",
-                                layer.isExpanded ? "h-[100dvh] rounded-none" : "h-[90dvh] rounded-t-[2.5rem]"
+                                "relative w-full bg-white dark:bg-neutral-900 shadow-2xl overflow-hidden pointer-events-auto flex flex-col transition-all duration-300",
+                                layer.isExpanded ? "h-full rounded-none" : "h-[90%] rounded-t-[2.5rem]"
                             )}
                             initial="hidden"
                             animate="visible"

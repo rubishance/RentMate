@@ -29,6 +29,33 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
     const [readOnly, setReadOnly] = useState(initialReadOnly);
     const [loading, setLoading] = useState(false);
     const [status, setStatus] = useState(contract?.status || 'active');
+    const [signedUrl, setSignedUrl] = useState<string | null>(null);
+
+    useEffect(() => {
+        const getSignedUrl = async () => {
+            if (!contract?.contract_file_url) return;
+
+            // If it's already a full URL, use it (backward compatibility)
+            if (contract.contract_file_url.startsWith('http')) {
+                setSignedUrl(contract.contract_file_url);
+                return;
+            }
+
+            // It's a path - get a signed URL
+            try {
+                const { data, error } = await supabase.storage
+                    .from('contracts')
+                    .createSignedUrl(contract.contract_file_url, 3600);
+
+                if (error) throw error;
+                setSignedUrl(data.signedUrl);
+            } catch (err) {
+                console.error('Error fetching signed URL:', err);
+            }
+        };
+
+        getSignedUrl();
+    }, [contract?.contract_file_url]);
 
     const {
         control,
@@ -270,9 +297,9 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
             }
         >
             <div className="flex items-center gap-2 absolute top-6 right-16">
-                {contract.contract_file_url && (
+                {signedUrl && (
                     <a
-                        href={contract.contract_file_url}
+                        href={signedUrl}
                         target="_blank"
                         rel="noreferrer"
                         className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary font-medium px-2 py-0.5 bg-primary/10 hover:bg-primary/10 rounded-full transition-colors"

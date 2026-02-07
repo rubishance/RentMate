@@ -122,7 +122,7 @@ export function CPICalculatorPage() {
 
                 {/* Final CTA */}
                 <div className="bg-brand-600 rounded-3xl p-8 sm:p-12 text-center text-white relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
+                    <div className="absolute top-0 left-0 w-full h-full bg-indigo-500/10 opacity-20"></div>
                     <div className="relative z-10 space-y-6">
                         <h2 className="text-3xl font-black">רוצים לנהל את הנכסים שלכם בראש שקט?</h2>
                         <p className="text-brand-100 text-lg max-w-xl mx-auto">

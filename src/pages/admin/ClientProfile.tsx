@@ -115,6 +115,20 @@ const ClientProfile = () => {
         }
     };
 
+    const handleReassignInteraction = async (interactionId: string | number, type: string) => {
+        const targetEmail = prompt('Enter the email of the user to move this item to:');
+        if (!targetEmail) return;
+
+        try {
+            await crmService.reassignInteraction(interactionId, type, targetEmail);
+            // Remove from current view since it belongs to someone else now
+            setInteractions(interactions.filter(i => i.id !== interactionId));
+            alert('Item moved successfully!');
+        } catch (err: unknown) {
+            alert('Failed to reassign: ' + (err instanceof Error ? err.message : 'Unknown error'));
+        }
+    };
+
     const filteredInteractions = interactions.filter(i => {
         if (feedFilter === 'all') return true;
         if (feedFilter === 'ai') return i.type === 'chat';
@@ -358,6 +372,7 @@ const ClientProfile = () => {
                                         key={interaction.id}
                                         interaction={interaction}
                                         onDelete={handleDeleteInteraction}
+                                        onReassign={handleReassignInteraction}
                                         onOpenBotChat={setSelectedBotChat}
                                     />
                                 ))

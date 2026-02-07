@@ -12,15 +12,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeToggle } from '../components/common/ThemeToggle';
 import { LanguageToggle } from '../components/common/LanguageToggle';
 import { Palette } from 'lucide-react';
+import { ConfirmActionModal } from '../components/modals/ConfirmActionModal';
 
 export function Settings() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const [isAdmin, setIsAdmin] = useState(false);
 
-    const [userData, setUserData] = useState<{ full_name: string | null; email: string | null }>({
+    const [userData, setUserData] = useState<{ full_name: string | null; email: string | null; phone: string | null }>({
         full_name: '',
-        email: ''
+        email: '',
+        phone: ''
     });
 
     const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
@@ -30,6 +32,7 @@ export function Settings() {
     const [isSendingMessage, setIsSendingMessage] = useState(false);
     const [messageSent, setMessageSent] = useState(false);
     const [isContactOpen, setIsContactOpen] = useState(false);
+    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
     useEffect(() => {
         fetchUserData();
@@ -43,7 +46,7 @@ export function Settings() {
 
             const { data } = await supabase
                 .from('user_profiles')
-                .select('full_name, role')
+                .select('full_name, role, phone')
                 .eq('id', user.id)
                 .single();
 
@@ -54,7 +57,8 @@ export function Settings() {
 
             setUserData({
                 full_name: name || t('user_generic'),
-                email: email || ''
+                email: email || '',
+                phone: data?.phone || ''
             });
         }
     };
@@ -105,7 +109,7 @@ export function Settings() {
                         {t('preferencesAndAccount')}
                     </span>
                 </div>
-                <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-foreground leading-tight lowercase">
+                <h1 className="h1-bionic">
                     {t('settings')}
                 </h1>
             </div>
@@ -121,7 +125,7 @@ export function Settings() {
                     {userData.full_name?.charAt(0) || userData.email?.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 space-y-1 md:space-y-2">
-                    <h3 className="font-black text-xl md:text-3xl tracking-tighter text-foreground lowercase leading-none">{userData.full_name || 'rentmate user'}</h3>
+                    <h3 className="font-black text-lg md:text-3xl tracking-tighter text-foreground lowercase leading-none">{userData.full_name || 'rentmate user'}</h3>
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-40">{userData.email}</p>
                 </div>
                 <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl glass-premium border-white/10 flex items-center justify-center text-muted-foreground/30 group-hover:bg-foreground group-hover:text-background group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-minimal">
@@ -138,7 +142,7 @@ export function Settings() {
                     <div className="absolute top-0 right-0 w-48 h-48 bg-white/20 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl group-hover:scale-125 transition-transform duration-500" />
                     <div className="flex items-center justify-between relative z-10 text-white">
                         <div className="space-y-2 text-center md:text-left rtl:md:text-right w-full md:w-auto">
-                            <h3 className="font-black text-2xl tracking-tighter uppercase mb-1">{t('settings_admin_dashboard')}</h3>
+                            <h3 className="font-black text-xl md:text-2xl tracking-tighter uppercase mb-1">{t('settings_admin_dashboard')}</h3>
                             <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-60">{t('settings_admin_desc')}</p>
                         </div>
                         <Shield className="w-12 h-12 opacity-30 group-hover:rotate-12 transition-transform duration-500 hidden md:block" />
@@ -166,7 +170,7 @@ export function Settings() {
                                             <Icon className="w-7 h-7 text-foreground opacity-60 group-hover:opacity-100" />
                                         </div>
                                         <div className="flex-1 space-y-2">
-                                            <div className="font-black text-xl tracking-tighter text-foreground lowercase">{item.label}</div>
+                                            <div className="font-black text-lg md:text-xl tracking-tighter text-foreground lowercase">{item.label}</div>
                                             <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-40">{item.description}</div>
                                         </div>
                                         <ChevronRight className="w-6 h-6 text-muted-foreground/20 group-hover:text-primary group-hover:translate-x-2 transition-all duration-500" />
@@ -190,7 +194,7 @@ export function Settings() {
                                 <Palette className="w-7 h-7 text-foreground opacity-60" />
                             </div>
                             <div>
-                                <div className="font-black text-xl tracking-tighter text-foreground lowercase">{t('theme')}</div>
+                                <div className="font-black text-lg md:text-xl tracking-tighter text-foreground lowercase">{t('theme')}</div>
                                 <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-40">{t('chooseTheme')}</div>
                             </div>
                         </div>
@@ -205,7 +209,7 @@ export function Settings() {
                                 <div className="text-[10px] font-black opacity-60">EN/עב</div>
                             </div>
                             <div>
-                                <div className="font-black text-xl tracking-tighter text-foreground lowercase">{t('language')}</div>
+                                <div className="font-black text-lg md:text-xl tracking-tighter text-foreground lowercase">{t('language')}</div>
                                 <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-40">{t('chooseLanguage')}</div>
                             </div>
                         </div>
@@ -315,11 +319,7 @@ export function Settings() {
             {/* Logout & Footer */}
             <div className="pt-20 space-y-16 border-t border-slate-50 dark:border-neutral-800/50">
                 <button
-                    onClick={async () => {
-                        await supabase.auth.signOut();
-                        localStorage.clear();
-                        window.location.href = '/login';
-                    }}
+                    onClick={() => setIsLogoutModalOpen(true)}
                     className="w-full h-20 bg-rose-500/5 text-rose-500 rounded-full font-black uppercase text-xs tracking-[0.4em] hover:bg-rose-500/10 active:scale-[0.98] transition-all border border-rose-500/10 shadow-minimal flex items-center justify-center gap-4 group"
                 >
                     <LogOut className="w-6 h-6 group-hover:-translate-x-1 group-hover:rotate-12 transition-all" />
@@ -344,7 +344,10 @@ export function Settings() {
                     fetchUserData();
                     setIsEditProfileOpen(false);
                 }}
-                initialData={{ full_name: userData.full_name || '' }}
+                initialData={{
+                    full_name: userData.full_name || '',
+                    phone: userData.phone || ''
+                }}
             />
 
             <NotificationsSettingsModal
@@ -355,6 +358,21 @@ export function Settings() {
             <PrivacySecurityModal
                 isOpen={isPrivacySecurityOpen}
                 onClose={() => setIsPrivacySecurityOpen(false)}
+            />
+
+            <ConfirmActionModal
+                isOpen={isLogoutModalOpen}
+                onClose={() => setIsLogoutModalOpen(false)}
+                onConfirm={async () => {
+                    await supabase.auth.signOut();
+                    localStorage.clear();
+                    window.location.href = '/login';
+                }}
+                title={t('logoutConfirmTitle')}
+                message={t('logoutConfirmMessage')}
+                confirmText={t('confirmLogout')}
+                variant="danger"
+                icon="logout"
             />
         </div>
     );

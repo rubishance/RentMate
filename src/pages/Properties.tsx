@@ -26,6 +26,7 @@ import { SelectPropertyModal } from '../components/modals/SelectPropertyModal';
 import { useDataCache } from '../contexts/DataCacheContext';
 import { PortfolioVisualizer } from '../components/analytics/PortfolioVisualizer';
 import { useSubscription } from '../hooks/useSubscription';
+import { SecureImage } from '../components/common/SecureImage';
 
 
 import { cn } from '../lib/utils';
@@ -328,19 +329,12 @@ export function Properties() {
                                 >
                                     {/* Image Section */}
                                     <div className="relative h-72 bg-slate-50 dark:bg-neutral-800 overflow-hidden">
-                                        <img
-                                            loading="lazy"
-                                            decoding="async"
-                                            src={property.image_url || getPropertyPlaceholder(property.property_type)}
+                                        <SecureImage
+                                            bucket="property_images"
+                                            path={property.image_url}
+                                            placeholder={getPropertyPlaceholder(property.property_type)}
                                             alt={`${property.address}, ${property.city}`}
                                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 filter saturate-50 group-hover:saturate-100"
-                                            onError={(e) => {
-                                                const target = e.target as HTMLImageElement;
-                                                const placeholder = getPropertyPlaceholder(property.property_type);
-                                                if (target.src !== placeholder) {
-                                                    target.src = placeholder;
-                                                }
-                                            }}
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
 

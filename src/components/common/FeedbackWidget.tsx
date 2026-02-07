@@ -20,21 +20,20 @@ export function FeedbackWidget() {
         try {
             let screenshotUrl = null;
 
+            // Get User for path isolation
+            const { data: { user } } = await supabase.auth.getUser();
+            const userId = user?.id || 'anonymous';
+
             // Priority: Manual file upload > Auto-capture
             if (manualFile) {
-                // Upload manual file
-                const fileName = `manual-${Date.now()}.${manualFile.name.split('.').pop()}`;
-                const { data: uploadData, error: uploadError } = await supabase.storage
+                // Upload manual file to isolated path
+                const filePath = `${userId}/manual-${Date.now()}.${manualFile.name.split('.').pop()}`;
+                const { error: uploadError } = await supabase.storage
                     .from('feedback-screenshots')
-                    .upload(fileName, manualFile);
+                    .upload(filePath, manualFile);
 
                 if (uploadError) throw uploadError;
-
-                const { data: { publicUrl } } = supabase.storage
-                    .from('feedback-screenshots')
-                    .getPublicUrl(fileName);
-
-                screenshotUrl = publicUrl;
+                screenshotUrl = filePath;
 
             } else if (includeScreenshot) {
                 // Auto-capture screenshot
@@ -48,22 +47,14 @@ export function FeedbackWidget() {
 
                 const blob = await new Promise<Blob>((resolve) => canvas.toBlob(b => resolve(b!), 'image/jpeg', 0.7));
 
-                const fileName = `auto-${Date.now()}.jpg`;
-                const { data: uploadData, error: uploadError } = await supabase.storage
+                const filePath = `${userId}/auto-${Date.now()}.jpg`;
+                const { error: uploadError } = await supabase.storage
                     .from('feedback-screenshots')
-                    .upload(fileName, blob);
+                    .upload(filePath, blob);
 
                 if (uploadError) throw uploadError;
-
-                const { data: { publicUrl } } = supabase.storage
-                    .from('feedback-screenshots')
-                    .getPublicUrl(fileName);
-
-                screenshotUrl = publicUrl;
+                screenshotUrl = filePath;
             }
-
-            // Get User
-            const { data: { user } } = await supabase.auth.getUser();
 
             // Insert Feedback
             const { error: insertError } = await supabase

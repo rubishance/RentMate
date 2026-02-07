@@ -512,11 +512,7 @@ class PropertyDocumentsService {
 
         if (error) {
             console.error('Error creating signed URL:', error);
-            // Fallback to public if it was accidentally public or if error is just temporary
-            const { data: publicData } = supabase.storage
-                .from(document.storage_bucket)
-                .getPublicUrl(document.storage_path);
-            return publicData.publicUrl;
+            throw new Error('Failed to generate secure access link for this document.');
         }
 
         return data.signedUrl;

@@ -50,7 +50,12 @@ export function RentyCommandCenter({ firstName, feedItems }: RentyCommandCenterP
     };
 
     const handleCardClick = (item: FeedItem) => {
-        // Generate a context-aware prompt based on the item
+        if (item.onAction) {
+            item.onAction();
+            return;
+        }
+
+        // Generate a context-aware prompt based on the item as fallback
         let message = '';
         if (item.type === 'warning' || item.type === 'urgent') {
             message = `I see there is an issue with "${item.title}" at ${item.desc}. How should we handle this?`;
@@ -132,10 +137,13 @@ export function RentyCommandCenter({ firstName, feedItems }: RentyCommandCenterP
 
                 {/* Briefing Stats (Subtle) */}
                 <div className="flex gap-4">
-                    <div className="flex flex-col items-center px-4 py-2 bg-white/5 dark:bg-white/5 rounded-2xl border border-white/10">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">{t('updates')}</span>
+                    <button
+                        onClick={() => window.dispatchEvent(new CustomEvent('TOGGLE_NOTIFICATIONS'))}
+                        className="flex flex-col items-center px-4 py-2 bg-white/5 dark:bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all active:scale-95 group/updates"
+                    >
+                        <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground group-hover/updates:text-indigo-400 transition-colors">{t('updates')}</span>
                         <span className="text-xl font-black text-foreground">{activeItems.length}</span>
-                    </div>
+                    </button>
                 </div>
             </div>
 

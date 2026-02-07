@@ -61,7 +61,7 @@ export function KnowledgeBase() {
                                 {t('knowledgeBaseTitle')}
                             </span>
                         </div>
-                        <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground leading-tight lowercase">
+                        <h1 className="h1-bionic">
                             {t('learnAndExplore')}
                         </h1>
                         <p className="text-muted-foreground text-lg font-medium leading-relaxed max-w-2xl opacity-60">
@@ -127,7 +127,7 @@ export function KnowledgeBase() {
                                 </div>
 
                                 <div className="flex-1 space-y-4 relative z-10 mb-8">
-                                    <h2 className="text-2xl font-black text-foreground tracking-tighter leading-tight group-hover:text-indigo-500 transition-colors lowercase">
+                                    <h2 className="text-xl md:text-2xl font-black text-foreground tracking-tighter leading-tight group-hover:text-indigo-500 transition-colors lowercase">
                                         {lang === 'he' ? article.title_he : article.title_en}
                                     </h2>
                                     <p className="text-muted-foreground text-sm font-medium leading-relaxed opacity-60 line-clamp-3">

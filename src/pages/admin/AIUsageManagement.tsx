@@ -18,6 +18,7 @@ interface UsageLimit {
     tier_name: string;
     monthly_message_limit: number;
     monthly_token_limit: number;
+    monthly_whatsapp_limit: number;
 }
 
 interface UserUsage {
@@ -26,7 +27,8 @@ interface UserUsage {
     tokens_used: number;
     last_reset_at: string;
     user_email?: string;
-    subscription_tier?: string; // Maps to plan_id now
+    subscription_tier?: string;
+    whatsapp_messages?: number;
 }
 
 export default function AIUsageManagement() {
@@ -66,6 +68,18 @@ export default function AIUsageManagement() {
 
             if (usageError) throw usageError;
 
+            // Fetch WhatsApp usage summary per user
+            const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+            const { data: waUsageData } = await supabase
+                .from('whatsapp_usage_logs')
+                .select('user_id')
+                .gte('created_at', monthStart);
+
+            const waCountMap = (waUsageData || []).reduce((acc: any, curr: any) => {
+                acc[curr.user_id] = (acc[curr.user_id] || 0) + 1;
+                return acc;
+            }, {});
+
             interface RawUsageData {
                 user_id: string;
                 message_count: number;
@@ -83,7 +97,8 @@ export default function AIUsageManagement() {
                 tokens_used: u.tokens_used,
                 last_reset_at: u.last_reset_at,
                 user_email: u.user_profiles?.email,
-                subscription_tier: u.user_profiles?.plan_id
+                subscription_tier: u.user_profiles?.plan_id,
+                whatsapp_messages: waCountMap[u.user_id] || 0
             })) || [];
 
             setUsage(formattedUsage);
@@ -95,7 +110,7 @@ export default function AIUsageManagement() {
         }
     };
 
-    const handleLimitChange = (tierId: string, field: 'monthly_message_limit' | 'monthly_token_limit', value: string) => {
+    const handleLimitChange = (tierId: string, field: 'monthly_message_limit' | 'monthly_token_limit' | 'monthly_whatsapp_limit', value: string) => {
         const limit = limits.find(l => l.id === tierId);
         if (!limit) return;
 
@@ -122,6 +137,7 @@ export default function AIUsageManagement() {
                     .update({
                         monthly_message_limit: limit.monthly_message_limit,
                         monthly_token_limit: limit.monthly_token_limit,
+                        monthly_whatsapp_limit: limit.monthly_whatsapp_limit,
                         updated_at: new Date().toISOString()
                     })
                     .eq('id', limit.id);
@@ -155,7 +171,8 @@ export default function AIUsageManagement() {
 
     const totalMessages = usage.reduce((sum, u) => sum + u.message_count, 0);
     const totalTokens = usage.reduce((sum, u) => sum + u.tokens_used, 0);
-    const activeUsers = usage.filter(u => u.message_count > 0).length;
+    const totalWhatsApp = usage.reduce((sum, u) => sum + (u.whatsapp_messages || 0), 0);
+    const activeUsers = usage.filter(u => u.message_count > 0 || (u.whatsapp_messages || 0) > 0).length;
 
     if (loading) {
         return (
@@ -243,14 +260,14 @@ export default function AIUsageManagement() {
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm transition-all hover:shadow-md">
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-100 dark:border-amber-800">
-                            <Settings className="w-6 h-6 text-amber-600" />
+                            <ArrowPathIcon className="w-6 h-6 text-amber-600" />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Est. Platform Cost</p>
-                            <p className="text-2xl font-black text-gray-900 dark:text-white">${((totalTokens / 1000000) * 0.15).toFixed(2)}</p>
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">WhatsApp Sent</p>
+                            <p className="text-2xl font-black text-gray-900 dark:text-white">{totalWhatsApp.toLocaleString()}</p>
                         </div>
                     </div>
                 </div>
@@ -268,9 +285,10 @@ export default function AIUsageManagement() {
                         <thead>
                             <tr className="bg-gray-50 dark:bg-gray-900/30">
                                 <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Pricing Tier</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Msg Limit / Mo</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Token Limit / Mo</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Est. User Cost</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">AI Msg / Mo</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">AI Token / Mo</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">WhatsApp / Mo</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Est. AI Cost</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -303,6 +321,14 @@ export default function AIUsageManagement() {
                                                 className="w-24 px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-center font-black text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500/20"
                                             />
                                         </td>
+                                        <td className="px-6 py-5 text-center">
+                                            <input
+                                                type="number"
+                                                value={edited.monthly_whatsapp_limit}
+                                                onChange={(e) => handleLimitChange(limit.id, 'monthly_whatsapp_limit', e.target.value)}
+                                                className="w-24 px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-center font-black text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500/20"
+                                            />
+                                        </td>
                                         <td className="px-6 py-5 text-sm font-bold text-gray-600 dark:text-gray-400">
                                             {estimatedCost}
                                         </td>
@@ -327,8 +353,9 @@ export default function AIUsageManagement() {
                             <tr className="bg-gray-50 dark:bg-gray-900/30">
                                 <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">User Context</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Tier</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Activity</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Usage Bar</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">AI Activity</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">WhatsApp</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">AI Usage</th>
                                 <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Last Reset</th>
                             </tr>
                         </thead>
@@ -356,6 +383,10 @@ export default function AIUsageManagement() {
                                             <td className="px-6 py-5 text-center">
                                                 <div className="font-black text-gray-900 dark:text-white text-sm">{u.message_count} msgs</div>
                                                 <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{u.tokens_used.toLocaleString()} tokens</div>
+                                            </td>
+                                            <td className="px-6 py-5 text-center">
+                                                <div className="font-black text-brand-600 dark:text-brand-400 text-sm">{u.whatsapp_messages || 0}</div>
+                                                <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">sent msgs</div>
                                             </td>
                                             <td className="px-6 py-5 w-48">
                                                 <div className="space-y-1.5">

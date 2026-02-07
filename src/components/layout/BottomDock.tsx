@@ -1,5 +1,5 @@
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { HomeIcon, AssetsIcon, PaymentsIcon, ToolsIcon, AdminIcon } from '../icons/NavIcons';
+import { HomeIcon, AssetsIcon, ContractsIcon, PaymentsIcon, ToolsIcon, AdminIcon } from '../icons/NavIcons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../../lib/utils';
 import { useUserPreferences } from '../../contexts/UserPreferencesContext';
@@ -12,6 +12,7 @@ const NAV_LABELS = {
     he: {
         '/dashboard': 'בית',
         '/properties': 'נכסים',
+        '/contracts': 'חוזים',
         '/payments': 'תשלומים',
         '/tools': 'כלים',
         '/admin': 'ניהול'
@@ -19,6 +20,7 @@ const NAV_LABELS = {
     en: {
         '/dashboard': 'Home',
         '/properties': 'Assets',
+        '/contracts': 'Contracts',
         '/payments': 'Wallet',
         '/tools': 'Tools',
         '/admin': 'Admin'
@@ -47,6 +49,7 @@ export function BottomDock() {
     const navItems = [
         { path: '/dashboard', label: labels['/dashboard'], icon: HomeIcon },
         { path: '/properties', label: labels['/properties'], icon: AssetsIcon },
+        { path: '/contracts', label: labels['/contracts'], icon: ContractsIcon },
         { path: '/payments', label: labels['/payments'], icon: PaymentsIcon },
         { path: '/tools', label: labels['/tools'], icon: ToolsIcon },
         ...(isAdmin ? [{ path: '/admin', label: labels['/admin'], icon: AdminIcon }] : []),
@@ -75,6 +78,7 @@ export function BottomDock() {
                             onMouseEnter={() => {
                                 if (item.path === '/dashboard') prefetchRoutes.dashboard();
                                 if (item.path === '/properties') prefetchRoutes.properties();
+                                if (item.path === '/contracts') prefetchRoutes.contracts();
                                 if (item.path === '/payments') prefetchRoutes.payments();
                                 if (item.path === '/tools') prefetchRoutes.settings();
                                 if (item.path === '/admin') prefetchRoutes.adminDashboard();

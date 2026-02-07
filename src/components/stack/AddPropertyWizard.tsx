@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
-import { Button } from '../ui/Button';
 import { Checkbox } from '../ui/Checkbox';
 import { CheckIcon, ArrowRightIcon, MapPin, Building2, Info, Upload, Image as ImageIcon, Loader2, Trash2, Wind, ShieldCheck, Car, Package } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,6 +11,8 @@ import { CompressionService } from '../../services/compression.service';
 import { cn } from '../../lib/utils';
 import { GoogleAutocomplete } from '../common/GoogleAutocomplete';
 import { getPropertyPlaceholder } from '../../lib/property-placeholders';
+import { SecureImage } from '../common/SecureImage';
+import { useSignedUrl } from '../../hooks/useSignedUrl';
 
 // Wizard Steps Configuration
 const STEPS = [
@@ -85,11 +86,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
 
             if (uploadError) throw uploadError;
 
-            const { data } = supabase.storage
-                .from('property-images')
-                .getPublicUrl(filePath);
-
-            setFormData(prev => ({ ...prev, image_url: data.publicUrl }));
+            setFormData(prev => ({ ...prev, image_url: filePath }));
         } catch (err: any) {
             console.error('Error uploading image:', err);
             setImageError('Failed to upload image: ' + err.message);
@@ -163,8 +160,9 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
     };
 
     const isStepValid = () => {
-        if (currentStep === 0) return !!formData.address && !!formData.city && !!formData.property_type;
-        return true;
+        const valid = currentStep === 0 ? (!!formData.address && !!formData.city && !!formData.property_type) : true;
+        console.log('Wizard Validation:', { currentStep, valid, address: !!formData.address, city: !!formData.city, type: !!formData.property_type }); // DEBUG
+        return valid;
     };
 
     return (
@@ -352,11 +350,26 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                                         alert('Please enter city and address first');
                                                                         return;
                                                                     }
-                                                                    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || (process?.env?.VITE_GOOGLE_MAPS_API_KEY);
-                                                                    if (!apiKey) return;
-                                                                    const location = `${formData.address}, ${formData.city}`;
-                                                                    const imageUrl = `https://maps.googleapis.com/maps/api/streetview?size=600x400&location=${encodeURIComponent(location)}&key=${apiKey}`;
-                                                                    setFormData(prev => ({ ...prev, image_url: imageUrl }));
+
+                                                                    try {
+                                                                        const location = `${formData.address}, ${formData.city}`;
+                                                                        const { data, error } = await supabase.functions.invoke('google-maps-proxy', {
+                                                                            body: {
+                                                                                action: 'streetview',
+                                                                                location
+                                                                            }
+                                                                        });
+
+                                                                        if (error) throw error;
+                                                                        if (data?.publicUrl) {
+                                                                            setFormData(prev => ({ ...prev, image_url: data.publicUrl }));
+                                                                        }
+                                                                    } catch (err: any) {
+                                                                        console.error('Street View Error:', err);
+                                                                        const errMsg = err?.context?.message || err?.message || 'Unknown error';
+                                                                        console.error('Street View Error Details:', errMsg);
+                                                                        alert(`Failed to fetch Street View: ${errMsg}`);
+                                                                    }
                                                                 }}
                                                                 className="px-4 bg-primary/10 text-primary rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/20 transition-all"
                                                             >
@@ -394,20 +407,16 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                                 exit={{ opacity: 0, scale: 0.9 }}
                                                                 className="relative w-full h-48 rounded-[2rem] overflow-hidden border border-slate-100 dark:border-neutral-800 shadow-lg group"
                                                             >
-                                                                <img
-                                                                    src={formData.image_url || getPropertyPlaceholder(formData.property_type)}
+                                                                <SecureImage
+                                                                    bucket="property_images"
+                                                                    path={formData.image_url}
+                                                                    placeholder={getPropertyPlaceholder(formData.property_type)}
                                                                     alt="Preview"
                                                                     className="w-full h-full object-cover"
-                                                                    onError={(e) => {
-                                                                        const target = e.target as HTMLImageElement;
-                                                                        const placeholder = getPropertyPlaceholder(formData.property_type);
-                                                                        if (target.src !== placeholder) {
-                                                                            target.src = placeholder;
-                                                                        }
-                                                                    }}
                                                                 />
                                                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
                                                                     <button
+                                                                        type="button"
                                                                         onClick={() => setFormData(p => ({ ...p, image_url: '' }))}
                                                                         className="p-3 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all shadow-xl"
                                                                     >

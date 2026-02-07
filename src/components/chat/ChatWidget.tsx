@@ -15,6 +15,7 @@ import { BillAnalysisService, ExtractedBillData } from '../../services/bill-anal
 import { propertyDocumentsService } from '../../services/property-documents.service';
 import { chatBus } from '../../events/chatEvents';
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
+import { RentyMascot } from '../common/RentyMascot';
 
 // Modals
 import { AddPaymentModal } from '../modals/AddPaymentModal';
@@ -345,12 +346,7 @@ export function ChatWidget() {
                         <div className="p-4 border-b border-gray-200 dark:border-white/10 flex justify-between items-center cursor-move transition-colors bg-white dark:bg-black text-gray-900 dark:text-white">
                             <div className="flex items-center space-x-3 rtl:space-x-reverse">
                                 <div className="p-1.5 bg-white dark:bg-neutral-800 rounded-lg flex items-center justify-center overflow-hidden w-9 h-9 border border-white/20">
-                                    {/* <BotIcon size={24} className="relative z-10" /> */}
-                                    <img
-                                        src="/assets/icons/renty-chat-outline.png"
-                                        alt="Renty"
-                                        className="relative z-10 w-6 h-6 object-contain"
-                                    />
+                                    <RentyMascot size={28} showBackground={false} />
                                 </div>
                                 <div>
                                     <h3 className="font-semibold text-gray-900 dark:text-white">Renty - תמיכה חכמה</h3>
@@ -592,12 +588,7 @@ export function ChatWidget() {
                     {/* Aura Glow */}
                     <div className="absolute inset-0 blur-xl rounded-full scale-50 group-hover:scale-100 transition-transform duration-500 opacity-0 group-hover:opacity-100 bg-gold/20"></div>
 
-                    {/* <BotIcon size={64} className="relative z-10" /> */}
-                    <img
-                        src="/assets/icons/renty-chat-outline.png"
-                        alt="Renty Chat"
-                        className="relative z-10 w-16 h-16 object-contain drop-shadow-md"
-                    />
+                    <RentyMascot size={64} showBackground={false} className="relative z-10 drop-shadow-md" />
                 </motion.button>
             )}
 

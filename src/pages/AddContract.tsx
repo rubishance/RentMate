@@ -15,7 +15,7 @@ import type { ExtractedField, Tenant, Property } from '../types/database';
 
 import { supabase } from '../lib/supabase';
 import { useTranslation } from '../hooks/useTranslation';
-import { generatePaymentSchedule } from '../utils/payment-generator';
+// import { generatePaymentSchedule } from '../utils/payment-generator'; // Offloaded to Edge Function
 import { useSubscription } from '../hooks/useSubscription';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -24,6 +24,7 @@ import { useToast } from '../hooks/useToast';
 import { CompressionService } from '../services/compression.service';
 import { useDataCache } from '../contexts/DataCacheContext';
 import { propertyService } from '../services/property.service';
+import { useSignedUrl } from '../hooks/useSignedUrl';
 
 const STEPS = [
     { id: 1, labelKey: 'stepAsset', icon: Building },
@@ -257,6 +258,9 @@ export function AddContract() {
         fetchBlockedIntervals();
     }, [formData.selectedPropertyId]);
 
+    // Resolve Signed URL for Property Image Preview
+    const { url: signedImageUrl } = useSignedUrl('property_images', formData.image_url);
+
     // Block access if limit reached
     // Moving the Limit Reached early return to AFTER all hooks
     // to prevent "Rendered more hooks than during the previous render" error
@@ -321,13 +325,7 @@ export function AddContract() {
                 .from('property-images')
                 .upload(filePath, fileToUpload);
 
-            if (uploadError) throw uploadError;
-
-            const { data } = supabase.storage
-                .from('property-images')
-                .getPublicUrl(filePath);
-
-            setValue('image_url', data.publicUrl);
+            setValue('image_url', filePath);
         } catch (err: any) {
             console.error('Error uploading image:', err);
             setImageError('Failed to upload image: ' + err.message);
@@ -473,29 +471,38 @@ export function AddContract() {
 
             // 3. Generate Expected Payments
             if (newContract) {
-                const schedule = await generatePaymentSchedule({
-                    startDate: data.startDate,
-                    endDate: data.endDate,
-                    baseRent: data.rent || 0,
-                    currency: data.currency as any,
-                    paymentFrequency: data.paymentFrequency as any,
-                    paymentDay: data.paymentDay,
-                    linkageType: data.linkageType as any,
-                    linkageSubType: data.linkageSubType as any,
-                    baseIndexDate: data.baseIndexDate || null,
-                    baseIndexValue: data.baseIndexValue,
-                    linkageCeiling: data.hasLinkageCeiling ? data.linkageCeiling : null,
-                    linkageFloor: data.linkageFloor,
-                    rent_periods: (data.rentSteps || []).map(s => ({
-                        startDate: s.startDate || data.startDate,
-                        amount: s.amount || 0,
-                        currency: s.currency || 'ILS',
-                    }))
+                const { data: genData, error: genError } = await supabase.functions.invoke('generate-payments', {
+                    body: {
+                        startDate: data.startDate,
+                        endDate: data.endDate,
+                        baseRent: data.rent || 0,
+                        currency: data.currency,
+                        paymentFrequency: data.paymentFrequency,
+                        paymentDay: data.paymentDay,
+                        linkageType: data.linkageType,
+                        linkageSubType: data.linkageType === 'none' ? null : data.linkageSubType,
+                        baseIndexDate: data.baseIndexDate || null,
+                        baseIndexValue: data.baseIndexValue,
+                        linkageCeiling: data.hasLinkageCeiling ? data.linkageCeiling : null,
+                        linkageFloor: data.linkageFloor,
+                        rent_periods: (data.rentSteps || []).map(s => ({
+                            startDate: s.startDate || data.startDate,
+                            amount: s.amount || 0,
+                            currency: s.currency || 'ILS',
+                        }))
+                    }
                 });
+
+                if (genError) {
+                    console.error('Payment Generation Logic Error:', genError);
+                    throw new Error(`Payment Gen Error: ${genError.message}`);
+                }
+
+                const schedule = genData?.payments || [];
 
                 if (schedule.length > 0) {
                     await supabase.from('payments').insert(
-                        schedule.map(p => ({
+                        schedule.map((p: any) => ({
                             ...p,
                             contract_id: newContract.id,
                             user_id: user.id
@@ -516,8 +523,8 @@ export function AddContract() {
                     const filePath = `${propertyId}/${fileName}`;
                     const { error: uploadError } = await supabase.storage.from('contracts').upload(filePath, fileToUpload);
                     if (!uploadError) {
-                        const { data: { publicUrl } } = supabase.storage.from('contracts').getPublicUrl(filePath);
-                        await supabase.from('contracts').update({ contract_file_url: publicUrl }).eq('id', newContract.id);
+                        // Store only the path, NOT a public URL. Security: Contracts must be private.
+                        await supabase.from('contracts').update({ contract_file_url: filePath }).eq('id', newContract.id);
                     }
                 }
 
@@ -1203,13 +1210,20 @@ export function AddContract() {
                                                                                     return;
                                                                                 }
 
-                                                                                const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-                                                                                if (!apiKey) return;
+                                                                                try {
+                                                                                    const location = `${formData.address}, ${formData.city}`;
+                                                                                    const { data, error } = await supabase.functions.invoke('google-maps-proxy', {
+                                                                                        body: { action: 'streetview', location }
+                                                                                    });
 
-                                                                                const location = `${formData.address}, ${formData.city}`;
-                                                                                const imageUrl = `https://maps.googleapis.com/maps/api/streetview?size=600x400&location=${encodeURIComponent(location)}&key=${apiKey}`;
-
-                                                                                setValue('image_url', imageUrl);
+                                                                                    if (error) throw error;
+                                                                                    if (data?.publicUrl) {
+                                                                                        setValue('image_url', data.publicUrl);
+                                                                                    }
+                                                                                } catch (err) {
+                                                                                    console.error('Street View Error:', err);
+                                                                                    alert('Failed to generate image');
+                                                                                }
                                                                             }}
                                                                             className="px-4 py-2 bg-primary/10 text-primary hover:bg-primary/10 rounded-lg text-sm font-medium transition-colors flex-shrink-0"
                                                                         >

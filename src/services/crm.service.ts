@@ -64,18 +64,37 @@ export const crmService = {
     },
 
     async getClientSummary(userId: string) {
-        // Get user profile, invoices, interactions, AI conversations, support tickets, and human chats
-        const [profile, invoices, interactions, aiConversations, supportTickets, humanConversations] = await Promise.all([
+        // Get user profile, invoices, interactions, AI conversations, support tickets, human chats, AND WhatsApp
+        const [profile, invoices, interactions, aiConversations, supportTickets, humanConversations, whatsappConversations] = await Promise.all([
             supabase.from('user_profiles').select('*').eq('id', userId).single(),
             supabase.from('invoices').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
             this.getInteractions(userId),
             supabase.from('ai_conversations').select('*').eq('user_id', userId).order('updated_at', { ascending: false }),
             supabase.from('support_tickets').select('*, ticket_analysis(*)').eq('user_id', userId).order('created_at', { ascending: false }),
-            supabase.from('human_conversations').select('*, human_messages(*)').eq('user_id', userId).order('created_at', { ascending: false })
+            supabase.from('human_conversations').select('*, human_messages(*)').eq('user_id', userId).order('created_at', { ascending: false }),
+            supabase.from('whatsapp_conversations').select('*, whatsapp_messages(*)').eq('user_id', userId).order('last_message_at', { ascending: false })
         ]);
 
         if (profile.error) throw profile.error;
         if (invoices.error) throw invoices.error;
+
+        // Transform WhatsApp Conversations into CRM format
+        const whatsappInteractions: CRMInteraction[] = (whatsappConversations.data || []).map(conv => ({
+            id: conv.id,
+            user_id: conv.user_id,
+            admin_id: null,
+            type: 'whatsapp',
+            title: `WhatsApp Chat (${conv.phone_number})`,
+            content: `WhatsApp conversation with ${conv.whatsapp_messages?.length || 0} messages.`,
+            status: conv.status,
+            metadata: {
+                messages: conv.whatsapp_messages?.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
+                phone_number: conv.phone_number,
+                conversation_id: conv.id,
+                unread_count: conv.unread_count
+            },
+            created_at: conv.created_at // or last_message_at
+        }));
 
         // Transform AI conversations into a CRM-compatible format
         const botInteractions: CRMInteraction[] = (aiConversations.data || []).map(conv => ({
@@ -134,12 +153,13 @@ export const crmService = {
             created_at: ticket.created_at
         }));
 
-        // Merge and sort all interactions (Manual + Bot + Tickets + Human Chats)
+        // Merge and sort all interactions (Manual + Bot + Tickets + Human Chats + WhatsApp)
         const unifiedInteractions = [
             ...interactions,
             ...botInteractions,
             ...humanChatInteractions,
-            ...ticketInteractions
+            ...ticketInteractions,
+            ...whatsappInteractions
         ].sort(
             (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         );
@@ -276,6 +296,33 @@ export const crmService = {
             .eq('id', userId);
 
         if (error) throw error;
+    },
+
+    async reassignInteraction(id: string | number, type: string, targetEmail: string) {
+        // 1. Resolve Target User
+        const { data: targetUser, error: userError } = await supabase
+            .from('user_profiles')
+            .select('id')
+            .eq('email', targetEmail.trim().toLowerCase())
+            .single();
+
+        if (userError || !targetUser) throw new Error(`Target user not found with email: ${targetEmail}`);
+
+        // 2. Identify Table based on Type
+        let table = 'crm_interactions';
+        if (type === 'support_ticket') table = 'support_tickets';
+        if (type === 'chat' || type === 'ai_chat') table = 'ai_conversations';
+        if (type === 'human_chat') table = 'human_conversations';
+        if (type === 'whatsapp') table = 'whatsapp_conversations';
+
+        // 3. Update the Record
+        const { error: updateError } = await supabase
+            .from(table)
+            .update({ user_id: targetUser.id })
+            .eq('id', id);
+
+        if (updateError) throw updateError;
+        return targetUser.id;
     },
 
     async getSubscriptionPlans() {
