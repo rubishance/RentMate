@@ -8,12 +8,12 @@ import { supabase } from './supabase';
 export const StorageUtils = {
     /**
      * Generates a temporary signed URL for a file in a private bucket
-     * @param bucket The name of the storage bucket ('contracts', 'property_images', etc.)
+     * @param bucket The name of the storage bucket ('contracts', 'property-images', etc.)
      * @param path The full path to the file within the bucket
      * @param expiresIn Duration in seconds (default 1 hour)
      */
     getSignedUrl: async (
-        bucket: 'contracts' | 'property_images' | 'secure_documents' | string,
+        bucket: 'contracts' | 'property-images' | 'secure_documents' | string,
         path: string,
         expiresIn: number = 3600
     ): Promise<string | null> => {

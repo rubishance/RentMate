@@ -79,6 +79,48 @@ serve(async (req) => {
             }
         }
 
+        // --- 4. PROFILE / SUBSCRIPTION UPDATED ---
+        if (table === 'user_profiles' && type === 'UPDATE') {
+            const lang = record.language || 'he';
+            const isHe = lang === 'he';
+
+            // Plan Changed
+            if (record.plan_id !== old_record.plan_id) {
+                await supabase.functions.invoke('send-notification-email', {
+                    body: {
+                        email: record.email,
+                        lang: lang,
+                        notification: {
+                            title: isHe ? 'עדכון מנוי RentMate' : 'RentMate Subscription Updated',
+                            message: isHe
+                                ? `שלום ${record.full_name || ''}, המנוי שלך עודכן בהצלחה לתכנית חדשה. תודה שבחרת בנו!`
+                                : `Hello ${record.full_name || ''}, your subscription has been successfully updated. Thank you for choosing us!`
+                        }
+                    }
+                });
+            }
+
+            // Sensitive Info Changed (Email/Phone)
+            if (record.email !== old_record.email || record.phone !== old_record.phone) {
+                const field = record.email !== old_record.email
+                    ? (isHe ? 'כתובת האימייל' : 'email address')
+                    : (isHe ? 'מספר הטלפון' : 'phone number');
+
+                await supabase.functions.invoke('send-notification-email', {
+                    body: {
+                        email: record.email,
+                        lang: lang,
+                        notification: {
+                            title: isHe ? 'עדכון פרטי חשבון' : 'Account Details Updated',
+                            message: isHe
+                                ? `שלום ${record.full_name || ''}, רצינו לעדכן שבוצע שינוי ב-${field} בחשבון ה-RentMate שלך. אם לא ביצעת את השינוי, פנה אלינו מיד ב-support@rentmate.co.il.`
+                                : `Hello ${record.full_name || ''}, we wanted to let you know that your ${field} was updated. If you didn't perform this action, contact us immediately at support@rentmate.co.il.`
+                        }
+                    }
+                });
+            }
+        }
+
         return new Response(JSON.stringify({ success: true }), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
         });

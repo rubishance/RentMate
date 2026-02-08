@@ -1,5 +1,5 @@
 -- Migration: Enable public read access for Calculator Magnet Page
--- Date: 2026-02-04
+-- Date: 2026-02-08 (Moved from 2026-02-04 to avoid conflict)
 -- Author: Maestro (via Agent)
 
 -- 1. Index Data (Already has RLS enabled)

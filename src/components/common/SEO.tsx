@@ -20,13 +20,7 @@ export function SEO({
     noindex = false,
     schema
 }: SEOProps) {
-    let location;
-    try {
-        location = useLocation();
-    } catch (e) {
-        // Fallback for non-router context
-        location = { pathname: '/' };
-    }
+    const location = useLocation();
     const baseUrl = 'https://rentmate.co.il'; // Hardcoded production URL for consistency
     const currentUrl = canonical || `${baseUrl}${location.pathname}`;
 

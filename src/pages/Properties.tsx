@@ -330,7 +330,7 @@ export function Properties() {
                                     {/* Image Section */}
                                     <div className="relative h-72 bg-slate-50 dark:bg-neutral-800 overflow-hidden">
                                         <SecureImage
-                                            bucket="property_images"
+                                            bucket="property-images"
                                             path={property.image_url}
                                             placeholder={getPropertyPlaceholder(property.property_type)}
                                             alt={`${property.address}, ${property.city}`}

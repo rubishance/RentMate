@@ -13,7 +13,9 @@ serve(async (req) => {
     }
 
     try {
-        const { action, input, types, place_id, location } = await req.json();
+        const body = await req.json();
+        console.log('Function started. Action:', body.action);
+        const { action, input, types, place_id, location } = body;
         const GOOGLE_KEY = Deno.env.get('GOOGLE_MAPS_API_KEY');
 
         if (!GOOGLE_KEY) {
@@ -23,21 +25,25 @@ serve(async (req) => {
         const authHeader = req.headers.get('Authorization');
         if (!authHeader) throw new Error('Missing Authorization header');
 
+        const supabase = createClient(
+            Deno.env.get('SUPABASE_URL') ?? '',
+            Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+            { global: { headers: { Authorization: authHeader } } }
+        );
+
+        // Explicitly get the user from the token to ensure identity is confirmed
+        const token = authHeader.replace('Bearer ', '');
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+        if (authError || !user) {
+            console.error('StreetView Auth Error:', authError);
+            throw new Error(`Unauthorized (User Check Failed): ${authError?.message || 'No user found'}`);
+        }
+        console.log('User Authenticated:', user.id);
+
         // --- Action: Autocomplete ---
         if (action === 'autocomplete') {
             if (!input) throw new Error('Input required');
-
-            // 1. Auth Check (Enforce session for all API proxy calls)
-            const supabase = createClient(
-                Deno.env.get('SUPABASE_URL') ?? '',
-                Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-                { global: { headers: { Authorization: authHeader } } }
-            );
-
-            const { data: { user }, error: authError } = await supabase.auth.getUser();
-            if (authError || !user) throw new Error('Unauthorized quota usage denied');
-
-            // Default to Israel, types handled by params
             const typeParam = types === 'cities' ? '(cities)' : 'address';
             const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&types=${encodeURIComponent(typeParam)}&components=country:il&language=he&key=${GOOGLE_KEY}`;
 
@@ -52,8 +58,6 @@ serve(async (req) => {
         // --- Action: Place Details ---
         if (action === 'details') {
             if (!place_id) throw new Error('Place ID required');
-
-            // Fetch minimal fields
             const fields = 'address_component,formatted_address,geometry,name';
             const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place_id}&fields=${fields}&language=he&key=${GOOGLE_KEY}`;
 
@@ -65,53 +69,40 @@ serve(async (req) => {
             });
         }
 
-        // --- Action: Street View (Upload pattern) ---
+        // --- Action: Street View ---
         if (action === 'streetview') {
             if (!location) throw new Error('Location required');
 
-            // 1. Auth Check (Critical for storage write)
-            const authHeader = req.headers.get('Authorization');
-            if (!authHeader) throw new Error('Missing Authorization header');
-
-            const supabase = createClient(
-                Deno.env.get('SUPABASE_URL') ?? '',
-                Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-                { global: { headers: { Authorization: authHeader } } }
-            );
-
-            const { data: { user }, error: authError } = await supabase.auth.getUser();
-            if (authError || !user) throw new Error('Unauthorized');
-
-            // 2. Fetch Image from Google
+            console.log('StreetView request for:', location);
             const imageUrl = `https://maps.googleapis.com/maps/api/streetview?size=600x400&location=${encodeURIComponent(location)}&key=${GOOGLE_KEY}`;
             const imgRes = await fetch(imageUrl);
 
             if (!imgRes.ok) throw new Error('Failed to fetch from Google');
 
             const imgBlob = await imgRes.blob();
-
-            // 3. Upload to Supabase Storage
-            // Use a consistent path or random? 
-            // Random to allow multiple properties. 
-            // Path: google-imports/{userId}/{timestamp}.jpg
             const timestamp = Date.now();
+            // Path structure: google-imports/{userId}/{timestamp}.jpg
             const fileName = `google-imports/${user.id}/${timestamp}.jpg`;
 
-            const { data: uploadData, error: uploadError } = await supabase.storage
+            console.log('Uploading to storage:', fileName);
+            const { error: uploadError } = await supabase.storage
                 .from('property-images')
                 .upload(fileName, imgBlob, {
                     contentType: 'image/jpeg',
                     upsert: false
                 });
 
-            if (uploadError) throw new Error(`Storage Upload Error: ${uploadError.message}`);
+            if (uploadError) {
+                console.error('Storage Upload Error Detail:', uploadError);
+                throw new Error(`Storage Upload Error: ${uploadError.message}`);
+            }
 
-            // 4. Get Public URL
-            const { data: urlData } = supabase.storage
-                .from('property-images')
-                .getPublicUrl(fileName);
-
-            return new Response(JSON.stringify({ publicUrl: urlData.publicUrl }), {
+            console.log('Upload Success. Returning path:', fileName);
+            // Return BOTH the path (relative) and a flag to indicate it's a storage path
+            return new Response(JSON.stringify({
+                publicUrl: fileName, // We reuse 'publicUrl' field name to match frontend expectation but pass the path
+                path: fileName
+            }), {
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' }
             });
         }
@@ -119,9 +110,13 @@ serve(async (req) => {
         throw new Error(`Unknown action: ${action}`);
 
     } catch (error: any) {
-        console.error('Google Proxy Error:', error);
+        console.error('Edge Function Error:', error);
         return new Response(
-            JSON.stringify({ error: error.message }),
+            JSON.stringify({
+                error: error.message,
+                stack: error.stack,
+                details: error
+            }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
     }

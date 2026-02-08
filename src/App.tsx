@@ -8,6 +8,7 @@ import { AppShell } from './components/layout/AppShell';
 import { Loader2 } from 'lucide-react';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { ChatWidget } from './components/chat/ChatWidget';
+import { RouteErrorBoundary } from './components/common/RouteErrorBoundary';
 
 const PageLoader = () => (
   <div className="flex h-screen w-full items-center justify-center bg-gray-50 dark:bg-gray-900">
@@ -58,6 +59,7 @@ const StorageManagement = lazy(() => import('./pages/admin/StorageManagement'));
 const AIUsageManagement = lazy(() => import('./pages/admin/AIUsageManagement'));
 const ClientProfile = lazy(() => import('./pages/admin/ClientProfile'));
 const AutomationTracking = lazy(() => import('./pages/admin/AutomationTracking'));
+const AdminErrorLogs = lazy(() => import('./pages/admin/AdminErrorLogs'));
 const SupportTickets = lazy(() => import('./pages/admin/SupportTickets'));
 const SupportChat = lazy(() => import('./pages/admin/SupportChat'));
 
@@ -102,6 +104,7 @@ const RootLayout = () => {
 const router = createBrowserRouter([
   {
     element: <RootLayout />,
+    errorElement: <RouteErrorBoundary />,
     children: [
       {
         path: "/",
@@ -303,6 +306,10 @@ const router = createBrowserRouter([
               {
                 path: "client/:id",
                 element: <ClientProfile />,
+              },
+              {
+                path: "errors",
+                element: <AdminErrorLogs />,
               },
               {
                 path: "tickets",

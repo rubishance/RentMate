@@ -169,7 +169,7 @@ serve(async (req) => {
       // Try to find if the email belongs to a registered user
       const { data: userData } = await supabase.from('user_profiles').select('id').eq('email', user_email).single()
 
-      const targetUserId = userData?.id || user_id // fallback to passed ID if matches format, or maybe 'guest'
+      let targetUserId = userData?.id || user_id // fallback to passed ID if matches format, or maybe 'guest'
 
       // If 'guest', we might want to store it differently, but for now let's only log if we have a valid UUID or if we allow guests
       if (targetUserId && targetUserId !== 'guest') {

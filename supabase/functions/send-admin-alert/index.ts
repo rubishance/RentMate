@@ -96,6 +96,19 @@ serve(async (req) => {
                 ${record.screenshot_url ? `<p><strong>Screenshot:</strong> <a href="${record.screenshot_url}">View Image</a></p>` : ''}
             `;
             htmlBody = wrapInTemplate(`משוב חדש: ${record.type}`, message, "http://localhost:5173/admin/feedback", "צפה במשוב במערכת");
+        } else if (payload.table === 'error_logs') {
+            subject = "System Error Reported ⚠️";
+            const message = `
+                <p><strong>Error:</strong> ${record.message}</p>
+                <p><strong>Route:</strong> ${record.route || 'N/A'}</p>
+                <p><strong>User ID:</strong> ${record.user_id || 'Anonymous'}</p>
+                <p><strong>Environment:</strong> ${record.environment || 'production'}</p>
+                <p><strong>Time:</strong> ${new Date(record.created_at).toLocaleString()}</p>
+                <pre style="background: #f1f5f9; padding: 10px; border-radius: 4px; font-size: 10px; overflow-x: auto;">
+                    ${record.stack || 'No stack trace available'}
+                </pre>
+            `;
+            htmlBody = wrapInTemplate("שגיאת מערכת דווחה", message, `http://localhost:5173/admin/errors?id=${record.id}`, "צפה בפרטי השגיאה");
         } else {
             console.log("Ignored event type:", eventType);
             return new Response(JSON.stringify({ message: "Notification ignored" }), {

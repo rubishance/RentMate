@@ -13,3 +13,8 @@ entrypoint = "./functions/chat-support/index.ts"
 enabled = true
 verify_jwt = false
 entrypoint = "./functions/analyze-contract/index.ts"
+
+[functions.google-maps-proxy]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/google-maps-proxy/index.ts"

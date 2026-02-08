@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase';
 
-export type CRMInteractionType = 'note' | 'call' | 'email' | 'support_ticket' | 'chat' | 'human_chat' | 'whatsapp';
+export type CRMInteractionType = 'note' | 'call' | 'email' | 'support_ticket' | 'chat' | 'human_chat' | 'whatsapp' | 'error_report';
 
 export interface CRMInteraction {
     id: number | string;
@@ -72,7 +72,8 @@ export const crmService = {
             supabase.from('ai_conversations').select('*').eq('user_id', userId).order('updated_at', { ascending: false }),
             supabase.from('support_tickets').select('*, ticket_analysis(*)').eq('user_id', userId).order('created_at', { ascending: false }),
             supabase.from('human_conversations').select('*, human_messages(*)').eq('user_id', userId).order('created_at', { ascending: false }),
-            supabase.from('whatsapp_conversations').select('*, whatsapp_messages(*)').eq('user_id', userId).order('last_message_at', { ascending: false })
+            supabase.from('whatsapp_conversations').select('*, whatsapp_messages(*)').eq('user_id', userId).order('last_message_at', { ascending: false }),
+            supabase.from('error_logs').select('*').eq('user_id', userId).order('created_at', { ascending: false })
         ]);
 
         if (profile.error) throw profile.error;
@@ -153,13 +154,33 @@ export const crmService = {
             created_at: ticket.created_at
         }));
 
+        // Transform Error Logs into CRM format
+        const errorInteractions: CRMInteraction[] = (arguments[7]?.data || []).map((err: any) => ({
+            id: err.id,
+            user_id: err.user_id,
+            admin_id: null,
+            type: 'error_report',
+            title: 'System Error Reported',
+            content: err.message,
+            status: err.is_resolved ? 'resolved' : 'open',
+            metadata: {
+                error_id: err.id,
+                stack: err.stack,
+                route: err.route,
+                environment: err.environment,
+                metadata: err.metadata
+            },
+            created_at: err.created_at
+        }));
+
         // Merge and sort all interactions (Manual + Bot + Tickets + Human Chats + WhatsApp)
         const unifiedInteractions = [
             ...interactions,
             ...botInteractions,
             ...humanChatInteractions,
             ...ticketInteractions,
-            ...whatsappInteractions
+            ...whatsappInteractions,
+            ...errorInteractions
         ].sort(
             (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         );

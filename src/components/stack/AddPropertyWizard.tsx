@@ -13,6 +13,7 @@ import { GoogleAutocomplete } from '../common/GoogleAutocomplete';
 import { getPropertyPlaceholder } from '../../lib/property-placeholders';
 import { SecureImage } from '../common/SecureImage';
 import { useSignedUrl } from '../../hooks/useSignedUrl';
+import { useAuth } from '../../contexts/AuthContext';
 
 // Wizard Steps Configuration
 const STEPS = [
@@ -27,6 +28,7 @@ interface AddPropertyWizardProps {
 }
 
 export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddPropertyWizardProps) {
+    const { user } = useAuth();
     const { t } = useTranslation();
     const { pop } = useStack();
     const [currentStep, setCurrentStep] = useState(0);
@@ -59,7 +61,41 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
     // Image Upload State
     const [uploadMode, setUploadMode] = useState<'url' | 'upload'>('upload');
     const [isUploading, setIsUploading] = useState(false);
+    const [isFetchingMap, setIsFetchingMap] = useState(false);
     const [imageError, setImageError] = useState<string | null>(null);
+
+    const handleGoogleMapsFetch = async () => {
+        if (!formData.address || !formData.city) {
+            alert('Please enter city and address first');
+            setUploadMode('upload');
+            return;
+        }
+
+        setIsFetchingMap(true);
+        setImageError(null);
+
+        try {
+            const location = `${formData.address}, ${formData.city}`;
+            const { data, error } = await supabase.functions.invoke('google-maps-proxy', {
+                body: {
+                    action: 'streetview',
+                    location
+                }
+            });
+
+            if (error) throw error;
+            if (data?.publicUrl) {
+                setFormData(prev => ({ ...prev, image_url: data.publicUrl }));
+            }
+        } catch (err: any) {
+            console.error('Street View Error:', err);
+            let detailedError = err?.context?.message || err?.message || 'Unknown error';
+            setImageError(detailedError);
+            alert(`Failed to fetch Street View: ${detailedError}`);
+        } finally {
+            setIsFetchingMap(false);
+        }
+    };
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || e.target.files.length === 0) return;
@@ -77,7 +113,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
 
         const fileExt = file.name.split('.').pop();
         const fileName = `prop_${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-        const filePath = `${fileName}`;
+        const filePath = user ? `${user.id}/${fileName}` : fileName;
 
         try {
             const { error: uploadError } = await supabase.storage
@@ -327,7 +363,10 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                                 {t('upload') || 'Upload'}
                                                             </button>
                                                             <button
-                                                                onClick={() => setUploadMode('url')}
+                                                                onClick={() => {
+                                                                    setUploadMode('url');
+                                                                    handleGoogleMapsFetch();
+                                                                }}
                                                                 className={cn("px-3 py-1 text-[10px] font-black uppercase rounded-lg transition-all", uploadMode === 'url' ? "bg-white dark:bg-neutral-700 text-primary shadow-sm" : "text-muted-foreground")}
                                                             >
                                                                 Google Maps
@@ -335,48 +374,16 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                         </div>
                                                     </div>
 
-                                                    {uploadMode === 'url' ? (
-                                                        <div className="flex gap-2">
-                                                            <input
-                                                                type="url"
-                                                                placeholder="Static Map URL"
-                                                                className="flex-1 bg-slate-50 dark:bg-neutral-800/50 p-4 rounded-2xl text-sm outline-none border border-transparent focus:border-primary/30 transition-all"
-                                                                value={formData.image_url}
-                                                                onChange={e => setFormData({ ...formData, image_url: e.target.value })}
-                                                            />
-                                                            <button
-                                                                onClick={async () => {
-                                                                    if (!formData.address || !formData.city) {
-                                                                        alert('Please enter city and address first');
-                                                                        return;
-                                                                    }
-
-                                                                    try {
-                                                                        const location = `${formData.address}, ${formData.city}`;
-                                                                        const { data, error } = await supabase.functions.invoke('google-maps-proxy', {
-                                                                            body: {
-                                                                                action: 'streetview',
-                                                                                location
-                                                                            }
-                                                                        });
-
-                                                                        if (error) throw error;
-                                                                        if (data?.publicUrl) {
-                                                                            setFormData(prev => ({ ...prev, image_url: data.publicUrl }));
-                                                                        }
-                                                                    } catch (err: any) {
-                                                                        console.error('Street View Error:', err);
-                                                                        const errMsg = err?.context?.message || err?.message || 'Unknown error';
-                                                                        console.error('Street View Error Details:', errMsg);
-                                                                        alert(`Failed to fetch Street View: ${errMsg}`);
-                                                                    }
-                                                                }}
-                                                                className="px-4 bg-primary/10 text-primary rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/20 transition-all"
-                                                            >
-                                                                Generate
-                                                            </button>
+                                                    {uploadMode === 'url' && isFetchingMap && (
+                                                        <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-slate-200 dark:border-neutral-800 rounded-[2rem] bg-slate-50/50 dark:bg-neutral-800/20">
+                                                            <Loader2 className="w-8 h-8 text-primary animate-spin mb-4" />
+                                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">
+                                                                Fetching Street View...
+                                                            </span>
                                                         </div>
-                                                    ) : (
+                                                    )}
+
+                                                    {uploadMode === 'upload' && (
                                                         <div className="relative border-2 border-dashed border-slate-200 dark:border-neutral-800 rounded-[2rem] p-8 hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-all text-center group cursor-pointer">
                                                             <input
                                                                 type="file"
@@ -408,7 +415,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                                 className="relative w-full h-48 rounded-[2rem] overflow-hidden border border-slate-100 dark:border-neutral-800 shadow-lg group"
                                                             >
                                                                 <SecureImage
-                                                                    bucket="property_images"
+                                                                    bucket="property-images"
                                                                     path={formData.image_url}
                                                                     placeholder={getPropertyPlaceholder(formData.property_type)}
                                                                     alt="Preview"

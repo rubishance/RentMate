@@ -21,16 +21,19 @@ serve(async (req: Request) => {
 
         const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
         const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-        console.log(`Daily summary start: ${new Date().toISOString()}`);
-
         // 0. Fetch Configuration
         console.log("Fetching email configuration...");
         const { data: settingsData } = await supabase
             .from('system_settings')
             .select('key, value')
-            .in('key', ['admin_email_daily_summary_enabled', 'admin_email_content_preferences']);
+            .in('key', [
+                'admin_email_daily_summary_enabled',
+                'admin_email_content_preferences',
+                'admin_notification_email'
+            ]);
 
         const isEnabled = settingsData?.find(s => s.key === 'admin_email_daily_summary_enabled')?.value !== false;
+        const adminRecipient = settingsData?.find(s => s.key === 'admin_notification_email')?.value as string || "rubi@rentmate.co.il";
         const preferences = settingsData?.find(s => s.key === 'admin_email_content_preferences')?.value as Record<string, boolean> || {
             new_users: true,
             revenue: true,
@@ -167,38 +170,43 @@ serve(async (req: Request) => {
         }
 
         // --- NEW: User Activity Metrics ---
-        console.log("Fetching user activity metrics...");
-        // 1. Total Page Views (Last 24h)
-        const { count: pageViewsCount } = await supabase
-            .from('user_activity')
-            .select('*', { count: 'exact', head: true })
-            .eq('event_type', 'page_view')
-            .gte('created_at', last24h);
+        let pageViewsCount = 0;
+        let dauCount = 0;
+        let topPages: any[] = [];
 
-        // 2. Daily Active Users (DAU) - Last 24h
-        // Note: Supabase JS doesn't support distinct count easily without rpc, so we fetch and set.
-        // For scalability, this should be an RPC, but for now fetching IDs is fine for valid scale.
-        const { data: activityData } = await supabase
-            .from('user_activity')
-            .select('user_id, path')
-            .eq('event_type', 'page_view')
-            .gte('created_at', last24h);
+        try {
+            console.log("Fetching user activity metrics...");
+            // 1. Total Page Views (Last 24h)
+            const { count: views } = await supabase
+                .from('user_activity')
+                .select('*', { count: 'exact', head: true })
+                .eq('event_type', 'page_view')
+                .gte('created_at', last24h);
+            pageViewsCount = views || 0;
 
-        const dauCount = new Set(activityData?.map(a => a.user_id)).size || 0;
+            // 2. Daily Active Users (DAU) - Last 24h
+            const { data: activityData } = await supabase
+                .from('user_activity')
+                .select('user_id, path')
+                .eq('event_type', 'page_view')
+                .gte('created_at', last24h);
 
-        // 3. Top Pages
-        const pageCounts = new Map<string, number>();
-        activityData?.forEach(a => {
-            // Clean path (remove UUIDs for aggregation if possible, or just raw path)
-            // Simple raw path for now
-            const p = a.path;
-            pageCounts.set(p, (pageCounts.get(p) || 0) + 1);
-        });
+            dauCount = new Set(activityData?.map(a => a.user_id)).size || 0;
 
-        const topPages = Array.from(pageCounts.entries())
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 3)
-            .map(([path, count]) => ({ path, count }));
+            // 3. Top Pages
+            const pageCounts = new Map<string, number>();
+            activityData?.forEach(a => {
+                const p = a.path;
+                pageCounts.set(p, (pageCounts.get(p) || 0) + 1);
+            });
+
+            topPages = Array.from(pageCounts.entries())
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 3)
+                .map(([path, count]) => ({ path, count }));
+        } catch (activityError) {
+            console.error("Error fetching activity metrics:", activityError);
+        }
         // ----------------------------------
 
 
@@ -354,8 +362,8 @@ serve(async (req: Request) => {
                 Authorization: `Bearer ${RESEND_API_KEY}`,
             },
             body: JSON.stringify({
-                from: "RentMate Intelligence <reports@rentmate.co.il>",
-                to: "rubi@rentmate.co.il",
+                from: "RentMate Intelligence <noreply@rentmate.co.il>",
+                to: adminRecipient,
                 subject: `📊 RentMate Daily Summary: ${new Date().toLocaleDateString()}`,
                 html: htmlBody,
             }),

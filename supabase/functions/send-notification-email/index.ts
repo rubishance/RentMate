@@ -14,39 +14,114 @@ serve(async (req) => {
     }
 
     try {
-        const { email, notification } = await req.json();
+        const { email, notification, lang = 'he' } = await req.json();
 
         if (!RESEND_API_KEY) {
             throw new Error("Missing RESEND_API_KEY");
         }
 
-        // Simple template for user notifications
+        const isRtl = lang === 'he';
+        const contactEmail = 'support@rentmate.co.il';
+        const footerText = isRtl
+            ? 'יש לך שאלות? השב למייל זה או צור קשר בכתובת'
+            : 'Have questions? Reply to this email or contact us at';
+        const dashboardBtnText = isRtl ? 'למעבר למרכז הבקרה' : 'Go to Dashboard';
+        const sentByText = isRtl ? 'נשלח על ידי RentMate - ניהול שכירות חכם' : 'Sent by RentMate - Smart Rental Management';
+
         const htmlBody = `
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="${lang}" dir="${isRtl ? 'rtl' : 'ltr'}">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; }
-        .header { background: #0F172A; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
-        .content { padding: 30px; }
-        .footer { text-align: center; font-size: 12px; color: #666; padding-top: 20px; }
-        .btn { display: inline-block; padding: 12px 24px; background: #0F172A; color: white; text-decoration: none; border-radius: 5px; margin-top: 20px; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6; 
+            color: #1e293b; 
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 0;
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 40px auto; 
+            background: #ffffff;
+            border-radius: 24px; 
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid #e2e8f0;
+        }
+        .header { 
+            background: #0F172A; 
+            padding: 40px 20px; 
+            text-align: center; 
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+            text-transform: lowercase;
+        }
+        .content { 
+            padding: 40px; 
+            text-align: ${isRtl ? 'right' : 'left'};
+        }
+        .title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 24px;
+            letter-spacing: -0.01em;
+        }
+        .message {
+            font-size: 16px;
+            color: #475569;
+            margin-bottom: 32px;
+        }
+        .footer { 
+            background-color: #f8fafc;
+            padding: 32px;
+            text-align: center; 
+            font-size: 12px; 
+            color: #94a3b8; 
+            border-top: 1px solid #f1f5f9; 
+        }
+        .btn { 
+            display: inline-block; 
+            padding: 16px 32px; 
+            background: #4f46e5; 
+            color: #ffffff !important; 
+            text-decoration: none; 
+            border-radius: 14px; 
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .contact-link {
+            color: #6366f1;
+            text-decoration: none;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1 style="margin:0;">RentMate</h1>
+            <div class="logo">rentmate</div>
         </div>
-        <div class="content" style="text-align: right;">
-            <h2>${notification.title}</h2>
-            <p>${notification.message}</p>
-            <a href="https://rentmate.co.il/dashboard" class="btn">לצפייה בפרטים</a>
+        <div class="content">
+            <h2 class="title">${notification.title}</h2>
+            <p class="message">${notification.message}</p>
+            <div style="text-align: center;">
+                <a href="https://rentmate.co.il/dashboard" class="btn">${dashboardBtnText}</a>
+            </div>
         </div>
         <div class="footer">
-            נשלח על ידי RentMate - ניהול שכירות חכם
+            <p style="margin-bottom: 8px;">${footerText} <a href="mailto:${contactEmail}" class="contact-link">${contactEmail}</a></p>
+            <p>${sentByText}</p>
         </div>
     </div>
 </body>
@@ -62,7 +137,7 @@ serve(async (req) => {
             body: JSON.stringify({
                 from: "RentMate <noreply@rentmate.co.il>",
                 to: email,
-                subject: `התראה מ-RentMate: ${notification.title}`,
+                subject: isRtl ? `התראה מ-RentMate: ${notification.title}` : `RentMate Notification: ${notification.title}`,
                 html: htmlBody,
             }),
         });

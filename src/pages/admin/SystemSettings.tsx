@@ -228,6 +228,11 @@ export default function SystemSettings() {
                         active_properties: true
                     },
                     description: 'JSON object defining which sections to include in the daily summary'
+                },
+                {
+                    key: 'admin_notification_email',
+                    value: 'rubi@rentmate.co.il',
+                    description: 'Email address where the daily admin summary and alerts are sent'
                 }
             ];
 
@@ -666,6 +671,33 @@ export default function SystemSettings() {
                                                 </button>
                                             </div>
                                         ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Recipient Configuration */}
+                            {settings.find(s => s.key === 'admin_notification_email') && (
+                                <div className="bg-white dark:bg-gray-800 p-8 rounded-[2.5rem] border border-gray-200 dark:border-gray-700 shadow-sm">
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div className="p-3 bg-brand-50 rounded-2xl">
+                                            <Bell className="w-6 h-6 text-brand-600" />
+                                        </div>
+                                        <h2 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight">Recipient Configuration</h2>
+                                    </div>
+                                    <div className="space-y-4">
+                                        <div className="flex flex-col gap-2">
+                                            <label className="text-xs font-black uppercase tracking-widest text-gray-400 px-1">Recipient Email Address</label>
+                                            <input
+                                                type="email"
+                                                value={settings.find(s => s.key === 'admin_notification_email')?.value as string || ''}
+                                                onChange={(e) => handleSettingChange('admin_notification_email', e.target.value)}
+                                                placeholder="e.g. admin@rentmate.co.il"
+                                                className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-700 rounded-2xl text-gray-900 dark:text-white font-bold text-sm focus:border-brand-500 outline-none transition-all"
+                                            />
+                                            <p className="text-[10px] font-bold text-gray-500 mt-1 uppercase tracking-tight">
+                                                The daily report and system alerts will be sent to this address.
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             )}

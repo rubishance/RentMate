@@ -62,7 +62,7 @@ serve(async (req: Request) => {
 <body>
     <div class="container">
         <div class="header">
-            <img src="${SUPABASE_URL}/storage/v1/object/public/assets/logo.png" alt="RentMate" width="150" style="max-width: 150px; height: auto;">
+            <img src="https://qfvrekvugdjnwhnaucmz.supabase.co/storage/v1/object/public/assets/logo.png" alt="RentMate" width="150" style="max-width: 150px; height: auto;">
         </div>
         <div class="content" style="text-align: right;">
             <h2>${title || subject}</h2>

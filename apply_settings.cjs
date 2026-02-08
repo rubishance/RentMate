@@ -13,6 +13,18 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function applySettings() {
+    console.log('Checking current settings...');
+    const { data: currentSettings, error: fetchError } = await supabase
+        .from('system_settings')
+        .select('*');
+
+    if (currentSettings) {
+        console.log('Current System Settings:');
+        currentSettings.forEach(s => {
+            console.log(`- ${s.key}: ${JSON.stringify(s.value)}`);
+        });
+    }
+
     const sql1 = `INSERT INTO public.system_settings (key, value, description)
     VALUES ('admin_email_daily_summary_enabled', 'true'::jsonb, 'Master toggle for daily admin summary email')
     ON CONFLICT (key) DO UPDATE SET value = 'true'::jsonb;`;

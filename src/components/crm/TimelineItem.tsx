@@ -7,7 +7,9 @@ import {
     TrashIcon,
     ArrowDownTrayIcon,
     ArrowRightOnRectangleIcon,
-    TicketIcon
+    TicketIcon,
+    BugAntIcon,
+    ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 import { CRMInteraction } from '../../services/crm.service';
 
@@ -31,6 +33,7 @@ export function TimelineItem({ interaction, onDelete, onReassign, onOpenBotChat 
             case 'chat': return 'bg-purple-50 text-purple-600 border-purple-100';
             case 'human_chat': return 'bg-brand-50 text-brand-600 border-brand-100';
             case 'whatsapp': return 'bg-[#25D366]/10 text-[#25D366] border-[#25D366]/20';
+            case 'error_report': return 'bg-red-50 text-red-600 border-red-100';
             default: return 'bg-gray-100 text-gray-600 border-gray-200';
         }
     };
@@ -43,6 +46,7 @@ export function TimelineItem({ interaction, onDelete, onReassign, onOpenBotChat 
             case 'chat': return <span className="text-[10px] font-black">AI</span>;
             case 'human_chat': return <ChatBubbleLeftEllipsisIcon className="w-4 h-4" />;
             case 'whatsapp': return <ChatBubbleLeftEllipsisIcon className="w-4 h-4" />;
+            case 'error_report': return <BugAntIcon className="w-4 h-4" />;
             default: return <DocumentTextIcon className="w-4 h-4" />;
         }
     };
@@ -54,7 +58,8 @@ export function TimelineItem({ interaction, onDelete, onReassign, onOpenBotChat 
                 isTicket ? 'bg-amber-400' :
                     interaction.type === 'human_chat' ? 'bg-brand-400' :
                         isWhatsApp ? 'bg-[#25D366]' :
-                            'bg-gray-300'
+                            interaction.type === 'error_report' ? 'bg-red-500' :
+                                'bg-gray-300'
                 }`} />
 
             <div className="flex justify-between items-start mb-2">
@@ -179,6 +184,28 @@ export function TimelineItem({ interaction, onDelete, onReassign, onOpenBotChat 
                     </div>
                 )}
             </div>
+
+            {interaction.type === 'error_report' && (
+                <div className="mt-3 p-3 bg-red-50/50 dark:bg-red-900/10 rounded-lg border border-red-100/50 dark:border-red-900/20">
+                    <div className="flex items-start gap-2 text-xs text-red-600 dark:text-red-400">
+                        <ExclamationTriangleIcon className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                        <div className="space-y-1">
+                            <p className="font-bold">Error Context</p>
+                            <p className="font-mono text-[10px] bg-white/50 dark:bg-black/20 p-1.5 rounded border border-red-100/30">
+                                Route: {interaction.metadata?.route || 'N/A'}
+                            </p>
+                            {interaction.metadata?.stack && (
+                                <details className="cursor-pointer">
+                                    <summary className="hover:underline font-bold">View Stack Trace</summary>
+                                    <pre className="mt-2 text-[8px] overflow-x-auto p-2 bg-black/5 rounded text-gray-500 max-h-40">
+                                        {interaction.metadata.stack}
+                                    </pre>
+                                </details>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {(isBot || interaction.type === 'human_chat' || isWhatsApp) && (
                 <button

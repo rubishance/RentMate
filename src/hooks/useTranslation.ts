@@ -720,6 +720,15 @@ export type TranslationKeys =
     | 'stable' | 'stable_female' | 'stable_male'
     | 'enablePush'
     | 'knowledgeBase'
+    | 'errorTitle404'
+    | 'errorDesc404'
+    | 'errorTitle500'
+    | 'errorDesc500'
+    | 'backToHome'
+    | 'reportToAdmin'
+    | 'reporting'
+    | 'reportSuccess'
+    | 'reportError'
     | 'lp_new_scan'
     | 'lp_hero_title_1'
     | 'lp_hero_title_2'
@@ -1567,6 +1576,15 @@ export const translations: Record<string, any> = {
         stable_female: 'יציבה',
         stable_male: 'יציב',
         knowledgeBase: 'מרכז ידע',
+        errorTitle404: 'אופס! הדף לא נמצא',
+        errorDesc404: 'מצטערים, הדף שחיפשת אינו קיים או שהועבר לכתובת אחרת.',
+        errorTitle500: 'משהו השתבש אצלנו',
+        errorDesc500: 'אירעה שגיאה בלתי צפויה. הצוות הטכני שלנו כבר עודכן ומטפל בזה.',
+        backToHome: 'חזרה לדף הבית',
+        reportToAdmin: 'דווח למנהל המערכת',
+        reporting: 'מדווח...',
+        reportSuccess: 'הדיווח נשלח בהצלחה',
+        reportError: 'נכשל בשליחת הדיווח',
         lp_new_scan: 'חדש: סריקת חוזה ב-AI',
         lp_hero_title_1: 'ניהול שכירות',
         lp_hero_title_2: 'בלי כאבי ראש',
@@ -1879,6 +1897,15 @@ export const translations: Record<string, any> = {
         archived_contract: 'Archived Contract',
         view_details: 'View Details',
         cancel: 'Cancel',
+        errorTitle404: 'Oops! Page Not Found',
+        errorDesc404: "Sorry, the page you're looking for doesn't exist or has been moved.",
+        errorTitle500: 'Something Went Wrong',
+        errorDesc500: "An unexpected error occurred. Our technical team has been notified and is on it.",
+        backToHome: 'Back to Home',
+        reportToAdmin: 'Report to Admin',
+        reporting: 'Reporting...',
+        reportSuccess: 'Report sent successfully',
+        reportError: 'Failed to send report',
         logoutConfirmTitle: 'Logout?',
         logoutConfirmMessage: 'Are you sure you want to log out?',
         confirmLogout: 'Yes, Logout',

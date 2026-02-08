@@ -49,7 +49,37 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
     const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
     const [uploadMode, setUploadMode] = useState<'url' | 'upload'>('upload');
     const [isUploading, setIsUploading] = useState(false);
+    const [isFetchingMap, setIsFetchingMap] = useState(false);
     const [imageError, setImageError] = useState<string | null>(null);
+
+    const handleGoogleMapsFetch = async () => {
+        if (!editedProperty.address || !editedProperty.city) {
+            alert('Please enter city and address first');
+            setUploadMode('upload');
+            return;
+        }
+
+        setIsFetchingMap(true);
+        setImageError(null);
+
+        try {
+            const location = `${editedProperty.address}, ${editedProperty.city}`;
+            const { data, error } = await supabase.functions.invoke('google-maps-proxy', {
+                body: { action: 'streetview', location }
+            });
+
+            if (error) throw error;
+            if (data?.publicUrl) {
+                setEditedProperty(prev => ({ ...prev, image_url: data.publicUrl }));
+            }
+        } catch (err: any) {
+            console.error('Street View Error:', err);
+            setImageError('Failed to generate image');
+            alert('Failed to generate image');
+        } finally {
+            setIsFetchingMap(false);
+        }
+    };
 
     // Modals
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -60,7 +90,7 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
     const [marketTrend, setMarketTrend] = useState<any>(null);
 
     // Resolve Signed URL for Property Image
-    const { url: signedImageUrl } = useSignedUrl('property_images', property.image_url);
+    const { url: signedImageUrl } = useSignedUrl('property-images', property.image_url);
 
     // Auto-Navigation State
     const location = useLocation();
@@ -445,7 +475,10 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
                                                     {t('upload') || 'Upload'}
                                                 </button>
                                                 <button
-                                                    onClick={() => setUploadMode('url')}
+                                                    onClick={() => {
+                                                        setUploadMode('url');
+                                                        handleGoogleMapsFetch();
+                                                    }}
                                                     className={cn("px-3 py-1 text-[10px] font-black uppercase rounded-lg transition-all", uploadMode === 'url' ? "bg-white dark:bg-neutral-700 text-primary shadow-sm" : "text-muted-foreground")}
                                                 >
                                                     Street View
@@ -453,42 +486,16 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
                                             </div>
                                         </div>
 
-                                        {uploadMode === 'url' ? (
-                                            <div className="flex gap-2">
-                                                <input
-                                                    type="text"
-                                                    className="flex-1 text-xs bg-slate-50 dark:bg-neutral-800 p-3 rounded-xl border border-slate-100 dark:border-neutral-700 outline-none focus:border-primary"
-                                                    value={editedProperty.image_url || ''}
-                                                    onChange={e => setEditedProperty(prev => ({ ...prev, image_url: e.target.value }))}
-                                                    placeholder="https://..."
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={async () => {
-                                                        if (!editedProperty.address || !editedProperty.city) return;
-
-                                                        try {
-                                                            const location = `${editedProperty.address}, ${editedProperty.city}`;
-                                                            const { data, error } = await supabase.functions.invoke('google-maps-proxy', {
-                                                                body: { action: 'streetview', location }
-                                                            });
-
-                                                            if (error) throw error;
-                                                            if (data?.publicUrl) {
-                                                                setEditedProperty(prev => ({ ...prev, image_url: data.publicUrl }));
-                                                            }
-                                                        } catch (err: any) {
-                                                            console.error('Street View Error:', err);
-                                                            console.error('Street View Error Details:', err.message || err.toString()); // Added detail log
-                                                            alert('Failed to generate image');
-                                                        }
-                                                    }}
-                                                    className="px-3 py-2 bg-primary/10 text-primary rounded-xl text-[10px] font-bold uppercase transition-all hover:bg-primary/20"
-                                                >
-                                                    {lang === 'he' ? 'אוטומטי' : 'Auto'}
-                                                </button>
+                                        {uploadMode === 'url' && isFetchingMap && (
+                                            <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-200 dark:border-neutral-800 rounded-2xl bg-slate-50/50 dark:bg-neutral-800/20 h-24">
+                                                <Loader2 className="w-5 h-5 text-primary animate-spin mb-1" />
+                                                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">
+                                                    Fetching...
+                                                </span>
                                             </div>
-                                        ) : (
+                                        )}
+
+                                        {uploadMode === 'upload' && (
                                             <div className="relative border-2 border-dashed border-slate-200 dark:border-neutral-800 rounded-2xl p-6 hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-all text-center group cursor-pointer h-24 flex items-center justify-center">
                                                 <input
                                                     type="file"

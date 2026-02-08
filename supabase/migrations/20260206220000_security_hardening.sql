@@ -4,6 +4,7 @@
 -- 1. HARDEN system_settings
 -- Only Super Admins can read the full settings. Regular users see nothing (unless we specificy public keys).
 DROP POLICY IF EXISTS "Everyone can read system settings" ON public.system_settings;
+DROP POLICY IF EXISTS "Admins can read system settings" ON public.system_settings;
 CREATE POLICY "Admins can read system settings" ON public.system_settings
     FOR SELECT
     USING (public.is_admin());
