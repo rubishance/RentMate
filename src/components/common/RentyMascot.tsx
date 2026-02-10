@@ -24,7 +24,7 @@ export function RentyMascot({ className = "", size = 240, showBackground = true 
             )}
 
             <motion.img
-                src="/assets/images/renty-mascot-new.png"
+                src="/assets/images/renty-mascot-transparent.png"
                 alt="Renty Mascot"
                 style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                 initial={{ scale: 0.9, opacity: 0 }}
