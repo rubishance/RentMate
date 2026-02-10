@@ -4,7 +4,7 @@ import { RentyMascot } from '../common/RentyMascot';
 export function BotIcon({ size = 40, className = "" }: { size?: number, className?: string }) {
     return (
         <motion.div
-            className={`relative ${className} flex items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500/20 to-brand-600/5 backdrop-blur-md border border-white/20 shadow-xl overflow-hidden`}
+            className={`relative ${className} flex items-center justify-center rounded-2xl bg-transparent border border-white/10 shadow-sm overflow-hidden`}
             style={{ width: size, height: size }}
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}

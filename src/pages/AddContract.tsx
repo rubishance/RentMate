@@ -25,6 +25,7 @@ import { CompressionService } from '../services/compression.service';
 import { useDataCache } from '../contexts/DataCacheContext';
 import { propertyService } from '../services/property.service';
 import { useSignedUrl } from '../hooks/useSignedUrl';
+import { useUsageTracking } from '../hooks/useUsageTracking';
 
 const STEPS = [
     { id: 1, labelKey: 'stepAsset', icon: Building },
@@ -42,6 +43,7 @@ export function AddContract() {
     const { clear: clearCache } = useDataCache();
 
     const { success, error: toastError } = useToast();
+    const { trackEvent } = useUsageTracking();
     const {
         register,
         handleSubmit,
@@ -133,7 +135,7 @@ export function AddContract() {
         }
     }, [location.state]);
 
-    const { canAddContract, loading: subLoading, plan } = useSubscription();
+    const { canAddActiveContract, loading: subLoading, plan } = useSubscription();
 
     const [step, setStep] = useState(1);
     const [isSaving, setIsSaving] = useState(false);
@@ -294,6 +296,38 @@ export function AddContract() {
     // Block access if limit reached
     // Moving the Limit Reached early return to AFTER all hooks
     // to prevent "Rendered more hooks than during the previous render" error
+
+
+    // Limit Check UI
+    if (!subLoading && !canAddActiveContract) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 text-center space-y-6 animate-in fade-in slide-in-from-bottom-4">
+                <div className="w-20 h-20 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mb-4 ring-8 ring-red-50 dark:ring-red-900/10">
+                    <Lock className="w-10 h-10 text-red-500" />
+                </div>
+                <h2 className="text-3xl font-black text-slate-900 dark:text-white">
+                    {t('upgradeRequired') || 'Upgrade Required'}
+                </h2>
+                <p className="text-lg text-slate-600 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+                    {t('limitReachedDesc') || 'You have reached the active contract limit for your current plan. Please upgrade to create more contracts.'}
+                </p>
+                <div className="flex gap-4 pt-4">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="px-6 py-3 rounded-xl font-bold bg-slate-100 hover:bg-slate-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 transition"
+                    >
+                        {t('goBack')}
+                    </button>
+                    <button
+                        onClick={() => navigate('/pricing')}
+                        className="px-6 py-3 rounded-xl font-bold text-white shadow-xl shadow-brand-500/20 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 transition transform hover:-translate-y-1"
+                    >
+                        {t('upgradeNow')}
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || e.target.files.length === 0) return;
@@ -497,7 +531,15 @@ export function AddContract() {
             const sanitizedPayload = sanitizePayload(contractPayload);
             const { data: newContract, error: contractError } = await supabase.from('contracts').insert(sanitizedPayload).select().single();
 
+
             if (contractError) throw new Error(`[${contractError.code}] ${contractError.message}`);
+
+            // Track analytics event
+            trackEvent('contract_created', {
+                property_id: propertyId,
+                rent: data.rent,
+                currency: data.currency
+            });
 
             // 3. Generate Expected Payments
             if (newContract) {
@@ -845,1716 +887,1694 @@ export function AddContract() {
         );
     };
 
+
     return (
         <div className={cn(
             "relative h-[100dvh] overflow-hidden bg-slate-50 dark:bg-black flex",
             isContractViewerOpen ? "flex-col lg:flex-row-reverse" : "flex-col"
         )}>
-            {!subLoading && !canAddContract ? (
-                <div className="h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-black w-full z-50">
-                    <div className="max-w-md w-full bg-white dark:bg-neutral-900 rounded-[2.5rem] p-10 border border-slate-100 dark:border-neutral-800 shadow-2xl space-y-8 text-center animate-in fade-in zoom-in duration-500">
-                        <div className="w-20 h-20 bg-amber-500/10 rounded-[2rem] flex items-center justify-center mx-auto">
-                            <AlertTriangle className="w-10 h-10 text-amber-500" />
-                        </div>
-                        <div className="space-y-2">
-                            <h2 className="text-3xl font-black tracking-tighter text-foreground">{t('limitReached')}</h2>
-                            <p className="text-muted-foreground font-medium">
-                                {t('limitReachedDesc')}
-                            </p>
-                        </div>
+
+            {/* PROGRESS TRACKER (High Blur) */}
+            <div className="absolute top-0 inset-x-0 h-1 bg-black/5 dark:bg-white/5 z-[100]">
+                <motion.div
+                    className="h-full bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.5)]"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(step / STEPS.length) * 100}%` }}
+                    transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                />
+            </div>
+
+            {/* Floating Toggle Button */}
+            <AnimatePresence>
+                {scannedContractUrl && !isScanning && (
+                    <motion.button
+                        initial={{ opacity: 0, scale: 0.8, x: -20 }}
+                        animate={{ opacity: 1, scale: 1, x: 0 }}
+                        exit={{ opacity: 0, scale: 0.8, x: -20 }}
+                        onClick={() => setIsContractViewerOpen(!isContractViewerOpen)}
+                        className="fixed top-24 left-6 z-50 glass-premium dark:bg-neutral-800/60 shadow-lg border border-white/5 p-3 rounded-full flex items-center gap-3 hover:scale-105 transition-all text-indigo-500"
+                    >
+                        {isContractViewerOpen ? <ChevronDown className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
+                        <span className="text-[10px] font-black uppercase tracking-widest pr-1 text-foreground">{t('hideContract')}</span>
+                    </motion.button>
+                )}
+            </AnimatePresence>
+
+            {/* Top Pane: Wizard Form */}
+            <div
+                className={cn(
+                    "flex-1 flex flex-col min-w-0 transition-all duration-300",
+                    isContractViewerOpen ? "border-b lg:border-b-0 lg:border-r border-white/5" : "h-full w-full"
+                )}
+                style={{
+                    height: (isContractViewerOpen && windowWidth < 1024) ? `${splitRatio}%` : '100%',
+                    width: (isContractViewerOpen && windowWidth >= 1024) ? `${splitRatio}%` : '100%',
+                    flex: (isContractViewerOpen) ? 'none' : '1'
+                }}
+            >
+                {/* Wizard Header (Bionic) */}
+                <div className="h-24 glass-premium dark:bg-neutral-900/60 border-b border-white/5 flex items-center justify-between px-8 md:px-12 z-20 shrink-0 backdrop-blur-2xl">
+                    <div className="flex items-center gap-6">
                         <button
                             onClick={() => navigate('/properties')}
-                            className="w-full py-2.5 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-colors"
+                            className="w-10 h-10 glass-premium dark:bg-neutral-800/40 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground transition-all border border-white/5"
                         >
-                            {t('backToContracts')}
+                            <ArrowLeft className={cn("w-4 h-4", lang === 'he' ? 'rotate-180' : '')} />
                         </button>
+                        <div className="flex flex-col">
+                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40 leading-none mb-1">
+                                {t('step')} {step} / {STEPS.length}
+                            </span>
+                            <h1 className="font-black text-xl tracking-tighter text-foreground leading-none lowercase">
+                                {t(STEPS[step - 1].labelKey)}
+                            </h1>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        {!scannedContractUrl && isScanning && (
+                            <div className="hidden md:block">
+                                <ContractScanner
+                                    onScanComplete={handleScanComplete}
+                                    onCancel={() => setIsScanning(false)}
+                                />
+                            </div>
+                        )}
+                        <div className="flex gap-1.5 glass-premium dark:bg-neutral-800/40 p-1.5 rounded-2xl border border-white/5">
+                            {STEPS.map((s) => (
+                                <div
+                                    key={s.id}
+                                    className={cn(
+                                        "w-2 h-2 rounded-full transition-all duration-700",
+                                        s.id === step ? "w-8 bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]" : s.id < step ? "bg-indigo-300 dark:bg-indigo-900" : "bg-slate-200 dark:bg-neutral-800"
+                                    )}
+                                />
+                            ))}
+                        </div>
                     </div>
                 </div>
-            ) : (
-                <>
-                    {/* PROGRESS TRACKER (High Blur) */}
-                    <div className="absolute top-0 inset-x-0 h-1 bg-black/5 dark:bg-white/5 z-[100]">
-                        <motion.div
-                            className="h-full bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.5)]"
-                            initial={{ width: 0 }}
-                            animate={{ width: `${(step / STEPS.length) * 100}%` }}
-                            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                        />
-                    </div>
 
-                    {/* Floating Toggle Button */}
-                    <AnimatePresence>
-                        {scannedContractUrl && !isScanning && (
-                            <motion.button
-                                initial={{ opacity: 0, scale: 0.8, x: -20 }}
-                                animate={{ opacity: 1, scale: 1, x: 0 }}
-                                exit={{ opacity: 0, scale: 0.8, x: -20 }}
-                                onClick={() => setIsContractViewerOpen(!isContractViewerOpen)}
-                                className="fixed top-24 left-6 z-50 glass-premium dark:bg-neutral-800/60 shadow-lg border border-white/5 p-3 rounded-full flex items-center gap-3 hover:scale-105 transition-all text-indigo-500"
-                            >
-                                {isContractViewerOpen ? <ChevronDown className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
-                                <span className="text-[10px] font-black uppercase tracking-widest pr-1 text-foreground">{t('hideContract')}</span>
-                            </motion.button>
-                        )}
-                    </AnimatePresence>
-
-                    {/* Top Pane: Wizard Form */}
-                    <div
-                        className={cn(
-                            "flex-1 flex flex-col min-w-0 transition-all duration-300",
-                            isContractViewerOpen ? "border-b lg:border-b-0 lg:border-r border-white/5" : "h-full w-full"
-                        )}
-                        style={{
-                            height: (isContractViewerOpen && windowWidth < 1024) ? `${splitRatio}%` : '100%',
-                            width: (isContractViewerOpen && windowWidth >= 1024) ? `${splitRatio}%` : '100%',
-                            flex: (isContractViewerOpen) ? 'none' : '1'
-                        }}
-                    >
-                        {/* Wizard Header (Bionic) */}
-                        <div className="h-24 glass-premium dark:bg-neutral-900/60 border-b border-white/5 flex items-center justify-between px-8 md:px-12 z-20 shrink-0 backdrop-blur-2xl">
-                            <div className="flex items-center gap-6">
-                                <button
-                                    onClick={() => navigate('/properties')}
-                                    className="w-10 h-10 glass-premium dark:bg-neutral-800/40 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground transition-all border border-white/5"
-                                >
-                                    <ArrowLeft className={cn("w-4 h-4", lang === 'he' ? 'rotate-180' : '')} />
-                                </button>
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40 leading-none mb-1">
-                                        {t('step')} {step} / {STEPS.length}
-                                    </span>
-                                    <h1 className="font-black text-xl tracking-tighter text-foreground leading-none lowercase">
-                                        {t(STEPS[step - 1].labelKey)}
-                                    </h1>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                                {!scannedContractUrl && isScanning && (
-                                    <div className="hidden md:block">
-                                        <ContractScanner
-                                            onScanComplete={handleScanComplete}
-                                            onCancel={() => setIsScanning(false)}
-                                        />
-                                    </div>
-                                )}
-                                <div className="flex gap-1.5 glass-premium dark:bg-neutral-800/40 p-1.5 rounded-2xl border border-white/5">
-                                    {STEPS.map((s) => (
-                                        <div
-                                            key={s.id}
-                                            className={cn(
-                                                "w-2 h-2 rounded-full transition-all duration-700",
-                                                s.id === step ? "w-8 bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]" : s.id < step ? "bg-indigo-300 dark:bg-indigo-900" : "bg-slate-200 dark:bg-neutral-800"
-                                            )}
-                                        />
-                                    ))}
-                                </div>
+                <div className="flex-1 overflow-y-auto no-scrollbar pt-10 pb-32">
+                    <div className={cn("max-w-2xl mx-auto px-6 transition-all", isContractViewerOpen ? "pb-12" : "pb-24")}>
+                        {/* Header */}
+                        <div className="flex items-center gap-4 mb-4">
+                            <button onClick={() => navigate('/properties')} className="p-2 hover:bg-secondary rounded-full transition-colors">
+                                <ArrowLeft className="w-5 h-5" />
+                            </button>
+                            <div>
+                                <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('newContract')}</h1>
+                                <p className="text-sm text-muted-foreground">{t('newContractDesc')}</p>
                             </div>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto no-scrollbar pt-10 pb-32">
-                            <div className={cn("max-w-2xl mx-auto px-6 transition-all", isContractViewerOpen ? "pb-12" : "pb-24")}>
-                                {/* Header */}
-                                <div className="flex items-center gap-4 mb-4">
-                                    <button onClick={() => navigate('/properties')} className="p-2 hover:bg-secondary rounded-full transition-colors">
-                                        <ArrowLeft className="w-5 h-5" />
-                                    </button>
-                                    <div>
-                                        <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('newContract')}</h1>
-                                        <p className="text-sm text-muted-foreground">{t('newContractDesc')}</p>
+                        {/* Stepper */}
+                        <div className="flex items-center justify-between mb-4 relative">
+                            <div className="absolute top-1/2 left-0 w-full h-0.5 bg-border -z-10" />
+                            {STEPS.map((s) => {
+                                const isActive = s.id === step;
+                                const isCompleted = s.id < step;
+                                const Icon = s.icon;
+
+                                return (
+                                    <div key={s.id} className="flex flex-col items-center gap-2 bg-background px-2">
+                                        <div
+                                            className={cn(
+                                                "w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300",
+                                                isActive ? "border-primary bg-primary text-primary-foreground scale-110" :
+                                                    isCompleted ? "border-primary bg-primary text-primary-foreground" : "border-muted-foreground/30 text-muted-foreground bg-background"
+                                            )}
+                                        >
+                                            {isCompleted ? <Check className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
+                                        </div>
+                                        <span className={cn("text-xs font-medium transition-colors duration-300", isActive ? "text-primary" : "text-muted-foreground")}>
+                                            {t(s.labelKey)}
+                                        </span>
                                     </div>
-                                </div>
+                                )
+                            })}
+                        </div>
 
-                                {/* Stepper */}
-                                <div className="flex items-center justify-between mb-4 relative">
-                                    <div className="absolute top-1/2 left-0 w-full h-0.5 bg-border -z-10" />
-                                    {STEPS.map((s) => {
-                                        const isActive = s.id === step;
-                                        const isCompleted = s.id < step;
-                                        const Icon = s.icon;
-
-                                        return (
-                                            <div key={s.id} className="flex flex-col items-center gap-2 bg-background px-2">
-                                                <div
-                                                    className={cn(
-                                                        "w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300",
-                                                        isActive ? "border-primary bg-primary text-primary-foreground scale-110" :
-                                                            isCompleted ? "border-primary bg-primary text-primary-foreground" : "border-muted-foreground/30 text-muted-foreground bg-background"
-                                                    )}
-                                                >
-                                                    {isCompleted ? <Check className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
+                        {/* Main Form Content */}
+                        <div className="bg-card border border-border rounded-2xl p-4 shadow-sm min-h-[400px]" dir="rtl">
+                            <AnimatePresence mode="wait">
+                                {step === 1 && (
+                                    isScanning ? (
+                                        <ContractScanner mode="embedded" onScanComplete={handleScanComplete} onCancel={() => setIsScanning(false)} skipReview={true} />
+                                    ) : (
+                                        <motion.div
+                                            key="step1"
+                                            initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
+                                            className="space-y-6"
+                                        >
+                                            {/* AI Scan Banner */}
+                                            {!contractFile && (
+                                                <div className="bg-gradient-to-l from-blue-600 to-indigo-600 rounded-xl p-6 text-white flex items-center justify-between shadow-lg">
+                                                    <div>
+                                                        <h3 className="font-bold text-lg mb-1">{t('aiScanTitle')}</h3>
+                                                        <p className="text-blue-100 text-sm opacity-90">{t('aiScanDesc')}</p>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => setIsScanning(true)}
+                                                        className="bg-white text-primary px-4 py-2 rounded-lg font-bold text-sm hover:bg-primary/10 transition-colors shadow-sm"
+                                                    >
+                                                        {t('scanNow')}
+                                                    </button>
                                                 </div>
-                                                <span className={cn("text-xs font-medium transition-colors duration-300", isActive ? "text-primary" : "text-muted-foreground")}>
-                                                    {t(s.labelKey)}
-                                                </span>
-                                            </div>
-                                        )
-                                    })}
-                                </div>
+                                            )}
 
-                                {/* Main Form Content */}
-                                <div className="bg-card border border-border rounded-2xl p-4 shadow-sm min-h-[400px]" dir="rtl">
-                                    <AnimatePresence mode="wait">
-                                        {step === 1 && (
-                                            isScanning ? (
-                                                <ContractScanner mode="embedded" onScanComplete={handleScanComplete} onCancel={() => setIsScanning(false)} skipReview={true} />
-                                            ) : (
-                                                <motion.div
-                                                    key="step1"
-                                                    initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
-                                                    className="space-y-6"
-                                                >
-                                                    {/* AI Scan Banner */}
-                                                    {!contractFile && (
-                                                        <div className="bg-gradient-to-l from-blue-600 to-indigo-600 rounded-xl p-6 text-white flex items-center justify-between shadow-lg">
-                                                            <div>
-                                                                <h3 className="font-bold text-lg mb-1">{t('aiScanTitle')}</h3>
-                                                                <p className="text-blue-100 text-sm opacity-90">{t('aiScanDesc')}</p>
-                                                            </div>
+                                            {contractFile && (
+                                                <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3 text-green-700">
+                                                    <Check className="w-5 h-5" />
+                                                    <span className="font-medium text-sm">{t('contractScannedSuccess')}</span>
+                                                </div>
+                                            )}
+
+                                            <div className="space-y-4">
+                                                <div className="flex items-center justify-between">
+                                                    <h3 className="font-semibold text-lg flex items-center gap-2"><Building className="w-4 h-4" /> {t('propertyDetails')}</h3>
+
+                                                    {!isPropertyLocked && (
+                                                        <div className="flex bg-secondary/50 p-1 rounded-lg">
                                                             <button
-                                                                onClick={() => setIsScanning(true)}
-                                                                className="bg-white text-primary px-4 py-2 rounded-lg font-bold text-sm hover:bg-primary/10 transition-colors shadow-sm"
-                                                            >
-                                                                {t('scanNow')}
-                                                            </button>
-                                                        </div>
-                                                    )}
-
-                                                    {contractFile && (
-                                                        <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3 text-green-700">
-                                                            <Check className="w-5 h-5" />
-                                                            <span className="font-medium text-sm">{t('contractScannedSuccess')}</span>
-                                                        </div>
-                                                    )}
-
-                                                    <div className="space-y-4">
-                                                        <div className="flex items-center justify-between">
-                                                            <h3 className="font-semibold text-lg flex items-center gap-2"><Building className="w-4 h-4" /> {t('propertyDetails')}</h3>
-
-                                                            {!isPropertyLocked && (
-                                                                <div className="flex bg-secondary/50 p-1 rounded-lg">
-                                                                    <button
-                                                                        onClick={() => setValue('isExistingProperty', false)}
-                                                                        className={cn(
-                                                                            "px-3 py-1 text-xs font-medium rounded-md transition-all",
-                                                                            !formData.isExistingProperty ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-                                                                        )}
-                                                                    >
-                                                                        {t('newProperty')}
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={() => setValue('isExistingProperty', true)}
-                                                                        className={cn(
-                                                                            "px-3 py-1 text-xs font-medium rounded-md transition-all",
-                                                                            formData.isExistingProperty ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-                                                                        )}
-                                                                    >
-                                                                        {t('existingProperty')}
-                                                                    </button>
-                                                                </div>
-                                                            )}
-                                                        </div>
-
-                                                        {formData.isExistingProperty ? (
-                                                            <div className="space-y-2">
-                                                                <label className="text-sm font-medium">{t('chooseProperty')}</label>
-                                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                                    {existingProperties.map((p) => (
-                                                                        <button
-                                                                            key={p.id}
-                                                                            onClick={() => {
-                                                                                setValue('selectedPropertyId', p.id);
-                                                                                if (p.address && p.city) {
-                                                                                    setValue('address', p.address);
-                                                                                    setValue('city', p.city);
-                                                                                }
-                                                                            }}
-                                                                            className={cn(
-                                                                                "p-4 rounded-xl border-2 text-right transition-all group",
-                                                                                formData.selectedPropertyId === p.id
-                                                                                    ? "border-primary bg-primary/5 shadow-md"
-                                                                                    : "border-secondary dark:border-gray-800 hover:border-primary/50"
-                                                                            )}
-                                                                        >
-                                                                            <div className="flex items-center justify-between mb-2">
-                                                                                <span className="text-xs font-semibold text-primary">{t('property')}</span>
-                                                                                {formData.selectedPropertyId === p.id && <CheckCircle className="w-5 h-5 text-primary" />}
-                                                                            </div>
-                                                                            <p className="font-bold text-lg text-foreground">{p.address}</p>
-                                                                            <p className="text-sm text-muted-foreground">{p.city}</p>
-                                                                        </button>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        ) : (
-                                                            <div className="space-y-4">
-                                                                <div className="grid grid-cols-2 gap-4">
-                                                                    {/* Asset Type */}
-                                                                    <div className="space-y-2">
-                                                                        <label className="text-sm font-medium flex items-center gap-2">{t('propertyType')} <ConfidenceDot field="property_type" /></label>
-                                                                        <PropertyTypeSelect
-                                                                            value={formData.property_type as any}
-                                                                            onChange={(val) => setValue('property_type', val as any)}
-                                                                        />
-                                                                    </div>
-
-                                                                    {/* City */}
-                                                                    <div className="space-y-2">
-                                                                        <label className="text-sm font-medium flex items-center gap-2">{t('city')} <span className="text-red-500">*</span> {scannedQuotes.city && <Tooltip quote={scannedQuotes.city} />} <ConfidenceDot field="city" /></label>
-                                                                        <GoogleAutocomplete
-                                                                            value={formData.city || ''}
-                                                                            onChange={val => setValue('city', val)}
-                                                                            className="w-full p-3 bg-background border border-border rounded-xl"
-                                                                            type="cities"
-                                                                            error={!!errors.city}
-                                                                        />
-                                                                    </div>
-                                                                </div>
-
-                                                                {/* Address */}
-                                                                <div className="space-y-2">
-                                                                    <label className="text-sm font-medium flex items-center gap-2">{t('address')} <span className="text-red-500">*</span> {scannedQuotes.street && <Tooltip quote={scannedQuotes.street} />} <ConfidenceDot field="address" /></label>
-                                                                    <div className="relative">
-                                                                        <MapPin className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10 pointer-events-none" />
-                                                                        <GoogleAutocomplete
-                                                                            value={formData.address || ''}
-                                                                            onChange={(val) => setValue('address', val)}
-                                                                            className="w-full p-3 bg-background border border-border rounded-xl ps-10"
-                                                                            type="address"
-                                                                            biasCity={formData.city}
-                                                                            placeholder={t('searchProperty')}
-                                                                            error={!!errors.address}
-                                                                        />
-                                                                    </div>
-                                                                </div>
-
-                                                                {/* Specs */}
-                                                                <div className="grid grid-cols-2 gap-4">
-                                                                    <div className="space-y-2">
-                                                                        <label className="text-sm font-medium flex items-center gap-2">{t('rooms')} <ConfidenceDot field="rooms" /></label>
-                                                                        <input
-                                                                            type="text"
-                                                                            value={formData.rooms?.toString() || ''}
-                                                                            onChange={e => {
-                                                                                const val = e.target.value;
-                                                                                setValue('rooms', val === '' ? undefined : parseFloat(val) as any);
-                                                                            }}
-                                                                            className="w-full p-3 bg-background border border-border rounded-xl no-spinner"
-                                                                        />
-                                                                    </div>
-                                                                    <div className="space-y-2">
-                                                                        <label className="text-sm font-medium flex items-center gap-2">{t('sizeSqm')} <ConfidenceDot field="size" /></label>
-                                                                        <input
-                                                                            type="text"
-                                                                            value={formData.size?.toString() || ''}
-                                                                            onChange={e => {
-                                                                                const val = e.target.value;
-                                                                                setValue('size', val === '' ? undefined : parseFloat(val) as any);
-                                                                            }}
-                                                                            className="w-full p-3 bg-background border border-border rounded-xl no-spinner"
-                                                                        />
-                                                                    </div>
-                                                                </div>
-
-                                                                {/* Amenities */}
-                                                                <div className="grid grid-cols-2 gap-4">
-                                                                    <label className={cn(
-                                                                        "flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer",
-                                                                        formData.hasBalcony ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-                                                                    )}>
-                                                                        <input type="checkbox" className="hidden" checked={formData.hasBalcony} onChange={e => setValue('hasBalcony', e.target.checked)} />
-                                                                        <div className="p-2 bg-secondary rounded-full text-foreground"><Wind className="w-5 h-5" /></div>
-                                                                        <span className="font-medium flex items-center gap-2">{t('balcony')} <ConfidenceDot field="hasBalcony" /></span>
-                                                                    </label>
-
-                                                                    <label className={cn(
-                                                                        "flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer",
-                                                                        formData.hasSafeRoom ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-                                                                    )}>
-                                                                        <input type="checkbox" className="hidden" checked={formData.hasSafeRoom} onChange={e => setValue('hasSafeRoom', e.target.checked)} />
-                                                                        <div className="p-2 bg-secondary rounded-full text-foreground"><ShieldCheck className="w-5 h-5" /></div>
-                                                                        <span className="font-medium flex items-center gap-2">{t('safeRoom')} <ConfidenceDot field="hasSafeRoom" /></span>
-                                                                    </label>
-
-                                                                    <label className={cn(
-                                                                        "flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer",
-                                                                        formData.hasParking ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-                                                                    )}>
-                                                                        <input type="checkbox" className="hidden" checked={formData.hasParking} onChange={e => setValue('hasParking', e.target.checked)} />
-                                                                        <div className="p-2 bg-secondary rounded-full text-foreground"><Car className="w-5 h-5" /></div>
-                                                                        <span className="font-medium flex items-center gap-2">{t('parking')} <ConfidenceDot field="hasParking" /></span>
-                                                                    </label>
-
-                                                                    <label className={cn(
-                                                                        "flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer",
-                                                                        formData.hasStorage ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-                                                                    )}>
-                                                                        <input type="checkbox" className="hidden" checked={formData.hasStorage} onChange={e => setValue('hasStorage', e.target.checked)} />
-                                                                        <div className="p-2 bg-secondary rounded-full text-foreground"><Box className="w-5 h-5" /></div>
-                                                                        <span className="font-medium flex items-center gap-2">{t('storage')} <ConfidenceDot field="hasStorage" /></span>
-                                                                    </label>
-                                                                </div>
-
-                                                                {/* Image Section */}
-                                                                <div className="space-y-3 pt-2">
-                                                                    <label className="text-sm font-medium">{t('propertyImage')}</label>
-
-                                                                    {/* Toggle Tabs */}
-                                                                    <div className="flex p-1 bg-secondary/50 rounded-lg w-fit">
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() => setUploadMode('upload')}
-                                                                            className={cn("px-3 py-1.5 text-xs font-medium rounded-md transition-all", uploadMode === 'upload' ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}
-                                                                        >
-                                                                            {t('uploadFile')}
-                                                                        </button>
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() => {
-                                                                                setUploadMode('url');
-                                                                                handleGoogleMapsFetch();
-                                                                            }}
-                                                                            className={cn("px-3 py-1.5 text-xs font-medium rounded-md transition-all", uploadMode === 'url' ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}
-                                                                        >
-                                                                            {t('importFromGoogle')}
-                                                                        </button>
-                                                                    </div>
-
-                                                                    {uploadMode === 'url' && isFetchingMap && (
-                                                                        <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-border rounded-lg bg-secondary/10">
-                                                                            <Loader2 className="w-8 h-8 text-primary animate-spin mb-2" />
-                                                                            <span className="text-xs text-muted-foreground animate-pulse">
-                                                                                {t('fetchingStreetView') || 'Fetching Street View...'}
-                                                                            </span>
-                                                                        </div>
-                                                                    )}
-                                                                    {uploadMode === 'upload' && (
-                                                                        <div className="space-y-2">
-                                                                            <div className="relative border-2 border-dashed border-border rounded-lg p-4 hover:bg-secondary/20 transition-colors text-center cursor-pointer group">
-                                                                                <input
-                                                                                    type="file"
-                                                                                    accept="image/*"
-                                                                                    disabled={isUploading}
-                                                                                    onChange={handleFileUpload}
-                                                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                                                                                />
-                                                                                <div className="flex flex-col items-center gap-2">
-                                                                                    {isUploading ? (
-                                                                                        <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                                                                                    ) : (
-                                                                                        <Upload className="w-8 h-8 text-muted-foreground group-hover:text-primary transition-colors" />
-                                                                                    )}
-                                                                                    <span className="text-xs text-muted-foreground">
-                                                                                        {isUploading ? t('uploading') : t('clickToUpload')}
-                                                                                    </span>
-                                                                                    {imageError && (
-                                                                                        <span className="text-xs text-red-500 mt-1">{imageError}</span>
-                                                                                    )}
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    )}
-
-                                                                    {/* Preview */}
-                                                                    {formData.image_url && (
-                                                                        <div className="relative w-full h-48 rounded-lg overflow-hidden border border-border bg-secondary/10 mt-2">
-                                                                            <img
-                                                                                src={formData.image_url}
-                                                                                alt="Preview"
-                                                                                className="w-full h-full object-cover"
-                                                                                onError={(e) => {
-                                                                                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=2070&auto=format&fit=crop';
-                                                                                }}
-                                                                            />
-                                                                            <button
-                                                                                type="button"
-                                                                                onClick={() => setValue('image_url', '')}
-                                                                                className="absolute top-2 right-2 p-1.5 bg-white/90 text-red-500 rounded-full shadow-sm hover:bg-white"
-                                                                            >
-                                                                                <Trash2 className="w-4 h-4" />
-                                                                            </button>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </motion.div>
-                                            )
-                                        )}
-
-                                        {step === 2 && (
-                                            <motion.div
-                                                key="step2"
-                                                initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
-                                                className="space-y-6"
-                                            >
-                                                <div className="space-y-4">
-                                                    {/* AI Scan Banner moved to Tenant details when asset is pre-set or as alternative scan point */}
-                                                    {!contractFile && (
-                                                        <div className="bg-gradient-to-l from-blue-600 to-indigo-600 rounded-xl p-6 text-white flex items-center justify-between shadow-lg mb-4">
-                                                            <div>
-                                                                <h3 className="font-bold text-lg mb-1">{t('aiScanTitle')}</h3>
-                                                                <p className="text-blue-100 text-sm opacity-90">{t('aiScanDesc')}</p>
-                                                            </div>
-                                                            <button
-                                                                onClick={() => setIsScanning(true)}
-                                                                className="bg-white text-primary px-4 py-2 rounded-lg font-bold text-sm hover:bg-primary/10 transition-colors shadow-sm"
-                                                            >
-                                                                {t('scanNow')}
-                                                            </button>
-                                                        </div>
-                                                    )}
-
-                                                    {contractFile && (
-                                                        <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3 text-green-700 mb-4">
-                                                            <Check className="w-5 h-5" />
-                                                            <span className="font-medium text-sm">{t('contractScannedSuccess')}</span>
-                                                        </div>
-                                                    )}
-
-                                                    <div className="flex items-center justify-between">
-                                                        <h3 className="font-semibold text-lg flex items-center gap-2"><User className="w-4 h-4" /> {t('tenantDetails')}</h3>
-                                                    </div>
-
-                                                    <div className="space-y-6">
-                                                        {formData.tenants.map((tenant, index) => (
-                                                            <div key={index} className="p-4 border border-border rounded-2xl space-y-4 relative bg-secondary/5 group transition-colors hover:bg-secondary/10">
-                                                                {formData.tenants.length > 1 && (
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => {
-                                                                            const newTenants = [...formData.tenants];
-                                                                            newTenants.splice(index, 1);
-                                                                            setValue('tenants', newTenants);
-                                                                        }}
-                                                                        className="absolute top-3 left-3 p-1.5 text-red-500 hover:bg-red-50 rounded-full transition-colors opacity-0 group-hover:opacity-100"
-                                                                    >
-                                                                        <Trash2 className="w-4 h-4" />
-                                                                    </button>
+                                                                onClick={() => setValue('isExistingProperty', false)}
+                                                                className={cn(
+                                                                    "px-3 py-1 text-xs font-medium rounded-md transition-all",
+                                                                    !formData.isExistingProperty ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
                                                                 )}
-
-                                                                <div className="space-y-2">
-                                                                    <label className="text-sm font-medium flex items-center gap-2">
-                                                                        {t('fullName')} <span className="text-red-500">*</span>
-                                                                        {index === 0 && scannedQuotes.tenantName && <Tooltip quote={scannedQuotes.tenantName} />}
-                                                                        {index === 0 && <ConfidenceDot field="tenants" />}
-                                                                    </label>
-                                                                    <input
-                                                                        value={tenant.name}
-                                                                        onChange={e => {
-                                                                            const newTenants = [...formData.tenants];
-                                                                            newTenants[index].name = e.target.value;
-                                                                            setValue('tenants', newTenants);
-                                                                        }}
-                                                                        className={cn(
-                                                                            "w-full p-3 bg-background border rounded-xl transition-all duration-300",
-                                                                            (!tenant.name && index === 0 && step === 2) ? "border-red-500 ring-1 ring-red-500" : "border-border"
-                                                                        )}
-                                                                    />
-                                                                </div>
-
-                                                                <div className="grid grid-cols-2 gap-4">
-                                                                    <div className="space-y-2">
-                                                                        <label className="text-sm font-medium">{t('idNumber')}</label>
-                                                                        <input
-                                                                            value={tenant.id_number}
-                                                                            onChange={e => {
-                                                                                const newTenants = [...formData.tenants];
-                                                                                newTenants[index].id_number = e.target.value;
-                                                                                setValue('tenants', newTenants);
-                                                                            }}
-                                                                            className="w-full p-3 bg-background border border-border rounded-xl font-mono"
-                                                                        />
-                                                                    </div>
-                                                                    <div className="space-y-2">
-                                                                        <label className="text-sm font-medium">{t('phone')}</label>
-                                                                        <input
-                                                                            value={tenant.phone}
-                                                                            onChange={e => {
-                                                                                const newTenants = [...formData.tenants];
-                                                                                newTenants[index].phone = e.target.value;
-                                                                                setValue('tenants', newTenants);
-                                                                            }}
-                                                                            className="w-full p-3 bg-background border border-border rounded-xl"
-                                                                            dir="ltr"
-                                                                        />
-                                                                    </div>
-                                                                </div>
-
-                                                                <div className="space-y-2">
-                                                                    <label className="text-sm font-medium">{t('email')}</label>
-                                                                    <input
-                                                                        value={tenant.email}
-                                                                        onChange={e => {
-                                                                            const newTenants = [...formData.tenants];
-                                                                            newTenants[index].email = e.target.value;
-                                                                            setValue('tenants', newTenants);
-                                                                        }}
-                                                                        className="w-full p-3 bg-background border border-border rounded-xl"
-                                                                        type="email"
-                                                                        dir="ltr"
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
+                                                            >
+                                                                {t('newProperty')}
+                                                            </button>
+                                                            <button
+                                                                onClick={() => setValue('isExistingProperty', true)}
+                                                                className={cn(
+                                                                    "px-3 py-1 text-xs font-medium rounded-md transition-all",
+                                                                    formData.isExistingProperty ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                                                                )}
+                                                            >
+                                                                {t('existingProperty')}
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            </motion.div>
-                                        )}
-                                        {step === 3 && (
-                                            <motion.div
-                                                key="step3"
-                                                initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
-                                                className="space-y-6"
-                                            >
-                                                <div className="space-y-6">
-                                                    <div className="grid grid-cols-2 gap-4">
-                                                        <div className="space-y-2">
-                                                            <DatePicker
-                                                                label={t('signingDate')}
-                                                                value={formData.signingDate ? parseISO(formData.signingDate) : undefined}
-                                                                onChange={(date) => {
-                                                                    const dateStr = date ? format(date, 'yyyy-MM-dd') : '';
-                                                                    setValue('signingDate', dateStr);
-                                                                    // Pre-fill base index date if it's empty
-                                                                    if (dateStr && !formData.baseIndexDate) {
-                                                                        setValue('baseIndexDate', dateStr);
-                                                                    }
-                                                                }}
-                                                                placeholder={t('selectDate')}
-                                                            />
+
+                                                {formData.isExistingProperty ? (
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">{t('chooseProperty')}</label>
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            {existingProperties.map((p) => (
+                                                                <button
+                                                                    key={p.id}
+                                                                    onClick={() => {
+                                                                        setValue('selectedPropertyId', p.id);
+                                                                        if (p.address && p.city) {
+                                                                            setValue('address', p.address);
+                                                                            setValue('city', p.city);
+                                                                        }
+                                                                    }}
+                                                                    className={cn(
+                                                                        "p-4 rounded-xl border-2 text-right transition-all group",
+                                                                        formData.selectedPropertyId === p.id
+                                                                            ? "border-primary bg-primary/5 shadow-md"
+                                                                            : "border-secondary dark:border-gray-800 hover:border-primary/50"
+                                                                    )}
+                                                                >
+                                                                    <div className="flex items-center justify-between mb-2">
+                                                                        <span className="text-xs font-semibold text-primary">{t('property')}</span>
+                                                                        {formData.selectedPropertyId === p.id && <CheckCircle className="w-5 h-5 text-primary" />}
+                                                                    </div>
+                                                                    <p className="font-bold text-lg text-foreground">{p.address}</p>
+                                                                    <p className="text-sm text-muted-foreground">{p.city}</p>
+                                                                </button>
+                                                            ))}
                                                         </div>
                                                     </div>
+                                                ) : (
+                                                    <div className="space-y-4">
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            {/* Asset Type */}
+                                                            <div className="space-y-2">
+                                                                <label className="text-sm font-medium flex items-center gap-2">{t('propertyType')} <ConfidenceDot field="property_type" /></label>
+                                                                <PropertyTypeSelect
+                                                                    value={formData.property_type as any}
+                                                                    onChange={(val) => setValue('property_type', val as any)}
+                                                                />
+                                                            </div>
 
-                                                    <div className="grid grid-cols-2 gap-4">
-                                                        <div className="space-y-2">
-                                                            <DatePicker
-                                                                label={<span>{t('startDate')} <span className="text-red-500">*</span></span>}
-                                                                value={formData.startDate ? parseISO(formData.startDate) : undefined}
-                                                                onChange={(date) => {
-                                                                    const startDateStr = date ? format(date, 'yyyy-MM-dd') : '';
-                                                                    const prevStartDateStr = formData.startDate;
-                                                                    const prevEndDateStr = formData.endDate;
-
-                                                                    let newEndDateStr = prevEndDateStr;
-
-                                                                    // Check if the current end date was auto-calculated from the previous start date
-                                                                    let wasAutoCalculated = false;
-                                                                    if (prevStartDateStr && prevEndDateStr) {
-                                                                        const prevStart = parseISO(prevStartDateStr);
-                                                                        if (isValid(prevStart)) {
-                                                                            const expectedPrevEnd = format(subDays(addYears(prevStart, 1), 1), 'yyyy-MM-dd');
-                                                                            wasAutoCalculated = expectedPrevEnd === prevEndDateStr;
-                                                                        }
-                                                                    }
-
-                                                                    // Update end date if it's empty OR it was auto-calculated previously
-                                                                    if (date && (!prevEndDateStr || wasAutoCalculated)) {
-                                                                        const calculatedEnd = subDays(addYears(date, 1), 1);
-                                                                        newEndDateStr = format(calculatedEnd, 'yyyy-MM-dd');
-                                                                    }
-
-                                                                    setValue('startDate', startDateStr);
-                                                                    setValue('endDate', newEndDateStr);
-                                                                }}
-                                                                disabledDays={blockedIntervals}
-                                                                error={hasOverlap || (!formData.startDate && step === 3)}
-                                                                placeholder={t('selectDate')}
-                                                            />
+                                                            {/* City */}
+                                                            <div className="space-y-2">
+                                                                <label className="text-sm font-medium flex items-center gap-2">{t('city')} <span className="text-red-500">*</span> {scannedQuotes.city && <Tooltip quote={scannedQuotes.city} />} <ConfidenceDot field="city" /></label>
+                                                                <GoogleAutocomplete
+                                                                    value={formData.city || ''}
+                                                                    onChange={val => setValue('city', val)}
+                                                                    className="w-full p-3 bg-background border border-border rounded-xl"
+                                                                    type="cities"
+                                                                    error={!!errors.city}
+                                                                />
+                                                            </div>
                                                         </div>
+
+                                                        {/* Address */}
                                                         <div className="space-y-2">
-                                                            <DatePicker
-                                                                label={<span>{t('endDate')} <span className="text-red-500">*</span></span>}
-                                                                value={formData.endDate ? parseISO(formData.endDate) : undefined}
-                                                                onChange={(date) => setValue('endDate', date ? format(date, 'yyyy-MM-dd') : '')}
-                                                                minDate={formData.startDate ? parseISO(formData.startDate) : undefined}
-                                                                disabledDays={blockedIntervals}
-                                                                error={!formData.endDate && step === 3}
-                                                                placeholder={t('selectDate')}
-                                                            />
-                                                            {formData.startDate && formData.endDate && (
-                                                                <div className="text-xs text-muted-foreground bg-secondary/30 p-2 rounded-lg flex items-center gap-2">
-                                                                    <Calendar className="w-3 h-3" />
-                                                                    <span>
-                                                                        {t('contractDuration')}:
-                                                                        <span className="font-bold text-foreground">
-                                                                            {(() => {
-                                                                                const start = new Date(formData.startDate);
-                                                                                const end = new Date(formData.endDate);
-                                                                                const diffTime = Math.abs(end.getTime() - start.getTime());
-                                                                                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Include end date
+                                                            <label className="text-sm font-medium flex items-center gap-2">{t('address')} <span className="text-red-500">*</span> {scannedQuotes.street && <Tooltip quote={scannedQuotes.street} />} <ConfidenceDot field="address" /></label>
+                                                            <div className="relative">
+                                                                <MapPin className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10 pointer-events-none" />
+                                                                <GoogleAutocomplete
+                                                                    value={formData.address || ''}
+                                                                    onChange={(val) => setValue('address', val)}
+                                                                    className="w-full p-3 bg-background border border-border rounded-xl ps-10"
+                                                                    type="address"
+                                                                    biasCity={formData.city}
+                                                                    placeholder={t('searchProperty')}
+                                                                    error={!!errors.address}
+                                                                />
+                                                            </div>
+                                                        </div>
 
-                                                                                const months = Math.floor(diffDays / 30);
-                                                                                const years = Math.floor(months / 12);
-                                                                                const remainingMonths = months % 12;
+                                                        {/* Specs */}
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div className="space-y-2">
+                                                                <label className="text-sm font-medium flex items-center gap-2">{t('rooms')} <ConfidenceDot field="rooms" /></label>
+                                                                <input
+                                                                    type="text"
+                                                                    value={formData.rooms?.toString() || ''}
+                                                                    onChange={e => {
+                                                                        const val = e.target.value;
+                                                                        setValue('rooms', val === '' ? undefined : parseFloat(val) as any);
+                                                                    }}
+                                                                    className="w-full p-3 bg-background border border-border rounded-xl no-spinner"
+                                                                />
+                                                            </div>
+                                                            <div className="space-y-2">
+                                                                <label className="text-sm font-medium flex items-center gap-2">{t('sizeSqm')} <ConfidenceDot field="size" /></label>
+                                                                <input
+                                                                    type="text"
+                                                                    value={formData.size?.toString() || ''}
+                                                                    onChange={e => {
+                                                                        const val = e.target.value;
+                                                                        setValue('size', val === '' ? undefined : parseFloat(val) as any);
+                                                                    }}
+                                                                    className="w-full p-3 bg-background border border-border rounded-xl no-spinner"
+                                                                />
+                                                            </div>
+                                                        </div>
 
-                                                                                if (years > 0) return ` ${years} ${t('years')}${remainingMonths > 0 ? ` ${t('and')}${remainingMonths} ${t('months')}` : ''}`;
-                                                                                if (months > 0) return ` ${months} ${t('months')}`;
-                                                                                return ` ${diffDays} ${t('days')}`;
-                                                                            })()}
-                                                                        </span>
+                                                        {/* Amenities */}
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <label className={cn(
+                                                                "flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer",
+                                                                formData.hasBalcony ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                                                            )}>
+                                                                <input type="checkbox" className="hidden" checked={formData.hasBalcony} onChange={e => setValue('hasBalcony', e.target.checked)} />
+                                                                <div className="p-2 bg-secondary rounded-full text-foreground"><Wind className="w-5 h-5" /></div>
+                                                                <span className="font-medium flex items-center gap-2">{t('balcony')} <ConfidenceDot field="hasBalcony" /></span>
+                                                            </label>
+
+                                                            <label className={cn(
+                                                                "flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer",
+                                                                formData.hasSafeRoom ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                                                            )}>
+                                                                <input type="checkbox" className="hidden" checked={formData.hasSafeRoom} onChange={e => setValue('hasSafeRoom', e.target.checked)} />
+                                                                <div className="p-2 bg-secondary rounded-full text-foreground"><ShieldCheck className="w-5 h-5" /></div>
+                                                                <span className="font-medium flex items-center gap-2">{t('safeRoom')} <ConfidenceDot field="hasSafeRoom" /></span>
+                                                            </label>
+
+                                                            <label className={cn(
+                                                                "flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer",
+                                                                formData.hasParking ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                                                            )}>
+                                                                <input type="checkbox" className="hidden" checked={formData.hasParking} onChange={e => setValue('hasParking', e.target.checked)} />
+                                                                <div className="p-2 bg-secondary rounded-full text-foreground"><Car className="w-5 h-5" /></div>
+                                                                <span className="font-medium flex items-center gap-2">{t('parking')} <ConfidenceDot field="hasParking" /></span>
+                                                            </label>
+
+                                                            <label className={cn(
+                                                                "flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer",
+                                                                formData.hasStorage ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                                                            )}>
+                                                                <input type="checkbox" className="hidden" checked={formData.hasStorage} onChange={e => setValue('hasStorage', e.target.checked)} />
+                                                                <div className="p-2 bg-secondary rounded-full text-foreground"><Box className="w-5 h-5" /></div>
+                                                                <span className="font-medium flex items-center gap-2">{t('storage')} <ConfidenceDot field="hasStorage" /></span>
+                                                            </label>
+                                                        </div>
+
+                                                        {/* Image Section */}
+                                                        <div className="space-y-3 pt-2">
+                                                            <label className="text-sm font-medium">{t('propertyImage')}</label>
+
+                                                            {/* Toggle Tabs */}
+                                                            <div className="flex p-1 bg-secondary/50 rounded-lg w-fit">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setUploadMode('upload')}
+                                                                    className={cn("px-3 py-1.5 text-xs font-medium rounded-md transition-all", uploadMode === 'upload' ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}
+                                                                >
+                                                                    {t('uploadFile')}
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setUploadMode('url');
+                                                                        handleGoogleMapsFetch();
+                                                                    }}
+                                                                    className={cn("px-3 py-1.5 text-xs font-medium rounded-md transition-all", uploadMode === 'url' ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground")}
+                                                                >
+                                                                    {t('importFromGoogle')}
+                                                                </button>
+                                                            </div>
+
+                                                            {uploadMode === 'url' && isFetchingMap && (
+                                                                <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-border rounded-lg bg-secondary/10">
+                                                                    <Loader2 className="w-8 h-8 text-primary animate-spin mb-2" />
+                                                                    <span className="text-xs text-muted-foreground animate-pulse">
+                                                                        {t('fetchingStreetView') || 'Fetching Street View...'}
                                                                     </span>
                                                                 </div>
                                                             )}
+                                                            {uploadMode === 'upload' && (
+                                                                <div className="space-y-2">
+                                                                    <div className="relative border-2 border-dashed border-border rounded-lg p-4 hover:bg-secondary/20 transition-colors text-center cursor-pointer group">
+                                                                        <input
+                                                                            type="file"
+                                                                            accept="image/*"
+                                                                            disabled={isUploading}
+                                                                            onChange={handleFileUpload}
+                                                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                                                                        />
+                                                                        <div className="flex flex-col items-center gap-2">
+                                                                            {isUploading ? (
+                                                                                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                                                                            ) : (
+                                                                                <Upload className="w-8 h-8 text-muted-foreground group-hover:text-primary transition-colors" />
+                                                                            )}
+                                                                            <span className="text-xs text-muted-foreground">
+                                                                                {isUploading ? t('uploading') : t('clickToUpload')}
+                                                                            </span>
+                                                                            {imageError && (
+                                                                                <span className="text-xs text-red-500 mt-1">{imageError}</span>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+
+                                                            {/* Preview */}
+                                                            {formData.image_url && (
+                                                                <div className="relative w-full h-48 rounded-lg overflow-hidden border border-border bg-secondary/10 mt-2">
+                                                                    <img
+                                                                        src={formData.image_url}
+                                                                        alt="Preview"
+                                                                        className="w-full h-full object-cover"
+                                                                        onError={(e) => {
+                                                                            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=2070&auto=format&fit=crop';
+                                                                        }}
+                                                                    />
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setValue('image_url', '')}
+                                                                        className="absolute top-2 right-2 p-1.5 bg-white/90 text-red-500 rounded-full shadow-sm hover:bg-white"
+                                                                    >
+                                                                        <Trash2 className="w-4 h-4" />
+                                                                    </button>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
+                                                )}
+                                            </div>
+                                        </motion.div>
+                                    )
+                                )}
 
-                                                    <div className="space-y-3">
-                                                        <div className="flex items-center justify-between">
-                                                            <label className="text-sm font-medium flex items-center gap-2">
-                                                                {t('optionPeriods')}
-                                                                {scannedQuotes.optionPeriod && <Tooltip quote={scannedQuotes.optionPeriod} />} <ConfidenceDot field="optionPeriod" />
-                                                            </label>
+                                {step === 2 && (
+                                    <motion.div
+                                        key="step2"
+                                        initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
+                                        className="space-y-6"
+                                    >
+                                        <div className="space-y-4">
+                                            {/* AI Scan Banner moved to Tenant details when asset is pre-set or as alternative scan point */}
+                                            {!contractFile && (
+                                                <div className="bg-gradient-to-l from-blue-600 to-indigo-600 rounded-xl p-6 text-white flex items-center justify-between shadow-lg mb-4">
+                                                    <div>
+                                                        <h3 className="font-bold text-lg mb-1">{t('aiScanTitle')}</h3>
+                                                        <p className="text-blue-100 text-sm opacity-90">{t('aiScanDesc')}</p>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => setIsScanning(true)}
+                                                        className="bg-white text-primary px-4 py-2 rounded-lg font-bold text-sm hover:bg-primary/10 transition-colors shadow-sm"
+                                                    >
+                                                        {t('scanNow')}
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {contractFile && (
+                                                <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3 text-green-700 mb-4">
+                                                    <Check className="w-5 h-5" />
+                                                    <span className="font-medium text-sm">{t('contractScannedSuccess')}</span>
+                                                </div>
+                                            )}
+
+                                            <div className="flex items-center justify-between">
+                                                <h3 className="font-semibold text-lg flex items-center gap-2"><User className="w-4 h-4" /> {t('tenantDetails')}</h3>
+                                            </div>
+
+                                            <div className="space-y-6">
+                                                {formData.tenants.map((tenant, index) => (
+                                                    <div key={index} className="p-4 border border-border rounded-2xl space-y-4 relative bg-secondary/5 group transition-colors hover:bg-secondary/10">
+                                                        {formData.tenants.length > 1 && (
                                                             <button
                                                                 type="button"
                                                                 onClick={() => {
-                                                                    const lastOption = formData.optionPeriods[formData.optionPeriods.length - 1];
-                                                                    const baseDateStr = lastOption?.endDate || formData.endDate;
-                                                                    let defaultDate = '';
-
-                                                                    if (baseDateStr) {
-                                                                        const baseDate = parseISO(baseDateStr);
-                                                                        if (isValid(baseDate)) {
-                                                                            defaultDate = format(addYears(baseDate, 1), 'yyyy-MM-dd');
-                                                                        }
-                                                                    }
-
-                                                                    setValue('optionPeriods', [...formData.optionPeriods, { endDate: defaultDate, rentAmount: null as any, currency: 'ILS' }]);
+                                                                    const newTenants = [...formData.tenants];
+                                                                    newTenants.splice(index, 1);
+                                                                    setValue('tenants', newTenants);
                                                                 }}
-                                                                className="text-xs text-primary hover:text-primary font-medium flex items-center gap-1"
+                                                                className="absolute top-3 left-3 p-1.5 text-red-500 hover:bg-red-50 rounded-full transition-colors opacity-0 group-hover:opacity-100"
                                                             >
-                                                                <Plus className="w-3 h-3" /> {t('addPeriod')}
+                                                                <Trash2 className="w-4 h-4" />
                                                             </button>
-                                                        </div>
-
-                                                        {formData.optionPeriods.length === 0 && (
-                                                            <div className="text-sm text-muted-foreground italic p-3 bg-secondary rounded-xl text-center border border-dashed border-border">
-                                                                {t('noOptionPeriods')}
-                                                            </div>
                                                         )}
 
-                                                        <div className="space-y-3">
-                                                            {formData.optionPeriods.map((period, idx) => (
-                                                                <div key={idx} className="flex gap-2 items-end bg-secondary/10 p-3 rounded-xl">
-                                                                    <div className="flex-1 space-y-2">
+                                                        <div className="space-y-2">
+                                                            <label className="text-sm font-medium flex items-center gap-2">
+                                                                {t('fullName')} <span className="text-red-500">*</span>
+                                                                {index === 0 && scannedQuotes.tenantName && <Tooltip quote={scannedQuotes.tenantName} />}
+                                                                {index === 0 && <ConfidenceDot field="tenants" />}
+                                                            </label>
+                                                            <input
+                                                                value={tenant.name}
+                                                                onChange={e => {
+                                                                    const newTenants = [...formData.tenants];
+                                                                    newTenants[index].name = e.target.value;
+                                                                    setValue('tenants', newTenants);
+                                                                }}
+                                                                className={cn(
+                                                                    "w-full p-3 bg-background border rounded-xl transition-all duration-300",
+                                                                    (!tenant.name && index === 0 && step === 2) ? "border-red-500 ring-1 ring-red-500" : "border-border"
+                                                                )}
+                                                            />
+                                                        </div>
+
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div className="space-y-2">
+                                                                <label className="text-sm font-medium">{t('idNumber')}</label>
+                                                                <input
+                                                                    value={tenant.id_number}
+                                                                    onChange={e => {
+                                                                        const newTenants = [...formData.tenants];
+                                                                        newTenants[index].id_number = e.target.value;
+                                                                        setValue('tenants', newTenants);
+                                                                    }}
+                                                                    className="w-full p-3 bg-background border border-border rounded-xl font-mono"
+                                                                />
+                                                            </div>
+                                                            <div className="space-y-2">
+                                                                <label className="text-sm font-medium">{t('phone')}</label>
+                                                                <input
+                                                                    value={tenant.phone}
+                                                                    onChange={e => {
+                                                                        const newTenants = [...formData.tenants];
+                                                                        newTenants[index].phone = e.target.value;
+                                                                        setValue('tenants', newTenants);
+                                                                    }}
+                                                                    className="w-full p-3 bg-background border border-border rounded-xl"
+                                                                    dir="ltr"
+                                                                />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="space-y-2">
+                                                            <label className="text-sm font-medium">{t('email')}</label>
+                                                            <input
+                                                                value={tenant.email}
+                                                                onChange={e => {
+                                                                    const newTenants = [...formData.tenants];
+                                                                    newTenants[index].email = e.target.value;
+                                                                    setValue('tenants', newTenants);
+                                                                }}
+                                                                className="w-full p-3 bg-background border border-border rounded-xl"
+                                                                type="email"
+                                                                dir="ltr"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
+                                {step === 3 && (
+                                    <motion.div
+                                        key="step3"
+                                        initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
+                                        className="space-y-6"
+                                    >
+                                        <div className="space-y-6">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <DatePicker
+                                                        label={t('signingDate')}
+                                                        value={formData.signingDate ? parseISO(formData.signingDate) : undefined}
+                                                        onChange={(date) => {
+                                                            const dateStr = date ? format(date, 'yyyy-MM-dd') : '';
+                                                            setValue('signingDate', dateStr);
+                                                            // Pre-fill base index date if it's empty
+                                                            if (dateStr && !formData.baseIndexDate) {
+                                                                setValue('baseIndexDate', dateStr);
+                                                            }
+                                                        }}
+                                                        placeholder={t('selectDate')}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <DatePicker
+                                                        label={<span>{t('startDate')} <span className="text-red-500">*</span></span>}
+                                                        value={formData.startDate ? parseISO(formData.startDate) : undefined}
+                                                        onChange={(date) => {
+                                                            const startDateStr = date ? format(date, 'yyyy-MM-dd') : '';
+                                                            const prevStartDateStr = formData.startDate;
+                                                            const prevEndDateStr = formData.endDate;
+
+                                                            let newEndDateStr = prevEndDateStr;
+
+                                                            // Check if the current end date was auto-calculated from the previous start date
+                                                            let wasAutoCalculated = false;
+                                                            if (prevStartDateStr && prevEndDateStr) {
+                                                                const prevStart = parseISO(prevStartDateStr);
+                                                                if (isValid(prevStart)) {
+                                                                    const expectedPrevEnd = format(subDays(addYears(prevStart, 1), 1), 'yyyy-MM-dd');
+                                                                    wasAutoCalculated = expectedPrevEnd === prevEndDateStr;
+                                                                }
+                                                            }
+
+                                                            // Update end date if it's empty OR it was auto-calculated previously
+                                                            if (date && (!prevEndDateStr || wasAutoCalculated)) {
+                                                                const calculatedEnd = subDays(addYears(date, 1), 1);
+                                                                newEndDateStr = format(calculatedEnd, 'yyyy-MM-dd');
+                                                            }
+
+                                                            setValue('startDate', startDateStr);
+                                                            setValue('endDate', newEndDateStr);
+                                                        }}
+                                                        disabledDays={blockedIntervals}
+                                                        error={hasOverlap || (!formData.startDate && step === 3)}
+                                                        placeholder={t('selectDate')}
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <DatePicker
+                                                        label={<span>{t('endDate')} <span className="text-red-500">*</span></span>}
+                                                        value={formData.endDate ? parseISO(formData.endDate) : undefined}
+                                                        onChange={(date) => setValue('endDate', date ? format(date, 'yyyy-MM-dd') : '')}
+                                                        minDate={formData.startDate ? parseISO(formData.startDate) : undefined}
+                                                        disabledDays={blockedIntervals}
+                                                        error={!formData.endDate && step === 3}
+                                                        placeholder={t('selectDate')}
+                                                    />
+                                                    {formData.startDate && formData.endDate && (
+                                                        <div className="text-xs text-muted-foreground bg-secondary/30 p-2 rounded-lg flex items-center gap-2">
+                                                            <Calendar className="w-3 h-3" />
+                                                            <span>
+                                                                {t('contractDuration')}:
+                                                                <span className="font-bold text-foreground">
+                                                                    {(() => {
+                                                                        const start = new Date(formData.startDate);
+                                                                        const end = new Date(formData.endDate);
+                                                                        const diffTime = Math.abs(end.getTime() - start.getTime());
+                                                                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Include end date
+
+                                                                        const months = Math.floor(diffDays / 30);
+                                                                        const years = Math.floor(months / 12);
+                                                                        const remainingMonths = months % 12;
+
+                                                                        if (years > 0) return ` ${years} ${t('years')}${remainingMonths > 0 ? ` ${t('and')}${remainingMonths} ${t('months')}` : ''}`;
+                                                                        if (months > 0) return ` ${months} ${t('months')}`;
+                                                                        return ` ${diffDays} ${t('days')}`;
+                                                                    })()}
+                                                                </span>
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-3">
+                                                <div className="flex items-center justify-between">
+                                                    <label className="text-sm font-medium flex items-center gap-2">
+                                                        {t('optionPeriods')}
+                                                        {scannedQuotes.optionPeriod && <Tooltip quote={scannedQuotes.optionPeriod} />} <ConfidenceDot field="optionPeriod" />
+                                                    </label>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const lastOption = formData.optionPeriods[formData.optionPeriods.length - 1];
+                                                            const baseDateStr = lastOption?.endDate || formData.endDate;
+                                                            let defaultDate = '';
+
+                                                            if (baseDateStr) {
+                                                                const baseDate = parseISO(baseDateStr);
+                                                                if (isValid(baseDate)) {
+                                                                    defaultDate = format(addYears(baseDate, 1), 'yyyy-MM-dd');
+                                                                }
+                                                            }
+
+                                                            setValue('optionPeriods', [...formData.optionPeriods, { endDate: defaultDate, rentAmount: null as any, currency: 'ILS' }]);
+                                                        }}
+                                                        className="text-xs text-primary hover:text-primary font-medium flex items-center gap-1"
+                                                    >
+                                                        <Plus className="w-3 h-3" /> {t('addPeriod')}
+                                                    </button>
+                                                </div>
+
+                                                {formData.optionPeriods.length === 0 && (
+                                                    <div className="text-sm text-muted-foreground italic p-3 bg-secondary rounded-xl text-center border border-dashed border-border">
+                                                        {t('noOptionPeriods')}
+                                                    </div>
+                                                )}
+
+                                                <div className="space-y-3">
+                                                    {formData.optionPeriods.map((period, idx) => (
+                                                        <div key={idx} className="flex gap-2 items-end bg-secondary/10 p-3 rounded-xl">
+                                                            <div className="flex-1 space-y-2">
+                                                                <DatePicker
+                                                                    label={`${t('extensionEndDate')} ${idx + 1}`}
+                                                                    value={period.endDate ? parseISO(period.endDate) : undefined}
+                                                                    onChange={(date) => {
+                                                                        const newPeriods = [...formData.optionPeriods];
+                                                                        newPeriods[idx].endDate = date ? format(date, 'yyyy-MM-dd') : '';
+                                                                        setValue('optionPeriods', newPeriods);
+                                                                    }}
+                                                                    minDate={idx === 0
+                                                                        ? (formData.endDate ? parseISO(formData.endDate) : undefined)
+                                                                        : (formData.optionPeriods[idx - 1].endDate ? parseISO(formData.optionPeriods[idx - 1].endDate) : undefined)
+                                                                    }
+                                                                    className="w-full"
+                                                                />
+                                                            </div>
+
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const newPeriods = formData.optionPeriods.filter((_, i) => i !== idx);
+                                                                    setValue('optionPeriods', newPeriods);
+                                                                }}
+                                                                className="p-3 text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-border/50 h-[46px]"
+                                                            >
+                                                                <Trash2 className="w-5 h-5" />
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+
+                                                {/* Extension Notice Days */}
+                                                {formData.optionPeriods.length > 0 && (
+                                                    <div className="pt-4 border-t border-border/50 animate-in fade-in slide-in-from-top-2 duration-300">
+                                                        <div className="space-y-2">
+                                                            <label className="text-sm font-medium flex items-center gap-2">
+                                                                {t('extensionNoticeDays')}
+                                                            </label>
+                                                            <div className="relative">
+                                                                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                                                <input
+                                                                    type="text"
+                                                                    value={formatNumber(formData.optionNoticeDays)}
+                                                                    onChange={e => {
+                                                                        const val = parseNumber(e.target.value);
+                                                                        if (/^\d*$/.test(val)) setValue('optionNoticeDays', val as any);
+                                                                    }}
+                                                                    className="w-full p-3 pl-10 bg-background border border-border rounded-xl no-spinner"
+                                                                    placeholder="e.g. 60"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
+
+                                {
+                                    step === 4 && (
+                                        <motion.div
+                                            key="step4"
+                                            initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
+                                            className="space-y-6"
+                                        >
+                                            <h3 className="font-semibold text-lg flex items-center gap-2"><SettingsIcon className="w-4 h-4" /> {t('paymentDetails')}</h3>
+
+                                            <div className="space-y-6">
+                                                {/* 1. Rent Amount */}
+                                                <div className="space-y-3">
+                                                    <label className="text-sm font-medium flex items-center gap-2">
+                                                        {t('monthlyRent')} <span className="text-red-500">*</span>
+                                                        {scannedQuotes.rent && <Tooltip quote={scannedQuotes.rent} />} <ConfidenceDot field="rent" />
+                                                    </label>
+                                                    <div className="relative">
+                                                        <span className="absolute left-4 top-3 text-muted-foreground">{formData.currency === 'ILS' ? '₪' : formData.currency === 'USD' ? '₪' : '€'}</span>
+                                                        <input
+                                                            type="text"
+                                                            value={formatNumber(formData.rent)}
+                                                            onChange={e => {
+                                                                const val = parseNumber(e.target.value);
+                                                                if (/^\d*\.?\d*$/.test(val)) setValue('rent', val as any);
+                                                            }}
+                                                            className={cn(
+                                                                "w-full pl-8 p-3 bg-background border rounded-xl font-bold text-lg no-spinner transition-all duration-300",
+                                                                ((!formData.rent || formData.rent <= 0) && step === 4) ? "border-red-500 ring-1 ring-red-500" : "border-border"
+                                                            )}
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                {/* Extension Rent Amount(s) - Moved here from Step 3 */}
+                                                {formData.optionPeriods.map((period, idx) => (
+                                                    <div key={idx} className="space-y-3 p-4 bg-secondary/10 rounded-2xl border border-dashed border-border animate-in fade-in slide-in-from-top-2 duration-300">
+                                                        <label className="text-sm font-medium flex items-center gap-2">
+                                                            {t('stepOptionRent')} {formData.optionPeriods.length > 1 ? idx + 1 : ''}
+                                                            <span className="text-xs text-muted-foreground font-normal">
+                                                                ({period.endDate ? formatDate(period.endDate) : t('noEndDate')})
+                                                            </span>
+                                                        </label>
+                                                        <div className="relative">
+                                                            <span className="absolute left-4 top-3 text-muted-foreground">{formData.currency === 'ILS' ? '₪' : formData.currency === 'USD' ? '₪' : '€'}</span>
+                                                            <input
+                                                                type="text"
+                                                                value={formatNumber(period.rentAmount)}
+                                                                onChange={e => {
+                                                                    const val = parseNumber(e.target.value);
+                                                                    if (/^\d*\.?\d*$/.test(val)) {
+                                                                        const newPeriods = [...formData.optionPeriods];
+                                                                        newPeriods[idx].rentAmount = val as any;
+                                                                        setValue('optionPeriods', newPeriods);
+                                                                    }
+                                                                }}
+                                                                className="w-full pl-8 p-3 bg-background border border-border rounded-xl font-bold text-lg no-spinner"
+                                                                placeholder="0"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                ))}
+
+                                                {/* 2. Frequency & Method Grid */}
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium flex items-center gap-2">{t('paymentFrequency')} <ConfidenceDot field="paymentFrequency" /></label>
+                                                        <div className="relative">
+                                                            <select
+                                                                value={formData.paymentFrequency}
+                                                                onChange={e => setValue('paymentFrequency', e.target.value as any)}
+                                                                className="w-full p-3 bg-background border border-border rounded-xl appearance-none pr-10"
+                                                            >
+                                                                <option value="Monthly">{t('monthly')}</option>
+                                                                <option value="Quarterly">{t('quarterly')}</option>
+                                                                <option value="Annually">{t('annually')}</option>
+                                                            </select>
+                                                            <ChevronDown className="absolute left-3 top-3.5 w-4 h-4 text-muted-foreground pointer-events-none" />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium flex items-center gap-2">{t('paymentMethod')} <ConfidenceDot field="paymentMethod" /></label>
+                                                        <div className="relative">
+                                                            <select
+                                                                value={formData.paymentMethod}
+                                                                onChange={e => setValue('paymentMethod', e.target.value as any)}
+                                                                className="w-full p-3 bg-background border border-border rounded-xl appearance-none pr-10"
+                                                            >
+                                                                <option value="Transfer">{t('transfer')}</option>
+                                                                <option value="Checks">{t('check')}</option>
+                                                                <option value="Cash">{t('cash')}</option>
+                                                                <option value="bit">{t('bit')}</option>
+                                                                <option value="paybox">{t('paybox')}</option>
+                                                                <option value="Other">{t('other')}</option>
+                                                            </select>
+                                                            <ChevronDown className="absolute left-3 top-3.5 w-4 h-4 text-muted-foreground pointer-events-none" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* 3. Rent Steps (מדרגות שכר דירה) */}
+                                                <div className="space-y-3 pt-2 border-t border-border/50">
+                                                    <div className="flex items-center justify-between">
+                                                        <label className="text-sm font-medium flex items-center gap-2">{t('rentSteps')} {t('optional')} <ConfidenceDot field="rentSteps" /></label>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setValue('rentSteps', [...formData.rentSteps, { startDate: '', amount: null as any, currency: 'ILS' }])}
+                                                            className="text-xs text-primary hover:text-primary font-bold flex items-center gap-1 bg-primary/5 px-2 py-1 rounded-lg"
+                                                        >
+                                                            <Plus className="w-3 h-3" /> {t('addStep')}
+                                                        </button>
+                                                    </div>
+
+                                                    {formData.rentSteps.length > 0 && (
+                                                        <div className="space-y-2 bg-secondary/10 p-3 rounded-xl">
+                                                            {formData.rentSteps.map((step, idx) => (
+                                                                <div key={idx} className="flex gap-2 items-end">
+                                                                    <div className="flex-[2] space-y-1">
+                                                                        <label className="text-[10px] text-muted-foreground font-bold">{t('stepDate')}</label>
                                                                         <DatePicker
-                                                                            label={`${t('extensionEndDate')} ${idx + 1}`}
-                                                                            value={period.endDate ? parseISO(period.endDate) : undefined}
+                                                                            value={step.startDate ? parseISO(step.startDate) : undefined}
                                                                             onChange={(date) => {
-                                                                                const newPeriods = [...formData.optionPeriods];
-                                                                                newPeriods[idx].endDate = date ? format(date, 'yyyy-MM-dd') : '';
-                                                                                setValue('optionPeriods', newPeriods);
+                                                                                const newSteps = [...formData.rentSteps];
+                                                                                newSteps[idx].startDate = date ? format(date, 'yyyy-MM-dd') : '';
+                                                                                setValue('rentSteps', newSteps);
                                                                             }}
-                                                                            minDate={idx === 0
-                                                                                ? (formData.endDate ? parseISO(formData.endDate) : undefined)
-                                                                                : (formData.optionPeriods[idx - 1].endDate ? parseISO(formData.optionPeriods[idx - 1].endDate) : undefined)
-                                                                            }
                                                                             className="w-full"
                                                                         />
                                                                     </div>
-
+                                                                    <div className="flex-1 space-y-1">
+                                                                        <label className="text-[10px] text-muted-foreground font-bold">{t('newAmount')}</label>
+                                                                        <div className="relative">
+                                                                            <span className="absolute left-2 top-2 text-[10px] text-muted-foreground opacity-50">{formData.currency === 'ILS' ? '₪' : formData.currency === 'USD' ? '₪' : '€'}</span>
+                                                                            <input
+                                                                                type="text"
+                                                                                value={formatNumber(step.amount)}
+                                                                                onChange={e => {
+                                                                                    const val = parseNumber(e.target.value);
+                                                                                    if (/^\d*\.?\d*$/.test(val)) {
+                                                                                        const newSteps = [...formData.rentSteps];
+                                                                                        newSteps[idx].amount = val as any;
+                                                                                        setValue('rentSteps', newSteps);
+                                                                                    }
+                                                                                }}
+                                                                                className="w-full p-2 pl-6 text-xs bg-background border border-border rounded-lg no-spinner font-bold"
+                                                                            />
+                                                                        </div>
+                                                                    </div>
                                                                     <button
                                                                         type="button"
                                                                         onClick={() => {
-                                                                            const newPeriods = formData.optionPeriods.filter((_, i) => i !== idx);
-                                                                            setValue('optionPeriods', newPeriods);
+                                                                            const newSteps = formData.rentSteps.filter((_, i) => i !== idx);
+                                                                            setValue('rentSteps', newSteps);
                                                                         }}
-                                                                        className="p-3 text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-border/50 h-[46px]"
+                                                                        className="p-2 mb-[1px] text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                                                                     >
-                                                                        <Trash2 className="w-5 h-5" />
+                                                                        <Trash2 className="w-4 h-4" />
                                                                     </button>
                                                                 </div>
                                                             ))}
                                                         </div>
-
-                                                        {/* Extension Notice Days */}
-                                                        {formData.optionPeriods.length > 0 && (
-                                                            <div className="pt-4 border-t border-border/50 animate-in fade-in slide-in-from-top-2 duration-300">
-                                                                <div className="space-y-2">
-                                                                    <label className="text-sm font-medium flex items-center gap-2">
-                                                                        {t('extensionNoticeDays')}
-                                                                    </label>
-                                                                    <div className="relative">
-                                                                        <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                                                        <input
-                                                                            type="text"
-                                                                            value={formatNumber(formData.optionNoticeDays)}
-                                                                            onChange={e => {
-                                                                                const val = parseNumber(e.target.value);
-                                                                                if (/^\d*$/.test(val)) setValue('optionNoticeDays', val as any);
-                                                                            }}
-                                                                            className="w-full p-3 pl-10 bg-background border border-border rounded-xl no-spinner"
-                                                                            placeholder="e.g. 60"
-                                                                        />
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                    </div>
+                                                    )}
                                                 </div>
-                                            </motion.div>
-                                        )}
 
-                                        {
-                                            step === 4 && (
-                                                <motion.div
-                                                    key="step4"
-                                                    initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
-                                                    className="space-y-6"
-                                                >
-                                                    <h3 className="font-semibold text-lg flex items-center gap-2"><SettingsIcon className="w-4 h-4" /> {t('paymentDetails')}</h3>
-
-                                                    <div className="space-y-6">
-                                                        {/* 1. Rent Amount */}
-                                                        <div className="space-y-3">
-                                                            <label className="text-sm font-medium flex items-center gap-2">
-                                                                {t('monthlyRent')} <span className="text-red-500">*</span>
-                                                                {scannedQuotes.rent && <Tooltip quote={scannedQuotes.rent} />} <ConfidenceDot field="rent" />
-                                                            </label>
-                                                            <div className="relative">
-                                                                <span className="absolute left-4 top-3 text-muted-foreground">{formData.currency === 'ILS' ? '₪' : formData.currency === 'USD' ? '₪' : '€'}</span>
-                                                                <input
-                                                                    type="text"
-                                                                    value={formatNumber(formData.rent)}
-                                                                    onChange={e => {
-                                                                        const val = parseNumber(e.target.value);
-                                                                        if (/^\d*\.?\d*$/.test(val)) setValue('rent', val as any);
-                                                                    }}
-                                                                    className={cn(
-                                                                        "w-full pl-8 p-3 bg-background border rounded-xl font-bold text-lg no-spinner transition-all duration-300",
-                                                                        ((!formData.rent || formData.rent <= 0) && step === 4) ? "border-red-500 ring-1 ring-red-500" : "border-border"
-                                                                    )}
-                                                                />
-                                                            </div>
+                                                {/* 4. Linkage Section (Checkbox first) */}
+                                                <div className="space-y-4 pt-2 border-t border-border/50">
+                                                    <label className="flex items-center gap-3 cursor-pointer p-4 border border-border rounded-2xl hover:bg-secondary/20 transition-all group">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={formData.hasLinkage}
+                                                            onChange={(e) => {
+                                                                const checked = e.target.checked;
+                                                                setValue('hasLinkage', checked);
+                                                                setValue('linkageType', checked ? (formData.linkageType === 'none' ? 'cpi' : formData.linkageType) : 'none');
+                                                                setValue('baseIndexDate', (checked && (!formData.baseIndexDate || formData.baseIndexDate === '')) ? formData.signingDate : formData.baseIndexDate);
+                                                            }}
+                                                            className="w-5 h-5 rounded-lg border-gray-300 text-primary focus:ring-primary"
+                                                        />
+                                                        <div className="flex-1">
+                                                            <span className="text-sm font-bold text-foreground block">
+                                                                {t('contractIsIndexed')}
+                                                            </span>
+                                                            <span className="text-xs text-muted-foreground">{t('contractIsIndexedDesc') || 'Apply index or currency linkage to rent payments'}</span>
                                                         </div>
+                                                    </label>
 
-                                                        {/* Extension Rent Amount(s) - Moved here from Step 3 */}
-                                                        {formData.optionPeriods.map((period, idx) => (
-                                                            <div key={idx} className="space-y-3 p-4 bg-secondary/10 rounded-2xl border border-dashed border-border animate-in fade-in slide-in-from-top-2 duration-300">
-                                                                <label className="text-sm font-medium flex items-center gap-2">
-                                                                    {t('stepOptionRent')} {formData.optionPeriods.length > 1 ? idx + 1 : ''}
-                                                                    <span className="text-xs text-muted-foreground font-normal">
-                                                                        ({period.endDate ? formatDate(period.endDate) : t('noEndDate')})
-                                                                    </span>
-                                                                </label>
-                                                                <div className="relative">
-                                                                    <span className="absolute left-4 top-3 text-muted-foreground">{formData.currency === 'ILS' ? '₪' : formData.currency === 'USD' ? '₪' : '€'}</span>
-                                                                    <input
-                                                                        type="text"
-                                                                        value={formatNumber(period.rentAmount)}
-                                                                        onChange={e => {
-                                                                            const val = parseNumber(e.target.value);
-                                                                            if (/^\d*\.?\d*$/.test(val)) {
-                                                                                const newPeriods = [...formData.optionPeriods];
-                                                                                newPeriods[idx].rentAmount = val as any;
-                                                                                setValue('optionPeriods', newPeriods);
-                                                                            }
-                                                                        }}
-                                                                        className="w-full pl-8 p-3 bg-background border border-border rounded-xl font-bold text-lg no-spinner"
-                                                                        placeholder="0"
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                        ))}
-
-                                                        {/* 2. Frequency & Method Grid */}
-                                                        <div className="grid grid-cols-2 gap-4">
+                                                    {formData.hasLinkage && (
+                                                        <motion.div
+                                                            initial={{ opacity: 0, height: 0 }}
+                                                            animate={{ opacity: 1, height: 'auto' }}
+                                                            className="space-y-4 bg-secondary/5 p-4 rounded-2xl border border-dashed border-border"
+                                                        >
+                                                            {/* Category Toggle: Currency vs Index */}
                                                             <div className="space-y-2">
-                                                                <label className="text-sm font-medium flex items-center gap-2">{t('paymentFrequency')} <ConfidenceDot field="paymentFrequency" /></label>
-                                                                <div className="relative">
-                                                                    <select
-                                                                        value={formData.paymentFrequency}
-                                                                        onChange={e => setValue('paymentFrequency', e.target.value as any)}
-                                                                        className="w-full p-3 bg-background border border-border rounded-xl appearance-none pr-10"
-                                                                    >
-                                                                        <option value="Monthly">{t('monthly')}</option>
-                                                                        <option value="Quarterly">{t('quarterly')}</option>
-                                                                        <option value="Annually">{t('annually')}</option>
-                                                                    </select>
-                                                                    <ChevronDown className="absolute left-3 top-3.5 w-4 h-4 text-muted-foreground pointer-events-none" />
-                                                                </div>
-                                                            </div>
-
-                                                            <div className="space-y-2">
-                                                                <label className="text-sm font-medium flex items-center gap-2">{t('paymentMethod')} <ConfidenceDot field="paymentMethod" /></label>
-                                                                <div className="relative">
-                                                                    <select
-                                                                        value={formData.paymentMethod}
-                                                                        onChange={e => setValue('paymentMethod', e.target.value as any)}
-                                                                        className="w-full p-3 bg-background border border-border rounded-xl appearance-none pr-10"
-                                                                    >
-                                                                        <option value="Transfer">{t('transfer')}</option>
-                                                                        <option value="Checks">{t('check')}</option>
-                                                                        <option value="Cash">{t('cash')}</option>
-                                                                        <option value="bit">{t('bit')}</option>
-                                                                        <option value="paybox">{t('paybox')}</option>
-                                                                        <option value="Other">{t('other')}</option>
-                                                                    </select>
-                                                                    <ChevronDown className="absolute left-3 top-3.5 w-4 h-4 text-muted-foreground pointer-events-none" />
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        {/* 3. Rent Steps (מדרגות שכר דירה) */}
-                                                        <div className="space-y-3 pt-2 border-t border-border/50">
-                                                            <div className="flex items-center justify-between">
-                                                                <label className="text-sm font-medium flex items-center gap-2">{t('rentSteps')} {t('optional')} <ConfidenceDot field="rentSteps" /></label>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => setValue('rentSteps', [...formData.rentSteps, { startDate: '', amount: null as any, currency: 'ILS' }])}
-                                                                    className="text-xs text-primary hover:text-primary font-bold flex items-center gap-1 bg-primary/5 px-2 py-1 rounded-lg"
-                                                                >
-                                                                    <Plus className="w-3 h-3" /> {t('addStep')}
-                                                                </button>
-                                                            </div>
-
-                                                            {formData.rentSteps.length > 0 && (
-                                                                <div className="space-y-2 bg-secondary/10 p-3 rounded-xl">
-                                                                    {formData.rentSteps.map((step, idx) => (
-                                                                        <div key={idx} className="flex gap-2 items-end">
-                                                                            <div className="flex-[2] space-y-1">
-                                                                                <label className="text-[10px] text-muted-foreground font-bold">{t('stepDate')}</label>
-                                                                                <DatePicker
-                                                                                    value={step.startDate ? parseISO(step.startDate) : undefined}
-                                                                                    onChange={(date) => {
-                                                                                        const newSteps = [...formData.rentSteps];
-                                                                                        newSteps[idx].startDate = date ? format(date, 'yyyy-MM-dd') : '';
-                                                                                        setValue('rentSteps', newSteps);
-                                                                                    }}
-                                                                                    className="w-full"
-                                                                                />
-                                                                            </div>
-                                                                            <div className="flex-1 space-y-1">
-                                                                                <label className="text-[10px] text-muted-foreground font-bold">{t('newAmount')}</label>
-                                                                                <div className="relative">
-                                                                                    <span className="absolute left-2 top-2 text-[10px] text-muted-foreground opacity-50">{formData.currency === 'ILS' ? '₪' : formData.currency === 'USD' ? '₪' : '€'}</span>
-                                                                                    <input
-                                                                                        type="text"
-                                                                                        value={formatNumber(step.amount)}
-                                                                                        onChange={e => {
-                                                                                            const val = parseNumber(e.target.value);
-                                                                                            if (/^\d*\.?\d*$/.test(val)) {
-                                                                                                const newSteps = [...formData.rentSteps];
-                                                                                                newSteps[idx].amount = val as any;
-                                                                                                setValue('rentSteps', newSteps);
-                                                                                            }
-                                                                                        }}
-                                                                                        className="w-full p-2 pl-6 text-xs bg-background border border-border rounded-lg no-spinner font-bold"
-                                                                                    />
-                                                                                </div>
-                                                                            </div>
-                                                                            <button
-                                                                                type="button"
-                                                                                onClick={() => {
-                                                                                    const newSteps = formData.rentSteps.filter((_, i) => i !== idx);
-                                                                                    setValue('rentSteps', newSteps);
-                                                                                }}
-                                                                                className="p-2 mb-[1px] text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                                                            >
-                                                                                <Trash2 className="w-4 h-4" />
-                                                                            </button>
-                                                                        </div>
+                                                                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('linkageCategory')}</label>
+                                                                <div className="flex bg-secondary/30 p-1 rounded-xl gap-1">
+                                                                    {[
+                                                                        { label: t('indexOption'), val: 'index' },
+                                                                        { label: t('foreignCurrency'), val: 'currency' }
+                                                                    ].map(cat => (
+                                                                        <button
+                                                                            key={cat.val}
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                const isNewCurrency = cat.val === 'currency';
+                                                                                setValue('linkageType', isNewCurrency ? 'usd' : 'cpi');
+                                                                                if (!formData.baseIndexDate) {
+                                                                                    setValue('baseIndexDate', formData.signingDate);
+                                                                                }
+                                                                            }}
+                                                                            className={cn(
+                                                                                "flex-1 py-2 text-xs font-bold rounded-lg transition-all border-none",
+                                                                                ((['usd', 'eur'].includes(formData.linkageType)) === (cat.val === 'currency'))
+                                                                                    ? "bg-white dark:bg-black text-foreground shadow-sm"
+                                                                                    : "text-muted-foreground hover:text-foreground bg-transparent"
+                                                                            )}
+                                                                        >
+                                                                            {cat.label}
+                                                                        </button>
                                                                     ))}
                                                                 </div>
-                                                            )}
-                                                        </div>
+                                                            </div>
 
-                                                        {/* 4. Linkage Section (Checkbox first) */}
-                                                        <div className="space-y-4 pt-2 border-t border-border/50">
-                                                            <label className="flex items-center gap-3 cursor-pointer p-4 border border-border rounded-2xl hover:bg-secondary/20 transition-all group">
-                                                                <input
-                                                                    type="checkbox"
-                                                                    checked={formData.hasLinkage}
-                                                                    onChange={(e) => {
-                                                                        const checked = e.target.checked;
-                                                                        setValue('hasLinkage', checked);
-                                                                        setValue('linkageType', checked ? (formData.linkageType === 'none' ? 'cpi' : formData.linkageType) : 'none');
-                                                                        setValue('baseIndexDate', (checked && (!formData.baseIndexDate || formData.baseIndexDate === '')) ? formData.signingDate : formData.baseIndexDate);
-                                                                    }}
-                                                                    className="w-5 h-5 rounded-lg border-gray-300 text-primary focus:ring-primary"
-                                                                />
-                                                                <div className="flex-1">
-                                                                    <span className="text-sm font-bold text-foreground block">
-                                                                        {t('contractIsIndexed')}
-                                                                    </span>
-                                                                    <span className="text-xs text-muted-foreground">{t('contractIsIndexedDesc') || 'Apply index or currency linkage to rent payments'}</span>
+                                                            {/* Specific Selection */}
+                                                            {['usd', 'eur'].includes(formData.linkageType) ? (
+                                                                <div className="space-y-2">
+                                                                    <label className="text-sm font-medium">{t('foreignCurrency')}</label>
+                                                                    <div className="relative">
+                                                                        <select
+                                                                            value={formData.linkageType}
+                                                                            onChange={(e) => setValue('linkageType', e.target.value as any)}
+                                                                            className="w-full p-3 bg-background border border-border rounded-xl appearance-none"
+                                                                        >
+                                                                            <option value="usd">{t('linkedToUsd')}</option>
+                                                                            <option value="eur">{t('linkedToEur')}</option>
+                                                                        </select>
+                                                                        <ChevronDown className="absolute left-3 top-3.5 w-4 h-4 text-muted-foreground pointer-events-none" />
+                                                                    </div>
                                                                 </div>
-                                                            </label>
-
-                                                            {formData.hasLinkage && (
-                                                                <motion.div
-                                                                    initial={{ opacity: 0, height: 0 }}
-                                                                    animate={{ opacity: 1, height: 'auto' }}
-                                                                    className="space-y-4 bg-secondary/5 p-4 rounded-2xl border border-dashed border-border"
-                                                                >
-                                                                    {/* Category Toggle: Currency vs Index */}
+                                                            ) : (
+                                                                <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                                                    {/* Index Choice Dropdown */}
                                                                     <div className="space-y-2">
-                                                                        <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('linkageCategory')}</label>
-                                                                        <div className="flex bg-secondary/30 p-1 rounded-xl gap-1">
-                                                                            {[
-                                                                                { label: t('indexOption'), val: 'index' },
-                                                                                { label: t('foreignCurrency'), val: 'currency' }
-                                                                            ].map(cat => (
+                                                                        <label className="text-sm font-medium">{t('indexOption')}</label>
+                                                                        <div className="relative">
+                                                                            <select
+                                                                                value={formData.linkageType}
+                                                                                onChange={(e) => setValue('linkageType', e.target.value as any)}
+                                                                                className="w-full p-3 bg-background border border-border rounded-xl appearance-none"
+                                                                            >
+                                                                                <option value="cpi">{t('linkedToCpi')}</option>
+                                                                                <option value="housing">{t('linkedToHousing')}</option>
+                                                                                <option value="construction">{t('linkedToConstruction')}</option>
+                                                                            </select>
+                                                                            <ChevronDown className="absolute left-3 top-3.5 w-4 h-4 text-muted-foreground pointer-events-none" />
+                                                                        </div>
+                                                                    </div>
+
+                                                                    {/* Base Index Rate & Date */}
+                                                                    <div className="bg-background/80 p-4 rounded-xl border border-border/50 space-y-4">
+                                                                        <div className="space-y-3">
+                                                                            <div className="flex bg-secondary/30 p-1 rounded-lg gap-1">
                                                                                 <button
-                                                                                    key={cat.val}
                                                                                     type="button"
                                                                                     onClick={() => {
-                                                                                        const isNewCurrency = cat.val === 'currency';
-                                                                                        setValue('linkageType', isNewCurrency ? 'usd' : 'cpi');
-                                                                                        if (!formData.baseIndexDate) {
-                                                                                            setValue('baseIndexDate', formData.signingDate);
-                                                                                        }
+                                                                                        setValue('linkageSubType', 'base');
+                                                                                        setValue('baseIndexValue', '' as any);
                                                                                     }}
                                                                                     className={cn(
-                                                                                        "flex-1 py-2 text-xs font-bold rounded-lg transition-all border-none",
-                                                                                        ((['usd', 'eur'].includes(formData.linkageType)) === (cat.val === 'currency'))
-                                                                                            ? "bg-white dark:bg-black text-foreground shadow-sm"
-                                                                                            : "text-muted-foreground hover:text-foreground bg-transparent"
+                                                                                        "flex-1 py-1 text-[10px] font-bold rounded-md transition-all border-none",
+                                                                                        formData.linkageSubType !== 'known' ? "bg-white dark:bg-black shadow-sm" : "bg-transparent opacity-60"
                                                                                     )}
                                                                                 >
-                                                                                    {cat.label}
+                                                                                    {t('indexByDate')}
+                                                                                </button>
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => {
+                                                                                        setValue('linkageSubType', 'known');
+                                                                                        setValue('baseIndexDate', '');
+                                                                                    }}
+                                                                                    className={cn(
+                                                                                        "px-3 py-1 text-[10px] font-bold rounded-md transition-all border-none",
+                                                                                        formData.linkageSubType === 'known' ? "bg-white dark:bg-black shadow-sm" : "bg-transparent opacity-60"
+                                                                                    )}
+                                                                                >
+                                                                                    {t('manualRate')}
+                                                                                </button>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        {formData.linkageSubType === 'known' ? (
+                                                                            <div className="space-y-1">
+                                                                                <label className="text-xs font-medium flex items-center gap-2">
+                                                                                    {t('baseIndexValue')} <ConfidenceDot field="baseIndexValue" />
+                                                                                </label>
+                                                                                <input
+                                                                                    type="text"
+                                                                                    value={formatNumber(formData.baseIndexValue)}
+                                                                                    onChange={(e) => {
+                                                                                        const val = parseNumber(e.target.value);
+                                                                                        if (/^\d*\.?\d*$/.test(val)) setValue('baseIndexValue', val as any);
+                                                                                    }}
+                                                                                    className="w-full p-2.5 bg-background border border-border rounded-lg no-spinner font-mono text-sm"
+                                                                                    placeholder="e.g. 105.2"
+                                                                                />
+                                                                            </div>
+                                                                        ) : (
+                                                                            <div className="space-y-1">
+                                                                                <label className="text-xs font-medium flex items-center gap-2">
+                                                                                    {t('baseDate')}
+                                                                                    {scannedQuotes.baseIndexDate && <Tooltip quote={scannedQuotes.baseIndexDate} />} <ConfidenceDot field="baseIndexDate" />
+                                                                                </label>
+                                                                                <DatePicker
+                                                                                    value={formData.baseIndexDate ? parseISO(formData.baseIndexDate) : undefined}
+                                                                                    onChange={(date) => setValue('baseIndexDate', date ? format(date, 'yyyy-MM-dd') : '')}
+                                                                                    className="w-full text-sm"
+                                                                                />
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+
+                                                                    {/* Index Type (מדד ידוע vs מדד קובע) */}
+                                                                    <div className="space-y-2">
+                                                                        <label className="text-sm font-medium">{t('calculationMethod')}</label>
+                                                                        <div className="flex bg-secondary/30 p-1 rounded-xl gap-1">
+                                                                            {[
+                                                                                { label: t('knownIndexLabel'), val: 'known' },
+                                                                                { label: t('respectOfLabel'), val: 'respect_of' }
+                                                                            ].map(type => (
+                                                                                <button
+                                                                                    key={type.val}
+                                                                                    type="button"
+                                                                                    onClick={() => setValue('linkageSubType', type.val as any)}
+                                                                                    className={cn(
+                                                                                        "flex-1 py-1.5 text-xs font-bold rounded-lg transition-all border-none",
+                                                                                        (formData.linkageSubType === type.val)
+                                                                                            ? "bg-white dark:bg-black text-foreground shadow-sm"
+                                                                                            : "text-muted-foreground hover:text-foreground bg-transparent hover:opacity-100"
+                                                                                    )}
+                                                                                >
+                                                                                    {type.label}
                                                                                 </button>
                                                                             ))}
                                                                         </div>
                                                                     </div>
 
-                                                                    {/* Specific Selection */}
-                                                                    {['usd', 'eur'].includes(formData.linkageType) ? (
+                                                                    {/* Ceiling & Floor - At the bottom of index detail */}
+                                                                    <div className="grid grid-cols-2 gap-3">
                                                                         <div className="space-y-2">
-                                                                            <label className="text-sm font-medium">{t('foreignCurrency')}</label>
-                                                                            <div className="relative">
-                                                                                <select
-                                                                                    value={formData.linkageType}
-                                                                                    onChange={(e) => setValue('linkageType', e.target.value as any)}
-                                                                                    className="w-full p-3 bg-background border border-border rounded-xl appearance-none"
-                                                                                >
-                                                                                    <option value="usd">{t('linkedToUsd')}</option>
-                                                                                    <option value="eur">{t('linkedToEur')}</option>
-                                                                                </select>
-                                                                                <ChevronDown className="absolute left-3 top-3.5 w-4 h-4 text-muted-foreground pointer-events-none" />
-                                                                            </div>
+                                                                            <label className="flex items-center gap-2 cursor-pointer p-2 border border-border rounded-xl hover:bg-secondary/50 transition-colors">
+                                                                                <input
+                                                                                    type="checkbox"
+                                                                                    checked={formData.hasLinkageCeiling}
+                                                                                    onChange={(e) => {
+                                                                                        setValue('hasLinkageCeiling', e.target.checked);
+                                                                                        if (!e.target.checked) setValue('linkageCeiling', undefined);
+                                                                                    }}
+                                                                                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                                                                />
+                                                                                <span className="text-xs font-bold">{t('linkageCeiling')}</span>
+                                                                            </label>
+                                                                            {formData.hasLinkageCeiling && (
+                                                                                <div className="relative mt-1">
+                                                                                    <input
+                                                                                        type="text"
+                                                                                        value={formatNumber(formData.linkageCeiling)}
+                                                                                        onChange={(e) => {
+                                                                                            const val = parseNumber(e.target.value);
+                                                                                            if (/^\d*\.?\d*$/.test(val)) setValue('linkageCeiling', val as any);
+                                                                                        }}
+                                                                                        className="w-full p-2 bg-background border border-border rounded-lg text-xs no-spinner"
+                                                                                        placeholder="%"
+                                                                                    />
+                                                                                    <span className="absolute right-3 top-2 text-muted-foreground text-[10px]">%</span>
+                                                                                </div>
+                                                                            )}
                                                                         </div>
-                                                                    ) : (
-                                                                        <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                                                                            {/* Index Choice Dropdown */}
-                                                                            <div className="space-y-2">
-                                                                                <label className="text-sm font-medium">{t('indexOption')}</label>
-                                                                                <div className="relative">
-                                                                                    <select
-                                                                                        value={formData.linkageType}
-                                                                                        onChange={(e) => setValue('linkageType', e.target.value as any)}
-                                                                                        className="w-full p-3 bg-background border border-border rounded-xl appearance-none"
-                                                                                    >
-                                                                                        <option value="cpi">{t('linkedToCpi')}</option>
-                                                                                        <option value="housing">{t('linkedToHousing')}</option>
-                                                                                        <option value="construction">{t('linkedToConstruction')}</option>
-                                                                                    </select>
-                                                                                    <ChevronDown className="absolute left-3 top-3.5 w-4 h-4 text-muted-foreground pointer-events-none" />
-                                                                                </div>
-                                                                            </div>
 
-                                                                            {/* Base Index Rate & Date */}
-                                                                            <div className="bg-background/80 p-4 rounded-xl border border-border/50 space-y-4">
-                                                                                <div className="space-y-3">
-                                                                                    <div className="flex bg-secondary/30 p-1 rounded-lg gap-1">
-                                                                                        <button
-                                                                                            type="button"
-                                                                                            onClick={() => {
-                                                                                                setValue('linkageSubType', 'base');
-                                                                                                setValue('baseIndexValue', '' as any);
-                                                                                            }}
-                                                                                            className={cn(
-                                                                                                "flex-1 py-1 text-[10px] font-bold rounded-md transition-all border-none",
-                                                                                                formData.linkageSubType !== 'known' ? "bg-white dark:bg-black shadow-sm" : "bg-transparent opacity-60"
-                                                                                            )}
-                                                                                        >
-                                                                                            {t('indexByDate')}
-                                                                                        </button>
-                                                                                        <button
-                                                                                            type="button"
-                                                                                            onClick={() => {
-                                                                                                setValue('linkageSubType', 'known');
-                                                                                                setValue('baseIndexDate', '');
-                                                                                            }}
-                                                                                            className={cn(
-                                                                                                "px-3 py-1 text-[10px] font-bold rounded-md transition-all border-none",
-                                                                                                formData.linkageSubType === 'known' ? "bg-white dark:bg-black shadow-sm" : "bg-transparent opacity-60"
-                                                                                            )}
-                                                                                        >
-                                                                                            {t('manualRate')}
-                                                                                        </button>
-                                                                                    </div>
-                                                                                </div>
-
-                                                                                {formData.linkageSubType === 'known' ? (
-                                                                                    <div className="space-y-1">
-                                                                                        <label className="text-xs font-medium flex items-center gap-2">
-                                                                                            {t('baseIndexValue')} <ConfidenceDot field="baseIndexValue" />
-                                                                                        </label>
-                                                                                        <input
-                                                                                            type="text"
-                                                                                            value={formatNumber(formData.baseIndexValue)}
-                                                                                            onChange={(e) => {
-                                                                                                const val = parseNumber(e.target.value);
-                                                                                                if (/^\d*\.?\d*$/.test(val)) setValue('baseIndexValue', val as any);
-                                                                                            }}
-                                                                                            className="w-full p-2.5 bg-background border border-border rounded-lg no-spinner font-mono text-sm"
-                                                                                            placeholder="e.g. 105.2"
-                                                                                        />
-                                                                                    </div>
-                                                                                ) : (
-                                                                                    <div className="space-y-1">
-                                                                                        <label className="text-xs font-medium flex items-center gap-2">
-                                                                                            {t('baseDate')}
-                                                                                            {scannedQuotes.baseIndexDate && <Tooltip quote={scannedQuotes.baseIndexDate} />} <ConfidenceDot field="baseIndexDate" />
-                                                                                        </label>
-                                                                                        <DatePicker
-                                                                                            value={formData.baseIndexDate ? parseISO(formData.baseIndexDate) : undefined}
-                                                                                            onChange={(date) => setValue('baseIndexDate', date ? format(date, 'yyyy-MM-dd') : '')}
-                                                                                            className="w-full text-sm"
-                                                                                        />
-                                                                                    </div>
-                                                                                )}
-                                                                            </div>
-
-                                                                            {/* Index Type (מדד ידוע vs מדד קובע) */}
-                                                                            <div className="space-y-2">
-                                                                                <label className="text-sm font-medium">{t('calculationMethod')}</label>
-                                                                                <div className="flex bg-secondary/30 p-1 rounded-xl gap-1">
-                                                                                    {[
-                                                                                        { label: t('knownIndexLabel'), val: 'known' },
-                                                                                        { label: t('respectOfLabel'), val: 'respect_of' }
-                                                                                    ].map(type => (
-                                                                                        <button
-                                                                                            key={type.val}
-                                                                                            type="button"
-                                                                                            onClick={() => setValue('linkageSubType', type.val as any)}
-                                                                                            className={cn(
-                                                                                                "flex-1 py-1.5 text-xs font-bold rounded-lg transition-all border-none",
-                                                                                                (formData.linkageSubType === type.val)
-                                                                                                    ? "bg-white dark:bg-black text-foreground shadow-sm"
-                                                                                                    : "text-muted-foreground hover:text-foreground bg-transparent hover:opacity-100"
-                                                                                            )}
-                                                                                        >
-                                                                                            {type.label}
-                                                                                        </button>
-                                                                                    ))}
-                                                                                </div>
-                                                                            </div>
-
-                                                                            {/* Ceiling & Floor - At the bottom of index detail */}
-                                                                            <div className="grid grid-cols-2 gap-3">
-                                                                                <div className="space-y-2">
-                                                                                    <label className="flex items-center gap-2 cursor-pointer p-2 border border-border rounded-xl hover:bg-secondary/50 transition-colors">
-                                                                                        <input
-                                                                                            type="checkbox"
-                                                                                            checked={formData.hasLinkageCeiling}
-                                                                                            onChange={(e) => {
-                                                                                                setValue('hasLinkageCeiling', e.target.checked);
-                                                                                                if (!e.target.checked) setValue('linkageCeiling', undefined);
-                                                                                            }}
-                                                                                            className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-                                                                                        />
-                                                                                        <span className="text-xs font-bold">{t('linkageCeiling')}</span>
-                                                                                    </label>
-                                                                                    {formData.hasLinkageCeiling && (
-                                                                                        <div className="relative mt-1">
-                                                                                            <input
-                                                                                                type="text"
-                                                                                                value={formatNumber(formData.linkageCeiling)}
-                                                                                                onChange={(e) => {
-                                                                                                    const val = parseNumber(e.target.value);
-                                                                                                    if (/^\d*\.?\d*$/.test(val)) setValue('linkageCeiling', val as any);
-                                                                                                }}
-                                                                                                className="w-full p-2 bg-background border border-border rounded-lg text-xs no-spinner"
-                                                                                                placeholder="%"
-                                                                                            />
-                                                                                            <span className="absolute right-3 top-2 text-muted-foreground text-[10px]">%</span>
-                                                                                        </div>
-                                                                                    )}
-                                                                                </div>
-
-                                                                                <div className="space-y-2">
-                                                                                    <label className="flex items-center gap-2 cursor-pointer p-2 border border-border rounded-xl hover:bg-secondary/50 transition-colors h-[38px]">
-                                                                                        <input
-                                                                                            type="checkbox"
-                                                                                            checked={formData.linkageFloor === 0}
-                                                                                            onChange={(e) => setValue('linkageFloor', e.target.checked ? 0 : undefined)}
-                                                                                            className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-                                                                                        />
-                                                                                        <span className="text-xs font-bold">{t('floorIndex')}</span>
-                                                                                    </label>
-                                                                                </div>
-                                                                            </div>
+                                                                        <div className="space-y-2">
+                                                                            <label className="flex items-center gap-2 cursor-pointer p-2 border border-border rounded-xl hover:bg-secondary/50 transition-colors h-[38px]">
+                                                                                <input
+                                                                                    type="checkbox"
+                                                                                    checked={formData.linkageFloor === 0}
+                                                                                    onChange={(e) => setValue('linkageFloor', e.target.checked ? 0 : undefined)}
+                                                                                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                                                                />
+                                                                                <span className="text-xs font-bold">{t('floorIndex')}</span>
+                                                                            </label>
                                                                         </div>
-                                                                    )}
-                                                                </motion.div>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </motion.div>
-                                            )
-                                        }
-
-                                        {
-                                            step === 5 && (
-                                                <motion.div
-                                                    key="step5"
-                                                    initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
-                                                    className="space-y-6"
-                                                >
-                                                    <h3 className="font-semibold text-lg flex items-center gap-2">
-                                                        <Shield className="w-4 h-4" /> {t('securityAndAppendices')}
-                                                    </h3>
-
-                                                    <div className="space-y-4">
-                                                        <div className="space-y-2">
-                                                            <label className="text-sm font-medium flex items-center gap-2">{t('securityDeposit')} {scannedQuotes.securityDeposit && <Tooltip quote={scannedQuotes.securityDeposit} />} <ConfidenceDot field="securityDeposit" /></label>
-                                                            <div className="relative">
-                                                                <input
-                                                                    type="text"
-                                                                    value={formatNumber(formData.securityDeposit)}
-                                                                    onChange={e => {
-                                                                        const val = parseNumber(e.target.value);
-                                                                        if (/^\d*\.?\d*$/.test(val)) setValue('securityDeposit', val as any);
-                                                                    }}
-                                                                    className="w-full p-3 pl-8 bg-background border border-border rounded-xl no-spinner font-bold"
-                                                                />
-                                                                <span className="absolute left-4 top-3 text-muted-foreground">₪</span>
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="space-y-2">
-                                                            <label className="text-sm font-medium flex items-center gap-2">{t('guarantors')} {scannedQuotes.guarantees && <Tooltip quote={scannedQuotes.guarantees} />} <ConfidenceDot field="guarantees" /></label>
-                                                            <textarea
-                                                                value={formData.guarantees}
-                                                                onChange={e => setValue('guarantees', e.target.value)}
-                                                                className="w-full p-3 bg-background border border-border rounded-xl min-h-[100px]"
-                                                            />
-                                                        </div>
-
-
-                                                        <div className="space-y-2">
-                                                            <label className={cn(
-                                                                "flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer",
-                                                                formData.needsPainting ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-                                                            )}>
-                                                                <input type="checkbox" className="hidden" checked={formData.needsPainting} onChange={e => setValue('needsPainting', e.target.checked)} />
-                                                                <div className="p-2 bg-secondary rounded-full text-foreground"><Box className="w-5 h-5" /></div>
-                                                                <span className="font-medium flex items-center gap-2">{t('needsPaintingQuery')}</span>
-                                                            </label>
-                                                        </div>
-
-                                                        {/* Legal Library (MASTER Tier) */}
-                                                        <div className="space-y-3 pt-6 border-t border-border/50">
-                                                            <div className="flex items-center justify-between">
-                                                                <label className="text-sm font-bold flex items-center gap-2 text-amber-600">
-                                                                    <ShieldCheck className="w-4 h-4" />
-                                                                    {t('legalProtection') || 'Legal Safe Suite'}
-                                                                    <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-bold">MASTER</span>
-                                                                </label>
-                                                                {(!plan?.name?.toLowerCase().includes('master')) && (
-                                                                    <button type="button" onClick={() => navigate('/pricing')} className="text-xs text-blue-600 font-bold hover:underline flex items-center gap-1">
-                                                                        <Lock className="w-3 h-3" />
-                                                                        {t('upgradeToUnlock') || 'Upgrade to Unlock'}
-                                                                    </button>
-                                                                )}
-                                                            </div>
-
-                                                            {['Pinui Binui Shield', 'Pet Clause Pro', 'Inflation Hedge'].map((clause, i) => (
-                                                                <div
-                                                                    key={clause}
-                                                                    onClick={() => {
-                                                                        if (!plan?.name?.toLowerCase().includes('master')) navigate('/pricing');
-                                                                    }}
-                                                                    className={cn(
-                                                                        "flex items-center justify-between p-3 rounded-xl border transition-all",
-                                                                        plan?.name?.toLowerCase().includes('master')
-                                                                            ? "border-border bg-white cursor-pointer hover:border-amber-500"
-                                                                            : "border-dashed border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed"
-                                                                    )}
-                                                                >
-                                                                    <div className="flex items-center gap-3">
-                                                                        <div className={`p-1.5 rounded-full ${plan?.name?.toLowerCase().includes('master') ? 'bg-amber-100 text-amber-600' : 'bg-slate-200 text-slate-400'}`}>
-                                                                            <FileText className="w-3 h-3" />
-                                                                        </div>
-                                                                        <span className="text-sm font-medium">{clause}</span>
-                                                                    </div>
-                                                                    <div className={cn(
-                                                                        "w-8 h-4 rounded-full relative transition-colors",
-                                                                        plan?.name?.toLowerCase().includes('master') ? "bg-slate-200" : "bg-slate-200"
-                                                                    )}>
-                                                                        <div className="absolute left-1 top-1 w-2 h-2 bg-white rounded-full shadow-sm" />
                                                                     </div>
                                                                 </div>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                </motion.div>
-                                            )
-                                        }
-
-                                        {
-                                            step === 6 && (
-                                                <motion.div
-                                                    key="step6"
-                                                    initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
-                                                    className="space-y-6"
-                                                >
-                                                    <div className="text-center py-8">
-                                                        <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                                                            <Check className="w-8 h-8" />
-                                                        </div>
-                                                        <h3 className="text-xl font-bold">{t('contractReadySummary')}</h3>
-                                                        <p className="text-muted-foreground mt-2 max-w-xs mx-auto">
-                                                            {t('contractReadySummaryDesc', { address: formData.address || '', city: formData.city || '' })}
-                                                        </p>
-                                                    </div>
-
-                                                    <div className="space-y-6 text-right">
-                                                        {/* Section 1: Asset & Physical Details */}
-                                                        <div className="bg-secondary/10 p-4 rounded-xl space-y-3">
-                                                            <h4 className="font-bold text-sm text-primary flex items-center gap-2 flex-row-reverse border-b border-border/50 pb-2 mb-3">
-                                                                <Building className="w-4 h-4" /> {t('propertySpecs')}
-                                                            </h4>
-                                                            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                                                                <span className="text-muted-foreground">{t('address')}</span>
-                                                                <span className="font-medium">{formData.address || '-'}, {formData.city || '-'}</span>
-
-                                                                <span className="text-muted-foreground">{t('propertyType')}</span>
-                                                                <span className="font-medium">{t(formData.property_type as any)}</span>
-
-                                                                <span className="text-muted-foreground">{t('rooms')}</span>
-                                                                <span className="font-medium">{formData.rooms || '-'} {t('rooms')}</span>
-
-                                                                <span className="text-muted-foreground">{t('sizeSqm')}</span>
-                                                                <span className="font-medium">{formData.size ? `${formData.size} ${t('sqm')}` : '-'}</span>
-
-                                                                <span className="text-muted-foreground">{t('parking')}</span>
-                                                                <span className="font-medium">{formData.hasParking ? t('yes') : t('no')}</span>
-
-                                                                <span className="text-muted-foreground">{t('storage')}</span>
-                                                                <span className="font-medium">{formData.hasStorage ? t('yes') : t('no')}</span>
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Section 2: Parties Involved */}
-                                                        <div className="bg-secondary/10 p-4 rounded-xl space-y-3">
-                                                            <h4 className="font-bold text-sm text-primary flex items-center gap-2 flex-row-reverse border-b border-border/50 pb-2 mb-3">
-                                                                <User className="w-4 h-4" /> {t('partiesInvolved')}
-                                                            </h4>
-                                                            <div className="space-y-4">
-                                                                {formData.tenants.map((tenant, idx) => (
-                                                                    <div key={idx} className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm bg-white/50 p-2 rounded-lg">
-                                                                        <span className="text-muted-foreground font-bold">{t('tenant')} {formData.tenants.length > 1 ? idx + 1 : ''}</span>
-                                                                        <span className="font-bold">{tenant.name || '-'}</span>
-
-                                                                        <span className="text-muted-foreground">{t('idNumber')}</span>
-                                                                        <span className="font-medium">{tenant.id_number || '-'}</span>
-
-                                                                        <span className="text-muted-foreground">{t('phone')}</span>
-                                                                        <span className="font-medium">{tenant.phone || '-'}</span>
-
-                                                                        <span className="text-muted-foreground">{t('email')}</span>
-                                                                        <span className="font-medium">{tenant.email || '-'}</span>
-                                                                    </div>
-                                                                ))}
-                                                                {formData.guarantorsInfo && (
-                                                                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm border-t border-border/30 pt-2">
-                                                                        <span className="text-muted-foreground">{t('guarantors')}</span>
-                                                                        <span className="font-medium whitespace-pre-line">{formData.guarantorsInfo}</span>
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Section 3: Lease Timeline & Terms */}
-                                                        <div className="bg-secondary/10 p-4 rounded-xl space-y-3">
-                                                            <h4 className="font-bold text-sm text-primary flex items-center gap-2 flex-row-reverse border-b border-border/50 pb-2 mb-3">
-                                                                <Calendar className="w-4 h-4" /> {t('leaseTerms')}
-                                                            </h4>
-                                                            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                                                                <span className="text-muted-foreground">{t('startDate')}</span>
-                                                                <span className="font-medium">{formatDate(formData.startDate)}</span>
-
-                                                                <span className="text-muted-foreground">{t('endDate')}</span>
-                                                                <span className="font-medium">{formatDate(formData.endDate)}</span>
-
-                                                                <span className="text-muted-foreground">{t('signingDate')}</span>
-                                                                <span className="font-medium">{formData.signingDate ? formatDate(formData.signingDate) : '-'}</span>
-
-                                                                <span className="text-muted-foreground">{t('optionPeriods')}</span>
-                                                                <span className="font-medium">{formData.optionPeriods.length > 0 ? `${formData.optionPeriods.length} ${t('periods')}` : t('no')}</span>
-
-                                                                {formData.optionPeriods.map((period, idx) => (
-                                                                    <div key={idx} className="contents text-xs">
-                                                                        <span className="text-muted-foreground pr-4 border-r border-border/30 flex items-center h-full">└ {t('option')} {idx + 1}</span>
-                                                                        <span className="font-medium py-1">
-                                                                            {formatDate(period.endDate)} {period.rentAmount ? `(₪${formatNumber(period.rentAmount)})` : ''}
-                                                                        </span>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Section 4: Financial & Linkage Details */}
-                                                        <div className="bg-secondary/10 p-4 rounded-xl space-y-3">
-                                                            <h4 className="font-bold text-sm text-primary flex items-center gap-2 flex-row-reverse border-b border-border/50 pb-2 mb-3">
-                                                                <SettingsIcon className="w-4 h-4" /> {t('financials')}
-                                                            </h4>
-                                                            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                                                                <span className="text-muted-foreground">{t('monthlyRent')}</span>
-                                                                <span className="font-bold text-lg text-primary">₪{formatNumber(formData.rent || '0')}</span>
-
-                                                                {formData.rentSteps.length > 0 && (
-                                                                    <div className="col-span-2 space-y-1 mb-2">
-                                                                        <div className="text-xs text-muted-foreground mb-1">{t('rentSteps')}:</div>
-                                                                        {formData.rentSteps.map((step, idx) => (
-                                                                            <div key={idx} className="flex justify-between flex-row-reverse text-xs bg-white/30 p-1 px-2 rounded">
-                                                                                <span>{step.startDate ? formatDate(step.startDate) : '-'}:</span>
-                                                                                <span className="font-bold">₪{formatNumber(step.amount)}</span>
-                                                                            </div>
-                                                                        ))}
-                                                                    </div>
-                                                                )}
-
-                                                                <span className="text-muted-foreground">{t('paymentFrequency')}</span>
-                                                                <span className="font-medium">
-                                                                    {(() => {
-                                                                        const map: any = { 'monthly': 'monthly', 'bimonthly': 'bimonthly', 'quarterly': 'quarterly', 'semi_annually': 'semiAnnually', 'yearly': 'annually' };
-                                                                        return t(map[formData.paymentFrequency] || formData.paymentFrequency as any);
-                                                                    })()}
-                                                                </span>
-
-                                                                <span className="text-muted-foreground">{t('paymentMethod')}</span>
-                                                                <span className="font-medium">
-                                                                    {(() => {
-                                                                        const map: any = {
-                                                                            'Transfer': 'transfer',
-                                                                            'bank_transfer': 'transfer',
-                                                                            'Checks': 'check',
-                                                                            'check': 'check',
-                                                                            'Cash': 'cash',
-                                                                            'bit': 'bit',
-                                                                            'paybox': 'paybox',
-                                                                            'Other': 'other',
-                                                                            'other': 'other'
-                                                                        };
-                                                                        const key = map[formData.paymentMethod] || formData.paymentMethod.toLowerCase();
-                                                                        return t(key);
-                                                                    })()}
-                                                                </span>
-
-                                                                <span className="text-muted-foreground">{t('linkageType')}</span>
-                                                                <span className="font-medium">
-                                                                    {formData.linkageType === 'none' ? t('notLinked') :
-                                                                        formData.linkageType === 'cpi' ? t('linkedToCpi') :
-                                                                            formData.linkageType === 'usd' ? t('linkedToUsd') :
-                                                                                formData.linkageType === 'eur' ? t('linkedToEur') : formData.linkageType}
-                                                                </span>
-
-                                                                {formData.linkageType !== 'none' && (
-                                                                    <div className="col-span-2 grid grid-cols-2 gap-x-4 gap-y-1 mt-1 border-t border-border/20 pt-1">
-                                                                        <span className="text-muted-foreground text-xs pr-4">└ {t('indexSubType')}</span>
-                                                                        <span className="font-medium text-xs">
-                                                                            {formData.linkageSubType === 'known' ? t('knownIndex') :
-                                                                                formData.linkageSubType === 'respect_of' ? t('inRespectOf') :
-                                                                                    formData.linkageSubType === 'base' ? t('baseIndexValue') : formData.linkageSubType}
-                                                                        </span>
-
-                                                                        <span className="text-muted-foreground text-xs pr-4">└ {t('baseIndexDate')}</span>
-                                                                        <span className="font-medium text-xs">{formData.baseIndexDate ? formatDate(formData.baseIndexDate) : '-'}</span>
-
-                                                                        {(formData.linkageCeiling || formData.linkageFloor) && (
-                                                                            <>
-                                                                                <span className="text-muted-foreground text-xs pr-4">└ {t('capCeiling')}</span>
-                                                                                <span className="font-medium text-xs">
-                                                                                    {formData.linkageCeiling && `${formData.linkageCeiling}% `}
-                                                                                    {formData.linkageFloor && `(${t('floorIndex')})`}
-                                                                                </span>
-                                                                            </>
-                                                                        )}
-                                                                    </div>
-                                                                )}
-
-                                                                <span className="text-muted-foreground">{t('securityDeposit')}</span>
-                                                                <span className="font-medium">{formData.securityDeposit ? `₪${formatNumber(formData.securityDeposit)}` : '-'}</span>
-
-
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-
-
-                                                    {contractFile && (
-                                                        <div className="bg-primary/10/50 rounded-xl p-4 border border-blue-100">
-                                                            <label className="flex items-center gap-2 cursor-pointer mb-2">
-                                                                <input
-                                                                    type="checkbox"
-                                                                    checked={saveContractFile}
-                                                                    onChange={e => setSaveContractFile(e.target.checked)}
-                                                                    className="w-5 h-5 rounded border-blue-300 text-primary focus:ring-indigo-500"
-                                                                />
-                                                                <h4 className="font-bold text-sm text-blue-900 flex items-center gap-2 m-0">
-                                                                    <Shield className="w-4 h-4" /> {t('saveContractFileQuery')}
-                                                                </h4>
-                                                            </label>
-
-                                                            <AnimatePresence>
-                                                                {saveContractFile && (
-                                                                    <motion.div
-                                                                        initial={{ height: 0, opacity: 0 }}
-                                                                        animate={{ height: 'auto', opacity: 1 }}
-                                                                        exit={{ height: 0, opacity: 0 }}
-                                                                        className="space-y-3 overflow-hidden"
-                                                                    >
-                                                                        <div className="flex gap-2 pt-2">
-                                                                            {[
-                                                                                { id: 'cloud', label: t('storageRentMateCloud'), icon: Cloud, desc: t('storageRentMateCloudDesc') },
-                                                                                { id: 'device', label: t('storageThisDevice'), icon: HardDrive, desc: t('storageThisDeviceDesc') },
-                                                                                { id: 'both', label: t('storageBoth'), icon: Download, desc: t('storageBothDesc') }
-                                                                            ].map((opt) => {
-                                                                                const Icon = opt.icon;
-                                                                                const isSelected = storagePreference === opt.id;
-                                                                                return (
-                                                                                    <button
-                                                                                        key={opt.id}
-                                                                                        onClick={() => setStoragePreference(opt.id as any)}
-                                                                                        className={cn(
-                                                                                            "flex-1 relative p-3 rounded-xl border-2 transition-all text-right",
-                                                                                            isSelected
-                                                                                                ? "border-primary bg-white shadow-md z-10"
-                                                                                                : "border-transparent bg-slate-50 hover:bg-white hover:border-blue-200"
-                                                                                        )}
-                                                                                    >
-                                                                                        <div className="flex flex-col items-center gap-2 text-center">
-                                                                                            <div className={cn(
-                                                                                                "w-8 h-8 rounded-full flex items-center justify-center transition-colors",
-                                                                                                isSelected ? "bg-primary/10 text-primary" : "bg-slate-200 text-slate-500"
-                                                                                            )}>
-                                                                                                <Icon className="w-4 h-4" />
-                                                                                            </div>
-                                                                                            <div>
-                                                                                                <div className={cn("font-bold text-xs", isSelected ? "text-blue-900" : "text-slate-700")}>{opt.label}</div>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    </button>
-                                                                                );
-                                                                            })}
-                                                                        </div>
-                                                                        <p className="text-center text-[10px] text-slate-400 mt-2">
-                                                                            {storagePreference === 'cloud' && t('storageCloudSuccess')}
-                                                                            {storagePreference === 'device' && t('storageDeviceSuccess')}
-                                                                            {storagePreference === 'both' && t('storageBothSuccess')}
-                                                                        </p>
-                                                                    </motion.div>
-                                                                )}
-                                                            </AnimatePresence>
-                                                        </div>
+                                                            )}
+                                                        </motion.div>
                                                     )}
-                                                </motion.div>
-                                            )
-                                        }
-                                    </AnimatePresence >
-                                </div >
-                            </div >
-                        </div >
-
-                        {/* Split Handle & Viewer */}
-                        <AnimatePresence>
-                            {scannedContractUrl && isContractViewerOpen && (
-                                <>
-                                    {/* Drag Handle */}
-                                    <motion.div
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        onMouseDown={handleDragStart}
-                                        className={cn(
-                                            "fixed z-40 flex items-center justify-center group",
-                                            "lg:h-full lg:w-4 lg:-mr-2 lg:flex-col lg:cursor-col-resize",
-                                            "h-4 w-full -mt-2 cursor-row-resize flex-row"
-                                        )}
-                                        style={{
-                                            top: windowWidth < 1024 ? `${splitRatio}%` : '0',
-                                            right: windowWidth >= 1024 ? `${splitRatio}%` : '0',
-                                            height: windowWidth >= 1024 ? '100%' : '16px',
-                                            width: windowWidth >= 1024 ? '16px' : '100%'
-                                        }}
-                                    >
-                                        <div className={cn(
-                                            "bg-border group-hover:bg-primary/50 transition-colors",
-                                            "lg:h-full lg:w-px h-px w-full"
-                                        )} />
-                                        <div className={cn(
-                                            "absolute bg-white border border-border shadow-sm rounded-full pointer-events-none",
-                                            "lg:px-0.5 lg:py-2 px-2 py-0.5"
-                                        )}>
-                                            <div className={cn(
-                                                "bg-slate-200 rounded-full",
-                                                "lg:w-1 lg:h-8 w-8 h-1"
-                                            )} />
-                                        </div>
-                                    </motion.div>
-
-                                    {/* Viewer Pane */}
-                                    <motion.div
-                                        initial={windowWidth >= 1024 ? { x: "-100%" } : { y: "100%" }}
-                                        animate={windowWidth >= 1024 ? { x: 0 } : { y: 0 }}
-                                        exit={windowWidth >= 1024 ? { x: "-100%" } : { y: "100%" }}
-                                        transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-                                        className={cn(
-                                            "bg-slate-100 shadow-[0_-5px_30px_rgba(0,0,0,0.1)] z-30 flex flex-col",
-                                            "lg:h-full lg:border-r border-t lg:border-t-0 border-border"
-                                        )}
-                                        style={{
-                                            height: windowWidth >= 1024 ? '100%' : `${100 - splitRatio}%`,
-                                            width: windowWidth >= 1024 ? `${100 - splitRatio}%` : '100%'
-                                        }}
-                                    >
-                                        <div className="flex items-center justify-between px-4 py-2 bg-white border-b border-border/50 shrink-0">
-                                            <span className="text-xs font-bold text-muted-foreground flex items-center gap-1">
-                                                <FileText className="w-4 h-4" /> {t('originalContract')}
-                                            </span>
-                                            <div className="flex items-center gap-2">
-                                                <a
-                                                    href={scannedContractUrl || ''}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="p-1.5 hover:bg-slate-50 text-primary rounded-lg transition-colors flex items-center gap-1"
-                                                    title="פתח בחלון חדש"
-                                                >
-                                                    <Download className="w-4 h-4" />
-                                                    <span className="text-xs">{t('download')}</span>
-                                                </a>
-                                                <button
-                                                    onClick={() => setIsContractViewerOpen(false)}
-                                                    className="p-1 hover:bg-slate-50 text-slate-400 hover:text-red-500 rounded-full transition-colors"
-                                                >
-                                                    <ChevronDown className="w-5 h-5 rotate-180" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div className="flex-1 bg-slate-200 overflow-hidden relative">
-                                            <iframe
-                                                src={scannedContractUrl || ''}
-                                                className="w-full h-full border-none"
-                                                title="Contract Viewer"
-                                            />
-                                        </div>
-                                    </motion.div>
-                                </>
-                            )}
-                        </AnimatePresence>
-                        {/* Footer Navigation (Bionic) */}
-                        <div className={cn(
-                            "fixed bottom-0 p-8 pb-12 glass-premium dark:bg-neutral-900/60 border-t border-white/5 z-40 backdrop-blur-2xl transition-all duration-700",
-                            isContractViewerOpen ? "left-0 lg:left-auto" : "left-0 right-0"
-                        )}
-                            style={{
-                                width: (isContractViewerOpen && windowWidth >= 1024) ? `${splitRatio}%` : '100%',
-                                right: (isContractViewerOpen && windowWidth >= 1024) ? '0' : '0'
-                            }}>
-                            <div className="flex gap-4 max-w-2xl mx-auto">
-                                {step > 1 && (
-                                    <button
-                                        onClick={prevStep}
-                                        className="h-14 px-10 rounded-2xl font-black text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-all hover:bg-white/5"
-                                    >
-                                        {t('back')}
-                                    </button>
-                                )}
-                                <button
-                                    onClick={nextStep}
-                                    disabled={isSaving || (
-                                        step === 1 ? (!formData.address && !formData.selectedPropertyId) :
-                                            step === 2 ? !formData.tenants[0]?.name :
-                                                step === 3 ? (!formData.startDate || !formData.endDate) :
-                                                    step === 4 ? (!formData.rent || formData.rent <= 0) :
-                                                        false
-                                    )}
-                                    className={cn(
-                                        "flex-1 h-14 button-jewel font-black text-[11px] uppercase tracking-[0.2em] text-white rounded-[1.5rem] shadow-jewel hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-4 disabled:opacity-50",
-                                        (isSaving || (
-                                            step === 1 ? (!formData.address && !formData.selectedPropertyId) :
-                                                step === 2 ? !formData.tenants[0]?.name :
-                                                    step === 3 ? (!formData.startDate || !formData.endDate) :
-                                                        step === 4 ? (!formData.rent || formData.rent <= 0) :
-                                                            false
-                                        )) && "opacity-50 cursor-not-allowed"
-                                    )}
-                                >
-                                    {isSaving ? (
-                                        <>
-                                            <Loader2 className="w-5 h-5 animate-spin" />
-                                            <span>{t('saving')}...</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            {step === 6 ? t('finish') : t('next')} <ArrowRight className={cn("w-5 h-5", lang === 'he' ? 'rotate-180' : '')} />
-                                        </>
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-
-
-                        {/* Image Cropper Modal */}
-                        <AnimatePresence>
-                            {isCropping && imageToCrop && (
-                                <ImageCropper
-                                    imageSrc={imageToCrop}
-                                    onCropComplete={onCropComplete}
-                                    onCancel={onCropCancel}
-                                    aspect={4 / 3} // Standard photo aspect ratio
-                                />
-                            )}
-                        </AnimatePresence>
-
-                        {/* Overlap Warning Modal */}
-                        <AnimatePresence>
-                            {
-                                showOverlapWarning && (
-                                    <motion.div
-                                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-                                    >
-                                        <motion.div
-                                            initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}
-                                            className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md text-center space-y-4"
-                                        >
-                                            <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto">
-                                                <AlertTriangle className="w-8 h-8" />
-                                            </div>
-
-                                            <h3 className="text-xl font-bold text-slate-900">{t('overlapWarningTitle')}</h3>
-                                            <p className="text-slate-600">
-                                                {t('overlapWarningDesc')} ({formatDate(formData.startDate)} - {formatDate(formData.endDate)})
-                                            </p>
-
-                                            {overlapDetails && (
-                                                <div className="bg-amber-50 p-3 rounded-lg text-sm text-amber-800">
-                                                    {t('existingContract')}: {formatDate(overlapDetails.start)} - {formatDate(overlapDetails.end)}
                                                 </div>
-                                            )}
-
-                                            <div className="flex gap-3 pt-2">
-                                                <button
-                                                    onClick={() => setShowOverlapWarning(false)}
-                                                    className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition-all"
-                                                >
-                                                    {t('done')}
-                                                </button>
                                             </div>
                                         </motion.div>
-                                    </motion.div>
+                                    )
+                                }
+
+                                {
+                                    step === 5 && (
+                                        <motion.div
+                                            key="step5"
+                                            initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
+                                            className="space-y-6"
+                                        >
+                                            <h3 className="font-semibold text-lg flex items-center gap-2">
+                                                <Shield className="w-4 h-4" /> {t('securityAndAppendices')}
+                                            </h3>
+
+                                            <div className="space-y-4">
+                                                <div className="space-y-2">
+                                                    <label className="text-sm font-medium flex items-center gap-2">{t('securityDeposit')} {scannedQuotes.securityDeposit && <Tooltip quote={scannedQuotes.securityDeposit} />} <ConfidenceDot field="securityDeposit" /></label>
+                                                    <div className="relative">
+                                                        <input
+                                                            type="text"
+                                                            value={formatNumber(formData.securityDeposit)}
+                                                            onChange={e => {
+                                                                const val = parseNumber(e.target.value);
+                                                                if (/^\d*\.?\d*$/.test(val)) setValue('securityDeposit', val as any);
+                                                            }}
+                                                            className="w-full p-3 pl-8 bg-background border border-border rounded-xl no-spinner font-bold"
+                                                        />
+                                                        <span className="absolute left-4 top-3 text-muted-foreground">₪</span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    <label className="text-sm font-medium flex items-center gap-2">{t('guarantors')} {scannedQuotes.guarantees && <Tooltip quote={scannedQuotes.guarantees} />} <ConfidenceDot field="guarantees" /></label>
+                                                    <textarea
+                                                        value={formData.guarantees}
+                                                        onChange={e => setValue('guarantees', e.target.value)}
+                                                        className="w-full p-3 bg-background border border-border rounded-xl min-h-[100px]"
+                                                    />
+                                                </div>
+
+
+                                                <div className="space-y-2">
+                                                    <label className={cn(
+                                                        "flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer",
+                                                        formData.needsPainting ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                                                    )}>
+                                                        <input type="checkbox" className="hidden" checked={formData.needsPainting} onChange={e => setValue('needsPainting', e.target.checked)} />
+                                                        <div className="p-2 bg-secondary rounded-full text-foreground"><Box className="w-5 h-5" /></div>
+                                                        <span className="font-medium flex items-center gap-2">{t('needsPaintingQuery')}</span>
+                                                    </label>
+                                                </div>
+
+                                                {/* Legal Library (MASTER Tier) */}
+                                                <div className="space-y-3 pt-6 border-t border-border/50">
+                                                    <div className="flex items-center justify-between">
+                                                        <label className="text-sm font-bold flex items-center gap-2 text-amber-600">
+                                                            <ShieldCheck className="w-4 h-4" />
+                                                            {t('legalProtection') || 'Legal Safe Suite'}
+                                                            <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-bold">MASTER</span>
+                                                        </label>
+                                                        {(!plan?.name?.toLowerCase().includes('master')) && (
+                                                            <button type="button" onClick={() => navigate('/pricing')} className="text-xs text-blue-600 font-bold hover:underline flex items-center gap-1">
+                                                                <Lock className="w-3 h-3" />
+                                                                {t('upgradeToUnlock') || 'Upgrade to Unlock'}
+                                                            </button>
+                                                        )}
+                                                    </div>
+
+                                                    {['Pinui Binui Shield', 'Pet Clause Pro', 'Inflation Hedge'].map((clause, i) => (
+                                                        <div
+                                                            key={clause}
+                                                            onClick={() => {
+                                                                if (!plan?.name?.toLowerCase().includes('master')) navigate('/pricing');
+                                                            }}
+                                                            className={cn(
+                                                                "flex items-center justify-between p-3 rounded-xl border transition-all",
+                                                                plan?.name?.toLowerCase().includes('master')
+                                                                    ? "border-border bg-white cursor-pointer hover:border-amber-500"
+                                                                    : "border-dashed border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed"
+                                                            )}
+                                                        >
+                                                            <div className="flex items-center gap-3">
+                                                                <div className={`p-1.5 rounded-full ${plan?.name?.toLowerCase().includes('master') ? 'bg-amber-100 text-amber-600' : 'bg-slate-200 text-slate-400'}`}>
+                                                                    <FileText className="w-3 h-3" />
+                                                                </div>
+                                                                <span className="text-sm font-medium">{clause}</span>
+                                                            </div>
+                                                            <div className={cn(
+                                                                "w-8 h-4 rounded-full relative transition-colors",
+                                                                plan?.name?.toLowerCase().includes('master') ? "bg-slate-200" : "bg-slate-200"
+                                                            )}>
+                                                                <div className="absolute left-1 top-1 w-2 h-2 bg-white rounded-full shadow-sm" />
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    )
+                                }
+
+                                {
+                                    step === 6 && (
+                                        <motion.div
+                                            key="step6"
+                                            initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
+                                            className="space-y-6"
+                                        >
+                                            <div className="text-center py-8">
+                                                <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                                    <Check className="w-8 h-8" />
+                                                </div>
+                                                <h3 className="text-xl font-bold">{t('contractReadySummary')}</h3>
+                                                <p className="text-muted-foreground mt-2 max-w-xs mx-auto">
+                                                    {t('contractReadySummaryDesc', { address: formData.address || '', city: formData.city || '' })}
+                                                </p>
+                                            </div>
+
+                                            <div className="space-y-6 text-right">
+                                                {/* Section 1: Asset & Physical Details */}
+                                                <div className="bg-secondary/10 p-4 rounded-xl space-y-3">
+                                                    <h4 className="font-bold text-sm text-primary flex items-center gap-2 flex-row-reverse border-b border-border/50 pb-2 mb-3">
+                                                        <Building className="w-4 h-4" /> {t('propertySpecs')}
+                                                    </h4>
+                                                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                                                        <span className="text-muted-foreground">{t('address')}</span>
+                                                        <span className="font-medium">{formData.address || '-'}, {formData.city || '-'}</span>
+
+                                                        <span className="text-muted-foreground">{t('propertyType')}</span>
+                                                        <span className="font-medium">{t(formData.property_type as any)}</span>
+
+                                                        <span className="text-muted-foreground">{t('rooms')}</span>
+                                                        <span className="font-medium">{formData.rooms || '-'} {t('rooms')}</span>
+
+                                                        <span className="text-muted-foreground">{t('sizeSqm')}</span>
+                                                        <span className="font-medium">{formData.size ? `${formData.size} ${t('sqm')}` : '-'}</span>
+
+                                                        <span className="text-muted-foreground">{t('parking')}</span>
+                                                        <span className="font-medium">{formData.hasParking ? t('yes') : t('no')}</span>
+
+                                                        <span className="text-muted-foreground">{t('storage')}</span>
+                                                        <span className="font-medium">{formData.hasStorage ? t('yes') : t('no')}</span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Section 2: Parties Involved */}
+                                                <div className="bg-secondary/10 p-4 rounded-xl space-y-3">
+                                                    <h4 className="font-bold text-sm text-primary flex items-center gap-2 flex-row-reverse border-b border-border/50 pb-2 mb-3">
+                                                        <User className="w-4 h-4" /> {t('partiesInvolved')}
+                                                    </h4>
+                                                    <div className="space-y-4">
+                                                        {formData.tenants.map((tenant, idx) => (
+                                                            <div key={idx} className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm bg-white/50 p-2 rounded-lg">
+                                                                <span className="text-muted-foreground font-bold">{t('tenant')} {formData.tenants.length > 1 ? idx + 1 : ''}</span>
+                                                                <span className="font-bold">{tenant.name || '-'}</span>
+
+                                                                <span className="text-muted-foreground">{t('idNumber')}</span>
+                                                                <span className="font-medium">{tenant.id_number || '-'}</span>
+
+                                                                <span className="text-muted-foreground">{t('phone')}</span>
+                                                                <span className="font-medium">{tenant.phone || '-'}</span>
+
+                                                                <span className="text-muted-foreground">{t('email')}</span>
+                                                                <span className="font-medium">{tenant.email || '-'}</span>
+                                                            </div>
+                                                        ))}
+                                                        {formData.guarantorsInfo && (
+                                                            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm border-t border-border/30 pt-2">
+                                                                <span className="text-muted-foreground">{t('guarantors')}</span>
+                                                                <span className="font-medium whitespace-pre-line">{formData.guarantorsInfo}</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* Section 3: Lease Timeline & Terms */}
+                                                <div className="bg-secondary/10 p-4 rounded-xl space-y-3">
+                                                    <h4 className="font-bold text-sm text-primary flex items-center gap-2 flex-row-reverse border-b border-border/50 pb-2 mb-3">
+                                                        <Calendar className="w-4 h-4" /> {t('leaseTerms')}
+                                                    </h4>
+                                                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                                                        <span className="text-muted-foreground">{t('startDate')}</span>
+                                                        <span className="font-medium">{formatDate(formData.startDate)}</span>
+
+                                                        <span className="text-muted-foreground">{t('endDate')}</span>
+                                                        <span className="font-medium">{formatDate(formData.endDate)}</span>
+
+                                                        <span className="text-muted-foreground">{t('signingDate')}</span>
+                                                        <span className="font-medium">{formData.signingDate ? formatDate(formData.signingDate) : '-'}</span>
+
+                                                        <span className="text-muted-foreground">{t('optionPeriods')}</span>
+                                                        <span className="font-medium">{formData.optionPeriods.length > 0 ? `${formData.optionPeriods.length} ${t('periods')}` : t('no')}</span>
+
+                                                        {formData.optionPeriods.map((period, idx) => (
+                                                            <div key={idx} className="contents text-xs">
+                                                                <span className="text-muted-foreground pr-4 border-r border-border/30 flex items-center h-full">└ {t('option')} {idx + 1}</span>
+                                                                <span className="font-medium py-1">
+                                                                    {formatDate(period.endDate)} {period.rentAmount ? `(₪${formatNumber(period.rentAmount)})` : ''}
+                                                                </span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                {/* Section 4: Financial & Linkage Details */}
+                                                <div className="bg-secondary/10 p-4 rounded-xl space-y-3">
+                                                    <h4 className="font-bold text-sm text-primary flex items-center gap-2 flex-row-reverse border-b border-border/50 pb-2 mb-3">
+                                                        <SettingsIcon className="w-4 h-4" /> {t('financials')}
+                                                    </h4>
+                                                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                                                        <span className="text-muted-foreground">{t('monthlyRent')}</span>
+                                                        <span className="font-bold text-lg text-primary">₪{formatNumber(formData.rent || '0')}</span>
+
+                                                        {formData.rentSteps.length > 0 && (
+                                                            <div className="col-span-2 space-y-1 mb-2">
+                                                                <div className="text-xs text-muted-foreground mb-1">{t('rentSteps')}:</div>
+                                                                {formData.rentSteps.map((step, idx) => (
+                                                                    <div key={idx} className="flex justify-between flex-row-reverse text-xs bg-white/30 p-1 px-2 rounded">
+                                                                        <span>{step.startDate ? formatDate(step.startDate) : '-'}:</span>
+                                                                        <span className="font-bold">₪{formatNumber(step.amount)}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+
+                                                        <span className="text-muted-foreground">{t('paymentFrequency')}</span>
+                                                        <span className="font-medium">
+                                                            {(() => {
+                                                                const map: any = { 'monthly': 'monthly', 'bimonthly': 'bimonthly', 'quarterly': 'quarterly', 'semi_annually': 'semiAnnually', 'yearly': 'annually' };
+                                                                return t(map[formData.paymentFrequency] || formData.paymentFrequency as any);
+                                                            })()}
+                                                        </span>
+
+                                                        <span className="text-muted-foreground">{t('paymentMethod')}</span>
+                                                        <span className="font-medium">
+                                                            {(() => {
+                                                                const map: any = {
+                                                                    'Transfer': 'transfer',
+                                                                    'bank_transfer': 'transfer',
+                                                                    'Checks': 'check',
+                                                                    'check': 'check',
+                                                                    'Cash': 'cash',
+                                                                    'bit': 'bit',
+                                                                    'paybox': 'paybox',
+                                                                    'Other': 'other',
+                                                                    'other': 'other'
+                                                                };
+                                                                const key = map[formData.paymentMethod] || formData.paymentMethod.toLowerCase();
+                                                                return t(key);
+                                                            })()}
+                                                        </span>
+
+                                                        <span className="text-muted-foreground">{t('linkageType')}</span>
+                                                        <span className="font-medium">
+                                                            {formData.linkageType === 'none' ? t('notLinked') :
+                                                                formData.linkageType === 'cpi' ? t('linkedToCpi') :
+                                                                    formData.linkageType === 'usd' ? t('linkedToUsd') :
+                                                                        formData.linkageType === 'eur' ? t('linkedToEur') : formData.linkageType}
+                                                        </span>
+
+                                                        {formData.linkageType !== 'none' && (
+                                                            <div className="col-span-2 grid grid-cols-2 gap-x-4 gap-y-1 mt-1 border-t border-border/20 pt-1">
+                                                                <span className="text-muted-foreground text-xs pr-4">└ {t('indexSubType')}</span>
+                                                                <span className="font-medium text-xs">
+                                                                    {formData.linkageSubType === 'known' ? t('knownIndex') :
+                                                                        formData.linkageSubType === 'respect_of' ? t('inRespectOf') :
+                                                                            formData.linkageSubType === 'base' ? t('baseIndexValue') : formData.linkageSubType}
+                                                                </span>
+
+                                                                <span className="text-muted-foreground text-xs pr-4">└ {t('baseIndexDate')}</span>
+                                                                <span className="font-medium text-xs">{formData.baseIndexDate ? formatDate(formData.baseIndexDate) : '-'}</span>
+
+                                                                {(formData.linkageCeiling || formData.linkageFloor) && (
+                                                                    <>
+                                                                        <span className="text-muted-foreground text-xs pr-4">└ {t('capCeiling')}</span>
+                                                                        <span className="font-medium text-xs">
+                                                                            {formData.linkageCeiling && `${formData.linkageCeiling}% `}
+                                                                            {formData.linkageFloor && `(${t('floorIndex')})`}
+                                                                        </span>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        )}
+
+                                                        <span className="text-muted-foreground">{t('securityDeposit')}</span>
+                                                        <span className="font-medium">{formData.securityDeposit ? `₪${formatNumber(formData.securityDeposit)}` : '-'}</span>
+
+
+                                                    </div>
+                                                </div>
+                                            </div>
+
+
+
+                                            {contractFile && (
+                                                <div className="bg-primary/10/50 rounded-xl p-4 border border-blue-100">
+                                                    <label className="flex items-center gap-2 cursor-pointer mb-2">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={saveContractFile}
+                                                            onChange={e => setSaveContractFile(e.target.checked)}
+                                                            className="w-5 h-5 rounded border-blue-300 text-primary focus:ring-indigo-500"
+                                                        />
+                                                        <h4 className="font-bold text-sm text-blue-900 flex items-center gap-2 m-0">
+                                                            <Shield className="w-4 h-4" /> {t('saveContractFileQuery')}
+                                                        </h4>
+                                                    </label>
+
+                                                    <AnimatePresence>
+                                                        {saveContractFile && (
+                                                            <motion.div
+                                                                initial={{ height: 0, opacity: 0 }}
+                                                                animate={{ height: 'auto', opacity: 1 }}
+                                                                exit={{ height: 0, opacity: 0 }}
+                                                                className="space-y-3 overflow-hidden"
+                                                            >
+                                                                <div className="flex gap-2 pt-2">
+                                                                    {[
+                                                                        { id: 'cloud', label: t('storageRentMateCloud'), icon: Cloud, desc: t('storageRentMateCloudDesc') },
+                                                                        { id: 'device', label: t('storageThisDevice'), icon: HardDrive, desc: t('storageThisDeviceDesc') },
+                                                                        { id: 'both', label: t('storageBoth'), icon: Download, desc: t('storageBothDesc') }
+                                                                    ].map((opt) => {
+                                                                        const Icon = opt.icon;
+                                                                        const isSelected = storagePreference === opt.id;
+                                                                        return (
+                                                                            <button
+                                                                                key={opt.id}
+                                                                                onClick={() => setStoragePreference(opt.id as any)}
+                                                                                className={cn(
+                                                                                    "flex-1 relative p-3 rounded-xl border-2 transition-all text-right",
+                                                                                    isSelected
+                                                                                        ? "border-primary bg-white shadow-md z-10"
+                                                                                        : "border-transparent bg-slate-50 hover:bg-white hover:border-blue-200"
+                                                                                )}
+                                                                            >
+                                                                                <div className="flex flex-col items-center gap-2 text-center">
+                                                                                    <div className={cn(
+                                                                                        "w-8 h-8 rounded-full flex items-center justify-center transition-colors",
+                                                                                        isSelected ? "bg-primary/10 text-primary" : "bg-slate-200 text-slate-500"
+                                                                                    )}>
+                                                                                        <Icon className="w-4 h-4" />
+                                                                                    </div>
+                                                                                    <div>
+                                                                                        <div className={cn("font-bold text-xs", isSelected ? "text-blue-900" : "text-slate-700")}>{opt.label}</div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </button>
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                                <p className="text-center text-[10px] text-slate-400 mt-2">
+                                                                    {storagePreference === 'cloud' && t('storageCloudSuccess')}
+                                                                    {storagePreference === 'device' && t('storageDeviceSuccess')}
+                                                                    {storagePreference === 'both' && t('storageBothSuccess')}
+                                                                </p>
+                                                            </motion.div>
+                                                        )}
+                                                    </AnimatePresence>
+                                                </div>
+                                            )}
+                                        </motion.div>
+                                    )
+                                }
+                            </AnimatePresence >
+                        </div >
+                    </div >
+                </div >
+
+                {/* Split Handle & Viewer */}
+                <AnimatePresence>
+                    {scannedContractUrl && isContractViewerOpen && (
+                        <>
+                            {/* Drag Handle */}
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onMouseDown={handleDragStart}
+                                className={cn(
+                                    "fixed z-40 flex items-center justify-center group",
+                                    "lg:h-full lg:w-4 lg:-mr-2 lg:flex-col lg:cursor-col-resize",
+                                    "h-4 w-full -mt-2 cursor-row-resize flex-row"
                                 )}
-                        </AnimatePresence>
+                                style={{
+                                    top: windowWidth < 1024 ? `${splitRatio}%` : '0',
+                                    right: windowWidth >= 1024 ? `${splitRatio}%` : '0',
+                                    height: windowWidth >= 1024 ? '100%' : '16px',
+                                    width: windowWidth >= 1024 ? '16px' : '100%'
+                                }}
+                            >
+                                <div className={cn(
+                                    "bg-border group-hover:bg-primary/50 transition-colors",
+                                    "lg:h-full lg:w-px h-px w-full"
+                                )} />
+                                <div className={cn(
+                                    "absolute bg-white border border-border shadow-sm rounded-full pointer-events-none",
+                                    "lg:px-0.5 lg:py-2 px-2 py-0.5"
+                                )}>
+                                    <div className={cn(
+                                        "bg-slate-200 rounded-full",
+                                        "lg:w-1 lg:h-8 w-8 h-1"
+                                    )} />
+                                </div>
+                            </motion.div>
+
+                            {/* Viewer Pane */}
+                            <motion.div
+                                initial={windowWidth >= 1024 ? { x: "-100%" } : { y: "100%" }}
+                                animate={windowWidth >= 1024 ? { x: 0 } : { y: 0 }}
+                                exit={windowWidth >= 1024 ? { x: "-100%" } : { y: "100%" }}
+                                transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+                                className={cn(
+                                    "bg-slate-100 shadow-[0_-5px_30px_rgba(0,0,0,0.1)] z-30 flex flex-col",
+                                    "lg:h-full lg:border-r border-t lg:border-t-0 border-border"
+                                )}
+                                style={{
+                                    height: windowWidth >= 1024 ? '100%' : `${100 - splitRatio}%`,
+                                    width: windowWidth >= 1024 ? `${100 - splitRatio}%` : '100%'
+                                }}
+                            >
+                                <div className="flex items-center justify-between px-4 py-2 bg-white border-b border-border/50 shrink-0">
+                                    <span className="text-xs font-bold text-muted-foreground flex items-center gap-1">
+                                        <FileText className="w-4 h-4" /> {t('originalContract')}
+                                    </span>
+                                    <div className="flex items-center gap-2">
+                                        <a
+                                            href={scannedContractUrl || ''}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="p-1.5 hover:bg-slate-50 text-primary rounded-lg transition-colors flex items-center gap-1"
+                                            title="פתח בחלון חדש"
+                                        >
+                                            <Download className="w-4 h-4" />
+                                            <span className="text-xs">{t('download')}</span>
+                                        </a>
+                                        <button
+                                            onClick={() => setIsContractViewerOpen(false)}
+                                            className="p-1 hover:bg-slate-50 text-slate-400 hover:text-red-500 rounded-full transition-colors"
+                                        >
+                                            <ChevronDown className="w-5 h-5 rotate-180" />
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="flex-1 bg-slate-200 overflow-hidden relative">
+                                    <iframe
+                                        src={scannedContractUrl || ''}
+                                        className="w-full h-full border-none"
+                                        title="Contract Viewer"
+                                    />
+                                </div>
+                            </motion.div>
+                        </>
+                    )}
+                </AnimatePresence>
+                {/* Footer Navigation (Bionic) */}
+                <div className={cn(
+                    "fixed bottom-0 p-8 pb-12 glass-premium dark:bg-neutral-900/60 border-t border-white/5 z-40 backdrop-blur-2xl transition-all duration-700",
+                    isContractViewerOpen ? "left-0 lg:left-auto" : "left-0 right-0"
+                )}
+                    style={{
+                        width: (isContractViewerOpen && windowWidth >= 1024) ? `${splitRatio}%` : '100%',
+                        right: (isContractViewerOpen && windowWidth >= 1024) ? '0' : '0'
+                    }}>
+                    <div className="flex gap-4 max-w-2xl mx-auto">
+                        {step > 1 && (
+                            <button
+                                onClick={prevStep}
+                                className="h-14 px-10 rounded-2xl font-black text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-all hover:bg-white/5"
+                            >
+                                {t('back')}
+                            </button>
+                        )}
+                        <button
+                            onClick={nextStep}
+                            disabled={isSaving || (
+                                step === 1 ? (!formData.address && !formData.selectedPropertyId) :
+                                    step === 2 ? !formData.tenants[0]?.name :
+                                        step === 3 ? (!formData.startDate || !formData.endDate) :
+                                            step === 4 ? (!formData.rent || formData.rent <= 0) :
+                                                false
+                            )}
+                            className={cn(
+                                "flex-1 h-14 button-jewel font-black text-[11px] uppercase tracking-[0.2em] text-white rounded-[1.5rem] shadow-jewel hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-4 disabled:opacity-50",
+                                (isSaving || (
+                                    step === 1 ? (!formData.address && !formData.selectedPropertyId) :
+                                        step === 2 ? !formData.tenants[0]?.name :
+                                            step === 3 ? (!formData.startDate || !formData.endDate) :
+                                                step === 4 ? (!formData.rent || formData.rent <= 0) :
+                                                    false
+                                )) && "opacity-50 cursor-not-allowed"
+                            )}
+                        >
+                            {isSaving ? (
+                                <>
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                    <span>{t('saving')}...</span>
+                                </>
+                            ) : (
+                                <>
+                                    {step === 6 ? t('finish') : t('next')} <ArrowRight className={cn("w-5 h-5", lang === 'he' ? 'rotate-180' : '')} />
+                                </>
+                            )}
+                        </button>
                     </div>
-                </>
-            )}
+                </div>
+
+
+                {/* Image Cropper Modal */}
+                <AnimatePresence>
+                    {isCropping && imageToCrop && (
+                        <ImageCropper
+                            imageSrc={imageToCrop}
+                            onCropComplete={onCropComplete}
+                            onCancel={onCropCancel}
+                            aspect={4 / 3} // Standard photo aspect ratio
+                        />
+                    )}
+                </AnimatePresence>
+
+                {/* Overlap Warning Modal */}
+                <AnimatePresence>
+                    {
+                        showOverlapWarning && (
+                            <motion.div
+                                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                            >
+                                <motion.div
+                                    initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}
+                                    className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md text-center space-y-4"
+                                >
+                                    <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto">
+                                        <AlertTriangle className="w-8 h-8" />
+                                    </div>
+
+                                    <h3 className="text-xl font-bold text-slate-900">{t('overlapWarningTitle')}</h3>
+                                    <p className="text-slate-600">
+                                        {t('overlapWarningDesc')} ({formatDate(formData.startDate)} - {formatDate(formData.endDate)})
+                                    </p>
+
+                                    {overlapDetails && (
+                                        <div className="bg-amber-50 p-3 rounded-lg text-sm text-amber-800">
+                                            {t('existingContract')}: {formatDate(overlapDetails.start)} - {formatDate(overlapDetails.end)}
+                                        </div>
+                                    )}
+
+                                    <div className="flex gap-3 pt-2">
+                                        <button
+                                            onClick={() => setShowOverlapWarning(false)}
+                                            className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition-all"
+                                        >
+                                            {t('done')}
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            </motion.div>
+                        )}
+                </AnimatePresence>
+            </div>
         </div>
     );
 }

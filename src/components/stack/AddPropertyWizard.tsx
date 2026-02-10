@@ -14,6 +14,7 @@ import { getPropertyPlaceholder } from '../../lib/property-placeholders';
 import { SecureImage } from '../common/SecureImage';
 import { useSignedUrl } from '../../hooks/useSignedUrl';
 import { useAuth } from '../../contexts/AuthContext';
+import { useUsageTracking } from '../../hooks/useUsageTracking';
 
 // Wizard Steps Configuration
 const STEPS = [
@@ -31,6 +32,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
     const { user } = useAuth();
     const { t } = useTranslation();
     const { pop } = useStack();
+    const { trackEvent } = useUsageTracking();
     const [currentStep, setCurrentStep] = useState(0);
 
     // Form State
@@ -171,7 +173,14 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                     error = retryError;
                 }
 
+
                 if (error) throw error;
+
+                // Track analytics event
+                trackEvent('property_created', {
+                    property_type: startData.property_type,
+                    city: startData.city
+                });
 
                 // Success - close and refresh via parent/cache clearing
                 if (onSuccess) onSuccess();

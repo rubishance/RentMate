@@ -6,6 +6,7 @@ import { ThemeToggle } from '../common/ThemeToggle';
 import { LanguageToggle } from '../common/LanguageToggle';
 import logoIconOnly from '../../assets/rentmate-icon-only.png';
 import logoIconDark from '../../assets/rentmate-icon-only-dark.png';
+import { HeaderActionMenu } from './HeaderActionMenu';
 import { useTranslation } from '../../hooks/useTranslation';
 
 interface StreamHeaderProps {
@@ -27,29 +28,33 @@ export function StreamHeader({ title }: StreamHeaderProps) {
     return (
         <header className="fixed top-0 left-0 right-0 h-16 glass-premium z-[60] flex items-center justify-between px-4 md:px-10 border-b border-white/10 transition-all duration-500">
             {/* Left: Logo or Title */}
-            <Link
-                to="/dashboard"
-                className="flex items-center gap-3 group cursor-pointer"
-                onClick={() => console.log('[StreamHeader] [NAV] Logo clicked')}
-            >
-                <div className="w-8 h-8 button-jewel rounded-lg flex items-center justify-center group-hover:rotate-12 transition-transform duration-500">
-                    <img
-                        src={effectiveTheme === 'dark' ? logoIconDark : logoIconOnly}
-                        alt="RentMate"
-                        className="w-5 h-5 invert dark:invert-0"
-                    />
-                </div>
-                <div className="flex flex-col justify-center">
-                    <span className="text-xl md:text-2xl font-black tracking-tighter text-foreground whitespace-nowrap lowercase leading-none">
-                        {title || 'RentMate'}
-                    </span>
-                    {!title && (
-                        <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground opacity-60 mt-0.5">
-                            {getGreeting()}
+            {/* Left: Logo or Title */}
+            <div className="flex items-center gap-4">
+                <HeaderActionMenu />
+                <Link
+                    to="/dashboard"
+                    className="flex items-center gap-3 group cursor-pointer"
+                    onClick={() => console.log('[StreamHeader] [NAV] Logo clicked')}
+                >
+                    <div className="w-8 h-8 button-jewel rounded-lg flex items-center justify-center group-hover:rotate-12 transition-transform duration-500">
+                        <img
+                            src={effectiveTheme === 'dark' ? logoIconDark : logoIconOnly}
+                            alt="RentMate"
+                            className="w-5 h-5 invert dark:invert-0"
+                        />
+                    </div>
+                    <div className="flex flex-col justify-center">
+                        <span className="text-xl md:text-2xl font-black tracking-tighter text-foreground whitespace-nowrap lowercase leading-none">
+                            {title || 'RentMate'}
                         </span>
-                    )}
-                </div>
-            </Link>
+                        {!title && (
+                            <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground opacity-60 mt-0.5">
+                                {getGreeting()}
+                            </span>
+                        )}
+                    </div>
+                </Link>
+            </div>
 
             {/* Right: Actions */}
             <div className="flex items-center gap-2 md:gap-4">

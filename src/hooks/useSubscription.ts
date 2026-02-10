@@ -7,7 +7,9 @@ export function useSubscription() {
     const [usage, setUsage] = useState({
         properties: 0,
         tenants: 0,
-        contracts: 0
+        contracts: 0,
+        activeContracts: 0,
+        archivedContracts: 0
     });
     const [loading, setLoading] = useState(true);
 
@@ -43,6 +45,7 @@ export function useSubscription() {
                     max_properties: -1,
                     max_tenants: -1,
                     max_contracts: -1,
+                    max_archived_contracts: -1,
                     max_sessions: -1,
                     max_whatsapp_messages: -1,
                     price_monthly: 0,
@@ -50,7 +53,10 @@ export function useSubscription() {
                         'legal_library': true,
                         'whatsapp_bot': true,
                         'maintenance_tracker': true,
-                        'portfolio_visualizer': true
+                        'portfolio_visualizer': true,
+                        'ai_analysis': true,
+                        'ai_assistant': true,
+                        'export_data': true
                     },
                     created_at: new Date().toISOString()
                 });
@@ -61,16 +67,21 @@ export function useSubscription() {
             // 2. Get Usage Counts
             const [props, contractsRes] = await Promise.all([
                 supabase.from('properties').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
-                supabase.from('contracts').select('tenants', { count: 'exact' }).eq('user_id', user.id)
+                supabase.from('contracts').select('status, tenants', { count: 'exact' }).eq('user_id', user.id)
             ]);
 
             const contractList = (contractsRes.data as any[]) || [];
             const tenantCount = contractList.reduce((acc, c) => acc + (Array.isArray(c.tenants) ? c.tenants.length : 1), 0);
 
+            const activeContracts = contractList.filter(c => c.status === 'active').length;
+            const archivedContracts = contractList.filter(c => c.status === 'archived').length;
+
             setUsage({
                 properties: props.count || 0,
                 tenants: tenantCount,
-                contracts: contractsRes.count || 0
+                contracts: contractsRes.count || 0,
+                activeContracts,
+                archivedContracts
             });
 
         } catch (error) {
@@ -89,6 +100,26 @@ export function useSubscription() {
         return current < max;
     };
 
+    const canAddActiveContract = (() => {
+        if (!plan) return false;
+
+        // Free Plan Check: Limit to 1 TOTAL Contract (Active + Archived)
+        // This forces upgrade if they have an archived contract and want a new one.
+        if (plan.id === 'free' || plan.id === 'solo') {
+            return usage.contracts < 1;
+        }
+
+        // Paid Plans: Limit based on Active Contracts only
+        return checkLimit(usage.activeContracts, plan.max_contracts);
+    })();
+
+    const canArchiveContract = (() => {
+        if (!plan) return false;
+        if (plan.max_archived_contracts === undefined || plan.max_archived_contracts === null) return true; // Legacy/Unlimited fallback
+
+        return checkLimit(usage.archivedContracts, plan.max_archived_contracts);
+    })();
+
     return {
         plan,
         usage,
@@ -96,7 +127,11 @@ export function useSubscription() {
         refreshSubscription,
         canAddProperty: plan ? checkLimit(usage.properties, plan.max_properties) : false,
         canAddTenant: plan ? checkLimit(usage.tenants, plan.max_tenants) : false,
-        canAddContract: plan ? checkLimit(usage.contracts, plan.max_contracts) : false,
+        canAddContract: plan ? checkLimit(usage.contracts, plan.max_contracts) : false, // Legacy check
+
+        // New specific checks
+        canAddActiveContract,
+        canArchiveContract,
 
         // Feature flags helper
         hasFeature: (featureKey: string) => {

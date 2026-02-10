@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { crmService, CRMInteraction } from '../../services/crm.service';
+import { supabase } from '../../lib/supabase';
 import { MaskedAdminValue } from '../../components/admin/MaskedAdminValue';
 import {
     ChatBubbleLeftEllipsisIcon,
@@ -9,7 +10,7 @@ import {
     PlusIcon,
     ExclamationCircleIcon,
 } from '@heroicons/react/24/outline';
-import { Loader2, Table } from 'lucide-react';
+import { Loader2, Table, Activity, MousePointer2 } from 'lucide-react';
 import { TimelineItem } from '../../components/crm/TimelineItem';
 import { InteractionLogger } from '../../components/crm/InteractionLogger';
 import { AdminChatWindow } from '../../components/crm/AdminChatWindow';
@@ -50,6 +51,14 @@ interface ClientProfileData {
     tenants_count?: number;
 }
 
+interface AnalyticsEvent {
+    id: string;
+    event_name: string;
+    metadata: any;
+    created_at: string;
+    url: string;
+}
+
 const ClientProfile = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
@@ -62,8 +71,10 @@ const ClientProfile = () => {
     // New Note Form
     const [isExporting, setIsExporting] = useState(false);
     const [selectedBotChat, setSelectedBotChat] = useState<CRMInteraction | null>(null);
-    const [feedFilter, setFeedFilter] = useState<'all' | 'ai' | 'human' | 'ticket'>('all');
+    const [feedFilter, setFeedFilter] = useState<'all' | 'ai' | 'human' | 'ticket' | 'usage'>('all');
     const [isChatOpen, setIsChatOpen] = useState(false);
+    const [usageEvents, setUsageEvents] = useState<AnalyticsEvent[]>([]);
+    const [loadingUsage, setLoadingUsage] = useState(false);
 
     // Plan Editing
     const [isEditingPlan, setIsEditingPlan] = useState(false);
@@ -94,10 +105,31 @@ const ClientProfile = () => {
         }
     }, []);
 
+    const fetchUsageEvents = useCallback(async () => {
+        if (!id) return;
+        setLoadingUsage(true);
+        try {
+            const { data: events, error } = await supabase
+                .from('analytics_events')
+                .select('*')
+                .eq('user_id', id)
+                .order('created_at', { ascending: false })
+                .limit(50);
+
+            if (error) throw error;
+            setUsageEvents(events || []);
+        } catch (err) {
+            console.error('Error fetching usage events:', err);
+        } finally {
+            setLoadingUsage(false);
+        }
+    }, [id]);
+
     useEffect(() => {
         fetchClientData();
         fetchAvailablePlans();
-    }, [fetchClientData, fetchAvailablePlans]);
+        fetchUsageEvents();
+    }, [fetchClientData, fetchAvailablePlans, fetchUsageEvents]);
 
     const handleLogSuccess = (newInteraction: CRMInteraction) => {
         setInteractions([newInteraction, ...interactions]);
@@ -130,6 +162,7 @@ const ClientProfile = () => {
     };
 
     const filteredInteractions = interactions.filter(i => {
+        if (feedFilter === 'usage') return false; // Usage events are handled separately or we could merge them
         if (feedFilter === 'all') return true;
         if (feedFilter === 'ai') return i.type === 'chat';
         if (feedFilter === 'human') return ['note', 'call', 'email', 'human_chat', 'whatsapp'].includes(i.type);
@@ -344,10 +377,10 @@ const ClientProfile = () => {
 
                         {/* Filters */}
                         <div className="px-6 py-4 border-b border-gray-50 dark:border-gray-700 flex gap-2 overflow-x-auto">
-                            {['all', 'ai', 'ticket', 'human'].map((f) => (
+                            {['all', 'ai', 'ticket', 'human', 'usage'].map((f) => (
                                 <button
                                     key={f}
-                                    onClick={() => setFeedFilter(f as 'all' | 'ai' | 'human' | 'ticket')}
+                                    onClick={() => setFeedFilter(f as any)}
                                     className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${feedFilter === f
                                         ? 'bg-brand-50 text-brand-700 dark:bg-brand-900/20 dark:text-brand-400'
                                         : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
@@ -355,13 +388,46 @@ const ClientProfile = () => {
                                 >
                                     {f === 'all' ? 'All Activity' :
                                         f === 'ai' ? 'Bot Chats' :
-                                            f === 'ticket' ? 'Tickets' : 'Human Logs'}
+                                            f === 'usage' ? 'Feature Usage' :
+                                                f === 'ticket' ? 'Tickets' : 'Human Logs'}
                                 </button>
                             ))}
                         </div>
 
                         <div className="divide-y divide-gray-50 dark:divide-gray-800 p-6 max-h-[800px] overflow-y-auto">
-                            {filteredInteractions.length === 0 ? (
+                            {feedFilter === 'usage' ? (
+                                usageEvents.length === 0 ? (
+                                    <div className="text-center py-12">
+                                        <Activity className="w-12 h-12 text-gray-200 dark:text-gray-700 mx-auto mb-4" />
+                                        <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">No usage history recorded</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {usageEvents.map(event => (
+                                            <div key={event.id} className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-neutral-800/20 border border-slate-100 dark:border-neutral-800">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg">
+                                                        <MousePointer2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-sm font-bold text-slate-900 dark:text-white capitalize">
+                                                            {event.event_name.replace(/_/g, ' ')}
+                                                        </div>
+                                                        <div className="text-[10px] text-slate-400">
+                                                            {event.url} • {new Date(event.created_at).toLocaleString()}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {event.metadata && (
+                                                    <div className="text-[10px] text-indigo-500 font-bold bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded-md">
+                                                        {JSON.stringify(event.metadata)}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )
+                            ) : filteredInteractions.length === 0 ? (
                                 <div className="text-center py-12">
                                     <ChatBubbleLeftEllipsisIcon className="w-12 h-12 text-gray-200 dark:text-gray-700 mx-auto mb-4" />
                                     <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">No activity found</p>

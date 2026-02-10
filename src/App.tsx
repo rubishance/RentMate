@@ -58,6 +58,7 @@ const SystemSettings = lazy(() => import('./pages/admin/SystemSettings'));
 const StorageManagement = lazy(() => import('./pages/admin/StorageManagement'));
 const AIUsageManagement = lazy(() => import('./pages/admin/AIUsageManagement'));
 const ClientProfile = lazy(() => import('./pages/admin/ClientProfile'));
+const UsageAnalytics = lazy(() => import('./pages/admin/UsageAnalytics'));
 const AutomationTracking = lazy(() => import('./pages/admin/AutomationTracking'));
 const AdminErrorLogs = lazy(() => import('./pages/admin/AdminErrorLogs'));
 const SupportTickets = lazy(() => import('./pages/admin/SupportTickets'));
@@ -274,6 +275,10 @@ const router = createBrowserRouter([
               {
                 path: "users",
                 element: <UserManagement />,
+              },
+              {
+                path: "usage",
+                element: <UsageAnalytics />,
               },
               {
                 path: "plans",

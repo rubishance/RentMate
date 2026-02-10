@@ -316,6 +316,7 @@ export interface SubscriptionPlanDef {
     max_properties: number;
     max_tenants: number;
     max_contracts: number;
+    max_archived_contracts?: number; // Optional until migration
     max_sessions: number;
     max_whatsapp_messages: number;
     features: Record<string, any>;

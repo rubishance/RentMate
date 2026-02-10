@@ -159,6 +159,7 @@ const AdminDashboard = () => {
         { name: 'Manage Users', icon: Users, path: '/admin/users', desc: 'View and edit user accounts' },
         { name: 'Manage Plans', icon: CreditCard, path: '/admin/plans', desc: 'Update subscription tiers' },
         { name: 'Audit Logs', icon: Shield, path: '/admin/audit-logs', desc: 'Review system security events' },
+        { name: 'Usage Analytics', icon: Activity, path: '/admin/usage', desc: 'Track platform adoption' },
         { name: 'System Settings', icon: Settings, path: '/admin/settings', desc: 'Global configuration' },
     ];
 

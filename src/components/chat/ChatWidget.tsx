@@ -345,7 +345,7 @@ export function ChatWidget() {
                         {/* Header */}
                         <div className="p-4 border-b border-gray-200 dark:border-white/10 flex justify-between items-center cursor-move transition-colors bg-white dark:bg-black text-gray-900 dark:text-white">
                             <div className="flex items-center space-x-3 rtl:space-x-reverse">
-                                <div className="p-1.5 bg-white dark:bg-neutral-800 rounded-lg flex items-center justify-center overflow-hidden w-9 h-9 border border-white/20">
+                                <div className="p-1.5 flex items-center justify-center overflow-hidden w-9 h-9">
                                     <RentyMascot size={28} showBackground={false} />
                                 </div>
                                 <div>
@@ -585,10 +585,10 @@ export function ChatWidget() {
                     exit={{ opacity: 0, scale: 0.5 }}
                     className="p-0 bg-transparent transition-all border-none outline-none focus:outline-none relative group"
                 >
-                    {/* Aura Glow */}
-                    <div className="absolute inset-0 blur-xl rounded-full scale-50 group-hover:scale-100 transition-transform duration-500 opacity-0 group-hover:opacity-100 bg-gold/20"></div>
+                    {/* Soft Hover Aura */}
+                    <div className="absolute inset-0 blur-xl rounded-full scale-50 group-hover:scale-100 transition-transform duration-500 opacity-0 group-hover:opacity-100 bg-white/5"></div>
 
-                    <RentyMascot size={64} showBackground={false} className="relative z-10 drop-shadow-md" />
+                    <RentyMascot size={64} showBackground={false} className="relative z-10" />
                 </motion.button>
             )}
 

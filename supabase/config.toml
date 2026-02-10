@@ -18,3 +18,23 @@ entrypoint = "./functions/analyze-contract/index.ts"
 enabled = true
 verify_jwt = false
 entrypoint = "./functions/google-maps-proxy/index.ts"
+
+[functions.smart-function]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/smart-function/send-contact-email.ts"
+
+[functions.smart-processor]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/smart-processor/fetch-index-data.ts"
+
+[functions.hyper-worker]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/hyper-worker/index.ts"
+
+[functions.smooth-processor]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/smooth-processor/index.ts"

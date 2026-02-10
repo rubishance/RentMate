@@ -110,7 +110,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                     tenants,
                     properties (address)
                 `)
-                .in('status', ['active', 'archived']);
+                .in('status', ['active']); // Only active contracts allowed for new payments
 
             if (error) throw error;
             setContracts(data || []);

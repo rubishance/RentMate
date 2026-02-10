@@ -9,9 +9,8 @@ import { useNotificationScheduler } from '../../hooks/useNotificationScheduler';
 import { SystemBroadcast } from '../common/SystemBroadcast';
 import { StreamHeader } from './StreamHeader';
 import { BottomDock } from './BottomDock';
-import { FloatingContactButton } from './FloatingContactButton';
-import { GlobalActionFab } from './GlobalActionFab';
 import { useStack } from '../../contexts/StackContext';
+
 import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -132,11 +131,7 @@ export function AppShell() {
             {/* New Bottom Dock */}
             <BottomDock />
 
-            {/* Global Actions FAB */}
-            <GlobalActionFab />
-
-            {/* Global Quick Contact FAB */}
-            <FloatingContactButton />
         </div>
+
     );
 }

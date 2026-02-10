@@ -83,63 +83,77 @@ export default function Pricing() {
     const fetchPlans = async () => {
         setLoading(true);
         try {
-            const { data, error } = await supabase
-                .from('subscription_plans')
-                .select('*')
-                .eq('is_active', true)
-                .order('sort_order', { ascending: true });
-
-            if (error) throw error;
-
-            const mappedTiers: Tier[] = (data || []).map(plan => {
-                const id = plan.id.toLowerCase();
-                const baseId = id.includes('solo') || id.includes('free') ? 'solo' :
-                    id.includes('mate') || id.includes('pro') ? 'mate' :
-                        id.includes('master') || id.includes('enterprise') ? 'master' : 'unlimited';
-
-                // Map features from JSONB
-                const features: TierFeature[] = [];
-                if (plan.max_properties === -1) {
-                    features.push({ icon: Lock, text: t('unlimited_properties') });
-                } else if (plan.max_properties === 1) {
-                    features.push({ icon: Lock, text: `1 ${t('property_unit')}` });
-                } else {
-                    features.push({ icon: Lock, text: `${plan.max_properties} ${t('property_units')}` });
+            // Define static plans based on requirements since DB might not be updated yet
+            const plans = [
+                {
+                    id: 'free',
+                    name: 'BASIC',
+                    price: 0,
+                    description: isRtl ? 'שקט נפשי דיגיטלי לבעלי נכס יחיד.' : 'Digital peace of mind for the single-unit owner.',
+                    features: [
+                        { icon: Lock, text: isRtl ? 'נכס 1' : '1 Asset' },
+                        { icon: FileText, text: isRtl ? 'חוזה 1 (כולל ארכיון)' : '1 Total Contract (Active + Archived)' },
+                        { icon: MessageCircle, text: isRtl ? 'ללא AI וללא בוט וואטסאפ' : 'No AI & No WhatsApp Bot' },
+                        { icon: Check, text: isRtl ? 'מעקב תחזוקה בסיסי' : 'Basic Maintenance Tracking' },
+                    ],
+                    cta: isRtl ? 'התחל בחינם' : 'Start for Free',
+                    popular: false,
+                    color: 'text-slate-500',
+                    bg: 'bg-slate-50 dark:bg-slate-900/50'
+                },
+                {
+                    id: 'mate', // Starter
+                    name: 'STARTER',
+                    price: 29,
+                    description: isRtl ? 'ניהול מקצועי עם AI לבעלי דירה אחת.' : 'Professional management with AI for single owners.',
+                    features: [
+                        { icon: Lock, text: isRtl ? 'נכס 1' : '1 Asset' },
+                        { icon: FileText, text: isRtl ? 'חוזה פעיל 1 (+3 בארכיון)' : '1 Active Contract (+3 Archived)' },
+                        { icon: Zap, text: isRtl ? 'כולל כלי AI מלאים' : 'Includes Full AI Tools' },
+                        { icon: MessageCircle, text: isRtl ? 'תזכורות בוואטסאפ' : 'WhatsApp Reminders' },
+                        { icon: FileText, text: isRtl ? 'יצוא נתונים' : 'Data Export' }
+                    ],
+                    cta: isRtl ? 'שדרג ל-Starter' : 'Upgrade to Starter',
+                    popular: true,
+                    color: 'text-blue-500',
+                    bg: 'bg-blue-50/50 dark:bg-blue-900/20'
+                },
+                {
+                    id: 'pro', // Pro
+                    name: 'PRO',
+                    price: 59,
+                    description: isRtl ? 'טייס אוטומטי מלא למשקיעים צומחים.' : 'Full autopilot for growing investors.',
+                    features: [
+                        { icon: Lock, text: isRtl ? 'עד 3 נכסים' : 'Up to 3 Assets' },
+                        { icon: FileText, text: isRtl ? '3 חוזים פעילים (+15 בארכיון)' : '3 Active Contracts (+15 Archived)' },
+                        { icon: Zap, text: isRtl ? 'AI וניתוח תשואה מתקדם' : 'AI & Advanced Yield Analysis' },
+                        { icon: MessageCircle, text: isRtl ? 'תמיכה בעדיפות גבוהה' : 'Priority Support' },
+                        { icon: Check, text: isRtl ? 'כל מה שיש ב-Starter' : 'Everything in Starter' }
+                    ],
+                    cta: isRtl ? 'שדרג ל-Pro' : 'Upgrade to Pro',
+                    popular: false,
+                    color: 'text-amber-500',
+                    bg: 'bg-amber-50/50 dark:bg-amber-900/20'
                 }
+            ];
 
-                if (plan.features && typeof plan.features === 'object') {
-                    Object.entries(plan.features).forEach(([key, value]) => {
-                        if (value === true) {
-                            features.push({
-                                icon: FEATURE_ICON_MAP[key] || Check,
-                                text: t(key as any) // Use key as fallback if t handles it
-                            });
-                        }
-                    });
-                }
-
-                return {
-                    id: plan.id,
-                    name: plan.name,
-                    price: plan.price_monthly,
-                    priceYearly: plan.price_yearly || plan.price_monthly * 10, // Fallback if 0
-                    description: plan.description || (
-                        plan.id === 'free' || plan.id === 'solo' ? (isRtl ? 'שקט נפשי דיגיטלי לבעלי נכס יחיד.' : 'Digital peace of mind for the single-unit owner.') :
-                            plan.id === 'mate' || plan.id === 'pro' ? (isRtl ? 'אופטימיזציית תשואה לבעלי נכסים בצמיחה.' : 'The Yield Optimizer for growth-minded owners.') :
-                                plan.id === 'master' || plan.id === 'enterprise' ? (isRtl ? 'מרכז בקרה עסקי למשקיעי נדל"ן.' : 'Business Command Center for portfolio investors.') :
-                                    (isRtl ? 'פיצ\'רים מתקדמים למקצוענים' : 'Advanced features for professionals')
-                    ),
-                    subtitle: plan.subtitle,
-                    badgeText: plan.badge_text,
-                    ctaText: plan.cta_text,
-                    icon: ICON_MAP[baseId] || Star,
-                    color: COLOR_MAP[baseId] || 'text-blue-500',
-                    bg: BG_MAP[baseId] || 'bg-blue-50/50 dark:bg-blue-900/20',
-                    isPopular: baseId === 'mate' || !!plan.badge_text,
-                    buttonVariant: baseId === 'mate' ? 'primary' : 'outline',
-                    features: features.slice(0, 5) // Keep it clean
-                };
-            });
+            // Map to Tier format
+            const mappedTiers: Tier[] = plans.map(plan => ({
+                id: plan.id,
+                name: plan.name,
+                price: plan.price,
+                priceYearly: plan.price * 10,
+                description: plan.description,
+                subtitle: null,
+                badgeText: plan.popular ? (isRtl ? 'הכי משתלם' : 'BEST VALUE') : null,
+                ctaText: plan.cta,
+                icon: ICON_MAP[plan.id] || Star,
+                color: plan.color,
+                bg: plan.bg,
+                isPopular: plan.popular,
+                buttonVariant: plan.id === 'mate' ? 'primary' : 'outline',
+                features: plan.features
+            }));
 
             setTiers(mappedTiers);
         } catch (error) {

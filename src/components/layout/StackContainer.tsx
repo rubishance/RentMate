@@ -23,17 +23,54 @@ export function StackContainer() {
     const { stack, pop } = useStack();
 
     // Lock background scrolling when stack is active (unless top layer is modeless)
+    // Lock background scrolling and interaction when stack is active
     useEffect(() => {
         const topLayer = stack[stack.length - 1];
+        const mainContent = document.getElementById('main-content');
+        const header = document.querySelector('header'); // The stream header
+        const bottomDock = document.querySelector('.bottom-dock'); // The bottom dock if it has a class
+
         if (stack.length > 0 && !topLayer?.modeless) {
+            // Lock body scroll
             document.body.style.overflow = 'hidden';
+
+            // Add inert to background elements interaction
+            if (mainContent) {
+                mainContent.setAttribute('inert', '');
+                mainContent.style.filter = 'blur(4px) grayscale(40%)';
+                mainContent.style.transition = 'filter 0.3s ease';
+            }
+            if (header) {
+                header.setAttribute('inert', '');
+                header.style.filter = 'blur(4px) grayscale(40%)';
+                header.style.transition = 'filter 0.3s ease';
+            }
         } else {
+            // Unlock body scroll
             document.body.style.overflow = 'unset';
+
+            // Remove inert and visual effects
+            if (mainContent) {
+                mainContent.removeAttribute('inert');
+                mainContent.style.filter = 'none';
+            }
+            if (header) {
+                header.removeAttribute('inert');
+                header.style.filter = 'none';
+            }
         }
 
         // Cleanup on unmount
         return () => {
             document.body.style.overflow = 'unset';
+            if (mainContent) {
+                mainContent.removeAttribute('inert');
+                mainContent.style.filter = 'none';
+            }
+            if (header) {
+                header.removeAttribute('inert');
+                header.style.filter = 'none';
+            }
         };
     }, [stack.length, stack[stack.length - 1]?.modeless]);
 
