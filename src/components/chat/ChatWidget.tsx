@@ -42,7 +42,7 @@ export function ChatWidget() {
 
     // Modal States
     const [activeModal, setActiveModal] = useState<string | null>(null);
-    const [modalData, setModalData] = useState<Record<string, unknown> | null>(null);
+    const [modalData, setModalData] = useState<any>(null);
 
     const [user, setUser] = useState<User | null>(null);
 
@@ -267,12 +267,12 @@ export function ChatWidget() {
                 'other': 'other'
             };
 
-            const systemCategory = (categoryMap[scannedBill.category] || 'other') as DocumentCategory;
+            const systemCategory: DocumentCategory = (categoryMap[scannedBill.category] || 'other') as DocumentCategory;
 
             // 2. Upload to property documents (this also handles storage)
             await propertyDocumentsService.uploadDocument(scannedBill.file, {
                 propertyId: selectedPropertyId,
-                category: systemCategory,
+                category: systemCategory as DocumentCategory,
                 amount: scannedBill.amount,
                 documentDate: scannedBill.date,
                 vendorName: scannedBill.vendor,
