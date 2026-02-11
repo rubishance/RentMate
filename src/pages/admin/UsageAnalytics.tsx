@@ -3,7 +3,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { supabase } from '../../lib/supabase';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
-    LineChart, Line, PieChart, Pie, Cell, Legend, AreaChart, Area
+    PieChart, Pie, Cell, Legend, AreaChart, Area
 } from 'recharts';
 import {
     BarChart3, Users, Activity, MousePointer2, TrendingUp, Calendar,
@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn, formatDate, formatNumber } from '../../lib/utils';
+import { ActivityWidget } from '../../components/analytics/ActivityWidget';
 
 interface UsageStats {
     top_users: {
@@ -114,6 +115,9 @@ export default function UsageAnalytics() {
                     ))}
                 </div>
             </div>
+
+            {/* Activity Widget (Global Trends) */}
+            <ActivityWidget />
 
             {/* Top Metrics Row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
