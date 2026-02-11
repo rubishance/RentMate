@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import { X, Send, Paperclip, Loader2, Mic, MicOff } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ActionCard } from '../dashboard/ActionCard';
@@ -6,8 +6,11 @@ import { supabase } from '../../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useChatBot } from '../../hooks/useChatBot';
 import { useUserPreferences } from '../../contexts/UserPreferencesContext';
+import { useStack } from '../../contexts/StackContext';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useDataCache } from '../../contexts/DataCacheContext';
 import { BillAnalysisService, ExtractedBillData } from '../../services/bill-analysis.service';
+import { propertyDocumentsService } from '../../services/property-documents.service';
 import { chatBus } from '../../events/chatEvents';
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
 import { RentyMascot } from '../common/RentyMascot';
@@ -111,7 +114,7 @@ export function ChatWidget() {
             }
         });
         return unsubscribe;
-    }, [isOpen, openChat, sendBotMessage]);
+    }, [isOpen, openChat, sendBotMessage, processFile]);
 
     // Handle UI Actions from Bot
     useEffect(() => {
@@ -137,7 +140,7 @@ export function ChatWidget() {
             }
             clearUiAction();
         }
-    }, [uiAction, navigate, clearUiAction, push]);
+    }, [uiAction, navigate, clearUiAction, push, clear, t]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -177,7 +180,7 @@ export function ChatWidget() {
         }
     };
 
-    const processFile = async (file: File) => {
+    const processFile = useCallback(async (file: File) => {
         setIsUploading(true);
         try {
             const { data: { user } } = await supabase.auth.getUser();
@@ -226,13 +229,14 @@ export function ChatWidget() {
             await sendBotMessage(`Uploaded file: ${file.name}`, { name: file.name, path }, analysisResults);
 
             if (fileInputRef.current) fileInputRef.current.value = '';
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Upload error:', err);
-            alert(`Failed to upload file: ${err.message}`);
+            const message = err instanceof Error ? err.message : 'Unknown error';
+            alert(`Failed to upload file: ${message}`);
         } finally {
             setIsUploading(false);
         }
-    };
+    }, [properties, sendBotMessage]);
 
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -263,7 +267,7 @@ export function ChatWidget() {
                 'other': 'other'
             };
 
-            const systemCategory = (categoryMap[scannedBill.category] || 'other') as any;
+            const systemCategory = (categoryMap[scannedBill.category] || 'other') as string;
 
             // 2. Upload to property documents (this also handles storage)
             await propertyDocumentsService.uploadDocument(scannedBill.file, {
@@ -295,9 +299,10 @@ export function ChatWidget() {
             setActiveModal('payment');
             setScannedBill(null);
             setSelectedPropertyId('');
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Failed to save bill:', err);
-            alert(`Failed to save bill: ${err.message}`);
+            const message = err instanceof Error ? err.message : 'Unknown error';
+            alert(`Failed to save bill: ${message}`);
         }
     };
     const handleAction = async (value: string) => {
