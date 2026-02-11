@@ -101,12 +101,18 @@ export function AddContract() {
                     (prefill.payment_frequency.charAt(0).toUpperCase() + prefill.payment_frequency.slice(1)) :
                     formData.paymentFrequency,
                 paymentDay: prefill.payment_day || formData.paymentDay,
-                image_url: prefill?.image ? prefill.image : '',
-                hasParking: !!prefill?.has_parking,
-                hasStorage: !!prefill?.has_storage,
-                hasBalcony: !!prefill?.has_balcony,
-                hasSafeRoom: !!prefill?.has_safe_room,
-                property_type: (prefill?.property_type || 'apartment') as any,
+                image_url: prefill?.image ? prefill.image : (formData.image_url || ''),
+
+                // Property Prefill
+                address: prefill.address || formData.address,
+                city: prefill.city || formData.city,
+                rooms: prefill.rooms || formData.rooms,
+                size: prefill.size_sqm || prefill.size || formData.size,
+                hasParking: prefill.has_parking ?? formData.hasParking,
+                hasStorage: prefill.has_storage ?? formData.hasStorage,
+                hasBalcony: prefill.has_balcony ?? formData.hasBalcony,
+                hasSafeRoom: prefill.has_safe_room ?? formData.hasSafeRoom,
+                property_type: (prefill?.property_type || formData.property_type || 'apartment') as any,
                 isExistingProperty: hasProperty
             };
 
@@ -115,14 +121,9 @@ export function AddContract() {
                 setIsPropertyLocked(true);
             }
 
-            // Smart Step Jumping
-            if (hasProperty && hasTenant && hasDates) {
-                setStep(4); // To Payments
-            } else if (hasProperty && hasTenant) {
-                setStep(3); // To Periods
-            } else if (hasProperty) {
-                setStep(2); // To Tenant
-            }
+            // Smart Step Jumping - Per user request, always start on first page (Step 1)
+            // but all provided fields will be filled on all pages.
+            setStep(1);
 
             reset(updatedData);
             // Clear state after reading to prevent re-fill on refresh
@@ -890,8 +891,7 @@ export function AddContract() {
 
     return (
         <div className={cn(
-            "relative h-[100dvh] overflow-hidden bg-slate-50 dark:bg-black flex",
-            isContractViewerOpen ? "flex-col lg:flex-row-reverse" : "flex-col"
+            "relative h-[100dvh] overflow-hidden bg-slate-50 dark:bg-black flex flex-col",
         )}>
 
             {/* PROGRESS TRACKER (High Blur) */}
@@ -920,107 +920,110 @@ export function AddContract() {
                 )}
             </AnimatePresence>
 
-            {/* Top Pane: Wizard Form */}
-            <div
-                className={cn(
-                    "flex-1 flex flex-col min-w-0 transition-all duration-300",
-                    isContractViewerOpen ? "border-b lg:border-b-0 lg:border-r border-white/5" : "h-full w-full"
-                )}
-                style={{
-                    height: (isContractViewerOpen && windowWidth < 1024) ? `${splitRatio}%` : '100%',
-                    width: (isContractViewerOpen && windowWidth >= 1024) ? `${splitRatio}%` : '100%',
-                    flex: (isContractViewerOpen) ? 'none' : '1'
-                }}
-            >
-                {/* Wizard Header (Bionic) */}
-                <div className="h-24 glass-premium dark:bg-neutral-900/60 border-b border-white/5 flex items-center justify-between px-8 md:px-12 z-20 shrink-0 backdrop-blur-2xl">
-                    <div className="flex items-center gap-6">
-                        <button
-                            onClick={() => navigate('/properties')}
-                            className="w-10 h-10 glass-premium dark:bg-neutral-800/40 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground transition-all border border-white/5"
-                        >
-                            <ArrowLeft className={cn("w-4 h-4", lang === 'he' ? 'rotate-180' : '')} />
-                        </button>
-                        <div className="flex flex-col">
-                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40 leading-none mb-1">
-                                {t('step')} {step} / {STEPS.length}
-                            </span>
-                            <h1 className="font-black text-xl tracking-tighter text-foreground leading-none lowercase">
-                                {t(STEPS[step - 1].labelKey)}
-                            </h1>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        {!scannedContractUrl && isScanning && (
-                            <div className="hidden md:block">
-                                <ContractScanner
-                                    onScanComplete={handleScanComplete}
-                                    onCancel={() => setIsScanning(false)}
-                                />
-                            </div>
-                        )}
-                        <div className="flex gap-1.5 glass-premium dark:bg-neutral-800/40 p-1.5 rounded-2xl border border-white/5">
-                            {STEPS.map((s) => (
-                                <div
-                                    key={s.id}
-                                    className={cn(
-                                        "w-2 h-2 rounded-full transition-all duration-700",
-                                        s.id === step ? "w-8 bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]" : s.id < step ? "bg-indigo-300 dark:bg-indigo-900" : "bg-slate-200 dark:bg-neutral-800"
-                                    )}
-                                />
-                            ))}
-                        </div>
-                    </div>
-                </div>
-
-                <div className="flex-1 overflow-y-auto no-scrollbar pt-10 pb-32">
-                    <div className={cn("max-w-2xl mx-auto px-6 transition-all", isContractViewerOpen ? "pb-12" : "pb-24")}>
-                        {/* Header */}
-                        <div className="flex items-center gap-4 mb-4">
-                            <button onClick={() => navigate('/properties')} className="p-2 hover:bg-secondary rounded-full transition-colors">
-                                <ArrowLeft className="w-5 h-5" />
+            <div className={cn(
+                "flex-1 flex overflow-hidden relative",
+                isContractViewerOpen ? "flex-col lg:flex-row-reverse" : "flex-col"
+            )}>
+                {/* Top Pane: Wizard Form */}
+                <div
+                    className={cn(
+                        "flex flex-col min-w-0 transition-all duration-300",
+                        isContractViewerOpen ? "border-b lg:border-b-0 lg:border-r border-white/5" : "h-full w-full"
+                    )}
+                    style={{
+                        height: (isContractViewerOpen && windowWidth < 1024) ? `${splitRatio}%` : '100%',
+                        width: (isContractViewerOpen && windowWidth >= 1024) ? `${splitRatio}%` : '100%',
+                        flex: (isContractViewerOpen) ? 'none' : '1'
+                    }}
+                >
+                    {/* Wizard Header (Bionic) */}
+                    <div className="h-24 glass-premium dark:bg-neutral-900/60 border-b border-white/5 flex items-center justify-between px-8 md:px-12 z-20 shrink-0 backdrop-blur-2xl">
+                        <div className="flex items-center gap-6">
+                            <button
+                                onClick={() => navigate('/properties')}
+                                className="w-10 h-10 glass-premium dark:bg-neutral-800/40 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground transition-all border border-white/5"
+                            >
+                                <ArrowLeft className={cn("w-4 h-4", lang === 'he' ? 'rotate-180' : '')} />
                             </button>
-                            <div>
-                                <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('newContract')}</h1>
-                                <p className="text-sm text-muted-foreground">{t('newContractDesc')}</p>
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40 leading-none mb-1">
+                                    {t('step')} {step} / {STEPS.length}
+                                </span>
+                                <h1 className="font-black text-xl tracking-tighter text-foreground leading-none lowercase">
+                                    {t(STEPS[step - 1].labelKey)}
+                                </h1>
                             </div>
                         </div>
 
-                        {/* Stepper */}
-                        <div className="flex items-center justify-between mb-4 relative">
-                            <div className="absolute top-1/2 left-0 w-full h-0.5 bg-border -z-10" />
-                            {STEPS.map((s) => {
-                                const isActive = s.id === step;
-                                const isCompleted = s.id < step;
-                                const Icon = s.icon;
-
-                                return (
-                                    <div key={s.id} className="flex flex-col items-center gap-2 bg-background px-2">
-                                        <div
-                                            className={cn(
-                                                "w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300",
-                                                isActive ? "border-primary bg-primary text-primary-foreground scale-110" :
-                                                    isCompleted ? "border-primary bg-primary text-primary-foreground" : "border-muted-foreground/30 text-muted-foreground bg-background"
-                                            )}
-                                        >
-                                            {isCompleted ? <Check className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
-                                        </div>
-                                        <span className={cn("text-xs font-medium transition-colors duration-300", isActive ? "text-primary" : "text-muted-foreground")}>
-                                            {t(s.labelKey)}
-                                        </span>
-                                    </div>
-                                )
-                            })}
+                        <div className="flex items-center gap-2">
+                            <div className="flex gap-1.5 glass-premium dark:bg-neutral-800/40 p-1.5 rounded-2xl border border-white/5">
+                                {STEPS.map((s) => (
+                                    <div
+                                        key={s.id}
+                                        className={cn(
+                                            "w-2 h-2 rounded-full transition-all duration-700",
+                                            s.id === step ? "w-8 bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]" : s.id < step ? "bg-indigo-300 dark:bg-indigo-900" : "bg-slate-200 dark:bg-neutral-800"
+                                        )}
+                                    />
+                                ))}
+                            </div>
                         </div>
+                    </div>
 
-                        {/* Main Form Content */}
-                        <div className="bg-card border border-border rounded-2xl p-4 shadow-sm min-h-[400px]" dir="rtl">
-                            <AnimatePresence mode="wait">
-                                {step === 1 && (
-                                    isScanning ? (
-                                        <ContractScanner mode="embedded" onScanComplete={handleScanComplete} onCancel={() => setIsScanning(false)} skipReview={true} />
-                                    ) : (
+                    <div className="flex-1 overflow-y-auto no-scrollbar pt-10 pb-32">
+                        <div className={cn("max-w-2xl mx-auto px-6 transition-all", isContractViewerOpen ? "pb-12" : "pb-24")}>
+                            {/* Header */}
+                            <div className="flex items-center gap-4 mb-4">
+                                <button onClick={() => navigate('/properties')} className="p-2 hover:bg-secondary rounded-full transition-colors">
+                                    <ArrowLeft className="w-5 h-5" />
+                                </button>
+                                <div>
+                                    <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('newContract')}</h1>
+                                    <p className="text-sm text-muted-foreground">{t('newContractDesc')}</p>
+                                </div>
+                            </div>
+
+                            {/* Stepper */}
+                            <div className="flex items-center justify-between mb-4 relative">
+                                <div className="absolute top-1/2 left-0 w-full h-0.5 bg-border -z-10" />
+                                {STEPS.map((s) => {
+                                    const isActive = s.id === step;
+                                    const isCompleted = s.id < step;
+                                    const Icon = s.icon;
+
+                                    return (
+                                        <div key={s.id} className="flex flex-col items-center gap-2 bg-background px-2">
+                                            <div
+                                                className={cn(
+                                                    "w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300",
+                                                    isActive ? "border-primary bg-primary text-primary-foreground scale-110" :
+                                                        isCompleted ? "border-primary bg-primary text-primary-foreground" : "border-muted-foreground/30 text-muted-foreground bg-background"
+                                                )}
+                                            >
+                                                {isCompleted ? <Check className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
+                                            </div>
+                                            <span className={cn("text-xs font-medium transition-colors duration-300", isActive ? "text-primary" : "text-muted-foreground")}>
+                                                {t(s.labelKey)}
+                                            </span>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+
+                            {/* Main Form Content */}
+                            <div className="bg-card border border-border rounded-2xl p-4 shadow-sm min-h-[400px]" dir="rtl">
+                                <AnimatePresence mode="wait">
+                                    {isScanning && (
+                                        <ContractScanner
+                                            key="main-scanner"
+                                            mode="embedded"
+                                            onScanComplete={handleScanComplete}
+                                            onCancel={() => setIsScanning(false)}
+                                            skipReview={true}
+                                        />
+                                    )}
+
+                                    {!isScanning && step === 1 && (
                                         <motion.div
                                             key="step1"
                                             initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
@@ -1303,323 +1306,308 @@ export function AddContract() {
                                             </div>
                                         </motion.div>
                                     )
-                                )}
+                                    }
 
-                                {step === 2 && (
-                                    <motion.div
-                                        key="step2"
-                                        initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
-                                        className="space-y-6"
-                                    >
-                                        <div className="space-y-4">
-                                            {/* AI Scan Banner moved to Tenant details when asset is pre-set or as alternative scan point */}
-                                            {!contractFile && (
-                                                <div className="bg-gradient-to-l from-blue-600 to-indigo-600 rounded-xl p-6 text-white flex items-center justify-between shadow-lg mb-4">
-                                                    <div>
-                                                        <h3 className="font-bold text-lg mb-1">{t('aiScanTitle')}</h3>
-                                                        <p className="text-blue-100 text-sm opacity-90">{t('aiScanDesc')}</p>
+                                    {!isScanning && step === 2 && (
+                                        <motion.div
+                                            key="step2"
+                                            initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
+                                            className="space-y-6"
+                                        >
+                                            <div className="space-y-4">
+                                                {/* AI Scan Banner removed from Step 2 to avoid redundancy */}
+
+                                                {contractFile && (
+                                                    <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3 text-green-700 mb-4">
+                                                        <Check className="w-5 h-5" />
+                                                        <span className="font-medium text-sm">{t('contractScannedSuccess')}</span>
                                                     </div>
-                                                    <button
-                                                        onClick={() => setIsScanning(true)}
-                                                        className="bg-white text-primary px-4 py-2 rounded-lg font-bold text-sm hover:bg-primary/10 transition-colors shadow-sm"
-                                                    >
-                                                        {t('scanNow')}
-                                                    </button>
+                                                )}
+
+                                                <div className="flex items-center justify-between">
+                                                    <h3 className="font-semibold text-lg flex items-center gap-2"><User className="w-4 h-4" /> {t('tenantDetails')}</h3>
                                                 </div>
-                                            )}
 
-                                            {contractFile && (
-                                                <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3 text-green-700 mb-4">
-                                                    <Check className="w-5 h-5" />
-                                                    <span className="font-medium text-sm">{t('contractScannedSuccess')}</span>
-                                                </div>
-                                            )}
-
-                                            <div className="flex items-center justify-between">
-                                                <h3 className="font-semibold text-lg flex items-center gap-2"><User className="w-4 h-4" /> {t('tenantDetails')}</h3>
-                                            </div>
-
-                                            <div className="space-y-6">
-                                                {formData.tenants.map((tenant, index) => (
-                                                    <div key={index} className="p-4 border border-border rounded-2xl space-y-4 relative bg-secondary/5 group transition-colors hover:bg-secondary/10">
-                                                        {formData.tenants.length > 1 && (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    const newTenants = [...formData.tenants];
-                                                                    newTenants.splice(index, 1);
-                                                                    setValue('tenants', newTenants);
-                                                                }}
-                                                                className="absolute top-3 left-3 p-1.5 text-red-500 hover:bg-red-50 rounded-full transition-colors opacity-0 group-hover:opacity-100"
-                                                            >
-                                                                <Trash2 className="w-4 h-4" />
-                                                            </button>
-                                                        )}
-
-                                                        <div className="space-y-2">
-                                                            <label className="text-sm font-medium flex items-center gap-2">
-                                                                {t('fullName')} <span className="text-red-500">*</span>
-                                                                {index === 0 && scannedQuotes.tenantName && <Tooltip quote={scannedQuotes.tenantName} />}
-                                                                {index === 0 && <ConfidenceDot field="tenants" />}
-                                                            </label>
-                                                            <input
-                                                                value={tenant.name}
-                                                                onChange={e => {
-                                                                    const newTenants = [...formData.tenants];
-                                                                    newTenants[index].name = e.target.value;
-                                                                    setValue('tenants', newTenants);
-                                                                }}
-                                                                className={cn(
-                                                                    "w-full p-3 bg-background border rounded-xl transition-all duration-300",
-                                                                    (!tenant.name && index === 0 && step === 2) ? "border-red-500 ring-1 ring-red-500" : "border-border"
-                                                                )}
-                                                            />
-                                                        </div>
-
-                                                        <div className="grid grid-cols-2 gap-4">
-                                                            <div className="space-y-2">
-                                                                <label className="text-sm font-medium">{t('idNumber')}</label>
-                                                                <input
-                                                                    value={tenant.id_number}
-                                                                    onChange={e => {
+                                                <div className="space-y-6">
+                                                    {formData.tenants.map((tenant, index) => (
+                                                        <div key={index} className="p-4 border border-border rounded-2xl space-y-4 relative bg-secondary/5 group transition-colors hover:bg-secondary/10">
+                                                            {formData.tenants.length > 1 && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
                                                                         const newTenants = [...formData.tenants];
-                                                                        newTenants[index].id_number = e.target.value;
+                                                                        newTenants.splice(index, 1);
                                                                         setValue('tenants', newTenants);
                                                                     }}
-                                                                    className="w-full p-3 bg-background border border-border rounded-xl font-mono"
-                                                                />
-                                                            </div>
+                                                                    className="absolute top-3 left-3 p-1.5 text-red-500 hover:bg-red-50 rounded-full transition-colors opacity-0 group-hover:opacity-100"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </button>
+                                                            )}
+
                                                             <div className="space-y-2">
-                                                                <label className="text-sm font-medium">{t('phone')}</label>
+                                                                <label className="text-sm font-medium flex items-center gap-2">
+                                                                    {t('fullName')} <span className="text-red-500">*</span>
+                                                                    {index === 0 && scannedQuotes.tenantName && <Tooltip quote={scannedQuotes.tenantName} />}
+                                                                    {index === 0 && <ConfidenceDot field="tenants" />}
+                                                                </label>
                                                                 <input
-                                                                    value={tenant.phone}
+                                                                    value={tenant.name}
                                                                     onChange={e => {
                                                                         const newTenants = [...formData.tenants];
-                                                                        newTenants[index].phone = e.target.value;
+                                                                        newTenants[index].name = e.target.value;
+                                                                        setValue('tenants', newTenants);
+                                                                    }}
+                                                                    className={cn(
+                                                                        "w-full p-3 bg-background border rounded-xl transition-all duration-300",
+                                                                        (!tenant.name && index === 0 && step === 2) ? "border-red-500 ring-1 ring-red-500" : "border-border"
+                                                                    )}
+                                                                />
+                                                            </div>
+
+                                                            <div className="grid grid-cols-2 gap-4">
+                                                                <div className="space-y-2">
+                                                                    <label className="text-sm font-medium">{t('idNumber')}</label>
+                                                                    <input
+                                                                        value={tenant.id_number}
+                                                                        onChange={e => {
+                                                                            const newTenants = [...formData.tenants];
+                                                                            newTenants[index].id_number = e.target.value;
+                                                                            setValue('tenants', newTenants);
+                                                                        }}
+                                                                        className="w-full p-3 bg-background border border-border rounded-xl font-mono"
+                                                                    />
+                                                                </div>
+                                                                <div className="space-y-2">
+                                                                    <label className="text-sm font-medium">{t('phone')}</label>
+                                                                    <input
+                                                                        value={tenant.phone}
+                                                                        onChange={e => {
+                                                                            const newTenants = [...formData.tenants];
+                                                                            newTenants[index].phone = e.target.value;
+                                                                            setValue('tenants', newTenants);
+                                                                        }}
+                                                                        className="w-full p-3 bg-background border border-border rounded-xl"
+                                                                        dir="ltr"
+                                                                    />
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="space-y-2">
+                                                                <label className="text-sm font-medium">{t('email')}</label>
+                                                                <input
+                                                                    value={tenant.email}
+                                                                    onChange={e => {
+                                                                        const newTenants = [...formData.tenants];
+                                                                        newTenants[index].email = e.target.value;
                                                                         setValue('tenants', newTenants);
                                                                     }}
                                                                     className="w-full p-3 bg-background border border-border rounded-xl"
+                                                                    type="email"
                                                                     dir="ltr"
                                                                 />
                                                             </div>
                                                         </div>
-
-                                                        <div className="space-y-2">
-                                                            <label className="text-sm font-medium">{t('email')}</label>
-                                                            <input
-                                                                value={tenant.email}
-                                                                onChange={e => {
-                                                                    const newTenants = [...formData.tenants];
-                                                                    newTenants[index].email = e.target.value;
-                                                                    setValue('tenants', newTenants);
-                                                                }}
-                                                                className="w-full p-3 bg-background border border-border rounded-xl"
-                                                                type="email"
-                                                                dir="ltr"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </motion.div>
-                                )}
-                                {step === 3 && (
-                                    <motion.div
-                                        key="step3"
-                                        initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
-                                        className="space-y-6"
-                                    >
-                                        <div className="space-y-6">
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="space-y-2">
-                                                    <DatePicker
-                                                        label={t('signingDate')}
-                                                        value={formData.signingDate ? parseISO(formData.signingDate) : undefined}
-                                                        onChange={(date) => {
-                                                            const dateStr = date ? format(date, 'yyyy-MM-dd') : '';
-                                                            setValue('signingDate', dateStr);
-                                                            // Pre-fill base index date if it's empty
-                                                            if (dateStr && !formData.baseIndexDate) {
-                                                                setValue('baseIndexDate', dateStr);
-                                                            }
-                                                        }}
-                                                        placeholder={t('selectDate')}
-                                                    />
+                                                    ))}
                                                 </div>
                                             </div>
-
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="space-y-2">
-                                                    <DatePicker
-                                                        label={<span>{t('startDate')} <span className="text-red-500">*</span></span>}
-                                                        value={formData.startDate ? parseISO(formData.startDate) : undefined}
-                                                        onChange={(date) => {
-                                                            const startDateStr = date ? format(date, 'yyyy-MM-dd') : '';
-                                                            const prevStartDateStr = formData.startDate;
-                                                            const prevEndDateStr = formData.endDate;
-
-                                                            let newEndDateStr = prevEndDateStr;
-
-                                                            // Check if the current end date was auto-calculated from the previous start date
-                                                            let wasAutoCalculated = false;
-                                                            if (prevStartDateStr && prevEndDateStr) {
-                                                                const prevStart = parseISO(prevStartDateStr);
-                                                                if (isValid(prevStart)) {
-                                                                    const expectedPrevEnd = format(subDays(addYears(prevStart, 1), 1), 'yyyy-MM-dd');
-                                                                    wasAutoCalculated = expectedPrevEnd === prevEndDateStr;
+                                        </motion.div>
+                                    )}
+                                    {!isScanning && step === 3 && (
+                                        <motion.div
+                                            key="step3"
+                                            initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
+                                            className="space-y-6"
+                                        >
+                                            <div className="space-y-6">
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <DatePicker
+                                                            label={t('signingDate')}
+                                                            value={formData.signingDate ? parseISO(formData.signingDate) : undefined}
+                                                            onChange={(date) => {
+                                                                const dateStr = date ? format(date, 'yyyy-MM-dd') : '';
+                                                                setValue('signingDate', dateStr);
+                                                                // Pre-fill base index date if it's empty
+                                                                if (dateStr && !formData.baseIndexDate) {
+                                                                    setValue('baseIndexDate', dateStr);
                                                                 }
-                                                            }
-
-                                                            // Update end date if it's empty OR it was auto-calculated previously
-                                                            if (date && (!prevEndDateStr || wasAutoCalculated)) {
-                                                                const calculatedEnd = subDays(addYears(date, 1), 1);
-                                                                newEndDateStr = format(calculatedEnd, 'yyyy-MM-dd');
-                                                            }
-
-                                                            setValue('startDate', startDateStr);
-                                                            setValue('endDate', newEndDateStr);
-                                                        }}
-                                                        disabledDays={blockedIntervals}
-                                                        error={hasOverlap || (!formData.startDate && step === 3)}
-                                                        placeholder={t('selectDate')}
-                                                    />
+                                                            }}
+                                                            placeholder={t('selectDate')}
+                                                        />
+                                                    </div>
                                                 </div>
-                                                <div className="space-y-2">
-                                                    <DatePicker
-                                                        label={<span>{t('endDate')} <span className="text-red-500">*</span></span>}
-                                                        value={formData.endDate ? parseISO(formData.endDate) : undefined}
-                                                        onChange={(date) => setValue('endDate', date ? format(date, 'yyyy-MM-dd') : '')}
-                                                        minDate={formData.startDate ? parseISO(formData.startDate) : undefined}
-                                                        disabledDays={blockedIntervals}
-                                                        error={!formData.endDate && step === 3}
-                                                        placeholder={t('selectDate')}
-                                                    />
-                                                    {formData.startDate && formData.endDate && (
-                                                        <div className="text-xs text-muted-foreground bg-secondary/30 p-2 rounded-lg flex items-center gap-2">
-                                                            <Calendar className="w-3 h-3" />
-                                                            <span>
-                                                                {t('contractDuration')}:
-                                                                <span className="font-bold text-foreground">
-                                                                    {(() => {
-                                                                        const start = new Date(formData.startDate);
-                                                                        const end = new Date(formData.endDate);
-                                                                        const diffTime = Math.abs(end.getTime() - start.getTime());
-                                                                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Include end date
 
-                                                                        const months = Math.floor(diffDays / 30);
-                                                                        const years = Math.floor(months / 12);
-                                                                        const remainingMonths = months % 12;
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <DatePicker
+                                                            label={<span>{t('startDate')} <span className="text-red-500">*</span></span>}
+                                                            value={formData.startDate ? parseISO(formData.startDate) : undefined}
+                                                            onChange={(date) => {
+                                                                const startDateStr = date ? format(date, 'yyyy-MM-dd') : '';
+                                                                const prevStartDateStr = formData.startDate;
+                                                                const prevEndDateStr = formData.endDate;
 
-                                                                        if (years > 0) return ` ${years} ${t('years')}${remainingMonths > 0 ? ` ${t('and')}${remainingMonths} ${t('months')}` : ''}`;
-                                                                        if (months > 0) return ` ${months} ${t('months')}`;
-                                                                        return ` ${diffDays} ${t('days')}`;
-                                                                    })()}
+                                                                let newEndDateStr = prevEndDateStr;
+
+                                                                // Check if the current end date was auto-calculated from the previous start date
+                                                                let wasAutoCalculated = false;
+                                                                if (prevStartDateStr && prevEndDateStr) {
+                                                                    const prevStart = parseISO(prevStartDateStr);
+                                                                    if (isValid(prevStart)) {
+                                                                        const expectedPrevEnd = format(subDays(addYears(prevStart, 1), 1), 'yyyy-MM-dd');
+                                                                        wasAutoCalculated = expectedPrevEnd === prevEndDateStr;
+                                                                    }
+                                                                }
+
+                                                                // Update end date if it's empty OR it was auto-calculated previously
+                                                                if (date && (!prevEndDateStr || wasAutoCalculated)) {
+                                                                    const calculatedEnd = subDays(addYears(date, 1), 1);
+                                                                    newEndDateStr = format(calculatedEnd, 'yyyy-MM-dd');
+                                                                }
+
+                                                                setValue('startDate', startDateStr);
+                                                                setValue('endDate', newEndDateStr);
+                                                            }}
+                                                            disabledDays={blockedIntervals}
+                                                            error={hasOverlap || (!formData.startDate && step === 3)}
+                                                            placeholder={t('selectDate')}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <DatePicker
+                                                            label={<span>{t('endDate')} <span className="text-red-500">*</span></span>}
+                                                            value={formData.endDate ? parseISO(formData.endDate) : undefined}
+                                                            onChange={(date) => setValue('endDate', date ? format(date, 'yyyy-MM-dd') : '')}
+                                                            minDate={formData.startDate ? parseISO(formData.startDate) : undefined}
+                                                            disabledDays={blockedIntervals}
+                                                            error={!formData.endDate && step === 3}
+                                                            placeholder={t('selectDate')}
+                                                        />
+                                                        {formData.startDate && formData.endDate && (
+                                                            <div className="text-xs text-muted-foreground bg-secondary/30 p-2 rounded-lg flex items-center gap-2">
+                                                                <Calendar className="w-3 h-3" />
+                                                                <span>
+                                                                    {t('contractDuration')}:
+                                                                    <span className="font-bold text-foreground">
+                                                                        {(() => {
+                                                                            const start = new Date(formData.startDate);
+                                                                            const end = new Date(formData.endDate);
+                                                                            const diffTime = Math.abs(end.getTime() - start.getTime());
+                                                                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Include end date
+
+                                                                            const months = Math.floor(diffDays / 30);
+                                                                            const years = Math.floor(months / 12);
+                                                                            const remainingMonths = months % 12;
+
+                                                                            if (years > 0) return ` ${years} ${t('years')}${remainingMonths > 0 ? ` ${t('and')}${remainingMonths} ${t('months')}` : ''}`;
+                                                                            if (months > 0) return ` ${months} ${t('months')}`;
+                                                                            return ` ${diffDays} ${t('days')}`;
+                                                                        })()}
+                                                                    </span>
                                                                 </span>
-                                                            </span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-3">
+                                                    <div className="flex items-center justify-between">
+                                                        <label className="text-sm font-medium flex items-center gap-2">
+                                                            {t('optionPeriods')}
+                                                            {scannedQuotes.optionPeriod && <Tooltip quote={scannedQuotes.optionPeriod} />} <ConfidenceDot field="optionPeriod" />
+                                                        </label>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                const lastOption = formData.optionPeriods[formData.optionPeriods.length - 1];
+                                                                const baseDateStr = lastOption?.endDate || formData.endDate;
+                                                                let defaultDate = '';
+
+                                                                if (baseDateStr) {
+                                                                    const baseDate = parseISO(baseDateStr);
+                                                                    if (isValid(baseDate)) {
+                                                                        defaultDate = format(addYears(baseDate, 1), 'yyyy-MM-dd');
+                                                                    }
+                                                                }
+
+                                                                setValue('optionPeriods', [...formData.optionPeriods, { endDate: defaultDate, rentAmount: null as any, currency: 'ILS' }]);
+                                                            }}
+                                                            className="text-xs text-primary hover:text-primary font-medium flex items-center gap-1"
+                                                        >
+                                                            <Plus className="w-3 h-3" /> {t('addPeriod')}
+                                                        </button>
+                                                    </div>
+
+                                                    {formData.optionPeriods.length === 0 && (
+                                                        <div className="text-sm text-muted-foreground italic p-3 bg-secondary rounded-xl text-center border border-dashed border-border">
+                                                            {t('noOptionPeriods')}
+                                                        </div>
+                                                    )}
+
+                                                    <div className="space-y-3">
+                                                        {formData.optionPeriods.map((period, idx) => (
+                                                            <div key={idx} className="flex gap-2 items-end bg-secondary/10 p-3 rounded-xl">
+                                                                <div className="flex-1 space-y-2">
+                                                                    <DatePicker
+                                                                        label={`${t('extensionEndDate')} ${idx + 1}`}
+                                                                        value={period.endDate ? parseISO(period.endDate) : undefined}
+                                                                        onChange={(date) => {
+                                                                            const newPeriods = [...formData.optionPeriods];
+                                                                            newPeriods[idx].endDate = date ? format(date, 'yyyy-MM-dd') : '';
+                                                                            setValue('optionPeriods', newPeriods);
+                                                                        }}
+                                                                        minDate={idx === 0
+                                                                            ? (formData.endDate ? parseISO(formData.endDate) : undefined)
+                                                                            : (formData.optionPeriods[idx - 1].endDate ? parseISO(formData.optionPeriods[idx - 1].endDate) : undefined)
+                                                                        }
+                                                                        className="w-full"
+                                                                    />
+                                                                </div>
+
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        const newPeriods = formData.optionPeriods.filter((_, i) => i !== idx);
+                                                                        setValue('optionPeriods', newPeriods);
+                                                                    }}
+                                                                    className="p-3 text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-border/50 h-[46px]"
+                                                                >
+                                                                    <Trash2 className="w-5 h-5" />
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+
+                                                    {/* Extension Notice Days */}
+                                                    {formData.optionPeriods.length > 0 && (
+                                                        <div className="pt-4 border-t border-border/50 animate-in fade-in slide-in-from-top-2 duration-300">
+                                                            <div className="space-y-2">
+                                                                <label className="text-sm font-medium flex items-center gap-2">
+                                                                    {t('extensionNoticeDays')}
+                                                                </label>
+                                                                <div className="relative">
+                                                                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                                                    <input
+                                                                        type="text"
+                                                                        value={formatNumber(formData.optionNoticeDays)}
+                                                                        onChange={e => {
+                                                                            const val = parseNumber(e.target.value);
+                                                                            if (/^\d*$/.test(val)) setValue('optionNoticeDays', val as any);
+                                                                        }}
+                                                                        className="w-full p-3 pl-10 bg-background border border-border rounded-xl no-spinner"
+                                                                        placeholder="e.g. 60"
+                                                                    />
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     )}
                                                 </div>
                                             </div>
+                                        </motion.div>
+                                    )}
 
-                                            <div className="space-y-3">
-                                                <div className="flex items-center justify-between">
-                                                    <label className="text-sm font-medium flex items-center gap-2">
-                                                        {t('optionPeriods')}
-                                                        {scannedQuotes.optionPeriod && <Tooltip quote={scannedQuotes.optionPeriod} />} <ConfidenceDot field="optionPeriod" />
-                                                    </label>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            const lastOption = formData.optionPeriods[formData.optionPeriods.length - 1];
-                                                            const baseDateStr = lastOption?.endDate || formData.endDate;
-                                                            let defaultDate = '';
-
-                                                            if (baseDateStr) {
-                                                                const baseDate = parseISO(baseDateStr);
-                                                                if (isValid(baseDate)) {
-                                                                    defaultDate = format(addYears(baseDate, 1), 'yyyy-MM-dd');
-                                                                }
-                                                            }
-
-                                                            setValue('optionPeriods', [...formData.optionPeriods, { endDate: defaultDate, rentAmount: null as any, currency: 'ILS' }]);
-                                                        }}
-                                                        className="text-xs text-primary hover:text-primary font-medium flex items-center gap-1"
-                                                    >
-                                                        <Plus className="w-3 h-3" /> {t('addPeriod')}
-                                                    </button>
-                                                </div>
-
-                                                {formData.optionPeriods.length === 0 && (
-                                                    <div className="text-sm text-muted-foreground italic p-3 bg-secondary rounded-xl text-center border border-dashed border-border">
-                                                        {t('noOptionPeriods')}
-                                                    </div>
-                                                )}
-
-                                                <div className="space-y-3">
-                                                    {formData.optionPeriods.map((period, idx) => (
-                                                        <div key={idx} className="flex gap-2 items-end bg-secondary/10 p-3 rounded-xl">
-                                                            <div className="flex-1 space-y-2">
-                                                                <DatePicker
-                                                                    label={`${t('extensionEndDate')} ${idx + 1}`}
-                                                                    value={period.endDate ? parseISO(period.endDate) : undefined}
-                                                                    onChange={(date) => {
-                                                                        const newPeriods = [...formData.optionPeriods];
-                                                                        newPeriods[idx].endDate = date ? format(date, 'yyyy-MM-dd') : '';
-                                                                        setValue('optionPeriods', newPeriods);
-                                                                    }}
-                                                                    minDate={idx === 0
-                                                                        ? (formData.endDate ? parseISO(formData.endDate) : undefined)
-                                                                        : (formData.optionPeriods[idx - 1].endDate ? parseISO(formData.optionPeriods[idx - 1].endDate) : undefined)
-                                                                    }
-                                                                    className="w-full"
-                                                                />
-                                                            </div>
-
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    const newPeriods = formData.optionPeriods.filter((_, i) => i !== idx);
-                                                                    setValue('optionPeriods', newPeriods);
-                                                                }}
-                                                                className="p-3 text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-border/50 h-[46px]"
-                                                            >
-                                                                <Trash2 className="w-5 h-5" />
-                                                            </button>
-                                                        </div>
-                                                    ))}
-                                                </div>
-
-                                                {/* Extension Notice Days */}
-                                                {formData.optionPeriods.length > 0 && (
-                                                    <div className="pt-4 border-t border-border/50 animate-in fade-in slide-in-from-top-2 duration-300">
-                                                        <div className="space-y-2">
-                                                            <label className="text-sm font-medium flex items-center gap-2">
-                                                                {t('extensionNoticeDays')}
-                                                            </label>
-                                                            <div className="relative">
-                                                                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                                                <input
-                                                                    type="text"
-                                                                    value={formatNumber(formData.optionNoticeDays)}
-                                                                    onChange={e => {
-                                                                        const val = parseNumber(e.target.value);
-                                                                        if (/^\d*$/.test(val)) setValue('optionNoticeDays', val as any);
-                                                                    }}
-                                                                    className="w-full p-3 pl-10 bg-background border border-border rounded-xl no-spinner"
-                                                                    placeholder="e.g. 60"
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </motion.div>
-                                )}
-
-                                {
-                                    step === 4 && (
+                                    {!isScanning && step === 4 && (
                                         <motion.div
                                             key="step4"
                                             initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
@@ -2017,10 +2005,9 @@ export function AddContract() {
                                             </div>
                                         </motion.div>
                                     )
-                                }
+                                    }
 
-                                {
-                                    step === 5 && (
+                                    {!isScanning && step === 5 && (
                                         <motion.div
                                             key="step5"
                                             initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
@@ -2068,57 +2055,12 @@ export function AddContract() {
                                                     </label>
                                                 </div>
 
-                                                {/* Legal Library (MASTER Tier) */}
-                                                <div className="space-y-3 pt-6 border-t border-border/50">
-                                                    <div className="flex items-center justify-between">
-                                                        <label className="text-sm font-bold flex items-center gap-2 text-amber-600">
-                                                            <ShieldCheck className="w-4 h-4" />
-                                                            {t('legalProtection') || 'Legal Safe Suite'}
-                                                            <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-bold">MASTER</span>
-                                                        </label>
-                                                        {(!plan?.name?.toLowerCase().includes('master')) && (
-                                                            <button type="button" onClick={() => navigate('/pricing')} className="text-xs text-blue-600 font-bold hover:underline flex items-center gap-1">
-                                                                <Lock className="w-3 h-3" />
-                                                                {t('upgradeToUnlock') || 'Upgrade to Unlock'}
-                                                            </button>
-                                                        )}
-                                                    </div>
-
-                                                    {['Pinui Binui Shield', 'Pet Clause Pro', 'Inflation Hedge'].map((clause, i) => (
-                                                        <div
-                                                            key={clause}
-                                                            onClick={() => {
-                                                                if (!plan?.name?.toLowerCase().includes('master')) navigate('/pricing');
-                                                            }}
-                                                            className={cn(
-                                                                "flex items-center justify-between p-3 rounded-xl border transition-all",
-                                                                plan?.name?.toLowerCase().includes('master')
-                                                                    ? "border-border bg-white cursor-pointer hover:border-amber-500"
-                                                                    : "border-dashed border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed"
-                                                            )}
-                                                        >
-                                                            <div className="flex items-center gap-3">
-                                                                <div className={`p-1.5 rounded-full ${plan?.name?.toLowerCase().includes('master') ? 'bg-amber-100 text-amber-600' : 'bg-slate-200 text-slate-400'}`}>
-                                                                    <FileText className="w-3 h-3" />
-                                                                </div>
-                                                                <span className="text-sm font-medium">{clause}</span>
-                                                            </div>
-                                                            <div className={cn(
-                                                                "w-8 h-4 rounded-full relative transition-colors",
-                                                                plan?.name?.toLowerCase().includes('master') ? "bg-slate-200" : "bg-slate-200"
-                                                            )}>
-                                                                <div className="absolute left-1 top-1 w-2 h-2 bg-white rounded-full shadow-sm" />
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
                                             </div>
                                         </motion.div>
                                     )
-                                }
+                                    }
 
-                                {
-                                    step === 6 && (
+                                    {!isScanning && step === 6 && (
                                         <motion.div
                                             key="step6"
                                             initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
@@ -2377,16 +2319,16 @@ export function AddContract() {
                                                 </div>
                                             )}
                                         </motion.div>
-                                    )
-                                }
-                            </AnimatePresence >
-                        </div >
-                    </div >
-                </div >
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                {/* Split Handle & Viewer */}
+                {/* Contract Viewer Elements (Siblings of Wizard Pane) */}
                 <AnimatePresence>
-                    {scannedContractUrl && isContractViewerOpen && (
+                    {isContractViewerOpen && (
                         <>
                             {/* Drag Handle */}
                             <motion.div
@@ -2472,7 +2414,7 @@ export function AddContract() {
                 </AnimatePresence>
                 {/* Footer Navigation (Bionic) */}
                 <div className={cn(
-                    "fixed bottom-0 p-8 pb-12 glass-premium dark:bg-neutral-900/60 border-t border-white/5 z-40 backdrop-blur-2xl transition-all duration-700",
+                    "fixed bottom-0 p-8 pb-12 glass-premium dark:bg-neutral-900/60 border-t border-white/5 z-[70] backdrop-blur-2xl transition-all duration-700",
                     isContractViewerOpen ? "left-0 lg:left-auto" : "left-0 right-0"
                 )}
                     style={{
@@ -2577,4 +2519,6 @@ export function AddContract() {
             </div>
         </div>
     );
-}
+};
+
+export default AddContract;

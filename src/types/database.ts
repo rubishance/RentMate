@@ -297,6 +297,7 @@ export interface UserPreferences {
     pinned_cities?: string[];
     has_seen_welcome_v1?: boolean;
     seen_features?: string[];
+    disclaimer_accepted?: boolean;
 }
 
 // ============================================

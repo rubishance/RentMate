@@ -9,8 +9,8 @@ export function LegalDisclaimerModal({ onAccept, onDecline }: Props) {
     const [hasRead, setHasRead] = useState(false);
 
     return (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" dir="rtl">
-            <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto p-6">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4" dir="rtl">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-2xl w-full max-h-[85vh] shadow-2xl overflow-y-auto p-6 md:p-10 border border-white/20">
                 <h2 className="text-2xl font-bold mb-4">⚠️ סורק חוזים AI - כתב ויתור משפטי</h2>
 
                 <div className="space-y-4 text-sm">

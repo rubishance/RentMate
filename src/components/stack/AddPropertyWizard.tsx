@@ -49,16 +49,8 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
         image_url: initialData?.image_url || ''
     });
 
-    // Auto-advance if primary details are prefilled (AI Support)
-    useEffect(() => {
-        if (currentStep === 0 && initialData?.address && initialData?.city) {
-            // Briefly wait to ensure UI renders then jump
-            const timer = setTimeout(() => {
-                next();
-            }, 500);
-            return () => clearTimeout(timer);
-        }
-    }, []); // Only on mount if initialData exists
+    // AI Support: Prefill data is handled in the initial state of formData.
+    // We start at step 0 so the user can verify the location details.
 
     // Image Upload State
     const [uploadMode, setUploadMode] = useState<'url' | 'upload'>('upload');
@@ -454,7 +446,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
             </div>
 
             {/* Footer Navigation */}
-            <div className="p-8 pb-12 glass-premium dark:bg-neutral-900/60 border-t border-white/5 flex justify-between items-center px-12 z-20 backdrop-blur-2xl">
+            <div className="p-8 pb-12 glass-premium dark:bg-neutral-900/60 border-t border-white/5 flex justify-between items-center px-12 z-[70] backdrop-blur-2xl">
                 <button
                     onClick={back}
                     className="h-14 px-10 rounded-2xl font-black text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-all hover:bg-white/5"

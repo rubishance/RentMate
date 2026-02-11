@@ -42,6 +42,8 @@ const KnowledgeBase = lazy(() => import('./pages/KnowledgeBase').then(module => 
 const ArticleViewer = lazy(() => import('./pages/ArticleViewer').then(module => ({ default: module.ArticleViewer })));
 const Contact = lazy(() => import('./pages/Contact'));
 import { CPICalculatorPage } from './pages/tools/CPICalculatorPage';
+const AccountSuspended = lazy(() => import('./pages/AccountSuspended'));
+
 
 // Lazy load Admin Pages & Less Critical (Default Exports)
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -78,7 +80,7 @@ const MFAChallenge = lazy(() => import('./components/auth/MFAChallenge'));
 const SuperAdminGuard = lazy(() => import('./components/guards/SuperAdminGuard'));
 
 import { SEO } from './components/common/SEO';
-import { StackProvider } from './contexts/StackContext';
+import { StackProvider, useStack } from './contexts/StackContext';
 import { StackContainer } from './components/layout/StackContainer';
 
 
@@ -86,8 +88,19 @@ import { StackContainer } from './components/layout/StackContainer';
 // Root Layout to provide router context to global widgets
 const RootLayout = () => {
   const location = useLocation();
+  const { activeLayer } = useStack();
+
+  const isWizard =
+    location.pathname.includes('/new') ||
+    location.pathname.includes('/add') ||
+    location.pathname.includes('/create') ||
+    location.pathname.includes('/wizard') ||
+    location.pathname.includes('/setup') ||
+    location.pathname.includes('/onboarding') ||
+    activeLayer?.type === 'wizard';
+
   const hideChatPaths = ['/login', '/signup', '/forgot-password', '/reset-password'];
-  const shouldHideChat = hideChatPaths.includes(location.pathname);
+  const shouldHideChat = hideChatPaths.includes(location.pathname) || isWizard;
 
   return (
     <>
@@ -138,6 +151,10 @@ const router = createBrowserRouter([
       {
         path: "/system-maintenance",
         element: <MaintenancePage />,
+      },
+      {
+        path: "/account-suspended",
+        element: <Suspense fallback={<PageLoader />}><AccountSuspended /></Suspense>,
       },
       {
         path: "/contact",

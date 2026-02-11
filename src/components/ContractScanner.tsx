@@ -8,6 +8,8 @@ import { Loader2, FileText, Upload, Shield, AlertTriangle, CheckCircle2, ScanLin
 import { motion, AnimatePresence } from 'framer-motion';
 import { ScannerAnimation } from './ScannerAnimation';
 import { BillAnalysisService } from '../services/bill-analysis.service';
+import { useUserPreferences } from '../contexts/UserPreferencesContext';
+import { userPreferencesService } from '../services/user-preferences.service';
 import UpgradeRequestModal from './modals/UpgradeRequestModal';
 
 interface ContractScannerProps {
@@ -18,7 +20,10 @@ interface ContractScannerProps {
 }
 
 export function ContractScanner({ onScanComplete, onCancel, mode = 'modal', skipReview }: ContractScannerProps) {
-    const [step, setStep] = useState<'disclaimer' | 'upload' | 'processing' | 'redact' | 'review' | 'success'>('disclaimer');
+    const { preferences, refreshPreferences } = useUserPreferences();
+    const [step, setStep] = useState<'disclaimer' | 'upload' | 'processing' | 'redact' | 'review' | 'success'>(
+        preferences.disclaimer_accepted ? 'upload' : 'disclaimer'
+    );
     const [scannedImages, setScannedImages] = useState<File[]>([]);
     const [extractedFields, setExtractedFields] = useState<ExtractedField[]>([]);
     const [contractUrl, setContractUrl] = useState('');
@@ -28,7 +33,9 @@ export function ContractScanner({ onScanComplete, onCancel, mode = 'modal', skip
     const [generatedPdf, setGeneratedPdf] = useState<File | null>(null);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
-    const handleDisclaimerAccept = () => {
+    const handleDisclaimerAccept = async () => {
+        userPreferencesService.setDisclaimerAccepted(true);
+        await refreshPreferences();
         setStep('upload');
     };
 
@@ -445,7 +452,7 @@ export function ContractScanner({ onScanComplete, onCancel, mode = 'modal', skip
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
             >
                 {content}
             </motion.div>

@@ -26,6 +26,11 @@ const AuthGuard = () => {
         return <Navigate to="/login" replace />;
     }
 
+    const { profile } = useAuth();
+    if (profile?.security_status === 'suspended' || profile?.security_status === 'banned') {
+        return <Navigate to="/account-suspended" replace />;
+    }
+
     return <Outlet />;
 };
 

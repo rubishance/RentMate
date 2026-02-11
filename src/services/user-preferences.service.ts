@@ -10,6 +10,7 @@ const DEFAULT_PREFERENCES: UserPreferences = {
     pinned_cities: [],
     has_seen_welcome_v1: false,
     seen_features: [],
+    disclaimer_accepted: false,
 };
 
 /**
@@ -42,6 +43,7 @@ export const userPreferencesService = {
                     pinned_cities: parsed.pinned_cities || DEFAULT_PREFERENCES.pinned_cities,
                     has_seen_welcome_v1: parsed.has_seen_welcome_v1 ?? DEFAULT_PREFERENCES.has_seen_welcome_v1,
                     seen_features: parsed.seen_features || DEFAULT_PREFERENCES.seen_features,
+                    disclaimer_accepted: parsed.disclaimer_accepted ?? DEFAULT_PREFERENCES.disclaimer_accepted,
                 };
             }
         } catch (error) {
@@ -81,6 +83,7 @@ export const userPreferencesService = {
                     pinned_cities: preferences.pinned_cities,
                     has_seen_welcome_v1: preferences.has_seen_welcome_v1,
                     seen_features: preferences.seen_features,
+                    disclaimer_accepted: preferences.disclaimer_accepted,
                     updated_at: new Date().toISOString()
                 }, { onConflict: 'user_id' });
 
@@ -114,6 +117,7 @@ export const userPreferencesService = {
                     pinned_cities: data.pinned_cities || [],
                     has_seen_welcome_v1: data.has_seen_welcome_v1 ?? false,
                     seen_features: data.seen_features || [],
+                    disclaimer_accepted: data.disclaimer_accepted ?? false,
                 };
                 this.savePreferences(preferences); // Update local cache
                 return preferences;
@@ -228,6 +232,19 @@ export const userPreferencesService = {
         const updated: UserPreferences = {
             ...current,
             seen_features: [...seen, featureId],
+        };
+        this.savePreferences(updated);
+        return updated;
+    },
+
+    /**
+     * Set disclaimer_accepted flag
+     */
+    setDisclaimerAccepted(accepted: boolean): UserPreferences {
+        const current = this.getUserPreferences();
+        const updated: UserPreferences = {
+            ...current,
+            disclaimer_accepted: accepted,
         };
         this.savePreferences(updated);
         return updated;

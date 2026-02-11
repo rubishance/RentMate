@@ -11,9 +11,10 @@ import { useTranslation } from '../../hooks/useTranslation';
 
 interface StreamHeaderProps {
     title?: string;
+    hideControls?: boolean;
 }
 
-export function StreamHeader({ title }: StreamHeaderProps) {
+export function StreamHeader({ title, hideControls }: StreamHeaderProps) {
     const navigate = useNavigate();
     const { effectiveTheme, preferences } = useUserPreferences();
     const { t } = useTranslation();
@@ -30,7 +31,7 @@ export function StreamHeader({ title }: StreamHeaderProps) {
             {/* Left: Logo or Title */}
             {/* Left: Logo or Title */}
             <div className="flex items-center gap-4">
-                <HeaderActionMenu />
+                {!hideControls && <HeaderActionMenu />}
                 <Link
                     to="/dashboard"
                     className="flex items-center gap-3 group cursor-pointer"
@@ -57,18 +58,20 @@ export function StreamHeader({ title }: StreamHeaderProps) {
             </div>
 
             {/* Right: Actions */}
-            <div className="flex items-center gap-2 md:gap-4">
-                <NotificationCenter />
+            {!hideControls && (
+                <div className="flex items-center gap-2 md:gap-4">
+                    <NotificationCenter />
 
-                <Link
-                    to="/settings"
-                    className="p-2 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-full transition-all"
-                    aria-label="Settings"
-                    onClick={() => console.log('[StreamHeader] [NAV] Settings clicked')}
-                >
-                    <SettingsIcon className="w-6 h-6" />
-                </Link>
-            </div>
+                    <Link
+                        to="/settings"
+                        className="p-2 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-full transition-all"
+                        aria-label="Settings"
+                        onClick={() => console.log('[StreamHeader] [NAV] Settings clicked')}
+                    >
+                        <SettingsIcon className="w-6 h-6" />
+                    </Link>
+                </div>
+            )}
         </header>
     );
 }

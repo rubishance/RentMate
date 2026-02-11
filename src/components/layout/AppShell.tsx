@@ -13,6 +13,7 @@ import { useStack } from '../../contexts/StackContext';
 
 import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { useAuth } from '../../contexts/AuthContext';
+import { cn } from '../../lib/utils';
 
 export function AppShell() {
     useActivityTracking(); // Start tracking
@@ -23,6 +24,16 @@ export function AppShell() {
     const [isMaintenance, setIsMaintenance] = useState(false);
     const { activeLayer } = useStack();
     const { profile: authProfile } = useAuth();
+
+    // Distraction-free mode for all wizards (full routes or stack-based)
+    const isWizard =
+        location.pathname.includes('/new') ||
+        location.pathname.includes('/add') ||
+        location.pathname.includes('/create') ||
+        location.pathname.includes('/wizard') ||
+        location.pathname.includes('/setup') ||
+        location.pathname.includes('/onboarding') ||
+        activeLayer?.type === 'wizard';
 
     useEffect(() => {
         const timestamp = new Date().toISOString();
@@ -95,9 +106,9 @@ export function AppShell() {
             <div className="ambient-depth" />
 
             {/* New Stream Header */}
-            <StreamHeader title={activeLayer?.title} />
+            <StreamHeader title={activeLayer?.title} hideControls={isWizard} />
 
-            <div className="pt-16 min-h-screen flex flex-col relative overflow-hidden">
+            <div className={cn("min-h-screen flex flex-col relative overflow-hidden", !isWizard && "pt-16")}>
                 <div className="relative z-50">
                     <SystemBroadcast />
                 </div>
@@ -128,8 +139,8 @@ export function AppShell() {
             {/* Cookie Consent */}
             <CookieConsent />
 
-            {/* New Bottom Dock */}
-            <BottomDock />
+            {/* New Bottom Dock - Hidden on Wizards/Creation and when Stack is active */}
+            {!isWizard && !activeLayer && <BottomDock />}
 
         </div>
 

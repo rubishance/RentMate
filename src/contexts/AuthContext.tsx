@@ -9,6 +9,7 @@ interface UserProfile {
     role: string;
     subscription_status: string;
     is_super_admin?: boolean;
+    security_status?: 'active' | 'flagged' | 'suspended' | 'banned';
 }
 
 interface AuthContextType {

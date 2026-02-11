@@ -135,69 +135,14 @@ export function Payments() {
     }
 
     async function handleInstaPay(payment: any) {
-        const originalStatus = payment.status;
-        const originalPaidAmount = payment.paid_amount;
-        const originalPaidDate = payment.paid_date;
-        const originalPaymentMethod = payment.payment_method;
-
-        // Use base amount (original_amount) if available, per user request
-        const paidAmount = payment.original_amount || payment.amount;
-        const paidDate = new Date().toISOString().split('T')[0];
-
-        // Optimistic Update
-        setPayments(prev => prev.map(p =>
-            p.id === payment.id
-                ? { ...p, status: 'paid', paid_amount: paidAmount, paid_date: paidDate }
-                : p
-        ));
-
-        try {
-            const { error } = await supabase
-                .from('payments')
-                .update({
-                    status: 'paid',
-                    paid_amount: paidAmount,
-                    paid_date: paidDate,
-                    payment_method: payment.payment_method || 'bank_transfer'
-                })
-                .eq('id', payment.id);
-
-            if (error) throw error;
-
-            toast.success(t('paymentMarkedPaid'), {
-                action: {
-                    label: t('undo'),
-                    onClick: async () => {
-                        try {
-                            const { error: undoError } = await supabase
-                                .from('payments')
-                                .update({
-                                    status: originalStatus,
-                                    paid_amount: originalPaidAmount,
-                                    paid_date: originalPaidDate,
-                                    payment_method: originalPaymentMethod
-                                })
-                                .eq('id', payment.id);
-
-                            if (undoError) throw undoError;
-                            toast.success(t('paymentUndoSuccess'));
-                            fetchPayments();
-                        } catch (err) {
-                            console.error('Undo failed:', err);
-                            toast.error(t('errorInUndo'));
-                        }
-                    }
-                }
-            });
-
-            // Recalculate stats locally if possible, or just refresh list
-            // For now, refresh list to ensure accuracy with DB
-            fetchPayments();
-        } catch (error) {
-            console.error('Error in Insta-Pay:', error);
-            toast.error(t('errorMarkingPaid'));
-            fetchPayments(); // Revert
-        }
+        // Instead of immediate update, open the details modal in edit mode
+        // with the status pre-set to 'paid' so user can confirm date/amount
+        setSelectedPayment(payment);
+        setDetailsModalProps({
+            editMode: true,
+            status: 'paid'
+        });
+        setIsDetailsModalOpen(true);
     }
 
     function calculateStats(data: any[]) {

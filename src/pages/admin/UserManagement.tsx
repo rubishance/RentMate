@@ -11,7 +11,8 @@ import {
     ArrowPathIcon,
     UserIcon,
     UserCircleIcon,
-    ExclamationTriangleIcon
+    ExclamationTriangleIcon,
+    ShieldCheckIcon
 } from '@heroicons/react/24/outline';
 import { Loader2 } from 'lucide-react';
 
@@ -45,6 +46,9 @@ interface UserWithStats {
     open_tickets_count: number;
     storage_usage_mb: number;
     is_super_admin?: boolean;
+    security_status: 'active' | 'flagged' | 'suspended' | 'banned';
+    flagged_at: string | null;
+    last_security_check: string | null;
 }
 
 const UserManagement = () => {
@@ -71,7 +75,13 @@ const UserManagement = () => {
     // Form State
     const [editRole, setEditRole] = useState<string>('user');
     const [editStatus, setEditStatus] = useState<string>('active');
+    const [editSecurityStatus, setEditSecurityStatus] = useState<string>('active');
     const [editPlan, setEditPlan] = useState<string>('free');
+
+    // Security Logs State
+    const [isSecurityLogsOpen, setIsSecurityLogsOpen] = useState(false);
+    const [securityLogs, setSecurityLogs] = useState<any[]>([]);
+    const [logsLoading, setLogsLoading] = useState(false);
 
     const fetchData = async () => {
         setLoading(true);
@@ -121,6 +131,7 @@ const UserManagement = () => {
         setSelectedUser(user);
         setEditRole(user.role);
         setEditStatus(user.subscription_status || 'active');
+        setEditSecurityStatus(user.security_status || 'active');
         setEditPlan(user.plan_id || 'free');
         setModalMessage(null);
         setIsEditModalOpen(true);
@@ -139,6 +150,7 @@ const UserManagement = () => {
                 .update({
                     role: editRole,
                     subscription_status: editStatus,
+                    security_status: editSecurityStatus,
                     plan_id: editPlan
                 })
                 .eq('id', selectedUser.id);
@@ -227,6 +239,26 @@ const UserManagement = () => {
         } catch (error: unknown) {
             console.error('Impersonation error:', error);
             alert(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    };
+
+    const openSecurityLogs = async (user: UserWithStats) => {
+        setSelectedUser(user);
+        setIsSecurityLogsOpen(true);
+        setLogsLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('security_logs')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            setSecurityLogs(data || []);
+        } catch (err) {
+            console.error('Error fetching logs:', err);
+        } finally {
+            setLogsLoading(false);
         }
     };
 
@@ -453,6 +485,9 @@ const UserManagement = () => {
                                                 <button onClick={() => openEditModal(user)} className="p-2 text-gray-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 rounded-xl transition-all" title="Edit Account Settings">
                                                     <PencilSquareIcon className="w-5 h-5" />
                                                 </button>
+                                                <button onClick={() => openSecurityLogs(user)} className="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-all" title="Security Logs & Abuse History">
+                                                    <ShieldCheckIcon className="w-5 h-5" />
+                                                </button>
                                                 <button onClick={() => handleImpersonate(user)} className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-xl transition-all" title="Impersonate (Login as User)">
                                                     <KeyIcon className="w-5 h-5" />
                                                 </button>
@@ -585,6 +620,65 @@ const UserManagement = () => {
                                     {actionLoading ? 'Saving...' : 'Save Changes'}
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* SECURITY LOGS MODAL */}
+            {isSecurityLogsOpen && selectedUser && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 sm:p-6 text-left" dir="ltr">
+                    <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm transition-opacity" onClick={() => setIsSecurityLogsOpen(false)}></div>
+
+                    <div className="relative w-full max-w-2xl transform overflow-hidden rounded-3xl bg-white dark:bg-gray-800 p-8 shadow-2xl transition-all border border-gray-100 dark:border-gray-700" dir="ltr">
+                        <button onClick={() => setIsSecurityLogsOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                            <XMarkIcon className="h-6 w-6" />
+                        </button>
+
+                        <div className="mb-6">
+                            <h3 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
+                                <ShieldCheckIcon className="w-8 h-8 text-rose-600" />
+                                Security Audit Logs
+                            </h3>
+                            <p className="text-sm font-medium text-gray-500 mt-1">Activity history for {selectedUser.email}</p>
+                        </div>
+
+                        <div className="max-h-[50vh] overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+                            {logsLoading ? (
+                                <div className="py-20 flex justify-center"><Loader2 className="animate-spin text-brand-600" /></div>
+                            ) : securityLogs.length === 0 ? (
+                                <div className="py-20 text-center text-sm font-bold text-gray-400 uppercase tracking-widest bg-gray-50 dark:bg-gray-900/50 rounded-2xl">No security events found.</div>
+                            ) : (
+                                securityLogs.map((log) => (
+                                    <div key={log.id} className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700 flex flex-col gap-2">
+                                        <div className="flex items-center justify-between">
+                                            <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${log.severity === 'critical' ? 'bg-red-100 text-red-700' :
+                                                log.severity === 'high' ? 'bg-orange-100 text-orange-700' :
+                                                    'bg-blue-100 text-blue-700'
+                                                }`}>
+                                                {log.event_code}
+                                            </span>
+                                            <span className="text-[10px] font-bold text-gray-400">{new Date(log.created_at).toLocaleString()}</span>
+                                        </div>
+                                        <div className="text-xs text-gray-600 dark:text-gray-400 font-medium whitespace-pre-wrap break-all">
+                                            {JSON.stringify(log.details, null, 2)}
+                                        </div>
+                                        <div className="flex items-center gap-4 mt-1 opacity-50 text-[9px] font-bold uppercase tracking-tighter">
+                                            <span>IP: {log.ip_address || 'Unknown'}</span>
+                                            <span>Severity: {log.severity}</span>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+
+                        <div className="mt-8">
+                            <button
+                                onClick={() => setIsSecurityLogsOpen(false)}
+                                className="w-full py-4 rounded-2xl bg-gray-100 dark:bg-gray-900 text-sm font-black text-gray-900 dark:text-white uppercase tracking-widest hover:bg-gray-200 transition-all border border-gray-200 dark:border-gray-700"
+                            >
+                                Close
+                            </button>
                         </div>
                     </div>
                 </div>

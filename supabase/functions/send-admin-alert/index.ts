@@ -3,6 +3,9 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+const WHATSAPP_ACCESS_TOKEN = Deno.env.get("WHATSAPP_ACCESS_TOKEN");
+const WHATSAPP_PHONE_NUMBER_ID = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID");
 
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -20,6 +23,25 @@ serve(async (req) => {
         // Handle Database Webhook Structure
         const record = payload.record || payload;
         const eventType = payload.type || 'unknown'; // INSERT, UPDATE, etc.
+
+        if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error("Missing Supabase configuration");
+        const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+        // Fetch Admin Configuration
+        const { data: settings } = await supabase
+            .from('system_settings')
+            .select('key, value')
+            .in('key', ['admin_security_email', 'admin_security_whatsapp', 'security_alerts_enabled', 'admin_notification_email']);
+
+        const adminEmail = settings?.find(s => s.key === 'admin_security_email')?.value as string
+            || settings?.find(s => s.key === 'admin_notification_email')?.value as string
+            || "support@rentmate.co.il";
+        const adminWhatsApp = settings?.find(s => s.key === 'admin_security_whatsapp')?.value as string;
+        const alertsEnabled = settings?.find(s => s.key === 'security_alerts_enabled')?.value !== false;
+
+        if (!alertsEnabled && (payload.table === 'security_logs' || record.type === 'security_alert')) {
+            return new Response(JSON.stringify({ message: "Security alerts are disabled" }), { headers: corsHeaders });
+        }
 
         if (!RESEND_API_KEY) {
             console.error("Missing RESEND_API_KEY");
@@ -109,6 +131,45 @@ serve(async (req) => {
                 </pre>
             `;
             htmlBody = wrapInTemplate("שגיאת מערכת דווחה", message, `http://localhost:5173/admin/errors?id=${record.id}`, "צפה בפרטי השגיאה");
+        } else if (payload.table === 'security_logs' || record.type === 'security_alert') {
+            const evCode = record.event_code || record.event_type || 'Potential Abuse Detected';
+            subject = `🛡️ Security Alert: ${evCode}`;
+            const message = `
+                <p><strong>Event:</strong> ${evCode}</p>
+                <p><strong>Severity:</strong> <span style="color: ${record.severity === 'critical' ? 'red' : 'orange'}">${record.severity?.toUpperCase()}</span></p>
+                <p><strong>Details:</strong> ${record.details ? (typeof record.details === 'string' ? record.details : JSON.stringify(record.details)) : 'N/A'}</p>
+                <p><strong>User ID:</strong> ${record.user_id}</p>
+                <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+                <hr>
+                <p>The user has been flagged for review. Please check the security logs in the admin dashboard.</p>
+            `;
+            htmlBody = wrapInTemplate("התראת אבטחה RentMate", message, `http://localhost:5173/admin/users?id=${record.user_id}`, "צפה בפרופיל משתמש");
+
+            // --- SEND WHATSAPP IF CONFIGURED ---
+            if (WHATSAPP_ACCESS_TOKEN && WHATSAPP_PHONE_NUMBER_ID && adminWhatsApp) {
+                try {
+                    console.log(`Sending WhatsApp alert to ${adminWhatsApp}...`);
+                    const waRes = await fetch(`https://graph.facebook.com/v18.0/${WHATSAPP_PHONE_NUMBER_ID}/messages`, {
+                        method: "POST",
+                        headers: {
+                            "Authorization": `Bearer ${WHATSAPP_ACCESS_TOKEN}`,
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            messaging_product: "whatsapp",
+                            to: adminWhatsApp,
+                            type: "text",
+                            text: {
+                                body: `🛡️ *התראת אבטחה RentMate*\n\nאירוע: ${evCode}\nחומרה: ${record.severity?.toUpperCase()}\nפרטים: ${record.details}\nמשתמש: ${record.user_id}\n\nבדוק את מערכת הניהול.`
+                            }
+                        }),
+                    });
+                    const waData = await waRes.json();
+                    if (!waRes.ok) console.error("WhatsApp API Error:", waData);
+                } catch (waErr) {
+                    console.error("WhatsApp Send Failed:", waErr);
+                }
+            }
         } else {
             console.log("Ignored event type:", eventType);
             return new Response(JSON.stringify({ message: "Notification ignored" }), {
@@ -126,7 +187,7 @@ serve(async (req) => {
             },
             body: JSON.stringify({
                 from: "RentMate Admin <admin@rentmate.co.il>",
-                to: "support@rentmate.co.il",
+                to: adminEmail,
                 subject: subject,
                 html: htmlBody,
             }),

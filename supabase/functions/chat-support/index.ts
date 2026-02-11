@@ -155,11 +155,20 @@ const FUNCTION_TOOLS = [
         type: "function",
         function: {
             name: "prepare_add_contract",
-            description: "Prepare the 'Add Contract' wizard. (Hebrew: הכן טופס הוספת חוזה).",
+            description: "Prepare the 'Add Contract' wizard. (Hebrew: הכן טופס הוספת חוזה). Use this to extract contract and property details from natural language.",
             parameters: {
                 type: "object",
                 properties: {
                     property_id: { type: "string", description: "UUID of an existing property if known" },
+                    address: { type: "string", description: "The street address and house number (e.g., 'רוטשילד 22')" },
+                    city: { type: "string", description: "The city name (e.g., 'תל אביב')" },
+                    property_type: { type: "string", enum: ["apartment", "house", "studio", "office", "warehouse", "parking"], description: "The type of asset" },
+                    rooms: { type: "number", description: "Number of rooms" },
+                    size_sqm: { type: "number", description: "Area in square meters" },
+                    has_parking: { type: "boolean" },
+                    has_storage: { type: "boolean" },
+                    has_balcony: { type: "boolean" },
+                    has_safe_room: { type: "boolean" },
                     tenant_name: { type: "string" },
                     monthly_rent: { type: "number" },
                     currency: { type: "string", enum: ["ILS", "USD", "EUR"] },
