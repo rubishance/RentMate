@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import {
-    PlusIcon as Plus,
     HomeIcon as Home,
     BedIcon as BedDouble,
     RulerIcon as Ruler,
@@ -24,7 +23,6 @@ import UpgradeRequestModal from '../components/modals/UpgradeRequestModal';
 import { AddPaymentModal } from '../components/modals/AddPaymentModal';
 import { SelectPropertyModal } from '../components/modals/SelectPropertyModal';
 import { useDataCache } from '../contexts/DataCacheContext';
-import { PortfolioVisualizer } from '../components/analytics/PortfolioVisualizer';
 import { useSubscription } from '../hooks/useSubscription';
 import { SecureImage } from '../components/common/SecureImage';
 
@@ -309,10 +307,6 @@ export function Properties() {
             ) : (
                 /* Properties Grid */
                 <>
-                    <PortfolioVisualizer
-                        properties={properties}
-                        isLocked={!plan?.name?.toLowerCase().includes('master')}
-                    />
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 px-8">
                         {properties.map((property) => {
                             const today = format(new Date(), 'yyyy-MM-dd');
