@@ -9,11 +9,9 @@ export function BotIcon({ size = 40, className = "" }: { size?: number, classNam
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.3 }}
-            whileHover={{ scale: 1.05 }}
         >
             <motion.div
                 animate={{
-                    scale: [1, 1.08, 1],
                     rotate: [0, 2, 0, -2, 0]
                 }}
                 transition={{

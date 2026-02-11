@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Button } from './Button';
-import { MascotPopIn } from '../common/MascotPopIn';
 
 interface ModalProps {
     isOpen: boolean;
@@ -38,7 +37,7 @@ export const Modal: React.FC<ModalProps> = ({
         return () => {
             document.body.style.overflow = 'unset';
         };
-    }, [isOpen]);
+    }, [isOpen, modeless]);
 
     const sizes = {
         sm: 'max-w-md',
@@ -113,9 +112,6 @@ export const Modal: React.FC<ModalProps> = ({
                                 {footer}
                             </div>
                         )}
-
-                        {/* Renty Pop-In */}
-                        <MascotPopIn position="bottom-right" className="translate-x-4 translate-y-4" />
                     </motion.div>
                 </div>
             )}

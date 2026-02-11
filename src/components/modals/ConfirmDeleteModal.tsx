@@ -1,9 +1,8 @@
 import { AlertTriangle, Trash2, ArrowRight } from 'lucide-react';
-import { MascotPopIn } from '../common/MascotPopIn';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from '../../hooks/useTranslation';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export interface AffectedItem {
     label: string;
@@ -179,9 +178,6 @@ export function ConfirmDeleteModal({
                             </button>
                         </div>
                     </div>
-
-                    {/* Renty Pop-In */}
-                    <MascotPopIn position="bottom-right" className="translate-x-4 translate-y-4" />
                 </motion.div>
             </div>
         </AnimatePresence>

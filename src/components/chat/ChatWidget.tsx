@@ -1,18 +1,13 @@
 import { useRef, useEffect, useState } from 'react';
-import { BotIcon, X, Send, Paperclip, Loader2, Mic, MicOff } from 'lucide-react';
+import { X, Send, Paperclip, Loader2, Mic, MicOff } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ActionCard } from '../dashboard/ActionCard';
 import { supabase } from '../../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useChatBot } from '../../hooks/useChatBot';
-import { BotIcon as CustomBotIcon } from './BotIcon'; // Renamed to avoid conflict
 import { useUserPreferences } from '../../contexts/UserPreferencesContext';
-import { crmService } from '../../services/crm.service';
-import { useStack } from '../../contexts/StackContext';
 import { useTranslation } from '../../hooks/useTranslation';
-import { useDataCache } from '../../contexts/DataCacheContext';
 import { BillAnalysisService, ExtractedBillData } from '../../services/bill-analysis.service';
-import { propertyDocumentsService } from '../../services/property-documents.service';
 import { chatBus } from '../../events/chatEvents';
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
 import { RentyMascot } from '../common/RentyMascot';
@@ -39,14 +34,6 @@ export function ChatWidget() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isUploading, setIsUploading] = useState(false);
     const { isListening, transcript, startListening, stopListening, hasSupport: hasVoiceSupport } = useSpeechRecognition(isRtl ? 'he-IL' : 'en-US');
-
-    // Hybrid Mode State
-    const [isHybridEnabled, setIsHybridEnabled] = useState(true); // Default to true (safe)
-    const [checkingHybrid, setCheckingHybrid] = useState(true);
-
-    // AI Chat State
-    const [conversationId, setConversationId] = useState<string | null>(null);
-    const [checkingSettings, setCheckingSettings] = useState(true);
 
     // Modal States
     const [activeModal, setActiveModal] = useState<string | null>(null);
@@ -76,7 +63,6 @@ export function ChatWidget() {
 
                 // If setting exists, use it. If not, default to TRUE (Menu Mode)
                 const hybridEnabled = hybridSetting ? (hybridSetting.value === true || hybridSetting.value === 'true') : true;
-                setIsHybridEnabled(hybridEnabled);
 
                 // If Hybrid is OFF, auto-activate AI
                 if (!hybridEnabled) {
@@ -96,14 +82,11 @@ export function ChatWidget() {
                 }
             } catch (err) {
                 console.error('Error checking chat settings:', err);
-            } finally {
-                setCheckingSettings(false);
-                setCheckingHybrid(false);
             }
         };
 
         if (isOpen) checkSettings();
-    }, [isOpen]);
+    }, [isOpen, activateAiMode]);
 
 
 
@@ -578,11 +561,11 @@ export function ChatWidget() {
             {!isOpen && (
                 <motion.button
                     onClick={toggleChat}
-                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    whileHover={{ rotate: 5 }}
                     whileTap={{ scale: 0.9 }}
-                    initial={{ opacity: 0, scale: 0.5 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.5 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
                     className="p-0 bg-transparent transition-all border-none outline-none focus:outline-none relative group"
                 >
                     {/* Soft Hover Aura */}

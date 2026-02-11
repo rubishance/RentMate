@@ -38,8 +38,8 @@ export function RentyMascot({ className = "", size = 240, showBackground = true 
                     height: '100%',
                     objectFit: 'contain'
                 }}
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 className={`drop-shadow-2xl transition-all duration-300 ${isDark ? 'brightness-0 invert' : ''}`}
             />
         </motion.div>

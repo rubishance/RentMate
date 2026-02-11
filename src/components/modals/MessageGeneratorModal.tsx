@@ -5,6 +5,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { UrlCompression } from '../../lib/url-compression';
 import { supabase } from '../../lib/supabase';
 import { ShortenerService } from '../../services/shortener.service';
+import { RentyMascot } from '../common/RentyMascot';
 
 interface MessageGeneratorModalProps {
     isOpen: boolean;
@@ -84,54 +85,48 @@ export function MessageGeneratorModal({ isOpen, onClose, calculationData }: Mess
         // Standard Templates
         const stdTemplatesHe = {
             friendly: `היי! 👋
-עשיתי בדיקה לגבי עדכון שכר הדירה לפי המדד 📈.
-לפי החישוב, השכירות החדשה היא ₪${amount} (שינוי של ₪${change}, או ${percent}%).
+עשיתי בדיקה באתר www.RentMate.co.il לגבי עדכון שכר הדירה לפי המדד 📈.
+לפי החישוב, השכירות החדשה היא ${amount}.
 אפשר לראות את החישוב המלא כאן:
-${urlToUse}
-דברו איתי אם יש שאלות! 🏠
-rentmate.co.il`,
+${urlToUse}`,
             formal: `שלום רב,
-בהתאם לחוזה השכירות, בוצע תחשיב עדכון דמי השכירות לפי הצמדה למדד 📈.
-סכום השכירות המעודכן הינו ₪${amount}.
-הפרשי הצמדה: ₪${change} (${percent}%).
+בהתאם לחוזה השכירות, בוצע באתר www.RentMate.co.il תחשיב עדכון דמי השכירות לפי הצמדה למדד 📈.
+סכום השכירות המעודכן הינו ${amount}.
 לצפייה בפירוט התחשיב המלא:
 ${urlToUse}
 בברכה,
 RentMate 🏠
-rentmate.co.il`
+www.RentMate.co.il`
         };
 
         const stdTemplatesEn = {
             friendly: `Hey! 👋
-Just checked the rent adjustment based on the index 📈.
-The new rent comes out to be ₪${amount} (a change of ₪${change}, or ${percent}%).
+I just checked the rent update according to the index on www.RentMate.co.il 📈.
+According to the calculation, the new rent is ${amount}.
 You can see the full calculation here:
-${urlToUse}
-Let me know if you have any questions! 🏠
-rentmate.co.il`,
+${urlToUse}`,
             formal: `Dear Tenant,
-In accordance with our lease agreement, the rent has been adjusted based on index linkage 📈.
-The updated rent amount is ₪${amount}.
-Adjustment difference: ₪${change} (${percent}%).
-Please find the detailed calculation attached:
+In accordance with the lease agreement, a rent adjustment calculation based on index linkage has been performed on www.RentMate.co.il 📈.
+The updated rent amount is ${amount}.
+You can view the full detailed calculation here:
 ${urlToUse}
 Best regards,
 RentMate 🏠
-rentmate.co.il`
+www.RentMate.co.il`
         };
 
         // Reconciliation Templates
         const recoTemplatesHe = {
             friendly: `היי! 👋
 עשיתי חישובי הפרשים (Back-pay) לגבי השכירות 💰.
-סך הכל ההפרש לתשלום הוא ₪${amount}.
+סך הכל ההפרש לתשלום הוא ${amount}.
 אפשר לראות את הפירוט המלא של כל החודשים כאן:
 ${urlToUse}
 דברו איתי ונסדר את זה! 🏠
 rentmate.co.il`,
             formal: `שלום רב,
 בהתאם להסכם השכירות, בוצע תחשיב הפרשי הצמדה רטרואקטיביים 💰.
-סך חוב ההפרשים לתשלום הינו ₪${amount}.
+סך חוב ההפרשים לתשלום הינו ${amount}.
 לצפייה בפירוט התחשיב המלא לכל חודש:
 ${urlToUse}
 בברכה,
@@ -142,14 +137,14 @@ rentmate.co.il`
         const recoTemplatesEn = {
             friendly: `Hey! 👋
 I calculated the rent payment differences (back-pay) 💰.
-The total owed difference is ₪${amount}.
+The total owed difference is ${amount}.
 You can see the full monthly breakdown here:
 ${urlToUse}
 Let's catch up to settle this! 🏠
 rentmate.co.il`,
             formal: `Dear Tenant,
 A retroactive index linkage calculation has been performed in accordance with the lease 💰.
-The total back-pay amount due is ₪${amount}.
+The total back-pay amount due is ${amount}.
 Please find the detailed monthly breakdown attached:
 ${urlToUse}
 Best regards,
@@ -189,7 +184,7 @@ rentmate.co.il`
                 <div className="p-6 border-b border-border dark:border-gray-700 flex items-center justify-between">
                     <div>
                         <h2 className="text-xl font-bold text-foreground dark:text-white flex items-center gap-2">
-                            <img src="/social/sticker.png" alt="RentMate Sticker" className="w-10 h-10 object-contain drop-shadow-sm" />
+                            <RentyMascot size={40} showBackground={false} className="drop-shadow-sm" />
                             {lang === 'he' ? 'שתף חישוב' : 'Share Calculation'}
                         </h2>
                     </div>
