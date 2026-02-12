@@ -14,9 +14,6 @@ DROP POLICY IF EXISTS "Enable read access for admin" ON public.contracts;
 DROP POLICY IF EXISTS "Admins view all properties" ON public.properties;
 DROP POLICY IF EXISTS "Enable read access for admin" ON public.properties;
 
--- 3. Tenants (if exists)
-DROP POLICY IF EXISTS "Admins view all tenants" ON public.tenants;
-
 -- 4. Payments
 DROP POLICY IF EXISTS "Admins view all payments" ON public.payments;
 DROP POLICY IF EXISTS "Enable read access for admin" ON public.payments;
