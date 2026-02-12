@@ -8,16 +8,20 @@ import { toast } from 'sonner';
 export function useToast() {
     return {
         success: (message: string, options?: any) => {
-            toast.success(message, options);
+            const toastOptions = typeof options === 'string' ? { description: options } : options;
+            toast.success(message, toastOptions);
         },
         error: (message: string, options?: any) => {
-            toast.error(message, options);
+            const toastOptions = typeof options === 'string' ? { description: options } : options;
+            toast.error(message, toastOptions);
         },
         info: (message: string, options?: any) => {
-            toast(message, options);
+            const toastOptions = typeof options === 'string' ? { description: options } : options;
+            toast(message, toastOptions);
         },
         warning: (message: string, options?: any) => {
-            toast.warning(message, options);
+            const toastOptions = typeof options === 'string' ? { description: options } : options;
+            toast.warning(message, toastOptions);
         },
         loading: (message: string) => {
             return toast.loading(message);

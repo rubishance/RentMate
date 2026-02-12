@@ -22,6 +22,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { contractSchema, type ContractFormData } from '../schemas/contract.schema';
 import { useToast } from '../hooks/useToast';
 import { CompressionService } from '../services/compression.service';
+import { errorLogService } from '../services/error-log.service';
 import { useDataCache } from '../contexts/DataCacheContext';
 import { propertyService } from '../services/property.service';
 import { useSignedUrl } from '../hooks/useSignedUrl';
@@ -619,7 +620,22 @@ export function AddContract() {
             navigate('/properties');
         } catch (err: any) {
             console.error('Save error:', err);
-            toastError(t('error'), err.message);
+
+            // Log to server for debugging
+            await errorLogService.logError(err, {
+                componentStack: 'AddContract.tsx',
+                metadata: {
+                    step,
+                    contractDataSummary: {
+                        city: data.city,
+                        rent: data.rent
+                    }
+                }
+            });
+
+            const errorMessage = err.message || t('unknownError');
+            toastError(t('error'), errorMessage);
+
         } finally {
             setIsSaving(false);
         }
