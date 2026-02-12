@@ -33,6 +33,7 @@ export function Dashboard() {
     const [activeContracts, setActiveContracts] = useState<any[]>([]);
     const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
     const [layout, setLayout] = useState<WidgetConfig[]>(DEFAULT_WIDGET_LAYOUT);
+    const [counts, setCounts] = useState({ properties: 0, contracts: 0, tenants: 0 });
 
     const [isEditingLayout, setIsEditingLayout] = useState(false);
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
@@ -79,13 +80,25 @@ export function Dashboard() {
             const fetchPromise = Promise.all([
                 supabase.rpc('get_dashboard_summary', { p_user_id: user.id }),
                 BriefingService.getBriefingItems(user.id, t),
-                userScoringService.shouldShowUpsell(user.id, plan?.name || '')
+                userScoringService.shouldShowUpsell(user.id, plan?.name || ''),
+                supabase.from('properties').select('id', { count: 'exact', head: true }),
+                supabase.from('contracts').select('id, tenants', { count: 'exact' })
             ]);
 
             const responses = await Promise.race([fetchPromise, timeoutPromise]) as any;
             const summary = responses[0]?.data;
             const briefing = responses[1];
             const shouldShowBanner = responses[2];
+            const propertiesCount = responses[3]?.count || 0;
+            const contractsData = responses[4]?.data || [];
+            const contractsCount = responses[4]?.count || 0;
+            const totalTenants = contractsData.reduce((acc: number, c: any) => acc + (Array.isArray(c.tenants) ? c.tenants.length : 0), 0);
+
+            setCounts({
+                properties: propertiesCount,
+                contracts: contractsCount,
+                tenants: totalTenants
+            });
 
             if (summary) {
                 const newStats = {
@@ -103,6 +116,7 @@ export function Dashboard() {
                     storageCounts: summary.storage_counts || storageCounts,
                     activeContracts: summary.active_contracts || [],
                     feedItems: briefing,
+                    counts: { properties: propertiesCount, contracts: contractsCount, tenants: totalTenants },
                     layout
                 }, { persist: true });
             }
@@ -179,12 +193,12 @@ export function Dashboard() {
             <div className="max-w-7xl mx-auto px-4 md:px-10 pt-8 md:pt-12 space-y-8 md:space-y-12">
                 <DashboardHero firstName={firstName} feedItems={feedItemsWithActions} />
 
-                {/* Gamification: Setup Progress (Shows only if 0 properties) */}
-                {activeContracts.length === 0 && (
+                {/* Gamification: Setup Progress (Shows only if onboarding not complete) */}
+                {(counts.properties === 0 || counts.tenants === 0) && (
                     <div className="mb-8">
                         <SetupProgressWidget
-                            hasProperty={activeContracts.length > 0}
-                            hasTenant={activeContracts.some((c: any) => c.tenants?.length > 0)}
+                            hasProperty={counts.properties > 0}
+                            hasTenant={counts.tenants > 0}
                         />
                     </div>
                 )}
