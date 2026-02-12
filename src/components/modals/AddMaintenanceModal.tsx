@@ -208,7 +208,7 @@ export function AddMaintenanceModal({ isOpen, onClose, onSuccess, initialData }:
                 </div>
 
                 {/* Vendor & Issue Type */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                         <label className="text-sm font-semibold text-gray-700 ml-1">{t('vendor')}</label>
                         <div className="relative">

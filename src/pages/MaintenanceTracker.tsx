@@ -59,7 +59,7 @@ export function MaintenanceTracker() {
 
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 px-4 md:px-0">
-                <div className="p-8 rounded-[3rem] glass-premium dark:bg-neutral-900/60 border-white/10 flex flex-col justify-between min-h-[160px] shadow-minimal group hover:shadow-jewel transition-all duration-700 relative overflow-hidden">
+                <GlassCard variant="deep" className="p-8 rounded-[3rem] flex flex-col justify-between min-h-[160px] group hover:shadow-jewel transition-all duration-700 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
                     <div className="flex items-center justify-between relative z-10">
                         <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40 lowercase">{t('totalYTD') || 'Total Spend (YTD)'}</span>
@@ -72,9 +72,9 @@ export function MaintenanceTracker() {
                             ₪{totalSpend.toLocaleString()}
                         </h3>
                     </div>
-                </div>
+                </GlassCard>
 
-                <div className="p-8 rounded-[3rem] glass-premium dark:bg-neutral-900/60 border-white/10 flex flex-col justify-between min-h-[160px] shadow-minimal group hover:shadow-jewel transition-all duration-700 relative overflow-hidden">
+                <GlassCard variant="deep" className="p-8 rounded-[3rem] flex flex-col justify-between min-h-[160px] group hover:shadow-jewel transition-all duration-700 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
                     <div className="flex items-center justify-between relative z-10">
                         <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40 lowercase">{t('totalTickets') || 'Total Tickets'}</span>
@@ -87,9 +87,9 @@ export function MaintenanceTracker() {
                             {documents.length}
                         </h3>
                     </div>
-                </div>
+                </GlassCard>
 
-                <div className="p-8 rounded-[3rem] glass-premium dark:bg-neutral-900/60 border-white/10 flex flex-col justify-between min-h-[160px] shadow-minimal group hover:shadow-jewel transition-all duration-700 relative overflow-hidden">
+                <GlassCard variant="deep" className="p-8 rounded-[3rem] flex flex-col justify-between min-h-[160px] group hover:shadow-jewel transition-all duration-700 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
                     <div className="flex items-center justify-between relative z-10">
                         <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40 lowercase">{t('avgCost') || 'Avg. Ticket Cost'}</span>
@@ -102,7 +102,7 @@ export function MaintenanceTracker() {
                             ₪{documents.length > 0 ? Math.round(totalSpend / documents.length).toLocaleString() : 0}
                         </h3>
                     </div>
-                </div>
+                </GlassCard>
             </div>
 
             {/* Recent Activity List */}
@@ -129,30 +129,30 @@ export function MaintenanceTracker() {
                     ) : (
                         <div className="divide-y divide-white/5">
                             {documents.map((doc) => (
-                                <div key={doc.id} className="p-6 md:p-8 hover:bg-white/5 transition-all flex items-center justify-between gap-6 group cursor-pointer relative overflow-hidden">
+                                <div key={doc.id} className="p-4 sm:p-6 md:p-8 hover:bg-white/5 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 group cursor-pointer relative overflow-hidden">
                                     <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-transparent translate-x-full group-hover:translate-x-0 transition-transform duration-1000 pointer-events-none" />
 
-                                    <div className="flex items-center gap-6 flex-1 min-w-0 relative z-10">
-                                        <div className="w-14 h-14 rounded-2xl glass-premium border-white/10 flex items-center justify-center text-orange-500/80 group-hover:scale-105 transition-all duration-700">
-                                            <Wrench className="w-6 h-6" />
+                                    <div className="flex items-start sm:items-center gap-4 sm:gap-6 flex-1 min-w-0 relative z-10 w-full sm:w-auto">
+                                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl glass-premium border-white/10 flex items-center justify-center text-orange-500/80 group-hover:scale-105 transition-all duration-700 shrink-0">
+                                            <Wrench className="w-5 h-5 sm:w-6 sm:h-6" />
                                         </div>
                                         <div className="flex-1 min-w-0 space-y-1">
-                                            <h4 className="text-lg font-black tracking-tight text-foreground lowercase truncate">{doc.title || doc.description || 'Maintenance'}</h4>
-                                            <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40">
-                                                <span className="flex items-center gap-1.5 shrink-0">
+                                            <h4 className="text-base sm:text-lg font-black tracking-tight text-foreground lowercase truncate"><bdi>{doc.title || doc.description || 'Maintenance'}</bdi></h4>
+                                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40">
+                                                <span className="flex items-center gap-1.5 shrink-0 truncate max-w-full">
                                                     <Building className="w-3 h-3" />
-                                                    {(doc as any).properties?.address || 'Unknown Property'}
+                                                    <bdi>{(doc as any).properties?.address || 'Unknown Property'}</bdi>
                                                 </span>
-                                                <span className="opacity-20">•</span>
-                                                <span className="truncate">{doc.vendor_name || 'No Vendor'}</span>
+                                                <span className="hidden sm:inline opacity-20">•</span>
+                                                <span className="truncate max-w-full"><bdi>{doc.vendor_name || 'No Vendor'}</bdi></span>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="text-right flex flex-col items-end gap-2 relative z-10">
+                                    <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 relative z-10 w-full sm:w-auto pl-[4rem] sm:pl-0">
                                         <div className="flex items-baseline gap-1.5 font-black text-foreground">
                                             <span className="text-[10px] opacity-40">₪</span>
-                                            <span className="text-2xl tracking-tighter">{(doc.amount || 0).toLocaleString()}</span>
+                                            <span className="text-xl sm:text-2xl tracking-tighter">{(doc.amount || 0).toLocaleString()}</span>
                                         </div>
                                         <span className="text-[8px] font-black uppercase tracking-[2px] px-3 py-1 rounded-full glass-premium border-white/5 text-muted-foreground opacity-60">
                                             {doc.issue_type || 'General'}

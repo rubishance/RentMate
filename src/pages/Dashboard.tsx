@@ -17,6 +17,7 @@ import { BionicWelcomeOverlay } from '../components/onboarding/BionicWelcomeOver
 import { BionicSpotlight } from '../components/onboarding/BionicSpotlight';
 import { useAuth } from '../contexts/AuthContext';
 import { SmartActionsRow } from '../components/dashboard/SmartActionsRow';
+import { SetupProgressWidget } from '../components/dashboard/SetupProgressWidget';
 
 export function Dashboard() {
     const { lang, t } = useTranslation();
@@ -177,6 +178,16 @@ export function Dashboard() {
 
             <div className="max-w-7xl mx-auto px-4 md:px-10 pt-8 md:pt-12 space-y-8 md:space-y-12">
                 <DashboardHero firstName={firstName} feedItems={feedItemsWithActions} />
+
+                {/* Gamification: Setup Progress (Shows only if 0 properties) */}
+                {activeContracts.length === 0 && (
+                    <div className="mb-8">
+                        <SetupProgressWidget
+                            hasProperty={activeContracts.length > 0}
+                            hasTenant={activeContracts.some((c: any) => c.tenants?.length > 0)}
+                        />
+                    </div>
+                )}
 
                 {/* Command Bar */}
                 {/* Smart Actions & Tools */}

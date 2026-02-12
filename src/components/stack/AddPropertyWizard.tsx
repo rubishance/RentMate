@@ -15,6 +15,22 @@ import { SecureImage } from '../common/SecureImage';
 import { useSignedUrl } from '../../hooks/useSignedUrl';
 import { useAuth } from '../../contexts/AuthContext';
 import { useUsageTracking } from '../../hooks/useUsageTracking';
+import { ValidatedField } from '../common/ValidatedField';
+
+const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1
+        }
+    }
+};
+
+const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+};
 
 // Wizard Steps Configuration
 const STEPS = [
@@ -224,7 +240,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                         <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40 leading-none mb-1">
                             {t('step')} {currentStep + 1} / {STEPS.length}
                         </span>
-                        <span className="font-black text-xl tracking-tighter text-foreground leading-none lowercase">{STEPS[currentStep].title}</span>
+                        <span className="font-black text-xl tracking-tighter text-foreground leading-none lowercase"><bdi>{STEPS[currentStep].title}</bdi></span>
                     </div>
                 </div>
 
@@ -250,7 +266,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                         >
                             <div className="space-y-4 text-center mb-16">
                                 <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground leading-tight lowercase">
-                                    {STEPS[currentStep].question}
+                                    <bdi>{STEPS[currentStep].question}</bdi>
                                 </h2>
                                 <p className="text-muted-foreground text-lg font-medium opacity-40 max-w-md mx-auto">
                                     {t('wizard_desc') || 'We help you categorize and manage your assets effectively.'}
@@ -258,68 +274,84 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                             </div>
 
                             <div className="p-1 glass-premium dark:bg-neutral-900/60 border-white/10 rounded-[4rem] shadow-minimal overflow-hidden">
-                                <div className="p-10 space-y-10">
+                                <motion.div
+                                    variants={containerVariants}
+                                    initial="hidden"
+                                    animate="show"
+                                    className="p-10 space-y-10"
+                                >
                                     {currentStep === 0 && (
                                         <div className="space-y-6 py-4">
-                                            <div className="space-y-4">
+                                            <motion.div variants={itemVariants} className="space-y-4">
                                                 {/* Asset Type moved to page 1 as requested */}
-                                                <div className="p-6 rounded-[2rem] bg-white dark:bg-neutral-800/30 border border-slate-100 dark:border-neutral-700 mb-4">
-                                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block mb-4 text-center">
-                                                        {t('selectCategory')}
-                                                    </label>
-                                                    <PropertyTypeSelect
-                                                        value={formData.property_type!}
-                                                        onChange={(val) => setFormData({ ...formData, property_type: val })}
-                                                    />
-                                                </div>
+                                                <ValidatedField isValid={!!formData.property_type}>
+                                                    <div className="p-6 rounded-[2rem] bg-white dark:bg-neutral-800/30 border border-slate-100 dark:border-neutral-700 mb-4">
+                                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block mb-4 text-center">
+                                                            {t('selectCategory')}
+                                                        </label>
+                                                        <PropertyTypeSelect
+                                                            value={formData.property_type!}
+                                                            onChange={(val) => setFormData({ ...formData, property_type: val })}
+                                                        />
+                                                    </div>
+                                                </ValidatedField>
 
                                                 {/* City above Address */}
-                                                <div className="p-5 rounded-2xl bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700 focus-within:ring-2 ring-primary/20 transition-all">
-                                                    <GoogleAutocomplete
-                                                        label={t('city')}
-                                                        value={formData.city || ''}
-                                                        onChange={(val: string) => setFormData({ ...formData, city: val })}
-                                                        type="cities"
-                                                    />
-                                                </div>
-                                                <div className="p-5 rounded-2xl bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700 focus-within:ring-2 ring-primary/20 transition-all">
-                                                    <GoogleAutocomplete
-                                                        label={t('address')}
-                                                        value={formData.address || ''}
-                                                        onChange={(val: string) => setFormData({ ...formData, address: val })}
-                                                        type="address"
-                                                        biasCity={formData.city}
-                                                    />
-                                                </div>
-                                            </div>
+                                                <ValidatedField isValid={!!formData.city && formData.city.length > 2}>
+                                                    <div className="p-5 rounded-2xl bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700 focus-within:ring-2 ring-primary/20 transition-all">
+                                                        <GoogleAutocomplete
+                                                            label={t('city')}
+                                                            value={formData.city || ''}
+                                                            onChange={(val: string) => setFormData({ ...formData, city: val })}
+                                                            type="cities"
+                                                        />
+                                                    </div>
+                                                </ValidatedField>
+
+                                                <ValidatedField isValid={!!formData.address && formData.address.length > 5}>
+                                                    <div className="p-5 rounded-2xl bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700 focus-within:ring-2 ring-primary/20 transition-all">
+                                                        <GoogleAutocomplete
+                                                            label={t('address')}
+                                                            value={formData.address || ''}
+                                                            onChange={(val: string) => setFormData({ ...formData, address: val })}
+                                                            type="address"
+                                                            biasCity={formData.city}
+                                                        />
+                                                    </div>
+                                                </ValidatedField>
+                                            </motion.div>
                                         </div>
                                     )}
 
                                     {currentStep === 1 && (
-                                        <div className="space-y-8 py-4">
+                                        <motion.div variants={itemVariants} className="space-y-8 py-4">
 
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                <div className="p-6 rounded-[2rem] bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
-                                                    <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">{t('rooms')}</label>
-                                                    <input
-                                                        type="number"
-                                                        step="0.5"
-                                                        className="bg-transparent font-black text-3xl text-foreground w-full outline-none"
-                                                        value={formData.rooms ?? ''}
-                                                        placeholder="0"
-                                                        onChange={e => setFormData({ ...formData, rooms: e.target.value === '' ? undefined : parseFloat(e.target.value) })}
-                                                    />
-                                                </div>
-                                                <div className="p-6 rounded-[2rem] bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
-                                                    <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">{t('sqm')}</label>
-                                                    <input
-                                                        type="number"
-                                                        className="bg-transparent font-black text-3xl text-foreground w-full outline-none"
-                                                        value={formData.size_sqm ?? ''}
-                                                        placeholder="0"
-                                                        onChange={e => setFormData({ ...formData, size_sqm: e.target.value === '' ? undefined : parseFloat(e.target.value) })}
-                                                    />
-                                                </div>
+                                                <ValidatedField isValid={!!formData.rooms && formData.rooms > 0}>
+                                                    <div className="p-6 rounded-[2rem] bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
+                                                        <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">{t('rooms')}</label>
+                                                        <input
+                                                            type="number"
+                                                            step="0.5"
+                                                            className="bg-transparent font-black text-3xl text-foreground w-full outline-none"
+                                                            value={formData.rooms ?? ''}
+                                                            placeholder="0"
+                                                            onChange={e => setFormData({ ...formData, rooms: e.target.value === '' ? undefined : parseFloat(e.target.value) })}
+                                                        />
+                                                    </div>
+                                                </ValidatedField>
+                                                <ValidatedField isValid={!!formData.size_sqm && formData.size_sqm > 0}>
+                                                    <div className="p-6 rounded-[2rem] bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
+                                                        <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">{t('sqm')}</label>
+                                                        <input
+                                                            type="number"
+                                                            className="bg-transparent font-black text-3xl text-foreground w-full outline-none"
+                                                            value={formData.size_sqm ?? ''}
+                                                            placeholder="0"
+                                                            onChange={e => setFormData({ ...formData, size_sqm: e.target.value === '' ? undefined : parseFloat(e.target.value) })}
+                                                        />
+                                                    </div>
+                                                </ValidatedField>
 
                                                 {/* Features: Balcony, Safe Room, Parking & Storage */}
                                                 <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -436,9 +468,9 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                     </AnimatePresence>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </motion.div>
                                     )}
-                                </div>
+                                </motion.div>
                             </div>
                         </motion.div>
                     </AnimatePresence>

@@ -2084,7 +2084,7 @@ export function AddContract() {
                                                     </h4>
                                                     <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                                                         <span className="text-muted-foreground">{t('address')}</span>
-                                                        <span className="font-medium">{formData.address || '-'}, {formData.city || '-'}</span>
+                                                        <span className="font-medium"><bdi>{formData.address || '-'}</bdi>, <bdi>{formData.city || '-'}</bdi></span>
 
                                                         <span className="text-muted-foreground">{t('propertyType')}</span>
                                                         <span className="font-medium">{t(formData.property_type as any)}</span>
@@ -2112,7 +2112,7 @@ export function AddContract() {
                                                         {formData.tenants.map((tenant, idx) => (
                                                             <div key={idx} className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm bg-white/50 p-2 rounded-lg">
                                                                 <span className="text-muted-foreground font-bold">{t('tenant')} {formData.tenants.length > 1 ? idx + 1 : ''}</span>
-                                                                <span className="font-bold">{tenant.name || '-'}</span>
+                                                                <span className="font-bold"><bdi>{tenant.name || '-'}</bdi></span>
 
                                                                 <span className="text-muted-foreground">{t('idNumber')}</span>
                                                                 <span className="font-medium">{tenant.id_number || '-'}</span>
@@ -2121,7 +2121,7 @@ export function AddContract() {
                                                                 <span className="font-medium">{tenant.phone || '-'}</span>
 
                                                                 <span className="text-muted-foreground">{t('email')}</span>
-                                                                <span className="font-medium">{tenant.email || '-'}</span>
+                                                                <span className="font-medium"><bdi>{tenant.email || '-'}</bdi></span>
                                                             </div>
                                                         ))}
                                                         {formData.guarantorsInfo && (

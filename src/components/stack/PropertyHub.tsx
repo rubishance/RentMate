@@ -352,7 +352,7 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
                     <div className="flex justify-between items-start">
                         <div className="flex-1">
                             {/* Status Badge */}
-                            <div className="inline-flex items-center gap-2 px-3 py-1 glass-premium dark:bg-black/50 backdrop-blur-md rounded-full border border-white/20 dark:border-white/10 text-[9px] font-black uppercase tracking-widest mb-2 shadow-minimal">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 backdrop-blur-3xl rounded-full border border-white/10 text-[9px] font-black uppercase tracking-widest mb-2 shadow-xl">
                                 {(() => {
                                     const today = new Date().toISOString().split('T')[0];
                                     const hasActiveContract = (property as any).contracts?.some((c: any) =>
@@ -387,7 +387,7 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
                             )}
 
                             {isEditing ? (
-                                <div className="space-y-4 bg-white/80 dark:bg-black/80 p-4 rounded-2xl border border-primary/20 backdrop-blur-xl">
+                                <div className="space-y-4 bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-3xl shadow-xl">
                                     <div className="space-y-2">
                                         <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Address</label>
                                         <div className="pt-2">
@@ -716,7 +716,7 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
 
             {/* 2. Tabs Navigation */}
             <div className="px-3 md:px-6 relative z-20">
-                <div className="flex gap-1.5 glass-premium dark:bg-white/5 backdrop-blur-2xl p-1.5 rounded-[1.8rem] border border-white/5 shadow-minimal overflow-x-auto no-scrollbar">
+                <div className="flex gap-1.5 bg-white/5 backdrop-blur-3xl p-1.5 rounded-[1.8rem] border border-white/10 shadow-xl overflow-x-auto no-scrollbar">
                     {tabs.map((tab) => {
                         const Icon = tab.icon;
                         const isActive = activeTab === tab.id;
