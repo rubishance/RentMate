@@ -15,6 +15,8 @@ export type TranslationKeys =
     | 'add' | 'add_female'
     | 'search'
     | 'actions'
+    | 'logPayment' | 'quickAction' | 'addExpense' | 'maintenanceRequest' | 'messageTenant'
+    | 'logPayment' | 'quickAction' | 'addExpense' | 'maintenanceRequest' | 'messageTenant'
     | 'view' | 'view_female'
     | 'deleteConfirmation' | 'deleteConfirmation_female'
     | 'clear' | 'clear_female'
@@ -945,6 +947,11 @@ export const translations: Record<string, any> = {
         add_female: 'הוסיפי',
         search: 'חיפוש',
         actions: 'פעולות',
+        logPayment: 'תיעוד תשלום',
+        quickAction: 'פעולה מהירה',
+        addExpense: 'הוסף הוצאה',
+        maintenanceRequest: 'קריאת שירות',
+        messageTenant: 'שלח הודעה',
         view: 'צפייה',
         view_female: 'צפי',
         deleteConfirmation: 'האם אתה בטוח שברצונך למחוק?',
@@ -1945,6 +1952,12 @@ export const translations: Record<string, any> = {
         active_contract: 'Active Contract',
         archived_contract: 'Archived Contract',
         view_details: 'View Details',
+        actions: 'Actions',
+        logPayment: 'Log Payment',
+        quickAction: 'Quick Action',
+        addExpense: 'Add Expense',
+        maintenanceRequest: 'Maintenance Request',
+        messageTenant: 'Message Tenant',
         cancel: 'Cancel',
         errorTitle404: 'Oops! Page Not Found',
         errorDesc404: "Sorry, the page you're looking for doesn't exist or has been moved.",
