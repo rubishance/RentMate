@@ -34,10 +34,13 @@ export function GoogleAutocomplete({
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Sync external value changes
+    const lastSentValue = useRef(value);
+
+    // Sync external value changes (only if it didn't come from us)
     useEffect(() => {
-        if (value !== inputValue) {
+        if (value !== lastSentValue.current) {
             setInputValue(value);
+            lastSentValue.current = value;
         }
     }, [value]);
 
@@ -102,14 +105,17 @@ export function GoogleAutocomplete({
     const handleSelect = (prediction: any) => {
         const mainText = prediction.structured_formatting?.main_text || prediction.description;
         setInputValue(mainText);
+        lastSentValue.current = mainText; // Record what we sent
         onChange(mainText);
         setIsOpen(false);
     };
 
     const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setInputValue(e.target.value);
-        onChange(e.target.value);
-        if (!e.target.value) {
+        const val = e.target.value;
+        setInputValue(val);
+        lastSentValue.current = val; // Record what we sent
+        onChange(val);
+        if (!val) {
             setIsOpen(false);
             setSuggestions([]);
         }

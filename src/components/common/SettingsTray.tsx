@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Settings, X, Globe, Moon } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { useUserPreferences } from '../../contexts/UserPreferencesContext';
 import { useTranslation } from '../../hooks/useTranslation';
 import { LanguageToggle } from './LanguageToggle';
@@ -8,9 +9,14 @@ import { ThemeToggle } from './ThemeToggle';
 import { cn } from '../../lib/utils';
 
 export function SettingsTray() {
+    const location = useLocation();
     const [isOpen, setIsOpen] = useState(false);
     const { lang } = useTranslation();
     const isRtl = lang === 'he';
+
+    const isAuthPage = ['/login', '/signup', '/forgot-password'].includes(location.pathname);
+
+    if (isAuthPage) return null;
 
     return (
         <>

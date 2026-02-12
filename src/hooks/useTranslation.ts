@@ -31,6 +31,7 @@ export type TranslationKeys =
     | 'saving' | 'saving_female'
     | 'adding' | 'adding_female'
     | 'saveChanges' | 'saveChanges_female'
+    | 'editLayout' | 'saveLayout'
     | 'addItem' | 'addItem_female'
     | 'name'
     | 'address'
@@ -161,6 +162,12 @@ export type TranslationKeys =
     | 'manageStorage' | 'manageStorage_female'
     | 'items'
     | 'now'
+    | 'commandCenter'
+    | 'welcomeMessageDashboard'
+    | 'goodMorning'
+    | 'goodAfternoon'
+    | 'goodEvening'
+    | 'goodNight'
     | 'addContractDesc'
     | 'organizeDocsDesc'
     | 'uploadNow' | 'uploadNow_female'
@@ -594,6 +601,19 @@ export type TranslationKeys =
     | 'noAssetsFound'
     | 'addFirstPropertyDesc' | 'addFirstPropertyDesc_female'
     | 'createFirstAsset' | 'createFirstAsset_female'
+    | 'maintenanceHub'
+    | 'maintenanceOverview'
+    | 'logExpense'
+    | 'totalYTD'
+    | 'totalTickets'
+    | 'avgCost'
+    | 'noMaintenanceRecords'
+    | 'noMaintenanceDesc'
+    | 'recentActivity'
+    | 'wizard_desc'
+    | 'selectCategory'
+    | 'step'
+    | 'finish'
     | 'occupied'
     | 'vacant'
     | 'sqm'
@@ -955,6 +975,8 @@ export const translations: Record<string, any> = {
         saveChanges_female: 'שמרי שינויים',
         addItem: 'הוסף פריט',
         addItem_female: 'הוסיפי פריט',
+        editLayout: 'עריכת תצוגה',
+        saveLayout: 'שמירת תצוגה',
         name: 'שם',
         address: 'כתובת',
         city: 'עיר',
@@ -1065,7 +1087,7 @@ export const translations: Record<string, any> = {
         configureAlerts_female: 'הגדרת התראות',
         controlData: 'שליטה במידע שלך',
         controlData_female: 'שליטה במידע שלך',
-        agreeToTerms: 'אני מסכים ל{terms} ול{privacy}',
+        agreeToTerms: 'אני מסכים ל- {terms} ול{privacy}',
         marketingConsent: 'אני מאשר קבלת עדכונים ותכנים שיווקיים',
         legalDocs: 'מסמכים משפטיים',
         privacyPolicy: 'מדיניות פרטיות',
@@ -1086,6 +1108,11 @@ export const translations: Record<string, any> = {
         archiveAndCalculate: 'ארכב וחשב',
         archiveAndCalculate_female: 'ארכבי וחשבי',
         welcomeMessage: 'ברוכים הבאים ל-RentMate',
+        welcomeMessageDashboard: 'ערב טוב',
+        goodMorning: 'בוקר טוב',
+        goodAfternoon: 'צהריים טובים',
+        goodEvening: 'ערב טוב',
+        goodNight: 'לילה טוב',
         allLooksQuiet: 'הכל נראה רגוע כאן.',
         paymentPendingTitle: 'תשלום ממתין',
         paymentPendingDesc: 'יש לך חוב של ₪{amount} שטרם נגבה',
@@ -1102,7 +1129,8 @@ export const translations: Record<string, any> = {
         items: 'פריטים',
         now: 'עכשיו',
         addContractDesc: 'הוסף את החוזה הראשון שלך כדי להתחיל לעקוב',
-        organizeDocsTitle: 'ארגן את המסמכים שלך',
+        organizeDocs: 'ארגן מסמכים',
+        commandCenter: 'מרכז שליטה',
         organizeDocsDesc: 'העלה קבלות וחשבונות למקום אחד מסודר',
         uploadNow: 'העלה עכשיו',
         uploadNow_female: 'העלי עכשיו',
@@ -1788,9 +1816,23 @@ export const translations: Record<string, any> = {
         deleteContractMessage_male: 'האם למחוק חוזה זה וכל נתוניו?',
         addNewTenant_male: 'הוסף דייר חדש',
         addProperty_male: 'הוסף נכס',
-        addFirstPropertyDesc_male: 'התחל בהוספת הנכס הראשון שלך',
-        createFirstAsset_male: 'צור נכס ראשון',
-        addTenant_male: 'הוסף דייר',
+        addFirstPropertyDesc: 'עדיין לא הוספת נכסים. התחל בהוספת היחידה הראשונה שלך למעקב.',
+        addFirstPropertyDesc_female: 'עדיין לא הוספת נכסים. התחלי בהוספת היחידה הראשונה שלך למעקב.',
+        createFirstAsset: 'הוסף את הנכס הראשון שלי',
+        createFirstAsset_female: 'הוסיפי את הנכס הראשון שלי',
+        maintenanceHub: 'מרכז תחזוקה',
+        maintenanceOverview: 'בריאות הפורטפוליו',
+        logExpense: 'תיעוד הוצאה',
+        totalYTD: 'סה"כ הוצאות (שנתי)',
+        totalTickets: 'סה"כ קריאות',
+        avgCost: 'עלות ממוצעת לקריאה',
+        noMaintenanceRecords: 'אין תיעודי תחזוקה',
+        noMaintenanceDesc: 'התחל לתעד הוצאות כדי לעקוב אחר מצב הנכסים שלך.',
+        wizard_desc: 'אנחנו נעזור לך לקטלג ולנהל את הנכסים שלך בצורה יעילה.',
+        selectCategory: 'בחר סוג נכס',
+        step: 'שלב',
+        finish: 'סיום',
+        occupied: 'מושכר',
         addFirstTenantDesc_male: 'התחל בהוספת הדייר הראשון שלך',
         uploadNewBill_male: 'העלה חשבון חדש',
         markAsPaid_male: 'סמן כסדר',
@@ -1887,6 +1929,13 @@ export const translations: Record<string, any> = {
         conciergeDesc: 'You have {count} properties but no contracts yet. Let\'s get organized.',
         conciergeStart: 'Add First Contract',
         conciergeLater: 'Remind me later',
+        welcomeMessage: 'Welcome to RentMate',
+        welcomeMessageDashboard: 'good evening',
+        commandCenter: 'Command Center',
+        goodMorning: 'good morning',
+        goodAfternoon: 'good afternoon',
+        goodEvening: 'good evening',
+        goodNight: 'good night',
         conciergeAiExtraction: 'Smart AI Extraction',
         conciergeLinkageMonitoring: 'Automatic Linkage Alerts',
         all: 'All',

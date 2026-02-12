@@ -1,10 +1,11 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import type { User } from '@supabase/supabase-js';
-import { X, Send, Paperclip, Loader2, Mic, MicOff } from 'lucide-react';
+import { Send, Paperclip, X, Maximize2, Minimize2, Settings, Sparkles, Bot, User as UserIcon, Trash2, FileIcon, ImageIcon, CheckCircle2, AlertCircle, Mic, MicOff, Loader2 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ActionCard } from '../dashboard/ActionCard';
 import { supabase } from '../../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '../../lib/utils';
 import { useChatBot } from '../../hooks/useChatBot';
 import { useUserPreferences } from '../../contexts/UserPreferencesContext';
 import { useStack } from '../../contexts/StackContext';
@@ -317,15 +318,20 @@ export function ChatWidget() {
 
     return (
         <motion.div
-            drag
-            dragConstraints={{ left: -window.innerWidth + 80, right: 0, top: -window.innerHeight + 80, bottom: 0 }}
-            dragElastic={0.1}
-            dragTransition={{ bounceStiffness: 600, bounceDamping: 20 }}
-            className="fixed bottom-32 sm:bottom-24 right-6 z-[60] flex flex-col items-end space-y-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={cn(
+                "fixed bottom-36 sm:bottom-32 z-[60] flex flex-col items-end space-y-4",
+                isRtl ? "left-6" : "right-6"
+            )}
         >
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
+                        drag
+                        dragConstraints={{ left: -window.innerWidth + 80, right: 0, top: -window.innerHeight + 80, bottom: 0 }}
+                        dragElastic={0.1}
+                        dragTransition={{ bounceStiffness: 600, bounceDamping: 20 }}
                         initial={{ opacity: 0, y: 20, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
@@ -545,6 +551,7 @@ export function ChatWidget() {
                                         id="chat-input"
                                         ref={inputRef}
                                         type="text"
+                                        // I'll check BotIcon.tsx first to see how it's styled.
                                         placeholder={
                                             !user
                                                 ? (isRtl ? "שאל על RentMate..." : "Ask about RentMate...")

@@ -86,25 +86,21 @@ export function BottomDock() {
                             aria-label={item.label}
                             aria-current={isActive ? 'page' : undefined}
                             className={cn(
-                                "relative flex items-center justify-center h-16 rounded-[1.8rem] transition-all duration-300",
+                                "relative flex flex-col items-center justify-center min-w-[70px] h-16 rounded-[1.8rem] transition-all duration-300 gap-1",
                                 isActive
-                                    ? "text-primary-foreground button-jewel px-8"
-                                    : "text-muted-foreground hover:text-foreground hover:bg-white/10 px-5"
+                                    ? "text-primary-foreground button-jewel px-6"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-white/10 px-4"
                             )}
                         >
-                            <Icon className={cn("w-6 h-6 transition-all duration-300", isActive && "scale-110")} />
-                            <AnimatePresence>
-                                {isActive && (
-                                    <motion.span
-                                        initial={{ opacity: 0, width: 0, marginLeft: 0 }}
-                                        animate={{ opacity: 1, width: 'auto', marginLeft: 12 }}
-                                        exit={{ opacity: 0, width: 0, marginLeft: 0 }}
-                                        className="text-[10px] font-black uppercase tracking-[0.2em] overflow-hidden whitespace-nowrap"
-                                    >
-                                        {item.label}
-                                    </motion.span>
+                            <Icon className={cn("w-5 h-5 transition-all duration-300", isActive && "scale-110")} />
+                            <span
+                                className={cn(
+                                    "text-[8px] font-black uppercase tracking-[0.1em] whitespace-nowrap",
+                                    isActive ? "opacity-100" : "opacity-60"
                                 )}
-                            </AnimatePresence>
+                            >
+                                {item.label}
+                            </span>
                         </Link>
                     );
                 })}

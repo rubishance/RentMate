@@ -2,7 +2,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Navigate, Outlet } from 'react-router-dom';
 
 const AuthGuard = () => {
-    const { isAuthenticated, isLoading } = useAuth();
+    const { isAuthenticated, isLoading, profile } = useAuth();
 
     // ALLOW CACHED SESSIONS: If we have a user (from cache), proceed immediately
     // Only show loading if we have no user AND we are still loading
@@ -26,7 +26,6 @@ const AuthGuard = () => {
         return <Navigate to="/login" replace />;
     }
 
-    const { profile } = useAuth();
     if (profile?.security_status === 'suspended' || profile?.security_status === 'banned') {
         return <Navigate to="/account-suspended" replace />;
     }

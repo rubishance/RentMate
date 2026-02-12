@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
     HomeIcon as Home,
     BedIcon as BedDouble,
@@ -71,17 +71,11 @@ export function Properties() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const handleQuickUpload = () => {
-        if (properties.length === 0) {
-            handleAdd();
-        } else if (properties.length === 1) {
-            navigate(`/properties/${properties[0].id}`, { state: { action: 'upload' } });
-        } else {
-            setIsSelectPropertyModalOpen(true);
-        }
-    };
+    const { push } = useStack();
 
-    const handleAdd = () => {
+    const handleAdd = useCallback(() => {
+        if (loading) return; // Don't act if still loading subscription/plan
+
         if (!canAddProperty) {
             setIsUpgradeModalOpen(true);
             return;
@@ -93,9 +87,17 @@ export function Properties() {
                 refreshSubscription();
             }
         }, { isExpanded: true, title: t('addProperty') });
-    };
+    }, [loading, canAddProperty, setIsUpgradeModalOpen, push, clear, fetchProperties, refreshSubscription, t]);
 
-    const { push } = useStack();
+    const handleQuickUpload = useCallback(() => {
+        if (properties.length === 0) {
+            handleAdd();
+        } else if (properties.length === 1) {
+            navigate(`/properties/${properties[0].id}`, { state: { action: 'upload' } });
+        } else {
+            setIsSelectPropertyModalOpen(true);
+        }
+    }, [properties, handleAdd, navigate, setIsSelectPropertyModalOpen]);
 
     const handleView = (property: Property) => {
         navigate(`/properties/${property.id}`);
@@ -203,7 +205,7 @@ export function Properties() {
                 window.history.replaceState({}, '');
             }
         }
-    }, [location.state, loading, properties.length]); // Dependencies important for upload logic
+    }, [location.state, loading, properties.length, handleAdd, handleQuickUpload]); // Dependencies important for upload logic
 
 
     async function fetchProperties() {

@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const fetchProfile = async (userId: string) => {
         try {
             console.log(`[AuthContext] Fetching profile for ${userId}...`);
-            // Add a strict 4-second timeout for the profile fetch
+            // Increased timeout to 10 seconds for more resilience
             const fetchPromise = supabase
                 .from('user_profiles')
                 .select('*')
@@ -66,19 +66,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 .single();
 
             const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Profile fetch timeout')), 4000)
+                setTimeout(() => reject(new Error('Profile fetch timeout after 10s')), 10000)
             );
 
             const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
 
             if (data) {
+                console.log(`[AuthContext] Profile fetched successfully for ${userId}`);
                 setProfile(data);
                 updateCaches(user, data);
             } else if (error) {
-                console.warn('[AuthContext] Profile fetch error:', error);
+                console.warn('[AuthContext] Profile fetch returned error:', error);
             }
         } catch (err) {
-            console.error('Error fetching profile:', err);
+            console.error('[AuthContext] Critical error fetching profile:', err);
+            // On timeout, we still have the cached profile (if any) from state initialization
         }
     };
 

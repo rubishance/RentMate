@@ -127,11 +127,11 @@ export function RentyCommandCenter({ firstName, feedItems }: RentyCommandCenterP
                     >
                         <Sparkles className="w-3 h-3 text-indigo-500" />
                         <span className="text-[9px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
-                            Command Center v3
+                            {t('commandCenter')}
                         </span>
                     </motion.div>
                     <h1 className="text-3xl md:text-4xl font-black tracking-tighter text-foreground leading-tight lowercase">
-                        {greeting}, <span className="text-indigo-600 dark:text-indigo-400">{firstName}</span>.
+                        {t('commandCenter')}
                     </h1>
                 </div>
 

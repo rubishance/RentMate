@@ -26,7 +26,7 @@ export async function getIndexValue(
             .select('value')
             .eq('index_type', type)
             .eq('date', lookupDate)
-            .single();
+            .maybeSingle();
 
         if (error) {
             // If full date check fails for currencies, try the month? 
@@ -85,7 +85,7 @@ export async function getLatestIndex(
             .eq('index_type', type)
             .order('date', { ascending: false })
             .limit(1)
-            .single();
+            .maybeSingle();
 
         if (error) {
             console.error('Error fetching latest index:', error);

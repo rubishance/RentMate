@@ -186,11 +186,7 @@ export function Dashboard() {
                                 {lang === 'he' ? 'חיבור חי' : 'live connection'}
                             </span>
                         </div>
-                        <h1 className="text-2xl md:text-5xl font-black tracking-tighter text-white leading-[0.9] lowercase">
-                            {lang === 'he' ? 'ערב טוב,' : 'good evening,'}
-                            <br />
-                            <span className="text-white/40">{user?.user_metadata?.first_name || user?.email?.split('@')[0]}</span>
-                        </h1>
+                        <div className="h-2" />
                     </div>
                     <div className="flex items-center gap-4">
                         <button
