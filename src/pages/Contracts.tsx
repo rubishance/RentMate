@@ -200,15 +200,17 @@ export default function Contracts() {
                 ))}
             </div>
 
-            {/* Contracts List */}
             {filteredContracts.length === 0 ? (
-                <div className="py-32 text-center space-y-6 bg-slate-50/50 dark:bg-neutral-900/50 rounded-[3.5rem] border border-dashed border-slate-200 dark:border-neutral-800 mx-auto max-w-4xl w-full">
-                    <div className="w-24 h-24 bg-white dark:bg-neutral-900 rounded-[2.5rem] shadow-minimal flex items-center justify-center mx-auto mb-4">
-                        <FileText className="w-10 h-10 text-slate-200" />
+                <div
+                    onClick={handleAdd}
+                    className="py-32 text-center space-y-6 bg-slate-50/50 dark:bg-neutral-900/50 rounded-[3.5rem] border border-dashed border-slate-200 dark:border-neutral-800 mx-auto max-w-4xl w-full cursor-pointer hover:bg-emerald-500/5 hover:border-emerald-500/30 transition-all group"
+                >
+                    <div className="w-24 h-24 bg-white dark:bg-neutral-900 rounded-[2.5rem] shadow-minimal flex items-center justify-center mx-auto mb-4 group-hover:scale-110 group-hover:shadow-jewel transition-all">
+                        <FileText className="w-10 h-10 text-slate-200 group-hover:text-emerald-500 transition-colors" />
                     </div>
                     <div className="space-y-2">
-                        <h3 className="text-2xl font-black tracking-tighter text-foreground lowercase opacity-40">{t('noActiveContracts')}</h3>
-                        <p className="text-muted-foreground font-medium max-w-xs mx-auto text-sm italic">{t('addContractDesc')}</p>
+                        <h3 className="text-2xl font-black tracking-tighter text-foreground lowercase opacity-40 group-hover:opacity-100 transition-opacity">{t('noActiveContracts')}</h3>
+                        <p className="text-muted-foreground font-medium max-w-xs mx-auto text-sm italic group-hover:text-foreground transition-colors">{t('addContractDesc')}</p>
                     </div>
                 </div>
             ) : (
