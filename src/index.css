@@ -89,9 +89,9 @@
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
-    /* Borders: Sage/20% */
-    --border: 167 15% 72% / 0.15;
-    /* #b7c6c2 with opacity */
+    /* Borders: Sage/20% - Harder contrasts */
+    --border: 167 15% 72%;
+    /* #b7c6c2 (Solid Sage for visibility) */
     --input: 137 13% 15%;
     --ring: 46 100% 74%;
   }
@@ -110,31 +110,36 @@
 
 @layer utilities {
 
-  /* Premium Shadows */
+  /* Brutalist Shadows */
   .shadow-minimal {
-    box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.02);
+    box-shadow: 1px 1px 0px 0px rgba(0, 0, 0, 1);
   }
 
   .shadow-premium {
-    box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.08), 0 10px 20px -5px rgba(15, 23, 42, 0.04);
+    box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
   }
 
   .shadow-premium-dark {
-    box-shadow: 0 20px 40px -12px rgba(2, 6, 23, 0.5);
+    box-shadow: 4px 4px 0px 0px #ffe17c;
+    /* Golden shadow in dark mode */
   }
 
   .shadow-jewel {
-    box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.2), 0 4px 6px -2px rgba(99, 102, 241, 0.1);
+    box-shadow: 3px 3px 0px 0px rgba(0, 0, 0, 1);
   }
 
-  /* Glassmorphism & Surfaces */
+  /* Glassmorphism -> Solid Brutalist Surfaces */
   .glass-premium {
-    @apply bg-white/70 dark:bg-black/40 backdrop-blur-2xl border border-white/20 dark:border-white/10;
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    @apply bg-white dark:bg-black border-2 border-black dark:border-white;
+    box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+  }
+
+  .dark .glass-premium {
+    box-shadow: 4px 4px 0px 0px #ffe17c;
   }
 
   .glass-morphism {
-    @apply bg-white/70 dark:bg-black/40 backdrop-blur-xl border border-white/20 dark:border-white/10;
+    @apply bg-white dark:bg-black border-2 border-black dark:border-white;
   }
 
   /* Bionic Density Utilities */
@@ -155,26 +160,38 @@
     @apply text-xl md:text-3xl lg:text-4xl font-black text-foreground tracking-tight lowercase;
   }
 
-  /* Jewel Button Utility */
+  /* Jewel Button Utility -> Brutalist Button */
   .button-jewel {
-    @apply bg-primary text-primary-foreground bg-gradient-to-b from-white/10 to-transparent shadow-jewel hover:shadow-indigo-500/30 transition-all active:scale-95;
+    @apply bg-primary text-primary-foreground font-heading uppercase tracking-wider border-2 border-black dark:border-white transition-all;
+    box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+  }
+
+  .button-jewel:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
+  }
+
+  .button-jewel:active {
+    transform: translate(4px, 4px);
+    box-shadow: none;
   }
 
   /* Checkbox-to-Button Standard */
   .checkbox-button {
-    @apply flex items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer select-none;
-    @apply bg-white dark:bg-neutral-900 border-slate-200 dark:border-neutral-800 text-muted-foreground;
+    @apply flex items-center justify-between p-4 border-2 transition-all cursor-pointer select-none;
+    @apply bg-white dark:bg-neutral-900 border-black dark:border-white text-muted-foreground;
+    box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
   }
 
   .checkbox-button[aria-checked="true"] {
-    @apply bg-indigo-500/10 border-indigo-500 text-indigo-600 dark:text-indigo-400 shadow-jewel;
+    @apply bg-primary text-primary-foreground border-black dark:border-white;
+    box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
   }
 
-  /* Ambient Mesh Layers */
+  /* Ambient Mesh Layers -> Grid Background Only */
   .ambient-depth {
-    @apply fixed inset-0 z-[-1] pointer-events-none overflow-hidden opacity-30 dark:opacity-20;
-    background: radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 40%),
-      radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 40%);
+    @apply fixed inset-0 z-[-1] pointer-events-none overflow-hidden opacity-100;
+    /* Removed gradients, rely on grid pattern */
   }
 
   /* Hide number input spinners */
@@ -190,10 +207,15 @@
 
   /* Brutalist Grid Pattern */
   .bg-grid-pattern {
-    background-image: linear-gradient(to right, var(--border) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+    background-image: linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
     background-size: 40px 40px;
-    mask-image: linear-gradient(to bottom, white 80%, transparent 100%);
+    /* Removed mask */
+  }
+
+  .dark .bg-grid-pattern {
+    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
   }
 
   .hide-scrollbar::-webkit-scrollbar {
@@ -208,13 +230,14 @@
   /* Snappy Transitions (Performance Upgrade) */
   .transition-snappy {
     transition-property: all;
-    transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
-    transition-duration: 200ms;
+    transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
+    /* Instant snap */
+    transition-duration: 100ms;
   }
 
   .duration-snappy {
-    animation-duration: 200ms !important;
-    transition-duration: 200ms !important;
+    animation-duration: 100ms !important;
+    transition-duration: 100ms !important;
   }
 }
 

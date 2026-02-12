@@ -918,7 +918,53 @@ export type TranslationKeys =
     | 'Modi\'in'
     | 'Nazareth'
     | 'Lod'
-    | 'Ramla';
+    | 'Ramla'
+    | 'Akko'
+    | 'Afula'
+    | 'Arad'
+    | 'Ashkelon'
+    | 'Beit Shemesh'
+    | 'Bet Shemesh' // Alias
+    | 'Central'
+    | 'Dimona'
+    | 'Eilat'
+    | 'Elad'
+    | 'Givatayim'
+    | 'Hod HaSharon'
+    | 'Karmiel'
+    | 'Kfar Yona'
+    | 'Kiryat Ata'
+    | 'Kiryat Bialik'
+    | 'Kiryat Gat'
+    | 'Kiryat Malakhi'
+    | 'Kiryat Motzkin'
+    | 'Kiryat Ono'
+    | 'Kiryat Shmona'
+    | 'Kiryat Yam'
+    | 'Ma\'ale Adumim'
+    | 'Migdal HaEmek'
+    | 'Modi\'in Illit'
+    | 'Nahariya'
+    | 'Nazareth Illit'
+    | 'Nof HaGalil'
+    | 'Nes Ziona'
+    | 'Netivot'
+    | 'Ofakim'
+    | 'Or Akiva'
+    | 'Or Yehuda'
+    | 'Ramat HaSharon'
+    | 'Rosh HaAyin'
+    | 'Safed'
+    | 'Sderot'
+    | 'Tamra'
+    | 'Tayibe'
+    | 'Tiberias'
+    | 'Tirat Carmel'
+    | 'Umm al-Fahm'
+    | 'Yavne'
+    | 'Yehud-Monosson'
+    | 'Yokneam Illit'
+    | 'Zefat';
 
 export const translations: Record<string, any> = {
     he: {
@@ -1887,6 +1933,52 @@ export const translations: Record<string, any> = {
         'Nazareth': 'נצרת',
         'Lod': 'לוד',
         'Ramla': 'רמלה',
+        'Akko': 'עכו',
+        'Afula': 'עפולה',
+        'Arad': 'ערד',
+        'Ashkelon': 'אשקלון',
+        'Beit Shemesh': 'בית שמש',
+        'Bet Shemesh': 'בית שמש',
+        'Central': 'מרכז',
+        'Dimona': 'דימונה',
+        'Eilat': 'אילת',
+        'Elad': 'אלעד',
+        'Givatayim': 'גבעתיים',
+        'Hod HaSharon': 'הוד השרון',
+        'Karmiel': 'כרמיאל',
+        'Kfar Yona': 'כפר יונה',
+        'Kiryat Ata': 'קריית אתא',
+        'Kiryat Bialik': 'קריית ביאליק',
+        'Kiryat Gat': 'קריית גת',
+        'Kiryat Malakhi': 'קריית מלאכי',
+        'Kiryat Motzkin': 'קריית מוצקין',
+        'Kiryat Ono': 'קריית אונו',
+        'Kiryat Shmona': 'קריית שמונה',
+        'Kiryat Yam': 'קריית ים',
+        'Ma\'ale Adumim': 'מעלה אדומים',
+        'Migdal HaEmek': 'מגדל העמק',
+        'Modi\'in Illit': 'מודיעין עילית',
+        'Nahariya': 'נהריה',
+        'Nazareth Illit': 'נצרת עילית',
+        'Nof HaGalil': 'נוף הגליל',
+        'Nes Ziona': 'נס ציונה',
+        'Netivot': 'נתיבות',
+        'Ofakim': 'אופקים',
+        'Or Akiva': 'אור עקיבא',
+        'Or Yehuda': 'אור יהודה',
+        'Ramat HaSharon': 'רמת השרון',
+        'Rosh HaAyin': 'ראש העין',
+        'Safed': 'צפת',
+        'Sderot': 'שדרות',
+        'Tamra': 'טמרה',
+        'Tayibe': 'טייבה',
+        'Tiberias': 'טבריה',
+        'Tirat Carmel': 'טירת כרמל',
+        'Umm al-Fahm': 'אום אל-פחם',
+        'Yavne': 'יבנה',
+        'Yehud-Monosson': 'יהוד-מונוסון',
+        'Yokneam Illit': 'יוקנעם עילית',
+        'Zefat': 'צפת',
         legalProtection: 'חבילת הגנה משפטית',
         upgradeToUnlock: 'שדרגו לפתיחה',
         needsPaintingQuery: 'הדירה דורשת צביעה?',
@@ -2003,6 +2095,52 @@ export const translations: Record<string, any> = {
         'Nazareth': 'Nazareth',
         'Lod': 'Lod',
         'Ramla': 'Ramla',
+        'Akko': 'Akko',
+        'Afula': 'Afula',
+        'Arad': 'Arad',
+        'Ashkelon': 'Ashkelon',
+        'Beit Shemesh': 'Beit Shemesh',
+        'Bet Shemesh': 'Beit Shemesh',
+        'Central': 'Central',
+        'Dimona': 'Dimona',
+        'Eilat': 'Eilat',
+        'Elad': 'Elad',
+        'Givatayim': 'Givatayim',
+        'Hod HaSharon': 'Hod HaSharon',
+        'Karmiel': 'Karmiel',
+        'Kfar Yona': 'Kfar Yona',
+        'Kiryat Ata': 'Kiryat Ata',
+        'Kiryat Bialik': 'Kiryat Bialik',
+        'Kiryat Gat': 'Kiryat Gat',
+        'Kiryat Malakhi': 'Kiryat Malakhi',
+        'Kiryat Motzkin': 'Kiryat Motzkin',
+        'Kiryat Ono': 'Kiryat Ono',
+        'Kiryat Shmona': 'Kiryat Shmona',
+        'Kiryat Yam': 'Kiryat Yam',
+        'Ma\'ale Adumim': 'Ma\'ale Adumim',
+        'Migdal HaEmek': 'Migdal HaEmek',
+        'Modi\'in Illit': 'Modi\'in Illit',
+        'Nahariya': 'Nahariya',
+        'Nazareth Illit': 'Nazareth Illit',
+        'Nof HaGalil': 'Nof HaGalil',
+        'Nes Ziona': 'Nes Ziona',
+        'Netivot': 'Netivot',
+        'Ofakim': 'Ofakim',
+        'Or Akiva': 'Or Akiva',
+        'Or Yehuda': 'Or Yehuda',
+        'Ramat HaSharon': 'Ramat HaSharon',
+        'Rosh HaAyin': 'Rosh HaAyin',
+        'Safed': 'Safed',
+        'Sderot': 'Sderot',
+        'Tamra': 'Tamra',
+        'Tayibe': 'Tayibe',
+        'Tiberias': 'Tiberias',
+        'Tirat Carmel': 'Tirat Carmel',
+        'Umm al-Fahm': 'Umm al-Fahm',
+        'Yavne': 'Yavne',
+        'Yehud-Monosson': 'Yehud-Monosson',
+        'Yokneam Illit': 'Yokneam Illit',
+        'Zefat': 'Safed',
         indexByDate: 'Index by Date',
         manualRate: 'Manual Rate',
         legalProtection: 'Legal Safe Suite',

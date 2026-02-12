@@ -737,7 +737,7 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                                         >
                                             <option value="none">{t('notLinked')}</option>
                                             <option value="cpi">{t('linkedToCpi')}</option>
-                                            <option value="usd">{t('linkedToUsd')}</option>
+                                            <option value="housing">{t('linkedToHousing')}</option>
                                         </select>
                                     </div>
 

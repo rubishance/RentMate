@@ -174,17 +174,21 @@ module.exports = {
                 },
             },
             borderRadius: {
-                lg: "0.75rem",
-                md: "0.5rem",
-                sm: "0.375rem",
+                lg: "0px",
+                md: "0px",
+                sm: "0px",
+                DEFAULT: "0px",
+                full: "9999px", // Keep full for avatars/pills if needed, but defaults are strict
             },
             boxShadow: {
-                'sm': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-                'DEFAULT': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)',
-                'md': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
-                'lg': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
-                'xl': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
-                '2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                'sm': '1px 1px 0px 0px rgba(0,0,0,1)',
+                'DEFAULT': '3px 3px 0px 0px rgba(0,0,0,1)',
+                'md': '5px 5px 0px 0px rgba(0,0,0,1)',
+                'lg': '8px 8px 0px 0px rgba(0,0,0,1)',
+                'xl': '12px 12px 0px 0px rgba(0,0,0,1)',
+                '2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)', // Keep specific large drop for modals if needed, or replace
+                'none': 'none',
+                'brutal': '4px 4px 0px 0px #000000', // Specialized hard shadow
             },
         },
     },

@@ -1814,207 +1814,158 @@ export function AddContract() {
                                                             animate={{ opacity: 1, height: 'auto' }}
                                                             className="space-y-4 bg-secondary/5 p-4 rounded-2xl border border-dashed border-border"
                                                         >
-                                                            {/* Category Toggle: Currency vs Index */}
-                                                            <div className="space-y-2">
-                                                                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('linkageCategory')}</label>
-                                                                <div className="flex bg-secondary/30 p-1 rounded-xl gap-1">
-                                                                    {[
-                                                                        { label: t('indexOption'), val: 'index' },
-                                                                        { label: t('foreignCurrency'), val: 'currency' }
-                                                                    ].map(cat => (
-                                                                        <button
-                                                                            key={cat.val}
-                                                                            type="button"
-                                                                            onClick={() => {
-                                                                                const isNewCurrency = cat.val === 'currency';
-                                                                                setValue('linkageType', isNewCurrency ? 'usd' : 'cpi');
-                                                                                if (!formData.baseIndexDate) {
-                                                                                    setValue('baseIndexDate', formData.signingDate);
-                                                                                }
-                                                                            }}
-                                                                            className={cn(
-                                                                                "flex-1 py-2 text-xs font-bold rounded-lg transition-all border-none",
-                                                                                ((['usd', 'eur'].includes(formData.linkageType)) === (cat.val === 'currency'))
-                                                                                    ? "bg-white dark:bg-black text-foreground shadow-sm"
-                                                                                    : "text-muted-foreground hover:text-foreground bg-transparent"
-                                                                            )}
-                                                                        >
-                                                                            {cat.label}
-                                                                        </button>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-
-                                                            {/* Specific Selection */}
-                                                            {['usd', 'eur'].includes(formData.linkageType) ? (
+                                                            <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                                                {/* Index Choice Dropdown */}
                                                                 <div className="space-y-2">
-                                                                    <label className="text-sm font-medium">{t('foreignCurrency')}</label>
+                                                                    <label className="text-sm font-medium">{t('indexOption')}</label>
                                                                     <div className="relative">
                                                                         <select
-                                                                            value={formData.linkageType}
+                                                                            value={['usd', 'eur', 'construction'].includes(formData.linkageType) ? 'cpi' : formData.linkageType}
                                                                             onChange={(e) => setValue('linkageType', e.target.value as any)}
                                                                             className="w-full p-3 bg-background border border-border rounded-xl appearance-none"
                                                                         >
-                                                                            <option value="usd">{t('linkedToUsd')}</option>
-                                                                            <option value="eur">{t('linkedToEur')}</option>
+                                                                            <option value="cpi">{t('linkedToCpi')}</option>
+                                                                            <option value="housing">{t('linkedToHousing')}</option>
                                                                         </select>
                                                                         <ChevronDown className="absolute left-3 top-3.5 w-4 h-4 text-muted-foreground pointer-events-none" />
                                                                     </div>
                                                                 </div>
-                                                            ) : (
-                                                                <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                                                                    {/* Index Choice Dropdown */}
-                                                                    <div className="space-y-2">
-                                                                        <label className="text-sm font-medium">{t('indexOption')}</label>
-                                                                        <div className="relative">
-                                                                            <select
-                                                                                value={formData.linkageType}
-                                                                                onChange={(e) => setValue('linkageType', e.target.value as any)}
-                                                                                className="w-full p-3 bg-background border border-border rounded-xl appearance-none"
+
+                                                                {/* Base Index Rate & Date */}
+                                                                <div className="bg-background/80 p-4 rounded-xl border border-border/50 space-y-4">
+                                                                    <div className="space-y-3">
+                                                                        <div className="flex bg-secondary/30 p-1 rounded-lg gap-1">
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => {
+                                                                                    setValue('linkageSubType', 'base');
+                                                                                    setValue('baseIndexValue', '' as any);
+                                                                                }}
+                                                                                className={cn(
+                                                                                    "flex-1 py-1 text-[10px] font-bold rounded-md transition-all border-none",
+                                                                                    formData.linkageSubType !== 'known' ? "bg-white dark:bg-black shadow-sm" : "bg-transparent opacity-60"
+                                                                                )}
                                                                             >
-                                                                                <option value="cpi">{t('linkedToCpi')}</option>
-                                                                                <option value="housing">{t('linkedToHousing')}</option>
-                                                                                <option value="construction">{t('linkedToConstruction')}</option>
-                                                                            </select>
-                                                                            <ChevronDown className="absolute left-3 top-3.5 w-4 h-4 text-muted-foreground pointer-events-none" />
+                                                                                {t('indexByDate')}
+                                                                            </button>
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => {
+                                                                                    setValue('linkageSubType', 'known');
+                                                                                    setValue('baseIndexDate', '');
+                                                                                }}
+                                                                                className={cn(
+                                                                                    "px-3 py-1 text-[10px] font-bold rounded-md transition-all border-none",
+                                                                                    formData.linkageSubType === 'known' ? "bg-white dark:bg-black shadow-sm" : "bg-transparent opacity-60"
+                                                                                )}
+                                                                            >
+                                                                                {t('manualRate')}
+                                                                            </button>
                                                                         </div>
                                                                     </div>
 
-                                                                    {/* Base Index Rate & Date */}
-                                                                    <div className="bg-background/80 p-4 rounded-xl border border-border/50 space-y-4">
-                                                                        <div className="space-y-3">
-                                                                            <div className="flex bg-secondary/30 p-1 rounded-lg gap-1">
-                                                                                <button
-                                                                                    type="button"
-                                                                                    onClick={() => {
-                                                                                        setValue('linkageSubType', 'base');
-                                                                                        setValue('baseIndexValue', '' as any);
-                                                                                    }}
-                                                                                    className={cn(
-                                                                                        "flex-1 py-1 text-[10px] font-bold rounded-md transition-all border-none",
-                                                                                        formData.linkageSubType !== 'known' ? "bg-white dark:bg-black shadow-sm" : "bg-transparent opacity-60"
-                                                                                    )}
-                                                                                >
-                                                                                    {t('indexByDate')}
-                                                                                </button>
-                                                                                <button
-                                                                                    type="button"
-                                                                                    onClick={() => {
-                                                                                        setValue('linkageSubType', 'known');
-                                                                                        setValue('baseIndexDate', '');
-                                                                                    }}
-                                                                                    className={cn(
-                                                                                        "px-3 py-1 text-[10px] font-bold rounded-md transition-all border-none",
-                                                                                        formData.linkageSubType === 'known' ? "bg-white dark:bg-black shadow-sm" : "bg-transparent opacity-60"
-                                                                                    )}
-                                                                                >
-                                                                                    {t('manualRate')}
-                                                                                </button>
-                                                                            </div>
+                                                                    {formData.linkageSubType === 'known' ? (
+                                                                        <div className="space-y-1">
+                                                                            <label className="text-xs font-medium flex items-center gap-2">
+                                                                                {t('baseIndexValue')} <ConfidenceDot field="baseIndexValue" />
+                                                                            </label>
+                                                                            <input
+                                                                                type="text"
+                                                                                value={formatNumber(formData.baseIndexValue)}
+                                                                                onChange={(e) => {
+                                                                                    const val = parseNumber(e.target.value);
+                                                                                    if (/^\d*\.?\d*$/.test(val)) setValue('baseIndexValue', val as any);
+                                                                                }}
+                                                                                className="w-full p-2.5 bg-background border border-border rounded-lg no-spinner font-mono text-sm"
+                                                                                placeholder="e.g. 105.2"
+                                                                            />
                                                                         </div>
+                                                                    ) : (
+                                                                        <div className="space-y-1">
+                                                                            <label className="text-xs font-medium flex items-center gap-2">
+                                                                                {t('baseDate')}
+                                                                                {scannedQuotes.baseIndexDate && <Tooltip quote={scannedQuotes.baseIndexDate} />} <ConfidenceDot field="baseIndexDate" />
+                                                                            </label>
+                                                                            <DatePicker
+                                                                                value={formData.baseIndexDate ? parseISO(formData.baseIndexDate) : undefined}
+                                                                                onChange={(date) => setValue('baseIndexDate', date ? format(date, 'yyyy-MM-dd') : '')}
+                                                                                className="w-full text-sm"
+                                                                            />
+                                                                        </div>
+                                                                    )}
+                                                                </div>
 
-                                                                        {formData.linkageSubType === 'known' ? (
-                                                                            <div className="space-y-1">
-                                                                                <label className="text-xs font-medium flex items-center gap-2">
-                                                                                    {t('baseIndexValue')} <ConfidenceDot field="baseIndexValue" />
-                                                                                </label>
+                                                                {/* Index Type (מדד ידוע vs מדד קובע) */}
+                                                                <div className="space-y-2">
+                                                                    <label className="text-sm font-medium">{t('calculationMethod')}</label>
+                                                                    <div className="flex bg-secondary/30 p-1 rounded-xl gap-1">
+                                                                        {[
+                                                                            { label: t('knownIndexLabel'), val: 'known' },
+                                                                            { label: t('respectOfLabel'), val: 'respect_of' }
+                                                                        ].map(type => (
+                                                                            <button
+                                                                                key={type.val}
+                                                                                type="button"
+                                                                                onClick={() => setValue('linkageSubType', type.val as any)}
+                                                                                className={cn(
+                                                                                    "flex-1 py-1.5 text-xs font-bold rounded-lg transition-all border-none",
+                                                                                    (formData.linkageSubType === type.val)
+                                                                                        ? "bg-white dark:bg-black text-foreground shadow-sm"
+                                                                                        : "text-muted-foreground hover:text-foreground bg-transparent hover:opacity-100"
+                                                                                )}
+                                                                            >
+                                                                                {type.label}
+                                                                            </button>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Ceiling & Floor - At the bottom of index detail */}
+                                                                <div className="grid grid-cols-2 gap-3">
+                                                                    <div className="space-y-2">
+                                                                        <label className="flex items-center gap-2 cursor-pointer p-2 border border-border rounded-xl hover:bg-secondary/50 transition-colors">
+                                                                            <input
+                                                                                type="checkbox"
+                                                                                checked={formData.hasLinkageCeiling}
+                                                                                onChange={(e) => {
+                                                                                    setValue('hasLinkageCeiling', e.target.checked);
+                                                                                    if (!e.target.checked) setValue('linkageCeiling', undefined);
+                                                                                }}
+                                                                                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                                                            />
+                                                                            <span className="text-xs font-bold">{t('linkageCeiling')}</span>
+                                                                        </label>
+                                                                        {formData.hasLinkageCeiling && (
+                                                                            <div className="relative mt-1">
                                                                                 <input
                                                                                     type="text"
-                                                                                    value={formatNumber(formData.baseIndexValue)}
+                                                                                    value={formatNumber(formData.linkageCeiling)}
                                                                                     onChange={(e) => {
                                                                                         const val = parseNumber(e.target.value);
-                                                                                        if (/^\d*\.?\d*$/.test(val)) setValue('baseIndexValue', val as any);
+                                                                                        if (/^\d*\.?\d*$/.test(val)) setValue('linkageCeiling', val as any);
                                                                                     }}
-                                                                                    className="w-full p-2.5 bg-background border border-border rounded-lg no-spinner font-mono text-sm"
-                                                                                    placeholder="e.g. 105.2"
+                                                                                    className="w-full p-2 bg-background border border-border rounded-lg text-xs no-spinner"
+                                                                                    placeholder="%"
                                                                                 />
-                                                                            </div>
-                                                                        ) : (
-                                                                            <div className="space-y-1">
-                                                                                <label className="text-xs font-medium flex items-center gap-2">
-                                                                                    {t('baseDate')}
-                                                                                    {scannedQuotes.baseIndexDate && <Tooltip quote={scannedQuotes.baseIndexDate} />} <ConfidenceDot field="baseIndexDate" />
-                                                                                </label>
-                                                                                <DatePicker
-                                                                                    value={formData.baseIndexDate ? parseISO(formData.baseIndexDate) : undefined}
-                                                                                    onChange={(date) => setValue('baseIndexDate', date ? format(date, 'yyyy-MM-dd') : '')}
-                                                                                    className="w-full text-sm"
-                                                                                />
+                                                                                <span className="absolute right-3 top-2 text-muted-foreground text-[10px]">%</span>
                                                                             </div>
                                                                         )}
                                                                     </div>
 
-                                                                    {/* Index Type (מדד ידוע vs מדד קובע) */}
                                                                     <div className="space-y-2">
-                                                                        <label className="text-sm font-medium">{t('calculationMethod')}</label>
-                                                                        <div className="flex bg-secondary/30 p-1 rounded-xl gap-1">
-                                                                            {[
-                                                                                { label: t('knownIndexLabel'), val: 'known' },
-                                                                                { label: t('respectOfLabel'), val: 'respect_of' }
-                                                                            ].map(type => (
-                                                                                <button
-                                                                                    key={type.val}
-                                                                                    type="button"
-                                                                                    onClick={() => setValue('linkageSubType', type.val as any)}
-                                                                                    className={cn(
-                                                                                        "flex-1 py-1.5 text-xs font-bold rounded-lg transition-all border-none",
-                                                                                        (formData.linkageSubType === type.val)
-                                                                                            ? "bg-white dark:bg-black text-foreground shadow-sm"
-                                                                                            : "text-muted-foreground hover:text-foreground bg-transparent hover:opacity-100"
-                                                                                    )}
-                                                                                >
-                                                                                    {type.label}
-                                                                                </button>
-                                                                            ))}
-                                                                        </div>
-                                                                    </div>
-
-                                                                    {/* Ceiling & Floor - At the bottom of index detail */}
-                                                                    <div className="grid grid-cols-2 gap-3">
-                                                                        <div className="space-y-2">
-                                                                            <label className="flex items-center gap-2 cursor-pointer p-2 border border-border rounded-xl hover:bg-secondary/50 transition-colors">
-                                                                                <input
-                                                                                    type="checkbox"
-                                                                                    checked={formData.hasLinkageCeiling}
-                                                                                    onChange={(e) => {
-                                                                                        setValue('hasLinkageCeiling', e.target.checked);
-                                                                                        if (!e.target.checked) setValue('linkageCeiling', undefined);
-                                                                                    }}
-                                                                                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-                                                                                />
-                                                                                <span className="text-xs font-bold">{t('linkageCeiling')}</span>
-                                                                            </label>
-                                                                            {formData.hasLinkageCeiling && (
-                                                                                <div className="relative mt-1">
-                                                                                    <input
-                                                                                        type="text"
-                                                                                        value={formatNumber(formData.linkageCeiling)}
-                                                                                        onChange={(e) => {
-                                                                                            const val = parseNumber(e.target.value);
-                                                                                            if (/^\d*\.?\d*$/.test(val)) setValue('linkageCeiling', val as any);
-                                                                                        }}
-                                                                                        className="w-full p-2 bg-background border border-border rounded-lg text-xs no-spinner"
-                                                                                        placeholder="%"
-                                                                                    />
-                                                                                    <span className="absolute right-3 top-2 text-muted-foreground text-[10px]">%</span>
-                                                                                </div>
-                                                                            )}
-                                                                        </div>
-
-                                                                        <div className="space-y-2">
-                                                                            <label className="flex items-center gap-2 cursor-pointer p-2 border border-border rounded-xl hover:bg-secondary/50 transition-colors h-[38px]">
-                                                                                <input
-                                                                                    type="checkbox"
-                                                                                    checked={formData.linkageFloor === 0}
-                                                                                    onChange={(e) => setValue('linkageFloor', e.target.checked ? 0 : undefined)}
-                                                                                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-                                                                                />
-                                                                                <span className="text-xs font-bold">{t('floorIndex')}</span>
-                                                                            </label>
-                                                                        </div>
+                                                                        <label className="flex items-center gap-2 cursor-pointer p-2 border border-border rounded-xl hover:bg-secondary/50 transition-colors h-[38px]">
+                                                                            <input
+                                                                                type="checkbox"
+                                                                                checked={formData.linkageFloor === 0}
+                                                                                onChange={(e) => setValue('linkageFloor', e.target.checked ? 0 : undefined)}
+                                                                                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                                                            />
+                                                                            <span className="text-xs font-bold">{t('floorIndex')}</span>
+                                                                        </label>
                                                                     </div>
                                                                 </div>
-                                                            )}
+                                                            </div>
+
                                                         </motion.div>
                                                     )}
                                                 </div>
