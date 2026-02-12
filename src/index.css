@@ -4,70 +4,96 @@
 
 @layer base {
   :root {
-    /* Premium Modern Palette - Midnight Navy & Soft White */
-    --background: 210 20% 98%;
-    /* Soft Cool Off-White */
-    --foreground: 222 47% 11%;
-    /* Midnight Navy (Dark) */
+    /* Brutalist-lite SaaS Palette - High Contrast */
+
+    /* Backgrounds: Alternating White & Charcoal */
+    --background: 0 0% 100%;
+    /* White */
+    --foreground: 137 13% 10%;
+    /* #171e19 (Charcoal) */
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 137 13% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 137 13% 10%;
 
-    --primary: 222 47% 11%;
-    /* Midnight Navy */
-    --primary-foreground: 210 40% 98%;
+    /* Primary: Golden Yellow */
+    --primary: 46 100% 74%;
+    /* #ffe17c */
+    --primary-foreground: 137 13% 10%;
+    /* Charcoal text on Yellow */
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 137 13% 10%;
+    /* Charcoal */
+    --secondary-foreground: 0 0% 100%;
+    /* White text */
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 137 13% 96%;
+    /* #f4f6f5 (Charcoal-50) */
+    --muted-foreground: 167 9% 45%;
+    /* #75918b (Charcoal-400) */
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222 47% 11%;
+    --accent: 46 100% 74%;
+    /* Golden Yellow */
+    --accent-foreground: 137 13% 10%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 222 47% 11%;
+    /* Borders: Charcoal/10% */
+    --border: 137 13% 10%;
+    /* #171e19 */
+    --input: 137 13% 10%;
+    --ring: 46 100% 74%;
+    /* Golden Ring */
 
-    --radius: 0.75rem;
+    --radius: 0px;
+    /* Brutalist sharp edges */
   }
 
   .dark {
-    --background: 222 47% 6%;
-    /* Deep Navy Black */
-    --foreground: 210 40% 98%;
+    /* Brutalist Dark Mode - Cyber-Noir */
 
-    --card: 222 47% 8%;
-    --card-foreground: 210 40% 98%;
+    /* Backgrounds: Charcoal & Deep Black */
+    --background: 137 13% 10%;
+    /* #171e19 (Charcoal) */
+    --foreground: 0 0% 100%;
+    /* White */
 
-    --popover: 222 47% 6%;
-    --popover-foreground: 210 40% 98%;
+    --card: 137 20% 5%;
+    /* #0a0f0d (Deep Black) */
+    --card-foreground: 0 0% 100%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222 47% 9%;
+    --popover: 137 20% 5%;
+    --popover-foreground: 0 0% 100%;
 
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
+    /* Primary: Golden Yellow (High Visibility) */
+    --primary: 46 100% 74%;
+    /* #ffe17c */
+    --primary-foreground: 137 13% 10%;
+    /* Charcoal text */
 
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
+    --secondary: 167 9% 45%;
+    /* #75918b (Sage-400) */
+    --secondary-foreground: 137 13% 10%;
 
-    --accent: 217 33% 17%;
-    --accent-foreground: 210 40% 98%;
+    --muted: 137 13% 15%;
+    /* #2d3b38 (Charcoal-800) */
+    --muted-foreground: 167 15% 72%;
+    /* #b7c6c2 (Sage) */
+
+    --accent: 46 100% 74%;
+    --accent-foreground: 137 13% 10%;
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 212 27% 84%;
+    /* Borders: Sage/20% */
+    --border: 167 15% 72% / 0.15;
+    /* #b7c6c2 with opacity */
+    --input: 137 13% 15%;
+    --ring: 46 100% 74%;
   }
 
   * {
@@ -162,6 +188,14 @@
     -moz-appearance: textfield;
   }
 
+  /* Brutalist Grid Pattern */
+  .bg-grid-pattern {
+    background-image: linear-gradient(to right, var(--border) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: linear-gradient(to bottom, white 80%, transparent 100%);
+  }
+
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
   }
@@ -201,12 +235,22 @@
   /* Language-specific fonts */
   [dir="rtl"],
   [lang="he"] {
-    font-family: 'Assistant', 'Rubik', sans-serif;
+    font-family: 'Satoshi', 'Outfit', 'Rubik', sans-serif;
   }
 
   [dir="ltr"],
   [lang="en"] {
-    font-family: 'Outfit', 'Inter', sans-serif;
+    font-family: 'Satoshi', 'Outfit', 'Inter', sans-serif;
+  }
+
+  /* Brutalist Typography Globals */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading uppercase tracking-normal leading-[0.9];
   }
 
   /* Dark mode text color fixes */
