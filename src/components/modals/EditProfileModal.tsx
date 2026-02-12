@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { X, Save, User as UserIcon, Loader2, Edit } from 'lucide-react';
-import { MascotPopIn } from '../common/MascotPopIn';
 import { supabase } from '../../lib/supabase';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Checkbox } from '../ui/Checkbox';
@@ -191,9 +190,6 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                         </>
                     )}
                 </div>
-
-                {/* Renty Pop-In */}
-                <MascotPopIn position="bottom-right" className="translate-x-4 translate-y-4" />
             </div>
         </div>
     );
