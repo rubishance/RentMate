@@ -41,22 +41,6 @@ export function SmartActionsRow() {
             gradient: 'from-blue-500/20 to-indigo-500/20 hover:from-blue-500/30 hover:to-indigo-500/30 border-blue-500/20',
             onClick: () => navigate('/properties?tab=maintenance&action=log'),
             variant: 'standard'
-        },
-        {
-            id: 'request_maintenance',
-            icon: Wrench,
-            label: t('maintenanceRequest') || 'Maintenance',
-            gradient: 'from-orange-500/20 to-red-500/20 hover:from-orange-500/30 hover:to-red-500/30 border-orange-500/20',
-            onClick: () => navigate('/properties?tab=maintenance&action=new'),
-            variant: 'standard'
-        },
-        {
-            id: 'message_tenant',
-            icon: MessageCircle,
-            label: t('messageTenant') || 'Message',
-            gradient: 'from-violet-500/20 to-purple-500/20 hover:from-violet-500/30 hover:to-purple-500/30 border-violet-500/20',
-            onClick: () => navigate('/contacts'), // Assuming contacts or similar
-            variant: 'standard'
         }
     ];
 

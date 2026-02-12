@@ -181,5 +181,57 @@ export const articles: ArticleMetadata[] = [
         description_he: 'למדו כיצד להשתמש בכתובת log@rentmate.co.il כדי לסנכרן אוטומטית תקשורת עם לקוחות וקבצים מצורפים ישירות להיסטוריית ה-CRM של RentMate.',
         keywords_en: ['email forwarding', 'CRM logging', 'admin tools', 'support tickets'],
         keywords_he: ['העברת אימייל', 'תיעוד CRM', 'כלי ניהול', 'קריאות שירות']
+    },
+    {
+        slug: 'digital-organization-tips',
+        title_en: 'Digital Organization for Rental Properties: A Modern Approach',
+        title_he: 'ארגון דיגיטלי לנכסי השכרה: גישה מודרנית',
+        category: 'Property Management',
+        category_he: 'ניהול נכסים',
+        readTime: 4,
+        date: '2026-02-12',
+        description_en: 'Managing rental properties in 2026 requires more than just collecting rent checks. Digital organization has become essential for efficient property management.',
+        description_he: 'ניהול נכסי השכרה ב-2026 דורש יותר מסתם גביית שיקי שכירות. ארגון דיגיטלי הפך להכרחי לניהול יעיל של נכסים.',
+        keywords_en: ['digital organization', 'cloud storage', 'property management', 'automation'],
+        keywords_he: ['ארגון דיגיטלי', 'אחסון בענן', 'ניהול נכסים', 'אוטומציה']
+    },
+    {
+        slug: 'tenant-screening-guide',
+        title_en: 'Tenant Screening: Finding Reliable Renters',
+        title_he: 'סינון שוכרים: מציאת דיירים אמינים',
+        category: 'Property Management',
+        category_he: 'ניהול נכסים',
+        readTime: 5,
+        date: '2026-02-12',
+        description_en: 'Finding the right tenant can make or break your rental experience. Learn how to screen tenants effectively without crossing legal boundaries.',
+        description_he: 'מציאת השוכר הנכון יכולה לקבוע את הצלחת ההשקעה. למדו כיצד לסנן שוכרים ביעילות מבלי לחצות גבולות חוקיים.',
+        keywords_en: ['tenant screening', 'background check', 'rental application', 'tenant verification'],
+        keywords_he: ['סינון שוכרים', 'בדיקת רקע', 'בקשת שכירות', 'אימות שוכר']
+    },
+    {
+        slug: 'preventive-maintenance-schedule',
+        title_en: 'Preventive Maintenance: Protecting Your Investment',
+        title_he: 'תחזוקה מונעת: הגנה על ההשקעה שלכם',
+        category: 'Property Management',
+        category_he: 'ניהול נכסים',
+        readTime: 6,
+        date: '2026-02-12',
+        description_en: 'A well-maintained property attracts better tenants and avoids costly repairs. Discover the secret to long-term profitability in rental management.',
+        description_he: 'נכס מתוחזק היטב מושך שוכרים טובים יותר ומונע תיקונים יקרים. גלו את הסוד לרווחיות ארוכת טווח בניהול נכסים.',
+        keywords_en: ['preventive maintenance', 'maintenance schedule', 'property upkeep', 'HVAC'],
+        keywords_he: ['תחזוקה מונעת', 'לוח תחזוקה', 'תחזוקת נכס', 'מיזוג אוויר']
+    },
+    {
+        slug: 'israeli-rental-market-faq',
+        title_en: 'Israeli Rental Market FAQ: Everything You Need to Know',
+        title_he: 'שוק השכירות הישראלי: שאלות ותשובות וכל מה שצריך לדעת',
+        category: 'Legal & Regulations',
+        category_he: 'חוקים ותקנות',
+        readTime: 4,
+        date: '2026-02-12',
+        description_en: 'Navigate the unique financial, legal, and cultural landscape of the Israeli rental market using professional terminology and legal guidelines.',
+        description_he: 'נווטו בנוף הפיננסי, המשפטי והתרבותי הייחודי של שוק השכירות הישראלי תוך שימוש במונחים מקצועיים והנחיות משפטיות.',
+        keywords_en: ['rental market faq', 'israel rental laws', 'arnona', 'guarantees'],
+        keywords_he: ['שאלות ותשובות שכירות', 'חוקי שכירות בישראל', 'ארנונה', 'ערבויות']
     }
 ];
