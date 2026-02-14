@@ -4,323 +4,117 @@
 
 @layer base {
   :root {
-    /* Brutalist-lite SaaS Palette - High Contrast */
-
-    /* Backgrounds: Alternating White & Charcoal */
+    /* Trust Blue Theme - Light Mode */
     --background: 0 0% 100%;
-    /* White */
-    --foreground: 137 13% 10%;
-    /* #171e19 (Charcoal) */
+    --foreground: 222.2 84% 4.9%;
 
     --card: 0 0% 100%;
-    --card-foreground: 137 13% 10%;
+    --card-foreground: 222.2 84% 4.9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 137 13% 10%;
+    --popover-foreground: 222.2 84% 4.9%;
 
-    /* Primary: Golden Yellow */
-    --primary: 46 100% 74%;
-    /* #ffe17c */
-    --primary-foreground: 137 13% 10%;
-    /* Charcoal text on Yellow */
+    /* Trust Blue 600 */
+    --primary: 201 96% 32%;
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 137 13% 10%;
-    /* Charcoal */
-    --secondary-foreground: 0 0% 100%;
-    /* White text */
+    /* Professional Teal 600 */
+    --secondary: 175 84% 32%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 137 13% 96%;
-    /* #f4f6f5 (Charcoal-50) */
-    --muted-foreground: 167 9% 45%;
-    /* #75918b (Charcoal-400) */
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 46 100% 74%;
-    /* Golden Yellow */
-    --accent-foreground: 137 13% 10%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 210 40% 98%;
 
-    /* Borders: Charcoal/10% */
-    --border: 137 13% 10%;
-    /* #171e19 */
-    --input: 137 13% 10%;
-    --ring: 46 100% 74%;
-    /* Golden Ring */
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 201 96% 32%;
 
-    --radius: 0px;
-    /* Brutalist sharp edges */
+    --radius: 0.5rem;
   }
 
   .dark {
-    /* Brutalist Dark Mode - Cyber-Noir */
+    /* Trust Blue Theme - Dark Mode */
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
 
-    /* Backgrounds: Charcoal & Deep Black */
-    --background: 137 13% 10%;
-    /* #171e19 (Charcoal) */
-    --foreground: 0 0% 100%;
-    /* White */
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
 
-    --card: 137 20% 5%;
-    /* #0a0f0d (Deep Black) */
-    --card-foreground: 0 0% 100%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
 
-    --popover: 137 20% 5%;
-    --popover-foreground: 0 0% 100%;
+    /* Trust Blue 500 for better visibility in dark */
+    --primary: 201 96% 32%;
+    --primary-foreground: 210 40% 98%;
 
-    /* Primary: Golden Yellow (High Visibility) */
-    --primary: 46 100% 74%;
-    /* #ffe17c */
-    --primary-foreground: 137 13% 10%;
-    /* Charcoal text */
+    --secondary: 175 84% 32%;
+    --secondary-foreground: 210 40% 98%;
 
-    --secondary: 167 9% 45%;
-    /* #75918b (Sage-400) */
-    --secondary-foreground: 137 13% 10%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
 
-    --muted: 137 13% 15%;
-    /* #2d3b38 (Charcoal-800) */
-    --muted-foreground: 167 15% 72%;
-    /* #b7c6c2 (Sage) */
-
-    --accent: 46 100% 74%;
-    --accent-foreground: 137 13% 10%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 210 40% 98%;
 
-    /* Borders: Sage/20% - Harder contrasts */
-    --border: 167 15% 72%;
-    /* #b7c6c2 (Solid Sage for visibility) */
-    --input: 137 13% 15%;
-    --ring: 46 100% 74%;
-  }
-
-  * {
-    @apply border-border;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  body {
-    @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
-  }
-}
-
-@layer utilities {
-
-  /* Brutalist Shadows */
-  .shadow-minimal {
-    box-shadow: 1px 1px 0px 0px rgba(0, 0, 0, 1);
-  }
-
-  .shadow-premium {
-    box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
-  }
-
-  .shadow-premium-dark {
-    box-shadow: 4px 4px 0px 0px #ffe17c;
-    /* Golden shadow in dark mode */
-  }
-
-  .shadow-jewel {
-    box-shadow: 3px 3px 0px 0px rgba(0, 0, 0, 1);
-  }
-
-  /* Glassmorphism -> Solid Brutalist Surfaces */
-  .glass-premium {
-    @apply bg-white dark:bg-black border-2 border-black dark:border-white;
-    box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
-  }
-
-  .dark .glass-premium {
-    box-shadow: 4px 4px 0px 0px #ffe17c;
-  }
-
-  .glass-morphism {
-    @apply bg-white dark:bg-black border-2 border-black dark:border-white;
-  }
-
-  /* Bionic Density Utilities */
-  .bionic-container {
-    @apply px-4 md:px-10 max-w-7xl mx-auto;
-  }
-
-  .bionic-grid {
-    @apply grid gap-6;
-  }
-
-  /* Typography Compression Utilities (Mobile-First) */
-  .h1-bionic {
-    @apply text-3xl md:text-5xl lg:text-6xl font-black tracking-tighter text-foreground leading-tight lowercase;
-  }
-
-  .h2-bionic {
-    @apply text-xl md:text-3xl lg:text-4xl font-black text-foreground tracking-tight lowercase;
-  }
-
-  /* Jewel Button Utility -> Brutalist Button */
-  .button-jewel {
-    @apply bg-primary text-primary-foreground font-heading uppercase tracking-wider border-2 border-black dark:border-white transition-all;
-    box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
-  }
-
-  .button-jewel:hover {
-    transform: translate(2px, 2px);
-    box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
-  }
-
-  .button-jewel:active {
-    transform: translate(4px, 4px);
-    box-shadow: none;
-  }
-
-  /* Checkbox-to-Button Standard */
-  .checkbox-button {
-    @apply flex items-center justify-between p-4 border-2 transition-all cursor-pointer select-none;
-    @apply bg-white dark:bg-neutral-900 border-black dark:border-white text-muted-foreground;
-    box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
-  }
-
-  .checkbox-button[aria-checked="true"] {
-    @apply bg-primary text-primary-foreground border-black dark:border-white;
-    box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
-  }
-
-  /* Ambient Mesh Layers -> Grid Background Only */
-  .ambient-depth {
-    @apply fixed inset-0 z-[-1] pointer-events-none overflow-hidden opacity-100;
-    /* Removed gradients, rely on grid pattern */
-  }
-
-  /* Hide number input spinners */
-  .no-spinner::-webkit-outer-spin-button,
-  .no-spinner::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-
-  .no-spinner {
-    -moz-appearance: textfield;
-  }
-
-  /* Brutalist Grid Pattern */
-  .bg-grid-pattern {
-    background-image: linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
-    background-size: 40px 40px;
-    /* Removed mask */
-  }
-
-  .dark .bg-grid-pattern {
-    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-  }
-
-  .hide-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-
-  .hide-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  /* Snappy Transitions (Performance Upgrade) */
-  .transition-snappy {
-    transition-property: all;
-    transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
-    /* Instant snap */
-    transition-duration: 100ms;
-  }
-
-  .duration-snappy {
-    animation-duration: 100ms !important;
-    transition-duration: 100ms !important;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
   }
 }
 
 @layer base {
-
-  html,
-  body,
-  #root {
-    height: 100%;
-    margin: 0;
-    padding: 0;
+  * {
+    @apply border-border;
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 
-  /* Language-specific fonts */
-  [dir="rtl"],
-  [lang="he"] {
-    font-family: 'Satoshi', 'Outfit', 'Rubik', sans-serif;
-  }
-
-  [dir="ltr"],
-  [lang="en"] {
-    font-family: 'Satoshi', 'Outfit', 'Inter', sans-serif;
-  }
-
-  /* Brutalist Typography Globals */
+  /* Typography Defaults */
   h1,
   h2,
   h3,
   h4,
   h5,
   h6 {
-    @apply font-heading uppercase tracking-normal leading-[0.9];
+    @apply font-heading tracking-tight text-foreground;
   }
 
-  /* Dark mode text color fixes */
-  .dark h1,
-  .dark h2,
-  .dark h3,
-  .dark h4,
-  .dark h5,
-  .dark h6 {
-    @apply text-foreground;
+  h1 {
+    @apply text-4xl font-extrabold lg:text-5xl;
   }
 
-  .dark p,
-  .dark span:not([class*="text-"]) {
-    @apply text-muted-foreground;
+  h2 {
+    @apply text-3xl font-semibold first:mt-0;
   }
 
-  /* Accessibility: High Contrast Focus Indicator */
-  :focus-visible {
-    outline: 2px solid theme('colors.foreground');
-    outline-offset: 4px;
+  h3 {
+    @apply text-2xl font-semibold;
   }
 
-  /* Custom Scrollbar for Desktop */
-  @media (min-width: 1024px) {
-    ::-webkit-scrollbar {
-      width: 10px;
-    }
+  h4 {
+    @apply text-xl font-semibold;
+  }
 
-    ::-webkit-scrollbar-track {
-      @apply bg-transparent;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      @apply bg-slate-200 dark:bg-neutral-800 rounded-full border-4 border-solid border-transparent bg-clip-padding;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      @apply bg-slate-300 dark:bg-neutral-700;
-    }
+  p {
+    @apply leading-7 [&:not(:first-child)]:mt-6;
   }
 }
 
-/* Page Transition Animations */
+/* Page Transitions */
 .animate-in {
   animation-duration: 0.3s;
-  /* Accelerated from 0.7s */
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   animation-fill-mode: both;
 }
@@ -338,10 +132,12 @@
 @keyframes slideInFromBottom {
   from {
     transform: translateY(20px);
+    opacity: 0;
   }
 
   to {
     transform: translateY(0);
+    opacity: 1;
   }
 }
 
@@ -349,23 +145,27 @@
   animation-name: fadeIn;
 }
 
-.slide-in-from-bottom-6 {
+.slide-in-from-bottom {
   animation-name: slideInFromBottom;
 }
 
-/* Safe Mobile Fix: Prevent iOS zoom on inputs */
-input,
-select,
-textarea {
-  font-size: 16px !important;
+/* Scrollbar Styling */
+@media (min-width: 1024px) {
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-300 dark:bg-slate-700 rounded-full hover:bg-slate-400 dark:hover:bg-slate-600 transition-colors;
+  }
 }
 
-/* Safe Mobile Fix: Better touch response */
-button,
-a {
-  touch-action: manipulation;
-}
-
+/* RTL Support */
 [dir="rtl"] {
   direction: rtl;
 }
@@ -376,51 +176,43 @@ a {
   text-align: right;
 }
 
-/* Google Maps Autocomplete Dropdown Fix */
+/* Safe Area Fixes */
+input,
+select,
+textarea {
+  font-size: 16px !important;
+}
+
+button,
+a {
+  touch-action: manipulation;
+}
+
+/* Google Maps Autocomplete Styling Override */
 .pac-container {
-  z-index: 999999 !important;
-  border-radius: 1.5rem !important;
-  border: 1px solid rgba(0, 0, 0, 0.05) !important;
-  box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.15) !important;
-  margin-top: 8px !important;
-  background-color: white !important;
-  pointer-events: auto !important;
+  @apply z-[9999] rounded-xl border border-slate-100 shadow-xl mt-2 bg-white font-sans;
 }
 
 .dark .pac-container {
-  background-color: #171717 !important;
-  border-color: #262626 !important;
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5) !important;
+  @apply bg-slate-900 border-slate-800 shadow-2xl;
 }
 
 .pac-item {
-  padding: 12px 16px !important;
-  cursor: pointer !important;
-  border-top: 1px solid rgba(0, 0, 0, 0.02) !important;
+  @apply px-4 py-3 cursor-pointer border-t border-slate-50 hover:bg-slate-50 transition-colors;
 }
 
 .dark .pac-item {
-  border-color: #262626 !important;
-  color: #a3a3a3 !important;
+  @apply border-slate-800 hover:bg-slate-800 text-slate-400;
 }
 
 .pac-item:first-child {
-  border-top: none !important;
-}
-
-.pac-item:hover {
-  background-color: #f8fafc !important;
-}
-
-.dark .pac-item:hover {
-  background-color: #262626 !important;
+  @apply border-t-0;
 }
 
 .pac-item-query {
-  font-weight: 700 !important;
-  color: #0f172a !important;
+  @apply font-semibold text-slate-900;
 }
 
 .dark .pac-item-query {
-  color: white !important;
+  @apply text-white;
 }

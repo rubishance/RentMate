@@ -1,0 +1,3 @@
+-- Placeholder to resolve migration history mismatch
+-- Remote has this version applied, but local file was missing.
+-- Created to allow db push to proceed.

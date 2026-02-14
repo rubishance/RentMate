@@ -7,7 +7,7 @@ import { RentyCommandCenter } from '../components/dashboard/RentyCommandCenter';
 import { useDataCache } from '../contexts/DataCacheContext';
 import { DashboardHero } from '../components/dashboard/DashboardHero';
 import { DEFAULT_WIDGET_LAYOUT, WidgetConfig, DashboardData, WIDGET_REGISTRY } from '../components/dashboard/WidgetRegistry';
-import { Edit3Icon, CheckIcon, FileSearch, ArrowRight, Crown, Sparkles } from 'lucide-react';
+import { Edit3Icon, CheckIcon, FileSearch } from 'lucide-react';
 import { ReportGenerationModal } from '../components/modals/ReportGenerationModal';
 import { cn } from '../lib/utils';
 import { userScoringService } from '../services/user-scoring.service';
@@ -18,6 +18,7 @@ import { BionicSpotlight } from '../components/onboarding/BionicSpotlight';
 import { useAuth } from '../contexts/AuthContext';
 import { SmartActionsRow } from '../components/dashboard/SmartActionsRow';
 import { SetupProgressWidget } from '../components/dashboard/SetupProgressWidget';
+import { Button } from '../components/ui/Button';
 
 export function Dashboard() {
     const { lang, t } = useTranslation();
@@ -187,10 +188,10 @@ export function Dashboard() {
     }
 
     return (
-        <main className="min-h-screen bg-slate-50 dark:bg-neutral-950 transition-colors duration-300 pb-40">
+        <div className="space-y-8 md:space-y-10 pb-8">
             <BionicWelcomeOverlay firstName={firstName} />
 
-            <div className="max-w-7xl mx-auto px-4 md:px-10 pt-8 md:pt-12 space-y-8 md:space-y-12">
+            <div className="space-y-8 md:space-y-10">
                 <DashboardHero firstName={firstName} feedItems={feedItemsWithActions} />
 
                 {/* Gamification: Setup Progress (Shows only if onboarding not complete) */}
@@ -209,33 +210,35 @@ export function Dashboard() {
                     <SmartActionsRow />
 
                     <div className="flex items-center justify-end gap-3">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 backdrop-blur-md rounded-full border border-white/10 mr-auto">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-full border border-primary/10 mr-auto">
                             <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-white/40">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                                 {lang === 'he' ? 'מחובר' : 'online'}
                             </span>
                         </div>
 
-                        <button
+                        <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => setIsEditingLayout(!isEditingLayout)}
                             className={cn(
-                                "flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300",
-                                isEditingLayout
-                                    ? "bg-indigo-600 text-white shadow-premium scale-105"
-                                    : "bg-white/50 dark:bg-black/20 text-slate-600 dark:text-slate-400 border border-slate-100 dark:border-white/5 hover:bg-white dark:hover:bg-white/10"
+                                "text-[10px] uppercase tracking-widest font-bold",
+                                isEditingLayout && "bg-primary text-primary-foreground border-primary"
                             )}
                         >
-                            {isEditingLayout ? <CheckIcon className="w-3.5 h-3.5" /> : <Edit3Icon className="w-3.5 h-3.5" />}
+                            {isEditingLayout ? <CheckIcon className="w-3.5 h-3.5 mr-2" /> : <Edit3Icon className="w-3.5 h-3.5 mr-2" />}
                             {isEditingLayout ? t('saveLayout') : t('editLayout')}
-                        </button>
+                        </Button>
 
-                        <button
+                        <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => setIsReportModalOpen(true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-white/50 dark:bg-black/20 text-slate-600 dark:text-slate-400 border border-slate-100 dark:border-white/5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white dark:hover:bg-white/10 transition-all duration-300"
+                            className="text-[10px] uppercase tracking-widest font-bold"
                         >
-                            <FileSearch className="w-3.5 h-3.5" />
+                            <FileSearch className="w-3.5 h-3.5 mr-2" />
                             {t('generateReport')}
-                        </button>
+                        </Button>
                     </div>
                 </div>
 
@@ -244,7 +247,7 @@ export function Dashboard() {
                 </div>
 
                 {/* Stabilized Grid (Manual Mapping) */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {layout
                         .filter(w => w.visible)
                         .sort((a, b) => a.order - b.order)
@@ -276,6 +279,6 @@ export function Dashboard() {
                     : 'Talk to Renty, upload files, and manage everything in one place.'}
                 position="bottom"
             />
-        </main>
+        </div>
     );
 }

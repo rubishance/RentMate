@@ -32,6 +32,7 @@ import { useStack } from '../contexts/StackContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Skeleton } from '../components/ui/Skeleton';
+import { Card, CardContent } from '../components/ui/Card';
 
 type ExtendedProperty = Property & {
     contracts: {
@@ -309,7 +310,7 @@ export function Properties() {
             ) : (
                 /* Properties Grid */
                 <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 px-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-4 md:px-8">
                         {properties.map((property) => {
                             const today = format(new Date(), 'yyyy-MM-dd');
                             const activeContract = property.contracts?.find(c =>
@@ -318,125 +319,92 @@ export function Properties() {
                                 (!c.end_date || c.end_date >= today)
                             );
                             return (
-                                <div
+                                <Card
                                     key={property.id}
                                     onClick={() => handleView(property)}
-                                    className="glass-premium dark:bg-neutral-900/60 group flex flex-col h-full border-white/10 overflow-hidden rounded-[3rem] shadow-minimal hover:shadow-jewel transition-all duration-300 cursor-pointer relative"
+                                    className="group flex flex-col h-full overflow-hidden rounded-[2.5rem] border-0 shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer p-0 gap-0 bg-card dark:bg-card"
+                                    hoverEffect
                                 >
                                     {/* Image Section */}
-                                    <div className="relative h-72 bg-slate-50 dark:bg-neutral-800 overflow-hidden">
+                                    <div className="relative h-64 bg-slate-100 dark:bg-neutral-800 overflow-hidden">
                                         <SecureImage
                                             bucket="property-images"
                                             path={property.image_url}
                                             placeholder={getPropertyPlaceholder(property.property_type)}
                                             alt={`${property.address}, ${property.city}`}
-                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 filter saturate-50 group-hover:saturate-100"
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
 
-                                        {/* Status Badge - Top Left as per reference */}
-                                        <div className={`absolute top-6 ${lang === 'he' ? 'left-6' : 'right-6'} flex gap-3`}>
+                                        {/* Status Badge */}
+                                        <div className={`absolute top-5 ${lang === 'he' ? 'left-5' : 'right-5'} flex gap-3`}>
                                             <span className={cn(
-                                                "px-4 py-2 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] backdrop-blur-3xl shadow-2xl border transition-all duration-500",
+                                                "px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest backdrop-blur-md shadow-sm border transition-all duration-500",
                                                 activeContract
-                                                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                                                    : 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+                                                    ? 'bg-emerald-500/90 text-white border-transparent'
+                                                    : 'bg-white/90 text-slate-700 border-white/20'
                                             )}>
                                                 {activeContract ? t('occupied') : t('vacant')}
                                             </span>
                                         </div>
 
-                                        {/* Property Type Badge - Bottom Right as per reference */}
-                                        <div className={`absolute bottom-6 ${lang === 'he' ? 'right-6' : 'left-6'}`}>
-                                            <div className="flex items-center gap-4 px-4 py-2 bg-white/10 backdrop-blur-3xl rounded-[2rem] border border-white/20 shadow-2xl transition-transform duration-500 group-hover:scale-[1.02]">
-                                                <span className="text-[10px] font-black uppercase tracking-[0.15em] text-white">
+                                        {/* Property Type Badge */}
+                                        <div className={`absolute bottom-5 ${lang === 'he' ? 'right-5' : 'left-5'}`}>
+                                            <div className="flex items-center gap-3 px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-full border border-white/20 shadow-lg">
+                                                <span className="text-[10px] font-bold uppercase tracking-widest text-white">
                                                     {property.property_type ? t(property.property_type as any) : t('apartment')}
                                                 </span>
-                                                <PropertyIcon type={property.property_type} className="w-8 h-8 rounded-xl" />
+                                                <PropertyIcon type={property.property_type} className="w-6 h-6 text-white" />
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Content */}
-                                    <div className="p-10 flex-1 flex flex-col space-y-8">
-                                        <div className="min-h-[3.5rem]">
-                                            <h3 className="text-2xl font-black tracking-tighter text-foreground lowercase leading-tight group-hover:text-primary transition-colors truncate">
+                                    <CardContent className="p-8 flex-1 flex flex-col space-y-6">
+                                        <div className="min-h-[3rem]">
+                                            <h3 className="text-xl font-bold tracking-tight text-foreground line-clamp-2 leading-tight group-hover:text-primary transition-colors">
                                                 {[property.address, property.city].filter(Boolean).join(', ')}
                                             </h3>
                                         </div>
 
                                         {/* Detailed Specs Row */}
-                                        <div className="grid grid-cols-3 md:grid-cols-6 gap-4 py-6 border-y border-white/5">
+                                        <div className="grid grid-cols-6 gap-2 py-4 border-t border-border/50">
                                             {/* Rooms */}
                                             <div className="flex flex-col items-center gap-1">
-                                                <div className="w-10 h-10 rounded-2xl bg-white/5 dark:bg-neutral-800/40 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform duration-500">
-                                                    <BedDouble className="w-5 h-5 text-muted-foreground opacity-60" />
-                                                </div>
-                                                <span className="text-sm font-black text-foreground tracking-tighter">{property.rooms}</span>
-                                                <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground opacity-40">{t('rooms')}</span>
+                                                <BedDouble className="w-4 h-4 text-muted-foreground" />
+                                                <span className="text-xs font-bold">{property.rooms}</span>
                                             </div>
                                             {/* SQM */}
                                             <div className="flex flex-col items-center gap-1">
-                                                <div className="w-10 h-10 rounded-2xl bg-white/5 dark:bg-neutral-800/40 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform duration-500">
-                                                    <Ruler className="w-5 h-5 text-muted-foreground opacity-60" />
-                                                </div>
-                                                <span className="text-sm font-black text-foreground tracking-tighter">{property.size_sqm}</span>
-                                                <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground opacity-40">{t('sqm')}</span>
+                                                <Ruler className="w-4 h-4 text-muted-foreground" />
+                                                <span className="text-xs font-bold">{property.size_sqm}</span>
                                             </div>
-
                                             {/* Parking */}
                                             <div className="flex flex-col items-center gap-1">
-                                                <div className={cn(
-                                                    "w-10 h-10 rounded-2xl flex items-center justify-center mb-1 group-hover:scale-110 transition-transform duration-500",
-                                                    property.has_parking ? "bg-indigo-500/20 text-indigo-500" : "bg-white/5 dark:bg-neutral-800/40 text-muted-foreground opacity-20"
-                                                )}>
-                                                    <Car className="w-5 h-5" />
-                                                </div>
-                                                <span className="text-sm font-black text-foreground tracking-tighter">{property.has_parking ? '✓' : ''}</span>
-                                                <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground opacity-40">{t('parking')}</span>
+                                                <Car className={cn("w-4 h-4", property.has_parking ? "text-primary" : "text-muted-foreground/30")} />
+                                                <span className="text-xs font-bold">{property.has_parking ? '✓' : '-'}</span>
                                             </div>
-
                                             {/* Balcony */}
                                             <div className="flex flex-col items-center gap-1">
-                                                <div className={cn(
-                                                    "w-10 h-10 rounded-2xl flex items-center justify-center mb-1 group-hover:scale-110 transition-transform duration-500",
-                                                    property.has_balcony ? "bg-indigo-500/20 text-indigo-500" : "bg-white/5 dark:bg-neutral-800/40 text-muted-foreground opacity-20"
-                                                )}>
-                                                    <BalconyIcon className="w-5 h-5" />
-                                                </div>
-                                                <span className="text-sm font-black text-foreground tracking-tighter">{property.has_balcony ? '✓' : ''}</span>
-                                                <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground opacity-40">{t('balcony')}</span>
+                                                <BalconyIcon className={cn("w-4 h-4", property.has_balcony ? "text-primary" : "text-muted-foreground/30")} />
+                                                <span className="text-xs font-bold">{property.has_balcony ? '✓' : '-'}</span>
                                             </div>
-
-                                            {/* Mamad (Safe Room) */}
+                                            {/* Safe Room */}
                                             <div className="flex flex-col items-center gap-1">
-                                                <div className={cn(
-                                                    "w-10 h-10 rounded-2xl flex items-center justify-center mb-1 group-hover:scale-110 transition-transform duration-500",
-                                                    property.has_safe_room ? "bg-indigo-500/20 text-indigo-500" : "bg-white/5 dark:bg-neutral-800/40 text-muted-foreground opacity-20"
-                                                )}>
-                                                    <SafeRoomIcon className="w-5 h-5" />
-                                                </div>
-                                                <span className="text-sm font-black text-foreground tracking-tighter">{property.has_safe_room ? '✓' : ''}</span>
-                                                <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground opacity-40">{t('safe_room')}</span>
+                                                <SafeRoomIcon className={cn("w-4 h-4", property.has_safe_room ? "text-primary" : "text-muted-foreground/30")} />
+                                                <span className="text-xs font-bold">{property.has_safe_room ? '✓' : '-'}</span>
                                             </div>
-
                                             {/* Storage */}
                                             <div className="flex flex-col items-center gap-1">
-                                                <div className={cn(
-                                                    "w-10 h-10 rounded-2xl flex items-center justify-center mb-1 group-hover:scale-110 transition-transform duration-500",
-                                                    property.has_storage ? "bg-indigo-500/20 text-indigo-500" : "bg-white/5 dark:bg-neutral-800/40 text-muted-foreground opacity-20"
-                                                )}>
-                                                    <StorageIcon className="w-5 h-5" />
-                                                </div>
-                                                <span className="text-sm font-black text-foreground tracking-tighter">{property.has_storage ? '✓' : ''}</span>
-                                                <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground opacity-40">{t('storage')}</span>
+                                                <StorageIcon className={cn("w-4 h-4", property.has_storage ? "text-primary" : "text-muted-foreground/30")} />
+                                                <span className="text-xs font-bold">{property.has_storage ? '✓' : '-'}</span>
                                             </div>
                                         </div>
 
                                         {/* Rent & Contract Section */}
-                                        <div className="flex items-center justify-between pt-4 mt-auto">
-                                            <div onClick={(e) => e.stopPropagation()} className="space-y-1">
-                                                <span className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40 block">
+                                        <div className="flex items-center justify-between pt-2 mt-auto">
+                                            <div onClick={(e) => e.stopPropagation()} className="space-y-0.5">
+                                                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground opacity-60">
                                                     {t('monthlyRentLabel')}
                                                 </span>
                                                 <div
@@ -447,8 +415,8 @@ export function Properties() {
                                                         }
                                                     }}
                                                     className={cn(
-                                                        "text-4xl font-black text-foreground tracking-tighter transition-all duration-500",
-                                                        property.contracts?.some(c => c.status === 'active' && c.linkage_type && c.linkage_type !== 'none') && "cursor-pointer hover:text-primary underline decoration-2 decoration-primary/10 hover:decoration-primary underline-offset-8"
+                                                        "text-2xl font-black text-foreground tracking-tight",
+                                                        property.contracts?.some(c => c.status === 'active' && c.linkage_type && c.linkage_type !== 'none') && "cursor-pointer text-primary hover:underline decoration-2 underline-offset-4"
                                                     )}
                                                 >
                                                     ₪{(activeContract?.base_rent || 0).toLocaleString()}
@@ -457,20 +425,18 @@ export function Properties() {
 
                                             {/* Contract Badge */}
                                             {activeContract && (
-                                                <div className="flex flex-col items-end gap-2">
-                                                    <span className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40">
+                                                <div className="flex flex-col items-end gap-1">
+                                                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground opacity-60">
                                                         {lang === 'he' ? 'סיום חוזה' : 'lease ends'}
                                                     </span>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="px-4 py-2 rounded-xl glass-premium text-[10px] font-black text-foreground border border-white/5 shadow-minimal group-hover:shadow-jewel transition-all">
-                                                            {formatDate(activeContract.end_date)}
-                                                        </span>
-                                                    </div>
+                                                    <span className="px-3 py-1 rounded-lg bg-secondary/50 text-xs font-bold text-foreground">
+                                                        {formatDate(activeContract.end_date)}
+                                                    </span>
                                                 </div>
                                             )}
                                         </div>
-                                    </div>
-                                </div>
+                                    </CardContent>
+                                </Card>
                             );
                         })}
                     </div>

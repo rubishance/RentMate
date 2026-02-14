@@ -1,7 +1,9 @@
 import { useMemo } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
-import { SparklesIcon as Sparkles, ArrowRightIcon as ArrowRight, PaymentsIcon as Wallet, WrenchIcon as Hammer, ContractsIcon as FileText, CalendarIcon as CheckCircle2 } from '../icons/NavIcons';
+import { SparklesIcon as Sparkles, ArrowRightIcon as ArrowRight } from '../icons/NavIcons';
 import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '../ui/Card';
+import { Button } from '../ui/Button';
 
 interface SmartAction {
     id: string;
@@ -28,7 +30,6 @@ export function SmartActionsWidget({ stats, loading }: SmartActionsWidgetProps) 
     const actions: SmartAction[] = useMemo(() => {
         const list: SmartAction[] = [];
 
-
         // 2. Open Maintenance
         if (stats.openMaintenance > 0) {
             list.push({
@@ -42,22 +43,19 @@ export function SmartActionsWidget({ stats, loading }: SmartActionsWidgetProps) 
             });
         }
 
-        // 3. Document Upload Nudge (Generic "Good Practice" if quiet)
-        // Removed per user request to keep UI cleaner
-
-        return list;
-
         return list;
     }, [stats, t, navigate]);
 
     if (loading) {
         return (
-            <div className="bg-black dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 rounded-[2.5rem] p-6 md:p-8 shadow-lg text-white h-full flex items-center justify-center">
-                <div className="animate-pulse flex flex-col items-center gap-3 w-full">
-                    <div className="h-5 md:h-6 w-1/2 bg-white/10 rounded"></div>
-                    <div className="h-3 md:h-4 w-3/4 bg-white/5 rounded"></div>
-                </div>
-            </div>
+            <Card className="h-full flex items-center justify-center">
+                <CardContent className="w-full">
+                    <div className="animate-pulse flex flex-col items-center gap-3 w-full">
+                        <div className="h-5 md:h-6 w-1/2 bg-slate-100 dark:bg-slate-800 rounded"></div>
+                        <div className="h-3 md:h-4 w-3/4 bg-slate-50 dark:bg-slate-900 rounded"></div>
+                    </div>
+                </CardContent>
+            </Card>
         );
     }
 
@@ -67,36 +65,37 @@ export function SmartActionsWidget({ stats, loading }: SmartActionsWidgetProps) 
     const topAction = actions[0];
 
     return (
-        <div className="bg-black dark:bg-neutral-900 rounded-[2.5rem] p-6 md:p-8 shadow-2xl text-white relative overflow-hidden group border border-gray-100 dark:border-neutral-800 h-full flex flex-col justify-between">
+        <Card className="h-full flex flex-col justify-between overflow-hidden relative group border-primary/20 bg-slate-900 text-white dark:bg-slate-950">
             {/* Background Decoration */}
-            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                 <Sparkles className="w-48 h-48 transform rotate-12" />
             </div>
 
-            <div className="relative z-10 space-y-4 md:space-y-6">
-                <div className="flex items-center gap-2 bg-white/10 w-fit px-2.5 py-1 md:px-3 md:py-1.5 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest backdrop-blur-md border border-white/10">
-                    <Sparkles className="w-2.5 md:w-3 h-2.5 md:h-3 text-white" />
+            <CardHeader className="relative z-10 pb-0">
+                <div className="flex items-center gap-2 bg-white/10 w-fit px-2.5 py-1 md:px-3 md:py-1.5 rounded-full text-[9px] md:text-[10px] font-bold uppercase tracking-widest backdrop-blur-md border border-white/10 mb-4">
+                    <Sparkles className="w-2.5 md:w-3 h-2.5 md:h-3 text-emerald-400" />
                     {t('smartRecommendation')}
                 </div>
+                <CardTitle className="text-xl md:text-2xl text-white">{topAction.title}</CardTitle>
+                <CardDescription className="text-slate-300 font-medium">
+                    {topAction.description}
+                </CardDescription>
+            </CardHeader>
 
-                <div className="space-y-1 md:space-y-2">
-                    <h3 className="text-lg md:text-2xl font-black tracking-tight">{topAction.title}</h3>
-                    <p className="text-gray-400 text-[11px] md:text-sm max-w-[95%] md:max-w-[90%] leading-relaxed font-medium">
-                        {topAction.description}
-                    </p>
-                </div>
-            </div>
+            <CardContent className="relative z-10 pt-4 flex-1">
+                {/* Spacer or content if needed */}
+            </CardContent>
 
-            <div className="relative z-10 mt-6 md:mt-8">
-                <button
+            <CardFooter className="relative z-10 pt-0">
+                <Button
                     onClick={topAction.onAction}
-                    className="w-full bg-white text-black px-6 py-3 md:py-4 rounded-2xl font-black text-[12px] md:text-sm hover:bg-gray-100 transition-all active:scale-95 shadow-xl flex items-center justify-center gap-2 group/btn"
-                    aria-label={topAction.actionLabel}
+                    className="w-full bg-white text-slate-900 hover:bg-slate-100 font-bold"
+                    size="lg"
                 >
                     {topAction.actionLabel}
-                    <ArrowRight className="w-3.5 md:w-4 h-3.5 md:h-4 transition-transform group-hover/btn:translate-x-1" />
-                </button>
-            </div>
-        </div>
+                    <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                </Button>
+            </CardFooter>
+        </Card>
     );
 }

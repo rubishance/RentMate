@@ -1,6 +1,5 @@
 import React from 'react';
 import { cn } from '../../lib/utils';
-import { motion, HTMLMotionProps } from 'framer-motion';
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
     hoverEffect?: boolean;
@@ -18,9 +17,9 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(({
         <div
             ref={ref}
             className={cn(
-                "rounded-2xl border border-border/60 bg-card text-card-foreground shadow-minimal transition-all duration-300",
-                hoverEffect && "hover:shadow-premium hover:-translate-y-1 cursor-pointer border-primary/5 hover:border-primary/20",
-                glass && "glass-premium",
+                "rounded-lg border bg-card text-card-foreground shadow-sm transition-all duration-200",
+                hoverEffect && "hover:shadow-md hover:-translate-y-0.5 cursor-pointer",
+                glass && "bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm",
                 className
             )}
             {...props}
@@ -37,7 +36,7 @@ export const CardHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDiv
 );
 
 export const CardTitle = ({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
-    <h3 className={cn("text-lg font-bold leading-none tracking-tight", className)} {...props} />
+    <h3 className={cn("text-2xl font-semibold leading-none tracking-tight text-primary", className)} {...props} />
 );
 
 export const CardDescription = ({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) => (

@@ -14,9 +14,13 @@ import { cn } from '../../lib/utils';
 import { useDataCache } from '../../contexts/DataCacheContext';
 import { propertyService } from '../../services/property.service';
 import { getPropertyPlaceholder } from '../../lib/property-placeholders';
-import { useSubscription } from '../../hooks/useSubscription'; // Added import
-// import { generatePaymentSchedule } from '../../utils/payment-generator'; // Offloaded to Edge Function
+import { useSubscription } from '../../hooks/useSubscription';
 import { addDays } from 'date-fns';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/Card';
+import { Input } from '../ui/Input';
+import { Button } from '../ui/Button';
+import { Select } from '../ui/Select';
+import { Textarea } from '../ui/Textarea';
 
 interface ContractHubProps {
     contractId: string;
@@ -38,13 +42,11 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
         const getSignedUrl = async () => {
             if (!contract?.contract_file_url) return;
 
-            // If it's already a full URL, use it (backward compatibility)
             if (contract.contract_file_url.startsWith('http')) {
                 setSignedUrl(contract.contract_file_url);
                 return;
             }
 
-            // It's a path - get a signed URL
             try {
                 const { data, error } = await supabase.storage
                     .from('contracts')
@@ -141,32 +143,17 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
         e.preventDefault();
 
         if (!contractId) {
-            console.error('[ContractHub] Critical: Attempted to save contract without a contractId. This would cause a Supabase error.');
             alert(t('error_missing_id') || 'System Error: Missing Contract ID');
             return;
         }
 
-
-        // --- Limit Check for Un-archiving ---
         if (contract.status === 'archived' && formData.status === 'active') {
-            // We need fresh state to be sure
             await refreshSubscription();
-            // We need to re-check the updated value from the hook, 
-            // but since hook state might not update immediately in this closure, 
-            // we rely on the fact that refreshSubscription updates the SWR/cache logic 
-            // or we might need to trust the current `canAddActiveContract` if it wasn't stale.
-            // Ideally `refreshSubscription` should return the fresh data or we assume `canAddActiveContract` is close enough.
-            // Given the complexity, let's trust `canAddActiveContract` but warn if it's edge case.
-            // BETTER APPROACH: The `canAddActiveContract` from the hook is reactive. 
-            // However, inside this async function, we can't wait for the hook to re-render.
-            // Let's assume the user hasn't added another contract in the last 5 seconds since they opened this page.
-
             if (!canAddActiveContract) {
                 alert(t('error_limit_active_contracts') || 'Limit Reached: You cannot have more active contracts on your current plan.');
                 return;
             }
         }
-
 
         setSaving(true);
         try {
@@ -198,12 +185,6 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                 updated_at: new Date().toISOString()
             };
 
-            console.log('[DEBUG] Attempting to update contract:', contractId, updates);
-
-            if (!contractId) {
-                throw new Error('Missing contract ID for update');
-            }
-
             const { error } = await supabase
                 .from('contracts')
                 .update(updates)
@@ -211,29 +192,19 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
 
             if (error) throw error;
 
-            // --- Payment Synchronization Logic ---
             const originalEndDate = contract.end_date;
             const newEndDate = formData.end_date;
 
-            console.log('[DEBUG] Syncing payments. Original end date:', originalEndDate, 'New end date:', newEndDate);
-
             if (newEndDate < originalEndDate) {
-                // Case 1: Early Termination - Cleanup future pending payments
-                console.log('[DEBUG] Early termination detected. Cleaning up future payments.');
                 const { error: deleteError } = await supabase
                     .from('payments')
                     .delete()
                     .eq('contract_id', contractId)
                     .eq('status', 'pending')
                     .gt('due_date', newEndDate);
-
                 if (deleteError) console.error('[ContractHub] Error cleaning up payments:', deleteError);
             } else if (newEndDate > originalEndDate) {
-                // Case 2: Extension - Generate new expected payments
-                console.log('[DEBUG] Extension detected. Generating new payments.');
-                // Gap starts the day after original end date
                 const gapStart = format(addDays(parseISO(originalEndDate), 1), 'yyyy-MM-dd');
-
                 try {
                     const { data: genData, error: genError } = await supabase.functions.invoke('generate-payments', {
                         body: {
@@ -266,23 +237,19 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                             })));
 
                         if (insertError) throw insertError;
-                        console.log(`[DEBUG] Inserted ${schedule.length} new payments for extension.`);
                     }
                 } catch (genError) {
                     console.error('[ContractHub] Error generating extension payments:', genError);
                 }
             }
-            // -------------------------------------
 
-            // Sync property occupancy status if status changed
             if (formData.status !== contract.status) {
                 await propertyService.syncOccupancyStatus(contract.property_id, contract.user_id);
             }
 
             setReadOnly(true);
-            clear(); // Sync cache
+            clear();
 
-            // Re-fetch to update the UI with property info
             const { data, error: fetchError } = await supabase
                 .from('contracts')
                 .select('*, properties(address, city)')
@@ -312,12 +279,10 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
     if (!contract) {
         return (
             <div className="p-12 text-center">
-                <p className="text-red-500 font-bold">Contract not found</p>
+                <p className="text-destructive font-bold">Contract not found</p>
             </div>
         );
     }
-
-    const tenantNames = contract.tenants ? (Array.isArray(contract.tenants) ? contract.tenants.map((t: any) => t.name || t.full_name).join(', ') : (contract.tenants.name || contract.tenants.full_name)) : 'N/A';
 
     return (
         <div className="flex flex-col bg-slate-50 dark:bg-black min-h-full" dir={lang === 'he' ? 'rtl' : 'ltr'}>
@@ -325,12 +290,14 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
             <div className="px-3 md:px-6 py-6 border-b border-slate-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm">
                 <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-4">
-                        <button
+                        <Button
+                            variant="outline"
+                            size="icon"
                             onClick={() => navigate(-1)}
-                            className="w-10 h-10 glass-premium dark:bg-neutral-800/40 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground transition-all border border-white/5 group"
+                            className="bg-transparent border-white/5 hover:bg-slate-50 dark:hover:bg-neutral-800"
                         >
-                            <ArrowLeft className={cn("w-4 h-4 group-hover:-translate-x-1 transition-transform", lang === 'he' ? 'rotate-180 group-hover:translate-x-1' : '')} />
-                        </button>
+                            <ArrowLeft className={cn("w-4 h-4", lang === 'he' ? 'rotate-180' : '')} />
+                        </Button>
                         <div className="w-12 h-12 rounded-2xl glass-premium dark:bg-neutral-800/40 border border-white/5 flex items-center justify-center text-primary shadow-minimal">
                             <FileText className="w-6 h-6" />
                         </div>
@@ -345,12 +312,12 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                         </div>
                     </div>
                     {readOnly && (
-                        <button
+                        <Button
                             onClick={() => setReadOnly(false)}
-                            className="w-12 h-12 button-jewel text-white rounded-[1.2rem] shadow-jewel hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
+                            className="w-12 h-12 rounded-[1.2rem] shadow-jewel p-0 flex items-center justify-center"
                         >
                             <Pen className="w-5 h-5" />
-                        </button>
+                        </Button>
                     )}
                 </div>
 
@@ -387,61 +354,65 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Contract Header Info */}
-                        <div className="bg-white dark:bg-neutral-800 rounded-2xl p-6 border border-slate-100 dark:border-neutral-700 shadow-sm space-y-4">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <h2 className="text-xl font-bold">{contract?.properties?.address || 'Address'}</h2>
-                                    <p className="text-sm text-neutral-500">{contract?.properties?.city || 'City'}</p>
+                        <Card className="rounded-[2rem] border shadow-sm">
+                            <CardContent className="p-6 space-y-4">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <h2 className="text-xl font-bold">{contract?.properties?.address || 'Address'}</h2>
+                                        <p className="text-sm text-neutral-500">{contract?.properties?.city || 'City'}</p>
+                                    </div>
+                                    <div className={`px-3 py-1 rounded-full text-xs font-bold ${formData.status === 'active' ? 'bg-green-100 text-green-700' :
+                                        formData.status === 'draft' ? 'bg-yellow-100 text-yellow-700' :
+                                            'bg-neutral-100 text-neutral-700'
+                                        }`}>
+                                        {t(formData.status)}
+                                    </div>
                                 </div>
-                                <div className={`px-3 py-1 rounded-full text-xs font-bold ${formData.status === 'active' ? 'bg-green-100 text-green-700' :
-                                    formData.status === 'draft' ? 'bg-yellow-100 text-yellow-700' :
-                                        'bg-neutral-100 text-neutral-700'
-                                    }`}>
-                                    {t(formData.status)}
-                                </div>
-                            </div>
 
-                            {contract?.properties?.image_url && (
-                                <div className="w-full h-40 rounded-xl overflow-hidden mt-4">
-                                    <img
-                                        loading="lazy"
-                                        decoding="async"
-                                        src={contract.properties.image_url || getPropertyPlaceholder(contract.properties.property_type)}
-                                        alt="Property"
-                                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                                        onError={(e) => {
-                                            const target = e.target as HTMLImageElement;
-                                            const placeholder = getPropertyPlaceholder(contract.properties.property_type);
-                                            if (target.src !== placeholder) {
-                                                target.src = placeholder;
-                                            }
-                                        }}
-                                    />
-                                </div>
-                            )}
-                        </div>
+                                {contract?.properties?.image_url && (
+                                    <div className="w-full h-40 rounded-xl overflow-hidden mt-4">
+                                        <img
+                                            loading="lazy"
+                                            decoding="async"
+                                            src={contract.properties.image_url || getPropertyPlaceholder(contract.properties.property_type)}
+                                            alt="Property"
+                                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                                            onError={(e) => {
+                                                const target = e.target as HTMLImageElement;
+                                                const placeholder = getPropertyPlaceholder(contract.properties.property_type);
+                                                if (target.src !== placeholder) {
+                                                    target.src = placeholder;
+                                                }
+                                            }}
+                                        />
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
 
                         {/* Amenities & Specs */}
                         {(!readOnly || contract?.properties?.has_balcony || contract?.properties?.has_safe_room || contract?.properties?.has_parking || contract?.properties?.has_storage) && (
-                            <div className="bg-white dark:bg-neutral-800 rounded-2xl p-6 border border-slate-100 dark:border-neutral-700 shadow-sm">
-                                <h4 className="text-xs font-bold text-muted-foreground uppercase mb-4">{t('amenities')}</h4>
-                                <div className="grid grid-cols-2 gap-4">
-                                    {[
-                                        { label: t('balcony'), icon: Wind, active: contract?.properties?.has_balcony },
-                                        { label: t('safeRoom'), icon: ShieldCheck, active: contract?.properties?.has_safe_room },
-                                        { label: t('parking'), icon: Car, active: contract?.properties?.has_parking },
-                                        { label: t('storage'), icon: Box, active: contract?.properties?.has_storage },
-                                    ].filter(item => !readOnly || item.active).map((item, i) => (
-                                        <div key={i} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${item.active
-                                            ? 'border-primary/20 bg-primary/5 text-primary'
-                                            : 'border-slate-100 dark:border-neutral-700 text-muted-foreground opacity-50'
-                                            }`}>
-                                            <item.icon className="w-4 h-4" />
-                                            <span className="text-sm font-medium">{item.label}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
+                            <Card className="rounded-[2rem] border shadow-sm">
+                                <CardContent className="p-6">
+                                    <h4 className="text-xs font-bold text-muted-foreground uppercase mb-4">{t('amenities')}</h4>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {[
+                                            { label: t('balcony'), icon: Wind, active: contract?.properties?.has_balcony },
+                                            { label: t('safeRoom'), icon: ShieldCheck, active: contract?.properties?.has_safe_room },
+                                            { label: t('parking'), icon: Car, active: contract?.properties?.has_parking },
+                                            { label: t('storage'), icon: Box, active: contract?.properties?.has_storage },
+                                        ].filter(item => !readOnly || item.active).map((item, i) => (
+                                            <div key={i} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${item.active
+                                                ? 'border-primary/20 bg-primary/5 text-primary'
+                                                : 'border-slate-100 dark:border-neutral-700 text-muted-foreground opacity-50'
+                                                }`}>
+                                                <item.icon className="w-4 h-4" />
+                                                <span className="text-sm font-medium">{item.label}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </CardContent>
+                            </Card>
                         )}
                     </div>
                 </div>
@@ -456,13 +427,12 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                     <div className="space-y-4">
                         {formData.tenants.length > 0 ? (
                             formData.tenants.map((tenant: any, idx: number) => (
-                                <div key={idx} className="bg-white dark:bg-neutral-800 rounded-2xl p-6 border border-slate-100 dark:border-neutral-700 shadow-sm relative group">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        {(!readOnly || tenant.name || tenant.full_name) && (
-                                            <div className="space-y-1.5">
-                                                <label className="text-xs font-bold text-muted-foreground">{t('fullName')}</label>
-                                                <input
-                                                    type="text"
+                                <Card key={idx} className="rounded-[2rem] border shadow-sm group">
+                                    <CardContent className="p-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            {(!readOnly || tenant.name || tenant.full_name) && (
+                                                <Input
+                                                    label={t('fullName')}
                                                     readOnly={readOnly}
                                                     value={tenant.name || tenant.full_name || ''}
                                                     onChange={(e) => {
@@ -470,45 +440,43 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                                                         newTenants[idx] = { ...newTenants[idx], name: e.target.value };
                                                         setFormData({ ...formData, tenants: newTenants });
                                                     }}
-                                                    className="w-full h-10 px-3 border border-slate-100 dark:border-neutral-700 rounded-xl bg-slate-50 dark:bg-neutral-900 font-medium"
                                                     placeholder={t('name')}
                                                 />
-                                            </div>
-                                        )}
-                                        {(!readOnly || tenant.email) && (
-                                            <div className="space-y-1.5">
-                                                <label className="text-xs font-bold text-muted-foreground">{t('email')}</label>
-                                                <div className="flex items-center gap-2 h-10 px-3 bg-slate-50 dark:bg-neutral-900 rounded-xl border border-slate-100 dark:border-neutral-700 text-sm">
-                                                    <Mail className="w-4 h-4 text-muted-foreground" />
-                                                    <span>{tenant.email || '-'}</span>
-                                                </div>
-                                            </div>
-                                        )}
-                                        {(!readOnly || tenant.phone) && (
-                                            <div className="space-y-1.5">
-                                                <label className="text-xs font-bold text-muted-foreground">{t('phone')}</label>
-                                                <div className="flex items-center gap-2 h-10 px-3 bg-slate-50 dark:bg-neutral-900 rounded-xl border border-slate-100 dark:border-neutral-700 text-sm">
-                                                    <Phone className="w-4 h-4 text-muted-foreground" />
-                                                    <span dir="ltr">{tenant.phone || '-'}</span>
-                                                </div>
-                                            </div>
-                                        )}
-                                        {(!readOnly || tenant.id_number) && (
-                                            <div className="space-y-1.5">
-                                                <label className="text-xs font-bold text-muted-foreground">{t('idNumber')}</label>
-                                                <div className="flex items-center gap-2 h-10 px-3 bg-slate-50 dark:bg-neutral-900 rounded-xl border border-slate-100 dark:border-neutral-700 text-sm font-mono">
-                                                    <CreditCard className="w-4 h-4 text-muted-foreground" />
-                                                    <span>{tenant.id_number || '-'}</span>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
+                                            )}
+                                            {(!readOnly || tenant.email) && (
+                                                <Input
+                                                    label={t('email')}
+                                                    readOnly={true}
+                                                    value={tenant.email || '-'}
+                                                    leftIcon={<Mail className="w-4 h-4 text-muted-foreground" />}
+                                                />
+                                            )}
+                                            {(!readOnly || tenant.phone) && (
+                                                <Input
+                                                    label={t('phone')}
+                                                    readOnly={true}
+                                                    value={tenant.phone || '-'}
+                                                    leftIcon={<Phone className="w-4 h-4 text-muted-foreground" />}
+                                                />
+                                            )}
+                                            {(!readOnly || tenant.id_number) && (
+                                                <Input
+                                                    label={t('idNumber')}
+                                                    readOnly={true}
+                                                    value={tenant.id_number || '-'}
+                                                    leftIcon={<CreditCard className="w-4 h-4 text-muted-foreground" />}
+                                                />
+                                            )}
+                                        </div>
+                                    </CardContent>
+                                </Card>
                             ))
                         ) : (
-                            <div className="bg-white dark:bg-neutral-800 rounded-2xl p-6 border border-slate-100 dark:border-neutral-700 shadow-sm text-center">
-                                <p className="text-muted-foreground">{t('noTenantsListed')}</p>
-                            </div>
+                            <Card className="rounded-[2rem] border shadow-sm">
+                                <CardContent className="p-6 text-center">
+                                    <p className="text-muted-foreground">{t('noTenantsListed')}</p>
+                                </CardContent>
+                            </Card>
                         )}
                     </div>
                 </div>
@@ -520,57 +488,59 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                         <h3 className="font-bold text-lg">{t('contractPeriod')}</h3>
                     </div>
 
-                    <div className="bg-white dark:bg-neutral-800 rounded-2xl p-6 border border-slate-100 dark:border-neutral-700 shadow-sm">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-muted-foreground">{t('startDate')}</label>
-                                <DatePicker
-                                    value={formData.start_date ? parseISO(formData.start_date) : undefined}
-                                    onChange={(date) => setFormData({ ...formData, start_date: date ? format(date, 'yyyy-MM-dd') : '' })}
-                                    readonly={readOnly}
-                                    placeholder={t('startDate')}
-                                />
-                            </div>
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-muted-foreground">{t('endDate')}</label>
-                                <DatePicker
-                                    value={formData.end_date ? parseISO(formData.end_date) : undefined}
-                                    onChange={(date) => setFormData({ ...formData, end_date: date ? format(date, 'yyyy-MM-dd') : '' })}
-                                    readonly={readOnly}
-                                    placeholder={t('endDate')}
-                                />
-                            </div>
-                            {(!readOnly || formData.signing_date) && (
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-muted-foreground">{t('signingDate')}</label>
+                    <Card className="rounded-[2rem] border shadow-sm">
+                        <CardContent className="p-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('startDate')}</label>
                                     <DatePicker
-                                        value={formData.signing_date ? parseISO(formData.signing_date) : undefined}
-                                        onChange={(date) => setFormData({ ...formData, signing_date: date ? format(date, 'yyyy-MM-dd') : '' })}
+                                        value={formData.start_date ? parseISO(formData.start_date) : undefined}
+                                        onChange={(date) => setFormData({ ...formData, start_date: date ? format(date, 'yyyy-MM-dd') : '' })}
                                         readonly={readOnly}
-                                        placeholder={t('signingDate')}
+                                        placeholder={t('startDate')}
                                     />
                                 </div>
-                            )}
-                        </div>
-
-                        {/* Duration Display */}
-                        {formData.start_date && formData.end_date && (
-                            <div className="mt-4 p-3 bg-secondary/20 rounded-xl flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                                <Clock className="w-4 h-4" />
-                                <span>{t('duration')}: </span>
-                                <span className="font-bold text-foreground">
-                                    {(() => {
-                                        const start = new Date(formData.start_date);
-                                        const end = new Date(formData.end_date);
-                                        const diffTime = Math.abs(end.getTime() - start.getTime());
-                                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                                        const months = Math.floor(diffDays / 30);
-                                        return diffDays > 360 ? `~${(diffDays / 365).toFixed(1)} ${t('years')}` : `${months} ${t('months')}`;
-                                    })()}
-                                </span>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('endDate')}</label>
+                                    <DatePicker
+                                        value={formData.end_date ? parseISO(formData.end_date) : undefined}
+                                        onChange={(date) => setFormData({ ...formData, end_date: date ? format(date, 'yyyy-MM-dd') : '' })}
+                                        readonly={readOnly}
+                                        placeholder={t('endDate')}
+                                    />
+                                </div>
+                                {(!readOnly || formData.signing_date) && (
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('signingDate')}</label>
+                                        <DatePicker
+                                            value={formData.signing_date ? parseISO(formData.signing_date) : undefined}
+                                            onChange={(date) => setFormData({ ...formData, signing_date: date ? format(date, 'yyyy-MM-dd') : '' })}
+                                            readonly={readOnly}
+                                            placeholder={t('signingDate')}
+                                        />
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
+
+                            {/* Duration Display */}
+                            {formData.start_date && formData.end_date && (
+                                <div className="mt-4 p-3 bg-secondary/20 rounded-xl flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                                    <Clock className="w-4 h-4" />
+                                    <span>{t('duration')}: </span>
+                                    <span className="font-bold text-foreground">
+                                        {(() => {
+                                            const start = new Date(formData.start_date);
+                                            const end = new Date(formData.end_date);
+                                            const diffTime = Math.abs(end.getTime() - start.getTime());
+                                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                                            const months = Math.floor(diffDays / 30);
+                                            return diffDays > 360 ? `~${(diffDays / 365).toFixed(1)} ${t('years')}` : `${months} ${t('months')}`;
+                                        })()}
+                                    </span>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
                 </div>
 
                 {/* 4. Options & Extensions Section */}
@@ -581,68 +551,72 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                             <h3 className="font-bold text-lg">{t('optionPeriods')}</h3>
                         </div>
 
-                        <div className="bg-white dark:bg-neutral-800 rounded-2xl p-6 border border-slate-100 dark:border-neutral-700 shadow-sm space-y-4">
-                            {/* Notice Days Header */}
-                            {(!readOnly || formData.option_notice_days) ? (
-                                <div className="flex justify-between items-center pb-4 border-b border-border/50">
-                                    <span className="text-sm font-medium text-muted-foreground">{t('extensionNoticeDays')}</span>
-                                    {!readOnly ? (
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                type="number"
-                                                value={formData.option_notice_days}
-                                                onChange={e => setFormData({ ...formData, option_notice_days: e.target.value })}
-                                                className="w-20 h-8 px-2 text-center border border-slate-100 dark:border-neutral-700 rounded-lg bg-slate-50 dark:bg-neutral-900 font-bold"
-                                            />
-                                            <span className="text-xs font-bold text-muted-foreground">{t('days')}</span>
-                                        </div>
-                                    ) : (
-                                        <span className="font-bold text-lg">{formData.option_notice_days || 0} {t('days')}</span>
-                                    )}
-                                </div>
-                            ) : null}
-
-                            {formData.option_periods.length > 0 ? (
-                                <div className="space-y-3">
-                                    {formData.option_periods.map((option: any, idx: number) => (
-                                        <div key={idx} className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-slate-50 dark:bg-neutral-900 rounded-xl border border-slate-100 dark:border-neutral-800">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
-                                                    {idx + 1}
-                                                </div>
-                                                <div>
-                                                    <p className="font-bold text-sm">{t('optionPeriod')} {idx + 1}</p>
-                                                    <p className="text-xs text-muted-foreground">{option.length} {t('months')}</p>
-                                                </div>
+                        <Card className="rounded-[2rem] border shadow-sm">
+                            <CardContent className="p-6 space-y-4">
+                                {/* Notice Days Header */}
+                                {(!readOnly || formData.option_notice_days) ? (
+                                    <div className="flex justify-between items-center pb-4 border-b border-border/50">
+                                        <span className="text-sm font-medium text-muted-foreground">{t('extensionNoticeDays')}</span>
+                                        {!readOnly ? (
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="number"
+                                                    value={formData.option_notice_days}
+                                                    onChange={e => setFormData({ ...formData, option_notice_days: e.target.value })}
+                                                    className="w-20 h-8 px-2 text-center border border-slate-100 dark:border-neutral-700 rounded-lg bg-slate-50 dark:bg-neutral-900 font-bold"
+                                                />
+                                                <span className="text-xs font-bold text-muted-foreground">{t('days')}</span>
                                             </div>
+                                        ) : (
+                                            <span className="font-bold text-lg">{formData.option_notice_days || 0} {t('days')}</span>
+                                        )}
+                                    </div>
+                                ) : null}
 
-                                            <div className="flex gap-6">
-                                                {option.rentAmount && (
-                                                    <div className="text-right">
-                                                        <span className="text-xs text-muted-foreground block">{t('monthlyRent')}</span>
-                                                        <span className="font-bold">
-                                                            {option.currency === 'USD' ? '₪' : '₪'}{Number(option.rentAmount).toLocaleString()}
-                                                        </span>
+                                {formData.option_periods.length > 0 ? (
+                                    <div className="space-y-3">
+                                        {formData.option_periods.map((option: any, idx: number) => (
+                                            <Card key={idx} className="bg-slate-50 dark:bg-neutral-900 border-none shadow-sm">
+                                                <CardContent className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                                                            {idx + 1}
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-bold text-sm">{t('optionPeriod')} {idx + 1}</p>
+                                                            <p className="text-xs text-muted-foreground">{option.length} {t('months')}</p>
+                                                        </div>
                                                     </div>
-                                                )}
-                                                {option.endDate && (
-                                                    <div className="text-right">
-                                                        <span className="text-xs text-muted-foreground block">{t('endDate')}</span>
-                                                        <span className="font-medium">
-                                                            {format(parseISO(option.endDate), 'dd/MM/yyyy')}
-                                                        </span>
+
+                                                    <div className="flex gap-6">
+                                                        {option.rentAmount && (
+                                                            <div className="text-right">
+                                                                <span className="text-xs text-muted-foreground block">{t('monthlyRent')}</span>
+                                                                <span className="font-bold">
+                                                                    {option.currency === 'USD' ? '₪' : '₪'}{Number(option.rentAmount).toLocaleString()}
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                        {option.endDate && (
+                                                            <div className="text-right">
+                                                                <span className="text-xs text-muted-foreground block">{t('endDate')}</span>
+                                                                <span className="font-medium">
+                                                                    {format(parseISO(option.endDate), 'dd/MM/yyyy')}
+                                                                </span>
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="text-center p-4 text-muted-foreground text-sm italic">
-                                    {t('noOptionsDefined')}
-                                </div>
-                            )}
-                        </div>
+                                                </CardContent>
+                                            </Card>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center p-4 text-muted-foreground text-sm italic">
+                                        {t('noOptionsDefined')}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
                     </div>
                 )}
 
@@ -655,118 +629,105 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Base Payment Info */}
-                        <div className="bg-white dark:bg-neutral-800 rounded-2xl p-6 border border-slate-100 dark:border-neutral-700 shadow-sm space-y-4">
-                            <h4 className="text-xs font-bold text-muted-foreground uppercase">{t('rent')}</h4>
-                            <div className="flex gap-4">
-                                <div className="flex-1 space-y-1.5">
-                                    <label className="text-xs font-bold text-muted-foreground">{t('amount')}</label>
-                                    <div className="relative">
-                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-bold">
-                                            {formData.currency === 'USD' ? '₪' : '₪'}
-                                        </span>
-                                        <input
-                                            type="number"
-                                            readOnly={readOnly}
-                                            value={formData.base_rent}
-                                            onChange={e => setFormData({ ...formData, base_rent: Number(e.target.value) })}
-                                            className="w-full h-10 pl-8 pr-3 border border-slate-100 dark:border-neutral-700 rounded-xl bg-slate-50 dark:bg-neutral-900 font-bold text-lg"
-                                        />
+                        <Card className="rounded-[2rem] border shadow-sm">
+                            <CardContent className="p-6 space-y-4">
+                                <h4 className="text-xs font-bold text-muted-foreground uppercase">{t('rent')}</h4>
+                                <div className="flex gap-4">
+                                    <Input
+                                        label={t('amount')}
+                                        type="number"
+                                        readOnly={readOnly}
+                                        value={formData.base_rent}
+                                        onChange={e => setFormData({ ...formData, base_rent: Number(e.target.value) })}
+                                        leftIcon={<span className="text-sm font-bold">{formData.currency === 'USD' ? '₪' : '₪'}</span>}
+                                        className="h-10 text-lg font-bold"
+                                    />
+                                    <div className="w-1/3">
+                                        <Select
+                                            label={t('currency')}
+                                            disabled={readOnly}
+                                            value={formData.currency}
+                                            onChange={e => setFormData({ ...formData, currency: e.target.value })}
+                                        >
+                                            <option value="ILS">₪ ILS</option>
+                                            <option value="USD">₪ USD</option>
+                                            <option value="EUR">€ EUR</option>
+                                        </Select>
                                     </div>
                                 </div>
-                                <div className="w-1/3 space-y-1.5">
-                                    <label className="text-xs font-bold text-muted-foreground">{t('currency')}</label>
-                                    <select
-                                        disabled={readOnly}
-                                        value={formData.currency}
-                                        onChange={e => setFormData({ ...formData, currency: e.target.value })}
-                                        className="w-full h-10 px-3 border border-slate-100 dark:border-neutral-700 rounded-xl bg-slate-50 dark:bg-neutral-900"
-                                    >
-                                        <option value="ILS">₪ ILS</option>
-                                        <option value="USD">₪ USD</option>
-                                        <option value="EUR">€ EUR</option>
-                                    </select>
-                                </div>
-                            </div>
 
-                            <div className="grid grid-cols-2 gap-4 pt-2">
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-muted-foreground">{t('paymentFrequency')}</label>
-                                    <select
+                                <div className="grid grid-cols-2 gap-4 pt-2">
+                                    <Select
+                                        label={t('paymentFrequency')}
                                         disabled={readOnly}
                                         value={formData.payment_frequency}
                                         onChange={e => setFormData({ ...formData, payment_frequency: e.target.value })}
-                                        className="w-full h-10 px-3 border border-slate-100 dark:border-neutral-700 rounded-xl bg-slate-50 dark:bg-neutral-900 text-sm"
                                     >
                                         <option value="monthly">{t('monthly')}</option>
                                         <option value="quarterly">{t('quarterly')}</option>
                                         <option value="annually">{t('annually')}</option>
-                                    </select>
-                                </div>
-                                <div className="space-y-1.5">
-                                    {/* Payment Method - assuming it exists or adding later */}
-                                    <label className="text-xs font-bold text-muted-foreground">{t('paymentDay')}</label>
-                                    <input
+                                    </Select>
+                                    <Input
+                                        label={t('paymentDay')}
                                         type="number"
                                         min="1"
                                         max="31"
-                                        disabled={readOnly}
+                                        readOnly={readOnly}
                                         value={formData.payment_day}
                                         onChange={e => setFormData({ ...formData, payment_day: Number(e.target.value) })}
-                                        className="w-full h-10 px-3 border border-slate-100 dark:border-neutral-700 rounded-xl bg-slate-50 dark:bg-neutral-900 text-sm"
                                     />
                                 </div>
-                            </div>
-                        </div>
+                            </CardContent>
+                        </Card>
 
                         {/* Linkage Info */}
                         {(!readOnly || formData.linkage_type !== 'none') && (
-                            <div className="bg-white dark:bg-neutral-800 rounded-2xl p-6 border border-slate-100 dark:border-neutral-700 shadow-sm space-y-4">
-                                <h4 className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-2">
-                                    <TrendingUp className="w-3 h-3 text-purple-500" />
-                                    {t('linkage')}
-                                </h4>
+                            <Card className="rounded-[2rem] border shadow-sm">
+                                <CardContent className="p-6 space-y-4">
+                                    <h4 className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-2">
+                                        <TrendingUp className="w-3 h-3 text-purple-500" />
+                                        {t('linkage')}
+                                    </h4>
 
-                                <div className="space-y-4">
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-muted-foreground">{t('linkageType')}</label>
-                                        <select
+                                    <div className="space-y-4">
+                                        <Select
+                                            label={t('linkageType')}
                                             disabled={readOnly}
                                             value={formData.linkage_type}
                                             onChange={e => setFormData({ ...formData, linkage_type: e.target.value })}
-                                            className="w-full h-10 px-3 border border-slate-100 dark:border-neutral-700 rounded-xl bg-slate-50 dark:bg-neutral-900 text-sm"
                                         >
                                             <option value="none">{t('notLinked')}</option>
                                             <option value="cpi">{t('linkedToCpi')}</option>
                                             <option value="housing">{t('linkedToHousing')}</option>
-                                        </select>
-                                    </div>
+                                        </Select>
 
-                                    {formData.linkage_type !== 'none' && (
-                                        <div className="grid grid-cols-2 gap-4 p-3 bg-secondary/10 rounded-xl">
-                                            <div>
-                                                <label className="text-[10px] font-bold text-muted-foreground uppercase block mb-1">{t('baseIndex')}</label>
-                                                <input
-                                                    type="number"
-                                                    readOnly={readOnly}
-                                                    value={formData.base_index_value || ''}
-                                                    onChange={e => setFormData({ ...formData, base_index_value: Number(e.target.value) })}
-                                                    className="w-full h-8 px-2 text-sm bg-transparent border-b border-border/50 focus:border-primary outline-none"
-                                                    placeholder="0.00"
-                                                />
+                                        {formData.linkage_type !== 'none' && (
+                                            <div className="grid grid-cols-2 gap-4 p-3 bg-secondary/10 rounded-xl">
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-muted-foreground uppercase block mb-1">{t('baseIndex')}</label>
+                                                    <input
+                                                        type="number"
+                                                        readOnly={readOnly}
+                                                        value={formData.base_index_value || ''}
+                                                        onChange={e => setFormData({ ...formData, base_index_value: Number(e.target.value) })}
+                                                        className="w-full h-8 px-2 text-sm bg-transparent border-b border-border/50 focus:border-primary outline-none"
+                                                        placeholder="0.00"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-muted-foreground uppercase block mb-1">{t('baseDate')}</label>
+                                                    <DatePicker
+                                                        value={formData.base_index_date ? parseISO(formData.base_index_date) : undefined}
+                                                        onChange={(date) => setFormData({ ...formData, base_index_date: date ? format(date, 'yyyy-MM-dd') : '' })}
+                                                        readonly={readOnly}
+                                                        className="w-full"
+                                                    />
+                                                </div>
                                             </div>
-                                            <div>
-                                                <label className="text-[10px] font-bold text-muted-foreground uppercase block mb-1">{t('baseDate')}</label>
-                                                <DatePicker
-                                                    value={formData.base_index_date ? parseISO(formData.base_index_date) : undefined}
-                                                    onChange={(date) => setFormData({ ...formData, base_index_date: date ? format(date, 'yyyy-MM-dd') : '' })}
-                                                    readonly={readOnly}
-                                                    className="w-full"
-                                                />
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
+                                        )}
+                                    </div>
+                                </CardContent>
+                            </Card>
                         )}
                     </div>
                 </div>
@@ -779,31 +740,33 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                             <h3 className="font-bold text-lg">{t('rentSteps')}</h3>
                         </div>
 
-                        <div className="bg-white dark:bg-neutral-800 rounded-2xl p-6 border border-slate-100 dark:border-neutral-700 shadow-sm">
-                            <div className="space-y-3">
-                                {formData.rent_periods.map((step: any, idx: number) => (
-                                    <div key={idx} className="flex justify-between items-center p-4 bg-slate-50 dark:bg-neutral-900 rounded-xl border border-slate-100 dark:border-neutral-800">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-bold text-sm">
-                                                {idx + 1}
+                        <Card className="rounded-[2rem] border shadow-sm">
+                            <CardContent className="p-6">
+                                <div className="space-y-3">
+                                    {formData.rent_periods.map((step: any, idx: number) => (
+                                        <div key={idx} className="flex justify-between items-center p-4 bg-slate-50 dark:bg-neutral-900 rounded-xl border border-slate-100 dark:border-neutral-800">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-bold text-sm">
+                                                    {idx + 1}
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-sm">{t('step')} {idx + 1}</p>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {t('effectiveDate')}: {step.startDate ? format(parseISO(step.startDate), 'dd/MM/yyyy') : '-'}
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className="font-bold text-sm">{t('step')} {idx + 1}</p>
-                                                <p className="text-xs text-muted-foreground">
-                                                    {t('effectiveDate')}: {step.startDate ? format(parseISO(step.startDate), 'dd/MM/yyyy') : '-'}
-                                                </p>
+                                            <div className="text-right">
+                                                <span className="text-xs text-muted-foreground block">{t('newRentAmount')}</span>
+                                                <span className="font-bold text-lg text-primary">
+                                                    {step.currency === 'USD' ? '₪' : '₪'}{Number(step.amount).toLocaleString()}
+                                                </span>
                                             </div>
                                         </div>
-                                        <div className="text-right">
-                                            <span className="text-xs text-muted-foreground block">{t('newRentAmount')}</span>
-                                            <span className="font-bold text-lg text-primary">
-                                                {step.currency === 'USD' ? '₪' : '₪'}{Number(step.amount).toLocaleString()}
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
                     </div>
                 )}
 
@@ -817,74 +780,65 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Deposit & Guarantees */}
                         {(!readOnly || formData.security_deposit_amount || formData.guarantees) && (
-                            <div className="bg-white dark:bg-neutral-800 rounded-2xl p-6 border border-slate-100 dark:border-neutral-700 shadow-sm space-y-4">
-                                {(!readOnly || formData.security_deposit_amount) && (
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-muted-foreground uppercase">{t('securityDeposit')}</label>
-                                        <div className="relative">
-                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-bold">
-                                                {formData.currency === 'USD' ? '₪' : '₪'}
-                                            </span>
-                                            <input
-                                                type="number"
-                                                readOnly={readOnly}
-                                                value={formData.security_deposit_amount}
-                                                onChange={e => setFormData({ ...formData, security_deposit_amount: Number(e.target.value) })}
-                                                className="w-full h-10 pl-8 pr-3 border border-slate-100 dark:border-neutral-700 rounded-xl bg-slate-50 dark:bg-neutral-900 font-bold"
-                                            />
-                                        </div>
-                                    </div>
-                                )}
+                            <Card className="rounded-[2rem] border shadow-sm">
+                                <CardContent className="p-6 space-y-4">
+                                    {(!readOnly || formData.security_deposit_amount) && (
+                                        <Input
+                                            label={t('securityDeposit')}
+                                            type="number"
+                                            readOnly={readOnly}
+                                            value={formData.security_deposit_amount}
+                                            onChange={e => setFormData({ ...formData, security_deposit_amount: Number(e.target.value) })}
+                                            leftIcon={<span className="text-sm font-bold">{formData.currency === 'USD' ? '₪' : '₪'}</span>}
+                                        />
+                                    )}
 
-                                {(!readOnly || formData.guarantees) && (
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-muted-foreground uppercase">{t('guarantees')}</label>
-                                        <textarea
+                                    {(!readOnly || formData.guarantees) && (
+                                        <Textarea
+                                            label={t('guarantees')}
                                             readOnly={readOnly}
                                             value={formData.guarantees}
                                             onChange={e => setFormData({ ...formData, guarantees: e.target.value })}
-                                            className="w-full h-24 px-3 py-2 border border-slate-100 dark:border-neutral-700 rounded-xl bg-slate-50 dark:bg-neutral-900 text-sm resize-none focus:ring-2 focus:ring-primary/20 outline-none"
+                                            className="h-24"
                                             placeholder={t('guaranteesPlaceholder')}
                                         />
-                                    </div>
-                                )}
-                            </div>
+                                    )}
+                                </CardContent>
+                            </Card>
                         )}
 
                         {/* Additional Clauses */}
                         {(!readOnly || formData.needs_painting || formData.special_clauses) && (
-                            <div className="bg-white dark:bg-neutral-800 rounded-2xl p-6 border border-slate-100 dark:border-neutral-700 shadow-sm space-y-4">
-
-
-                                {(!readOnly || formData.needs_painting) && (
-                                    <div className="flex items-start justify-between border-b border-slate-100 dark:border-neutral-700 pb-4">
-                                        <div className="space-y-0.5">
-                                            <label className="text-sm font-bold">{t('needsPainting')}</label>
-                                            <p className="text-xs text-muted-foreground">{t('needsPaintingDesc')}</p>
+                            <Card className="rounded-[2rem] border shadow-sm">
+                                <CardContent className="p-6 space-y-4">
+                                    {(!readOnly || formData.needs_painting) && (
+                                        <div className="flex items-start justify-between border-b border-slate-100 dark:border-neutral-700 pb-4">
+                                            <div className="space-y-0.5">
+                                                <label className="text-sm font-bold">{t('needsPainting')}</label>
+                                                <p className="text-xs text-muted-foreground">{t('needsPaintingDesc')}</p>
+                                            </div>
+                                            <input
+                                                type="checkbox"
+                                                disabled={readOnly}
+                                                checked={formData.needs_painting}
+                                                onChange={e => setFormData({ ...formData, needs_painting: e.target.checked })}
+                                                className="w-5 h-5 rounded-md border-slate-300 text-primary focus:ring-primary"
+                                            />
                                         </div>
-                                        <input
-                                            type="checkbox"
-                                            disabled={readOnly}
-                                            checked={formData.needs_painting}
-                                            onChange={e => setFormData({ ...formData, needs_painting: e.target.checked })}
-                                            className="w-5 h-5 rounded-md border-slate-300 text-primary focus:ring-primary"
-                                        />
-                                    </div>
-                                )}
+                                    )}
 
-                                {(!readOnly || formData.special_clauses) && (
-                                    <div className="space-y-1.5 pt-2">
-                                        <label className="text-xs font-bold text-muted-foreground uppercase">{t('specialClauses')}</label>
-                                        <textarea
+                                    {(!readOnly || formData.special_clauses) && (
+                                        <Textarea
+                                            label={t('specialClauses')}
                                             readOnly={readOnly}
                                             value={formData.special_clauses}
                                             onChange={e => setFormData({ ...formData, special_clauses: e.target.value })}
-                                            className="w-full h-24 px-3 py-2 border border-slate-100 dark:border-neutral-700 rounded-xl bg-slate-50 dark:bg-neutral-900 text-sm resize-none focus:ring-2 focus:ring-primary/20 outline-none"
+                                            className="h-24"
                                             placeholder={t('specialClausesPlaceholder')}
                                         />
-                                    </div>
-                                )}
-                            </div>
+                                    )}
+                                </CardContent>
+                            </Card>
                         )}
                     </div>
                 </div>
@@ -892,21 +846,22 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                 {!readOnly && (
                     <div className="fixed bottom-0 left-0 right-0 p-6 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-t border-slate-100 dark:border-neutral-800 z-50">
                         <div className="max-w-7xl mx-auto flex gap-4">
-                            <button
+                            <Button
                                 type="button"
                                 onClick={() => setReadOnly(true)}
-                                className="flex-1 py-4 bg-slate-100 dark:bg-neutral-800 text-foreground font-black uppercase tracking-widest rounded-2xl hover:bg-slate-200 transition-all"
+                                variant="secondary"
+                                className="flex-1 py-4 uppercase tracking-widest rounded-2xl h-14"
                             >
                                 {t('cancel')}
-                            </button>
-                            <button
+                            </Button>
+                            <Button
                                 type="submit"
                                 disabled={saving}
-                                className="flex-[2] py-4 bg-primary text-white font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                className="flex-[2] py-4 uppercase tracking-widest rounded-2xl shadow-lg shadow-primary/20 h-14"
                             >
-                                {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+                                {saving ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Save className="w-5 h-5 mr-2" />}
                                 {t('save')}
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 )}

@@ -2,19 +2,14 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useTranslation } from '../hooks/useTranslation';
-import { useUserPreferences } from '../contexts/UserPreferencesContext';
 import {
     FileText,
     Search,
-    Filter,
     Plus,
     Calendar,
-    User,
     Building2,
     ArrowRight,
-    CheckCircle2,
     Clock,
-    Archive,
     MessageCircle,
     Phone
 } from 'lucide-react';
@@ -22,7 +17,9 @@ import { cn, formatDate } from '../lib/utils';
 import { Skeleton } from '../components/ui/Skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDataCache } from '../contexts/DataCacheContext';
-import { ContractsIcon } from '../components/icons/NavIcons';
+import { Card, CardContent } from '../components/ui/Card';
+import { Input } from '../components/ui/Input';
+import { Button } from '../components/ui/Button';
 
 interface ExtendedContract {
     id: string;
@@ -39,11 +36,12 @@ interface ExtendedContract {
     } | null;
 }
 
+const MotionCard = motion(Card);
+
 export default function Contracts() {
     const { t, lang } = useTranslation();
-    const { preferences } = useUserPreferences();
     const navigate = useNavigate();
-    const { get, set, clear } = useDataCache();
+    const { get, set } = useDataCache();
     const CACHE_KEY = 'contracts_list_all';
 
     const [contracts, setContracts] = useState<ExtendedContract[]>([]);
@@ -144,59 +142,59 @@ export default function Contracts() {
                 <div className="flex items-center gap-3">
                     <div className="flex p-1 bg-slate-100 dark:bg-neutral-800 rounded-2xl border border-slate-200 dark:border-neutral-700 shadow-sm">
                         {(['active', 'archived', 'all'] as const).map((s) => (
-                            <button
+                            <Button
                                 key={s}
                                 onClick={() => setStatusFilter(s)}
+                                variant={statusFilter === s ? 'secondary' : 'ghost'}
                                 className={cn(
-                                    "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                                    "px-4 py-2 h-9 text-[10px] font-black uppercase tracking-widest transition-all rounded-xl",
                                     statusFilter === s
                                         ? "bg-white dark:bg-neutral-700 text-foreground shadow-sm"
-                                        : "text-muted-foreground hover:text-foreground"
+                                        : "text-muted-foreground hover:bg-transparent hover:text-foreground"
                                 )}
                             >
-                                {t(s as any)}
-                            </button>
+                                {t(s)}
+                            </Button>
                         ))}
                     </div>
-                    <button
+                    <Button
                         onClick={handleAdd}
-                        className="w-12 h-12 button-jewel text-white rounded-[1.2rem] shadow-jewel hover:scale-105 active:scale-95 transition-all flex items-center justify-center shrink-0"
+                        className="w-12 h-12 rounded-[1.2rem] shadow-jewel p-0 flex items-center justify-center shrink-0"
                     >
                         <Plus className="w-6 h-6" />
-                    </button>
+                    </Button>
                 </div>
             </div>
 
             {/* Quick Search & Filters */}
-            <div className="relative group">
-                <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none">
-                    <Search className="w-5 h-5 text-slate-300 group-focus-within:text-primary transition-colors" />
-                </div>
-                <input
-                    type="text"
+            <div className="relative group max-w-2xl">
+                <Input
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder={lang === 'he' ? 'חיפוש לפי דייר, כתובת או עיר...' : 'Search by tenant, address or city...'}
-                    className="w-full h-16 pl-14 pr-6 bg-white dark:bg-neutral-900 rounded-3xl border border-slate-100 dark:border-neutral-800 shadow-minimal outline-none focus:border-primary/30 focus:ring-4 focus:ring-primary/5 transition-all font-medium"
+                    className="h-16 pl-12 pr-6 rounded-3xl border-slate-100 dark:border-neutral-800 shadow-minimal font-medium"
+                    leftIcon={<Search className="w-5 h-5 text-slate-300 group-focus-within:text-primary transition-colors" />}
                 />
             </div>
 
             {/* Statistics Row */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-8">
                 {[
-                    { label: t('active'), value: stats.active, color: 'text-emerald-500', bg: 'bg-emerald-500/5' },
-                    { label: t('archived'), value: stats.archived, color: 'text-slate-400', bg: 'bg-slate-500/5' },
-                    { label: t('total'), value: stats.total, color: 'text-primary', bg: 'bg-primary/5' },
+                    { label: t('active'), value: stats.active, color: 'text-emerald-500', bg: 'bg-emerald-500/5', border: 'border-emerald-500/10' },
+                    { label: t('archived'), value: stats.archived, color: 'text-slate-400', bg: 'bg-slate-500/5', border: 'border-slate-200 dark:border-slate-800' },
+                    { label: t('total'), value: stats.total, color: 'text-primary', bg: 'bg-primary/5', border: 'border-primary/10' },
                 ].map((stat, i) => (
-                    <div key={i} className={cn("p-6 rounded-[2rem] border border-slate-100 dark:border-neutral-800 glass-premium flex items-center justify-between", stat.bg)}>
-                        <div className="space-y-1">
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">{stat.label}</span>
-                            <div className={cn("text-3xl font-black tracking-tighter", stat.color)}>{stat.value}</div>
-                        </div>
-                        <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center", stat.bg)}>
-                            <FileText className={cn("w-6 h-6", stat.color)} />
-                        </div>
-                    </div>
+                    <Card key={i} glass className={cn("rounded-[2rem] border shadow-sm", stat.bg, stat.border)}>
+                        <CardContent className="p-6 flex items-center justify-between">
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">{stat.label}</span>
+                                <div className={cn("text-3xl font-black tracking-tighter", stat.color)}>{stat.value}</div>
+                            </div>
+                            <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center bg-white/50 dark:bg-black/20", stat.color)}>
+                                <FileText className="w-6 h-6" />
+                            </div>
+                        </CardContent>
+                    </Card>
                 ))}
             </div>
 
@@ -223,88 +221,91 @@ export default function Contracts() {
                             const phone = tenant?.phone;
 
                             return (
-                                <motion.div
+                                <MotionCard
                                     layout
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.95 }}
                                     key={contract.id}
                                     onClick={() => navigate(`/contracts/${contract.id}`)}
-                                    className="glass-premium dark:bg-neutral-900/60 group p-8 rounded-[2.5rem] border border-white/10 shadow-minimal hover:shadow-jewel transition-all duration-300 cursor-pointer flex flex-col h-full relative"
+                                    hoverEffect
+                                    glass
+                                    className="group p-0 rounded-[2.5rem] border-white/10 overflow-hidden"
                                 >
-                                    {/* Status Indicator */}
-                                    <div className="absolute top-8 right-8">
-                                        <div className={cn(
-                                            "w-2.5 h-2.5 rounded-full shadow-[0_0_8px_currentColor]",
-                                            isActive ? "text-emerald-500 bg-emerald-500" : "text-slate-400 bg-slate-400"
-                                        )} />
-                                    </div>
-
-                                    {/* Content Wrapper */}
-                                    <div className="flex-1 space-y-6">
-                                        <div className="space-y-1">
-                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-40">
-                                                {isActive ? t('active_contract') : t('archived_contract')}
-                                            </span>
-                                            <h3 className="text-2xl font-black tracking-tighter text-foreground leading-tight group-hover:text-primary transition-colors">
-                                                {tenantName}
-                                            </h3>
-                                            <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground group-hover:text-foreground transition-colors">
-                                                <Building2 className="w-3.5 h-3.5" />
-                                                <span className="truncate">{contract.properties?.address || t('unknownProperty')}</span>
-                                            </div>
+                                    <CardContent className="p-8 space-y-6 relative h-full flex flex-col">
+                                        {/* Status Indicator */}
+                                        <div className="absolute top-8 right-8">
+                                            <div className={cn(
+                                                "w-2.5 h-2.5 rounded-full shadow-[0_0_8px_currentColor]",
+                                                isActive ? "text-emerald-500 bg-emerald-500" : "text-slate-400 bg-slate-400"
+                                            )} />
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-4 py-6 border-y border-white/5">
+                                        <div className="flex-1 space-y-6">
                                             <div className="space-y-1">
-                                                <div className="flex items-center gap-1.5 text-muted-foreground opacity-40">
-                                                    <Calendar className="w-3 h-3" />
-                                                    <span className="text-[9px] font-black uppercase tracking-widest">{t('period')}</span>
-                                                </div>
-                                                <div className="text-[11px] font-black tracking-tight text-foreground">
-                                                    {formatDate(contract.start_date)} - {formatDate(contract.end_date)}
-                                                </div>
-                                            </div>
-                                            <div className="space-y-1 text-right">
-                                                <div className="flex items-center justify-end gap-1.5 text-muted-foreground opacity-40">
-                                                    <Clock className="w-3 h-3" />
-                                                    <span className="text-[9px] font-black uppercase tracking-widest">{t('base_rent')}</span>
-                                                </div>
-                                                <div className="text-xl font-black tracking-tighter text-foreground">
-                                                    ₪{contract.base_rent?.toLocaleString()}
+                                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-40">
+                                                    {isActive ? t('active_contract') : t('archived_contract')}
+                                                </span>
+                                                <h3 className="text-2xl font-black tracking-tighter text-foreground leading-tight group-hover:text-primary transition-colors">
+                                                    {tenantName}
+                                                </h3>
+                                                <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground group-hover:text-foreground transition-colors">
+                                                    <Building2 className="w-3.5 h-3.5" />
+                                                    <span className="truncate">{contract.properties?.address || t('unknownProperty')}</span>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        {/* Actions Footer */}
-                                        <div className="flex items-center justify-between pt-2">
-                                            <div className="flex items-center gap-2">
-                                                {phone && (
-                                                    <a
-                                                        href={`https://wa.me/${phone.replace(/[^0-9]/g, '')}`}
-                                                        onClick={(e) => e.stopPropagation()}
-                                                        className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-all shadow-sm"
-                                                    >
-                                                        <MessageCircle className="w-5 h-5" />
-                                                    </a>
-                                                )}
-                                                {phone && (
-                                                    <a
-                                                        href={`tel:${phone}`}
-                                                        onClick={(e) => e.stopPropagation()}
-                                                        className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center hover:bg-blue-500 hover:text-white transition-all shadow-sm"
-                                                    >
-                                                        <Phone className="w-5 h-5" />
-                                                    </a>
-                                                )}
+                                            <div className="grid grid-cols-2 gap-4 py-6 border-y border-border/50">
+                                                <div className="space-y-1">
+                                                    <div className="flex items-center gap-1.5 text-muted-foreground opacity-40">
+                                                        <Calendar className="w-3 h-3" />
+                                                        <span className="text-[9px] font-black uppercase tracking-widest">{t('period')}</span>
+                                                    </div>
+                                                    <div className="text-[11px] font-black tracking-tight text-foreground">
+                                                        {formatDate(contract.start_date)} - {formatDate(contract.end_date)}
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-1 text-right">
+                                                    <div className="flex items-center justify-end gap-1.5 text-muted-foreground opacity-40">
+                                                        <Clock className="w-3 h-3" />
+                                                        <span className="text-[9px] font-black uppercase tracking-widest">{t('base_rent')}</span>
+                                                    </div>
+                                                    <div className="text-xl font-black tracking-tighter text-foreground">
+                                                        ₪{contract.base_rent?.toLocaleString()}
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className="flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-black rounded-xl text-[9px] font-black uppercase tracking-widest shadow-minimal group-hover:scale-105 transition-all">
-                                                {t('view_details')}
-                                                <ArrowRight className={cn("w-3 h-3", lang === 'he' ? 'rotate-180' : '')} />
+
+                                            {/* Actions Footer */}
+                                            <div className="flex items-center justify-between pt-2">
+                                                <div className="flex items-center gap-2">
+                                                    {phone && (
+                                                        <a
+                                                            href={`https://wa.me/${phone.replace(/[^0-9]/g, '')}`}
+                                                            onClick={(e) => e.stopPropagation()}
+                                                            className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-all shadow-sm"
+                                                        >
+                                                            <MessageCircle className="w-5 h-5" />
+                                                        </a>
+                                                    )}
+                                                    {phone && (
+                                                        <a
+                                                            href={`tel:${phone}`}
+                                                            onClick={(e) => e.stopPropagation()}
+                                                            className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center hover:bg-blue-500 hover:text-white transition-all shadow-sm"
+                                                        >
+                                                            <Phone className="w-5 h-5" />
+                                                        </a>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-black rounded-xl text-[9px] font-black uppercase tracking-widest shadow-minimal group-hover:scale-105 transition-all">
+                                                    {t('view_details')}
+                                                    <ArrowRight className={cn("w-3 h-3", lang === 'he' ? 'rotate-180' : '')} />
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </motion.div>
+                                    </CardContent>
+                                </MotionCard>
                             );
                         })}
                     </AnimatePresence>

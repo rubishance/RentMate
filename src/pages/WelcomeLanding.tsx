@@ -14,6 +14,7 @@ import { supabase } from '../lib/supabase';
 import { BotFullBody } from '../components/chat/BotFullBody';
 import { SEO } from '../components/common/SEO';
 import { useAuth } from '../contexts/AuthContext';
+import { Button } from '../components/ui/Button';
 
 
 export function WelcomeLanding() {
@@ -134,12 +135,12 @@ export function WelcomeLanding() {
                             <ThemeToggle />
                             <LanguageToggle />
                         </div>
-                        <button
+                        <Button
                             onClick={() => navigate('/login')}
-                            className="hidden md:flex h-12 items-center px-8 text-[10px] font-black uppercase tracking-[0.2em] bg-foreground text-background rounded-full hover:scale-105 active:scale-95 transition-all shadow-premium-dark"
+                            className="hidden md:flex h-12 px-8 text-[10px] font-black uppercase tracking-[0.2em] rounded-full shadow-premium-dark"
                         >
                             {isRtl ? 'כניסה' : 'Sign In'}
-                        </button>
+                        </Button>
                         <button
                             className="lg:hidden p-3 text-foreground hover:bg-slate-50 dark:hover:bg-neutral-900 rounded-xl transition-colors"
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -212,13 +213,13 @@ export function WelcomeLanding() {
                                     <LanguageToggle />
                                 </div>
 
-                                <button
+                                <Button
                                     onClick={() => navigate('/login')}
-                                    className="w-full h-20 bg-foreground text-background font-black text-xs uppercase tracking-[0.3em] rounded-[2rem] shadow-premium-dark flex items-center justify-center gap-4 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                    className="w-full h-20 font-black text-xs uppercase tracking-[0.3em] rounded-[2rem] shadow-premium-dark gap-4"
                                 >
                                     {isRtl ? 'כניסה למערכת' : 'Sign In'}
                                     <ArrowRight className={cn("w-6 h-6", isRtl && "rotate-180")} />
-                                </button>
+                                </Button>
                             </motion.div>
                         </div>
                     </motion.div>
@@ -276,20 +277,21 @@ export function WelcomeLanding() {
                                             transition={{ delay: 0.3, duration: 1, ease: [0.16, 1, 0.3, 1] }}
                                             className="flex flex-wrap gap-6"
                                         >
-                                            <button
+                                            <Button
                                                 onClick={() => navigate('/login?mode=signup')}
-                                                className="h-16 px-10 bg-foreground text-background font-black text-xs uppercase tracking-[0.2em] rounded-[1.5rem] hover:scale-105 active:scale-95 transition-all shadow-premium-dark flex items-center gap-4"
+                                                className="h-16 px-10 font-black text-xs uppercase tracking-[0.2em] rounded-[1.5rem] shadow-premium-dark gap-4"
                                             >
                                                 {isRtl ? 'התחל עכשיו' : 'Start Now'}
                                                 <ArrowRight className={cn("w-5 h-5", isRtl && "rotate-180")} />
-                                            </button>
-                                            <button
+                                            </Button>
+                                            <Button
                                                 onClick={() => setActiveTab('demo')}
-                                                className="h-16 px-10 bg-slate-50 dark:bg-neutral-900 text-foreground font-black text-xs uppercase tracking-[0.2em] rounded-[1.5rem] hover:bg-slate-100 dark:hover:bg-neutral-800 transition-all flex items-center gap-4 border border-slate-100 dark:border-neutral-800 shadow-minimal"
+                                                variant="outline"
+                                                className="h-16 px-10 font-black text-xs uppercase tracking-[0.2em] rounded-[1.5rem] gap-4 shadow-minimal bg-slate-50 dark:bg-neutral-900 border-slate-100 dark:border-neutral-800"
                                             >
                                                 <Play className="w-4 h-4 fill-current" />
                                                 {isRtl ? 'הדגמה' : 'Demo'}
-                                            </button>
+                                            </Button>
                                         </motion.div>
                                     </div>
 
@@ -422,12 +424,12 @@ export function WelcomeLanding() {
                                     <Clock className="w-10 h-10 text-slate-300" />
                                 </div>
                                 <h2 className="text-3xl font-black tracking-tighter text-foreground uppercase">Coming Soon</h2>
-                                <button
+                                <Button
                                     onClick={() => setActiveTab('home')}
-                                    className="px-10 py-4 bg-foreground text-background font-black text-xs uppercase tracking-[0.2em] rounded-full shadow-premium-dark"
+                                    className="px-10 py-4 font-black text-xs uppercase tracking-[0.2em] rounded-full shadow-premium-dark h-auto"
                                 >
                                     {isRtl ? 'חזרה לבית' : 'Back to Home'}
-                                </button>
+                                </Button>
                             </div>
                         </motion.div>
                     )}

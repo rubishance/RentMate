@@ -34,7 +34,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(({
                 <input
                     type={type}
                     className={cn(
-                        "flex h-12 w-full rounded-[1.25rem] border border-input bg-background/50 px-4 py-3 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-300 shadow-sm hover:border-primary/50 hover:bg-background",
+                        "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 transition-colors shadow-sm",
                         leftIcon && "pl-10",
                         rightIcon && "pr-10",
                         error && "border-destructive focus-visible:ring-destructive",
@@ -50,7 +50,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(({
                 )}
             </div>
             {error && (
-                <p className="text-xs font-medium text-red-500 mt-1">{error}</p>
+                <p className="text-[0.8rem] font-medium text-destructive mt-1.5">{error}</p>
             )}
         </div>
     );

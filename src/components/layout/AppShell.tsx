@@ -1,31 +1,28 @@
 import { Suspense, useState, useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import { CookieConsent } from '../legal/CookieConsent';
-import type { PanInfo } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import { useUserPreferences } from '../../contexts/UserPreferencesContext';
 import { useNotificationScheduler } from '../../hooks/useNotificationScheduler';
 import { SystemBroadcast } from '../common/SystemBroadcast';
 import { StreamHeader } from './StreamHeader';
 import { BottomDock } from './BottomDock';
+import { Sidebar } from './Sidebar';
 import { useStack } from '../../contexts/StackContext';
-
 import { useActivityTracking } from '../../hooks/useActivityTracking';
 import { useAuth } from '../../contexts/AuthContext';
 import { cn } from '../../lib/utils';
 
 export function AppShell() {
-    useActivityTracking(); // Start tracking
+    useActivityTracking();
     const location = useLocation();
     const navigate = useNavigate();
     const { preferences } = useUserPreferences();
-    const { language: lang } = preferences; // Match 'lang' usage in fallback
     const [isMaintenance, setIsMaintenance] = useState(false);
     const { activeLayer } = useStack();
     const { profile: authProfile } = useAuth();
 
-    // Distraction-free mode for all wizards (full routes or stack-based)
+    // Distraction-free mode for wizards
     const isWizard =
         location.pathname.includes('/new') ||
         location.pathname.includes('/add') ||
@@ -36,37 +33,14 @@ export function AppShell() {
         activeLayer?.type === 'wizard';
 
     useEffect(() => {
-        const timestamp = new Date().toISOString();
-        console.log(`[AppShell] [${timestamp}] Navigation to: ${location.pathname}`);
-        if (window.location.pathname !== location.pathname) {
-            console.error(`[AppShell] Router/Browser Mismatch: Router=${location.pathname}, Browser=${window.location.pathname}`);
-        }
-    }, [location.pathname]);
-
-    // GLOBAL CLICK LOGGER
-    useEffect(() => {
-        const handleGlobalClick = (e: MouseEvent) => {
-            const target = e.target as HTMLElement;
-            console.log(`[AppShell] [CLICK] Tag: ${target.tagName}, ID: ${target.id}, Class: ${target.className.substring(0, 50)}`);
-        };
-        window.addEventListener('click', handleGlobalClick);
-        return () => window.removeEventListener('click', handleGlobalClick);
-    }, []);
-
-    // Initial automated checks
-    useNotificationScheduler();
-
-    useEffect(() => {
         const checkSystemStatus = async () => {
-            // 1. Check Maintenance Mode
             const { data: settings } = await supabase
                 .from('system_settings')
                 .select('key, value')
-                .in('key', ['maintenance_mode', 'disable_ai_processing']);
+                .in('key', ['maintenance_mode']);
 
             const maintMode = settings?.find(s => s.key === 'maintenance_mode')?.value;
 
-            // 2. Check Permissions via AuthContext profile
             if (maintMode === true) {
                 if (!authProfile || (authProfile.role !== 'admin' && !authProfile.is_super_admin)) {
                     setIsMaintenance(true);
@@ -82,67 +56,60 @@ export function AppShell() {
         }
     }, [isMaintenance, navigate]);
 
-    // Simplified navigation
-    const onDragEnd = undefined;
-
-    const variants = {
-        enter: (direction: number) => ({
-            x: direction > 0 ? 100 : -100,
-            opacity: 0,
-        }),
-        center: {
-            x: 0,
-            opacity: 1,
-        },
-        exit: (direction: number) => ({
-            x: direction < 0 ? 100 : -100,
-            opacity: 0,
-        }),
-    };
+    // Initial automated checks
+    useNotificationScheduler();
 
     return (
-        <div className="min-h-screen bg-background font-sans selection:bg-primary/10 relative">
-            {/* Ambient Depth Layer */}
-            <div className="ambient-depth" />
+        <div className="min-h-screen bg-background font-sans relative flex">
+            {/* Desktop Sidebar (Left) */}
+            {!isWizard && <Sidebar />}
 
-            {/* New Stream Header */}
-            <StreamHeader title={activeLayer?.title} hideControls={isWizard} />
+            {/* Main Content Area */}
+            <div className={cn("flex-1 flex flex-col min-h-screen relative transition-all duration-300", !isWizard && "md:pl-64")}>
 
-            <div className={cn("min-h-screen flex flex-col relative overflow-hidden", !isWizard && "pt-16")}>
-                <div className="relative z-50">
-                    <SystemBroadcast />
+                {/* Mobile Header (Hidden on Desktop usually, but we keep StreamHeader for now as top bar) */}
+                {/* We adjust StreamHeader to be positioned correctly on desktop if we keep it, or hide it */}
+                <div className="md:hidden">
+                    <StreamHeader title={activeLayer?.title} hideControls={isWizard} />
                 </div>
 
-                {/* Accessibility: Skip to Content */}
-                <a
-                    href="#main-content"
-                    className="sr-only focus:not-sr-only focus:absolute focus:top-28 focus:left-8 z-[999] px-8 py-4 bg-foreground text-background font-black uppercase text-[10px] tracking-widest rounded-2xl shadow-premium-dark"
-                >
-                    {preferences.language === 'he' ? 'דלג לתוכן המרכזי' : 'Skip to main content'}
-                </a>
+                {/* Desktop Top Bar (Optional, if we want one. For now Sidebar handles Nav. Content handles Title) */}
+                {/* If StreamHeader is used on Desktop, it needs to offset left-64. currently it's fixed left-0 */}
+                {/* Let's keep StreamHeader for Mobile ONLY for now, and let Dashboard have its own header or use a simple Desktop Header if needed. */}
+                {/* Actually, existing pages might rely on the spacer `pt-16` from StreamHeader. */}
 
-                <main
-                    id="main-content"
-                    className="flex-1 overflow-y-auto overflow-x-hidden pb-40 scroll-smooth relative z-10"
-                >
-                    {/* Debug Indicator (Always visible for deconstruction) */}
-                    <div className="fixed top-0 right-0 bg-indigo-600 text-white text-[10px] font-black px-3 py-2 z-[9999] opacity-100 shadow-2xl border-b border-l border-white animate-pulse">
-                        V1.4.14-STABLE | {new Date().toLocaleTimeString()}
+                <div className={cn("flex-1 flex flex-col relative", !isWizard && "pt-16 md:pt-0")}>
+                    <div className="relative z-50">
+                        <SystemBroadcast />
                     </div>
 
-                    <div className="min-h-full px-3 md:px-10 max-w-7xl mx-auto">
-                        <Outlet key={location.pathname} />
-                    </div>
-                </main>
+                    <a
+                        href="#main-content"
+                        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-64 z-[999] px-4 py-2 bg-primary text-primary-foreground rounded-md shadow-lg"
+                    >
+                        {preferences.language === 'he' ? 'דלג לתוכן המרכזי' : 'Skip to main content'}
+                    </a>
+
+                    <main
+                        id="main-content"
+                        className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8 scroll-smooth relative z-10"
+                    >
+                        <div className="max-w-7xl mx-auto w-full">
+                            <Outlet key={location.pathname} />
+                        </div>
+                    </main>
+                </div>
             </div>
 
             {/* Cookie Consent */}
             <CookieConsent />
 
-            {/* New Bottom Dock - Hidden on Wizards/Creation and when Stack is active */}
-            {!isWizard && !activeLayer && <BottomDock />}
-
+            {/* Mobile Bottom Dock */}
+            {!isWizard && !activeLayer && (
+                <div className="md:hidden">
+                    <BottomDock />
+                </div>
+            )}
         </div>
-
     );
 }
