@@ -20,9 +20,10 @@ interface FeedItem {
 interface RentyCommandCenterProps {
     firstName: string;
     feedItems: FeedItem[];
+    className?: string;
 }
 
-export function RentyCommandCenter({ firstName, feedItems }: RentyCommandCenterProps) {
+export function RentyCommandCenter({ firstName, feedItems, className }: RentyCommandCenterProps) {
     const { t, lang } = useTranslation();
     const isRtl = lang === 'he';
     const inputRef = useRef<HTMLInputElement>(null);
@@ -114,7 +115,7 @@ export function RentyCommandCenter({ firstName, feedItems }: RentyCommandCenterP
     const greeting = getTimeBasedGreeting(t);
 
     return (
-        <div className="space-y-6 relative">
+        <div className={cn("space-y-6 relative", className)}>
             {/* Ambient Background Glow */}
             <div className="absolute top-[-100px] left-1/2 -translate-x-1/2 w-full h-[400px] bg-gradient-to-b from-indigo-500/10 via-violet-500/5 to-transparent blur-3xl -z-10 pointer-events-none" />
 

@@ -19,86 +19,83 @@ module.exports = {
                 heading: ["Outfit", "Inter", "Assistant", "sans-serif"],
                 display: ["Outfit", "sans-serif"],
             },
+            // Mid-Century Financial Palette
             colors: {
+                canvas: {
+                    DEFAULT: '#F5F2EB', // Almond Milk
+                    50: '#FCFBF9',
+                    100: '#F5F2EB',
+                    200: '#EBE6DA',
+                    300: '#D6CDB8',
+                    900: '#1A1917',
+                },
+                primary: {
+                    DEFAULT: '#0F5156', // Deep Teal
+                    foreground: '#FFFFFF',
+                    50: '#F0F9FA',
+                    100: '#DFF1F2',
+                    200: '#BFE0E3',
+                    300: '#90C6CB',
+                    400: '#5BA5AC',
+                    500: '#34868D',
+                    600: '#236C73',
+                    700: '#0F5156',
+                    800: '#0E4348',
+                    900: '#10383C',
+                    950: '#062326',
+                },
+                secondary: {
+                    DEFAULT: '#E0A458', // Harvest Gold
+                    foreground: '#1A1A1A',
+                    50: '#FDF9F3',
+                    100: '#FBF2E5',
+                    200: '#F6E0C5',
+                    300: '#EFCA9F',
+                    400: '#E7B073',
+                    500: '#E0A458',
+                    600: '#C4843D',
+                    700: '#A36832',
+                    800: '#85532E',
+                    900: '#6C4529',
+                    950: '#3E2413',
+                },
+                success: {
+                    DEFAULT: '#4B5F43', // Olive Drab
+                    foreground: '#FFFFFF',
+                    50: '#F4F7F4',
+                    100: '#E6EBE5',
+                    500: '#4B5F43',
+                    900: '#1A2317',
+                },
+                warning: {
+                    DEFAULT: '#E0A458',
+                    foreground: '#1A1A1A',
+                },
+                destructive: {
+                    DEFAULT: '#C05746', // Terracotta
+                    foreground: '#FFFFFF',
+                    50: '#FEF2F2',
+                    500: '#C05746',
+                    900: '#451510',
+                },
+                neutral: {
+                    50: '#F9FAFB',
+                    100: '#F3F4F6',
+                    200: '#E5E7EB',
+                    300: '#D1D5DB',
+                    400: '#9CA3AF',
+                    500: '#6B7280',
+                    600: '#4B5563',
+                    700: '#374151',
+                    800: '#1F2937',
+                    900: '#111827',
+                    950: '#030712',
+                },
                 border: "hsl(var(--border))",
                 input: "hsl(var(--input))",
                 ring: "hsl(var(--ring))",
                 background: "hsl(var(--background))",
                 foreground: "hsl(var(--foreground))",
-
-                primary: {
-                    DEFAULT: "hsl(var(--primary))",
-                    foreground: "hsl(var(--primary-foreground))",
-                },
-                secondary: {
-                    DEFAULT: "hsl(var(--secondary))",
-                    foreground: "hsl(var(--secondary-foreground))",
-                },
-                destructive: {
-                    DEFAULT: "hsl(var(--destructive))",
-                    foreground: "hsl(var(--destructive-foreground))",
-                },
-                muted: {
-                    DEFAULT: "hsl(var(--muted))",
-                    foreground: "hsl(var(--muted-foreground))",
-                },
-                accent: {
-                    DEFAULT: "hsl(var(--accent))",
-                    foreground: "hsl(var(--accent-foreground))",
-                },
-                popover: {
-                    DEFAULT: "hsl(var(--popover))",
-                    foreground: "hsl(var(--popover-foreground))",
-                },
-                card: {
-                    DEFAULT: "hsl(var(--card))",
-                    foreground: "hsl(var(--card-foreground))",
-                },
-
-                // Trust Blue Palette
-                trust: {
-                    50: '#f0f9ff',
-                    100: '#e0f2fe',
-                    200: '#bae6fd',
-                    300: '#7dd3fc',
-                    400: '#38bdf8',
-                    500: '#0ea5e9',
-                    600: '#0284c7', // Primary Brand Color
-                    700: '#0369a1',
-                    800: '#075985',
-                    900: '#0c4a6e',
-                    950: '#082f49',
-                },
-
-                // Professional Teal Palette
-                teal: {
-                    50: '#f0fdfa',
-                    100: '#ccfbf1',
-                    200: '#99f6e4',
-                    300: '#5eead4',
-                    400: '#2dd4bf',
-                    500: '#14b8a6',
-                    600: '#0d9488', // Secondary Brand Color
-                    700: '#0f766e',
-                    800: '#115e59',
-                    900: '#134e4a',
-                    950: '#042f2e',
-                },
-
-                // Sophisticated Neutrals (Slate)
-                slate: {
-                    50: '#f8fafc',
-                    100: '#f1f5f9',
-                    200: '#e2e8f0',
-                    300: '#cbd5e1',
-                    400: '#94a3b8',
-                    500: '#64748b',
-                    600: '#475569',
-                    700: '#334155',
-                    800: '#1e293b',
-                    900: '#0f172a',
-                    950: '#020617',
-                }
             },
             borderRadius: {
                 lg: "var(--radius)",

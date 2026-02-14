@@ -4,70 +4,81 @@
 
 @layer base {
   :root {
-    /* Trust Blue Theme - Light Mode */
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Mid-Century Financial Theme - Light Mode */
+    /* Almond Milk Background */
+    --background: 38 29% 94%;
+    /* Ink Black Foreground */
+    --foreground: 0 0% 10%;
 
+    /* Card White */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 0 0% 10%;
 
+    /* Popover White */
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 0 0% 10%;
 
-    /* Trust Blue 600 */
-    --primary: 201 96% 32%;
-    --primary-foreground: 210 40% 98%;
+    /* Deep Teal Primary */
+    --primary: 184 70% 20%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Professional Teal 600 */
-    --secondary: 175 84% 32%;
-    --secondary-foreground: 210 40% 98%;
+    /* Harvest Gold Secondary */
+    --secondary: 34 69% 61%;
+    --secondary-foreground: 0 0% 10%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Almond Muted */
+    --muted: 38 26% 78%;
+    --muted-foreground: 0 0% 40%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Almond Accent */
+    --accent: 38 26% 78%;
+    --accent-foreground: 184 70% 20%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Terracotta Destructive */
+    --destructive: 8 50% 51%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 201 96% 32%;
+    --border: 38 20% 88%;
+    --input: 38 20% 88%;
+    --ring: 184 70% 20%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
+    /* Slightly softer 12px */
   }
 
   .dark {
-    /* Trust Blue Theme - Dark Mode */
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Mid-Century Dark Theme (Ink & Gold) */
+    /* Deep Ink Background */
+    --background: 184 70% 5%;
+    --foreground: 38 29% 94%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    /* Dark Teal Card */
+    --card: 184 50% 8%;
+    --card-foreground: 38 29% 94%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 184 50% 8%;
+    --popover-foreground: 38 29% 94%;
 
-    /* Trust Blue 500 for better visibility in dark */
-    --primary: 201 96% 32%;
-    --primary-foreground: 210 40% 98%;
+    /* Lighter Teal for Dark Mode Primary */
+    --primary: 184 50% 40%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 175 84% 32%;
-    --secondary-foreground: 210 40% 98%;
+    /* Gold remains clear accent */
+    --secondary: 34 69% 61%;
+    --secondary-foreground: 0 0% 10%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 184 30% 15%;
+    --muted-foreground: 184 20% 60%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 184 30% 15%;
+    --accent-foreground: 38 29% 94%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 8 50% 51%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 184 30% 15%;
+    --input: 184 30% 15%;
+    --ring: 34 69% 61%;
   }
 }
 
@@ -215,4 +226,32 @@ a {
 
 .dark .pac-item-query {
   @apply text-white;
+}
+
+@layer components {
+  .glass-premium {
+    @apply backdrop-blur-xl border border-white/20 shadow-glass transition-all duration-300;
+    background: rgba(245, 242, 235, 0.65);
+    /* Almond Warmth */
+  }
+
+  .dark .glass-premium {
+    @apply border-white/5 shadow-none;
+    background: rgba(15, 81, 86, 0.2);
+    /* Deep Teal Depth */
+  }
+
+  .shadow-premium {
+    box-shadow:
+      0 4px 6px -1px rgba(15, 81, 86, 0.1),
+      /* Deep Teal Shadow */
+      0 2px 4px -1px rgba(15, 81, 86, 0.06);
+  }
+
+  .shadow-jewel {
+    box-shadow:
+      0 10px 15px -3px rgba(14, 165, 233, 0.1),
+      0 4px 6px -2px rgba(14, 165, 233, 0.05),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  }
 }

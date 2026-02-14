@@ -188,15 +188,23 @@ export function Dashboard() {
     }
 
     return (
-        <div className="space-y-8 md:space-y-10 pb-8">
+        <div className="min-h-screen bg-canvas text-foreground pb-32 md:pb-12 relative overflow-x-hidden transition-colors duration-500">
+            {/* Mobile: Top Bar Background Extension */}
+            <div className="fixed top-0 left-0 right-0 h-32 bg-gradient-to-b from-canvas to-transparent z-0 pointer-events-none md:hidden" />
+
+            {/* Bionic Elements */}
             <BionicWelcomeOverlay firstName={firstName} />
 
-            <div className="space-y-8 md:space-y-10">
-                <DashboardHero firstName={firstName} feedItems={feedItemsWithActions} />
+            <div className="container mx-auto px-4 pt-4 md:pt-10 relative z-10 max-w-7xl space-y-8 md:space-y-12">
 
-                {/* Gamification: Setup Progress (Shows only if onboarding not complete) */}
+                {/* Dashboard Hero (Welcome & Alerts) */}
+                <div className="mb-6 md:mb-10">
+                    <DashboardHero firstName={firstName} feedItems={feedItemsWithActions} />
+                </div>
+
+                {/* Gamification: Setup Progress */}
                 {(counts.properties === 0 || counts.tenants === 0) && (
-                    <div className="mb-8">
+                    <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                         <SetupProgressWidget
                             hasProperty={counts.properties > 0}
                             hasTenant={counts.tenants > 0}
@@ -204,80 +212,101 @@ export function Dashboard() {
                     </div>
                 )}
 
-                {/* Command Bar */}
-                {/* Smart Actions & Tools */}
-                <div className="flex flex-col gap-6">
-                    <SmartActionsRow />
-
-                    <div className="flex items-center justify-end gap-3">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-full border border-primary/10 mr-auto">
-                            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                                {lang === 'he' ? 'מחובר' : 'online'}
-                            </span>
-                        </div>
-
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setIsEditingLayout(!isEditingLayout)}
-                            className={cn(
-                                "text-[10px] uppercase tracking-widest font-bold",
-                                isEditingLayout && "bg-primary text-primary-foreground border-primary"
-                            )}
-                        >
-                            {isEditingLayout ? <CheckIcon className="w-3.5 h-3.5 mr-2" /> : <Edit3Icon className="w-3.5 h-3.5 mr-2" />}
-                            {isEditingLayout ? t('saveLayout') : t('editLayout')}
-                        </Button>
-
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setIsReportModalOpen(true)}
-                            className="text-[10px] uppercase tracking-widest font-bold"
-                        >
-                            <FileSearch className="w-3.5 h-3.5 mr-2" />
-                            {t('generateReport')}
-                        </Button>
+                {/* Edit Mode Toggle & Status */}
+                <div className="flex flex-wrap items-center justify-end gap-3">
+                    <div className="hidden md:inline-flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-full border border-primary/10 mr-auto">
+                        <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                            {lang === 'he' ? 'מחובר' : 'online'}
+                        </span>
                     </div>
+
+                    <Button
+                        onClick={() => setIsEditingLayout(!isEditingLayout)}
+                        variant="ghost"
+                        size="sm"
+                        className={cn(
+                            "text-[10px] uppercase tracking-widest font-bold bg-white/50 dark:bg-black/20 backdrop-blur-md border border-white/20 hover:bg-white/80 transition-all",
+                            isEditingLayout && "bg-primary text-primary-foreground border-primary"
+                        )}
+                    >
+                        {isEditingLayout ? (
+                            <>
+                                <CheckIcon className="w-3.5 h-3.5 mr-2" /> {t('saveLayout')}
+                            </>
+                        ) : (
+                            <>
+                                <Edit3Icon className="w-3.5 h-3.5 mr-2" /> {t('customize_dashboard')}
+                            </>
+                        )}
+                    </Button>
+
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsReportModalOpen(true)}
+                        className="text-[10px] uppercase tracking-widest font-bold bg-white/50 dark:bg-black/20 backdrop-blur-md border border-white/20 hover:bg-white/80 transition-all"
+                    >
+                        <FileSearch className="w-3.5 h-3.5 mr-2" />
+                        {t('generateReport')}
+                    </Button>
                 </div>
 
-                <div id="renty-command-center">
-                    <RentyCommandCenter firstName={firstName} feedItems={feedItemsWithActions} />
-                </div>
-
-                {/* Stabilized Grid (Manual Mapping) */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Bento Stack / Grid Layout */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-8 auto-rows-min">
                     {layout
                         .filter(w => w.visible)
                         .sort((a, b) => a.order - b.order)
                         .map((widget) => {
                             const WidgetComponent = WIDGET_REGISTRY[widget.widgetId];
-                            const sizeClass = widget.size === 'large' ? 'col-span-1 lg:col-span-2' : 'col-span-1';
                             if (!WidgetComponent) return null;
+
+                            // Mobile: Full Width (Stack). Desktop: Based on config size.
+                            const colSpan = {
+                                'small': 'md:col-span-3',
+                                'medium': 'md:col-span-6',
+                                'large': 'md:col-span-12', // Financial Health, Storage usually full width
+                            }[widget.size];
+
                             return (
-                                <div key={widget.id} className={cn("relative transition-all duration-300", sizeClass)}>
-                                    {WidgetComponent(dashboardData, widget as any, (updates) => updateWidget(widget.id, updates))}
+                                <div
+                                    key={widget.id}
+                                    className={cn(colSpan, "relative group animate-in fade-in zoom-in-95 duration-500")}
+                                    data-widget-id={widget.widgetId}
+                                >
+                                    {/* Edit Mode Controls */}
+                                    {isEditingLayout && (
+                                        <div className="absolute -top-3 -right-3 z-30 flex gap-1 opacity-100 scale-100 transition-all bg-foreground/90 text-background backdrop-blur-md p-1.5 rounded-xl shadow-xl">
+                                            <button className="p-1.5 hover:bg-white/20 rounded-lg"><Edit3Icon className="w-3 h-3" /></button>
+                                        </div>
+                                    )}
+
+                                    {/* Render Widget */}
+                                    {WidgetComponent(
+                                        dashboardData,
+                                        widget,
+                                        (updates) => updateWidget(widget.id, updates)
+                                    )}
                                 </div>
                             );
-                        })
-                    }
+                        })}
+                </div>
+            </div>
+
+            {/* Renty Command Center - Bottom Fixed (Mobile) / Floating (Desktop) */}
+            <div id="renty-command-center" className="fixed bottom-0 left-0 right-0 z-50 p-2 pb-6 md:p-8 pointer-events-none flex justify-center transition-transform duration-500 ease-out translate-y-0">
+                <div className="w-full max-w-2xl pointer-events-auto shadow-2xl shadow-primary/20 rounded-[2rem] overflow-hidden transform transition-all hover:scale-[1.01]">
+                    <RentyCommandCenter
+                        firstName={firstName}
+                        feedItems={feedItemsWithActions}
+                        className="glass-premium border-t border-white/40 md:border md:rounded-[2rem] bg-white/80 dark:bg-black/80 backdrop-blur-2xl"
+                    />
                 </div>
             </div>
 
             <ReportGenerationModal
                 isOpen={isReportModalOpen}
                 onClose={() => setIsReportModalOpen(false)}
-            />
-
-            <BionicSpotlight
-                targetId="renty-command-center"
-                featureId="command_center_intro_v1"
-                title={lang === 'he' ? 'מרכז הבקרה של רנטי' : 'Renty Command Center'}
-                description={lang === 'he'
-                    ? 'דבר עם רנטי, העלה קבצים ונהל את הכל במקום אחד.'
-                    : 'Talk to Renty, upload files, and manage everything in one place.'}
-                position="bottom"
             />
         </div>
     );

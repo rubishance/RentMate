@@ -3,8 +3,10 @@ import { StorageStatsWidget } from './StorageStatsWidget';
 import { SmartActionsWidget } from './SmartActionsWidget';
 import { UsageOverviewWidget } from './UsageOverviewWidget';
 import { IndexPulseWidget } from './IndexPulseWidget';
+import { FinancialHealthWidget } from './FinancialHealthWidget';
 
 export type WidgetId =
+    | 'financial_health'
     | 'storage_stats'
     | 'usage_overview'
     | 'index_pulse'
@@ -39,9 +41,15 @@ export const WIDGET_REGISTRY: Record<WidgetId, (data: DashboardData, config: Wid
         pendingMoney: data?.stats?.pending || 0,
         openMaintenance: data?.storageCounts?.maintenance || 0
     }} />,
+    'financial_health': (data) => <FinancialHealthWidget stats={{
+        monthlyIncome: data?.stats?.monthlyIncome || 0,
+        collected: data?.stats?.collected || 0,
+        pending: data?.stats?.pending || 0
+    }} />,
 };
 
 export const DEFAULT_WIDGET_LAYOUT: WidgetConfig[] = [
+    { id: '1', widgetId: 'financial_health', size: 'large', visible: true, order: 0 },
     { id: '7', widgetId: 'smart_actions', size: 'medium', visible: true, order: 1 },
     { id: '2', widgetId: 'storage_stats', size: 'large', visible: true, order: 2 },
     { id: '6', widgetId: 'index_pulse', size: 'medium', visible: true, order: 3 },
