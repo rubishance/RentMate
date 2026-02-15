@@ -475,7 +475,7 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
                                             <div className="flex p-1 bg-slate-100 dark:bg-neutral-800 rounded-xl">
                                                 <Button
                                                     onClick={() => setUploadMode('upload')}
-                                                    variant={uploadMode === 'upload' ? 'default' : 'ghost'}
+                                                    variant={uploadMode === 'upload' ? 'primary' : 'ghost'}
                                                     size="sm"
                                                     className={cn("px-3 py-1 text-[10px] font-black uppercase rounded-lg transition-all h-7", uploadMode === 'upload' ? "bg-white dark:bg-neutral-700 text-primary shadow-sm hover:bg-white dark:hover:bg-neutral-700" : "text-muted-foreground hover:bg-transparent hover:text-foreground")}
                                                 >
@@ -486,7 +486,7 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
                                                         setUploadMode('url');
                                                         handleGoogleMapsFetch();
                                                     }}
-                                                    variant={uploadMode === 'url' ? 'default' : 'ghost'}
+                                                    variant={uploadMode === 'url' ? 'primary' : 'ghost'}
                                                     size="sm"
                                                     className={cn("px-3 py-1 text-[10px] font-black uppercase rounded-lg transition-all h-7", uploadMode === 'url' ? "bg-white dark:bg-neutral-700 text-primary shadow-sm hover:bg-white dark:hover:bg-neutral-700" : "text-muted-foreground hover:bg-transparent hover:text-foreground")}
                                                 >

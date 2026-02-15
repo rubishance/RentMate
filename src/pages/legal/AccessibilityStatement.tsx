@@ -48,7 +48,8 @@ export default function AccessibilityStatement() {
                             <p className="font-semibold">פרטי רכז הנגישות:</p>
                             <ul className="list-none space-y-1 mt-2">
                                 <li>שם: צוות התמיכה</li>
-                                <li>אימייל: <a href="mailto:support@rentmate.com" className="text-brand-primary hover:underline">support@rentmate.com</a></li>
+                                <li>אימייל: <a href="mailto:support@rentmate.co.il" className="text-brand-primary hover:underline">support@rentmate.co.il</a></li>
+                                <li>טלפון: <a href="tel:+972503602000" className="text-brand-primary hover:underline">+972-50-3602000</a></li>
                             </ul>
                         </div>
 

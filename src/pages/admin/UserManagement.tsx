@@ -54,7 +54,10 @@ interface UserWithStats {
 }
 
 interface SecurityLog {
+    id: string;
     event_type: string;
+    event_code: string;
+    severity: string;
     created_at: string;
     ip_address: string;
     details?: Record<string, unknown>;

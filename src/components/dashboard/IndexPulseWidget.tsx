@@ -26,7 +26,7 @@ interface IndexPulseWidgetProps {
     onUpdateSettings: (settings: any) => void;
 }
 
-const ALL_TYPES = ['cpi', 'housing'] as const;
+const ALL_TYPES = ['cpi', 'housing'] as const; // Removed USD/EUR as per request
 
 export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidgetProps) {
     const { t } = useTranslation();

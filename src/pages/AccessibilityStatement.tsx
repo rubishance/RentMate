@@ -78,8 +78,8 @@ export function AccessibilityStatement() {
                                 </div>
                                 <div>
                                     <div className="text-sm text-muted-foreground dark:text-muted-foreground">{isRtl ? 'דואר אלקטרוני' : 'Email'}</div>
-                                    <a href="mailto:accessibility@rentmate.co.il" className="font-medium text-primary hover:underline">
-                                        accessibility@rentmate.co.il
+                                    <a href="mailto:support@rentmate.co.il" className="font-medium text-primary hover:underline">
+                                        support@rentmate.co.il
                                     </a>
                                 </div>
                             </div>
@@ -89,8 +89,8 @@ export function AccessibilityStatement() {
                                 </div>
                                 <div>
                                     <div className="text-sm text-muted-foreground dark:text-muted-foreground">{isRtl ? 'טלפון' : 'Phone'}</div>
-                                    <a href="tel:+972501234567" className="font-medium text-primary hover:underline">
-                                        +972-50-123-4567
+                                    <a href="tel:+972503602000" className="font-medium text-primary hover:underline">
+                                        +972-50-3602000
                                     </a>
                                 </div>
                             </div>
@@ -108,7 +108,7 @@ export function AccessibilityStatement() {
                                 : 'If you found inaccessible information on the site, including documents, videos, etc., or if you encountered any difficulty browsing the site, please let us know so we can address the issue promptly.'}
                         </p>
                         <a
-                            href="mailto:accessibility@rentmate.co.il"
+                            href="mailto:support@rentmate.co.il"
                             className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium text-sm"
                         >
                             {isRtl ? 'צור קשר לדיווח על בעיה' : 'Contact us to report an issue'}

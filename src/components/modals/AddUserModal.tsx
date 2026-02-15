@@ -108,7 +108,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
                     <div className="pt-4 flex gap-3">
                         <Button
                             type="button"
-                            variant="bg-muted" // Assuming variant support or use className
+                            variant="ghost"
                             // variant="ghost" or "secondary" might be better if bg-muted isnt a variant
                             onClick={onClose}
                             className="flex-1 px-4 py-2 text-gray-700 bg-muted hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 rounded-xl font-medium transition-colors h-auto"
