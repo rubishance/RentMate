@@ -203,7 +203,7 @@ export function Dashboard() {
                 </div>
 
                 {/* Gamification: Setup Progress */}
-                {(counts.properties === 0 || counts.tenants === 0) && (
+                {!loading && (counts.properties === 0 || counts.tenants === 0) && (
                     <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                         <SetupProgressWidget
                             hasProperty={counts.properties > 0}

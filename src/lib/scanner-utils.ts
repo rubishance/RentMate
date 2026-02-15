@@ -1,18 +1,10 @@
 import * as pdfjsLib from 'pdfjs-dist';
+// @ts-ignore - worker import
+import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
 // Initialize PDF.js worker
-// Using explicit version matching the package.json to ensure CDN compatibility
-// pdfjs-dist v5.4.530 may require a specific newer worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@4.8.69/build/pdf.worker.min.mjs`;
-// Note: We are using a widely stable version for the worker to avoid mismatches, 
-// or we can try to use the one matching the package: 
-// pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
-// But let's check the imported version. 
-
-// Actually, to be safe with Vite and modern pdfjs, let's use the local import if possible,
-// but since we are seeing errors, let's strictly set a working CDN URL.
-// v5.x changes: .mjs extension is standard now for module workers.
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+// Using local worker file via Vite ?url import to ensure version match and avoid CDN issues
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 
 export interface CompressedImage {

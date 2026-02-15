@@ -1,0 +1,198 @@
+import { useState, useEffect } from 'react';
+import { Modal } from '../ui/Modal';
+import { Button } from '../ui/Button';
+import { Loader2, RefreshCw, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
+import { useToast } from '../../hooks/useToast';
+import { useTranslation } from '../../hooks/useTranslation';
+
+interface RegeneratePaymentsModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSuccess: () => void;
+}
+
+export function RegeneratePaymentsModal({ isOpen, onClose, onSuccess }: RegeneratePaymentsModalProps) {
+    const { t } = useTranslation();
+    const { success, error: toastError } = useToast();
+    const [orphanContracts, setOrphanContracts] = useState<any[]>([]);
+    const [scanning, setScanning] = useState(false);
+    const [fixingId, setFixingId] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (isOpen) {
+            scanForOrphans();
+        }
+    }, [isOpen]);
+
+    const scanForOrphans = async () => {
+        setScanning(true);
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            // 1. Get all active contracts
+            const { data: contracts, error: contractError } = await supabase
+                .from('contracts')
+                .select('id, property_id, properties(address, city), start_date, end_date, base_rent, currency, payment_frequency, payment_day, linkage_type, linkage_sub_type, base_index_date, base_index_value, linkage_ceiling, linkage_floor, rent_periods(startDate, amount, currency)')
+                .eq('user_id', user.id)
+                .eq('status', 'active');
+
+            if (contractError) throw contractError;
+
+            // 2. Contracts with payments
+            const { data: payments, error: paymentError } = await supabase
+                .from('payments')
+                .select('contract_id')
+                .eq('user_id', user.id);
+
+            if (paymentError) throw paymentError;
+
+            const contractIdsWithPayments = new Set(payments?.map(p => p.contract_id));
+            const orphans = contracts?.filter(c => !contractIdsWithPayments.has(c.id)) || [];
+
+            setOrphanContracts(orphans);
+        } catch (err: any) {
+            console.error('Scan error:', err);
+            toastError(t('error'), 'Failed to scan for missing payments');
+        } finally {
+            setScanning(false);
+        }
+    };
+
+    const handleRegenerate = async (contract: any) => {
+        setFixingId(contract.id);
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error('No user');
+
+            // 1. Call Edge Function to generate schedule
+            const { data: genData, error: genError } = await supabase.functions.invoke('generate-payments', {
+                body: {
+                    startDate: contract.start_date,
+                    endDate: contract.end_date,
+                    baseRent: contract.base_rent,
+                    currency: contract.currency,
+                    paymentFrequency: contract.payment_frequency,
+                    paymentDay: contract.payment_day,
+                    linkageType: contract.linkage_type,
+                    linkageSubType: contract.linkage_sub_type,
+                    baseIndexDate: contract.base_index_date,
+                    baseIndexValue: contract.base_index_value,
+                    linkageCeiling: contract.linkage_ceiling,
+                    linkageFloor: contract.linkage_floor,
+                    rent_periods: contract.rent_periods
+                }
+            });
+
+            if (genError) throw genError;
+
+            const schedule = genData?.payments || [];
+
+            if (schedule.length > 0) {
+                // 2. Insert payments
+                const { error: insertError } = await supabase.from('payments').insert(
+                    schedule.map((p: any) => ({
+                        ...p,
+                        contract_id: contract.id,
+                        user_id: user.id
+                    }))
+                );
+                if (insertError) throw insertError;
+
+                success(t('success'), t('paymentsRegenerated'));
+
+                // Remove from list
+                setOrphanContracts(prev => prev.filter(c => c.id !== contract.id));
+
+                // If list empty, close after delay
+                if (orphanContracts.length <= 1) {
+                    setTimeout(() => {
+                        onSuccess();
+                        onClose();
+                    }, 1000);
+                } else {
+                    onSuccess(); // Refresh parent
+                }
+            } else {
+                toastError(t('error'), 'No payments generated for this contract timeframe');
+            }
+
+        } catch (err: any) {
+            console.error('Fix error:', err);
+            toastError(t('error'), err.message || 'Failed to regenerate');
+        } finally {
+            setFixingId(null);
+        }
+    };
+
+    return (
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title={
+                <div className="flex items-center gap-2">
+                    <RefreshCw className="w-5 h-5 text-indigo-500" />
+                    <span>{t('troubleshootPayments') || 'Troubleshoot Payments'}</span>
+                </div>
+            }
+        >
+            <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                    {t('troubleshootPaymentsDesc') || 'Scan for active contracts that are missing payment schedules and regenerate them.'}
+                </p>
+
+                <div className="py-4">
+                    {scanning ? (
+                        <div className="flex flex-col items-center justify-center py-8 space-y-4 text-center">
+                            <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
+                            <p className="text-sm text-muted-foreground">{t('scanningContracts') || 'Scanning your contracts...'}</p>
+                        </div>
+                    ) : orphanContracts.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-8 space-y-4 text-center">
+                            <CheckCircle2 className="w-12 h-12 text-emerald-500" />
+                            <p className="font-medium text-foreground">{t('allGood') || 'All contracts have payments'}</p>
+                            <p className="text-sm text-muted-foreground">{t('noMissingPaymentsFound') || 'We didn\'t find any missing payment schedules.'}</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-lg text-sm">
+                                <AlertTriangle className="w-4 h-4 shrink-0" />
+                                <p>{t('foundMissingPayments', { count: orphanContracts.length }) || `Found ${orphanContracts.length} contracts with missing payments.`}</p>
+                            </div>
+
+                            <div className="max-h-[300px] overflow-y-auto space-y-2 pr-2">
+                                {orphanContracts.map(contract => (
+                                    <div key={contract.id} className="p-4 border rounded-xl flex items-center justify-between group hover:border-indigo-500/30 transition-colors bg-card">
+                                        <div className="min-w-0 flex-1 mr-4">
+                                            <h4 className="font-bold truncate">{contract.properties?.address || 'Unknown Property'}</h4>
+                                            <p className="text-xs text-muted-foreground">{contract.properties?.city}</p>
+                                            <div className="mt-1 flex gap-2 text-[10px] uppercase font-bold text-muted-foreground">
+                                                <span>{contract.start_date} - {contract.end_date}</span>
+                                            </div>
+                                        </div>
+                                        <Button
+                                            size="sm"
+                                            onClick={() => handleRegenerate(contract)}
+                                            disabled={!!fixingId}
+                                            className="shrink-0"
+                                        >
+                                            {fixingId === contract.id ? (
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                            ) : (
+                                                <>
+                                                    <RefreshCw className="w-4 h-4 mr-2" />
+                                                    {t('fix') || 'Fix'}
+                                                </>
+                                            )}
+                                        </Button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </Modal>
+    );
+}

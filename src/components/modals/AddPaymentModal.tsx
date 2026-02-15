@@ -130,6 +130,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
         }
     }
 
+
     // Fetch pending payments when contract is selected
     useEffect(() => {
         const contractId = watch('contract_id');
@@ -149,7 +150,8 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
             .select('*')
             .eq('contract_id', contractId)
             .eq('user_id', user.id)
-            .eq('status', 'pending');
+            .eq('status', 'pending')
+            .order('due_date', { ascending: true }); // Prioritize oldest
 
         if (data) setPendingPayments(data);
     }
@@ -162,36 +164,44 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
         const date = currentDueDate ? parseISO(currentDueDate) : null;
 
         if (amount && date && pendingPayments.length > 0) {
-            const match = pendingPayments.find(p => {
+            // Find best match
+            let bestMatch = null;
+            let minScore = Infinity;
+
+            pendingPayments.forEach(p => {
                 const pDate = parseISO(p.due_date);
                 const pAmount = p.amount;
 
                 const daysDiff = Math.abs(differenceInDays(pDate, date));
                 const amountDiff = Math.abs(pAmount - amount);
-                const amountTolerance = pAmount * 0.03; // 3% tolerance
+                const amountTolerance = pAmount * 0.05; // 5% tolerance
 
-                return daysDiff <= 3 && amountDiff <= amountTolerance;
+                if (daysDiff <= 7 && amountDiff <= amountTolerance) {
+                    // Score: lower is better. Weighted distance.
+                    // 1 day diff = 1 point. 1% amount diff = 10 points (money matters more?)
+                    const score = daysDiff + (amountDiff / pAmount * 100);
+                    if (score < minScore) {
+                        minScore = score;
+                        bestMatch = p;
+                    }
+                }
             });
 
-            if (match && match.id !== matchedPayment?.id) {
-                setMatchedPayment(match);
-            } else if (!match) {
-                setMatchedPayment(null);
+            if (bestMatch && bestMatch.id !== matchedPayment?.id) {
+                setMatchedPayment(bestMatch);
+            } else if (!bestMatch && !matchedPayment) { // Only clear if we didn't manually select
+                // setMatchedPayment(null); // Actually, let's keep manual selection distinct
             }
         }
     }, [currentAmount, currentDueDate, pendingPayments, isMatchConfirmed]);
 
-    const confirmMatch = () => {
-        if (matchedPayment) {
-            setIsMatchConfirmed(true);
-            setValue('status', 'paid');
-            setValue('amount', matchedPayment.amount.toString()); // Align amount to exact due? Or keep user amount? 
-            // Plan says "filling in paid_amount". User input is likely the paid amount.
-            // If we merge, we should probably record the user's input as the PAID amount, but keep the original DUE amount?
-            // But existing table structure: amount is DUE amount, paid_amount is PAID amount.
-            // So if we pay an existing payment, we update `paid_amount` with `currentAmount`.
-            toast.success(t('paymentLinkedToPending'));
-        }
+    const confirmMatch = (payment: any) => {
+        setMatchedPayment(payment);
+        setIsMatchConfirmed(true);
+        setValue('status', 'paid');
+        // setValue('amount', payment.amount.toString()); // Keep user input amount?
+        // Use user input amount as paid_amount, keep payment.amount as the original due amount.
+        toast.success(t('paymentLinkedToPending'));
     };
 
     const onFormSubmit = async (values: PaymentFormValues, shouldClose: boolean = true) => {
@@ -301,64 +311,78 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                     )}
                 </div>
 
+                {/* Manual Selection List Trigger (Always visible if payments exist) */}
+                {pendingPayments.length > 0 && !isMatchConfirmed && (
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">
+                            {t('linkToExpectedPayment')}
+                        </label>
+                        <div className="max-h-40 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                            {pendingPayments.map(p => {
+                                const isBestMatch = matchedPayment?.id === p.id;
+                                return (
+                                    <button
+                                        key={p.id}
+                                        type="button"
+                                        onClick={() => confirmMatch(p)}
+                                        className={cn(
+                                            "w-full text-left p-3 rounded-xl border text-xs flex items-center justify-between transition-all",
+                                            isBestMatch
+                                                ? "bg-brand-50 border-brand-200 dark:bg-brand-900/20 dark:border-brand-800 ring-1 ring-brand-500"
+                                                : "bg-white dark:bg-neutral-900 border-gray-100 dark:border-neutral-800 hover:border-gray-300 dark:hover:border-neutral-700"
+                                        )}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <div className={cn("w-2 h-2 rounded-full", isBestMatch ? "bg-brand-500" : "bg-gray-300")} />
+                                            <span className="font-bold">{format(parseISO(p.due_date), 'dd/MM/yyyy')}</span>
+                                            <span className="text-gray-500">-</span>
+                                            <span className="font-bold">₪{p.amount.toLocaleString()}</span>
+                                        </div>
+                                        {isBestMatch && (
+                                            <span className="px-2 py-0.5 bg-brand-100 dark:bg-brand-900 text-brand-700 dark:text-brand-300 text-[9px] font-black uppercase tracking-wider rounded-full">
+                                                {t('bestMatch')}
+                                            </span>
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
 
-                {/* Smart Match Alert */}
+                {/* Confirmation State */}
                 <AnimatePresence>
-                    {matchedPayment && !isMatchConfirmed && (
+                    {isMatchConfirmed && matchedPayment && (
                         <motion.div
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
-                            className="bg-brand-50/50 dark:bg-brand-900/10 border border-brand-100 dark:border-brand-900/20 rounded-2xl overflow-hidden"
+                            className="p-4 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/20 rounded-2xl flex items-center gap-3"
                         >
-                            <div className="p-4 flex gap-4">
-                                <div className="w-10 h-10 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center shrink-0">
-                                    <Loader2 className="w-5 h-5 text-brand-600 animate-pulse" />
-                                </div>
-                                <div className="flex-1 space-y-2">
-                                    <div>
-                                        <h4 className="text-xs font-black uppercase tracking-wider text-brand-700 dark:text-brand-300">
-                                            {t('possibleMatchFound')}
-                                        </h4>
-                                        <p className="text-xs text-brand-600/80 dark:text-brand-400/80 mt-1">
-                                            {t('matchFoundDesc').replace('{date}', format(parseISO(matchedPayment.due_date), 'dd/MM')).replace('{amount}', matchedPayment.amount)}
-                                        </p>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={confirmMatch}
-                                            className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-colors"
-                                        >
-                                            {t('yesLinkPayment')}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setMatchedPayment(null)}
-                                            className="px-4 py-2 bg-transparent hover:bg-brand-100/50 text-brand-600 dark:text-brand-400 text-[10px] font-black uppercase tracking-widest rounded-xl transition-colors"
-                                        >
-                                            {t('noCreateNew')}
-                                        </button>
-                                    </div>
-                                </div>
+                            <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
+                                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                             </div>
+                            <div className="flex flex-col">
+                                <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                                    {t('linkedToPaymentOf')} ₪{matchedPayment.amount}
+                                </span>
+                                <span className="text-[10px] text-emerald-600/80">
+                                    {t('dueDate')}: {format(parseISO(matchedPayment.due_date), 'dd/MM/yyyy')}
+                                </span>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setIsMatchConfirmed(false);
+                                    setMatchedPayment(null);
+                                }}
+                                className="ml-auto p-2 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded-xl text-emerald-600 transition-colors"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
                         </motion.div>
                     )}
                 </AnimatePresence>
-
-                {isMatchConfirmed && (
-                    <div className="p-4 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/20 rounded-2xl flex items-center gap-3 animate-in fade-in">
-                        <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
-                            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                        </div>
-                        <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
-                            {t('linkedToPaymentOf')} ₪{matchedPayment?.amount} ({format(parseISO(matchedPayment?.due_date), 'dd/MM')})
-                        </span>
-                        <button type="button" onClick={() => setIsMatchConfirmed(false)} className="ml-auto text-emerald-600 hover:text-emerald-800">
-                            <X className="w-4 h-4" />
-                        </button>
-                    </div>
-                )}
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">

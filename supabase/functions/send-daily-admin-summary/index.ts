@@ -16,14 +16,38 @@ serve(async (req: Request) => {
         return new Response("ok", { headers: corsHeaders });
     }
 
-    try {
-        if (!RESEND_API_KEY) throw new Error("Missing RESEND_API_KEY");
+    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-        const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+    const logDebug = async (message: string, details: any = {}) => {
+        try {
+            await supabase.from('debug_logs').insert({
+                function_name: 'send-daily-admin-summary',
+                message,
+                details,
+                level: 'info'
+            });
+        } catch (e) {
+            console.error("Failed to log:", e);
+        }
+    };
+
+    try {
+        await logDebug("Function started", {
+            hasResendKey: !!RESEND_API_KEY,
+            hasSupabaseUrl: !!SUPABASE_URL,
+            hasServiceKey: !!SUPABASE_SERVICE_ROLE_KEY
+        });
+
+        if (!RESEND_API_KEY) {
+            await logDebug("Missing RESEND_API_KEY", { error: "Environment variable missing" });
+            throw new Error("Missing RESEND_API_KEY");
+        }
+
         const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
         // 0. Fetch Configuration
-        console.log("Fetching email configuration...");
-        const { data: settingsData } = await supabase
+        await logDebug("Fetching configuration");
+        const { data: settingsData, error: configError } = await supabase
             .from('system_settings')
             .select('key, value')
             .in('key', [
@@ -31,6 +55,11 @@ serve(async (req: Request) => {
                 'admin_email_content_preferences',
                 'admin_notification_email'
             ]);
+
+        if (configError) {
+            await logDebug("Config fetch failed", { error: configError });
+            throw configError;
+        }
 
         const isEnabled = settingsData?.find(s => s.key === 'admin_email_daily_summary_enabled')?.value !== false;
         const adminRecipient = settingsData?.find(s => s.key === 'admin_notification_email')?.value as string || "rubi@rentmate.co.il";
@@ -43,7 +72,7 @@ serve(async (req: Request) => {
         };
 
         if (!isEnabled) {
-            console.log("Admin Email is disabled in system settings. Skipping.");
+            await logDebug("Function disabled by settings", { settingsData });
             return new Response(JSON.stringify({ skipped: true, message: "Disabled by administrator." }), {
                 headers: { ...corsHeaders, "Content-Type": "application/json" },
                 status: 200,
@@ -51,12 +80,11 @@ serve(async (req: Request) => {
         }
 
         // 1. Fetch Stats
-        console.log("Fetching stats based on preferences:", JSON.stringify(preferences));
+        await logDebug("Fetching statistics", { preferences });
 
         // New Users
         let newUsers = 0;
         if (preferences.new_users) {
-            console.log("Fetching new users...");
             const { count, error } = await supabase
                 .from('user_profiles')
                 .select('*', { count: 'exact', head: true })
@@ -69,7 +97,6 @@ serve(async (req: Request) => {
         let totalRevenue = 0;
         let paymentCount = 0;
         if (preferences.revenue) {
-            console.log("Fetching new payments...");
             const { data, error } = await supabase
                 .from('invoices')
                 .select('amount')
@@ -83,7 +110,6 @@ serve(async (req: Request) => {
         // Support Tickets
         let newTickets = 0;
         if (preferences.support_tickets) {
-            console.log("Fetching support tickets...");
             const { count, error } = await supabase
                 .from('crm_interactions')
                 .select('*', { count: 'exact', head: true })
@@ -96,7 +122,6 @@ serve(async (req: Request) => {
         // Plan Upgrade Requests
         let newUpgrades = 0;
         if (preferences.upgrades) {
-            console.log("Fetching upgrade requests...");
             const { count, error } = await supabase
                 .from('admin_notifications')
                 .select('*', { count: 'exact', head: true })
@@ -110,7 +135,6 @@ serve(async (req: Request) => {
         // 1.1 Advanced Subscription Analytics
         let planStats: any[] = [];
         if (preferences.plan_breakdown) {
-            console.log("Fetching plan breakdown...");
             const { data: plans } = await supabase.from('subscription_plans').select('id, name');
             const { data: profiles } = await supabase.from('user_profiles').select('plan_id, subscription_status');
 
@@ -126,7 +150,6 @@ serve(async (req: Request) => {
 
         let cancellations = 0;
         if (preferences.cancellations) {
-            console.log("Fetching cancellations...");
             const { count } = await supabase
                 .from('user_profiles')
                 .select('*', { count: 'exact', head: true })
@@ -137,7 +160,6 @@ serve(async (req: Request) => {
 
         let planChanges: any[] = [];
         if (preferences.plan_changes) {
-            console.log("Fetching plan changes from audit logs...");
             const { data: logs } = await supabase
                 .from('audit_logs')
                 .select('details, created_at, user_id')
@@ -150,7 +172,6 @@ serve(async (req: Request) => {
 
         let freeTrials = 0;
         if (preferences.free_trials) {
-            console.log("Fetching free trials...");
             const { count } = await supabase
                 .from('user_profiles')
                 .select('*', { count: 'exact', head: true })
@@ -161,7 +182,6 @@ serve(async (req: Request) => {
         // Active Properties
         let totalProperties = 0;
         if (preferences.active_properties) {
-            console.log("Fetching total properties...");
             const { count, error } = await supabase
                 .from('properties')
                 .select('*', { count: 'exact', head: true });
@@ -175,7 +195,6 @@ serve(async (req: Request) => {
         let topPages: any[] = [];
 
         try {
-            console.log("Fetching user activity metrics...");
             // 1. Total Page Views (Last 24h)
             const { count: views } = await supabase
                 .from('user_activity')
@@ -206,11 +225,12 @@ serve(async (req: Request) => {
                 .map(([path, count]) => ({ path, count }));
         } catch (activityError) {
             console.error("Error fetching activity metrics:", activityError);
+            await logDebug("Activity metrics fetch failed", { error: activityError });
         }
         // ----------------------------------
 
 
-        // 2. Format Email
+        // 2. Format Email - Omitted for brevity in logs usually, but logged if debug needed
         const htmlBody = `
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
@@ -355,6 +375,7 @@ serve(async (req: Request) => {
         `;
 
         // 3. Send Email
+        await logDebug("Sending email via Resend", { recipient: adminRecipient });
         const res = await fetch("https://api.resend.com/emails", {
             method: "POST",
             headers: {
@@ -370,12 +391,15 @@ serve(async (req: Request) => {
         });
 
         const result = await res.json();
+        await logDebug("Resend API Response", { status: res.status, result });
+
         return new Response(JSON.stringify(result), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
             status: 200,
         });
 
     } catch (error: any) {
+        await logDebug("Fatal Error", { message: error.message, stack: error.stack });
         return new Response(JSON.stringify({ error: error.message }), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
             status: 400,

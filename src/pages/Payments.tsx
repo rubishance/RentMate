@@ -8,15 +8,17 @@ import { AddPaymentModal } from '../components/modals/AddPaymentModal';
 import { PaymentDetailsModal } from '../components/modals/PaymentDetailsModal';
 import { BulkCheckModal } from '../components/modals/BulkCheckModal';
 import { DatePicker } from '../components/ui/DatePicker';
+import { RegeneratePaymentsModal } from '../components/modals/RegeneratePaymentsModal';
 import { useTranslation } from '../hooks/useTranslation';
 import { useDataCache } from '../contexts/DataCacheContext';
 import { useToast } from '../hooks/useToast';
+import { usePaymentRepair } from '../hooks/usePaymentRepair';
 import { Skeleton } from '../components/ui/Skeleton';
 import { FilterDrawer } from '../components/common/FilterDrawer';
 import {
-    CalendarCheck, Filter, Plus, Wallet,
-    X, ArrowUpRight, Clock, AlertCircle, ArrowRight,
-    Search
+    RotateCcw, X, ArrowUpRight, Plus, CalendarCheck, Search, Filter,
+    Layout, Calendar, ChevronRight, CheckCircle2, AlertCircle, RefreshCw, Wallet,
+    Clock, ArrowRight
 } from 'lucide-react';
 import { Card, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -25,9 +27,22 @@ import { Select } from '../components/ui/Select';
 
 export function Payments() {
     const { t, lang } = useTranslation();
+    const { scanAndRepair } = usePaymentRepair();
     const toast = useToast();
     const { get, set, clear } = useDataCache();
     const [payments, setPayments] = useState<any[]>([]);
+
+    // Auto-repair on mount
+    useEffect(() => {
+        const runRepair = async () => {
+            const repaired = await scanAndRepair(true); // silent mode initially
+            if (repaired) {
+                fetchPayments();
+            }
+        };
+        runRepair();
+    }, [scanAndRepair]);
+
     const [loading, setLoading] = useState(true);
     const [periodFilter, setPeriodFilter] = useState<'all' | '3m' | '6m' | '1y'>('all');
     const [stats, setStats] = useState({
@@ -40,6 +55,7 @@ export function Payments() {
     const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [isBulkCheckModalOpen, setIsBulkCheckModalOpen] = useState(false);
+    const [isRegenerateModalOpen, setIsRegenerateModalOpen] = useState(false);
     const [detailsModalProps, setDetailsModalProps] = useState<{ editMode: boolean, status?: any }>({ editMode: false });
     const [showFilters, setShowFilters] = useState(false);
     const [filters, setFilters] = useState({
@@ -274,6 +290,15 @@ export function Payments() {
                         >
                             <Wallet className="w-4 h-4 mr-2 text-amber-500" />
                             {t('bulkCheckEntryTitle')}
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            onClick={() => scanAndRepair(false)} // manual mode with toasts
+                            className="hidden md:flex bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20"
+                            title={t('troubleshootPayments') || 'Troubleshoot'}
+                        >
+                            <RefreshCw className="w-4 h-4 mr-2" />
+                            {t('troubleshoot') || 'Troubleshoot'}
                         </Button>
                         <Button
                             onClick={() => setIsAddModalOpen(true)}
@@ -554,6 +579,11 @@ export function Payments() {
             <BulkCheckModal
                 isOpen={isBulkCheckModalOpen}
                 onClose={() => setIsBulkCheckModalOpen(false)}
+                onSuccess={fetchPayments}
+            />
+            <RegeneratePaymentsModal
+                isOpen={isRegenerateModalOpen}
+                onClose={() => setIsRegenerateModalOpen(false)}
                 onSuccess={fetchPayments}
             />
         </div>

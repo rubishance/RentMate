@@ -11,7 +11,7 @@ import { Button } from '../ui/Button';
 
 interface IndexPulse {
     id: string;
-    type: 'cpi' | 'housing' | 'construction' | 'usd' | 'eur';
+    type: 'cpi' | 'housing';
     value: number;
     date: string;
     change: number;
@@ -26,7 +26,7 @@ interface IndexPulseWidgetProps {
     onUpdateSettings: (settings: any) => void;
 }
 
-const ALL_TYPES = ['cpi', 'housing', 'construction', 'usd', 'eur'] as const;
+const ALL_TYPES = ['cpi', 'housing'] as const;
 
 export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidgetProps) {
     const { t } = useTranslation();
@@ -41,7 +41,7 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
     const [localBaseDate, setLocalBaseDate] = useState(settings?.baseDate || format(subMonths(new Date(), 1), 'yyyy-MM'));
 
     const displayedIndices = useMemo(() => {
-        return settings?.displayedIndices || ['cpi', 'usd', 'eur'];
+        return settings?.displayedIndices || ['cpi', 'housing'];
     }, [settings?.displayedIndices]);
 
     useEffect(() => {

@@ -38,6 +38,13 @@
     - Check `version.json` and key features on production.
     - **Update the user** with success/failure status immediately after verification.
 
+### 5. Legal Compliance ⚖️
+- **Strict Adherence to Israeli Law**:
+    - **Spam Law (Section 30A)**: All marketing emails MUST include "פרסומת:" in the subject line. Explicit consent (opt-in) is required. Unsubscribe links must be functional and easy to find.
+    - **Privacy**: User data must be processed according to the Privacy Protection Law.
+    - **Accessibility**: Services must meet WCAG 2.1 AA standards as per the Equal Rights for Persons with Disabilities Law.
+    - **Consumer Protection**: Cancelation policies and pricing transparency must be clear.
+
 ---
 
 *These guidelines ensure RentMate remains secure, accessible, and user-friendly for Israeli landlords managing their properties on the go.*

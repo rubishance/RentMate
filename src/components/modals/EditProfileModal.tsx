@@ -204,6 +204,7 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
     const [rentDueDays, setRentDueDays] = useState(3);
     const [extensionOptionDays, setExtensionOptionDays] = useState(30);
     const [extensionOptionEndDays, setExtensionOptionEndDays] = useState(7);
+    const [marketingConsent, setMarketingConsent] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
@@ -221,7 +222,7 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
 
             const { data, error } = await supabase
                 .from('user_profiles')
-                .select('notification_preferences')
+                .select('notification_preferences, marketing_consent')
                 .eq('id', user.id)
                 .single();
 
@@ -231,6 +232,7 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
                 setRentDueDays(prefs.rent_due_days ?? 3);
                 setExtensionOptionDays(prefs.extension_option_days ?? 30);
                 setExtensionOptionEndDays(prefs.extension_option_end_days ?? 7);
+                setMarketingConsent(data.marketing_consent ?? true);
             }
         } catch (error) {
             console.error('Error loading notification preferences:', error);
@@ -264,7 +266,10 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
 
             const { error } = await supabase
                 .from('user_profiles')
-                .update({ notification_preferences: newPrefs })
+                .update({
+                    notification_preferences: newPrefs,
+                    marketing_consent: marketingConsent
+                })
                 .eq('id', user.id);
 
             if (error) throw error;
@@ -299,6 +304,23 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
                 ) : (
                     <>
                         <div className="p-6 space-y-6 overflow-y-auto flex-1">
+                            {/* Marketing Consent */}
+                            <div className="space-y-3 pb-4 border-b border-border">
+                                <h3 className="text-sm font-semibold text-foreground/70 mb-2">
+                                    {lang === 'he' ? 'עדכונים וחדשות' : 'News & Updates'}
+                                </h3>
+                                <Checkbox
+                                    label={lang === 'he' ? 'קבלת עדכונים על תכונות חדשות ומבצעים' : 'Receive updates about new features and promotions'}
+                                    checked={marketingConsent}
+                                    onChange={setMarketingConsent}
+                                    className="border-none p-0 bg-transparent"
+                                />
+                            </div>
+
+                            <h3 className="text-sm font-semibold text-foreground/70 mb-2 mt-4">
+                                {lang === 'he' ? 'תזכורות אישיות' : 'Personal Reminders'}
+                            </h3>
+
                             {/* Contract Expiry */}
                             <div className="space-y-3 pb-4 border-b border-border">
                                 <Checkbox

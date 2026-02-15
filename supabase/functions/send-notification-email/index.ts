@@ -1,7 +1,10 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { create, getNumericDate } from "https://deno.land/x/djwt@v2.8/mod.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.21.0";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -18,6 +21,30 @@ serve(async (req) => {
 
         if (!RESEND_API_KEY) {
             throw new Error("Missing RESEND_API_KEY");
+        }
+
+        const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+
+        // Fetch user ID based on email to generate token
+        const { data: user, error: userError } = await supabase
+            .from('user_profiles')
+            .select('id')
+            .eq('email', email)
+            .single();
+
+        let unsubscribeLink = 'https://rentmate.co.il/settings'; // Fallback
+
+        if (user && !userError) {
+            const key = await crypto.subtle.importKey(
+                "raw",
+                new TextEncoder().encode(SUPABASE_SERVICE_ROLE_KEY),
+                { name: "HMAC", hash: "SHA-256" },
+                false,
+                ["sign"]
+            );
+
+            const jwt = await create({ alg: "HS256", type: "JWT" }, { userId: user.id, type: 'reminders' }, key);
+            unsubscribeLink = `https://rentmate.co.il/unsubscribe?token=${jwt}&type=reminders`;
         }
 
         const isRtl = lang === 'he';
@@ -122,6 +149,11 @@ serve(async (req) => {
         <div class="footer">
             <p style="margin-bottom: 8px;">${footerText} <a href="mailto:${contactEmail}" class="contact-link">${contactEmail}</a></p>
             <p>${sentByText}</p>
+            <p style="margin-top: 10px; font-size: 10px;">
+                <a href="${unsubscribeLink}" style="color: #94a3b8; text-decoration: underline;">
+                    ${isRtl ? 'הסר מרשימת תפוצה זו' : 'Unsubscribe from these notifications'}
+                </a>
+            </p>
         </div>
     </div>
 </body>
