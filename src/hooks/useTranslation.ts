@@ -964,6 +964,8 @@ export type TranslationKeys =
     | 'Yavne'
     | 'Yehud-Monosson'
     | 'Yokneam Illit'
+    | 'Beer Sheba'
+    | 'Ness Ziona'
     | 'Zefat';
 
 export const translations: Record<string, any> = {
@@ -1920,6 +1922,7 @@ export const translations: Record<string, any> = {
         'Ashdod': 'אשדוד',
         'Netanya': 'נתניה',
         'Beer Sheva': 'באר שבע',
+        'Beer Sheba': 'באר שבע',
         'Holon': 'חולון',
         'Bnei Brak': 'בני ברק',
         'Ramat Gan': 'רמת גן',
@@ -1962,6 +1965,7 @@ export const translations: Record<string, any> = {
         'Nazareth Illit': 'נצרת עילית',
         'Nof HaGalil': 'נוף הגליל',
         'Nes Ziona': 'נס ציונה',
+        'Ness Ziona': 'נס ציונה',
         'Netivot': 'נתיבות',
         'Ofakim': 'אופקים',
         'Or Akiva': 'אור עקיבא',
@@ -2093,6 +2097,7 @@ export const translations: Record<string, any> = {
         'Ashdod': 'Ashdod',
         'Netanya': 'Netanya',
         'Beer Sheva': 'Beer Sheva',
+        'Beer Sheba': 'Beer Sheba',
         'Holon': 'Holon',
         'Bnei Brak': 'Bnei Brak',
         'Ramat Gan': 'Ramat Gan',
@@ -2135,6 +2140,7 @@ export const translations: Record<string, any> = {
         'Nazareth Illit': 'Nazareth Illit',
         'Nof HaGalil': 'Nof HaGalil',
         'Nes Ziona': 'Nes Ziona',
+        'Ness Ziona': 'Ness Ziona',
         'Netivot': 'Netivot',
         'Ofakim': 'Ofakim',
         'Or Akiva': 'Or Akiva',
