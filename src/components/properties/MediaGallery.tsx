@@ -9,6 +9,9 @@ import { format, parseISO } from 'date-fns';
 import { DocumentTimeline } from './DocumentTimeline';
 import { DocumentDetailsModal } from '../modals/DocumentDetailsModal';
 import { DatePicker } from '../ui/DatePicker';
+import { Input } from '../ui/Input';
+import { Button } from '../ui/Button';
+import { Textarea } from '../ui/Textarea';
 
 interface MediaGalleryProps {
     property: Property;
@@ -243,16 +246,19 @@ export function MediaGallery({ property, readOnly }: MediaGalleryProps) {
                             <h4 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
                                 {editingFolder ? t('edit') : t('newAlbum')}
                             </h4>
-                            <p className="text-sm text-muted-foreground dark:text-muted-foreground mt-1">
-                                {t('createAlbumDesc', { defaultValue: 'Create a new album for your photos & videos' })}
+                            <h4 className="font-semibold text-foreground">{t('newUploads')}</h4>
+                            <p className="text-xs text-muted-foreground">
+                                {stagedFiles.length} {t('filesSelected')}
                             </p>
                         </div>
-                        <button
-                            onClick={() => setShowUploadForm(false)}
-                            className="p-2 bg-gray-100/50 dark:bg-gray-800/50 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors backdrop-blur-sm"
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setShowUploadForm(false)} // Renamed from setShowUploadForm
+                            className="rounded-full hover:bg-muted"
                         >
                             <X className="w-5 h-5 text-muted-foreground" />
-                        </button>
+                        </Button>
                     </div>
 
                     {/* Album Metadata */}
@@ -260,12 +266,12 @@ export function MediaGallery({ property, readOnly }: MediaGalleryProps) {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div className="space-y-1.5">
                                 <label className="text-sm font-semibold text-gray-700 dark:text-gray-200 ml-1">{t('albumName')}</label>
-                                <input
+                                <Input // Replaced native input
                                     type="text"
                                     value={albumName}
                                     onChange={(e) => setAlbumName(e.target.value)}
                                     placeholder={t('e.g. Property Inspection 2024')}
-                                    className="w-full px-4 py-3 bg-white/50 dark:bg-gray-800/50 border border-border/60 dark:border-gray-700/60 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-primary transition-all backdrop-blur-sm outline-none dark:text-white"
+                                    className="w-full"
                                 />
                             </div>
                             <div className="space-y-1.5">
@@ -279,11 +285,11 @@ export function MediaGallery({ property, readOnly }: MediaGalleryProps) {
                         </div>
                         <div className="space-y-1.5">
                             <label className="text-sm font-semibold text-gray-700 dark:text-gray-200 ml-1">{t('note')}</label>
-                            <textarea
+                            <Textarea // Replaced native textarea
                                 value={albumNote}
                                 onChange={(e) => setAlbumNote(e.target.value)}
                                 placeholder={t('optionalAlbumNote')}
-                                className="w-full px-4 py-3 bg-white/50 dark:bg-gray-800/50 border border-border/60 dark:border-gray-700/60 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-primary transition-all backdrop-blur-sm outline-none dark:text-white resize-none"
+                                className="w-full resize-none"
                                 rows={2}
                             />
                         </div>
@@ -335,21 +341,23 @@ export function MediaGallery({ property, readOnly }: MediaGalleryProps) {
                                             )}
 
                                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-start justify-end p-2">
-                                                <button
+                                                <Button // Replaced native button
+                                                    variant="ghost"
+                                                    size="sm"
                                                     onClick={() => removeStagedFile(idx)}
-                                                    className="p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                                                    className="text-white hover:bg-black/30 w-6 h-6 p-0 rounded-full"
                                                 >
-                                                    <X className="w-4 h-4" />
-                                                </button>
+                                                    <X className="w-3 h-3" />
+                                                </Button>
                                             </div>
-
-                                            <input
-                                                type="text"
-                                                value={item.note}
-                                                onChange={(e) => updateStagedFileNote(idx, e.target.value)}
-                                                placeholder={t('addQuickNote')}
-                                                className="absolute bottom-1 left-1 right-1 px-2 py-1.5 text-xs bg-white/90 dark:bg-black/70 border-0 rounded-lg backdrop-blur-md outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white placeholder-gray-500"
-                                            />
+                                            <div className="absolute bottom-1 left-1 right-1">
+                                                <Input // Replaced native input
+                                                    value={item.note}
+                                                    onChange={(e) => updateStagedFileNote(idx, e.target.value)}
+                                                    placeholder={t('addQuickNote')}
+                                                    className="h-7 text-xs bg-white/90 dark:bg-black/70 border-0 backdrop-blur-md focus:ring-1 focus:ring-indigo-500 dark:text-white placeholder-gray-500"
+                                                />
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -358,14 +366,14 @@ export function MediaGallery({ property, readOnly }: MediaGalleryProps) {
                     )}
 
                     <div className="flex gap-3 pt-4 border-t border-border dark:border-gray-700/50">
-                        <button
-                            onClick={() => setShowUploadForm(false)}
-                            className="px-6 py-2.5 text-sm font-medium text-muted-foreground dark:text-gray-300 hover:bg-muted dark:hover:bg-gray-800 rounded-xl transition-colors"
+                        <Button // Replaced native button
+                            variant="ghost"
+                            onClick={() => setShowUploadForm(false)} // Renamed from setShowUploadForm
                         >
                             {t('cancel')}
-                        </button>
-                        <button
-                            onClick={handleCreateAndUpload}
+                        </Button>
+                        <Button // Replaced native button
+                            onClick={handleCreateAndUpload} // Renamed from handleCreateAndUpload
                             disabled={uploading}
                             className={`
                                 flex-1 px-6 py-2.5 text-sm font-medium text-white rounded-xl shadow-lg shadow-blue-500/25
@@ -387,7 +395,7 @@ export function MediaGallery({ property, readOnly }: MediaGalleryProps) {
                                     {t('createAndUpload')}
                                 </>
                             )}
-                        </button>
+                        </Button>
                     </div>
                 </div>
             )}

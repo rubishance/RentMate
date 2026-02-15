@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { PageHeader } from '../components/common/PageHeader';
+
 import { Calculator } from './Calculator';
 import { Analytics } from './Analytics';
 import { RentalTrends } from '../components/tools/RentalTrends';
 import { Calculator as CalcIcon, BarChart2, TrendingUp } from 'lucide-react';
+import { SegmentedControl } from '../components/ui/SegmentedControl';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from '../hooks/useTranslation';
 
@@ -29,37 +30,17 @@ export function Tools() {
             </div>
 
             {/* Tab Switcher */}
-            <div className="flex glass-premium dark:bg-neutral-900/40 p-2 rounded-[2.5rem] border-white/5 shadow-minimal max-w-2xl mx-auto">
-                <button
-                    onClick={() => setActiveTab('calculator')}
-                    className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-[1.8rem] font-black text-[10px] uppercase tracking-[0.2em] transition-all ${activeTab === 'calculator'
-                        ? 'button-jewel text-white shadow-jewel'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
-                        }`}
-                >
-                    <CalcIcon className="w-4 h-4" />
-                    {lang === 'he' ? 'מחשבון' : 'Calculator'}
-                </button>
-                <button
-                    onClick={() => setActiveTab('analytics')}
-                    className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-[1.8rem] font-black text-[10px] uppercase tracking-[0.2em] transition-all ${activeTab === 'analytics'
-                        ? 'button-jewel text-white shadow-jewel'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
-                        }`}
-                >
-                    <BarChart2 className="w-4 h-4" />
-                    {lang === 'he' ? 'אנליטיקה' : 'Analytics'}
-                </button>
-                <button
-                    onClick={() => setActiveTab('trends')}
-                    className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-[1.8rem] font-black text-[10px] uppercase tracking-[0.2em] transition-all ${activeTab === 'trends'
-                        ? 'button-jewel text-white shadow-jewel'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
-                        }`}
-                >
-                    <TrendingUp className="w-4 h-4" />
-                    {lang === 'he' ? 'מגמות שוק' : 'Market Trends'}
-                </button>
+            <div className="flex justify-center mb-8">
+                <SegmentedControl
+                    value={activeTab}
+                    onChange={(val) => setActiveTab(val as 'calculator' | 'analytics' | 'trends')}
+                    options={[
+                        { value: 'calculator', label: lang === 'he' ? 'מחשבון' : 'Calculator', icon: <CalcIcon className="w-4 h-4" /> },
+                        { value: 'analytics', label: lang === 'he' ? 'אנליטיקה' : 'Analytics', icon: <BarChart2 className="w-4 h-4" /> },
+                        { value: 'trends', label: lang === 'he' ? 'מגמות שוק' : 'Market Trends', icon: <TrendingUp className="w-4 h-4" /> }
+                    ]}
+                    className="w-full max-w-2xl glass-premium dark:bg-neutral-900/40 border-white/5 shadow-minimal p-1.5"
+                />
             </div>
 
             {/* Content Area */}

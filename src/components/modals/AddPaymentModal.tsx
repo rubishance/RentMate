@@ -165,7 +165,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
 
         if (amount && date && pendingPayments.length > 0) {
             // Find best match
-            let bestMatch = null;
+            let bestMatch: any = null;
             let minScore = Infinity;
 
             pendingPayments.forEach(p => {

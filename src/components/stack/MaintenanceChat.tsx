@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
-import { SendIcon, PaperclipIcon, CameraIcon, CheckCircle2Icon } from 'lucide-react';
+import { SendIcon, PaperclipIcon, CameraIcon } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
 
 interface MaintenanceChatProps {
     ticketId?: string;
     propertyAddress?: string; // Passed if new ticket
 }
 
-export function MaintenanceChat({ ticketId, propertyAddress }: MaintenanceChatProps) {
+export function MaintenanceChat({ ticketId: _ticketId, propertyAddress }: MaintenanceChatProps) {
     const { t } = useTranslation();
     const [messages, setMessages] = useState([
         { id: 1, sender: 'system', text: 'Ticket #4291 Opened. Pro assigned.', time: '2 days ago' },
@@ -55,8 +56,8 @@ export function MaintenanceChat({ ticketId, propertyAddress }: MaintenanceChatPr
                         ) : (
                             // User Message
                             <div className={`max-w-[80%] rounded-2xl p-4 ${msg.sender === 'me'
-                                    ? 'bg-primary text-primary-foreground rounded-tr-sm'
-                                    : 'bg-white dark:bg-neutral-800 border border-slate-100 dark:border-neutral-700 rounded-tl-sm'
+                                ? 'bg-primary text-primary-foreground rounded-tr-sm'
+                                : 'bg-white dark:bg-neutral-800 border border-slate-100 dark:border-neutral-700 rounded-tl-sm'
                                 }`}>
                                 {msg.hasImage && (
                                     <div className="w-full h-32 bg-slate-200 dark:bg-neutral-700 rounded-lg mb-2 animate-pulse" />
@@ -72,19 +73,19 @@ export function MaintenanceChat({ ticketId, propertyAddress }: MaintenanceChatPr
             {/* Input Area */}
             <div className="p-4 bg-white dark:bg-neutral-900 border-t border-border shrink-0 pb-10">
                 <div className="flex items-center gap-4">
-                    <button className="p-2 text-muted-foreground hover:text-primary transition-colors">
+                    <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary transition-colors">
                         <PaperclipIcon className="w-5 h-5" />
-                    </button>
-                    <button className="p-2 text-muted-foreground hover:text-primary transition-colors">
+                    </Button>
+                    <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary transition-colors">
                         <CameraIcon className="w-5 h-5" />
-                    </button>
+                    </Button>
                     <div className="flex-1 relative">
-                        <input
+                        <Input
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                             placeholder={t('typeMessage')}
-                            className="w-full bg-slate-50 dark:bg-neutral-800 border-none rounded-2xl px-4 py-3 text-sm focus:ring-1 focus:ring-primary outline-none"
+                            className="w-full bg-slate-50 dark:bg-neutral-800 border-none rounded-2xl px-4 py-3 text-sm focus-visible:ring-1 focus-visible:ring-primary shadow-none h-auto"
                         />
                     </div>
                     <Button onClick={handleSend} size="icon" className="rounded-full w-10 h-10 shrink-0">

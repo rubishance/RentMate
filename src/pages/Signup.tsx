@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, ArrowRight, AlertTriangle, Mail } from 'lucide-react';
+import { Loader2, ArrowRight, Mail } from 'lucide-react';
 import logoIconOnly from '../assets/rentmate-icon-only.png';
 import logoIconDark from '../assets/rentmate-icon-only-dark.png';
 import { useTranslation } from '../hooks/useTranslation';
@@ -11,6 +11,9 @@ import { ThemeToggle } from '../components/common/ThemeToggle';
 import { SettingsTray } from '../components/common/SettingsTray';
 import { useUserPreferences } from '../contexts/UserPreferencesContext';
 import { cn } from '../lib/utils';
+import { Input } from '../components/ui/Input';
+import { Checkbox } from '../components/ui/Checkbox';
+import { Button } from '../components/ui/Button';
 
 export function Signup() {
     const navigate = useNavigate();
@@ -125,13 +128,15 @@ export function Signup() {
 
     return (
         <div className={`min-h-screen flex flex-col items-center justify-start sm:justify-center bg-white dark:bg-[#0a0a0a] py-4 sm:py-12 ${isRtl ? 'text-right' : 'text-left'}`} dir={isRtl ? 'rtl' : 'ltr'}>
-            <button
+            <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => navigate('/')}
-                className="absolute top-4 left-4 sm:top-8 sm:left-8 z-50 p-2 rounded-full bg-gray-100 dark:bg-neutral-900 hover:bg-gray-200 dark:hover:bg-neutral-800 transition-all"
+                className="absolute top-4 left-4 sm:top-8 sm:left-8 z-50 rounded-full bg-gray-100 dark:bg-neutral-900 hover:bg-gray-200 dark:hover:bg-neutral-800"
                 title={isRtl ? 'חזרה לדף הבית' : 'Back to home'}
             >
                 <ArrowRight className={cn("w-5 h-5 text-gray-600 dark:text-gray-400", !isRtl && "rotate-180")} />
-            </button>
+            </Button>
             <div className="absolute top-4 left-14 sm:top-8 sm:left-20 z-50 hidden sm:block">
                 <LanguageToggle />
             </div>
@@ -185,16 +190,16 @@ const ConfirmationView = ({ email, onBack, isRtl, t }: any) => (
                 {t('auth_confirmation_sent').replace('{email}', email)}
             </p>
         </div>
-        <button onClick={onBack} className="no-dark-fix w-full py-3.5 sm:py-4 bg-black dark:bg-white text-white dark:text-black font-bold rounded-2xl hover:bg-gray-800 transition-all shadow-xl">
+        <Button onClick={onBack} className="no-dark-fix w-full py-6 sm:py-6 bg-black dark:bg-white text-white dark:text-black font-bold rounded-2xl hover:bg-gray-800 transition-all shadow-xl text-base">
             {isRtl ? '← חזרה להתחברות' : '← Back to Login'}
-        </button>
+        </Button>
     </motion.div>
 );
 
 const SignupFormView = ({
     handleAuth, email, setEmail, password, setPassword, firstName, setFirstName, lastName, setLastName,
     phone, setPhone, agreeToTerms, setAgreeToTerms, marketingConsent, setMarketingConsent, loading, error, handleSocialLogin,
-    t, isRtl, effectiveTheme, isSupabaseConfigured
+    t, isRtl, effectiveTheme
 }: any) => (
     <div className="space-y-6 sm:space-y-10">
         <div className="text-center space-y-3 sm:space-y-6">
@@ -208,10 +213,15 @@ const SignupFormView = ({
         {error && <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-4 rounded-2xl text-sm border border-red-100 dark:border-red-900/40 text-center font-medium">{error}</div>}
 
         <div className="space-y-6 sm:space-y-10">
-            <button onClick={() => handleSocialLogin('google')} disabled={loading} className="w-full flex items-center justify-center gap-3 py-3.5 sm:py-4 bg-white dark:bg-neutral-800 border border-gray-100 rounded-2xl hover:bg-gray-50 transition-all shadow-sm">
+            <Button
+                variant="outline"
+                onClick={() => handleSocialLogin('google')}
+                disabled={loading}
+                className="w-full h-12 gap-3 bg-white dark:bg-neutral-800 border-gray-100 rounded-2xl hover:bg-gray-50 dark:hover:bg-neutral-700 shadow-sm"
+            >
                 <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
                 <span className="text-sm font-bold text-black dark:text-white">{isRtl ? 'המשך עם Google' : 'Continue with Google'}</span>
-            </button>
+            </Button>
             <div className="relative"><div className="absolute inset-0 flex items-center"><span className="w-full border-t border-gray-100 dark:border-neutral-800" /></div><div className="relative flex justify-center text-[10px] font-bold uppercase tracking-widest text-gray-400"><span className="bg-white dark:bg-neutral-900 px-3">{t('auth_or_continue')}</span></div></div>
         </div>
 
@@ -221,69 +231,93 @@ const SignupFormView = ({
                     {isRtl ? 'שם מלא' : 'Full Name'}
                 </label>
                 <div className="grid grid-cols-2 gap-3">
-                    <input
+                    <Input
                         type="text"
                         required
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
-                        className="block w-full px-4 py-3 sm:py-4 bg-gray-50 dark:bg-neutral-800 text-black dark:text-white rounded-2xl outline-none focus:bg-white dark:focus:bg-neutral-700 transition-all"
                         placeholder={isRtl ? 'שם פרטי' : 'First Name'}
+                        className="h-12 bg-gray-50 dark:bg-neutral-800"
                     />
-                    <input
+                    <Input
                         type="text"
                         required
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
-                        className="block w-full px-4 py-3 sm:py-4 bg-gray-50 dark:bg-neutral-800 text-black dark:text-white rounded-2xl outline-none focus:bg-white dark:focus:bg-neutral-700 transition-all"
                         placeholder={isRtl ? 'שם משפחה' : 'Last Name'}
+                        className="h-12 bg-gray-50 dark:bg-neutral-800"
                     />
                 </div>
             </div>
             <div className="space-y-2">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block ml-1">{t('phone')}</label>
-                <input
+                <Input
+                    label={t('phone')}
                     type="tel"
                     required
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="block w-full px-4 py-3 sm:py-4 bg-gray-50 dark:bg-neutral-800 text-black dark:text-white rounded-2xl outline-none focus:bg-white dark:focus:bg-neutral-700 transition-all"
                     placeholder="050-0000000"
+                    className="h-12 bg-gray-50 dark:bg-neutral-800"
                 />
             </div>
             <div className="space-y-2">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block ml-1">{t('auth_email')}</label>
-                <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="block w-full px-4 py-3 sm:py-4 bg-gray-50 dark:bg-neutral-800 text-black dark:text-white rounded-2xl outline-none focus:bg-white dark:focus:bg-neutral-700 transition-all" placeholder="name@example.com" />
+                <Input
+                    label={t('auth_email')}
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="name@example.com"
+                    className="h-12 bg-gray-50 dark:bg-neutral-800"
+                    leftIcon={<Mail className="w-4 h-4 text-muted-foreground" />}
+                />
             </div>
             <div className="space-y-2">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block ml-1">{t('auth_password')}</label>
-                <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="block w-full px-4 py-3 sm:py-4 bg-gray-50 dark:bg-neutral-800 text-black dark:text-white rounded-2xl outline-none focus:bg-white dark:focus:bg-neutral-700 transition-all" placeholder="••••••••" />
+                <Input
+                    label={t('auth_password')}
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="h-12 bg-gray-50 dark:bg-neutral-800"
+                />
             </div>
 
-            <div className="space-y-3">
-                <label className="flex items-start gap-3 cursor-pointer group">
-                    <input type="checkbox" checked={agreeToTerms} onChange={(e) => setAgreeToTerms(e.target.checked)} className="mt-1 w-4 h-4 rounded border-gray-300 transition-all" />
-                    <span className="text-xs text-gray-500 font-medium leading-relaxed group-hover:text-black transition-colors">
-                        {t('agreeToTerms').split('{terms}').map((part: string, i: number) => {
-                            if (i === 1) {
-                                const [p1, p2] = part.split('{privacy}');
-                                return <React.Fragment key={i}>
-                                    <Link to="/legal/terms" className="text-black font-bold hover:underline" target="_blank">{t('termsOfService')}</Link>{p1}
-                                    <Link to="/legal/privacy" className="text-black font-bold hover:underline" target="_blank">{t('privacyPolicy')}</Link>{p2}
-                                </React.Fragment>;
-                            }
-                            return part;
-                        })}
-                    </span>
-                </label>
-                <label className="flex items-start gap-3 cursor-pointer group">
-                    <input type="checkbox" checked={marketingConsent} onChange={(e) => setMarketingConsent(e.target.checked)} className="mt-1 w-4 h-4 rounded border-gray-300 transition-all" />
-                    <span className="text-xs text-gray-500 font-medium leading-relaxed group-hover:text-black transition-colors">{t('marketingConsent')}</span>
-                </label>
+            <div className="space-y-3 pt-2">
+                <Checkbox
+                    checked={agreeToTerms}
+                    onChange={setAgreeToTerms}
+                    label={(
+                        <span className="text-xs text-gray-500 font-medium leading-relaxed group-hover:text-black transition-colors">
+                            {t('agreeToTerms').split('{terms}').map((part: string, i: number) => {
+                                if (i === 1) {
+                                    const [p1, p2] = part.split('{privacy}');
+                                    return <React.Fragment key={i}>
+                                        <Link to="/legal/terms" className="text-black font-bold hover:underline" target="_blank">{t('termsOfService')}</Link>{p1}
+                                        <Link to="/legal/privacy" className="text-black font-bold hover:underline" target="_blank">{t('privacyPolicy')}</Link>{p2}
+                                    </React.Fragment>;
+                                }
+                                return part;
+                            })}
+                        </span>
+                    )}
+                />
+                <Checkbox
+                    checked={marketingConsent}
+                    onChange={setMarketingConsent}
+                    label={<span className="text-xs text-gray-500 font-medium leading-relaxed group-hover:text-black transition-colors">{t('marketingConsent')}</span>}
+                />
             </div>
 
-            <button type="submit" disabled={loading} className="w-full flex items-center justify-center py-3.5 sm:py-4 bg-black dark:bg-white text-white dark:text-black text-sm font-bold rounded-2xl shadow-xl hover:scale-[1.02] transition-all disabled:opacity-70">
+            <Button
+                type="submit"
+                disabled={loading}
+                className="w-full h-12 shadow-xl hover:scale-[1.02] transition-all"
+                size="lg"
+            >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : <div className="flex items-center gap-2">{t('auth_create_account')} <ArrowRight className={cn("w-4 h-4", isRtl && "rotate-180")} /></div>}
-            </button>
+            </Button>
         </form>
 
         <div className="text-center pt-2">

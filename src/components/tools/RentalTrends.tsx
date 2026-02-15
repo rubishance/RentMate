@@ -1,10 +1,13 @@
 import { useEffect, useState, useMemo } from 'react';
 import { rentalTrendService } from '../../services/rental-trend.service';
 import { useTranslation } from '../../hooks/useTranslation';
-import { TrendingUp, TrendingDown, MapPin, Info, ArrowUpRight, ShieldCheck, Home, Ruler, Calendar, Filter, RotateCcw, X } from 'lucide-react';
+import { TrendingUp, TrendingDown, Info, ArrowUpRight, ShieldCheck, Filter, X } from 'lucide-react';
 import { GlassCard } from '../common/GlassCard';
 import { FilterDrawer } from '../common/FilterDrawer';
 import { cn } from '../../lib/utils';
+import { Button } from '../ui/Button';
+import { Select } from '../ui/Select';
+import { Switch } from '../ui/Switch';
 
 export function RentalTrends() {
     const { t, lang } = useTranslation();
@@ -63,16 +66,14 @@ export function RentalTrends() {
                         {lang === 'he' ? 'נתוני למ"ס וניתוח מגמות המותאמים לנכס שלך' : 'CBS data and trend analysis tailored to your property'}
                     </p>
                 </div>
-                <button
+                <Button
                     onClick={() => setShowFilters(true)}
-                    className={cn(
-                        "flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-black uppercase tracking-widest transition-all",
-                        showFilters ? "bg-brand-600 text-white" : "bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800"
-                    )}
+                    variant={showFilters ? 'primary' : 'outline'}
+                    className="rounded-2xl text-xs font-black uppercase tracking-widest gap-2"
                 >
                     <Filter className="w-4 h-4" />
                     {lang === 'he' ? 'מסננים' : 'Filters'}
-                </button>
+                </Button>
             </div>
 
             {/* Active Filters Summary */}
@@ -114,51 +115,43 @@ export function RentalTrends() {
                         </label>
                         <div className="flex flex-wrap gap-2">
                             {regions.map((reg) => (
-                                <button
+                                <Button
                                     key={reg}
                                     onClick={() => toggleRegion(reg)}
-                                    className={cn(
-                                        "px-4 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border-2 transition-all",
-                                        selectedRegions.includes(reg)
-                                            ? "bg-brand-600 border-brand-600 text-white"
-                                            : "bg-background border-border text-muted-foreground hover:border-brand-600/20"
-                                    )}
+                                    variant={selectedRegions.includes(reg) ? 'primary' : 'outline'}
+                                    className="rounded-2xl text-[10px] font-black uppercase tracking-widest px-4 py-3 h-auto"
                                 >
                                     {reg}
-                                </button>
+                                </Button>
                             ))}
                         </div>
                     </div>
 
                     <div className="space-y-4">
                         <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('propertyType')}</label>
-                        <select
-                            className="w-full h-14 px-6 rounded-2xl border-2 border-border bg-background text-xs font-black text-foreground focus:border-foreground outline-none appearance-none"
+                        <Select
                             value={propertyType}
-                            onChange={(e) => setPropertyType(e.target.value)}
-                        >
-                            <option value="apartment">{t('apartment')}</option>
-                            <option value="house">{t('house')}</option>
-                            <option value="penthouse">{t('penthouse')}</option>
-                        </select>
+                            onChange={(value) => setPropertyType(value)}
+                            options={[
+                                { value: 'apartment', label: t('apartment') },
+                                { value: 'house', label: t('house') },
+                                { value: 'penthouse', label: t('penthouse') }
+                            ]}
+                        />
                     </div>
 
                     <div className="space-y-4">
                         <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('rooms')}</label>
                         <div className="grid grid-cols-4 gap-2">
                             {[2, 3, 4, 5].map(r => (
-                                <button
+                                <Button
                                     key={r}
                                     onClick={() => setRooms(r)}
-                                    className={cn(
-                                        "h-12 rounded-xl border-2 transition-all font-black text-[10px]",
-                                        rooms === r
-                                            ? "bg-foreground text-background border-foreground"
-                                            : "bg-background text-muted-foreground border-border"
-                                    )}
+                                    variant={rooms === r ? 'primary' : 'outline'}
+                                    className="h-12 rounded-xl font-black text-[10px]"
                                 >
                                     {r}
-                                </button>
+                                </Button>
                             ))}
                         </div>
                     </div>
@@ -167,24 +160,20 @@ export function RentalTrends() {
                         <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('comparisonDuration')}</label>
                         <div className="flex gap-2">
                             {(['1Y', '2Y', '5Y'] as const).map(d => (
-                                <button
+                                <Button
                                     key={d}
                                     onClick={() => setDuration(d)}
-                                    className={cn(
-                                        "flex-1 h-12 rounded-xl border-2 transition-all font-black text-[10px] uppercase tracking-widest",
-                                        duration === d
-                                            ? "bg-foreground text-background border-foreground"
-                                            : "bg-background text-muted-foreground border-border"
-                                    )}
+                                    variant={duration === d ? 'primary' : 'outline'}
+                                    className="flex-1 h-12 rounded-xl font-black text-[10px] uppercase tracking-widest"
                                 >
                                     {d}
-                                </button>
+                                </Button>
                             ))}
                         </div>
                     </div>
 
                     <div className="p-6 bg-brand-50/50 dark:bg-brand-900/10 rounded-[2rem] border border-brand-100 dark:border-brand-900/20">
-                        <label className="flex items-center justify-between cursor-pointer group">
+                        <div className="flex items-center justify-between cursor-pointer group" onClick={() => setHasMamah(!hasMamah)}>
                             <div className="space-y-1">
                                 <span className="text-[10px] font-black uppercase tracking-widest text-foreground flex items-center gap-2">
                                     <ShieldCheck className="w-4 h-4 text-brand-600" />
@@ -192,22 +181,11 @@ export function RentalTrends() {
                                 </span>
                                 <p className="text-[8px] text-muted-foreground font-medium">{t('mamahImpactDesc')}</p>
                             </div>
-                            <input
-                                type="checkbox"
-                                className="hidden"
+                            <Switch
                                 checked={hasMamah}
-                                onChange={() => setHasMamah(!hasMamah)}
+                                onChange={setHasMamah}
                             />
-                            <div className={cn(
-                                "w-12 h-6 rounded-full p-1 transition-colors duration-300",
-                                hasMamah ? "bg-brand-600" : "bg-slate-200 dark:bg-neutral-800"
-                            )}>
-                                <div className={cn(
-                                    "w-4 h-4 bg-white rounded-full transition-transform duration-300",
-                                    hasMamah ? "translate-x-6" : "translate-x-0"
-                                )} />
-                            </div>
-                        </label>
+                        </div>
                     </div>
                 </div>
             </FilterDrawer>

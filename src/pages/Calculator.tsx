@@ -5,6 +5,7 @@ import { useLocation } from 'react-router-dom';
 import { useTranslation } from '../hooks/useTranslation';
 import { cn } from '../lib/utils';
 import { motion } from 'framer-motion';
+import { SegmentedControl } from '../components/ui/SegmentedControl';
 import { UrlCompression } from '../lib/url-compression';
 import { StandardCalculator } from '../components/calculator/StandardCalculator';
 import { ReconciliationCalculator } from '../components/calculator/ReconciliationCalculator';
@@ -132,29 +133,16 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
             )}
 
             {/* Tabs */}
-            <div className="flex gap-2 glass-premium dark:bg-neutral-900/40 p-2 rounded-[2rem] border-white/5 shadow-minimal">
-                <button
-                    onClick={() => setActiveTab('standard')}
-                    className={cn(
-                        "flex-1 py-4 px-6 rounded-[1.2rem] font-black text-[10px] uppercase tracking-[0.2em] transition-all",
-                        activeTab === 'standard'
-                            ? "button-jewel text-white shadow-jewel"
-                            : "text-muted-foreground hover:text-foreground hover:bg-white/5"
-                    )}
-                >
-                    {t('standardCalculation')}
-                </button>
-                <button
-                    onClick={() => setActiveTab('reconciliation')}
-                    className={cn(
-                        "flex-1 py-4 px-6 rounded-[1.2rem] font-black text-[10px] uppercase tracking-[0.2em] transition-all",
-                        activeTab === 'reconciliation'
-                            ? "button-jewel text-white shadow-jewel"
-                            : "text-muted-foreground hover:text-foreground hover:bg-white/5"
-                    )}
-                >
-                    {t('paymentReconciliation')}
-                </button>
+            <div className="flex justify-center">
+                <SegmentedControl
+                    value={activeTab}
+                    onChange={(val) => setActiveTab(val as TabType)}
+                    options={[
+                        { value: 'standard', label: t('standardCalculation') },
+                        { value: 'reconciliation', label: t('paymentReconciliation') }
+                    ]}
+                    className="w-full max-w-xl glass-premium dark:bg-neutral-900/40 border-white/5 shadow-minimal p-1.5"
+                />
             </div>
 
             {/* SEO Metadata */}

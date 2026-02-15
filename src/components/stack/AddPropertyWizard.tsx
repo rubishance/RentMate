@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Checkbox } from '../ui/Checkbox';
-import { CheckIcon, ArrowRightIcon, MapPin, Building2, Info, Upload, Image as ImageIcon, Loader2, Trash2, Wind, ShieldCheck, Car, Package } from 'lucide-react';
+import { Input } from '../ui/Input';
+import { Button } from '../ui/Button';
+import { MapPin, Info, Upload, Loader2, Trash2, Wind, ShieldCheck, Car, Package, ArrowRightIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PropertyTypeSelect } from '../common/PropertyTypeSelect';
 import type { Property } from '../../types/database';
@@ -12,18 +14,16 @@ import { cn } from '../../lib/utils';
 import { GoogleAutocomplete } from '../common/GoogleAutocomplete';
 import { getPropertyPlaceholder } from '../../lib/property-placeholders';
 import { SecureImage } from '../common/SecureImage';
-import { useSignedUrl } from '../../hooks/useSignedUrl';
 import { useAuth } from '../../contexts/AuthContext';
 import { useUsageTracking } from '../../hooks/useUsageTracking';
 import { ValidatedField } from '../common/ValidatedField';
 
+// Animations
 const containerVariants = {
     hidden: { opacity: 0 },
     show: {
         opacity: 1,
-        transition: {
-            staggerChildren: 0.1
-        }
+        transition: { staggerChildren: 0.1 }
     }
 };
 
@@ -49,9 +49,15 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
     const { t } = useTranslation();
     const { pop } = useStack();
     const { trackEvent } = useUsageTracking();
-    const [currentStep, setCurrentStep] = useState(0);
 
-    // Form State
+    // State
+    const [currentStep, setCurrentStep] = useState(0);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const [isFetchingMap, setIsFetchingMap] = useState(false);
+    const [uploadMode, setUploadMode] = useState<'url' | 'upload'>('upload');
+    const [imageError, setImageError] = useState<string | null>(null);
+
     const [formData, setFormData] = useState<Partial<Property>>({
         property_type: initialData?.property_type || 'apartment',
         address: initialData?.address || '',
@@ -65,15 +71,26 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
         image_url: initialData?.image_url || ''
     });
 
-    // AI Support: Prefill data is handled in the initial state of formData.
-    // We start at step 0 so the user can verify the location details.
+    // Validation Helpers (Pure Functions)
+    const isValidStep0 = () => {
+        return !!formData.property_type &&
+            !!formData.city && formData.city.length > 1 &&
+            !!formData.address && formData.address.length > 2;
+    };
 
-    // Image Upload State
-    const [uploadMode, setUploadMode] = useState<'url' | 'upload'>('upload');
-    const [isUploading, setIsUploading] = useState(false);
-    const [isFetchingMap, setIsFetchingMap] = useState(false);
-    const [imageError, setImageError] = useState<string | null>(null);
+    const isValidStep1 = () => {
+        // Optional fields are fine, but if entered, strictly numbers > 0 handled by input types
+        // Basic requirement: simplified to always return true as fields are optional or have defaults
+        return true;
+    };
 
+    const isCurrentStepValid = () => {
+        if (currentStep === 0) return isValidStep0();
+        if (currentStep === 1) return isValidStep1();
+        return false;
+    };
+
+    // Handlers
     const handleGoogleMapsFetch = async () => {
         if (!formData.address || !formData.city) {
             alert('Please enter city and address first');
@@ -99,7 +116,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
             }
         } catch (err: any) {
             console.error('Street View Error:', err);
-            let detailedError = err?.context?.message || err?.message || 'Unknown error';
+            const detailedError = err?.context?.message || err?.message || 'Unknown error';
             setImageError(detailedError);
             alert(`Failed to fetch Street View: ${detailedError}`);
         } finally {
@@ -141,64 +158,9 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
         }
     };
 
-    const [isSaving, setIsSaving] = useState(false);
-
     const next = async () => {
         if (currentStep === STEPS.length - 1) {
-            setIsSaving(true);
-            try {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) throw new Error('User not authenticated');
-
-                const startData: any = {
-                    address: (formData.address || '').trim(),
-                    city: (formData.city || '').trim(),
-                    property_type: formData.property_type,
-                    rooms: Number(formData.rooms) || 0,
-                    size_sqm: Number(formData.size_sqm) || 0,
-                    has_parking: !!formData.has_parking,
-                    has_storage: !!formData.has_storage,
-                    has_balcony: !!formData.has_balcony,
-                    has_safe_room: !!formData.has_safe_room,
-                    image_url: formData.image_url || null,
-                    user_id: user.id
-                };
-
-                let { error } = await supabase
-                    .from('properties')
-                    .insert(startData);
-
-                // Resilience for schema cache mismatches
-                if (error && (error.message?.includes('schema cache') || error.message?.includes('column'))) {
-                    console.warn('[AddPropertyWizard] Modern schema columns missing. Retrying with legacy fields...');
-                    const legacyData = { ...startData };
-                    delete legacyData.has_balcony;
-                    delete legacyData.has_safe_room;
-
-                    const { error: retryError } = await supabase
-                        .from('properties')
-                        .insert(legacyData);
-                    error = retryError;
-                }
-
-
-                if (error) throw error;
-
-                // Track analytics event
-                trackEvent('property_created', {
-                    property_type: startData.property_type,
-                    city: startData.city
-                });
-
-                // Success - close and refresh via parent/cache clearing
-                if (onSuccess) onSuccess();
-                pop();
-            } catch (error) {
-                console.error('Error saving property:', error);
-                alert('Failed to save property. Please try again.');
-            } finally {
-                setIsSaving(false);
-            }
+            await saveProperty();
         } else {
             setCurrentStep(prev => prev + 1);
         }
@@ -208,19 +170,68 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
         if (currentStep === 0) {
             pop();
         } else {
-            setCurrentStep(prev => Math.max(prev - 1, 0));
+            setCurrentStep(prev => prev - 1);
         }
     };
 
-    const isStepValid = () => {
-        const valid = currentStep === 0 ? (!!formData.address && !!formData.city && !!formData.property_type) : true;
-        console.log('Wizard Validation:', { currentStep, valid, address: !!formData.address, city: !!formData.city, type: !!formData.property_type }); // DEBUG
-        return valid;
+    const saveProperty = async () => {
+        setIsSaving(true);
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error('User not authenticated');
+
+            const startData: any = {
+                address: (formData.address || '').trim(),
+                city: (formData.city || '').trim(),
+                property_type: formData.property_type,
+                rooms: Number(formData.rooms) || 0,
+                size_sqm: Number(formData.size_sqm) || 0,
+                has_parking: !!formData.has_parking,
+                has_storage: !!formData.has_storage,
+                has_balcony: !!formData.has_balcony,
+                has_safe_room: !!formData.has_safe_room,
+                image_url: formData.image_url || null,
+                user_id: user.id
+            };
+
+            let { error } = await supabase
+                .from('properties')
+                .insert(startData);
+
+            // Resilience for schema cache mismatches
+            if (error && (error.message?.includes('schema cache') || error.message?.includes('column'))) {
+                console.warn('[AddPropertyWizard] Modern schema columns missing. Retrying with legacy fields...');
+                const legacyData = { ...startData };
+                delete legacyData.has_balcony;
+                delete legacyData.has_safe_room;
+
+                const { error: retryError } = await supabase
+                    .from('properties')
+                    .insert(legacyData);
+                error = retryError;
+            }
+
+            if (error) throw error;
+
+            // Track analytics event
+            trackEvent('property_created', {
+                property_type: startData.property_type,
+                city: startData.city
+            });
+
+            if (onSuccess) onSuccess();
+            pop();
+        } catch (error) {
+            console.error('Error saving property:', error);
+            alert('Failed to save property. Please try again.');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
         <div className="flex flex-col h-[100dvh] bg-slate-50 dark:bg-black overflow-hidden relative">
-            {/* PROGRESS TRACKER (High Blur) */}
+            {/* PROGRESS TRACKER */}
             <div className="absolute top-0 inset-x-0 h-1.5 bg-black/5 dark:bg-white/5 z-[100]">
                 <motion.div
                     className="h-full bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.5)]"
@@ -230,7 +241,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                 />
             </div>
 
-            {/* Progress Header */}
+            {/* HEADER */}
             <div className="h-24 flex items-center justify-between px-8 md:px-12 glass-premium dark:bg-neutral-900/60 border-b border-white/5 z-10 pt-4 backdrop-blur-2xl">
                 <div className="flex items-center gap-6">
                     <div className="w-12 h-12 glass-premium dark:bg-neutral-800/40 rounded-2xl flex items-center justify-center text-indigo-500 shadow-minimal border border-white/5">
@@ -244,15 +255,17 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                     </div>
                 </div>
 
-                <button
+                <Button
                     onClick={() => pop()}
-                    className="p-3 glass-premium dark:bg-neutral-800/40 rounded-full border-white/5 text-muted-foreground hover:text-foreground transition-all"
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full w-12 h-12 glass-premium dark:bg-neutral-800/40 border-white/5 text-muted-foreground hover:text-foreground hover:bg-white/10"
                 >
                     <Trash2 className="w-5 h-5 opacity-30" />
-                </button>
+                </Button>
             </div>
 
-            {/* Step Content */}
+            {/* CONTENT */}
             <div className="flex-1 overflow-y-auto px-6 py-12">
                 <div className="max-w-xl mx-auto w-full">
                     <AnimatePresence mode="wait">
@@ -283,7 +296,6 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                     {currentStep === 0 && (
                                         <div className="space-y-6 py-4">
                                             <motion.div variants={itemVariants} className="space-y-4">
-                                                {/* Asset Type moved to page 1 as requested */}
                                                 <ValidatedField isValid={!!formData.property_type}>
                                                     <div className="p-6 rounded-[2rem] bg-white dark:bg-neutral-800/30 border border-slate-100 dark:border-neutral-700 mb-4">
                                                         <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block mb-4 text-center">
@@ -291,18 +303,17 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                         </label>
                                                         <PropertyTypeSelect
                                                             value={formData.property_type!}
-                                                            onChange={(val) => setFormData({ ...formData, property_type: val })}
+                                                            onChange={(val) => setFormData(prev => ({ ...prev, property_type: val }))}
                                                         />
                                                     </div>
                                                 </ValidatedField>
 
-                                                {/* City above Address */}
                                                 <ValidatedField isValid={!!formData.city && formData.city.length > 2}>
                                                     <div className="p-5 rounded-2xl bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700 focus-within:ring-2 ring-primary/20 transition-all">
                                                         <GoogleAutocomplete
                                                             label={t('city')}
                                                             value={formData.city || ''}
-                                                            onChange={(val: string) => setFormData({ ...formData, city: val })}
+                                                            onChange={(val) => setFormData(prev => ({ ...prev, city: val }))}
                                                             type="cities"
                                                         />
                                                     </div>
@@ -313,7 +324,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                         <GoogleAutocomplete
                                                             label={t('address')}
                                                             value={formData.address || ''}
-                                                            onChange={(val: string) => setFormData({ ...formData, address: val })}
+                                                            onChange={(val) => setFormData(prev => ({ ...prev, address: val }))}
                                                             type="address"
                                                             biasCity={formData.city}
                                                         />
@@ -325,85 +336,80 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
 
                                     {currentStep === 1 && (
                                         <motion.div variants={itemVariants} className="space-y-8 py-4">
-
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                <ValidatedField isValid={!!formData.rooms && formData.rooms > 0}>
-                                                    <div className="p-6 rounded-[2rem] bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
-                                                        <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">{t('rooms')}</label>
-                                                        <input
-                                                            type="number"
-                                                            step="0.5"
-                                                            className="bg-transparent font-black text-3xl text-foreground w-full outline-none"
-                                                            value={formData.rooms ?? ''}
-                                                            placeholder="0"
-                                                            onChange={e => setFormData({ ...formData, rooms: e.target.value === '' ? undefined : parseFloat(e.target.value) })}
-                                                        />
-                                                    </div>
-                                                </ValidatedField>
-                                                <ValidatedField isValid={!!formData.size_sqm && formData.size_sqm > 0}>
-                                                    <div className="p-6 rounded-[2rem] bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
-                                                        <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">{t('sqm')}</label>
-                                                        <input
-                                                            type="number"
-                                                            className="bg-transparent font-black text-3xl text-foreground w-full outline-none"
-                                                            value={formData.size_sqm ?? ''}
-                                                            placeholder="0"
-                                                            onChange={e => setFormData({ ...formData, size_sqm: e.target.value === '' ? undefined : parseFloat(e.target.value) })}
-                                                        />
-                                                    </div>
-                                                </ValidatedField>
+                                                <div className="p-6 rounded-[2rem] bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
+                                                    <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">{t('rooms')}</label>
+                                                    <Input
+                                                        type="number"
+                                                        step="0.5"
+                                                        className="bg-transparent font-black text-3xl text-foreground w-full border-none shadow-none focus-visible:ring-0 p-0 h-auto placeholder:text-muted-foreground/50"
+                                                        value={formData.rooms ?? ''}
+                                                        placeholder="0"
+                                                        onChange={e => setFormData(prev => ({ ...prev, rooms: parseFloat(e.target.value) }))}
+                                                    />
+                                                </div>
 
-                                                {/* Features: Balcony, Safe Room, Parking & Storage */}
+                                                <div className="p-6 rounded-[2rem] bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
+                                                    <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">{t('sqm')}</label>
+                                                    <Input
+                                                        type="number"
+                                                        className="bg-transparent font-black text-3xl text-foreground w-full border-none shadow-none focus-visible:ring-0 p-0 h-auto placeholder:text-muted-foreground/50"
+                                                        value={formData.size_sqm ?? ''}
+                                                        placeholder="0"
+                                                        onChange={e => setFormData(prev => ({ ...prev, size_sqm: parseFloat(e.target.value) }))}
+                                                    />
+                                                </div>
+
                                                 <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     <Checkbox
                                                         label={t('balcony')}
                                                         checked={formData.has_balcony || false}
-                                                        onChange={(val) => setFormData(p => ({ ...p, has_balcony: val }))}
+                                                        onChange={(val) => setFormData(prev => ({ ...prev, has_balcony: val }))}
                                                         icon={<Wind className="w-5 h-5" />}
                                                     />
-
                                                     <Checkbox
                                                         label={t('safe_room')}
                                                         checked={formData.has_safe_room || false}
-                                                        onChange={(val) => setFormData(p => ({ ...p, has_safe_room: val }))}
+                                                        onChange={(val) => setFormData(prev => ({ ...prev, has_safe_room: val }))}
                                                         icon={<ShieldCheck className="w-5 h-5" />}
                                                     />
-
                                                     <Checkbox
                                                         label={t('parking')}
                                                         checked={formData.has_parking || false}
-                                                        onChange={(val) => setFormData(p => ({ ...p, has_parking: val }))}
+                                                        onChange={(val) => setFormData(prev => ({ ...prev, has_parking: val }))}
                                                         icon={<Car className="w-5 h-5" />}
                                                     />
-
                                                     <Checkbox
                                                         label={t('storage')}
                                                         checked={formData.has_storage || false}
-                                                        onChange={(val) => setFormData(p => ({ ...p, has_storage: val }))}
+                                                        onChange={(val) => setFormData(prev => ({ ...prev, has_storage: val }))}
                                                         icon={<Package className="w-5 h-5" />}
                                                     />
                                                 </div>
 
-                                                {/* Image Upload & Google Maps Restoration */}
                                                 <div className="col-span-1 md:col-span-2 space-y-4 pt-4 border-t border-slate-100 dark:border-neutral-800">
                                                     <div className="flex items-center justify-between">
                                                         <label className="text-xs font-black uppercase tracking-wider text-muted-foreground">{t('propertyImage') || 'Property Image'}</label>
                                                         <div className="flex p-1 bg-slate-100 dark:bg-neutral-800 rounded-xl">
-                                                            <button
+                                                            <Button
+                                                                size="sm"
+                                                                variant="ghost"
                                                                 onClick={() => setUploadMode('upload')}
-                                                                className={cn("px-3 py-1 text-[10px] font-black uppercase rounded-lg transition-all", uploadMode === 'upload' ? "bg-white dark:bg-neutral-700 text-primary shadow-sm" : "text-muted-foreground")}
+                                                                className={cn("px-3 py-1 text-[10px] font-black uppercase h-7", uploadMode === 'upload' ? "bg-white dark:bg-neutral-700 text-primary shadow-sm hover:bg-white dark:hover:bg-neutral-700" : "text-muted-foreground hover:bg-transparent hover:text-foreground")}
                                                             >
                                                                 {t('upload') || 'Upload'}
-                                                            </button>
-                                                            <button
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="ghost"
                                                                 onClick={() => {
                                                                     setUploadMode('url');
                                                                     handleGoogleMapsFetch();
                                                                 }}
-                                                                className={cn("px-3 py-1 text-[10px] font-black uppercase rounded-lg transition-all", uploadMode === 'url' ? "bg-white dark:bg-neutral-700 text-primary shadow-sm" : "text-muted-foreground")}
+                                                                className={cn("px-3 py-1 text-[10px] font-black uppercase h-7", uploadMode === 'url' ? "bg-white dark:bg-neutral-700 text-primary shadow-sm hover:bg-white dark:hover:bg-neutral-700" : "text-muted-foreground hover:bg-transparent hover:text-foreground")}
                                                             >
                                                                 Google Maps
-                                                            </button>
+                                                            </Button>
                                                         </div>
                                                     </div>
 
@@ -438,7 +444,6 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                         </div>
                                                     )}
 
-                                                    {/* Image Preview */}
                                                     <AnimatePresence>
                                                         {formData.image_url && (
                                                             <motion.div
@@ -455,13 +460,15 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                                     className="w-full h-full object-cover"
                                                                 />
                                                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
-                                                                    <button
+                                                                    <Button
                                                                         type="button"
-                                                                        onClick={() => setFormData(p => ({ ...p, image_url: '' }))}
-                                                                        className="p-3 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all shadow-xl"
+                                                                        size="icon"
+                                                                        variant="destructive"
+                                                                        onClick={() => setFormData(prev => ({ ...prev, image_url: '' }))}
+                                                                        className="rounded-full shadow-xl w-12 h-12"
                                                                     >
                                                                         <Trash2 className="w-5 h-5" />
-                                                                    </button>
+                                                                    </Button>
                                                                 </div>
                                                             </motion.div>
                                                         )}
@@ -477,18 +484,19 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                 </div>
             </div>
 
-            {/* Footer Navigation */}
+            {/* FOOTER */}
             <div className="p-8 pb-12 glass-premium dark:bg-neutral-900/60 border-t border-white/5 flex justify-between items-center px-12 z-[70] backdrop-blur-2xl">
-                <button
+                <Button
                     onClick={back}
-                    className="h-14 px-10 rounded-2xl font-black text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-all hover:bg-white/5"
+                    variant="ghost"
+                    className="h-14 px-10 rounded-2xl font-black text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground hover:bg-white/5"
                 >
                     {t('back')}
-                </button>
-                <button
+                </Button>
+                <Button
                     onClick={next}
-                    disabled={!isStepValid() || isSaving}
-                    className="h-14 px-12 button-jewel font-black text-[11px] uppercase tracking-[0.2em] text-white rounded-[1.5rem] shadow-jewel hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-4 disabled:opacity-50"
+                    disabled={!isCurrentStepValid() || isSaving}
+                    className="h-14 px-12 button-jewel font-black text-[11px] uppercase tracking-[0.2em] text-white rounded-[1.5rem] shadow-jewel hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-4 disabled:opacity-50 border-none bg-indigo-500 hover:bg-indigo-600"
                 >
                     {isSaving ? (
                         <span className="flex items-center gap-3">
@@ -501,7 +509,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                             <ArrowRightIcon className="w-5 h-5" />
                         </>
                     )}
-                </button>
+                </Button>
             </div>
         </div>
     );

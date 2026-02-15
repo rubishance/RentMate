@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { AddUserModal } from '../../components/modals/AddUserModal';
 import {
-    MagnifyingGlassIcon,
     FunnelIcon,
     PencilSquareIcon,
     XMarkIcon,
@@ -15,6 +14,9 @@ import {
     ShieldCheckIcon
 } from '@heroicons/react/24/outline';
 import { Loader2 } from 'lucide-react';
+import { Input } from '../../components/ui/Input';
+import { Select } from '../../components/ui/Select';
+import { Button } from '../../components/ui/Button';
 
 interface SubscriptionPlan {
     id: string;
@@ -51,6 +53,13 @@ interface UserWithStats {
     last_security_check: string | null;
 }
 
+interface SecurityLog {
+    event_type: string;
+    created_at: string;
+    ip_address: string;
+    details?: Record<string, unknown>;
+}
+
 const UserManagement = () => {
     const navigate = useNavigate();
     const [users, setUsers] = useState<UserWithStats[]>([]);
@@ -80,7 +89,7 @@ const UserManagement = () => {
 
     // Security Logs State
     const [isSecurityLogsOpen, setIsSecurityLogsOpen] = useState(false);
-    const [securityLogs, setSecurityLogs] = useState<any[]>([]);
+    const [securityLogs, setSecurityLogs] = useState<SecurityLog[]>([]);
     const [logsLoading, setLogsLoading] = useState(false);
 
     const fetchData = async () => {
@@ -143,7 +152,7 @@ const UserManagement = () => {
         setModalMessage(null);
 
         try {
-            const planName = plans.find(p => p.id === editPlan)?.name || '';
+
 
             const { error } = await supabase
                 .from('user_profiles')
@@ -160,10 +169,11 @@ const UserManagement = () => {
             setModalMessage({ type: 'success', text: 'User updated successfully!' });
             fetchData();
             setTimeout(() => setIsEditModalOpen(false), 1500);
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const error = err as { message?: string, error_description?: string };
             setModalMessage({
                 type: 'error',
-                text: err.message || err.error_description || (typeof err === 'string' ? err : 'An unknown error occurred')
+                text: error.message || error.error_description || (typeof err === 'string' ? err : 'An unknown error occurred')
             });
         } finally {
             setActionLoading(false);
@@ -181,10 +191,11 @@ const UserManagement = () => {
             });
             if (error) throw error;
             setModalMessage({ type: 'success', text: 'Reset email sent!' });
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const error = err as { message?: string, error_description?: string };
             setModalMessage({
                 type: 'error',
-                text: err.message || err.error_description || (typeof err === 'string' ? err : 'An unknown error occurred')
+                text: error.message || error.error_description || (typeof err === 'string' ? err : 'An unknown error occurred')
             });
         } finally {
             setActionLoading(false);
@@ -203,11 +214,12 @@ const UserManagement = () => {
             setModalMessage({ type: 'success', text: 'User deleted successfully.' });
             setIsEditModalOpen(false);
             fetchData();
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Delete error:', err);
+            const error = err as { message?: string, error_description?: string };
             setModalMessage({
                 type: 'error',
-                text: 'Error deleting user: ' + (err.message || err.error_description || (typeof err === 'string' ? err : 'Unknown error'))
+                text: 'Error deleting user: ' + (error.message || error.error_description || (typeof err === 'string' ? err : 'Unknown error'))
             });
         } finally {
             setActionLoading(false);
@@ -288,19 +300,20 @@ const UserManagement = () => {
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <button
+                    <Button
+                        variant="outline"
                         onClick={fetchData}
-                        className="p-2.5 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm"
+                        className="p-2.5 bg-white dark:bg-gray-800 rounded-xl border-gray-200 dark:border-gray-700 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 h-auto"
                         title="Refresh List"
                     >
-                        <ArrowPathIcon className="w-6 h-6" />
-                    </button>
-                    <button
+                        <ArrowPathIcon className="w-6 h-6 text-gray-500 dark:text-gray-400" />
+                    </Button>
+                    <Button
                         onClick={() => setIsAddModalOpen(true)}
-                        className="inline-flex items-center justify-center rounded-xl bg-brand-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-brand-600/20 hover:bg-brand-700 transition-all font-bold"
+                        className="inline-flex items-center justify-center rounded-xl bg-brand-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-brand-600/20 hover:bg-brand-700 transition-all"
                     >
                         Add New User
-                    </button>
+                    </Button>
                 </div>
             </div>
 
@@ -332,12 +345,14 @@ const UserManagement = () => {
                         {Object.values(columnFilters).every(v => v === 'all' || v === '') && <span className="text-xs text-gray-400 font-medium italic">None</span>}
                     </div>
                 </div>
-                <button
+                <Button
+                    variant="link"
+                    size="sm"
                     onClick={() => setColumnFilters({ name: '', role: 'all', plan: 'all', status: 'all' })}
-                    className="text-[10px] font-black text-brand-600 uppercase tracking-widest hover:underline"
+                    className="text-[10px] font-black text-brand-600 uppercase tracking-widest hover:underline h-auto p-0"
                 >
                     Clear All
-                </button>
+                </Button>
             </div>
 
             {/* Table */}
@@ -356,34 +371,35 @@ const UserManagement = () => {
                             </tr>
                             <tr className="bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700">
                                 <th className="py-2 pr-6 pl-3">
-                                    <input
-                                        type="text"
+                                    <Input
                                         placeholder="Filter Name..."
-                                        className="w-full text-[10px] p-1.5 rounded-lg border border-gray-100 dark:border-gray-700 dark:bg-gray-900 focus:ring-brand-500"
+                                        className="w-full text-[10px] h-8"
                                         value={columnFilters.name}
                                         onChange={(e) => setColumnFilters({ ...columnFilters, name: e.target.value })}
                                     />
                                 </th>
                                 <th className="px-3 py-2">
                                     <div className="flex flex-col gap-1">
-                                        <select
-                                            className="w-full text-[10px] p-1 rounded-lg border border-gray-100 dark:border-gray-700 dark:bg-gray-900"
+                                        <Select
+                                            className="h-7 text-[10px]"
                                             value={columnFilters.role}
-                                            onChange={(e) => setColumnFilters({ ...columnFilters, role: e.target.value })}
-                                        >
-                                            <option value="all">Role: All</option>
-                                            <option value="user">User</option>
-                                            <option value="admin">Admin</option>
-                                            <option value="manager">Manager</option>
-                                        </select>
-                                        <select
-                                            className="w-full text-[10px] p-1 rounded-lg border border-gray-100 dark:border-gray-700 dark:bg-gray-900"
+                                            onChange={(val) => setColumnFilters({ ...columnFilters, role: val })}
+                                            options={[
+                                                { value: 'all', label: 'Role: All' },
+                                                { value: 'user', label: 'User' },
+                                                { value: 'admin', label: 'Admin' },
+                                                { value: 'manager', label: 'Manager' }
+                                            ]}
+                                        />
+                                        <Select
+                                            className="h-7 text-[10px]"
                                             value={columnFilters.plan}
-                                            onChange={(e) => setColumnFilters({ ...columnFilters, plan: e.target.value })}
-                                        >
-                                            <option value="all">Plan: All</option>
-                                            {plans.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                                        </select>
+                                            onChange={(val) => setColumnFilters({ ...columnFilters, plan: val })}
+                                            options={[
+                                                { value: 'all', label: 'Plan: All' },
+                                                ...plans.map(p => ({ value: p.id, label: p.name }))
+                                            ]}
+                                        />
                                     </div>
                                 </th>
                                 <th className="px-3 py-2 opacity-30 select-none">
@@ -392,15 +408,16 @@ const UserManagement = () => {
                                 <th className="px-3 py-2 opacity-30 select-none"></th>
                                 <th className="px-3 py-2 opacity-30 select-none"></th>
                                 <th className="px-3 py-2">
-                                    <select
-                                        className="w-full text-[10px] p-1.5 rounded-lg border border-gray-100 dark:border-gray-700 dark:bg-gray-900"
+                                    <Select
+                                        className="h-8 text-[10px]"
                                         value={columnFilters.status}
-                                        onChange={(e) => setColumnFilters({ ...columnFilters, status: e.target.value })}
-                                    >
-                                        <option value="all">Stat: All</option>
-                                        <option value="active">Active</option>
-                                        <option value="suspended">Suspended</option>
-                                    </select>
+                                        onChange={(val) => setColumnFilters({ ...columnFilters, status: val })}
+                                        options={[
+                                            { value: 'all', label: 'Stat: All' },
+                                            { value: 'active', label: 'Active' },
+                                            { value: 'suspended', label: 'Suspended' }
+                                        ]}
+                                    />
                                 </th>
                                 <th className="px-3 py-2"></th>
                             </tr>
@@ -475,22 +492,42 @@ const UserManagement = () => {
                                         </td>
                                         <td className="whitespace-nowrap py-5 pl-6 pr-3 text-left">
                                             <div className="flex items-center justify-end gap-1">
-                                                <button
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
                                                     onClick={() => navigate(`/admin/client/${user.id}`)}
-                                                    className="p-2 text-gray-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 rounded-xl transition-all"
+                                                    className="p-2 text-gray-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 rounded-xl transition-all h-auto"
                                                     title="Client Hub (CRM & Messaging)"
                                                 >
                                                     <UserCircleIcon className="w-5 h-5" />
-                                                </button>
-                                                <button onClick={() => openEditModal(user)} className="p-2 text-gray-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 rounded-xl transition-all" title="Edit Account Settings">
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => openEditModal(user)}
+                                                    className="p-2 text-gray-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 rounded-xl transition-all h-auto"
+                                                    title="Edit Account Settings"
+                                                >
                                                     <PencilSquareIcon className="w-5 h-5" />
-                                                </button>
-                                                <button onClick={() => openSecurityLogs(user)} className="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-all" title="Security Logs & Abuse History">
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => openSecurityLogs(user)}
+                                                    className="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-all h-auto"
+                                                    title="Security Logs & Abuse History"
+                                                >
                                                     <ShieldCheckIcon className="w-5 h-5" />
-                                                </button>
-                                                <button onClick={() => handleImpersonate(user)} className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-xl transition-all" title="Impersonate (Login as User)">
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => handleImpersonate(user)}
+                                                    className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-xl transition-all h-auto"
+                                                    title="Impersonate (Login as User)"
+                                                >
                                                     <KeyIcon className="w-5 h-5" />
-                                                </button>
+                                                </Button>
                                             </div>
                                         </td>
                                     </tr>
@@ -507,9 +544,9 @@ const UserManagement = () => {
                     <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm transition-opacity" onClick={() => setIsEditModalOpen(false)}></div>
 
                     <div className="relative w-full max-w-lg transform overflow-hidden rounded-3xl bg-white dark:bg-gray-800 p-8 shadow-2xl transition-all border border-gray-100 dark:border-gray-700" dir="ltr">
-                        <button onClick={() => setIsEditModalOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                        <Button variant="ghost" size="sm" onClick={() => setIsEditModalOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors h-auto p-1">
                             <XMarkIcon className="h-6 w-6" />
-                        </button>
+                        </Button>
 
                         <div className="mb-8">
                             <h3 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">
@@ -527,41 +564,43 @@ const UserManagement = () => {
                         <div className="space-y-6">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Account Role</label>
-                                    <select
+                                    <Select
+                                        label={<span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Account Role</span>}
                                         value={editRole}
-                                        onChange={(e) => setEditRole(e.target.value)}
-                                        className="block w-full rounded-2xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 text-sm font-bold text-gray-900 dark:text-white focus:border-brand-500 focus:ring-brand-500"
-                                    >
-                                        <option value="user">Standard User</option>
-                                        <option value="manager">Manager</option>
-                                        <option value="admin">Administrator</option>
-                                    </select>
+                                        onChange={(val) => setEditRole(val)}
+                                        options={[
+                                            { value: 'user', label: 'Standard User' },
+                                            { value: 'manager', label: 'Manager' },
+                                            { value: 'admin', label: 'Administrator' }
+                                        ]}
+                                        className="w-full"
+                                    />
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Account Status</label>
-                                    <select
+                                    <Select
+                                        label={<span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Account Status</span>}
                                         value={editStatus}
-                                        onChange={(e) => setEditStatus(e.target.value)}
-                                        className="block w-full rounded-2xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 text-sm font-bold text-gray-900 dark:text-white focus:border-brand-500 focus:ring-brand-500"
-                                    >
-                                        <option value="active">Active</option>
-                                        <option value="suspended">Suspended / Banned</option>
-                                    </select>
+                                        onChange={(val) => setEditStatus(val)}
+                                        options={[
+                                            { value: 'active', label: 'Active' },
+                                            { value: 'suspended', label: 'Suspended / Banned' }
+                                        ]}
+                                        className="w-full"
+                                    />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Subscription Plan</label>
-                                <select
+                                <Select
+                                    label={<span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Subscription Plan</span>}
                                     value={editPlan}
-                                    onChange={(e) => setEditPlan(e.target.value)}
-                                    className="block w-full rounded-2xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 text-sm font-bold text-gray-900 dark:text-white focus:border-brand-500 focus:ring-brand-500"
-                                >
-                                    {plans.map(p => (
-                                        <option key={p.id} value={p.id}>{p.name} ({p.max_properties === -1 ? 'Unlimited' : p.max_properties} Assets)</option>
-                                    ))}
-                                </select>
+                                    onChange={(val) => setEditPlan(val)}
+                                    options={plans.map(p => ({
+                                        value: p.id,
+                                        label: `${p.name} (${p.max_properties === -1 ? 'Unlimited' : p.max_properties} Assets)`
+                                    }))}
+                                    className="w-full"
+                                />
                             </div>
 
                             <div className="bg-brand-50/30 dark:bg-brand-900/10 rounded-2xl p-6 border border-brand-100 dark:border-brand-800">
@@ -593,32 +632,34 @@ const UserManagement = () => {
                             <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-700">
                                 <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Danger Zone</h4>
                                 <div className="space-y-3">
-                                    <button
+                                    <Button
+                                        variant="outline"
                                         onClick={handleResetPassword}
                                         disabled={actionLoading}
-                                        className="w-full flex items-center justify-center rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-2.5 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 transition-all disabled:opacity-50 shadow-sm"
+                                        className="w-full justify-center rounded-xl border-gray-200 dark:border-gray-700 px-4 py-2.5 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 h-auto"
                                     >
                                         Send Password Reset Email
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
+                                        variant="destructive"
                                         onClick={handleDeleteUser}
                                         disabled={actionLoading || selectedUser?.id === currentUser?.id}
-                                        className="w-full flex items-center justify-center rounded-xl bg-red-50 text-red-600 border border-red-100 px-4 py-2.5 text-xs font-bold hover:bg-red-100 transition-all disabled:opacity-50"
+                                        className="w-full justify-center rounded-xl bg-red-50 text-red-600 border border-red-100 px-4 py-2.5 text-xs font-bold hover:bg-red-100 hover:text-red-700 h-auto"
                                         title={selectedUser?.id === currentUser?.id ? "You cannot delete your own account" : ""}
                                     >
                                         {actionLoading ? 'Deleting...' : 'Delete User & All Linked Data'}
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
 
                             <div className="flex gap-3 mt-8">
-                                <button
+                                <Button
                                     onClick={handleSaveChanges}
                                     disabled={actionLoading}
-                                    className="flex-1 flex items-center justify-center rounded-2xl bg-brand-600 px-6 py-4 text-sm font-black text-white shadow-xl shadow-brand-600/20 hover:bg-brand-700 transition-all disabled:opacity-50 uppercase tracking-widest"
+                                    className="flex-1 justify-center rounded-2xl bg-brand-600 px-6 py-4 text-sm font-black text-white shadow-xl shadow-brand-600/20 hover:bg-brand-700 uppercase tracking-widest h-auto"
                                 >
                                     {actionLoading ? 'Saving...' : 'Save Changes'}
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     </div>
@@ -631,9 +672,9 @@ const UserManagement = () => {
                     <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm transition-opacity" onClick={() => setIsSecurityLogsOpen(false)}></div>
 
                     <div className="relative w-full max-w-2xl transform overflow-hidden rounded-3xl bg-white dark:bg-gray-800 p-8 shadow-2xl transition-all border border-gray-100 dark:border-gray-700" dir="ltr">
-                        <button onClick={() => setIsSecurityLogsOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                        <Button variant="ghost" size="sm" onClick={() => setIsSecurityLogsOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors h-auto p-1">
                             <XMarkIcon className="h-6 w-6" />
-                        </button>
+                        </Button>
 
                         <div className="mb-6">
                             <h3 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
@@ -673,12 +714,13 @@ const UserManagement = () => {
                         </div>
 
                         <div className="mt-8">
-                            <button
+                            <Button
+                                variant="secondary"
                                 onClick={() => setIsSecurityLogsOpen(false)}
-                                className="w-full py-4 rounded-2xl bg-gray-100 dark:bg-gray-900 text-sm font-black text-gray-900 dark:text-white uppercase tracking-widest hover:bg-gray-200 transition-all border border-gray-200 dark:border-gray-700"
+                                className="w-full py-4 rounded-2xl bg-gray-100 dark:bg-gray-900 text-sm font-black text-gray-900 dark:text-white uppercase tracking-widest hover:bg-gray-200 border-gray-200 dark:border-gray-700 h-auto"
                             >
                                 Close
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>

@@ -15,17 +15,16 @@ import { ConfirmDeleteModal } from '../components/modals/ConfirmDeleteModal';
 import { IndexedRentModal } from '../components/modals/IndexedRentModal';
 import type { Property } from '../types/database';
 import { useTranslation } from '../hooks/useTranslation';
-import { useUserPreferences } from '../contexts/UserPreferencesContext';
 import { PropertyIcon } from '../components/common/PropertyIcon';
 import { getPropertyPlaceholder } from '../lib/property-placeholders';
 
 import UpgradeRequestModal from '../components/modals/UpgradeRequestModal';
-import { AddPaymentModal } from '../components/modals/AddPaymentModal';
 import { SelectPropertyModal } from '../components/modals/SelectPropertyModal';
 import { useDataCache } from '../contexts/DataCacheContext';
 import { useSubscription } from '../hooks/useSubscription';
 import { SecureImage } from '../components/common/SecureImage';
 
+import { Trash2 } from 'lucide-react';
 
 import { cn } from '../lib/utils';
 import { useStack } from '../contexts/StackContext';
@@ -33,6 +32,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Skeleton } from '../components/ui/Skeleton';
 import { Card, CardContent } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
 
 type ExtendedProperty = Property & {
     contracts: {
@@ -52,8 +52,7 @@ type ExtendedProperty = Property & {
 
 export function Properties() {
     const { t, lang } = useTranslation();
-    const { preferences } = useUserPreferences();
-    const { plan, canAddProperty, refreshSubscription } = useSubscription();
+    const { canAddProperty, refreshSubscription } = useSubscription();
     const [properties, setProperties] = useState<ExtendedProperty[]>([]);
     const [loading, setLoading] = useState(true);
     const { get, set, clear } = useDataCache();
@@ -66,13 +65,48 @@ export function Properties() {
     const [isDeleting, setIsDeleting] = useState(false);
 
 
-    const [indexedRentContract, setIndexedRentContract] = useState<any>(null); // Contract to show calculation for
-    const [affectedItems, setAffectedItems] = useState<any[]>([]);
+    const [indexedRentContract, setIndexedRentContract] = useState<ExtendedProperty['contracts'][0] | null>(null); // Contract to show calculation for
+    const [affectedItems, setAffectedItems] = useState<{ label: string; count: number; items: any[]; type: 'critical' | 'warning' | 'info' }[]>([]);
     const [isSelectPropertyModalOpen, setIsSelectPropertyModalOpen] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
 
     const { push } = useStack();
+
+    const fetchProperties = useCallback(async () => {
+        const cached = get<ExtendedProperty[]>(CACHE_KEY);
+        if (cached) {
+            setProperties(cached);
+            setLoading(false);
+        }
+
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const { data, error } = await supabase
+                .from('properties')
+                .select('*, contracts(id, base_rent, status, start_date, end_date, linkage_type, base_index_date, base_index_value, option_periods)')
+                .eq('user_id', user.id) // STRICTLY enforce ownership
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Supabase error:', error);
+            } else if (data) {
+                const propertiesData = data as unknown as ExtendedProperty[];
+                setProperties(propertiesData);
+                set(CACHE_KEY, propertiesData, { persist: true });
+            }
+        } catch (error) {
+            console.error('Error fetching properties:', error);
+        } finally {
+            setLoading(false);
+        }
+    }, [get, set, CACHE_KEY]);
+
+    useEffect(() => {
+        fetchProperties();
+    }, [fetchProperties]);
 
     const handleAdd = useCallback(() => {
         if (loading) return; // Don't act if still loading subscription/plan
@@ -109,7 +143,6 @@ export function Properties() {
         setAffectedItems([]);
 
         try {
-
             // Get Contracts with details
             const { data: contracts, error: contractsError } = await supabase
                 .from('contracts')
@@ -118,8 +151,7 @@ export function Properties() {
 
             if (contractsError) console.error('Error fetching contracts:', contractsError);
 
-            const items = [];
-
+            const items: { label: string; count: number; items: any[]; type: 'critical' | 'warning' | 'info' }[] = [];
 
             if (contracts && contracts.length > 0) {
                 const contractItems = (contracts as any[]).map((c: any) => {
@@ -159,7 +191,7 @@ export function Properties() {
                 .eq('property_id', targetId);
 
             if (contracts && contracts.length > 0) {
-                const contractIds = contracts.map(c => c.id);
+                const contractIds = contracts.map((c: { id: string }) => c.id);
                 // Delete payments
                 await supabase.from('payments').delete().in('contract_id', contractIds);
                 // Delete contracts
@@ -188,57 +220,22 @@ export function Properties() {
         }
     };
 
-    useEffect(() => {
-        fetchProperties();
-    }, []);
-
     // Handle Global Actions
     useEffect(() => {
-        if (location.state?.action === 'add') {
+        const action = location.state?.action;
+        if (action === 'add') {
             handleAdd();
-            // Clear state
-            window.history.replaceState({}, '');
-        } else if (location.state?.action === 'upload') {
+            // Clear state using navigate to ensure React Router knows about it
+            navigate(location.pathname, { replace: true, state: {} });
+        } else if (action === 'upload') {
             // Need to wait for properties to load? 
             // Actually properties might be loading.
             if (!loading && properties.length > 0) {
                 handleQuickUpload();
-                window.history.replaceState({}, '');
+                navigate(location.pathname, { replace: true, state: {} });
             }
         }
-    }, [location.state, loading, properties.length, handleAdd, handleQuickUpload]); // Dependencies important for upload logic
-
-
-    async function fetchProperties() {
-        const cached = get<ExtendedProperty[]>(CACHE_KEY);
-        if (cached) {
-            setProperties(cached);
-            setLoading(false);
-        }
-
-        try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return;
-
-            const { data, error } = await supabase
-                .from('properties')
-                .select('*, contracts(id, base_rent, status, start_date, end_date, linkage_type, base_index_date, base_index_value, option_periods)')
-                .eq('user_id', user.id) // STRICTLY enforce ownership
-                .order('created_at', { ascending: false });
-
-            if (error) {
-                console.error('Supabase error:', error);
-            } else if (data) {
-                const propertiesData = data as unknown as ExtendedProperty[];
-                setProperties(propertiesData);
-                set(CACHE_KEY, propertiesData, { persist: true });
-            }
-        } catch (error) {
-            console.error('Error fetching properties:', error);
-        } finally {
-            setLoading(false);
-        }
-    }
+    }, [location.state?.action, loading, properties.length, handleAdd, handleQuickUpload, navigate, location.pathname]);
 
     if (loading) {
         return (
@@ -300,12 +297,12 @@ export function Properties() {
                             {t('addFirstPropertyDesc')}
                         </p>
                     </div>
-                    <button
+                    <Button
                         onClick={handleAdd}
-                        className="mt-12 px-10 py-5 bg-foreground text-background rounded-full font-black uppercase text-[10px] tracking-widest hover:scale-105 active:scale-95 transition-all shadow-premium-dark"
+                        className="mt-12 h-auto px-10 py-5 bg-foreground text-background rounded-full font-black uppercase text-[10px] tracking-widest hover:scale-105 active:scale-95 transition-all shadow-premium-dark hover:bg-foreground/90"
                     >
                         {t('createFirstAsset')}
-                    </button>
+                    </Button>
                 </div>
             ) : (
                 /* Properties Grid */
@@ -352,7 +349,7 @@ export function Properties() {
                                         <div className={`absolute bottom-5 ${lang === 'he' ? 'right-5' : 'left-5'}`}>
                                             <div className="flex items-center gap-3 px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-full border border-white/20 shadow-lg">
                                                 <span className="text-[10px] font-bold uppercase tracking-widest text-white">
-                                                    {property.property_type ? t(property.property_type as any) : t('apartment')}
+                                                    {property.property_type ? t(property.property_type as string) : t('apartment')}
                                                 </span>
                                                 <PropertyIcon type={property.property_type} className="w-6 h-6 text-white" />
                                             </div>
@@ -434,6 +431,19 @@ export function Properties() {
                                                     </span>
                                                 </div>
                                             )}
+                                            <div className="flex items-center">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDelete(property);
+                                                    }}
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
+                                            </div>
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -459,7 +469,7 @@ export function Properties() {
                     : `Are you sure you want to delete "${deleteTarget?.address}, ${deleteTarget?.city}"?`}
                 isDeleting={isDeleting}
                 affectedItems={affectedItems}
-                requireDoubleConfirm={affectedItems.length > 0}
+                requireDoubleConfirm={true}
             />
 
             <UpgradeRequestModal

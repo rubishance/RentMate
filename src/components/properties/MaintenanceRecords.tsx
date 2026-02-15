@@ -11,6 +11,10 @@ import { format, parseISO } from 'date-fns';
 import { DocumentTimeline } from './DocumentTimeline';
 import { DocumentDetailsModal } from '../modals/DocumentDetailsModal';
 import { DatePicker } from '../ui/DatePicker';
+import { Input } from '../ui/Input';
+import { Textarea } from '../ui/Textarea';
+import { Button } from '../ui/Button';
+import { Select } from '../ui/Select';
 
 interface MaintenanceRecordsProps {
     property: Property;
@@ -244,15 +248,16 @@ export function MaintenanceRecords({ property, readOnly }: MaintenanceRecordsPro
 
             {/* Actions */}
             {!readOnly && !showUploadForm && (
-                <button
+                <Button
+                    variant="outline"
                     onClick={() => setShowUploadForm(true)}
-                    className="w-full py-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-orange-400 hover:bg-orange-50/50 dark:hover:bg-orange-900/20 transition-all group flex items-center justify-center gap-2 text-muted-foreground dark:text-muted-foreground"
+                    className="w-full py-8 border-2 border-dashed border-border hover:border-orange-500/50 hover:bg-orange-50/50 dark:hover:bg-orange-900/10 h-auto flex flex-col gap-2 group"
                 >
-                    <div className="p-2 bg-orange-50 dark:bg-orange-900/20 rounded-full group-hover:scale-110 transition-transform">
+                    <div className="p-2 bg-orange-100/50 dark:bg-orange-900/30 rounded-full group-hover:scale-110 transition-transform">
                         <Plus className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                     </div>
-                    <span className="font-medium">{t('createMaintenanceFolder')}</span>
-                </button>
+                    <span className="font-medium text-muted-foreground group-hover:text-foreground">{t('createMaintenanceFolder')}</span>
+                </Button>
             )}
 
             {/* Create Folder Form */}
@@ -271,29 +276,30 @@ export function MaintenanceRecords({ property, readOnly }: MaintenanceRecordsPro
                                 {t('addMaintenanceRecord')}
                             </p>
                         </div>
-                        <button
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => setShowUploadForm(false)}
-                            className="p-2 bg-gray-100/50 dark:bg-gray-800/50 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors backdrop-blur-sm"
+                            className="rounded-full hover:bg-muted"
                         >
                             <X className="w-5 h-5 text-muted-foreground" />
-                        </button>
+                        </Button>
                     </div>
 
                     {/* Folder Metadata */}
                     <div className="relative space-y-5">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div className="space-y-1.5">
-                                <label className="text-sm font-semibold text-gray-700 dark:text-gray-200 ml-1">{t('subject')}</label>
-                                <input
-                                    type="text"
+                                <Input
+                                    label={t('subject')}
                                     value={newFolderName}
                                     onChange={(e) => setNewFolderName(e.target.value)}
                                     placeholder={t('e.g. Kitchen Renovation')}
-                                    className="w-full px-4 py-3 bg-white/50 dark:bg-gray-800/50 border border-border/60 dark:border-gray-700/60 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all backdrop-blur-sm outline-none dark:text-white"
+                                    className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
                                 />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-sm font-semibold text-gray-700 dark:text-gray-200 ml-1">{t('date')}</label>
+                                <label className="text-sm font-medium text-foreground ml-1">{t('date')}</label>
                                 <DatePicker
                                     value={newFolderDate ? parseISO(newFolderDate) : undefined}
                                     onChange={(date) => setNewFolderDate(date ? format(date, 'yyyy-MM-dd') : '')}
@@ -302,12 +308,12 @@ export function MaintenanceRecords({ property, readOnly }: MaintenanceRecordsPro
                             </div>
                         </div>
                         <div className="space-y-1.5">
-                            <label className="text-sm font-semibold text-gray-700 dark:text-gray-200 ml-1">{t('note')}</label>
-                            <textarea
+                            <Textarea
+                                label={t('note')}
                                 value={newFolderNote}
                                 onChange={(e) => setNewFolderNote(e.target.value)}
                                 placeholder={t('optionalFolderNote')}
-                                className="w-full px-4 py-3 bg-white/50 dark:bg-gray-800/50 border border-border/60 dark:border-gray-700/60 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all backdrop-blur-sm outline-none dark:text-white resize-none"
+                                className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm resize-none"
                                 rows={2}
                             />
                         </div>
@@ -357,9 +363,14 @@ export function MaintenanceRecords({ property, readOnly }: MaintenanceRecordsPro
                                                 </div>
                                                 <span className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">{file.file.name}</span>
                                             </div>
-                                            <button onClick={() => removeStagedFile(file.id)} className="text-muted-foreground hover:text-red-500 transition-colors p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded">
-                                                <X className="w-4 h-4" />
-                                            </button>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => removeStagedFile(file.id)}
+                                                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-6 w-6 p-0"
+                                            >
+                                                <X className="w-3 h-3" />
+                                            </Button>
                                         </div>
 
                                         {/* AI Badge */}
@@ -378,55 +389,49 @@ export function MaintenanceRecords({ property, readOnly }: MaintenanceRecordsPro
 
                                         <div className="grid grid-cols-2 gap-3 mb-3">
                                             <div className="space-y-1">
-                                                <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">{t('vendor')}</label>
-                                                <div className="relative">
-                                                    <User className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
-                                                    <input
-                                                        type="text"
-                                                        value={file.vendorName}
-                                                        onChange={(e) => updateStagedFile(file.id, 'vendorName', e.target.value)}
-                                                        className="w-full pl-7 pr-3 py-1.5 text-xs border border-border dark:border-gray-700 rounded-lg bg-white/50 dark:bg-foreground/50 outline-none focus:border-orange-500 transition-colors"
-                                                        placeholder={t('vendor')}
-                                                    />
-                                                </div>
+                                                <Input
+                                                    label={t('vendor')}
+                                                    value={file.vendorName}
+                                                    onChange={(e) => updateStagedFile(file.id, 'vendorName', e.target.value)}
+                                                    className="bg-white/50 dark:bg-foreground/50 h-8 text-xs"
+                                                    placeholder={t('vendor')}
+                                                    leftIcon={<User className="w-3 h-3 text-muted-foreground" />}
+                                                />
                                             </div>
                                             <div className="space-y-1">
-                                                <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">{t('cost')}</label>
-                                                <div className="relative">
-                                                    <DollarSign className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
-                                                    <input
-                                                        type="number"
-                                                        value={file.amount}
-                                                        onChange={(e) => updateStagedFile(file.id, 'amount', e.target.value)}
-                                                        className="w-full pl-7 pr-3 py-1.5 text-xs border border-border dark:border-gray-700 rounded-lg bg-white/50 dark:bg-foreground/50 outline-none focus:border-orange-500 transition-colors"
-                                                        placeholder="0"
-                                                    />
-                                                </div>
+                                                <Input
+                                                    label={t('cost')}
+                                                    type="number"
+                                                    value={file.amount}
+                                                    onChange={(e) => updateStagedFile(file.id, 'amount', e.target.value)}
+                                                    className="bg-white/50 dark:bg-foreground/50 h-8 text-xs"
+                                                    placeholder="0"
+                                                    leftIcon={<DollarSign className="w-3 h-3 text-muted-foreground" />}
+                                                />
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-3">
                                             <div className="space-y-1">
-                                                <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">{t('issueType')}</label>
-                                                <div className="relative">
-                                                    <Wrench className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
-                                                    <select
-                                                        value={file.issueType}
-                                                        onChange={(e) => updateStagedFile(file.id, 'issueType', e.target.value)}
-                                                        className="w-full pl-7 pr-3 py-1.5 text-xs border border-border dark:border-gray-700 rounded-lg bg-white/50 dark:bg-foreground/50 outline-none focus:border-orange-500 transition-colors appearance-none"
-                                                    >
-                                                        <option value="">{t('selectType')}</option>
-                                                        <option value="plumbing">{t('issuePlumbing')}</option>
-                                                        <option value="electrical">{t('issueElectrical')}</option>
-                                                        <option value="hvac">{t('issueHVAC')}</option>
-                                                        <option value="painting">{t('issuePainting')}</option>
-                                                        <option value="carpentry">{t('issueCarpentry')}</option>
-                                                        <option value="appliance">{t('issueAppliance')}</option>
-                                                        <option value="other">{t('issueOther')}</option>
-                                                    </select>
-                                                </div>
+                                                <Select
+                                                    label={t('issueType')}
+                                                    value={file.issueType}
+                                                    onChange={(val) => updateStagedFile(file.id, 'issueType', val)}
+                                                    options={[
+                                                        { value: 'plumbing', label: t('issuePlumbing') },
+                                                        { value: 'electrical', label: t('issueElectrical') },
+                                                        { value: 'hvac', label: t('issueHVAC') },
+                                                        { value: 'painting', label: t('issuePainting') },
+                                                        { value: 'carpentry', label: t('issueCarpentry') },
+                                                        { value: 'appliance', label: t('issueAppliance') },
+                                                        { value: 'other', label: t('issueOther') }
+                                                    ]}
+                                                    placeholder={t('selectType')}
+                                                    className="h-8 text-xs"
+                                                    leftIcon={<Wrench className="w-3 h-3 text-muted-foreground" />}
+                                                />
                                             </div>
                                             <div className="space-y-1">
-                                                <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">{t('date')}</label>
+                                                <label className="text-xs font-medium text-muted-foreground ml-1">{t('date')}</label>
                                                 <DatePicker
                                                     value={file.documentDate ? parseISO(file.documentDate) : undefined}
                                                     onChange={(date) => updateStagedFile(file.id, 'documentDate', date ? format(date, 'yyyy-MM-dd') : '')}
@@ -441,36 +446,23 @@ export function MaintenanceRecords({ property, readOnly }: MaintenanceRecordsPro
                     </div>
 
                     <div className="flex gap-3 pt-4 border-t border-border dark:border-gray-700/50">
-                        <button
-                            onClick={() => setShowUploadForm(false)}
-                            className="px-6 py-2.5 text-sm font-medium text-muted-foreground dark:text-gray-300 hover:bg-muted dark:hover:bg-gray-800 rounded-xl transition-colors"
-                        >
-                            {t('cancel')}
-                        </button>
-                        <button
-                            onClick={handleCreateAndUpload}
-                            disabled={uploading}
-                            className={`
-                                flex-1 px-6 py-2.5 text-sm font-medium text-white rounded-xl shadow-lg shadow-orange-500/25
-                                flex items-center justify-center gap-2 transition-all
-                                ${uploading
-                                    ? 'bg-gray-400 cursor-not-allowed opacity-70'
-                                    : 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 hover:shadow-orange-500/40 active:scale-[0.98]'
-                                }
-                            `}
-                        >
-                            {uploading ? (
-                                <>
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                    {t('saving')}
-                                </>
-                            ) : (
-                                <>
-                                    <Check className="w-4 h-4" />
-                                    {t('saveRecord')}
-                                </>
-                            )}
-                        </button>
+                        <div className="flex gap-3 pt-4 border-t border-border dark:border-gray-700/50">
+                            <Button
+                                variant="ghost"
+                                onClick={() => setShowUploadForm(false)}
+                            >
+                                {t('cancel')}
+                            </Button>
+                            <Button
+                                onClick={handleCreateAndUpload}
+                                isLoading={uploading}
+                                disabled={uploading}
+                                className={`flex-1 ${!uploading && 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700'}`}
+                                leftIcon={!uploading ? <Check className="w-4 h-4" /> : undefined}
+                            >
+                                {uploading ? t('saving') : t('saveRecord')}
+                            </Button>
+                        </div>
                     </div>
                 </div>
             )}

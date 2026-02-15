@@ -11,6 +11,7 @@ import { BillAnalysisService } from '../services/bill-analysis.service';
 import { useUserPreferences } from '../contexts/UserPreferencesContext';
 import { userPreferencesService } from '../services/user-preferences.service';
 import UpgradeRequestModal from './modals/UpgradeRequestModal';
+import { Button } from './ui/Button';
 
 interface ContractScannerProps {
     onScanComplete: (extractedData: ExtractedField[], contractFileUrl: string, contractFile?: File) => void;
@@ -432,12 +433,13 @@ export function ContractScanner({ onScanComplete, onCancel, mode = 'modal', skip
                 )}
 
                 {step !== 'processing' && step !== 'success' && (
-                    <button
+                    <Button
+                        variant="ghost"
                         onClick={onCancel}
-                        className="w-full mt-4 text-slate-400 text-sm hover:text-slate-600 transition-colors"
+                        className="w-full mt-4 text-slate-400 hover:text-slate-600"
                     >
                         ביטול
-                    </button>
+                    </Button>
                 )}
             </div>
         </motion.div>

@@ -13,7 +13,7 @@ interface GoogleAutocompleteProps {
     autoFocus?: boolean;
     type?: 'cities' | 'address';
     biasCity?: string;
-    error?: boolean;
+    error?: string | boolean;
 }
 
 export function GoogleAutocomplete({
@@ -33,16 +33,10 @@ export function GoogleAutocomplete({
     const [isLoading, setIsLoading] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
-
-    const lastSentValue = useRef(value);
+    const lastFetchedValue = useRef<string>('');
 
     // Sync external value changes (only if it didn't come from us)
-    useEffect(() => {
-        if (value !== lastSentValue.current) {
-            setInputValue(value);
-            lastSentValue.current = value;
-        }
-    }, [value]);
+    // removed useEffect to prevent infinite loop regression
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -63,11 +57,13 @@ export function GoogleAutocomplete({
         setIsLoading(true);
         console.log('Autocomplete: Requesting for', input);
         try {
+            lastFetchedValue.current = input;
             const { data, error } = await supabase.functions.invoke('google-maps-proxy', {
                 body: {
                     action: 'autocomplete',
                     input,
-                    types: type
+                    types: type,
+                    location: biasCity // Future proofing
                 }
             });
 
@@ -94,7 +90,7 @@ export function GoogleAutocomplete({
     // Simple debounce via timeout
     useEffect(() => {
         const timer = setTimeout(() => {
-            if (inputValue && inputValue !== value) {
+            if (inputValue && inputValue !== lastFetchedValue.current) {
                 fetchPredictions(inputValue);
             }
         }, 500);
@@ -105,7 +101,7 @@ export function GoogleAutocomplete({
     const handleSelect = (prediction: any) => {
         const mainText = prediction.structured_formatting?.main_text || prediction.description;
         setInputValue(mainText);
-        lastSentValue.current = mainText; // Record what we sent
+        lastFetchedValue.current = mainText; // Record what we sent
         onChange(mainText);
         setIsOpen(false);
     };
@@ -113,7 +109,7 @@ export function GoogleAutocomplete({
     const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = e.target.value;
         setInputValue(val);
-        lastSentValue.current = val; // Record what we sent
+        // lastFetchedValue.current is NOT updated here, so debounce can trigger
         onChange(val);
         if (!val) {
             setIsOpen(false);
@@ -177,6 +173,9 @@ export function GoogleAutocomplete({
                     </div>
                 )}
             </div>
+            {typeof hasError === 'string' && (
+                <p className="text-[0.8rem] font-medium text-destructive mt-1.5">{hasError}</p>
+            )}
         </div>
     );
 }

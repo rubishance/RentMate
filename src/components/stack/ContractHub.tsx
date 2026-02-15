@@ -559,11 +559,11 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                                         <span className="text-sm font-medium text-muted-foreground">{t('extensionNoticeDays')}</span>
                                         {!readOnly ? (
                                             <div className="flex items-center gap-2">
-                                                <input
+                                                <Input
                                                     type="number"
                                                     value={formData.option_notice_days}
                                                     onChange={e => setFormData({ ...formData, option_notice_days: e.target.value })}
-                                                    className="w-20 h-8 px-2 text-center border border-slate-100 dark:border-neutral-700 rounded-lg bg-slate-50 dark:bg-neutral-900 font-bold"
+                                                    className="w-20 h-8 px-2 text-center border-slate-100 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-900 font-bold"
                                                 />
                                                 <span className="text-xs font-bold text-muted-foreground">{t('days')}</span>
                                             </div>
@@ -647,12 +647,13 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                                             label={t('currency')}
                                             disabled={readOnly}
                                             value={formData.currency}
-                                            onChange={e => setFormData({ ...formData, currency: e.target.value })}
-                                        >
-                                            <option value="ILS">₪ ILS</option>
-                                            <option value="USD">₪ USD</option>
-                                            <option value="EUR">€ EUR</option>
-                                        </Select>
+                                            onChange={(value) => setFormData({ ...formData, currency: value })}
+                                            options={[
+                                                { value: 'ILS', label: '₪ ILS' },
+                                                { value: 'USD', label: '$ USD' },
+                                                { value: 'EUR', label: '€ EUR' }
+                                            ]}
+                                        />
                                     </div>
                                 </div>
 
@@ -661,12 +662,13 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                                         label={t('paymentFrequency')}
                                         disabled={readOnly}
                                         value={formData.payment_frequency}
-                                        onChange={e => setFormData({ ...formData, payment_frequency: e.target.value })}
-                                    >
-                                        <option value="monthly">{t('monthly')}</option>
-                                        <option value="quarterly">{t('quarterly')}</option>
-                                        <option value="annually">{t('annually')}</option>
-                                    </Select>
+                                        onChange={(value) => setFormData({ ...formData, payment_frequency: value })}
+                                        options={[
+                                            { value: 'monthly', label: t('monthly') },
+                                            { value: 'quarterly', label: t('quarterly') },
+                                            { value: 'annually', label: t('annually') }
+                                        ]}
+                                    />
                                     <Input
                                         label={t('paymentDay')}
                                         type="number"
@@ -694,23 +696,24 @@ export function ContractHub({ contractId, initialReadOnly = true }: ContractHubP
                                             label={t('linkageType')}
                                             disabled={readOnly}
                                             value={formData.linkage_type}
-                                            onChange={e => setFormData({ ...formData, linkage_type: e.target.value })}
-                                        >
-                                            <option value="none">{t('notLinked')}</option>
-                                            <option value="cpi">{t('linkedToCpi')}</option>
-                                            <option value="housing">{t('linkedToHousing')}</option>
-                                        </Select>
+                                            onChange={(value) => setFormData({ ...formData, linkage_type: value })}
+                                            options={[
+                                                { value: 'none', label: t('notLinked') },
+                                                { value: 'cpi', label: t('linkedToCpi') },
+                                                { value: 'housing', label: t('linkedToHousing') }
+                                            ]}
+                                        />
 
                                         {formData.linkage_type !== 'none' && (
                                             <div className="grid grid-cols-2 gap-4 p-3 bg-secondary/10 rounded-xl">
                                                 <div>
                                                     <label className="text-[10px] font-bold text-muted-foreground uppercase block mb-1">{t('baseIndex')}</label>
-                                                    <input
+                                                    <Input
                                                         type="number"
                                                         readOnly={readOnly}
                                                         value={formData.base_index_value || ''}
                                                         onChange={e => setFormData({ ...formData, base_index_value: Number(e.target.value) })}
-                                                        className="w-full h-8 px-2 text-sm bg-transparent border-b border-border/50 focus:border-primary outline-none"
+                                                        className="w-full h-8 px-2 text-sm bg-transparent border-0 border-b border-border/50 focus-visible:ring-0 focus-visible:border-primary rounded-none shadow-none"
                                                         placeholder="0.00"
                                                     />
                                                 </div>

@@ -1,18 +1,22 @@
 import { useState, useEffect } from 'react';
-import { Upload, Loader2, FileText, Check, X, Calendar, DollarSign, Folder, Trash2, ChevronDown, ChevronRight, Plus, Droplets, Zap, Flame, Building2, Landmark, TrendingUp, TrendingDown, Minus, Wifi, Tv } from 'lucide-react';
-import type { Property, PropertyDocument, DocumentCategory, DocumentFolder } from '../../types/database';
+import { Upload, Loader2, FileText, Check, X, DollarSign, ChevronRight, Plus, Droplets, Zap, Flame, Building2, Landmark, Wifi, Tv, Sparkles } from 'lucide-react';
+import type { Property, PropertyDocument, DocumentCategory } from '../../types/database';
 import { propertyDocumentsService } from '../../services/property-documents.service';
 import { format, parseISO } from 'date-fns';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useCallback } from 'react';
 import { cn } from '../../lib/utils';
 import { CompressionService } from '../../services/compression.service';
 import { BillAnalysisService, ExtractedBillData } from '../../services/bill-analysis.service';
-import { Sparkles } from 'lucide-react';
+
 import UpgradeRequestModal from '../modals/UpgradeRequestModal';
 import { useSubscription } from '../../hooks/useSubscription';
 import { DocumentTimeline } from './DocumentTimeline';
 import { DocumentDetailsModal } from '../modals/DocumentDetailsModal';
 import { DatePicker } from '../ui/DatePicker';
+import { Input } from '../ui/Input';
+import { Textarea } from '../ui/Textarea';
+import { Button } from '../ui/Button';
 
 interface UtilityBillsManagerProps {
     property: Property;
@@ -21,20 +25,13 @@ interface UtilityBillsManagerProps {
 
 type UtilityType = 'water' | 'electric' | 'gas' | 'municipality' | 'management' | 'internet' | 'cable';
 
-interface AnalyticsData {
-    averageMonthly: number;
-    trend: 'up' | 'down' | 'stable';
-    yearOverYear: number;
-    monthlyData: Array<{ month: string; amount: number }>;
-}
+
 
 export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerProps) {
     const { t } = useTranslation();
     const { hasFeature } = useSubscription();
     const [activeUtility, setActiveUtility] = useState<UtilityType>('electric');
-    const [folders, setFolders] = useState<DocumentFolder[]>([]);
     const [documents, setDocuments] = useState<PropertyDocument[]>([]);
-    const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
     const [showUploadForm, setShowUploadForm] = useState(false);
@@ -74,28 +71,28 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
         { id: 'cable' as UtilityType, label: t('utilityCable'), icon: Tv, color: 'text-rose-500', bg: 'bg-rose-100 dark:bg-rose-900/30' },
     ];
 
-    useEffect(() => {
-        loadData();
-    }, [property.id, activeUtility]);
 
-    async function loadData() {
+
+    const loadData = useCallback(async () => {
         setLoading(true);
         try {
             const category = `utility_${activeUtility}` as DocumentCategory;
 
-            const [fetchedFolders, fetchedDocs] = await Promise.all([
-                propertyDocumentsService.getFolders(property.id, category),
+            const [fetchedDocs] = await Promise.all([
                 propertyDocumentsService.getPropertyDocuments(property.id, { category })
             ]);
 
-            setFolders(fetchedFolders);
             setDocuments(fetchedDocs);
         } catch (error) {
             console.error('Error loading data:', error);
         } finally {
             setLoading(false);
         }
-    }
+    }, [property.id, activeUtility]);
+
+    useEffect(() => {
+        loadData();
+    }, [loadData]);
 
 
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -248,9 +245,9 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
             setShowUploadForm(false);
 
             loadData();
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Operation failed:', error);
-            alert(`${t('error')}: ${error.message}`);
+            alert(`${t('error')}: ${(error as Error).message}`);
         } finally {
             setUploading(false);
         }
@@ -261,42 +258,7 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
         setView('bills');
     };
 
-    const handleDeleteFolder = async (folderId: string) => {
-        if (!confirm(t('deleteFolderConfirmation'))) return;
-        try {
-            await propertyDocumentsService.deleteFolder(folderId);
-            loadData();
-        } catch (error) {
-            console.error('Error deleting folder:', error);
-        }
-    };
 
-    const handleDeleteDocument = async (docId: string) => {
-        if (!confirm(t('deleteDocumentConfirmation'))) return;
-        try {
-            await propertyDocumentsService.deleteDocument(docId);
-            loadData();
-        } catch (error) {
-            console.error('Error deleting document:', error);
-        }
-    };
-
-    const docsByFolder = documents.reduce((acc, doc) => {
-        if (doc.folder_id) {
-            if (!acc[doc.folder_id]) acc[doc.folder_id] = [];
-            acc[doc.folder_id].push(doc);
-        }
-        return acc;
-    }, {} as Record<string, PropertyDocument[]>);
-
-    const orphanedDocs = documents.filter(d => !d.folder_id);
-
-
-    const renderTrendIcon = (trend: 'up' | 'down' | 'stable') => {
-        if (trend === 'up') return <TrendingUp className="w-4 h-4 text-red-500" />;
-        if (trend === 'down') return <TrendingDown className="w-4 h-4 text-green-500" />;
-        return <Minus className="w-4 h-4 text-muted-foreground" />;
-    };
 
     return (
         <div className="p-6 space-y-6">
@@ -357,15 +319,16 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                     {/* Actions */}
 
                     {!readOnly && !showUploadForm && (
-                        <button
+                        <Button
+                            variant="outline"
                             onClick={() => setShowUploadForm(true)}
-                            className="w-full py-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-blue-400 hover:bg-primary/10/50 dark:hover:bg-blue-900/20 transition-all group flex items-center justify-center gap-2 text-muted-foreground dark:text-muted-foreground"
+                            className="w-full py-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-blue-400 hover:bg-primary/10/50 dark:hover:bg-blue-900/20 transition-all group flex h-auto flex-col items-center justify-center gap-2 text-muted-foreground dark:text-muted-foreground"
                         >
                             <div className="p-2 bg-primary/10 dark:bg-blue-900/20 rounded-full group-hover:scale-110 transition-transform">
                                 <Plus className="w-5 h-5 text-primary dark:text-blue-400" />
                             </div>
                             <span className="font-medium">{t('createBillFolder')}</span>
-                        </button>
+                        </Button>
                     )}
 
                     {/* Create Folder Form */}
@@ -384,12 +347,14 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                                         {t('uploadBillTitle', { type: utilities.find(u => u.id === activeUtility)?.label || '' })}
                                     </p>
                                 </div>
-                                <button
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
                                     onClick={() => setShowUploadForm(false)}
-                                    className="p-2 bg-gray-100/50 dark:bg-gray-800/50 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors backdrop-blur-sm"
+                                    className="rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
                                 >
                                     <X className="w-5 h-5 text-muted-foreground" />
-                                </button>
+                                </Button>
                             </div>
 
                             {/* Folder Metadata */}
@@ -397,12 +362,11 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     <div className="space-y-1.5">
                                         <label className="text-sm font-semibold text-gray-700 dark:text-gray-200 ml-1">{t('subject')}</label>
-                                        <input
-                                            type="text"
+                                        <Input
                                             value={newFolderName}
                                             onChange={(e) => setNewFolderName(e.target.value)}
                                             placeholder={t('eg_january_bill')}
-                                            className="w-full px-4 py-3 bg-white/50 dark:bg-gray-800/50 border border-border/60 dark:border-gray-700/60 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-primary transition-all backdrop-blur-sm outline-none dark:text-white"
+                                            className="bg-white/50 dark:bg-gray-800/50 border-border/60 dark:border-gray-700/60"
                                         />
                                     </div>
                                     <div className="space-y-1.5">
@@ -416,11 +380,11 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-sm font-semibold text-gray-700 dark:text-gray-200 ml-1">{t('note')}</label>
-                                    <textarea
+                                    <Textarea
                                         value={newFolderNote}
                                         onChange={(e) => setNewFolderNote(e.target.value)}
                                         placeholder={t('optionalFolderNote')}
-                                        className="w-full px-4 py-3 bg-white/50 dark:bg-gray-800/50 border border-border/60 dark:border-gray-700/60 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-primary transition-all backdrop-blur-sm outline-none dark:text-white resize-none"
+                                        className="bg-white/50 dark:bg-gray-800/50 border-border/60 dark:border-gray-700/60 resize-none"
                                         rows={2}
                                     />
                                 </div>
@@ -470,9 +434,9 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                                                         </div>
                                                         <span className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">{file.file.name}</span>
                                                     </div>
-                                                    <button onClick={() => removeStagedFile(file.id)} className="text-muted-foreground hover:text-red-500 transition-colors p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded">
+                                                    <Button variant="ghost" size="sm" onClick={() => removeStagedFile(file.id)} className="text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 h-8 w-8 p-0">
                                                         <X className="w-4 h-4" />
-                                                    </button>
+                                                    </Button>
                                                 </div>
 
                                                 {/* AI Badge */}
@@ -501,34 +465,32 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                                                 <div className="grid grid-cols-2 gap-3 mb-3">
                                                     <div className="col-span-2 space-y-1">
                                                         <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">{t('vendorName')}</label>
-                                                        <input
-                                                            type="text"
+                                                        <Input
                                                             value={file.vendorName}
                                                             onChange={(e) => updateStagedFile(file.id, 'vendorName', e.target.value)}
                                                             placeholder={t('eg_electric_corp')}
-                                                            className="w-full px-3 py-1.5 text-xs border border-border dark:border-gray-700 rounded-lg bg-white/50 dark:bg-foreground/50 outline-none focus:border-primary transition-colors"
+                                                            className="h-8 text-xs bg-white/50 dark:bg-foreground/50"
                                                         />
                                                     </div>
                                                     <div className="col-span-1 space-y-1">
                                                         <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">Invoice Number</label>
-                                                        <input
-                                                            type="text"
+                                                        <Input
                                                             value={file.invoiceNumber}
                                                             onChange={(e) => updateStagedFile(file.id, 'invoiceNumber', e.target.value)}
                                                             placeholder="e.g. 12345678"
-                                                            className="w-full px-3 py-1.5 text-xs border border-border dark:border-gray-700 rounded-lg bg-white/50 dark:bg-foreground/50 outline-none focus:border-primary transition-colors"
+                                                            className="h-8 text-xs bg-white/50 dark:bg-foreground/50"
                                                         />
                                                     </div>
                                                     <div className="space-y-1">
                                                         <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">{t('amount')}</label>
                                                         <div className="relative">
-                                                            <DollarSign className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
-                                                            <input
+                                                            <Input
                                                                 type="number"
                                                                 value={file.amount}
                                                                 onChange={(e) => updateStagedFile(file.id, 'amount', e.target.value)}
                                                                 placeholder="0.00"
-                                                                className="w-full pl-7 pr-3 py-1.5 text-xs border border-border dark:border-gray-700 rounded-lg bg-white/50 dark:bg-foreground/50 outline-none focus:border-primary transition-colors"
+                                                                leftIcon={<DollarSign className="w-3 h-3 text-muted-foreground" />}
+                                                                className="h-8 text-xs bg-white/50 dark:bg-foreground/50"
                                                             />
                                                         </div>
                                                     </div>
@@ -559,12 +521,12 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                                                 </div>
                                                 <div>
                                                     <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">{t('note')}</label>
-                                                    <input
-                                                        type="text"
+
+                                                    <Input
                                                         value={file.note}
                                                         onChange={(e) => updateStagedFile(file.id, 'note', e.target.value)}
                                                         placeholder={t('optionalFolderNote')}
-                                                        className="w-full px-3 py-1.5 text-xs border border-border dark:border-gray-700 rounded-lg bg-white/50 dark:bg-foreground/50 outline-none focus:border-primary transition-colors"
+                                                        className="h-8 text-xs bg-white/50 dark:bg-foreground/50"
                                                     />
                                                 </div>
                                             </div>
@@ -574,36 +536,22 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                             </div>
 
                             <div className="flex gap-3 pt-4 border-t border-border dark:border-gray-700/50">
-                                <button
+                                <Button
+                                    variant="ghost"
                                     onClick={() => setShowUploadForm(false)}
-                                    className="px-6 py-2.5 text-sm font-medium text-muted-foreground dark:text-gray-300 hover:bg-muted dark:hover:bg-gray-800 rounded-xl transition-colors"
+                                    className="text-muted-foreground dark:text-gray-300"
                                 >
                                     {t('cancel')}
-                                </button>
-                                <button
+                                </Button>
+                                <Button
                                     onClick={handleCreateAndUpload}
                                     disabled={uploading}
-                                    className={`
-                                flex-1 px-6 py-2.5 text-sm font-medium text-white rounded-xl shadow-lg shadow-blue-500/25
-                                flex items-center justify-center gap-2 transition-all
-                                ${uploading
-                                            ? 'bg-gray-400 cursor-not-allowed opacity-70'
-                                            : 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 hover:shadow-blue-500/40 active:scale-[0.98]'
-                                        }
-                            `}
+                                    isLoading={uploading}
+                                    className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-lg"
                                 >
-                                    {uploading ? (
-                                        <>
-                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                            {t('saving')}
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Check className="w-4 h-4" />
-                                            {t('saveBillEntry')}
-                                        </>
-                                    )}
-                                </button>
+                                    {!uploading && <Check className="w-4 h-4 mr-2" />}
+                                    {t('saveBillEntry')}
+                                </Button>
                             </div>
                         </div>
                     )}

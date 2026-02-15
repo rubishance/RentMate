@@ -44,6 +44,7 @@ const Contact = lazy(() => import('./pages/Contact'));
 import { CPICalculatorPage } from './pages/tools/CPICalculatorPage';
 const AccountSuspended = lazy(() => import('./pages/AccountSuspended'));
 const Unsubscribe = lazy(() => import('./pages/Unsubscribe').then(module => ({ default: module.Unsubscribe })));
+const DesignSystem = lazy(() => import('./pages/DesignSystem').then(module => ({ default: module.DesignSystem })));
 
 
 // Lazy load Admin Pages & Less Critical (Default Exports)
@@ -124,6 +125,10 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <WelcomeLanding />,
+      },
+      {
+        path: "/design-system",
+        element: <DesignSystem />,
       },
       {
         path: "/pricing",

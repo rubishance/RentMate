@@ -10,6 +10,10 @@ import { format, parseISO } from 'date-fns';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { contractSchema, type ContractFormData } from '../../schemas/contract.schema';
+import { Select } from '../ui/Select';
+import { Input } from '../ui/Input';
+import { Button } from '../ui/Button';
+import { Checkbox } from '../ui/Checkbox';
 
 interface ContractWithDetails extends Contract {
     properties: { address: string, city: string };
@@ -248,13 +252,9 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
     };
 
     // Watch values for conditional rendering
-    // Watch values for conditional rendering
     const linkageType = watch('linkageType');
-    const paymentFrequency = watch('paymentFrequency');
     const currency = watch('currency');
     const optionPeriods = watch('optionPeriods');
-    const startDate = watch('startDate');
-    const endDate = watch('endDate');
 
     return (
         <Modal
@@ -266,31 +266,29 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
             footer={
                 <div className="flex justify-end gap-3 w-full">
                     {readOnly ? (
-                        <button
-                            type="button"
+                        <Button
+                            variant="outline"
                             onClick={onClose}
-                            className="px-6 py-2 bg-muted hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-foreground dark:text-white rounded-xl font-medium transition-colors"
                         >
                             {lang === 'he' ? 'סגור' : 'Close'}
-                        </button>
+                        </Button>
                     ) : (
                         <>
-                            <button
-                                type="button"
+                            <Button
+                                variant="ghost"
                                 onClick={onClose}
-                                className="px-4 py-2 text-gray-700 bg-white border border-border hover:bg-secondary dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 rounded-xl font-medium transition-colors"
                             >
                                 {lang === 'he' ? 'ביטול' : 'Cancel'}
-                            </button>
-                            <button
-                                type="button"
+                            </Button>
+                            <Button
                                 onClick={handleSubmit(onSubmit as any)}
+                                isLoading={loading}
                                 disabled={loading}
-                                className="px-6 py-2 bg-primary text-white hover:bg-primary/90 rounded-xl font-medium transition-colors shadow-lg shadow-blue-500/30 flex items-center gap-2"
+                                className="bg-primary text-white hover:bg-primary/90 shadow-lg shadow-blue-500/30"
+                                leftIcon={!loading ? <Save className="w-4 h-4" /> : undefined}
                             >
-                                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                                 {t('saveChanges')}
-                            </button>
+                            </Button>
                         </>
                     )}
                 </div>
@@ -308,13 +306,15 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                     </a>
                 )}
                 {readOnly && (
-                    <button
+                    <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => setReadOnly(false)}
-                        className="p-1.5 text-primary hover:text-primary hover:bg-primary/10 dark:hover:bg-blue-900/20 rounded-full transition-colors flex items-center gap-1.5 px-3 bg-primary/10/50"
+                        className="text-primary hover:text-primary hover:bg-primary/10 dark:hover:bg-blue-900/20 rounded-full h-8 px-3"
+                        leftIcon={<Pen className="w-3.5 h-3.5" />}
                     >
-                        <Pen className="w-3.5 h-3.5" />
-                        <span className="text-sm font-medium">{lang === 'he' ? 'ערוך' : 'Edit'}</span>
-                    </button>
+                        {lang === 'he' ? 'ערוך' : 'Edit'}
+                    </Button>
                 )}
             </div>
 
@@ -353,16 +353,17 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                             </h3>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-medium text-muted-foreground uppercase">{t('status')}</label>
-                                    <select
+                                    <Select
+                                        label={t('status')}
                                         disabled={readOnly}
                                         value={status}
-                                        onChange={(e) => setStatus(e.target.value as any)}
-                                        className="w-full px-3 py-2 text-sm border border-border dark:border-gray-700 rounded-lg bg-white dark:bg-foreground disabled:bg-secondary disabled:text-muted-foreground"
-                                    >
-                                        <option value="active">{t('active')}</option>
-                                        <option value="archived">{t('archived')}</option>
-                                    </select>
+                                        onChange={(val) => setStatus(val as any)}
+                                        options={[
+                                            { value: 'active', label: t('active') },
+                                            { value: 'archived', label: t('archived') }
+                                        ]}
+                                        className="w-full"
+                                    />
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-medium text-muted-foreground uppercase">{t('signingDate')}</label>
@@ -418,59 +419,67 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                             </h3>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-medium text-muted-foreground uppercase">{t('baseRent')}</label>
-                                    <div className="relative">
-                                        <input
-                                            type="number"
-                                            disabled={readOnly}
-                                            {...register('rent')}
-                                            className="w-full pl-3 pr-12 py-2 text-sm border border-border dark:border-gray-700 rounded-lg bg-white dark:bg-foreground disabled:bg-secondary disabled:text-muted-foreground"
-                                        />
-                                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-muted-foreground text-sm">
-                                            {currency}
-                                        </div>
-                                    </div>
-                                    {errors.rent && <p className="text-red-500 text-xs">{t(errors.rent.message as any)}</p>}
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-medium text-muted-foreground uppercase">{t('currency')}</label>
-                                    <select
+                                    <Input
+                                        label={t('baseRent')}
+                                        type="number"
                                         disabled={readOnly}
-                                        {...register('currency')}
-                                        className="w-full px-3 py-2 text-sm border border-border dark:border-gray-700 rounded-lg bg-white dark:bg-foreground disabled:bg-secondary disabled:text-muted-foreground"
-                                    >
-                                        <option value="ILS">ILS (₪)</option>
-                                        <option value="USD">USD (₪)</option>
-                                        <option value="EUR">EUR (€)</option>
-                                    </select>
+                                        {...register('rent')}
+                                        error={errors.rent?.message}
+                                        className="w-full"
+                                        rightIcon={<span className="text-sm text-muted-foreground">{currency}</span>}
+                                    />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-medium text-muted-foreground uppercase">{t('paymentFreq')}</label>
-                                    <select
+                                    <Controller
+                                        control={control}
+                                        name="currency"
+                                        render={({ field }) => (
+                                            <Select
+                                                label={t('currency')}
+                                                disabled={readOnly}
+                                                value={field.value}
+                                                onChange={field.onChange}
+                                                options={[
+                                                    { value: 'ILS', label: 'ILS (₪)' },
+                                                    { value: 'USD', label: 'USD ($)' },
+                                                    { value: 'EUR', label: 'EUR (€)' }
+                                                ]}
+                                                className="w-full"
+                                            />
+                                        )}
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <Controller
+                                        control={control}
+                                        name="paymentFrequency"
+                                        render={({ field }) => (
+                                            <Select
+                                                label={t('paymentFreq')}
+                                                disabled={readOnly}
+                                                value={field.value}
+                                                onChange={field.onChange}
+                                                options={[
+                                                    { value: 'Monthly', label: t('monthly') },
+                                                    { value: 'Quarterly', label: t('quarterly') },
+                                                    { value: 'Annually', label: t('annually') }
+                                                ]}
+                                                className="w-full"
+                                            />
+                                        )}
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <Input
+                                        label={t('paymentDay')}
+                                        type="number"
+                                        min="1"
+                                        max="31"
                                         disabled={readOnly}
-                                        {...register('paymentFrequency')}
-                                        className="w-full px-3 py-2 text-sm border border-border dark:border-gray-700 rounded-lg bg-white dark:bg-foreground disabled:bg-secondary disabled:text-muted-foreground"
-                                    >
-                                        <option value="Monthly">{t('monthly')}</option>
-                                        <option value="Quarterly">{t('quarterly')}</option>
-                                        <option value="Annually">{t('annually')}</option>
-                                    </select>
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-medium text-muted-foreground uppercase">{t('paymentDay')}</label>
-                                    <div className="relative">
-                                        <input
-                                            type="number"
-                                            min="1"
-                                            max="31"
-                                            disabled={readOnly}
-                                            {...register('paymentDay')}
-                                            className="w-full pl-3 pr-8 py-2 text-sm border border-border dark:border-gray-700 rounded-lg bg-white dark:bg-foreground disabled:bg-secondary disabled:text-muted-foreground"
-                                        />
-                                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-muted-foreground text-xs">
-                                            {t('day')}
-                                        </div>
-                                    </div>
+                                        {...register('paymentDay')}
+                                        className="w-full"
+                                        rightIcon={<span className="text-xs text-muted-foreground">{t('day')}</span>}
+                                    />
                                 </div>
                             </div>
                             {/* Variable Rent Steps */}
@@ -492,29 +501,39 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                     )}
                                                 />
                                             </div>
-                                            <input
+                                            <Input
                                                 type="number"
                                                 disabled={readOnly}
                                                 {...register(`rentSteps.${idx}.amount`)}
-                                                className="flex-1 px-2 py-1.5 text-xs border border-border rounded-lg"
+                                                className="flex-1"
                                             />
-                                            <select
-                                                disabled={readOnly}
-                                                {...register(`rentSteps.${idx}.currency`)}
-                                                className="w-20 px-2 py-1.5 text-xs border border-border rounded-lg"
-                                            >
-                                                <option value="ILS">ILS</option>
-                                                <option value="USD">USD</option>
-                                                <option value="EUR">EUR</option>
-                                            </select>
+                                            <Controller
+                                                control={control}
+                                                name={`rentSteps.${idx}.currency`}
+                                                render={({ field }) => (
+                                                    <Select
+                                                        disabled={readOnly}
+                                                        value={field.value}
+                                                        onChange={field.onChange}
+                                                        options={[
+                                                            { value: 'ILS', label: 'ILS' },
+                                                            { value: 'USD', label: 'USD' },
+                                                            { value: 'EUR', label: 'EUR' }
+                                                        ]}
+                                                        className="w-24"
+                                                    />
+                                                )}
+                                            />
                                             {!readOnly && (
-                                                <button
+                                                <Button
                                                     type="button"
+                                                    variant="ghost"
+                                                    size="icon"
                                                     onClick={() => removeRentStep(idx)}
-                                                    className="text-red-500 hover:bg-red-50 p-1 rounded"
+                                                    className="text-destructive hover:bg-destructive/10"
                                                 >
                                                     <X className="w-4 h-4" />
-                                                </button>
+                                                </Button>
                                             )}
                                         </div>
                                     ))}
@@ -543,31 +562,47 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                             <div className="space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-medium text-muted-foreground uppercase">{t('linkageType')}</label>
-                                        <select
-                                            disabled={readOnly}
-                                            {...register('linkageType')}
-                                            className="w-full px-3 py-2 text-sm border border-border dark:border-gray-700 rounded-lg bg-white dark:bg-foreground disabled:bg-secondary disabled:text-muted-foreground"
-                                        >
-                                            <option value="none">{t('notLinked')}</option>
-                                            <option value="cpi">{t('linkedToCpi')}</option>
-                                            <option value="housing">{t('linkedToHousing')}</option>
-                                            <option value="construction">{t('linkedToConstruction')}</option>
-                                            <option value="usd">{t('linkedToUsd')}</option>
-                                            <option value="eur">{t('linkedToEur')}</option>
-                                        </select>
+                                        <Controller
+                                            control={control}
+                                            name="linkageType"
+                                            render={({ field }) => (
+                                                <Select
+                                                    label={t('linkageType')}
+                                                    disabled={readOnly}
+                                                    value={field.value}
+                                                    onChange={field.onChange}
+                                                    options={[
+                                                        { value: 'none', label: t('notLinked') },
+                                                        { value: 'cpi', label: t('linkedToCpi') },
+                                                        { value: 'housing', label: t('linkedToHousing') },
+                                                        { value: 'construction', label: t('linkedToConstruction') },
+                                                        { value: 'usd', label: t('linkedToUsd') },
+                                                        { value: 'eur', label: t('linkedToEur') }
+                                                    ]}
+                                                    className="w-full"
+                                                />
+                                            )}
+                                        />
                                     </div>
                                     {['cpi', 'housing', 'construction'].includes(linkageType) && (
                                         <div className="space-y-1.5">
-                                            <label className="text-xs font-medium text-muted-foreground uppercase">Sub-Type</label>
-                                            <select
-                                                disabled={readOnly}
-                                                {...register('linkageSubType')}
-                                                className="w-full px-3 py-2 text-sm border border-border dark:border-gray-700 rounded-lg bg-white dark:bg-foreground disabled:bg-secondary disabled:text-muted-foreground"
-                                            >
-                                                <option value="known">{t('knownIndex')}</option>
-                                                <option value="respect_of">{t('inRespectOf')}</option>
-                                            </select>
+                                            <Controller
+                                                control={control}
+                                                name="linkageSubType"
+                                                render={({ field }) => (
+                                                    <Select
+                                                        label="Sub-Type"
+                                                        disabled={readOnly}
+                                                        value={field.value}
+                                                        onChange={field.onChange}
+                                                        options={[
+                                                            { value: 'known', label: t('knownIndex') },
+                                                            { value: 'respect_of', label: t('inRespectOf') }
+                                                        ]}
+                                                        className="w-full"
+                                                    />
+                                                )}
+                                            />
                                         </div>
                                     )}
                                 </div>
@@ -592,30 +627,26 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                         </div>
                                         <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border dark:border-gray-700">
                                             <div className="space-y-1 flex flex-col justify-end">
-                                                <label className="flex items-center gap-2 cursor-pointer">
-                                                    <Controller
-                                                        control={control}
-                                                        name="linkageFloor"
-                                                        render={({ field }) => (
-                                                            <input
-                                                                type="checkbox"
-                                                                disabled={readOnly}
-                                                                checked={field.value !== undefined && field.value !== null}
-                                                                onChange={e => field.onChange(e.target.checked ? 0 : null)}
-                                                                className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-indigo-500"
-                                                            />
-                                                        )}
-                                                    />
-                                                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{t('indexBaseMin')}</span>
-                                                </label>
+                                                <Controller
+                                                    control={control}
+                                                    name="linkageFloor"
+                                                    render={({ field }) => (
+                                                        <Checkbox
+                                                            checked={field.value !== undefined && field.value !== null}
+                                                            onChange={(checked) => field.onChange(checked ? 0 : null)}
+                                                            label={t('indexBaseMin')}
+                                                            disabled={readOnly}
+                                                        />
+                                                    )}
+                                                />
                                             </div>
                                             <div className="space-y-1">
-                                                <label className="text-xs text-muted-foreground">{t('ceiling')}</label>
-                                                <input
+                                                <Input
+                                                    label={t('ceiling')}
                                                     type="number"
                                                     disabled={readOnly}
                                                     {...register('linkageCeiling')}
-                                                    className="w-full px-2 py-1 text-sm border border-border rounded"
+                                                    className="w-full"
                                                 />
                                             </div>
                                         </div>
@@ -635,21 +666,19 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                         <div className="flex items-center justify-between">
                                             <span className="text-xs font-medium text-muted-foreground uppercase">{t('optionRent')} {idx + 1}</span>
                                             {!readOnly && (
-                                                <button
+                                                <Button
                                                     type="button"
+                                                    variant="ghost"
+                                                    size="icon"
                                                     onClick={() => removeOption(idx)}
-                                                    className="text-red-500 hover:bg-red-50 p-1 rounded"
+                                                    className="text-destructive hover:bg-destructive/10 h-6 w-6"
                                                 >
                                                     <X className="w-3 h-3" />
-                                                </button>
+                                                </Button>
                                             )}
                                         </div>
                                         <div className="grid grid-cols-2 gap-2">
                                             <div className="relative">
-                                                {/* Schema uses endDate. Legacy used length/unit. 
-                                                        For this refactor to work without breaking, I need to check schema.
-                                                        If schema demands endDate, I must provide endDate selector or map length to endDate.
-                                                        Let's assume for now we expose EndDate picker as V3 standard. */}
                                                 <label className="text-[10px] text-muted-foreground mb-1 block">End Date</label>
                                                 <Controller
                                                     control={control}
@@ -665,24 +694,32 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                             </div>
                                             <div className="flex gap-1 items-end">
                                                 <div className="flex-1">
-                                                    <label className="text-[10px] text-muted-foreground mb-1 block">Rent</label>
-                                                    <input
+                                                    <Input
+                                                        label="Rent"
                                                         type="number"
                                                         disabled={readOnly}
                                                         {...register(`optionPeriods.${idx}.rentAmount`)}
                                                         className="w-full px-2 py-1.5 text-xs border border-border rounded-lg"
                                                     />
                                                 </div>
-                                                <div className="w-16">
-                                                    <select
-                                                        disabled={readOnly}
-                                                        {...register(`optionPeriods.${idx}.currency`)}
-                                                        className="w-full px-1 py-1.5 text-xs border border-border rounded-lg"
-                                                    >
-                                                        <option value="ILS">ILS</option>
-                                                        <option value="USD">USD</option>
-                                                        <option value="EUR">EUR</option>
-                                                    </select>
+                                                <div className="w-24">
+                                                    <Controller
+                                                        control={control}
+                                                        name={`optionPeriods.${idx}.currency`}
+                                                        render={({ field }) => (
+                                                            <Select
+                                                                disabled={readOnly}
+                                                                value={field.value}
+                                                                onChange={field.onChange}
+                                                                options={[
+                                                                    { value: 'ILS', label: 'ILS' },
+                                                                    { value: 'USD', label: 'USD' },
+                                                                    { value: 'EUR', label: 'EUR' }
+                                                                ]}
+                                                                className="w-full"
+                                                            />
+                                                        )}
+                                                    />
                                                 </div>
                                             </div>
                                         </div>
@@ -707,7 +744,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                     </label>
                                     <div className="relative">
                                         <Clock className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                                        <input
+                                        <Input
                                             type="number"
                                             disabled={readOnly}
                                             {...register('optionNoticeDays')}
@@ -725,12 +762,12 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                 <Shield className="w-4 h-4 text-muted-foreground" /> {t('securityAndAppendices')}
                             </h3>
                             <div className="space-y-1.5">
-                                <label className="text-xs font-medium text-muted-foreground uppercase">{t('depositAmount')}</label>
-                                <input
+                                <Input
+                                    label={t('depositAmount')}
                                     type="number"
                                     disabled={readOnly}
                                     {...register('securityDeposit')}
-                                    className="w-full px-3 py-2 text-sm border border-border dark:border-gray-700 rounded-lg bg-white dark:bg-foreground disabled:bg-secondary disabled:text-muted-foreground"
+                                    className="w-full"
                                 />
                             </div>
                         </section>

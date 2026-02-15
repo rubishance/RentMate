@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import {
     Users,
     FileText,
-    DollarSign,
     Activity,
     UserPlus,
     Shield,
@@ -17,6 +16,7 @@ import {
     Sparkles,
     Wallet
 } from 'lucide-react';
+import { Button } from '../../components/ui/Button';
 import {
     BarChart,
     Bar,
@@ -251,9 +251,14 @@ const AdminDashboard = () => {
                             <Activity className="w-4 h-4 text-muted-foreground" />
                             Recent Activity
                         </h3>
-                        <button onClick={() => navigate('/admin/audit-logs')} className="text-xs font-medium text-brand-600 hover:text-brand-500 flex items-center gap-1">
+                        <Button
+                            variant="link"
+                            size="sm"
+                            onClick={() => navigate('/admin/audit-logs')}
+                            className="text-xs font-medium text-brand-600 hover:text-brand-500 flex items-center gap-1 p-0 h-auto"
+                        >
                             View All <ExternalLink className="w-3 h-3" />
-                        </button>
+                        </Button>
                     </div>
                     <ul role="list" className="divide-y divide-gray-100 dark:divide-gray-700">
                         {recentActivity.length === 0 ? (
@@ -290,9 +295,14 @@ const AdminDashboard = () => {
                             <UserPlus className="w-4 h-4 text-muted-foreground" />
                             Newest Users
                         </h3>
-                        <button onClick={() => navigate('/admin/users')} className="text-xs font-medium text-brand-600 hover:text-brand-500 flex items-center gap-1">
+                        <Button
+                            variant="link"
+                            size="sm"
+                            onClick={() => navigate('/admin/users')}
+                            className="text-xs font-medium text-brand-600 hover:text-brand-500 flex items-center gap-1 p-0 h-auto"
+                        >
                             View All <ExternalLink className="w-3 h-3" />
-                        </button>
+                        </Button>
                     </div>
                     <ul role="list" className="divide-y divide-gray-100 dark:divide-gray-700">
                         {newUsers.length === 0 ? (
@@ -330,9 +340,14 @@ const AdminDashboard = () => {
                         <MessageSquare className="w-4 h-4 text-muted-foreground" />
                         Latest AI Conversations
                     </h3>
-                    <button onClick={() => navigate('/admin/conversations')} className="text-xs font-medium text-brand-600 hover:text-brand-500 flex items-center gap-1">
+                    <Button
+                        variant="link"
+                        size="sm"
+                        onClick={() => navigate('/admin/conversations')}
+                        className="text-xs font-medium text-brand-600 hover:text-brand-500 flex items-center gap-1 p-0 h-auto"
+                    >
                         View Analytics <ExternalLink className="w-3 h-3" />
-                    </button>
+                    </Button>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -388,10 +403,11 @@ const AdminDashboard = () => {
                 <h3 className="text-lg font-medium leading-6 text-foreground dark:text-white mb-4">Quick Actions</h3>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     {quickLinks.map((link) => (
-                        <button
+                        <Button
                             key={link.name}
                             onClick={() => navigate(link.path)}
-                            className="relative flex items-center space-x-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-6 py-5 shadow-sm focus-within:ring-2 focus-within:ring-brand-500 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-secondary dark:hover:bg-gray-700/50 transition-all text-left"
+                            variant="ghost"
+                            className="relative flex items-center space-x-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-6 py-5 shadow-sm focus-visible:ring-2 focus-visible:ring-brand-500 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-secondary dark:hover:bg-gray-700/50 transition-all text-left h-auto w-full justify-start"
                         >
                             <div className="flex-shrink-0">
                                 <div className="h-10 w-10 rounded-lg bg-muted dark:bg-gray-700 flex items-center justify-center text-muted-foreground dark:text-gray-300">
@@ -403,7 +419,7 @@ const AdminDashboard = () => {
                                 <p className="text-sm font-medium text-foreground dark:text-white">{link.name}</p>
                                 <p className="truncate text-xs text-muted-foreground dark:text-muted-foreground">{link.desc}</p>
                             </div>
-                        </button>
+                        </Button>
                     ))}
                 </div>
             </div>

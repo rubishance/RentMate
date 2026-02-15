@@ -3,7 +3,7 @@ import { cn } from '../../lib/utils';
 import { FormLabel } from './FormLabel';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-    label?: string;
+    label?: React.ReactNode;
     error?: string;
     required?: boolean;
     leftIcon?: React.ReactNode;

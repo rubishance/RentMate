@@ -10,8 +10,13 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { cn, formatDate, formatNumber, parseNumber } from '../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DatePicker } from '../components/ui/DatePicker';
-import { parseISO, format, addYears, subDays, isValid } from 'date-fns';
+import { parseISO, format, addYears, subDays, isValid, startOfDay } from 'date-fns';
 import type { ExtractedField, Tenant, Property } from '../types/database';
+import { Input } from '../components/ui/Input';
+import { Select } from '../components/ui/Select';
+import { Checkbox } from '../components/ui/Checkbox';
+import { Button } from '../components/ui/Button';
+import { Textarea } from '../components/ui/Textarea';
 
 import { supabase } from '../lib/supabase';
 import { useTranslation } from '../hooks/useTranslation';
@@ -1145,9 +1150,9 @@ export function AddContract() {
                                                                 <GoogleAutocomplete
                                                                     value={formData.city || ''}
                                                                     onChange={val => setValue('city', val)}
-                                                                    className="w-full p-3 bg-background border border-border rounded-xl"
+                                                                    className="w-full"
                                                                     type="cities"
-                                                                    error={!!errors.city}
+                                                                    error={errors.city?.message}
                                                                 />
                                                             </div>
                                                         </div>
@@ -1184,56 +1189,60 @@ export function AddContract() {
                                                                 />
                                                             </div>
                                                             <div className="space-y-2">
-                                                                <label className="text-sm font-medium flex items-center gap-2">{t('sizeSqm')} <ConfidenceDot field="size" /></label>
-                                                                <input
-                                                                    type="text"
+                                                                <Input
+                                                                    label={<span>{t('rooms')} <ConfidenceDot field="rooms" /></span>}
+                                                                    type="number"
+                                                                    value={formData.rooms?.toString() || ''}
+                                                                    onChange={e => {
+                                                                        const val = e.target.value;
+                                                                        setValue('rooms', val === '' ? undefined : parseFloat(val) as any);
+                                                                    }}
+                                                                    className="w-full bg-background"
+                                                                />
+                                                            </div>
+                                                            <div className="space-y-2">
+                                                                <Input
+                                                                    label={<span>{t('sizeSqm')} <ConfidenceDot field="size" /></span>}
+                                                                    type="number"
                                                                     value={formData.size?.toString() || ''}
                                                                     onChange={e => {
                                                                         const val = e.target.value;
                                                                         setValue('size', val === '' ? undefined : parseFloat(val) as any);
                                                                     }}
-                                                                    className="w-full p-3 bg-background border border-border rounded-xl no-spinner"
+                                                                    className="w-full bg-background"
                                                                 />
                                                             </div>
                                                         </div>
 
                                                         {/* Amenities */}
                                                         <div className="grid grid-cols-2 gap-4">
-                                                            <label className={cn(
-                                                                "flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer",
-                                                                formData.hasBalcony ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-                                                            )}>
-                                                                <input type="checkbox" className="hidden" checked={formData.hasBalcony} onChange={e => setValue('hasBalcony', e.target.checked)} />
-                                                                <div className="p-2 bg-secondary rounded-full text-foreground"><Wind className="w-5 h-5" /></div>
-                                                                <span className="font-medium flex items-center gap-2">{t('balcony')} <ConfidenceDot field="hasBalcony" /></span>
-                                                            </label>
+                                                            <Checkbox
+                                                                checked={formData.hasBalcony}
+                                                                onChange={(checked) => setValue('hasBalcony', checked)}
+                                                                label={<span className="font-medium flex items-center gap-2">{t('balcony')} <ConfidenceDot field="hasBalcony" /></span>}
+                                                                icon={<Wind className="w-4 h-4" />}
+                                                            />
 
-                                                            <label className={cn(
-                                                                "flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer",
-                                                                formData.hasSafeRoom ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-                                                            )}>
-                                                                <input type="checkbox" className="hidden" checked={formData.hasSafeRoom} onChange={e => setValue('hasSafeRoom', e.target.checked)} />
-                                                                <div className="p-2 bg-secondary rounded-full text-foreground"><ShieldCheck className="w-5 h-5" /></div>
-                                                                <span className="font-medium flex items-center gap-2">{t('safeRoom')} <ConfidenceDot field="hasSafeRoom" /></span>
-                                                            </label>
+                                                            <Checkbox
+                                                                checked={formData.hasSafeRoom}
+                                                                onChange={(checked) => setValue('hasSafeRoom', checked)}
+                                                                label={<span className="font-medium flex items-center gap-2">{t('safeRoom')} <ConfidenceDot field="hasSafeRoom" /></span>}
+                                                                icon={<ShieldCheck className="w-4 h-4" />}
+                                                            />
 
-                                                            <label className={cn(
-                                                                "flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer",
-                                                                formData.hasParking ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-                                                            )}>
-                                                                <input type="checkbox" className="hidden" checked={formData.hasParking} onChange={e => setValue('hasParking', e.target.checked)} />
-                                                                <div className="p-2 bg-secondary rounded-full text-foreground"><Car className="w-5 h-5" /></div>
-                                                                <span className="font-medium flex items-center gap-2">{t('parking')} <ConfidenceDot field="hasParking" /></span>
-                                                            </label>
+                                                            <Checkbox
+                                                                checked={formData.hasParking}
+                                                                onChange={(checked) => setValue('hasParking', checked)}
+                                                                label={<span className="font-medium flex items-center gap-2">{t('parking')} <ConfidenceDot field="hasParking" /></span>}
+                                                                icon={<Car className="w-4 h-4" />}
+                                                            />
 
-                                                            <label className={cn(
-                                                                "flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer",
-                                                                formData.hasStorage ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-                                                            )}>
-                                                                <input type="checkbox" className="hidden" checked={formData.hasStorage} onChange={e => setValue('hasStorage', e.target.checked)} />
-                                                                <div className="p-2 bg-secondary rounded-full text-foreground"><Box className="w-5 h-5" /></div>
-                                                                <span className="font-medium flex items-center gap-2">{t('storage')} <ConfidenceDot field="hasStorage" /></span>
-                                                            </label>
+                                                            <Checkbox
+                                                                checked={formData.hasStorage}
+                                                                onChange={(checked) => setValue('hasStorage', checked)}
+                                                                label={<span className="font-medium flex items-center gap-2">{t('storage')} <ConfidenceDot field="hasStorage" /></span>}
+                                                                icon={<Box className="w-4 h-4" />}
+                                                            />
                                                         </div>
 
                                                         {/* Image Section */}
@@ -1362,63 +1371,57 @@ export function AddContract() {
                                                             )}
 
                                                             <div className="space-y-2">
-                                                                <label className="text-sm font-medium flex items-center gap-2">
-                                                                    {t('fullName')} <span className="text-red-500">*</span>
-                                                                    {index === 0 && scannedQuotes.tenantName && <Tooltip quote={scannedQuotes.tenantName} />}
-                                                                    {index === 0 && <ConfidenceDot field="tenants" />}
-                                                                </label>
-                                                                <input
+                                                                <Input
+                                                                    label={<span>{t('fullName')} <span className="text-red-500">*</span> {index === 0 && scannedQuotes.tenantName && <Tooltip quote={scannedQuotes.tenantName} />} {index === 0 && <ConfidenceDot field="tenants" />}</span>}
                                                                     value={tenant.name}
                                                                     onChange={e => {
                                                                         const newTenants = [...formData.tenants];
                                                                         newTenants[index].name = e.target.value;
                                                                         setValue('tenants', newTenants);
                                                                     }}
-                                                                    className={cn(
-                                                                        "w-full p-3 bg-background border rounded-xl transition-all duration-300",
-                                                                        (!tenant.name && index === 0 && step === 2) ? "border-red-500 ring-1 ring-red-500" : "border-border"
-                                                                    )}
+                                                                    error={(!tenant.name && index === 0 && step === 2) ? " " : undefined}
+                                                                    className="w-full bg-background"
                                                                 />
                                                             </div>
 
                                                             <div className="grid grid-cols-2 gap-4">
                                                                 <div className="space-y-2">
-                                                                    <label className="text-sm font-medium">{t('idNumber')}</label>
-                                                                    <input
+                                                                    <Input
+                                                                        label={t('idNumber')}
                                                                         value={tenant.id_number}
                                                                         onChange={e => {
                                                                             const newTenants = [...formData.tenants];
                                                                             newTenants[index].id_number = e.target.value;
                                                                             setValue('tenants', newTenants);
                                                                         }}
-                                                                        className="w-full p-3 bg-background border border-border rounded-xl font-mono"
+                                                                        className="w-full bg-background font-mono"
                                                                     />
                                                                 </div>
                                                                 <div className="space-y-2">
-                                                                    <label className="text-sm font-medium">{t('phone')}</label>
-                                                                    <input
+                                                                    <Input
+                                                                        label={t('phone')}
                                                                         value={tenant.phone}
                                                                         onChange={e => {
                                                                             const newTenants = [...formData.tenants];
                                                                             newTenants[index].phone = e.target.value;
                                                                             setValue('tenants', newTenants);
                                                                         }}
-                                                                        className="w-full p-3 bg-background border border-border rounded-xl"
+                                                                        className="w-full bg-background"
                                                                         dir="ltr"
                                                                     />
                                                                 </div>
                                                             </div>
 
                                                             <div className="space-y-2">
-                                                                <label className="text-sm font-medium">{t('email')}</label>
-                                                                <input
+                                                                <Input
+                                                                    label={t('email')}
                                                                     value={tenant.email}
                                                                     onChange={e => {
                                                                         const newTenants = [...formData.tenants];
                                                                         newTenants[index].email = e.target.value;
                                                                         setValue('tenants', newTenants);
                                                                     }}
-                                                                    className="w-full p-3 bg-background border border-border rounded-xl"
+                                                                    className="w-full bg-background"
                                                                     type="email"
                                                                     dir="ltr"
                                                                 />
@@ -1533,8 +1536,10 @@ export function AddContract() {
                                                             {t('optionPeriods')}
                                                             {scannedQuotes.optionPeriod && <Tooltip quote={scannedQuotes.optionPeriod} />} <ConfidenceDot field="optionPeriod" />
                                                         </label>
-                                                        <button
+                                                        <Button
                                                             type="button"
+                                                            variant="link"
+                                                            size="sm"
                                                             onClick={() => {
                                                                 const lastOption = formData.optionPeriods[formData.optionPeriods.length - 1];
                                                                 const baseDateStr = lastOption?.endDate || formData.endDate;
@@ -1549,10 +1554,10 @@ export function AddContract() {
 
                                                                 setValue('optionPeriods', [...formData.optionPeriods, { endDate: defaultDate, rentAmount: null as any, currency: 'ILS' }]);
                                                             }}
-                                                            className="text-xs text-primary hover:text-primary font-medium flex items-center gap-1"
+                                                            className="text-primary hover:text-primary font-medium p-0 h-auto"
                                                         >
-                                                            <Plus className="w-3 h-3" /> {t('addPeriod')}
-                                                        </button>
+                                                            <Plus className="w-3 h-3 mr-1" /> {t('addPeriod')}
+                                                        </Button>
                                                     </div>
 
                                                     {formData.optionPeriods.length === 0 && (
@@ -1581,16 +1586,18 @@ export function AddContract() {
                                                                     />
                                                                 </div>
 
-                                                                <button
+                                                                <Button
                                                                     type="button"
+                                                                    variant="ghost"
+                                                                    size="icon"
                                                                     onClick={() => {
                                                                         const newPeriods = formData.optionPeriods.filter((_, i) => i !== idx);
                                                                         setValue('optionPeriods', newPeriods);
                                                                     }}
-                                                                    className="p-3 text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-border/50 h-[46px]"
+                                                                    className="text-red-500 hover:bg-red-50 hover:text-red-600 border border-border/50 h-[46px] w-[46px]"
                                                                 >
                                                                     <Trash2 className="w-5 h-5" />
-                                                                </button>
+                                                                </Button>
                                                             </div>
                                                         ))}
                                                     </div>
@@ -1638,22 +1645,19 @@ export function AddContract() {
                                                         {t('monthlyRent')} <span className="text-red-500">*</span>
                                                         {scannedQuotes.rent && <Tooltip quote={scannedQuotes.rent} />} <ConfidenceDot field="rent" />
                                                     </label>
-                                                    <div className="relative">
-                                                        <span className="absolute left-4 top-3 text-muted-foreground">{formData.currency === 'ILS' ? '₪' : formData.currency === 'USD' ? '₪' : '€'}</span>
-                                                        <input
-                                                            type="text"
-                                                            value={formatNumber(formData.rent)}
-                                                            onChange={e => {
-                                                                const val = parseNumber(e.target.value);
-                                                                if (/^\d*\.?\d*$/.test(val)) setValue('rent', val as any);
-                                                            }}
-                                                            className={cn(
-                                                                "w-full pl-8 p-3 bg-background border rounded-xl font-bold text-lg no-spinner transition-all duration-300",
-                                                                ((!formData.rent || formData.rent <= 0) && step === 4) ? "border-red-500 ring-1 ring-red-500" : "border-border"
-                                                            )}
-                                                        />
-                                                    </div>
+                                                    <Input
+                                                        label={<span>{t('monthlyRent')} <span className="text-red-500">*</span> {scannedQuotes.rent && <Tooltip quote={scannedQuotes.rent} />} <ConfidenceDot field="rent" /></span>}
+                                                        value={formatNumber(formData.rent)}
+                                                        onChange={e => {
+                                                            const val = parseNumber(e.target.value);
+                                                            if (/^\d*\.?\d*$/.test(val)) setValue('rent', val as any);
+                                                        }}
+                                                        error={((!formData.rent || formData.rent <= 0) && step === 4) ? " " : undefined}
+                                                        className="w-full font-bold text-lg bg-background"
+                                                        leftIcon={<span className="text-muted-foreground">{formData.currency === 'ILS' ? '₪' : formData.currency === 'USD' ? '$' : '€'}</span>}
+                                                    />
                                                 </div>
+
 
                                                 {/* Extension Rent Amount(s) - Moved here from Step 3 */}
                                                 {formData.optionPeriods.map((period, idx) => (
@@ -1687,38 +1691,35 @@ export function AddContract() {
                                                 {/* 2. Frequency & Method Grid */}
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div className="space-y-2">
-                                                        <label className="text-sm font-medium flex items-center gap-2">{t('paymentFrequency')} <ConfidenceDot field="paymentFrequency" /></label>
-                                                        <div className="relative">
-                                                            <select
-                                                                value={formData.paymentFrequency}
-                                                                onChange={e => setValue('paymentFrequency', e.target.value as any)}
-                                                                className="w-full p-3 bg-background border border-border rounded-xl appearance-none pr-10"
-                                                            >
-                                                                <option value="Monthly">{t('monthly')}</option>
-                                                                <option value="Quarterly">{t('quarterly')}</option>
-                                                                <option value="Annually">{t('annually')}</option>
-                                                            </select>
-                                                            <ChevronDown className="absolute left-3 top-3.5 w-4 h-4 text-muted-foreground pointer-events-none" />
-                                                        </div>
+                                                        <Select
+                                                            label={<span>{t('paymentFrequency')} <ConfidenceDot field="paymentFrequency" /></span>}
+                                                            value={formData.paymentFrequency}
+                                                            onChange={val => setValue('paymentFrequency', val as any)}
+                                                            options={[
+                                                                { value: 'Monthly', label: t('monthly') },
+                                                                { value: 'Quarterly', label: t('quarterly') },
+                                                                { value: 'Bi-Annually', label: t('biAnnually') },
+                                                                { value: 'Annually', label: t('annually') }
+                                                            ]}
+                                                        />
                                                     </div>
 
                                                     <div className="space-y-2">
-                                                        <label className="text-sm font-medium flex items-center gap-2">{t('paymentMethod')} <ConfidenceDot field="paymentMethod" /></label>
-                                                        <div className="relative">
-                                                            <select
-                                                                value={formData.paymentMethod}
-                                                                onChange={e => setValue('paymentMethod', e.target.value as any)}
-                                                                className="w-full p-3 bg-background border border-border rounded-xl appearance-none pr-10"
-                                                            >
-                                                                <option value="Transfer">{t('transfer')}</option>
-                                                                <option value="Checks">{t('check')}</option>
-                                                                <option value="Cash">{t('cash')}</option>
-                                                                <option value="bit">{t('bit')}</option>
-                                                                <option value="paybox">{t('paybox')}</option>
-                                                                <option value="Other">{t('other')}</option>
-                                                            </select>
-                                                            <ChevronDown className="absolute left-3 top-3.5 w-4 h-4 text-muted-foreground pointer-events-none" />
-                                                        </div>
+                                                        <Select
+                                                            label={<span>{t('paymentMethod')} <ConfidenceDot field="paymentMethod" /></span>}
+                                                            value={formData.paymentMethod}
+                                                            onChange={val => setValue('paymentMethod', val as any)}
+                                                            options={[
+                                                                { value: 'Transfer', label: t('transfer') },
+                                                                { value: 'Checks', label: t('check') },
+                                                                { value: 'Cash', label: t('cash') },
+                                                                { value: 'bit', label: t('bit') },
+                                                                { value: 'paybox', label: t('paybox') },
+                                                                { value: 'Other', label: t('other') },
+                                                                { value: 'Bank Transfer', label: t('bankTransfer') },
+                                                                { value: 'Credit Card', label: t('creditCard') }
+                                                            ]}
+                                                        />
                                                     </div>
                                                 </div>
 
@@ -1726,13 +1727,15 @@ export function AddContract() {
                                                 <div className="space-y-3 pt-2 border-t border-border/50">
                                                     <div className="flex items-center justify-between">
                                                         <label className="text-sm font-medium flex items-center gap-2">{t('rentSteps')} {t('optional')} <ConfidenceDot field="rentSteps" /></label>
-                                                        <button
+                                                        <Button
                                                             type="button"
+                                                            variant="ghost"
+                                                            size="sm"
                                                             onClick={() => setValue('rentSteps', [...formData.rentSteps, { startDate: '', amount: null as any, currency: 'ILS' }])}
-                                                            className="text-xs text-primary hover:text-primary font-bold flex items-center gap-1 bg-primary/5 px-2 py-1 rounded-lg"
+                                                            className="text-primary hover:text-primary font-bold bg-primary/5 hover:bg-primary/10"
                                                         >
-                                                            <Plus className="w-3 h-3" /> {t('addStep')}
-                                                        </button>
+                                                            <Plus className="w-3 h-3 mr-1" /> {t('addStep')}
+                                                        </Button>
                                                     </div>
 
                                                     {formData.rentSteps.length > 0 && (
@@ -1740,8 +1743,8 @@ export function AddContract() {
                                                             {formData.rentSteps.map((step, idx) => (
                                                                 <div key={idx} className="flex gap-2 items-end">
                                                                     <div className="flex-[2] space-y-1">
-                                                                        <label className="text-[10px] text-muted-foreground font-bold">{t('stepDate')}</label>
                                                                         <DatePicker
+                                                                            label={<span className="text-[10px] text-muted-foreground font-bold">{t('stepDate')}</span>}
                                                                             value={step.startDate ? parseISO(step.startDate) : undefined}
                                                                             onChange={(date) => {
                                                                                 const newSteps = [...formData.rentSteps];
@@ -1752,34 +1755,33 @@ export function AddContract() {
                                                                         />
                                                                     </div>
                                                                     <div className="flex-1 space-y-1">
-                                                                        <label className="text-[10px] text-muted-foreground font-bold">{t('newAmount')}</label>
-                                                                        <div className="relative">
-                                                                            <span className="absolute left-2 top-2 text-[10px] text-muted-foreground opacity-50">{formData.currency === 'ILS' ? '₪' : formData.currency === 'USD' ? '₪' : '€'}</span>
-                                                                            <input
-                                                                                type="text"
-                                                                                value={formatNumber(step.amount)}
-                                                                                onChange={e => {
-                                                                                    const val = parseNumber(e.target.value);
-                                                                                    if (/^\d*\.?\d*$/.test(val)) {
-                                                                                        const newSteps = [...formData.rentSteps];
-                                                                                        newSteps[idx].amount = val as any;
-                                                                                        setValue('rentSteps', newSteps);
-                                                                                    }
-                                                                                }}
-                                                                                className="w-full p-2 pl-6 text-xs bg-background border border-border rounded-lg no-spinner font-bold"
-                                                                            />
-                                                                        </div>
+                                                                        <Input
+                                                                            label={<span className="text-[10px] text-muted-foreground font-bold">{t('newAmount')}</span>}
+                                                                            value={formatNumber(step.amount)}
+                                                                            onChange={e => {
+                                                                                const val = parseNumber(e.target.value);
+                                                                                if (/^\d*\.?\d*$/.test(val)) {
+                                                                                    const newSteps = [...formData.rentSteps];
+                                                                                    newSteps[idx].amount = val as any;
+                                                                                    setValue('rentSteps', newSteps);
+                                                                                }
+                                                                            }}
+                                                                            className="w-full text-xs font-bold"
+                                                                            leftIcon={<span className="text-[10px] text-muted-foreground opacity-50">{formData.currency === 'ILS' ? '₪' : formData.currency === 'USD' ? '₪' : '€'}</span>}
+                                                                        />
                                                                     </div>
-                                                                    <button
+                                                                    <Button
                                                                         type="button"
+                                                                        variant="ghost"
+                                                                        size="icon"
                                                                         onClick={() => {
                                                                             const newSteps = formData.rentSteps.filter((_, i) => i !== idx);
                                                                             setValue('rentSteps', newSteps);
                                                                         }}
-                                                                        className="p-2 mb-[1px] text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                                        className="text-red-500 hover:bg-red-50 hover:text-red-600 border border-border/50 h-[46px] w-[46px]"
                                                                     >
                                                                         <Trash2 className="w-4 h-4" />
-                                                                    </button>
+                                                                    </Button>
                                                                 </div>
                                                             ))}
                                                         </div>
@@ -1788,25 +1790,24 @@ export function AddContract() {
 
                                                 {/* 4. Linkage Section (Checkbox first) */}
                                                 <div className="space-y-4 pt-2 border-t border-border/50">
-                                                    <label className="flex items-center gap-3 cursor-pointer p-4 border border-border rounded-2xl hover:bg-secondary/20 transition-all group">
-                                                        <input
-                                                            type="checkbox"
+                                                    <div className="p-4 border border-border rounded-2xl hover:bg-secondary/20 transition-all">
+                                                        <Checkbox
                                                             checked={formData.hasLinkage}
-                                                            onChange={(e) => {
-                                                                const checked = e.target.checked;
+                                                            onChange={(checked) => {
                                                                 setValue('hasLinkage', checked);
                                                                 setValue('linkageType', checked ? (formData.linkageType === 'none' ? 'cpi' : formData.linkageType) : 'none');
                                                                 setValue('baseIndexDate', (checked && (!formData.baseIndexDate || formData.baseIndexDate === '')) ? formData.signingDate : formData.baseIndexDate);
                                                             }}
-                                                            className="w-5 h-5 rounded-lg border-gray-300 text-primary focus:ring-primary"
+                                                            label={
+                                                                <div className="flex-1">
+                                                                    <span className="text-sm font-bold text-foreground block">
+                                                                        {t('contractIsIndexed')}
+                                                                    </span>
+                                                                    <span className="text-xs text-muted-foreground">{t('contractIsIndexedDesc') || 'Apply index or currency linkage to rent payments'}</span>
+                                                                </div>
+                                                            }
                                                         />
-                                                        <div className="flex-1">
-                                                            <span className="text-sm font-bold text-foreground block">
-                                                                {t('contractIsIndexed')}
-                                                            </span>
-                                                            <span className="text-xs text-muted-foreground">{t('contractIsIndexedDesc') || 'Apply index or currency linkage to rent payments'}</span>
-                                                        </div>
-                                                    </label>
+                                                    </div>
 
                                                     {formData.hasLinkage && (
                                                         <motion.div
@@ -1818,49 +1819,51 @@ export function AddContract() {
                                                                 {/* Index Choice Dropdown */}
                                                                 <div className="space-y-2">
                                                                     <label className="text-sm font-medium">{t('indexOption')}</label>
-                                                                    <div className="relative">
-                                                                        <select
-                                                                            value={['usd', 'eur', 'construction'].includes(formData.linkageType) ? 'cpi' : formData.linkageType}
-                                                                            onChange={(e) => setValue('linkageType', e.target.value as any)}
-                                                                            className="w-full p-3 bg-background border border-border rounded-xl appearance-none"
-                                                                        >
-                                                                            <option value="cpi">{t('linkedToCpi')}</option>
-                                                                            <option value="housing">{t('linkedToHousing')}</option>
-                                                                        </select>
-                                                                        <ChevronDown className="absolute left-3 top-3.5 w-4 h-4 text-muted-foreground pointer-events-none" />
-                                                                    </div>
+                                                                    <Select
+                                                                        label={t('indexOption')}
+                                                                        value={['usd', 'eur', 'construction'].includes(formData.linkageType) ? 'cpi' : formData.linkageType}
+                                                                        onChange={(val) => setValue('linkageType', val as any)}
+                                                                        options={[
+                                                                            { value: 'cpi', label: t('linkedToCpi') },
+                                                                            { value: 'housing', label: t('linkedToHousing') }
+                                                                        ]}
+                                                                    />
                                                                 </div>
 
                                                                 {/* Base Index Rate & Date */}
                                                                 <div className="bg-background/80 p-4 rounded-xl border border-border/50 space-y-4">
                                                                     <div className="space-y-3">
                                                                         <div className="flex bg-secondary/30 p-1 rounded-lg gap-1">
-                                                                            <button
+                                                                            <Button
                                                                                 type="button"
+                                                                                variant="ghost"
+                                                                                size="sm"
                                                                                 onClick={() => {
                                                                                     setValue('linkageSubType', 'base');
                                                                                     setValue('baseIndexValue', '' as any);
                                                                                 }}
                                                                                 className={cn(
-                                                                                    "flex-1 py-1 text-[10px] font-bold rounded-md transition-all border-none",
-                                                                                    formData.linkageSubType !== 'known' ? "bg-white dark:bg-black shadow-sm" : "bg-transparent opacity-60"
+                                                                                    "flex-1 py-1 text-[10px] font-bold rounded-md transition-all border-none h-auto",
+                                                                                    formData.linkageSubType !== 'known' ? "bg-white dark:bg-black shadow-sm" : "bg-transparent opacity-60 hover:bg-white/50 dark:hover:bg-black/50"
                                                                                 )}
                                                                             >
                                                                                 {t('indexByDate')}
-                                                                            </button>
-                                                                            <button
+                                                                            </Button>
+                                                                            <Button
                                                                                 type="button"
+                                                                                variant="ghost"
+                                                                                size="sm"
                                                                                 onClick={() => {
                                                                                     setValue('linkageSubType', 'known');
                                                                                     setValue('baseIndexDate', '');
                                                                                 }}
                                                                                 className={cn(
-                                                                                    "px-3 py-1 text-[10px] font-bold rounded-md transition-all border-none",
-                                                                                    formData.linkageSubType === 'known' ? "bg-white dark:bg-black shadow-sm" : "bg-transparent opacity-60"
+                                                                                    "px-3 py-1 text-[10px] font-bold rounded-md transition-all border-none h-auto",
+                                                                                    formData.linkageSubType === 'known' ? "bg-white dark:bg-black shadow-sm" : "bg-transparent opacity-60 hover:bg-white/50 dark:hover:bg-black/50"
                                                                                 )}
                                                                             >
                                                                                 {t('manualRate')}
-                                                                            </button>
+                                                                            </Button>
                                                                         </div>
                                                                     </div>
 
@@ -1869,15 +1872,15 @@ export function AddContract() {
                                                                             <label className="text-xs font-medium flex items-center gap-2">
                                                                                 {t('baseIndexValue')} <ConfidenceDot field="baseIndexValue" />
                                                                             </label>
-                                                                            <input
-                                                                                type="text"
+                                                                            <Input
+                                                                                label={<span>{t('baseIndexValue')} <ConfidenceDot field="baseIndexValue" /></span>}
                                                                                 value={formatNumber(formData.baseIndexValue)}
                                                                                 onChange={(e) => {
                                                                                     const val = parseNumber(e.target.value);
                                                                                     if (/^\d*\.?\d*$/.test(val)) setValue('baseIndexValue', val as any);
                                                                                 }}
-                                                                                className="w-full p-2.5 bg-background border border-border rounded-lg no-spinner font-mono text-sm"
                                                                                 placeholder="e.g. 105.2"
+                                                                                className="w-full font-mono text-sm bg-background"
                                                                             />
                                                                         </div>
                                                                     ) : (
@@ -1903,19 +1906,21 @@ export function AddContract() {
                                                                             { label: t('knownIndexLabel'), val: 'known' },
                                                                             { label: t('respectOfLabel'), val: 'respect_of' }
                                                                         ].map(type => (
-                                                                            <button
+                                                                            <Button
                                                                                 key={type.val}
                                                                                 type="button"
+                                                                                variant="ghost"
+                                                                                size="sm"
                                                                                 onClick={() => setValue('linkageSubType', type.val as any)}
                                                                                 className={cn(
-                                                                                    "flex-1 py-1.5 text-xs font-bold rounded-lg transition-all border-none",
+                                                                                    "flex-1 py-1.5 text-xs font-bold rounded-lg transition-all border-none h-auto",
                                                                                     (formData.linkageSubType === type.val)
                                                                                         ? "bg-white dark:bg-black text-foreground shadow-sm"
-                                                                                        : "text-muted-foreground hover:text-foreground bg-transparent hover:opacity-100"
+                                                                                        : "text-muted-foreground hover:text-foreground bg-transparent hover:opacity-100 hover:bg-white/50 dark:hover:bg-black/50"
                                                                                 )}
                                                                             >
                                                                                 {type.label}
-                                                                            </button>
+                                                                            </Button>
                                                                         ))}
                                                                     </div>
                                                                 </div>
@@ -1923,45 +1928,42 @@ export function AddContract() {
                                                                 {/* Ceiling & Floor - At the bottom of index detail */}
                                                                 <div className="grid grid-cols-2 gap-3">
                                                                     <div className="space-y-2">
-                                                                        <label className="flex items-center gap-2 cursor-pointer p-2 border border-border rounded-xl hover:bg-secondary/50 transition-colors">
-                                                                            <input
-                                                                                type="checkbox"
+                                                                        <div className="p-2 border border-border rounded-xl hover:bg-secondary/50 transition-colors">
+                                                                            <Checkbox
                                                                                 checked={formData.hasLinkageCeiling}
-                                                                                onChange={(e) => {
-                                                                                    setValue('hasLinkageCeiling', e.target.checked);
-                                                                                    if (!e.target.checked) setValue('linkageCeiling', undefined);
+                                                                                onChange={(checked) => {
+                                                                                    setValue('hasLinkageCeiling', checked);
+                                                                                    if (!checked) setValue('linkageCeiling', undefined);
                                                                                 }}
-                                                                                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                                                                label={<span className="text-xs font-bold">{t('linkageCeiling')}</span>}
+                                                                                className="data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
                                                                             />
-                                                                            <span className="text-xs font-bold">{t('linkageCeiling')}</span>
-                                                                        </label>
+                                                                        </div>
                                                                         {formData.hasLinkageCeiling && (
                                                                             <div className="relative mt-1">
-                                                                                <input
-                                                                                    type="text"
+                                                                                <Input
                                                                                     value={formatNumber(formData.linkageCeiling)}
                                                                                     onChange={(e) => {
                                                                                         const val = parseNumber(e.target.value);
                                                                                         if (/^\d*\.?\d*$/.test(val)) setValue('linkageCeiling', val as any);
                                                                                     }}
-                                                                                    className="w-full p-2 bg-background border border-border rounded-lg text-xs no-spinner"
+                                                                                    className="w-full text-xs no-spinner bg-background"
                                                                                     placeholder="%"
+                                                                                    rightIcon={<span className="text-muted-foreground text-[10px]">%</span>}
                                                                                 />
-                                                                                <span className="absolute right-3 top-2 text-muted-foreground text-[10px]">%</span>
                                                                             </div>
                                                                         )}
                                                                     </div>
 
                                                                     <div className="space-y-2">
-                                                                        <label className="flex items-center gap-2 cursor-pointer p-2 border border-border rounded-xl hover:bg-secondary/50 transition-colors h-[38px]">
-                                                                            <input
-                                                                                type="checkbox"
+                                                                        <div className="p-2 border border-border rounded-xl hover:bg-secondary/50 transition-colors h-[38px] flex items-center">
+                                                                            <Checkbox
                                                                                 checked={formData.linkageFloor === 0}
-                                                                                onChange={(e) => setValue('linkageFloor', e.target.checked ? 0 : undefined)}
-                                                                                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                                                                onChange={(checked) => setValue('linkageFloor', checked ? 0 : undefined)}
+                                                                                label={<span className="text-xs font-bold">{t('floorIndex')}</span>}
+                                                                                className="data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
                                                                             />
-                                                                            <span className="text-xs font-bold">{t('floorIndex')}</span>
-                                                                        </label>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -1988,38 +1990,45 @@ export function AddContract() {
                                                 <div className="space-y-2">
                                                     <label className="text-sm font-medium flex items-center gap-2">{t('securityDeposit')} {scannedQuotes.securityDeposit && <Tooltip quote={scannedQuotes.securityDeposit} />} <ConfidenceDot field="securityDeposit" /></label>
                                                     <div className="relative">
-                                                        <input
+                                                        <Input
                                                             type="text"
                                                             value={formatNumber(formData.securityDeposit)}
                                                             onChange={e => {
                                                                 const val = parseNumber(e.target.value);
                                                                 if (/^\d*\.?\d*$/.test(val)) setValue('securityDeposit', val as any);
                                                             }}
-                                                            className="w-full p-3 pl-8 bg-background border border-border rounded-xl no-spinner font-bold"
+                                                            className="w-full bg-background font-bold"
+                                                            leftIcon={<span className="text-muted-foreground">₪</span>}
                                                         />
-                                                        <span className="absolute left-4 top-3 text-muted-foreground">₪</span>
                                                     </div>
                                                 </div>
 
                                                 <div className="space-y-2">
                                                     <label className="text-sm font-medium flex items-center gap-2">{t('guarantors')} {scannedQuotes.guarantees && <Tooltip quote={scannedQuotes.guarantees} />} <ConfidenceDot field="guarantees" /></label>
-                                                    <textarea
+                                                    <Textarea
                                                         value={formData.guarantees}
                                                         onChange={e => setValue('guarantees', e.target.value)}
-                                                        className="w-full p-3 bg-background border border-border rounded-xl min-h-[100px]"
+                                                        className="w-full min-h-[100px]"
                                                     />
                                                 </div>
 
 
                                                 <div className="space-y-2">
-                                                    <label className={cn(
-                                                        "flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer",
+                                                    <div className={cn(
+                                                        "p-3 rounded-xl border-2 transition-all",
                                                         formData.needsPainting ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
                                                     )}>
-                                                        <input type="checkbox" className="hidden" checked={formData.needsPainting} onChange={e => setValue('needsPainting', e.target.checked)} />
-                                                        <div className="p-2 bg-secondary rounded-full text-foreground"><Box className="w-5 h-5" /></div>
-                                                        <span className="font-medium flex items-center gap-2">{t('needsPaintingQuery')}</span>
-                                                    </label>
+                                                        <Checkbox
+                                                            checked={formData.needsPainting}
+                                                            onChange={(checked) => setValue('needsPainting', checked)}
+                                                            label={
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="p-2 bg-secondary rounded-full text-foreground"><Box className="w-5 h-5" /></div>
+                                                                    <span className="font-medium flex items-center gap-2">{t('needsPaintingQuery')}</span>
+                                                                </div>
+                                                            }
+                                                        />
+                                                    </div>
                                                 </div>
 
                                             </div>
@@ -2484,7 +2493,7 @@ export function AddContract() {
                         )}
                 </AnimatePresence>
             </div>
-        </div>
+        </div >
     );
 };
 

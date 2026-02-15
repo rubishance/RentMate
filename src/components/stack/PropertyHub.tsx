@@ -5,11 +5,12 @@ import { rentalTrendService } from '../../services/rental-trend.service';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { Property } from '../../types/database';
 import { cn } from '../../lib/utils';
-import { WalletIcon, FolderIcon, MapPinIcon, PlusIcon, MoreVertical, Edit2, Trash2, CheckIcon, FilePlus, FileText, Car, Archive, ShieldCheck, ArrowUpDown, Accessibility, Upload, Loader2, Calendar, ArrowLeft } from 'lucide-react';
+import { WalletIcon, FolderIcon, PlusIcon, MoreVertical, Edit2, Trash2, CheckIcon, FilePlus, FileText, Car, ShieldCheck, ArrowUpDown, Upload, Loader2, Calendar, ArrowLeft } from 'lucide-react';
 import { BalconyIcon, SafeRoomIcon, StorageIcon, CarIcon } from '../icons/NavIcons';
 import { Menu, MenuButton, MenuItem, MenuItems, Transition, Portal } from '@headlessui/react';
 import { PropertyDocumentsHub } from '../properties/PropertyDocumentsHub';
 import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
 import { SnapshotTab } from './tabs/SnapshotTab';
 import { ContractsTab } from './tabs/ContractsTab';
 import { WalletTab } from './tabs/WalletTab';
@@ -327,12 +328,13 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
             {/* 1. Header & Cover */}
             <div className="relative shrink-0">
                 <div className="h-48 bg-slate-200 dark:bg-neutral-800 relative overflow-hidden">
-                    <button
+                    <Button
                         onClick={() => navigate(-1)}
-                        className="absolute top-6 left-6 z-20 w-10 h-10 glass-premium dark:bg-neutral-800/40 rounded-xl flex items-center justify-center text-white hover:bg-white/20 transition-all border border-white/10 group"
+                        variant="ghost"
+                        className="absolute top-6 left-6 z-20 w-10 h-10 glass-premium dark:bg-neutral-800/40 rounded-xl flex items-center justify-center text-white hover:bg-white/20 border border-white/10 group p-0"
                     >
                         <ArrowLeft className={cn("w-4 h-4 group-hover:-translate-x-1 transition-transform", lang === 'he' ? 'rotate-180 group-hover:translate-x-1' : '')} />
-                    </button>
+                    </Button>
                     <img
                         src={signedImageUrl || getPropertyPlaceholder(property.property_type)}
                         alt={property.address}
@@ -413,19 +415,21 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
                                     <div className="grid grid-cols-2 gap-4 pt-4">
                                         <div>
                                             <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">{t('rooms')}</label>
-                                            <input
+                                            <Input
                                                 type="number"
                                                 step="0.5"
-                                                className="text-lg font-black bg-transparent border-b border-primary/20 w-full outline-none focus:border-primary"
+                                                label={t('rooms')}
+                                                className="text-lg font-black bg-transparent border-b border-primary/20 w-full outline-none focus:border-primary px-0 rounded-none border-t-0 border-x-0 focus:ring-0 h-auto py-1"
                                                 value={editedProperty.rooms ?? ''}
                                                 onChange={e => setEditedProperty(prev => ({ ...prev, rooms: parseFloat(e.target.value) || 0 }))}
                                             />
                                         </div>
                                         <div>
                                             <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">{t('sqm')}</label>
-                                            <input
+                                            <Input
                                                 type="number"
-                                                className="text-lg font-black bg-transparent border-b border-primary/20 w-full outline-none focus:border-primary"
+                                                label={t('sqm')}
+                                                className="text-lg font-black bg-transparent border-b border-primary/20 w-full outline-none focus:border-primary px-0 rounded-none border-t-0 border-x-0 focus:ring-0 h-auto py-1"
                                                 value={editedProperty.size_sqm ?? ''}
                                                 onChange={e => setEditedProperty(prev => ({ ...prev, size_sqm: parseFloat(e.target.value) || 0 }))}
                                             />
@@ -447,12 +451,13 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
                                             { key: 'has_parking', label: t('parking'), icon: CarIcon },
                                             { key: 'has_storage', label: t('storage'), icon: StorageIcon },
                                         ].map((feat) => (
-                                            <button
+                                            <Button
                                                 key={feat.key}
                                                 type="button"
                                                 onClick={() => setEditedProperty(prev => ({ ...prev, [feat.key]: !prev[feat.key as keyof Property] }))}
+                                                variant={editedProperty[feat.key as keyof Property] ? 'primary' : 'outline'}
                                                 className={cn(
-                                                    "flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border transition-all",
+                                                    "flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border transition-all h-auto",
                                                     editedProperty[feat.key as keyof Property]
                                                         ? "bg-primary/10 border-primary/30 text-primary"
                                                         : "bg-slate-50 dark:bg-neutral-800 border-slate-100 dark:border-neutral-700 text-muted-foreground"
@@ -460,7 +465,7 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
                                             >
                                                 <feat.icon className="w-3.5 h-3.5" />
                                                 {feat.label}
-                                            </button>
+                                            </Button>
                                         ))}
                                     </div>
 
@@ -468,21 +473,25 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
                                         <div className="flex items-center justify-between">
                                             <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('propertyImage')}</label>
                                             <div className="flex p-1 bg-slate-100 dark:bg-neutral-800 rounded-xl">
-                                                <button
+                                                <Button
                                                     onClick={() => setUploadMode('upload')}
-                                                    className={cn("px-3 py-1 text-[10px] font-black uppercase rounded-lg transition-all", uploadMode === 'upload' ? "bg-white dark:bg-neutral-700 text-primary shadow-sm" : "text-muted-foreground")}
+                                                    variant={uploadMode === 'upload' ? 'default' : 'ghost'}
+                                                    size="sm"
+                                                    className={cn("px-3 py-1 text-[10px] font-black uppercase rounded-lg transition-all h-7", uploadMode === 'upload' ? "bg-white dark:bg-neutral-700 text-primary shadow-sm hover:bg-white dark:hover:bg-neutral-700" : "text-muted-foreground hover:bg-transparent hover:text-foreground")}
                                                 >
                                                     {t('upload') || 'Upload'}
-                                                </button>
-                                                <button
+                                                </Button>
+                                                <Button
                                                     onClick={() => {
                                                         setUploadMode('url');
                                                         handleGoogleMapsFetch();
                                                     }}
-                                                    className={cn("px-3 py-1 text-[10px] font-black uppercase rounded-lg transition-all", uploadMode === 'url' ? "bg-white dark:bg-neutral-700 text-primary shadow-sm" : "text-muted-foreground")}
+                                                    variant={uploadMode === 'url' ? 'default' : 'ghost'}
+                                                    size="sm"
+                                                    className={cn("px-3 py-1 text-[10px] font-black uppercase rounded-lg transition-all h-7", uploadMode === 'url' ? "bg-white dark:bg-neutral-700 text-primary shadow-sm hover:bg-white dark:hover:bg-neutral-700" : "text-muted-foreground hover:bg-transparent hover:text-foreground")}
                                                 >
                                                     Street View
-                                                </button>
+                                                </Button>
                                             </div>
                                         </div>
 
@@ -532,12 +541,14 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
                                                     }}
                                                 />
                                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
-                                                    <button
+                                                    <Button
                                                         onClick={() => setEditedProperty(p => ({ ...p, image_url: '' }))}
-                                                        className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all shadow-xl"
+                                                        variant="destructive"
+                                                        size="icon"
+                                                        className="p-2 rounded-full hover:bg-red-600 shadow-xl h-8 w-8"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
-                                                    </button>
+                                                    </Button>
                                                 </div>
                                             </div>
                                         )}
@@ -602,19 +613,20 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
                         <div className="relative">
                             {isEditing ? (
                                 <div className="flex flex-col gap-2">
-                                    <button
+                                    <Button
                                         onClick={handleSave}
                                         disabled={isDeleting}
-                                        className="w-12 h-12 button-jewel text-white rounded-[1.2rem] shadow-jewel hover:scale-105 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center shrink-0"
+                                        className="w-12 h-12 button-jewel text-white rounded-[1.2rem] shadow-jewel hover:scale-105 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center shrink-0 p-0"
                                     >
                                         <CheckIcon className="w-5 h-5" />
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
                                         onClick={handleCancel}
-                                        className="w-12 h-12 glass-premium dark:bg-neutral-800/40 rounded-[1.2rem] border border-white/5 text-foreground hover:bg-white/10 transition-all flex items-center justify-center shrink-0"
+                                        variant="ghost"
+                                        className="w-12 h-12 glass-premium dark:bg-neutral-800/40 rounded-[1.2rem] border border-white/5 text-foreground hover:bg-white/10 transition-all flex items-center justify-center shrink-0 p-0"
                                     >
                                         <PlusIcon className="w-5 h-5 rotate-45" />
-                                    </button>
+                                    </Button>
                                 </div>
                             ) : (
                                 <Menu as="div" className="relative inline-block text-left">
@@ -642,16 +654,17 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
                                                 <div className="py-1">
                                                     <MenuItem>
                                                         {({ focus }) => (
-                                                            <button
+                                                            <Button
                                                                 onClick={() => setIsAddPaymentModalOpen(true)}
+                                                                variant="ghost"
                                                                 className={cn(
-                                                                    "w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all",
+                                                                    "w-full flex items-center justify-start gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all h-auto",
                                                                     focus ? "bg-slate-50 dark:bg-neutral-800 text-foreground" : "text-muted-foreground"
                                                                 )}
                                                             >
                                                                 <DollarSign className="w-4 h-4 text-brand-500" />
                                                                 {lang === 'he' ? 'הוספת תשלום' : 'Add Payment'}
-                                                            </button>
+                                                            </Button>
                                                         )}
                                                     </MenuItem>
 
@@ -659,46 +672,49 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
 
                                                     <MenuItem>
                                                         {({ focus }) => (
-                                                            <button
+                                                            <Button
                                                                 onClick={handleAddContract}
+                                                                variant="ghost"
                                                                 className={cn(
-                                                                    "w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all",
+                                                                    "w-full flex items-center justify-start gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all h-auto",
                                                                     focus ? "bg-slate-50 dark:bg-neutral-800 text-foreground" : "text-muted-foreground"
                                                                 )}
                                                             >
                                                                 <FilePlus className="w-4 h-4 text-emerald-500" />
                                                                 {lang === 'he' ? 'הוספת חוזה' : 'Add Contract'}
-                                                            </button>
+                                                            </Button>
                                                         )}
                                                     </MenuItem>
 
                                                     <MenuItem>
                                                         {({ focus }) => (
-                                                            <button
+                                                            <Button
                                                                 onClick={handleEdit}
+                                                                variant="ghost"
                                                                 className={cn(
-                                                                    "w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all",
+                                                                    "w-full flex items-center justify-start gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all h-auto",
                                                                     focus ? "bg-slate-50 dark:bg-neutral-800 text-foreground" : "text-muted-foreground"
                                                                 )}
                                                             >
                                                                 <Edit2 className="w-4 h-4 text-brand-500" />
                                                                 {t('edit')}
-                                                            </button>
+                                                            </Button>
                                                         )}
                                                     </MenuItem>
 
                                                     <MenuItem>
                                                         {({ focus }) => (
-                                                            <button
+                                                            <Button
                                                                 onClick={handleDeleteClick}
+                                                                variant="ghost"
                                                                 className={cn(
-                                                                    "w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all",
+                                                                    "w-full flex items-center justify-start gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all h-auto",
                                                                     focus ? "bg-red-50 dark:bg-red-900/20 text-red-600" : "text-red-500"
                                                                 )}
                                                             >
                                                                 <Trash2 className="w-4 h-4" />
                                                                 {t('delete')}
-                                                            </button>
+                                                            </Button>
                                                         )}
                                                     </MenuItem>
                                                 </div>
@@ -767,9 +783,8 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
                 message={lang === 'he'
                     ? `האם את/ה בטוח/ה לגמרי שברצונך למחוק את הנכס "${property.address}"? כל המידע כולל חוזים ותשלומים ימחק לצמיתות.`
                     : `Are you sure you want to delete "${property.address}"? All data including contracts and payments will be permanently deleted.`}
-                verificationText={property.address}
-                verificationLabel={lang === 'he' ? `הקלד את כתובת הנכס (${property.address}) לאישור` : `Type the property address (${property.address}) to confirm`}
                 isDeleting={isDeleting}
+                requireDoubleConfirm={true}
             />
 
             <AddPaymentModal

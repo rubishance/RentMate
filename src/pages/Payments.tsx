@@ -396,34 +396,33 @@ export function Payments() {
                         <Select
                             label={t('paymentType')}
                             value={filters.type}
-                            onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value as any }))}
-                        >
-                            <option value="all">{t('allTypes')}</option>
-                            <option value="rent">{t('rent')}</option>
-                            <option value="bills">{t('bills')}</option>
-                        </Select>
+                            onChange={(value) => setFilters(prev => ({ ...prev, type: value as any }))}
+                            options={[
+                                { value: 'all', label: t('allTypes') },
+                                { value: 'rent', label: t('rent') },
+                                { value: 'bills', label: t('bills') }
+                            ]}
+                        />
 
                         <Select
                             label={t('tenant')}
                             value={filters.tenantId}
-                            onChange={(e) => setFilters(prev => ({ ...prev, tenantId: e.target.value }))}
-                        >
-                            <option value="all">{t('allTenants')}</option>
-                            {uniqueTenants.map((t: any) => (
-                                <option key={t.id} value={t.id}>{t.name}</option>
-                            ))}
-                        </Select>
+                            onChange={(value) => setFilters(prev => ({ ...prev, tenantId: value }))}
+                            options={[
+                                { value: 'all', label: t('allTenants') },
+                                ...uniqueTenants.map((t: any) => ({ value: t.id, label: t.name }))
+                            ]}
+                        />
 
                         <Select
                             label={t('asset')}
                             value={filters.propertyId}
-                            onChange={(e) => setFilters(prev => ({ ...prev, propertyId: e.target.value }))}
-                        >
-                            <option value="all">{t('allAssets')}</option>
-                            {uniqueProperties.map((p: any) => (
-                                <option key={p.id} value={p.id}>{p.address}</option>
-                            ))}
-                        </Select>
+                            onChange={(value) => setFilters(prev => ({ ...prev, propertyId: value }))}
+                            options={[
+                                { value: 'all', label: t('allAssets') },
+                                ...uniqueProperties.map((p: any) => ({ value: p.id, label: p.address }))
+                            ]}
+                        />
 
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('period')}</label>

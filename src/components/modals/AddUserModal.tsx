@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import { X, User, Mail, Shield, Loader2, Send } from 'lucide-react';
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
 
 interface AddUserModalProps {
     isOpen: boolean;
@@ -54,81 +57,72 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
                             Send an invitation email to a new team member
                         </p>
                     </div>
-                    <button
+                    <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={onClose}
-                        className="p-2 text-muted-foreground hover:text-muted-foreground hover:bg-muted dark:hover:bg-gray-700 rounded-full transition-colors"
+                        className="p-2 text-muted-foreground hover:text-muted-foreground hover:bg-muted dark:hover:bg-gray-700 rounded-full transition-colors h-auto"
                     >
                         <X className="w-5 h-5" />
-                    </button>
+                    </Button>
                 </div>
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     <div className="space-y-4">
                         {/* Name */}
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Full Name</label>
-                            <div className="relative">
-                                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                <input
-                                    type="text"
-                                    required
-                                    value={formData.fullName}
-                                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                                    className="w-full pl-9 pr-4 py-2 border border-border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent dark:bg-foreground dark:text-white"
-                                />
-                            </div>
-                        </div>
+                        <Input
+                            label="Full Name"
+                            value={formData.fullName}
+                            onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                            leftIcon={<User className="w-4 h-4 text-muted-foreground" />}
+                            required
+                            placeholder="John Doe"
+                        />
 
                         {/* Email */}
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Email Address</label>
-                            <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                <input
-                                    type="email"
-                                    required
-                                    value={formData.email}
-                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                    className="w-full pl-9 pr-4 py-2 border border-border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent dark:bg-foreground dark:text-white"
-                                />
-                            </div>
-                        </div>
+                        <Input
+                            label="Email Address"
+                            type="email"
+                            value={formData.email}
+                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                            leftIcon={<Mail className="w-4 h-4 text-muted-foreground" />}
+                            required
+                            placeholder="john@example.com"
+                        />
 
                         {/* Role */}
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Role</label>
-                            <div className="relative">
-                                <Shield className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                <select
-                                    value={formData.role}
-                                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                                    className="w-full pl-9 pr-4 py-2 border border-border dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent dark:bg-foreground dark:text-white appearance-none"
-                                >
-                                    <option value="user">User</option>
-                                    <option value="admin">Admin</option>
-                                    <option value="manager">Manager</option>
-                                </select>
-                            </div>
-                        </div>
+                        <Select
+                            label="Role"
+                            value={formData.role}
+                            onChange={(val) => setFormData({ ...formData, role: val })}
+                            leftIcon={<Shield className="w-4 h-4 text-muted-foreground" />}
+                            options={[
+                                { value: 'user', label: 'User' },
+                                { value: 'admin', label: 'Admin' },
+                                { value: 'manager', label: 'Manager' }
+                            ]}
+                        />
                     </div>
 
                     <div className="pt-4 flex gap-3">
-                        <button
+                        <Button
                             type="button"
+                            variant="bg-muted" // Assuming variant support or use className
+                            // variant="ghost" or "secondary" might be better if bg-muted isnt a variant
                             onClick={onClose}
-                            className="flex-1 px-4 py-2 text-gray-700 bg-muted hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 rounded-xl font-medium transition-colors"
+                            className="flex-1 px-4 py-2 text-gray-700 bg-muted hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 rounded-xl font-medium transition-colors h-auto"
                         >
                             Cancel
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             type="submit"
                             disabled={loading}
-                            className="flex-1 px-4 py-2 bg-brand-600 text-white hover:bg-brand-700 rounded-xl font-medium transition-colors shadow-lg shadow-brand-500/30 flex items-center justify-center gap-2"
+                            className="flex-1 px-4 py-2 bg-brand-600 text-white hover:bg-brand-700 rounded-xl font-medium transition-colors shadow-lg shadow-brand-500/30 flex items-center justify-center gap-2 h-auto"
                         >
                             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                             {loading ? 'Sending...' : 'Send Invite'}
-                        </button>
+                        </Button>
                     </div>
                 </form>
             </div>
