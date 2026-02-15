@@ -7,7 +7,7 @@ import { RentyCommandCenter } from '../components/dashboard/RentyCommandCenter';
 import { useDataCache } from '../contexts/DataCacheContext';
 import { DashboardHero } from '../components/dashboard/DashboardHero';
 import { DEFAULT_WIDGET_LAYOUT, WidgetConfig, DashboardData, WIDGET_REGISTRY } from '../components/dashboard/WidgetRegistry';
-import { Edit3Icon, CheckIcon, FileSearch } from 'lucide-react';
+import { FileSearch } from 'lucide-react';
 import { ReportGenerationModal } from '../components/modals/ReportGenerationModal';
 import { cn } from '../lib/utils';
 import { userScoringService } from '../services/user-scoring.service';
@@ -36,7 +36,6 @@ export function Dashboard() {
     const [layout, setLayout] = useState<WidgetConfig[]>(DEFAULT_WIDGET_LAYOUT);
     const [counts, setCounts] = useState({ properties: 0, contracts: 0, tenants: 0 });
 
-    const [isEditingLayout, setIsEditingLayout] = useState(false);
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [showProBanner, setShowProBanner] = useState(false);
 
@@ -176,7 +175,7 @@ export function Dashboard() {
             ...item,
             onAction: () => handleBriefingAction(item)
         }));
-    }, [feedItems, navigate]);
+    }, [feedItems, handleBriefingAction]);
 
     if (loading && !feedItems.length) {
         return (
@@ -221,25 +220,6 @@ export function Dashboard() {
                         </span>
                     </div>
 
-                    <Button
-                        onClick={() => setIsEditingLayout(!isEditingLayout)}
-                        variant="ghost"
-                        size="sm"
-                        className={cn(
-                            "text-[10px] uppercase tracking-widest font-bold bg-white/50 dark:bg-black/20 backdrop-blur-md border border-white/20 hover:bg-white/80 transition-all",
-                            isEditingLayout && "bg-primary text-primary-foreground border-primary"
-                        )}
-                    >
-                        {isEditingLayout ? (
-                            <>
-                                <CheckIcon className="w-3.5 h-3.5 mr-2" /> {t('saveLayout')}
-                            </>
-                        ) : (
-                            <>
-                                <Edit3Icon className="w-3.5 h-3.5 mr-2" /> {t('customize_dashboard')}
-                            </>
-                        )}
-                    </Button>
 
                     <Button
                         variant="ghost"
@@ -274,12 +254,6 @@ export function Dashboard() {
                                     className={cn(colSpan, "relative group animate-in fade-in zoom-in-95 duration-500")}
                                     data-widget-id={widget.widgetId}
                                 >
-                                    {/* Edit Mode Controls */}
-                                    {isEditingLayout && (
-                                        <div className="absolute -top-3 -right-3 z-30 flex gap-1 opacity-100 scale-100 transition-all bg-foreground/90 text-background backdrop-blur-md p-1.5 rounded-xl shadow-xl">
-                                            <button className="p-1.5 hover:bg-white/20 rounded-lg"><Edit3Icon className="w-3 h-3" /></button>
-                                        </div>
-                                    )}
 
                                     {/* Render Widget */}
                                     {WidgetComponent(
@@ -294,8 +268,8 @@ export function Dashboard() {
             </div>
 
             {/* Renty Command Center - Bottom Fixed (Mobile) / Floating (Desktop) */}
-            <div id="renty-command-center" className="fixed bottom-0 left-0 right-0 z-50 p-2 pb-6 md:p-8 pointer-events-none flex justify-center transition-transform duration-500 ease-out translate-y-0">
-                <div className="w-full max-w-2xl pointer-events-auto shadow-2xl shadow-primary/20 rounded-[2rem] overflow-hidden transform transition-all hover:scale-[1.01]">
+            <div id="renty-command-center" className="fixed bottom-0 left-0 right-0 z-50 p-2 pb-4 md:p-4 pointer-events-none flex justify-center transition-transform duration-500 ease-out translate-y-0">
+                <div className="w-full max-w-xl pointer-events-auto shadow-xl shadow-primary/10 rounded-[1.5rem] overflow-hidden transform transition-all hover:scale-[1.01]">
                     <RentyCommandCenter
                         firstName={firstName}
                         feedItems={feedItemsWithActions}

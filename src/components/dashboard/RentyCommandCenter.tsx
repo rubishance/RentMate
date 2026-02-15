@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Send, Sparkles, ArrowRight, MessageCircle, AlertCircle, CheckCircle2, Mic, MicOff, Paperclip, Loader2 } from 'lucide-react';
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
@@ -115,9 +115,9 @@ export function RentyCommandCenter({ firstName, feedItems, className }: RentyCom
     const greeting = getTimeBasedGreeting(t);
 
     return (
-        <div className={cn("space-y-6 relative", className)}>
+        <div className={cn("space-y-4 relative", className)}>
             {/* Ambient Background Glow */}
-            <div className="absolute top-[-100px] left-1/2 -translate-x-1/2 w-full h-[400px] bg-gradient-to-b from-indigo-500/10 via-violet-500/5 to-transparent blur-3xl -z-10 pointer-events-none" />
+            <div className="absolute top-[-100px] left-1/2 -translate-x-1/2 w-full h-[300px] bg-gradient-to-b from-indigo-500/10 via-violet-500/5 to-transparent blur-3xl -z-10 pointer-events-none" />
 
             {/* Consolidated Header & Greeting */}
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
@@ -132,7 +132,7 @@ export function RentyCommandCenter({ firstName, feedItems, className }: RentyCom
                             {t('commandCenter')}
                         </span>
                     </motion.div>
-                    <h1 className="text-3xl md:text-4xl font-black tracking-tighter text-foreground leading-tight lowercase">
+                    <h1 className="text-xl md:text-2xl font-black tracking-tighter text-foreground leading-tight lowercase">
                         {t('commandCenter')}
                     </h1>
                 </div>
@@ -141,10 +141,10 @@ export function RentyCommandCenter({ firstName, feedItems, className }: RentyCom
                 <div className="flex gap-4">
                     <button
                         onClick={() => window.dispatchEvent(new CustomEvent('TOGGLE_NOTIFICATIONS'))}
-                        className="flex flex-col items-center px-4 py-2 bg-white/5 dark:bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all active:scale-95 group/updates"
+                        className="flex flex-col items-center px-3 py-1.5 bg-white/5 dark:bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all active:scale-95 group/updates"
                     >
-                        <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground group-hover/updates:text-indigo-400 transition-colors">{t('updates')}</span>
-                        <span className="text-xl font-black text-foreground">{activeItems.length}</span>
+                        <span className="text-[7px] font-black uppercase tracking-widest text-muted-foreground group-hover/updates:text-indigo-400 transition-colors">{t('updates')}</span>
+                        <span className="text-lg font-black text-foreground">{activeItems.length}</span>
                     </button>
                 </div>
             </div>
@@ -169,10 +169,8 @@ export function RentyCommandCenter({ firstName, feedItems, className }: RentyCom
                 <form
                     onSubmit={handleSubmit}
                     className={cn(
-                        "relative glass-premium rounded-[2rem] shadow-jewel flex items-center p-2 pr-2 overflow-hidden transition-all duration-500",
-                        isDragging
-                            ? "border-indigo-500 scale-[1.02] ring-4 ring-indigo-500/20"
-                            : "border-white/10"
+                        "relative glass-premium rounded-[1.5rem] shadow-minimal flex items-center p-1.5 pr-1.5 overflow-hidden transition-all duration-500 border-white/10",
+                        isDragging && "border-indigo-500 scale-[1.02] ring-4 ring-indigo-500/20"
                     )}
                 >
                     <div className={cn(
@@ -190,7 +188,7 @@ export function RentyCommandCenter({ firstName, feedItems, className }: RentyCom
                             onChange={(e) => setInputValue(e.target.value)}
                             placeholder={isDragging ? (isRtl ? "שחרר את הקובץ לניתוח..." : "Drop file to analyze...") : (isRtl ? "איך אוכל לעזור לך לנהל את הנכסים היום?" : "How can I help you manage your properties today?")}
                             className={cn(
-                                "w-full bg-transparent border-none outline-none text-base font-medium h-12 transition-all",
+                                "w-full bg-transparent border-none outline-none text-sm font-medium h-10 transition-all",
                                 isDragging ? "placeholder:text-indigo-600/70" : "placeholder:text-muted-foreground/50"
                             )}
                             dir="auto"
@@ -239,9 +237,9 @@ export function RentyCommandCenter({ firstName, feedItems, className }: RentyCom
                     <button
                         type="submit"
                         disabled={!inputValue.trim()}
-                        className="ml-2 w-12 h-12 button-jewel rounded-full flex items-center justify-center transition-all disabled:opacity-30 disabled:scale-95 shrink-0"
+                        className="ml-2 w-10 h-10 button-jewel rounded-full flex items-center justify-center transition-all disabled:opacity-30 disabled:scale-95 shrink-0"
                     >
-                        <ArrowRight className={cn("w-5 h-5", isRtl && "rotate-180")} />
+                        <ArrowRight className={cn("w-4 h-4", isRtl && "rotate-180")} />
                     </button>
                 </form>
             </motion.div>
@@ -269,7 +267,7 @@ export function RentyCommandCenter({ firstName, feedItems, className }: RentyCom
                                 onClick={() => handleCardClick(item)}
                                 hoverEffect
                             >
-                                <CardContent className="p-6 h-full flex flex-col justify-between">
+                                <CardContent className="p-4 h-full flex flex-col justify-between">
                                     <div>
                                         <div className="flex items-center justify-between mb-3">
                                             <div className={cn(

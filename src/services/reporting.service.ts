@@ -81,7 +81,7 @@ export const ReportService = {
                 // Try to extract a useful message from the error object
                 let errorMessage = 'Server failed to generate report';
                 if (typeof error === 'object' && error !== null) {
-                    errorMessage = (error as any).message || JSON.stringify(error);
+                    errorMessage = (error as { message?: string }).message || JSON.stringify(error);
                 }
                 throw new Error(errorMessage);
             }
@@ -102,7 +102,7 @@ export const ReportService = {
             document.body.removeChild(link);
 
             console.log('[ReportService] Report generated successfully');
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('[ReportService] Generation Process Failed:', err);
             throw err;
         }

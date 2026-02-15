@@ -59,8 +59,8 @@ export function SmartActionsRow() {
                         )}
                     >
                         <div className={cn(
-                            "p-2 rounded-xl bg-white/10 text-white backdrop-blur-md",
-                            "shadow-inner border border-white/10"
+                            "p-2 rounded-xl backdrop-blur-md shadow-inner border",
+                            "bg-indigo-600 dark:bg-white/10 text-white dark:text-white border-indigo-700 dark:border-white/10"
                         )}>
                             <action.icon className="w-5 h-5" />
                         </div>

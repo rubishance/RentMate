@@ -20,10 +20,31 @@ const formatDate = (date: string | Date | null) => {
 // Helper: Simple Hebrew Number Formatting
 const formatCurrency = (val: number) => {
     try {
-        return new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS' }).format(val);
-    } catch (e) {
-        return `₪${val.toLocaleString()}`;
+        return `₪${val.toLocaleString('he-IL', { minimumFractionDigits: 2 })}`;
+    } catch (_e) {
+        return `₪${val.toFixed(2)}`;
     }
+};
+
+/**
+ * Reverses Hebrew characters for jsPDF RTL compatibility.
+ * Smatly handles numbers to keep them in logical order.
+ */
+const fixRtl = (text: string | null | undefined): string => {
+    if (!text) return '';
+    // Check if contains Hebrew characters
+    const hasHebrew = /[\u0590-\u05FF]/.test(text);
+    if (!hasHebrew) return text;
+
+    // Split into segments of (Hebrew+Space) vs (Non-Hebrew)
+    // Actually, a simpler robust way for jsPDF:
+    // Reverse the entire string, then reverse back any sequence of digits/decimals/symbols
+    let reversed = text.split('').reverse().join('');
+    // Regex to find sequences of numbers, dots, commas, %, and currency symbols that should be LTR
+    reversed = reversed.replace(/([0-9.,%₪$]+)/g, (match) => {
+        return match.split('').reverse().join('');
+    });
+    return reversed;
 };
 
 /**
@@ -31,11 +52,14 @@ const formatCurrency = (val: number) => {
  */
 async function loadFont(url: string): Promise<string> {
     const response = await fetch(url);
+    if (!response.ok) throw new Error(`Failed to fetch font: ${response.statusText}`);
     const arrayBuffer = await response.arrayBuffer();
-    const uint8Array = new Uint8Array(arrayBuffer);
+
+    // Uint8Array to Base64 in Deno environment
+    const uint8 = new Uint8Array(arrayBuffer);
     let binary = '';
-    for (let i = 0; i < uint8Array.byteLength; i++) {
-        binary += String.fromCharCode(uint8Array[i]);
+    for (let i = 0; i < uint8.byteLength; i++) {
+        binary += String.fromCharCode(uint8[i]);
     }
     return btoa(binary);
 }
@@ -47,6 +71,7 @@ serve(async (req) => {
     }
 
     try {
+        console.log('[ReportFunction] Initializing generation...');
         const supabase = createClient(
             Deno.env.get('SUPABASE_URL') ?? '',
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -58,12 +83,17 @@ serve(async (req) => {
         if (!token) throw new Error('Missing authorization token');
 
         const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-        if (authError || !user) throw new Error('Unauthorized');
+        if (authError || !user) {
+            console.error('[ReportFunction] Auth error:', authError);
+            throw new Error('Unauthorized');
+        }
 
         // 3. Request Data
         const body = await req.json();
         const { propertyId, startDate, endDate, lang = 'he' } = body;
         if (!propertyId) throw new Error('Property ID is required');
+
+        console.log(`[ReportFunction] Fetching data for property: ${propertyId}, range: ${startDate} to ${endDate}`);
 
         // 4. Verify Ownership & Fetch Base Data
         const { data: property, error: pError } = await supabase
@@ -73,11 +103,13 @@ serve(async (req) => {
             .eq('user_id', user.id)
             .maybeSingle();
 
-        if (pError || !property) throw new Error('Property not found or unauthorized access');
+        if (pError || !property) {
+            console.error('[ReportFunction] Data fetch error or unauthorized:', pError);
+            throw new Error('Property not found or unauthorized access');
+        }
 
         // 5. Aggregate Expanded Data
-
-        // A. Contract & Tenants
+        // A. Contract
         const { data: contract } = await supabase
             .from('contracts')
             .select('*')
@@ -87,7 +119,7 @@ serve(async (req) => {
             .limit(1)
             .maybeSingle();
 
-        // B. Payments (Itemized)
+        // B. Payments
         const { data: payments } = await supabase
             .from('payments')
             .select('*')
@@ -106,7 +138,7 @@ serve(async (req) => {
             .gte('document_date', startDate)
             .lte('document_date', endDate);
 
-        // D. Index Data for Linkage Calculation
+        // D. Indices
         const { data: latestIndices } = await supabase
             .from('index_data')
             .select('*')
@@ -132,26 +164,31 @@ serve(async (req) => {
         }
 
         // 7. PDF Generation
+        console.log('[ReportFunction] Starting PDF generation...');
         const doc = new jsPDF({
             orientation: 'p',
             unit: 'mm',
-            format: 'a4'
+            format: 'a4',
+            putOnlyUsedFonts: true
         });
 
         const isRtl = lang === 'he';
         const width = doc.internal.pageSize.getWidth();
         const margin = 20;
 
-        // -- Load Hebrew Font if needed --
+        // -- Load Hebrew Font with absolute fallback --
         if (isRtl) {
             try {
-                // Heebo-Regular is a good choice for Hebrew
+                // Heebo-Regular via Google's raw repository URL is usually reliable for Deno fetch
                 const fontBase64 = await loadFont('https://raw.githubusercontent.com/google/fonts/master/ofl/heebo/Heebo-Regular.ttf');
                 doc.addFileToVFS('Heebo.ttf', fontBase64);
                 doc.addFont('Heebo.ttf', 'Heebo', 'normal');
                 doc.setFont('Heebo');
+                console.log('[ReportFunction] Hebrew font Heebo loaded and set');
             } catch (fontErr) {
-                console.warn('Failed to load Hebrew font, falling back to standard', fontErr);
+                console.error('[ReportFunction] CRITICAL: Failed to load Hebrew font:', fontErr);
+                // If font fails, Hebrew will be gibberish in most standard fonts
+                doc.setFont('helvetica');
             }
         }
 
@@ -161,7 +198,7 @@ serve(async (req) => {
         doc.setTextColor(255, 255, 255);
 
         doc.setFontSize(24);
-        const title = isRtl ? 'דוח ביצועי נכס - RentMate' : 'Property Performance Report';
+        const title = isRtl ? fixRtl('דוח ביצועי נכס - RentMate') : 'Property Performance Report';
         doc.text(title, isRtl ? width - margin : margin, 20, { align: isRtl ? 'right' : 'left' });
 
         doc.setFontSize(10);
@@ -170,12 +207,14 @@ serve(async (req) => {
         // -- Property Summary --
         doc.setTextColor(30, 41, 59);
         doc.setFontSize(16);
-        doc.text(property.address || 'Address', isRtl ? width - margin : margin, 60, { align: isRtl ? 'right' : 'left' });
+        doc.text(fixRtl(property.title || property.address || 'Address'), isRtl ? width - margin : margin, 60, { align: isRtl ? 'right' : 'left' });
         doc.setFontSize(11);
-        doc.text(`${property.city || ''} | ${property.rooms || 0} ${isRtl ? 'חדרים' : 'Rooms'} | ${property.size_sqm || 0} ${isRtl ? 'מ"ר' : 'sqm'}`, isRtl ? width - margin : margin, 68, { align: isRtl ? 'right' : 'left' });
+        const roomsText = isRtl ? fixRtl(`${property.rooms || 0} חדרים`) : `${property.rooms || 0} Rooms`;
+        const sqmText = isRtl ? fixRtl(`${property.size_sqm || 0} מ"ר`) : `${property.size_sqm || 0} sqm`;
+        doc.text(`${fixRtl(property.city || '')} | ${roomsText} | ${sqmText}`, isRtl ? width - margin : margin, 68, { align: isRtl ? 'right' : 'left' });
 
         // -- Financial Scoreboard --
-        const totalIncome = (payments || []).reduce((sum, p) => sum + parseFloat(p.amount || '0'), 0);
+        const totalIncome = (payments || []).reduce((sum, p) => sum + parseFloat(p.paid_amount || p.amount || '0'), 0);
         const totalExpenses = (utilities || []).reduce((sum, u) => sum + (u.amount || 0), 0);
 
         doc.setFillColor(248, 250, 252);
@@ -183,9 +222,9 @@ serve(async (req) => {
 
         doc.setTextColor(100, 116, 139);
         doc.setFontSize(8);
-        doc.text(isRtl ? 'סה"כ הכנסות' : 'Total Income', margin + 10, 85);
-        doc.text(isRtl ? 'סה"כ הוצאות' : 'Total Expenses', width / 2, 85, { align: 'center' });
-        doc.text(isRtl ? 'תזרים נקי' : 'Net Cash Flow', width - margin - 10, 85, { align: 'right' });
+        doc.text(isRtl ? fixRtl('סה"כ הכנסות') : 'Total Income', margin + 10, 85);
+        doc.text(isRtl ? fixRtl('סה"כ הוצאות') : 'Total Expenses', width / 2, 85, { align: 'center' });
+        doc.text(isRtl ? fixRtl('תזרים נקי') : 'Net Cash Flow', width - margin - 10, 85, { align: 'right' });
 
         doc.setTextColor(15, 23, 42);
         doc.setFontSize(14);
@@ -196,18 +235,20 @@ serve(async (req) => {
         // -- Contract & Linkage --
         if (contract) {
             doc.setFontSize(12);
-            doc.text(isRtl ? 'פרטי חוזה והצמדה' : 'Contract & Linkage', isRtl ? width - margin : margin, 115, { align: isRtl ? 'right' : 'left' });
+            doc.text(isRtl ? fixRtl('פרטי חוזה והצמדה') : 'Contract & Linkage', isRtl ? width - margin : margin, 115, { align: isRtl ? 'right' : 'left' });
+
+            const contractRows = [
+                [isRtl ? fixRtl('שכר דירה בסיס') : 'Base Rent', formatCurrency(parseFloat(contract.base_rent || '0'))],
+                [isRtl ? fixRtl('סוג הצמדה') : 'Linkage Type', contract.linkage_type?.toUpperCase() || 'NONE'],
+                [isRtl ? fixRtl('תוספת הצמדה (חיזוי)') : 'Linkage Delta (Proj)', formatCurrency(linkageDelta)],
+                [isRtl ? fixRtl('שכר דירה נוכחי') : 'Current Adjusted Rent', formatCurrency(adjustedRent)],
+                [isRtl ? fixRtl('פיקדון') : 'Security Deposit', formatCurrency(parseFloat(contract.security_deposit_amount || '0'))]
+            ];
 
             autoTable(doc, {
                 startY: 120,
-                head: [[isRtl ? 'תיאור' : 'Description', isRtl ? 'ערך' : 'Value']],
-                body: [
-                    [isRtl ? 'שכר דירה בסיס' : 'Base Rent', formatCurrency(parseFloat(contract.base_rent || '0'))],
-                    [isRtl ? 'סוג הצמדה' : 'Linkage Type', contract.linkage_type?.toUpperCase() || 'NONE'],
-                    [isRtl ? 'תוספת הצמדה (חיזוי)' : 'Linkage Delta (Proj)', formatCurrency(linkageDelta)],
-                    [isRtl ? 'שכר דירה נוכחי' : 'Current Adjusted Rent', formatCurrency(adjustedRent)],
-                    [isRtl ? 'פיקדון' : 'Security Deposit', formatCurrency(parseFloat(contract.security_deposit_amount || '0'))]
-                ],
+                head: [[isRtl ? fixRtl('תיאור') : 'Description', isRtl ? fixRtl('ערך') : 'Value']],
+                body: contractRows,
                 theme: 'plain',
                 styles: {
                     halign: isRtl ? 'right' : 'left',
@@ -220,16 +261,17 @@ serve(async (req) => {
         // -- Payment History Table --
         const paymentsY = (doc as any).lastAutoTable?.finalY + 15 || 115;
         doc.setFontSize(12);
-        doc.text(isRtl ? 'פירוט תקבולים' : 'Payment History', isRtl ? width - margin : margin, paymentsY, { align: isRtl ? 'right' : 'left' });
+        doc.text(isRtl ? fixRtl('פירוט תקבולים') : 'Payment History', isRtl ? width - margin : margin, paymentsY, { align: isRtl ? 'right' : 'left' });
 
         autoTable(doc, {
             startY: paymentsY + 5,
-            head: [[isRtl ? 'תאריך' : 'Date', isRtl ? 'סטטוס' : 'Status', isRtl ? 'סכום' : 'Amount']],
+            head: [[isRtl ? fixRtl('תאריך') : 'Date', isRtl ? fixRtl('סטטוס') : 'Status', isRtl ? fixRtl('סכום') : 'Amount']],
             body: (payments || []).map(p => [formatDate(p.due_date), p.status.toUpperCase(), formatCurrency(parseFloat(p.amount || '0'))]),
             headStyles: { fillColor: [79, 70, 229] },
             styles: {
                 halign: isRtl ? 'right' : 'left',
-                font: isRtl ? 'Heebo' : 'helvetica'
+                font: isRtl ? 'Heebo' : 'helvetica',
+                fontSize: 9
             }
         });
 
@@ -239,6 +281,7 @@ serve(async (req) => {
         doc.text('RentMate Vanguard Management Intelligence - Automated Report', width / 2, 285, { align: 'center' });
 
         // 8. Output
+        console.log('[ReportFunction] PDF generated successfully');
         const pdfOutput = doc.output('datauristring');
 
         return new Response(
@@ -247,10 +290,13 @@ serve(async (req) => {
         );
 
     } catch (error: any) {
-        console.error('Report Edge Function Error:', error);
+        console.error('[ReportFunction] CRITICAL ERROR:', error);
         return new Response(
-            JSON.stringify({ error: error.message || 'Unknown internal error' }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            JSON.stringify({
+                error: error.message || 'Unknown internal error',
+                details: error.stack
+            }),
+            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
     }
 });

@@ -38,7 +38,7 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
                             "relative flex-1 flex items-center justify-center gap-2 z-10 transition-colors duration-200",
                             size === 'sm' ? "px-3 py-1.5 text-[10px]" : "px-4 py-2.5 text-xs",
                             "font-bold uppercase tracking-wide whitespace-nowrap",
-                            isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground/80"
+                            isActive ? "text-white" : "text-muted-foreground hover:text-foreground/80"
                         )}
                     >
                         {option.icon && <span className="shrink-0">{option.icon}</span>}
@@ -47,7 +47,7 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
                         {isActive && (
                             <motion.div
                                 layoutId="segmented-control-active"
-                                className="absolute inset-0 bg-background rounded-lg shadow-minimal -z-10"
+                                className="absolute inset-0 bg-indigo-600 dark:bg-indigo-500 rounded-lg shadow-minimal -z-10"
                                 transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                             />
                         )}

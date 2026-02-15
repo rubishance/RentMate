@@ -275,12 +275,12 @@ export default function OwnerDashboard() {
                                         className={cn(
                                             "p-4 rounded-2xl border transition-all flex flex-col gap-2 text-left relative overflow-hidden group",
                                             metrics?.system_status?.maintenance_mode
-                                                ? "bg-red-500/20 border-red-500/50 text-red-100"
-                                                : "bg-white/5 border-white/10 text-gray-300 hover:bg-white/10"
+                                                ? "bg-red-500 border-red-600 text-white shadow-lg shadow-red-500/20"
+                                                : "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10"
                                         )}
                                     >
                                         <div className="flex justify-between items-center">
-                                            <ShieldCheckIcon className={cn("w-5 h-5", metrics?.system_status?.maintenance_mode ? "text-red-400" : "text-gray-500")} />
+                                            <ShieldCheckIcon className={cn("w-5 h-5", metrics?.system_status?.maintenance_mode ? "text-white" : "text-slate-500 dark:text-gray-500")} />
                                             {toggling === 'maintenance_mode' && <Loader2 className="w-3 h-3 animate-spin" />}
                                         </div>
                                         <div className="text-[10px] font-black uppercase tracking-widest">Maintenance Control</div>
@@ -295,12 +295,12 @@ export default function OwnerDashboard() {
                                         className={cn(
                                             "p-4 rounded-2xl border transition-all flex flex-col gap-2 text-left relative overflow-hidden group",
                                             metrics?.system_status?.ai_disabled
-                                                ? "bg-amber-500/20 border-amber-500/50 text-amber-100"
-                                                : "bg-white/5 border-white/10 text-gray-300 hover:bg-white/10"
+                                                ? "bg-amber-500 border-amber-600 text-white shadow-lg shadow-amber-500/20"
+                                                : "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10"
                                         )}
                                     >
                                         <div className="flex justify-between items-center">
-                                            <ServerIcon className={cn("w-5 h-5", metrics?.system_status?.ai_disabled ? "text-amber-400" : "text-gray-500")} />
+                                            <ServerIcon className={cn("w-5 h-5", metrics?.system_status?.ai_disabled ? "text-white" : "text-slate-500 dark:text-gray-500")} />
                                             {toggling === 'disable_ai_processing' && <Loader2 className="w-3 h-3 animate-spin" />}
                                         </div>
                                         <div className="text-[10px] font-black uppercase tracking-widest">AI Kill-Switch</div>

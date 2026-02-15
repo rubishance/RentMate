@@ -20,13 +20,12 @@ interface IndexPulse {
 interface IndexPulseWidgetProps {
     settings?: {
         displayedIndices?: string[]; // Array of types
-        baseAmount?: number;
-        baseDate?: string; // YYYY-MM
+        baseDates?: Record<string, string>; // { [type]: 'YYYY-MM' }
     };
     onUpdateSettings: (settings: any) => void;
 }
 
-const ALL_TYPES = ['cpi', 'housing'] as const; // Removed USD/EUR as per request
+const ALL_TYPES = ['cpi', 'housing'] as const;
 
 export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidgetProps) {
     const { t } = useTranslation();
@@ -36,9 +35,13 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
     const [isLoading, setIsLoading] = useState(true);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-    // Local state for settings to avoid immediate layout shifts during typing
-    const [localBaseAmount, setLocalBaseAmount] = useState(settings?.baseAmount || 0);
-    const [localBaseDate, setLocalBaseDate] = useState(settings?.baseDate || format(subMonths(new Date(), 1), 'yyyy-MM'));
+    // Initial default date (last month)
+    const defaultDate = useMemo(() => format(subMonths(new Date(), 1), 'yyyy-MM'), []);
+
+    // Local state for settings
+    const [localBaseDates, setLocalBaseDates] = useState<Record<string, string>>(
+        settings?.baseDates || ALL_TYPES.reduce((acc, type) => ({ ...acc, [type]: defaultDate }), {})
+    );
 
     const displayedIndices = useMemo(() => {
         return settings?.displayedIndices || ['cpi', 'housing'];
@@ -59,23 +62,24 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
                             type,
                             value: latest.value,
                             date: latest.date,
-                            change: 0 // Will calculate if base date is set
+                            change: 0
                         } as IndexPulse;
                     })
                 );
 
-                // 2. Load base indexes if base date is set
-                const baseDate = settings?.baseDate || localBaseDate;
+                // 2. Load base indexes based on per-type dates
+                const currentBaseDates = settings?.baseDates || localBaseDates;
                 const baseIndexResults: Record<string, number> = {};
 
-                if (baseDate) {
-                    await Promise.all(
-                        ALL_TYPES.map(async type => {
-                            const val = await getIndexValue(type, baseDate);
+                await Promise.all(
+                    ALL_TYPES.map(async type => {
+                        const date = currentBaseDates[type];
+                        if (date) {
+                            const val = await getIndexValue(type, date);
                             if (val) baseIndexResults[type] = val;
-                        })
-                    );
-                }
+                        }
+                    })
+                );
 
                 if (mounted) {
                     setBaseIndexes(baseIndexResults);
@@ -99,7 +103,7 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
 
         loadData();
         return () => { mounted = false; };
-    }, [settings?.baseDate]); // Re-fetch base indexes when base date changes
+    }, [settings?.baseDates]);
 
     const toggleIndex = (type: string) => {
         const current = [...displayedIndices];
@@ -110,6 +114,10 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
             current.push(type);
         }
         onUpdateSettings({ ...settings, displayedIndices: current });
+    };
+
+    const updateBaseDate = (type: string, date: string) => {
+        setLocalBaseDates(prev => ({ ...prev, [type]: date }));
     };
 
     if (isLoading) {
@@ -182,13 +190,27 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
                                                 {pulse.change > 0 ? <TrendingUp className="w-3 h-3" /> : pulse.change < 0 ? <TrendingDown className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
                                                 {Math.abs(pulse.change).toFixed(2)}%
                                             </div>
-                                            {settings?.baseAmount && settings.baseAmount > 0 && (
-                                                <p className="text-[10px] font-bold text-muted-foreground mt-1">
-                                                    {t('adjustedAmount')}: ₪{((pulse.value / (baseIndexes[pulse.type] || pulse.value)) * (settings.baseAmount || 0)).toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                                                </p>
-                                            )}
                                         </div>
                                     </div>
+                                    {settings?.baseDates?.[pulse.type] && (
+                                        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-200 dark:border-white/5 opacity-60 group-hover/item:opacity-100 transition-opacity">
+                                            <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground">
+                                                <span>{t('baseDate')}:</span>
+                                                <span className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded">
+                                                    {settings.baseDates[pulse.type]}
+                                                </span>
+                                            </div>
+                                            <span className="text-[10px] text-slate-300 dark:text-neutral-700">|</span>
+                                            <div className="text-[10px] font-bold text-muted-foreground flex items-center gap-1">
+                                                <span>{t('change')}:</span>
+                                                <span className={cn(
+                                                    pulse.change > 0 ? "text-rose-500" : pulse.change < 0 ? "text-emerald-500" : ""
+                                                )}>
+                                                    {pulse.change > 0 ? '+' : ''}{pulse.change.toFixed(2)}%
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
                                 </motion.div>
                             ))}
                         </CardContent>
@@ -228,31 +250,27 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
                         </CardHeader>
 
                         <CardContent className="flex-1 space-y-6 overflow-y-auto max-h-[400px] scrollbar-none pt-4">
-                            {/* Calculation Settings */}
+                            {/* Per-Index Base Dates */}
                             <div className="space-y-4">
                                 <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
                                     {t('linkageCalculation')}
                                 </p>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-[9px] font-bold text-muted-foreground uppercase">{t('baseAmount')}</label>
-                                        <input
-                                            type="number"
-                                            value={localBaseAmount}
-                                            onChange={(e) => setLocalBaseAmount(Number(e.target.value))}
-                                            placeholder="5000"
-                                            className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-xs font-bold focus:border-indigo-500/50 outline-none transition-all"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[9px] font-bold text-muted-foreground uppercase">{t('baseDate')}</label>
-                                        <input
-                                            type="month"
-                                            value={localBaseDate}
-                                            onChange={(e) => setLocalBaseDate(e.target.value)}
-                                            className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-xs font-bold focus:border-indigo-500/50 outline-none transition-all"
-                                        />
-                                    </div>
+                                <div className="space-y-4">
+                                    {ALL_TYPES.map(type => (
+                                        <div key={type} className="bg-slate-50 dark:bg-white/5 p-3 rounded-xl border border-slate-100 dark:border-white/10 space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">
+                                                    {t(type) || type.toUpperCase()} - {t('baseDate')}
+                                                </label>
+                                            </div>
+                                            <input
+                                                type="month"
+                                                value={localBaseDates[type] || defaultDate}
+                                                onChange={(e) => updateBaseDate(type, e.target.value)}
+                                                className="w-full bg-white dark:bg-neutral-900 border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-xs font-bold focus:border-indigo-500/50 outline-none transition-all"
+                                            />
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
 
@@ -284,8 +302,7 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
                                     onUpdateSettings({
                                         ...settings,
                                         displayedIndices,
-                                        baseAmount: localBaseAmount,
-                                        baseDate: localBaseDate
+                                        baseDates: localBaseDates
                                     });
                                     setIsSettingsOpen(false);
                                 }}
