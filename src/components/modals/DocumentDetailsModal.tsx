@@ -72,7 +72,7 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete }: Do
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-white dark:bg-neutral-900 rounded-3xl shadow-2xl w-full max-w-lg pointer-events-auto overflow-hidden flex flex-col max-h-[90vh]"
+                            className="bg-window rounded-3xl shadow-2xl w-full max-w-lg pointer-events-auto overflow-hidden flex flex-col max-h-[90vh]"
                         >
                             {/* Header */}
                             <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-neutral-800">

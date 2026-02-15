@@ -64,7 +64,7 @@ export function ConfirmDeleteModal({
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+                    className="bg-window rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
                 >
                     <div className="p-6 overflow-y-auto flex-1">
                         <div className="flex items-center gap-4 mb-4 text-red-600">

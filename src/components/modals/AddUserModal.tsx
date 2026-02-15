@@ -3,6 +3,7 @@ import { X, User, Mail, Shield, Loader2, Send } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Select } from '../ui/Select';
+import { useScrollLock } from '../../hooks/useScrollLock';
 
 interface AddUserModalProps {
     isOpen: boolean;
@@ -11,6 +12,7 @@ interface AddUserModalProps {
 }
 
 export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) {
+    useScrollLock(isOpen);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         fullName: '',
@@ -45,7 +47,7 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
 
     return (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md shadow-2xl scale-100 animate-in zoom-in-95 duration-200 overflow-hidden">
+            <div className="bg-window rounded-2xl w-full max-w-md shadow-2xl scale-100 animate-in zoom-in-95 duration-200 overflow-hidden">
                 {/* Header */}
                 <div className="p-6 border-b border-border dark:border-gray-700 flex items-center justify-between">
                     <div>

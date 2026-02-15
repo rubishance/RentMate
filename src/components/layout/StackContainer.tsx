@@ -114,7 +114,7 @@ export function StackContainer() {
                         {/* Sheet / Layer */}
                         <motion.div
                             className={cn(
-                                "relative w-full bg-white dark:bg-neutral-900 shadow-2xl overflow-hidden pointer-events-auto flex flex-col transition-all duration-300",
+                                "relative w-full bg-window shadow-2xl overflow-hidden pointer-events-auto flex flex-col transition-all duration-300",
                                 layer.isExpanded ? "h-full rounded-none" : "h-[90%] rounded-t-[2.5rem]"
                             )}
                             initial="hidden"

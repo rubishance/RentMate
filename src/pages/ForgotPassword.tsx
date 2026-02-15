@@ -74,7 +74,7 @@ export function ForgotPassword() {
                 animate={{ opacity: 1, y: 0 }}
                 className="w-full max-w-md px-4 sm:p-0 relative z-10"
             >
-                <Card className="border-border/50 shadow-2xl bg-card/50 backdrop-blur-xl">
+                <Card className="border-border/50 shadow-2xl bg-window">
                     <CardHeader className="space-y-4 pb-2 text-center">
                         <img src={effectiveTheme === 'dark' ? logoIconDark : logoIconOnly} alt="RentMate" className="h-16 h-20 w-auto mx-auto object-contain mb-4" />
                         <CardTitle className="text-2xl font-bold tracking-tight">{t('auth_forgot_password')}</CardTitle>

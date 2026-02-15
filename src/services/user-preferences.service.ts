@@ -36,11 +36,21 @@ export const userPreferencesService = {
             const stored = localStorage.getItem(STORAGE_KEY);
             if (stored) {
                 const parsed = JSON.parse(stored);
+                let pinned: (string | { city: string; rooms: number })[] = parsed.pinned_cities || DEFAULT_PREFERENCES.pinned_cities;
+
+                // MIGRATION: Convert string[] to {city, rooms}[]
+                if (Array.isArray(pinned) && pinned.length > 0 && typeof pinned[0] === 'string') {
+                    pinned = pinned.map(p => ({ city: p as string, rooms: 3 }));
+                    // Save the migrated version back to local storage
+                    const migrated = { ...parsed, pinned_cities: pinned };
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+                }
+
                 return {
                     language: parsed.language || DEFAULT_PREFERENCES.language,
                     gender: parsed.gender || DEFAULT_PREFERENCES.gender,
                     theme: parsed.theme || DEFAULT_PREFERENCES.theme,
-                    pinned_cities: parsed.pinned_cities || DEFAULT_PREFERENCES.pinned_cities,
+                    pinned_cities: pinned,
                     has_seen_welcome_v1: parsed.has_seen_welcome_v1 ?? DEFAULT_PREFERENCES.has_seen_welcome_v1,
                     seen_features: parsed.seen_features || DEFAULT_PREFERENCES.seen_features,
                     disclaimer_accepted: parsed.disclaimer_accepted ?? DEFAULT_PREFERENCES.disclaimer_accepted,
@@ -187,7 +197,7 @@ export const userPreferencesService = {
     /**
      * Set pinned cities
      */
-    setPinnedCities(cities: string[]): UserPreferences {
+    setPinnedCities(cities: (string | { city: string; rooms: number })[]): UserPreferences {
         const current = this.getUserPreferences();
         const updated: UserPreferences = {
             ...current,

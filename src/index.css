@@ -44,6 +44,9 @@
 
     --radius: 0.75rem;
     /* Slightly softer 12px */
+
+    /* Window Background - Solid for consistency */
+    --window-background: 0 0% 100%;
   }
 
   .dark {
@@ -79,6 +82,8 @@
     --border: 184 30% 15%;
     --input: 184 30% 15%;
     --ring: 34 69% 61%;
+
+    --window-background: 184 50% 8%;
   }
 }
 

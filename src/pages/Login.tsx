@@ -132,7 +132,7 @@ export function Login() {
                 animate={{ opacity: 1, y: 0 }}
                 className="w-full max-w-md px-4 sm:p-0 relative z-10"
             >
-                <Card className="border-border/50 shadow-2xl bg-card/50 backdrop-blur-xl">
+                <Card className="border-border/50 shadow-2xl bg-window">
                     <CardHeader className="space-y-4 pb-2 text-center">
                         <img
                             src={effectiveTheme === 'dark' ? logoIconDark : logoIconOnly}
@@ -181,7 +181,7 @@ export function Login() {
 
                                 <div className="relative">
                                     <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
-                                    <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground"><span className="bg-card px-3">{t('auth_or_continue')}</span></div>
+                                    <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground"><span className="bg-window px-3">{t('auth_or_continue')}</span></div>
                                 </div>
                             </div>
                         )}

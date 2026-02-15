@@ -8,7 +8,7 @@ interface UserPreferencesContextType {
     setLanguage: (language: Language) => void;
     setGender: (gender: Gender | null) => void;
     setTheme: (theme: Theme) => void;
-    setPinnedCities: (cities: string[]) => void;
+    setPinnedCities: (cities: (string | { city: string; rooms: number })[]) => void;
     effectiveTheme: 'light' | 'dark';
     isLoading: boolean;
     refreshPreferences: () => Promise<void>;
@@ -81,7 +81,7 @@ export function UserPreferencesProvider({ children }: UserPreferencesProviderPro
         setIsLoading(false);
     };
 
-    const handleSetPinnedCities = (cities: string[]) => {
+    const handleSetPinnedCities = (cities: (string | { city: string; rooms: number })[]) => {
         const updated = userPreferencesService.setPinnedCities(cities);
         setPreferences(updated);
     };

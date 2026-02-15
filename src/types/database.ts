@@ -294,7 +294,7 @@ export interface UserPreferences {
     gender: Gender | null; // null when language is not Hebrew
     theme: Theme;
     ai_data_consent?: boolean;
-    pinned_cities?: string[];
+    pinned_cities?: (string | { city: string; rooms: number })[];
     has_seen_welcome_v1?: boolean;
     seen_features?: string[];
     disclaimer_accepted?: boolean;

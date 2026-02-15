@@ -48,7 +48,7 @@ export function ActionMenu({ onView, onEdit, onDelete, onCalculate, onSnooze, al
                     <MenuItems
                         anchor={{ to: align === 'right' ? 'bottom end' : 'bottom start', gap: 4 }}
                         className={cn(
-                            "z-[100] min-w-[180px] bg-card rounded-2xl shadow-premium border border-border/40 p-2 focus:outline-none",
+                            "z-[100] min-w-[180px] bg-window rounded-2xl shadow-premium border border-border/40 p-2 focus:outline-none",
                             "animate-in fade-in zoom-in-95 duration-100"
                         )}>
                         <div className="py-1">

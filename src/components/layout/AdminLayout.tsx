@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useScrollLock } from '../../hooks/useScrollLock';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import {
     Squares2X2Icon,
@@ -22,6 +23,7 @@ import { supabase } from '../../lib/supabase';
 const AdminLayout = () => {
     const location = useLocation();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    useScrollLock(sidebarOpen);
     const [user, setUser] = useState<any>(null);
     const [notification, setNotification] = useState<{ userId: string; userName: string } | null>(null);
 

@@ -648,7 +648,7 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
                                             <MenuItems
                                                 anchor={{ to: lang === 'he' ? 'bottom start' : 'bottom end', gap: 8 }}
                                                 className={cn(
-                                                    "z-[100] min-w-[200px] bg-white dark:bg-neutral-900 rounded-[2rem] shadow-2xl border border-slate-100 dark:border-neutral-800 p-2 focus:outline-none font-sans",
+                                                    "z-[100] min-w-[200px] bg-window rounded-[2rem] shadow-2xl border border-slate-100 dark:border-neutral-800 p-2 focus:outline-none font-sans",
                                                     "animate-in fade-in zoom-in-95 duration-100"
                                                 )}>
                                                 <div className="py-1">

@@ -108,7 +108,7 @@ export function SharedCalculation() {
                 </div>
 
                 {/* Main Card */}
-                <div className="bg-card border border-border rounded-3xl shadow-xl overflow-hidden">
+                <div className="bg-window border border-border rounded-3xl shadow-xl overflow-hidden">
                     <div className="p-6 space-y-6">
 
                         {!isReconciliation ? (

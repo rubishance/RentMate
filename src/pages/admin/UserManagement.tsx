@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { AddUserModal } from '../../components/modals/AddUserModal';
+import { useScrollLock } from '../../hooks/useScrollLock';
 import {
     FunnelIcon,
     PencilSquareIcon,
@@ -94,6 +95,9 @@ const UserManagement = () => {
     const [isSecurityLogsOpen, setIsSecurityLogsOpen] = useState(false);
     const [securityLogs, setSecurityLogs] = useState<SecurityLog[]>([]);
     const [logsLoading, setLogsLoading] = useState(false);
+
+    useScrollLock(isEditModalOpen);
+    useScrollLock(isSecurityLogsOpen);
 
     const fetchData = async () => {
         setLoading(true);
@@ -546,7 +550,7 @@ const UserManagement = () => {
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
                     <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm transition-opacity" onClick={() => setIsEditModalOpen(false)}></div>
 
-                    <div className="relative w-full max-w-lg transform overflow-hidden rounded-3xl bg-white dark:bg-gray-800 p-8 shadow-2xl transition-all border border-gray-100 dark:border-gray-700" dir="ltr">
+                    <div className="relative w-full max-w-lg transform overflow-hidden rounded-3xl bg-window p-8 shadow-2xl transition-all border border-gray-100 dark:border-gray-700" dir="ltr">
                         <Button variant="ghost" size="sm" onClick={() => setIsEditModalOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors h-auto p-1">
                             <XMarkIcon className="h-6 w-6" />
                         </Button>
@@ -674,7 +678,7 @@ const UserManagement = () => {
                 <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 sm:p-6 text-left" dir="ltr">
                     <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm transition-opacity" onClick={() => setIsSecurityLogsOpen(false)}></div>
 
-                    <div className="relative w-full max-w-2xl transform overflow-hidden rounded-3xl bg-white dark:bg-gray-800 p-8 shadow-2xl transition-all border border-gray-100 dark:border-gray-700" dir="ltr">
+                    <div className="relative w-full max-w-2xl transform overflow-hidden rounded-3xl bg-window p-8 shadow-2xl transition-all border border-gray-100 dark:border-gray-700" dir="ltr">
                         <Button variant="ghost" size="sm" onClick={() => setIsSecurityLogsOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors h-auto p-1">
                             <XMarkIcon className="h-6 w-6" />
                         </Button>

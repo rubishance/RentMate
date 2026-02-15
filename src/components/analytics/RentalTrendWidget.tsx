@@ -24,7 +24,10 @@ export const RentalTrendWidget: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(true);
 
-    const pinnedCities = useMemo(() => preferences.pinned_cities || [], [preferences.pinned_cities]);
+    const pinnedCities = useMemo(() => {
+        const pinned = preferences.pinned_cities || [];
+        return pinned.map(p => typeof p === 'string' ? { city: p, rooms: 3 } : p);
+    }, [preferences.pinned_cities]);
 
     useEffect(() => {
         const initData = async () => {
@@ -38,15 +41,24 @@ export const RentalTrendWidget: React.FC = () => {
 
     const filteredAvailableCities = useMemo(() => {
         return allRegions
-            .filter(city => city.toLowerCase().includes(searchQuery.toLowerCase()))
-            .filter(city => !pinnedCities.includes(city))
+            .filter(city => city.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                t(city).toLowerCase().includes(searchQuery.toLowerCase()))
             .sort();
-    }, [allRegions, searchQuery, pinnedCities]);
+    }, [allRegions, searchQuery, t]);
 
-    const toggleCity = (city: string) => {
-        const newPinned = pinnedCities.includes(city)
-            ? pinnedCities.filter(c => c !== city)
-            : [...pinnedCities, city];
+    const addCity = (city: string) => {
+        setPinnedCities([...pinnedCities, { city, rooms: 3 }]);
+    };
+
+    const removeCityCard = (index: number) => {
+        const newPinned = [...pinnedCities];
+        newPinned.splice(index, 1);
+        setPinnedCities(newPinned);
+    };
+
+    const updateCityRooms = (index: number, rooms: number) => {
+        const newPinned = [...pinnedCities];
+        newPinned[index] = { ...newPinned[index], rooms };
         setPinnedCities(newPinned);
     };
 
@@ -90,36 +102,48 @@ export const RentalTrendWidget: React.FC = () => {
                 </GlassCard>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {pinnedCities.map(city => {
-                        const data = rentalTrendService.getRegionalTrend(city);
+                    {pinnedCities.map((pinned, index) => {
+                        const data = rentalTrendService.getRegionalTrend(pinned.city);
                         if (!data) return null;
 
+                        const adjustedRent = data.averageRent * (data.roomAdjustments[pinned.rooms] || 1);
                         const isUp = data.annualGrowth >= 0;
 
                         return (
                             <GlassCard
-                                key={city}
+                                key={`${pinned.city}-${index}`}
                                 className="p-4 hover:shadow-lg transition-all border-l-4 border-l-brand-500"
                             >
                                 <div className="flex justify-between items-start mb-2">
                                     <div className="font-medium text-gray-900 dark:text-white flex items-center gap-1">
                                         <Map className="h-3 w-3 text-gray-400" />
-                                        {t(city)}
+                                        {t(pinned.city)}
                                     </div>
                                     <button
-                                        onClick={() => toggleCity(city)}
+                                        onClick={() => removeCityCard(index)}
                                         className="text-gray-400 hover:text-red-500 transition-colors"
                                     >
                                         <X className="h-4 w-4" />
                                     </button>
                                 </div>
+
                                 <div className="flex items-end justify-between">
                                     <div>
                                         <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                                            ₪{data.averageRent.toLocaleString()}
+                                            ₪{Math.round(adjustedRent).toLocaleString()}
                                         </div>
-                                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                                            {t('avgRent')}
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <select
+                                                value={pinned.rooms}
+                                                onChange={(e) => updateCityRooms(index, Number(e.target.value))}
+                                                className="text-[10px] bg-transparent border-none p-0 font-semibold text-brand-600 dark:text-brand-400 cursor-pointer outline-none focus:ring-0"
+                                            >
+                                                {[2, 3, 4, 5].map(n => (
+                                                    <option key={n} value={n} className="dark:bg-neutral-900">
+                                                        {n} {t('rooms')}
+                                                    </option>
+                                                ))}
+                                            </select>
                                         </div>
                                     </div>
                                     <div className={`flex items-center gap-1 font-semibold ${isUp ? 'text-green-600' : 'text-red-600'}`}>
@@ -162,13 +186,13 @@ export const RentalTrendWidget: React.FC = () => {
                                     {t('currentlyTracking')}
                                 </h4>
                                 <div className="flex flex-wrap gap-2">
-                                    {pinnedCities.map(city => (
+                                    {pinnedCities.map((pinned, index) => (
                                         <span
-                                            key={city}
+                                            key={`${pinned.city}-${index}`}
                                             className="inline-flex items-center gap-1 px-3 py-1 bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 rounded-full text-sm font-medium border border-brand-100 dark:border-brand-900/50"
                                         >
-                                            {t(city)}
-                                            <button onClick={() => toggleCity(city)}>
+                                            {t(pinned.city)} ({pinned.rooms})
+                                            <button onClick={() => removeCityCard(index)}>
                                                 <X className="h-3 w-3 hover:text-red-500" />
                                             </button>
                                         </span>
@@ -186,7 +210,7 @@ export const RentalTrendWidget: React.FC = () => {
                                     filteredAvailableCities.map(city => (
                                         <button
                                             key={city}
-                                            onClick={() => toggleCity(city)}
+                                            onClick={() => addCity(city)}
                                             className="flex items-center justify-between p-2 rounded-lg border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left text-sm"
                                         >
                                             <span className="text-gray-700 dark:text-gray-300">{t(city)}</span>

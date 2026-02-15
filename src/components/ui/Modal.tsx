@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Button } from './Button';
+import { useScrollLock } from '../../hooks/useScrollLock';
 
 interface ModalProps {
     isOpen: boolean;
@@ -28,16 +29,7 @@ export const Modal: React.FC<ModalProps> = ({
     className,
     modeless = false
 }) => {
-    useEffect(() => {
-        if (isOpen && !modeless) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
-        return () => {
-            document.body.style.overflow = 'unset';
-        };
-    }, [isOpen, modeless]);
+    useScrollLock(isOpen && !modeless);
 
     const sizes = {
         sm: 'max-w-md',
@@ -76,7 +68,7 @@ export const Modal: React.FC<ModalProps> = ({
                         }}
                         exit={{ opacity: 0, scale: 0.95, y: 10, transition: { duration: 0.2 } }}
                         className={cn(
-                            "relative w-full bg-background/95 dark:bg-neutral-900/95 shadow-premium rounded-3xl overflow-hidden flex flex-col border border-border/50",
+                            "relative w-full bg-window shadow-premium rounded-3xl overflow-hidden flex flex-col border border-border/50",
                             "max-h-[90dvh] sm:max-h-[85vh]",
                             sizes[size],
                             modeless && "pointer-events-auto",
@@ -84,7 +76,7 @@ export const Modal: React.FC<ModalProps> = ({
                         )}
                     >
                         {/* Header */}
-                        <div className="flex items-center justify-between p-6 border-b border-border shrink-0 bg-white dark:bg-neutral-900 z-10">
+                        <div className="flex items-center justify-between p-6 border-b border-border shrink-0 bg-window z-10">
                             <div>
                                 <h2 className="text-xl font-black tracking-tight text-foreground">{title}</h2>
                                 {description && (
@@ -108,7 +100,7 @@ export const Modal: React.FC<ModalProps> = ({
 
                         {/* Fixed Footer */}
                         {footer && (
-                            <div className="p-6 border-t border-border bg-gray-50/50 dark:bg-neutral-900/50 shrink-0">
+                            <div className="p-6 border-t border-border bg-window/50 shrink-0">
                                 {footer}
                             </div>
                         )}

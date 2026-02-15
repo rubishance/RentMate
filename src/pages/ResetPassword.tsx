@@ -71,7 +71,7 @@ export function ResetPassword() {
                 animate={{ opacity: 1, y: 0 }}
                 className="w-full max-w-md p-4 sm:p-0 relative z-10"
             >
-                <Card className="border-border/50 shadow-2xl bg-card/50 backdrop-blur-xl">
+                <Card className="border-border/50 shadow-2xl bg-window">
                     <CardHeader className="space-y-4 pb-2 text-center">
                         <div className="w-16 h-16 bg-primary/10 text-primary rounded-[1.5rem] flex items-center justify-center shadow-sm mx-auto mb-2 ring-8 ring-primary/5">
                             <ShieldCheck className="w-8 h-8" />

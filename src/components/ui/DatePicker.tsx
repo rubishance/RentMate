@@ -5,6 +5,7 @@ import { Calendar as CalendarIcon, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useScrollLock } from '../../hooks/useScrollLock';
 
 // Import react-day-picker styles if not using custom classNames exclusively?
 // Actually, we'll use custom classNames to fit the Glass Bionic theme perfectly.
@@ -39,6 +40,8 @@ export function DatePicker({
 }: DatePickerProps) {
     const [isOpen, setIsOpen] = React.useState(false);
     const [month, setMonth] = React.useState<Date | undefined>(value || new Date());
+
+    useScrollLock(isOpen);
 
     // Update month when opening
     React.useEffect(() => {

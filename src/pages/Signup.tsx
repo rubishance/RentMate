@@ -150,7 +150,7 @@ export function Signup() {
                 animate={{ opacity: 1, y: 0 }}
                 className="w-full max-w-md px-4 sm:px-6 relative z-10"
             >
-                <div className="bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 shadow-2xl rounded-3xl sm:rounded-[2.5rem] p-5 sm:p-8 md:p-12">
+                <div className="bg-window border border-gray-100 dark:border-neutral-800 shadow-2xl rounded-3xl sm:rounded-[2.5rem] p-5 sm:p-8 md:p-12">
                     <AnimatePresence mode="wait">
                         {awaitingConfirmation ? (
                             <ConfirmationView email={email} onBack={() => navigate('/login')} isRtl={isRtl} t={t} />
@@ -222,7 +222,7 @@ const SignupFormView = ({
                 <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
                 <span className="text-sm font-bold text-black dark:text-white">{isRtl ? 'המשך עם Google' : 'Continue with Google'}</span>
             </Button>
-            <div className="relative"><div className="absolute inset-0 flex items-center"><span className="w-full border-t border-gray-100 dark:border-neutral-800" /></div><div className="relative flex justify-center text-[10px] font-bold uppercase tracking-widest text-gray-400"><span className="bg-white dark:bg-neutral-900 px-3">{t('auth_or_continue')}</span></div></div>
+            <div className="relative"><div className="absolute inset-0 flex items-center"><span className="w-full border-t border-gray-100 dark:border-neutral-800" /></div><div className="relative flex justify-center text-[10px] font-bold uppercase tracking-widest text-gray-400"><span className="bg-window px-3">{t('auth_or_continue')}</span></div></div>
         </div>
 
         <form className="space-y-4 sm:space-y-6" onSubmit={handleAuth}>

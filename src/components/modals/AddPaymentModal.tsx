@@ -329,7 +329,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                                             "w-full text-left p-3 rounded-xl border text-xs flex items-center justify-between transition-all",
                                             isBestMatch
                                                 ? "bg-brand-50 border-brand-200 dark:bg-brand-900/20 dark:border-brand-800 ring-1 ring-brand-500"
-                                                : "bg-white dark:bg-neutral-900 border-gray-100 dark:border-neutral-800 hover:border-gray-300 dark:hover:border-neutral-700"
+                                                : "bg-window border-gray-100 dark:border-neutral-800 hover:border-gray-300 dark:hover:border-neutral-700"
                                         )}
                                     >
                                         <div className="flex items-center gap-2">
@@ -431,7 +431,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                                     "py-3 px-2 rounded-2xl text-[10px] font-black uppercase tracking-tighter transition-all border-2",
                                     watch('payment_method') === method.value
                                         ? 'bg-black dark:bg-white border-black dark:border-white text-white dark:text-black shadow-lg'
-                                        : 'bg-white dark:bg-neutral-900 border-black/5 dark:border-white/5 text-gray-400 hover:border-black/20 dark:hover:border-white/20'
+                                        : 'bg-window border-black/5 dark:border-white/5 text-gray-400 hover:border-black/20 dark:hover:border-white/20'
                                 )}
                             >
                                 {t(method.label)}

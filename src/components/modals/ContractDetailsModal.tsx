@@ -14,6 +14,7 @@ import { Select } from '../ui/Select';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { Checkbox } from '../ui/Checkbox';
+import { useScrollLock } from '../../hooks/useScrollLock';
 
 interface ContractWithDetails extends Contract {
     properties: { address: string, city: string };
@@ -161,17 +162,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
         }
     }, [isOpen, contract, initialReadOnly, reset]);
 
-    // Body scroll lock
-    useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
-        return () => {
-            document.body.style.overflow = 'unset';
-        };
-    }, [isOpen]);
+    useScrollLock(isOpen);
 
     if (!isOpen || !contract) return null;
 

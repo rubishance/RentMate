@@ -119,7 +119,7 @@ export function PaymentDetailsModal({ isOpen, onClose, payment, onSuccess, initi
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-white dark:bg-neutral-900 rounded-[2.5rem] shadow-2xl w-full max-w-lg pointer-events-auto overflow-hidden flex flex-col max-h-[90vh] border border-gray-100 dark:border-neutral-800"
+                            className="bg-window rounded-[2.5rem] shadow-2xl w-full max-w-lg pointer-events-auto overflow-hidden flex flex-col max-h-[90vh] border border-gray-100 dark:border-neutral-800"
                         >
                             {/* Header */}
                             <div className="p-6 border-b border-gray-50 dark:border-neutral-800 flex items-center justify-between bg-gray-50/50 dark:bg-neutral-800/10">
@@ -163,7 +163,7 @@ export function PaymentDetailsModal({ isOpen, onClose, payment, onSuccess, initi
                                                         onClick={() => setFormData(f => ({ ...f, status: s }))}
                                                         className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${formData.status === s
                                                             ? 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white shadow-lg'
-                                                            : 'bg-white dark:bg-neutral-900 text-gray-400 border-gray-100 dark:border-neutral-800'
+                                                            : 'bg-window text-gray-400 border-gray-100 dark:border-neutral-800'
                                                             }`}
                                                     >
                                                         {t(s)}
@@ -217,7 +217,7 @@ export function PaymentDetailsModal({ isOpen, onClose, payment, onSuccess, initi
                                                             type="number"
                                                             value={formData.paid_amount}
                                                             onChange={e => setFormData(f => ({ ...f, paid_amount: Number(e.target.value) }))}
-                                                            className="w-full pl-12 pr-4 py-4 bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-black dark:focus:ring-white outline-none"
+                                                            className="w-full pl-12 pr-4 py-4 bg-window border border-gray-100 dark:border-neutral-800 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-black dark:focus:ring-white outline-none"
                                                         />
                                                     </div>
                                                 </div>

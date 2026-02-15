@@ -2,7 +2,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { jsPDF } from 'https://esm.sh/jspdf@2.5.1';
-import 'https://esm.sh/jspdf-autotable@3.5.28';
+import autoTable from 'https://esm.sh/jspdf-autotable@3.5.28';
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -13,13 +13,32 @@ const corsHeaders = {
 const formatDate = (date: string | Date | null) => {
     if (!date) return 'N/A';
     const d = new Date(date);
+    if (isNaN(d.getTime())) return 'N/A';
     return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
 };
 
 // Helper: Simple Hebrew Number Formatting
 const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS' }).format(val);
+    try {
+        return new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS' }).format(val);
+    } catch (e) {
+        return `₪${val.toLocaleString()}`;
+    }
 };
+
+/**
+ * Loads a font from a URL and returns base64
+ */
+async function loadFont(url: string): Promise<string> {
+    const response = await fetch(url);
+    const arrayBuffer = await response.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
+    let binary = '';
+    for (let i = 0; i < uint8Array.byteLength; i++) {
+        binary += String.fromCharCode(uint8Array[i]);
+    }
+    return btoa(binary);
+}
 
 serve(async (req) => {
     // 1. Handle CORS
@@ -36,11 +55,14 @@ serve(async (req) => {
         // 2. Auth Check
         const authHeader = req.headers.get('Authorization');
         const token = authHeader?.replace('Bearer ', '');
+        if (!token) throw new Error('Missing authorization token');
+
         const { data: { user }, error: authError } = await supabase.auth.getUser(token);
         if (authError || !user) throw new Error('Unauthorized');
 
         // 3. Request Data
-        const { propertyId, startDate, endDate, lang = 'he' } = await req.json();
+        const body = await req.json();
+        const { propertyId, startDate, endDate, lang = 'he' } = body;
         if (!propertyId) throw new Error('Property ID is required');
 
         // 4. Verify Ownership & Fetch Base Data
@@ -49,7 +71,7 @@ serve(async (req) => {
             .select('*')
             .eq('id', propertyId)
             .eq('user_id', user.id)
-            .single();
+            .maybeSingle();
 
         if (pError || !property) throw new Error('Property not found or unauthorized access');
 
@@ -63,14 +85,14 @@ serve(async (req) => {
             .eq('status', 'active')
             .order('created_at', { ascending: false })
             .limit(1)
-            .single();
+            .maybeSingle();
 
         // B. Payments (Itemized)
         const { data: payments } = await supabase
             .from('payments')
             .select('*')
             .eq('user_id', user.id)
-            .eq('contract_id', contract?.id || '')
+            .eq('contract_id', contract?.id || '00000000-0000-0000-0000-000000000000')
             .gte('due_date', startDate)
             .lte('due_date', endDate)
             .order('due_date', { ascending: true });
@@ -116,11 +138,22 @@ serve(async (req) => {
             format: 'a4'
         });
 
-        // NOTE: In a production environment, we would load the font base64 here.
-        // For now, we use standard fonts and basic PDF structure.
         const isRtl = lang === 'he';
         const width = doc.internal.pageSize.getWidth();
         const margin = 20;
+
+        // -- Load Hebrew Font if needed --
+        if (isRtl) {
+            try {
+                // Heebo-Regular is a good choice for Hebrew
+                const fontBase64 = await loadFont('https://raw.githubusercontent.com/google/fonts/master/ofl/heebo/Heebo-Regular.ttf');
+                doc.addFileToVFS('Heebo.ttf', fontBase64);
+                doc.addFont('Heebo.ttf', 'Heebo', 'normal');
+                doc.setFont('Heebo');
+            } catch (fontErr) {
+                console.warn('Failed to load Hebrew font, falling back to standard', fontErr);
+            }
+        }
 
         // -- Header --
         doc.setFillColor(15, 23, 42);
@@ -137,9 +170,9 @@ serve(async (req) => {
         // -- Property Summary --
         doc.setTextColor(30, 41, 59);
         doc.setFontSize(16);
-        doc.text(property.address, isRtl ? width - margin : margin, 60, { align: isRtl ? 'right' : 'left' });
+        doc.text(property.address || 'Address', isRtl ? width - margin : margin, 60, { align: isRtl ? 'right' : 'left' });
         doc.setFontSize(11);
-        doc.text(`${property.city} | ${property.rooms} ${isRtl ? 'חדרים' : 'Rooms'} | ${property.size_sqm} ${isRtl ? 'מ"ר' : 'sqm'}`, isRtl ? width - margin : margin, 68, { align: isRtl ? 'right' : 'left' });
+        doc.text(`${property.city || ''} | ${property.rooms || 0} ${isRtl ? 'חדרים' : 'Rooms'} | ${property.size_sqm || 0} ${isRtl ? 'מ"ר' : 'sqm'}`, isRtl ? width - margin : margin, 68, { align: isRtl ? 'right' : 'left' });
 
         // -- Financial Scoreboard --
         const totalIncome = (payments || []).reduce((sum, p) => sum + parseFloat(p.amount || '0'), 0);
@@ -165,18 +198,22 @@ serve(async (req) => {
             doc.setFontSize(12);
             doc.text(isRtl ? 'פרטי חוזה והצמדה' : 'Contract & Linkage', isRtl ? width - margin : margin, 115, { align: isRtl ? 'right' : 'left' });
 
-            doc.autoTable({
+            autoTable(doc, {
                 startY: 120,
                 head: [[isRtl ? 'תיאור' : 'Description', isRtl ? 'ערך' : 'Value']],
                 body: [
-                    [isRtl ? 'שכר דירה בסיס' : 'Base Rent', formatCurrency(parseFloat(contract.base_rent))],
+                    [isRtl ? 'שכר דירה בסיס' : 'Base Rent', formatCurrency(parseFloat(contract.base_rent || '0'))],
                     [isRtl ? 'סוג הצמדה' : 'Linkage Type', contract.linkage_type?.toUpperCase() || 'NONE'],
                     [isRtl ? 'תוספת הצמדה (חיזוי)' : 'Linkage Delta (Proj)', formatCurrency(linkageDelta)],
                     [isRtl ? 'שכר דירה נוכחי' : 'Current Adjusted Rent', formatCurrency(adjustedRent)],
                     [isRtl ? 'פיקדון' : 'Security Deposit', formatCurrency(parseFloat(contract.security_deposit_amount || '0'))]
                 ],
                 theme: 'plain',
-                styles: { halign: isRtl ? 'right' : 'left', fontSize: 9 }
+                styles: {
+                    halign: isRtl ? 'right' : 'left',
+                    fontSize: 9,
+                    font: isRtl ? 'Heebo' : 'helvetica'
+                }
             });
         }
 
@@ -185,12 +222,15 @@ serve(async (req) => {
         doc.setFontSize(12);
         doc.text(isRtl ? 'פירוט תקבולים' : 'Payment History', isRtl ? width - margin : margin, paymentsY, { align: isRtl ? 'right' : 'left' });
 
-        doc.autoTable({
+        autoTable(doc, {
             startY: paymentsY + 5,
             head: [[isRtl ? 'תאריך' : 'Date', isRtl ? 'סטטוס' : 'Status', isRtl ? 'סכום' : 'Amount']],
-            body: (payments || []).map(p => [formatDate(p.due_date), p.status.toUpperCase(), formatCurrency(parseFloat(p.amount))]),
+            body: (payments || []).map(p => [formatDate(p.due_date), p.status.toUpperCase(), formatCurrency(parseFloat(p.amount || '0'))]),
             headStyles: { fillColor: [79, 70, 229] },
-            styles: { halign: isRtl ? 'right' : 'left' }
+            styles: {
+                halign: isRtl ? 'right' : 'left',
+                font: isRtl ? 'Heebo' : 'helvetica'
+            }
         });
 
         // -- Footer --
@@ -209,8 +249,9 @@ serve(async (req) => {
     } catch (error: any) {
         console.error('Report Edge Function Error:', error);
         return new Response(
-            JSON.stringify({ error: error.message }),
+            JSON.stringify({ error: error.message || 'Unknown internal error' }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
     }
 });
+

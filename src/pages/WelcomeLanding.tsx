@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useScrollLock } from '../hooks/useScrollLock';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../hooks/useTranslation';
 import { LanguageToggle } from '../components/common/LanguageToggle';
@@ -23,6 +24,7 @@ export function WelcomeLanding() {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<'home' | 'blog' | 'demo' | 'calculator'>('home');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    useScrollLock(isMenuOpen);
     const { user, isLoading: isAuthLoading } = useAuth();
     const [checkingAuth, setCheckingAuth] = useState(true);
 

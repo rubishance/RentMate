@@ -198,14 +198,18 @@ export function Payments() {
         const p = payment as any;
         if (filters.type !== 'all' && p.displayType !== filters.type) return false;
         if (filters.tenantId !== 'all') {
-            const tenantsArray = p.contracts?.tenants;
-            if (Array.isArray(tenantsArray)) {
-                if (!tenantsArray.some((t: any) => t.id_number === filters.tenantId || t.name === filters.tenantId)) return false;
-            } else if (p.contracts?.tenants?.id !== filters.tenantId) {
-                return false;
-            }
+            const tenantsArray = Array.isArray(p.contracts?.tenants) ? p.contracts.tenants : (p.contracts?.tenants ? [p.contracts.tenants] : []);
+            const matches = tenantsArray.some((t: any) =>
+                t.id === filters.tenantId ||
+                t.id_number === filters.tenantId ||
+                t.name === filters.tenantId
+            );
+            if (!matches) return false;
         }
-        if (filters.propertyId !== 'all' && p.contracts?.properties?.id !== filters.propertyId) return false;
+        if (filters.propertyId !== 'all') {
+            const propertyId = p.contracts?.properties?.id || p.property_id;
+            if (propertyId !== filters.propertyId) return false;
+        }
         if (filters.paymentMethod !== 'all' && p.payment_method !== filters.paymentMethod) return false;
         if (filters.startDate && p.due_date < filters.startDate) return false;
         if (filters.endDate && p.due_date > filters.endDate) return false;
@@ -223,8 +227,19 @@ export function Payments() {
     const uniqueTenants = Array.from(new Set(payments.flatMap(p => {
         const t = (p as any).contracts?.tenants;
         return Array.isArray(t) ? t : [t];
-    }).filter(Boolean).map(t => JSON.stringify(t)))).map(s => JSON.parse(s as string));
-    const uniqueProperties = Array.from(new Set(payments.map(p => (p as any).contracts?.properties).filter(Boolean).map(pr => JSON.stringify(pr)))).map(s => JSON.parse(s as string));
+    }).filter(Boolean).map(t => JSON.stringify({
+        id: t.id || t.id_number || t.name,
+        name: t.name
+    })))).map(s => JSON.parse(s as string));
+
+    const uniqueProperties = Array.from(new Set(payments.map(p => {
+        const pr = (p as any).contracts?.properties || {
+            id: (p as any).property_id,
+            address: (p as any).contracts?.properties?.address,
+            city: (p as any).contracts?.properties?.city
+        };
+        return pr.id ? JSON.stringify(pr) : null;
+    }).filter(Boolean))).map(s => JSON.parse(s as string));
 
     const resetFilters = () => {
         setFilters({

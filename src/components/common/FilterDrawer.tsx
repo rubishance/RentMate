@@ -5,6 +5,7 @@ import { X, Filter, RotateCcw } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Button } from '../ui/Button';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useScrollLock } from '../../hooks/useScrollLock';
 
 interface FilterDrawerProps {
     isOpen: boolean;
@@ -25,16 +26,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
 }) => {
     const { t } = useTranslation();
 
-    useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
-        return () => {
-            document.body.style.overflow = 'unset';
-        };
-    }, [isOpen]);
+    useScrollLock(isOpen);
 
     return createPortal(
         <AnimatePresence>

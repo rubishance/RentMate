@@ -68,27 +68,43 @@ export const ReportService = {
      * Generates a professional PDF report using Supabase Edge Function
      */
     async generatePDF(propertyId: string, startDate: string, endDate: string, lang: 'he' | 'en' = 'he'): Promise<void> {
-        console.log('Generating report via Edge Function...', { propertyId, startDate, endDate, lang });
+        console.log('[ReportService] Generating report...', { propertyId, startDate, endDate, lang });
 
-        const { data, error } = await supabase.functions.invoke('generate-report', {
-            body: { propertyId, startDate, endDate, lang }
-        });
+        try {
+            const { data, error } = await supabase.functions.invoke('generate-report', {
+                body: { propertyId, startDate, endDate, lang }
+            });
 
-        if (error) {
-            console.error('Edge Function Error:', error);
-            throw new Error(`Server failed to generate report: ${error.message}`);
+            if (error) {
+                console.error('[ReportService] Edge Function Error:', error);
+
+                // Try to extract a useful message from the error object
+                let errorMessage = 'Server failed to generate report';
+                if (typeof error === 'object' && error !== null) {
+                    errorMessage = (error as any).message || JSON.stringify(error);
+                }
+                throw new Error(errorMessage);
+            }
+
+            if (!data?.pdf) {
+                console.error('[ReportService] Invalid response format:', data);
+                throw new Error('Server returned invalid report data');
+            }
+
+            // Handle the data URI response
+            const link = document.createElement('a');
+            link.href = data.pdf;
+            // Sanitize filename
+            const dateStr = startDate.replace(/[-/]/g, '');
+            link.download = `RentMate_Report_${propertyId.slice(0, 8)}_${dateStr}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            console.log('[ReportService] Report generated successfully');
+        } catch (err: any) {
+            console.error('[ReportService] Generation Process Failed:', err);
+            throw err;
         }
-
-        if (!data?.pdf) {
-            throw new Error('Server returned invalid report data');
-        }
-
-        // Handle the data URI response
-        const link = document.createElement('a');
-        link.href = data.pdf;
-        link.download = `RentMate_Report_${propertyId.slice(0, 8)}_${startDate}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
     }
 };

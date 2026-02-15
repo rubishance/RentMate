@@ -3,6 +3,7 @@ import { X, Save, User as UserIcon, Loader2, Edit } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Checkbox } from '../ui/Checkbox';
+import { useScrollLock } from '../../hooks/useScrollLock';
 
 interface EditProfileModalProps {
     isOpen: boolean;
@@ -21,6 +22,8 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
     const [phone, setPhone] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isReadOnly, setIsReadOnly] = useState(true);
+
+    useScrollLock(isOpen);
 
     useEffect(() => {
         if (isOpen) {
@@ -84,7 +87,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
-            <div className="relative w-full max-w-md bg-card border border-border rounded-[2.5rem] shadow-xl overflow-hidden flex flex-col max-h-[90dvh]">
+            <div className="relative w-full max-w-md bg-window border border-border rounded-[2.5rem] shadow-xl overflow-hidden flex flex-col max-h-[90dvh]">
                 <div className="p-4 border-b flex items-center justify-between shrink-0">
                     <h2 className="text-lg font-bold">{isReadOnly ? (lang === 'he' ? 'פרופיל' : 'Profile') : (lang === 'he' ? 'עריכת פרופיל' : 'Edit Profile')}</h2>
                     <button onClick={onClose} className="p-2 hover:bg-muted rounded-full">
@@ -208,6 +211,8 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
+    useScrollLock(isOpen);
+
     useEffect(() => {
         if (isOpen) {
             loadPreferences();
@@ -289,7 +294,7 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
     return createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-            <div className="relative w-full max-w-md bg-card border border-border rounded-[2rem] shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200 max-h-[90dvh] flex flex-col">
+            <div className="relative w-full max-w-md bg-window border border-border rounded-[2rem] shadow-xl overflow-hidden animate-in fade-in zoom-in duration-200 max-h-[90dvh] flex flex-col">
                 <div className="p-4 border-b flex items-center justify-between shrink-0">
                     <h2 className="text-lg font-bold">{lang === 'he' ? 'הגדרות התראות' : 'Notification Settings'}</h2>
                     <button onClick={onClose} className="p-2 hover:bg-muted rounded-full">

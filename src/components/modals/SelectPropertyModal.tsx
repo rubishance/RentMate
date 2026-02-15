@@ -29,7 +29,7 @@ export function SelectPropertyModal({ isOpen, onClose, properties, onSelect }: S
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-white dark:bg-neutral-900 rounded-[2.5rem] shadow-2xl w-full max-w-md pointer-events-auto overflow-hidden flex flex-col max-h-[80vh] border border-white/10"
+                            className="bg-window rounded-[2.5rem] shadow-2xl w-full max-w-md pointer-events-auto overflow-hidden flex flex-col max-h-[80vh] border border-white/10"
                         >
                             {/* Header */}
                             <div className="flex items-center justify-between p-6 pb-4">

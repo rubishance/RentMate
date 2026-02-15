@@ -17,6 +17,7 @@ import { Select } from '../components/ui/Select';
 import { Checkbox } from '../components/ui/Checkbox';
 import { Button } from '../components/ui/Button';
 import { Textarea } from '../components/ui/Textarea';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 import { supabase } from '../lib/supabase';
 import { useTranslation } from '../hooks/useTranslation';
@@ -299,6 +300,9 @@ export function AddContract() {
 
     // Resolve Signed URL for Property Image Preview
     const { url: signedImageUrl } = useSignedUrl('property-images', formData.image_url);
+
+    useScrollLock(isCropping);
+    useScrollLock(showOverlapWarning);
 
     // Block access if limit reached
     // Moving the Limit Reached early return to AFTER all hooks

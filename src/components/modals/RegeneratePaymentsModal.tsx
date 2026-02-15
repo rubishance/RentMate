@@ -163,7 +163,7 @@ export function RegeneratePaymentsModal({ isOpen, onClose, onSuccess }: Regenera
 
                             <div className="max-h-[300px] overflow-y-auto space-y-2 pr-2">
                                 {orphanContracts.map(contract => (
-                                    <div key={contract.id} className="p-4 border rounded-xl flex items-center justify-between group hover:border-indigo-500/30 transition-colors bg-card">
+                                    <div key={contract.id} className="p-4 border rounded-xl flex items-center justify-between group hover:border-indigo-500/30 transition-colors bg-window">
                                         <div className="min-w-0 flex-1 mr-4">
                                             <h4 className="font-bold truncate">{contract.properties?.address || 'Unknown Property'}</h4>
                                             <p className="text-xs text-muted-foreground">{contract.properties?.city}</p>
