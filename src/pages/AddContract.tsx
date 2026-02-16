@@ -764,17 +764,18 @@ export function AddContract() {
         setIsScanning(false);
         if (url) {
             setScannedContractUrl(url);
-            setIsContractViewerOpen(true); // Open viewer automatically after scan
+            setIsContractViewerOpen(true);
         }
         if (file) setContractFile(file);
 
-        // Extract values, quotes, and CONFIDENCE
         const quotes: Record<string, string> = {};
         const confidences: Record<string, 'high' | 'medium' | 'low'> = {};
-        const newFormData: any = { ...formData };
 
-        const scannedStreet = '';
+        // Variables for address construction
+        let scannedStreet = '';
         let scannedBuilding = '';
+        let scannedCity = '';
+        let scannedFullAddress = '';
 
         extractedData.forEach(field => {
             const key = field.fieldName;
@@ -782,7 +783,6 @@ export function AddContract() {
             const quote = field.sourceText || '';
             let conf: 'high' | 'medium' | 'low' = field.confidence === 'high' ? 'high' : field.confidence === 'medium' ? 'medium' : 'low';
 
-            // Override confidence to low if value is empty
             if (!val || val.trim() === '') {
                 conf = 'low';
             }
@@ -792,113 +792,140 @@ export function AddContract() {
                 confidences[key] = conf;
             }
 
-            // Field Mapping
-
+            // Map fields to form state using react-hook-form's setValue
             switch (key) {
-                // Property
+                // Asset
                 case 'city':
-                    newFormData.city = val;
+                    scannedCity = val;
+                    setValue('city', val, { shouldValidate: true });
                     break;
                 case 'address':
-                case 'street': // Fallback if scanner maps to street
-                    newFormData.address = val;
+                    scannedFullAddress = val;
+                    setValue('address', val, { shouldValidate: true });
+                    break;
+                case 'street':
+                    scannedStreet = val;
                     break;
                 case 'buildingNum':
                     scannedBuilding = val;
                     break;
                 case 'rooms':
-                    newFormData.rooms = val;
+                    setValue('rooms', val, { shouldValidate: true });
                     break;
                 case 'size':
-                    newFormData.size = val;
+                    setValue('size', val, { shouldValidate: true });
                     break;
-                case 'hasParking': // Note: Scanner maps 'has_parking' -> 'hasParking'? No, let's check Scanner.
-                    // Scanner mapping: 'has_parking': (undefined in previous edit? Let's assume standard camelCase or manual)
-                    // Re-reading Scanner: 'has_parking': undefined in list!
-                    // Wait, I didn't add has_parking to Scanner mapping!
-                    // I need to be careful. I will stick to what I DEFINED in Scanner.
-                    // Scanner has: tenantName, tenantId, tenantEmail, tenantPhone, landlordName...
-                    // address, city, street, buildingNum, aptNum, size, rooms, floor
-                    // rent, currency, paymentDay, paymentFrequency
-                    // securityDeposit, guaranteeType
-                    // startDate, endDate, signingDate
-                    // linkageType, indexCalculationMethod, baseIndexDate, baseIndexValue, indexLimitType
-                    // renewalOption
-
+                case 'floor':
+                    // floor is not in basic schema but might be added or used in UI
                     break;
 
-                // Correct cases based on Scanner mapping:
-                // Duplicates removed
-
-                // Tenant
-                // Tenants (Store in first tenant for scan results)
-                case 'tenantName': newFormData.tenants[0].name = val; break;
-                case 'tenantId': newFormData.tenants[0].id_number = val; break;
-                case 'tenantEmail': newFormData.tenants[0].email = val; break;
-                case 'tenantPhone': newFormData.tenants[0].phone = val; break;
-
-                // Financials
-                case 'rent': newFormData.rent = val; break;
-                case 'currency': newFormData.currency = val; break;
-                case 'paymentFrequency': newFormData.paymentFrequency = val; break;
-                case 'paymentDay': newFormData.paymentDay = val; break;
+                // Tenant (We populate the first tenant)
+                case 'tenantName':
+                    setValue('tenants.0.name', val, { shouldValidate: true });
+                    break;
+                case 'tenantId':
+                    setValue('tenants.0.id_number', val, { shouldValidate: true });
+                    break;
+                case 'tenantEmail':
+                    setValue('tenants.0.email', val, { shouldValidate: true });
+                    break;
+                case 'tenantPhone':
+                    setValue('tenants.0.phone', val, { shouldValidate: true });
+                    break;
 
                 // Dates
-                case 'signingDate': newFormData.signingDate = val; break;
-                case 'startDate': newFormData.startDate = val; break;
-                case 'endDate': newFormData.endDate = val; break;
+                case 'startDate':
+                    setValue('startDate', val, { shouldValidate: true });
+                    break;
+                case 'endDate':
+                    setValue('endDate', val, { shouldValidate: true });
+                    break;
+                case 'signingDate':
+                    setValue('signingDate', val, { shouldValidate: true });
+                    break;
+
+                // Financials
+                case 'rent':
+                    setValue('rent', val, { shouldValidate: true });
+                    break;
+                case 'currency':
+                    if (['ILS', 'USD', 'EUR'].includes(val)) {
+                        setValue('currency', val as any, { shouldValidate: true });
+                    }
+                    break;
+                case 'paymentFrequency':
+                    if (['Monthly', 'Quarterly', 'Annually'].includes(val)) {
+                        setValue('paymentFrequency', val as any, { shouldValidate: true });
+                    }
+                    break;
+                case 'paymentDay':
+                    setValue('paymentDay', val, { shouldValidate: true });
+                    break;
 
                 // Linkage
                 case 'linkageType':
-                    newFormData.linkageType = val;
-                    newFormData.hasLinkage = val !== 'none' && val !== 'null' && !!val;
+                    if (['cpi', 'housing', 'construction', 'usd', 'eur', 'none'].includes(val)) {
+                        setValue('linkageType', val as any, { shouldValidate: true });
+                        setValue('hasLinkage', val !== 'none', { shouldValidate: true });
+                    }
                     break;
-                case 'indexCalculationMethod': newFormData.linkageSubType = val; break;
-                case 'baseIndexDate': newFormData.baseIndexDate = val; break;
-                case 'baseIndexValue': newFormData.baseIndexValue = val; break;
+                case 'indexCalculationMethod':
+                    setValue('linkageSubType', val as any, { shouldValidate: true });
+                    break;
+                case 'baseIndexDate':
+                    setValue('baseIndexDate', val, { shouldValidate: true });
+                    break;
+                case 'baseIndexValue':
+                    setValue('baseIndexValue', val, { shouldValidate: true });
+                    break;
                 case 'linkageCeiling':
-                    newFormData.linkageCeiling = val;
-                    newFormData.hasLinkageCeiling = !!val && val !== '0';
+                    setValue('linkageCeiling', val, { shouldValidate: true });
+                    setValue('hasLinkageCeiling', !!val && val !== '0', { shouldValidate: true });
                     break;
 
                 // Security
-                case 'securityDeposit': newFormData.securityDeposit = val; break;
-                case 'guaranteeType': newFormData.guarantees = val; break;
-                case 'guarantorsInfo': newFormData.guarantorsInfo = val; break;
-
-                case 'specialClauses': newFormData.specialClauses = val; break;
+                case 'securityDeposit':
+                    setValue('securityDeposit', val, { shouldValidate: true });
+                    break;
+                case 'guaranteeType':
+                    setValue('guarantees', val, { shouldValidate: true });
+                    break;
+                case 'guarantorsInfo':
+                    setValue('guarantorsInfo', val, { shouldValidate: true });
+                    break;
+                case 'specialClauses':
+                    setValue('specialClauses', val, { shouldValidate: true });
+                    break;
             }
+        });
 
-            // Also preserve original logic if needed, but the switch above covers most.
-            // Map confidence
-            quotes[key] = quote;
-            confidences[key] = conf; // Use original key for confidence lookups
+        // Construct address if not found directly
+        if (!scannedFullAddress && (scannedStreet || scannedBuilding)) {
+            const compositeAddress = `${scannedStreet} ${scannedBuilding}`.trim();
+            setValue('address', compositeAddress, { shouldValidate: true });
+            scannedFullAddress = compositeAddress;
+        }
 
-            if (!newFormData.address && (scannedStreet || scannedBuilding)) {
-                newFormData.address = `${scannedStreet} ${scannedBuilding}`.trim();
-            }
-
-            // Smart Match: Check for existing Property and Tenant
-            const scanAddress = (newFormData.address || '').trim();
-            const scanAddrNorm = scanAddress.replace(/\s/g, '');
-
+        // Smart Match: Check for existing Property
+        if (scannedFullAddress) {
+            const scanAddrNorm = scannedFullAddress.replace(/\s/g, '').toLowerCase();
             const matchedProp = existingProperties.find(p => {
                 if (!p.address) return false;
+                const propAddrNorm = p.address.replace(/\s/g, '').toLowerCase();
+                return propAddrNorm.includes(scanAddrNorm) || scanAddrNorm.includes(propAddrNorm);
             });
 
             if (matchedProp) {
                 setValue('isExistingProperty', true);
                 setValue('selectedPropertyId', matchedProp.id);
-
-                if (matchedProp.address && matchedProp.city) {
-                    setValue('address', matchedProp.address);
-                    setValue('city', matchedProp.city);
-                }
+                if (matchedProp.address) setValue('address', matchedProp.address);
+                if (matchedProp.city) setValue('city', matchedProp.city);
             }
-            setScannedQuotes(quotes);
-            setFieldConfidence(confidences);
-            setStep(1);
-        });
+        }
+
+        setScannedQuotes(quotes);
+        setFieldConfidence(confidences);
+        setStep(1); // Ensure we go back to step 1 to let user review the data
     };
 
 
