@@ -88,8 +88,8 @@ export function BottomDock() {
                             className={cn(
                                 "relative flex flex-col items-center justify-center min-w-[70px] h-16 rounded-[1.8rem] transition-all duration-300 gap-1",
                                 isActive
-                                    ? "text-primary-foreground button-jewel px-6"
-                                    : "text-muted-foreground hover:text-foreground hover:bg-white/10 px-4"
+                                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25 px-6 -translate-y-1.5"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-white/5 px-4"
                             )}
                         >
                             <Icon className={cn("w-5 h-5 transition-all duration-300", isActive && "scale-110")} />

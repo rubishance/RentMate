@@ -11,8 +11,13 @@ entrypoint = "./functions/chat-support/index.ts"
 
 [functions.analyze-contract]
 enabled = true
-verify_jwt = false
+verify_jwt = true
 entrypoint = "./functions/analyze-contract/index.ts"
+
+[functions.generate-report]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/generate-report/index.ts"
 
 [functions.google-maps-proxy]
 enabled = true

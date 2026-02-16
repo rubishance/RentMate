@@ -75,10 +75,20 @@ export const BillAnalysisService = {
             });
 
             if (error) {
+                console.error('Bill Analysis AI Error (full):', error);
+
                 if ((error as any).limitExceeded) {
-                    throw new UsageLimitExceededError(0, 0); // Simplified for UI
+                    throw new UsageLimitExceededError(0, 0);
                 }
-                throw error;
+
+                let detailedMessage = error.message;
+                if (detailedMessage?.includes('failed to fetch') || detailedMessage?.includes('NetworkError')) {
+                    detailedMessage = 'שגיאת חיבור לשרת הניתוח. אנא בדקו את חיבור האינטרנט שלכם ונסו שוב.';
+                } else if (detailedMessage?.includes('non-2xx')) {
+                    detailedMessage = 'שירות הניתוח אינו זמין כרגע. אנא נסו שנית בעוד מספר רגעים.';
+                }
+
+                throw new Error(`AI Analysis Failed: ${detailedMessage} (${error.name || 'InvokeError'})`);
             }
 
             if (!data) throw new Error('No data received from analysis service');

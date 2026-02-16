@@ -72,20 +72,23 @@ serve(async (req) => {
 
     try {
         console.log('[ReportFunction] Initializing generation...');
-        const supabase = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-        );
+        const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+        const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 
-        // 2. Auth Check
+        // 1. Get Token
         const authHeader = req.headers.get('Authorization');
         const token = authHeader?.replace('Bearer ', '');
         if (!token) throw new Error('Missing authorization token');
 
+        // 2. Initialize Clients
+        // We use service role for data fetching to bypass RLS, 
+        // but verify user identity using the token.
+        const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
         const { data: { user }, error: authError } = await supabase.auth.getUser(token);
         if (authError || !user) {
             console.error('[ReportFunction] Auth error:', authError);
-            throw new Error('Unauthorized');
+            throw new Error(`Unauthorized: ${authError?.message || 'Invalid user'}`);
         }
 
         // 3. Request Data
@@ -179,8 +182,10 @@ serve(async (req) => {
         // -- Load Hebrew Font with absolute fallback --
         if (isRtl) {
             try {
-                // Heebo-Regular via Google's raw repository URL is usually reliable for Deno fetch
-                const fontBase64 = await loadFont('https://raw.githubusercontent.com/google/fonts/master/ofl/heebo/Heebo-Regular.ttf');
+                // Verified direct Heebo TTF URL from Google Fonts CDN
+                const fontUrl = 'https://fonts.gstatic.com/s/heebo/v28/NGSpv5_NC0k9P_v6ZUCbLRAHxK1EiSyccg.ttf';
+                console.log('[ReportFunction] Fetching font from:', fontUrl);
+                const fontBase64 = await loadFont(fontUrl);
                 doc.addFileToVFS('Heebo.ttf', fontBase64);
                 doc.addFont('Heebo.ttf', 'Heebo', 'normal');
                 doc.setFont('Heebo');

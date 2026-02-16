@@ -5,7 +5,7 @@ const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY')
 
 // SECURITY: Restrict CORS to allowed origins only
-const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || 'https://qfvrekvugdjnwhnaucmz.supabase.co'
+const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || '*'
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': ALLOWED_ORIGIN,

@@ -107,18 +107,18 @@ export function ContractScanner({ onScanComplete, onCancel, mode = 'modal', skip
             });
 
             if (error) {
-                console.error('AI Service Error (raw):', error);
+                console.error('AI Service Error (full):', error);
 
-                // Attempt to extract meaningful message from Supabase error
-                // Sometimes error.context or error details are hidden
                 let detailedMessage = error.message;
 
-                // If it's the generic "non-2xx" error, try to see if there's more info
-                if (detailedMessage && detailedMessage.includes('non-2xx')) {
-                    detailedMessage = 'שירות הניתוח נמצא בעומס או אינו זמין כרגע. אנא נסו שנית בעוד מספר רגעים.';
+                // Supabase FunctionInvokeError often has a "context" or other details
+                if (detailedMessage?.includes('failed to fetch') || detailedMessage?.includes('NetworkError')) {
+                    detailedMessage = 'שגיאת חיבור לשרת ה-AI. אנא וודאו שיש לכם חיבור אינטרנט תקין ונסו שוב.';
+                } else if (detailedMessage?.includes('non-2xx')) {
+                    detailedMessage = 'שירות הניתוח אינו זמין כרגע (שגיאת שרת). אנא נסו שנית בעוד מספר רגעים.';
                 }
 
-                throw new Error(`AI Analysis Failed: ${detailedMessage}`);
+                throw new Error(`AI Analysis Failed: ${detailedMessage} (${error.name || 'InvokeError'})`);
             }
 
             if (!data || !data.fields) {

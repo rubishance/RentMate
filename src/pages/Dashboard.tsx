@@ -35,6 +35,7 @@ export function Dashboard() {
     const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
     const [layout, setLayout] = useState<WidgetConfig[]>(DEFAULT_WIDGET_LAYOUT);
     const [counts, setCounts] = useState({ properties: 0, contracts: 0, tenants: 0 });
+    const [isRefetching, setIsRefetching] = useState(false);
 
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [showProBanner, setShowProBanner] = useState(false);
@@ -70,8 +71,10 @@ export function Dashboard() {
             setStorageCounts(cached.storageCounts);
             setActiveContracts(cached.activeContracts);
             setFeedItems(cached.feedItems);
+            setCounts(cached.counts || { properties: 0, contracts: 0, tenants: 0 });
             setLayout(cached.layout || layout);
             setLoading(false);
+            setIsRefetching(true); // Background update starts
         }
 
         try {
@@ -125,6 +128,7 @@ export function Dashboard() {
             console.error('[Dashboard] Restore failed:', e);
         } finally {
             setLoading(false);
+            setIsRefetching(false);
         }
     }
 
@@ -202,7 +206,7 @@ export function Dashboard() {
                 </div>
 
                 {/* Gamification: Setup Progress */}
-                {!loading && (counts.properties === 0 || counts.tenants === 0) && (
+                {!loading && !isRefetching && (counts.properties === 0 || counts.tenants === 0) && (
                     <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                         <SetupProgressWidget
                             hasProperty={counts.properties > 0}

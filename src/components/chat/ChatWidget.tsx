@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import type { User } from '@supabase/supabase-js';
-import { Send, Paperclip, X, Maximize2, Minimize2, Settings, Sparkles, Bot, User as UserIcon, Trash2, FileIcon, ImageIcon, CheckCircle2, AlertCircle, Mic, MicOff, Loader2 } from 'lucide-react';
+import { Send, Paperclip, X, Maximize2, Minimize2, Settings, Sparkles, Bot, User as UserIcon, Trash2, FileIcon, ImageIcon, CheckCircle2, AlertCircle, Mic, MicOff, Loader2, ArrowLeft, MessageCircle } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ActionCard } from '../dashboard/ActionCard';
 import { supabase } from '../../lib/supabase';
@@ -567,21 +567,35 @@ export function ChatWidget() {
                 )}
             </AnimatePresence>
 
-            {/* FAB - Just the Head */}
+            {/* FAB - Horizontal Bar */}
             {!isOpen && (
                 <motion.button
                     onClick={toggleChat}
-                    whileHover={{ rotate: 5 }}
-                    whileTap={{ scale: 0.9 }}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="p-0 bg-transparent transition-all border-none outline-none focus:outline-none relative group"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 20 }}
+                    className="flex items-center bg-white/80 dark:bg-black/80 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-full shadow-lg p-1.5 px-4 w-[calc(100vw-3rem)] max-w-[500px] group transition-all"
+                    dir="ltr" // Container is LTR for icon placement, contents inside will handle RTL
                 >
-                    {/* Soft Hover Aura */}
-                    <div className="absolute inset-0 blur-xl rounded-full scale-50 group-hover:scale-100 transition-transform duration-500 opacity-0 group-hover:opacity-100 bg-white/5"></div>
+                    <div className="flex items-center gap-3">
+                        <ArrowLeft className="w-5 h-5 text-gray-400" />
+                        <div className="p-2 bg-gray-100 dark:bg-white/5 rounded-full">
+                            <Paperclip className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                        </div>
+                        <Mic className="w-5 h-5 text-gray-400" />
+                    </div>
 
-                    <RentyMascot size={64} showBackground={false} className="relative z-10" />
+                    <div className="flex-1 px-4 text-right" dir="rtl">
+                        <span className="text-gray-400 dark:text-gray-500 text-sm truncate">
+                            {isRtl ? 'איך אוכל לעזור לך לנהל את הנכסים היום?' : 'How can I help you manage your properties today?'}
+                        </span>
+                    </div>
+
+                    <div className="flex items-center justify-center w-10 h-10 bg-indigo-500 rounded-full shadow-sm text-white shrink-0">
+                        <MessageCircle className="w-6 h-6" />
+                    </div>
                 </motion.button>
             )}
 

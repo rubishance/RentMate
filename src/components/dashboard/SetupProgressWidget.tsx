@@ -14,9 +14,9 @@ export function SetupProgressWidget({ hasProperty, hasTenant }: SetupProgressWid
 
     // Calculate progress
     const steps = [
-        { id: 'signup', label: 'Create Account', isCompleted: true, icon: Trophy },
-        { id: 'property', label: 'Add First Property', isCompleted: hasProperty, icon: Home },
-        { id: 'tenant', label: 'Add Tenant', isCompleted: hasTenant, icon: Users },
+        { id: 'signup', label: t('setupSignup'), isCompleted: true, icon: Trophy },
+        { id: 'property', label: t('setupProperty'), isCompleted: hasProperty, icon: Home },
+        { id: 'tenant', label: t('setupTenant'), isCompleted: hasTenant, icon: Users },
     ];
 
     const completedCount = steps.filter(s => s.isCompleted).length;

@@ -37,12 +37,13 @@ export type TranslationKeys =
     | 'addItem' | 'addItem_female'
     | 'name'
     | 'address'
-    | 'city'
-    | 'status'
-    | 'amount'
-    | 'currency'
-    | 'date'
-    | 'period'
+    | 'signup'
+    | 'property'
+    | 'tenant'
+    | 'setupSignup'
+    | 'setupProperty'
+    | 'setupTenant'
+    | 'linkageCalculation'
     | 'from'
     | 'to'
     | 'month'
@@ -1055,6 +1056,14 @@ export const translations: Record<string, any> = {
         paymentFreq: 'תדירות תשלום',
         paymentDay: 'יום התשלום',
         day: 'יום',
+        setupProfile: 'השלמת הפרופיל שלך',
+        setupDesc: 'הוסיפו את הנכס הראשון שלכם כדי לפתוח את מלוא העוצמה של RentMate ולהגיע לרמת ברונזה.',
+        addProperty: 'הוספת נכס',
+        complete: 'הושלם',
+        step: 'שלב',
+        setupSignup: 'יצירת חשבון',
+        setupProperty: 'הוספת נכס ראשון',
+        setupTenant: 'הוספת שוכר',
         rentStepsVariable: 'מדרגות שכ"ד',
         addRentStep: 'הוסף מדרגת שכ"ד',
         linkageAdjustments: 'התאמות הצמדה',
@@ -1246,7 +1255,6 @@ export const translations: Record<string, any> = {
         lastYear: 'שנה אחרונה',
         allTime: 'כל הזמן',
         filters: 'סינונים',
-        tenant: 'דייר',
         allTenants: 'כל הדיירים',
         allAssets: 'כל הנכסים',
         method: 'שיטה',
@@ -1885,7 +1893,6 @@ export const translations: Record<string, any> = {
         noMaintenanceDesc: 'התחל לתעד הוצאות כדי לעקוב אחר מצב הנכסים שלך.',
         wizard_desc: 'אנחנו נעזור לך לקטלג ולנהל את הנכסים שלך בצורה יעילה.',
         selectCategory: 'בחר סוג נכס',
-        step: 'שלב',
         finish: 'סיום',
         occupied: 'מושכר',
         addFirstTenantDesc_male: 'התחל בהוספת הדייר הראשון שלך',
@@ -2039,10 +2046,14 @@ export const translations: Record<string, any> = {
         commandCenterUpdates: 'I have {count} new updates for you.',
         commandCenterAllClear: 'Everything looks great. No pending tasks.',
         rentySuggestsAction: 'RENTY SUGGESTS ACTION',
-        conciergeTitle: 'Complete Your Setup',
-        conciergeDesc: 'You have {count} properties but no contracts yet. Let\'s get organized.',
-        conciergeStart: 'Add First Contract',
-        conciergeLater: 'Remind me later',
+        setupProfile: 'Complete Your Profile',
+        setupDesc: 'Add your first property to unlock the full power of RentMate and reach Bronze level.',
+        addProperty: 'Add Property',
+        complete: 'Complete',
+        step: 'Step',
+        setupSignup: 'Create Account',
+        setupProperty: 'Add First Property',
+        setupTenant: 'Add Tenant',
         welcomeMessage: 'Welcome to RentMate',
         welcomeMessageDashboard: 'good evening',
         commandCenter: 'Command Center',
