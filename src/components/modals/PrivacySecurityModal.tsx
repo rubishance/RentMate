@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Shield, Eye, EyeOff, Trash2, Lock, AlertTriangle, Cloud } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useUserPreferences } from '../../contexts/UserPreferencesContext';
 
 interface PrivacySecurityModalProps {
     isOpen: boolean;
@@ -17,28 +18,9 @@ export function PrivacySecurityModal({ isOpen, onClose }: PrivacySecurityModalPr
     const [passwordError, setPasswordError] = useState('');
     const [passwordSuccess, setPasswordSuccess] = useState(false);
 
-    const [aiConsent, setAiConsent] = useState(false);
-    const [isLoadingConsent, setIsLoadingConsent] = useState(false);
+    const { preferences, setAiDataConsent } = useUserPreferences();
+    const aiConsent = preferences.ai_data_consent ?? false;
 
-    // Fetch consent on open
-    useEffect(() => {
-        if (isOpen) {
-            const fetchConsent = async () => {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (user) {
-                    const { data } = await supabase
-                        .from('user_preferences')
-                        .select('ai_data_consent')
-                        .eq('user_id', user.id)
-                        .single();
-                    if (data) {
-                        setAiConsent(data.ai_data_consent || false);
-                    }
-                }
-            };
-            fetchConsent();
-        }
-    }, [isOpen]);
 
     if (!isOpen) return null;
 
@@ -158,44 +140,9 @@ export function PrivacySecurityModal({ isOpen, onClose }: PrivacySecurityModalPr
                                 </p>
                             </div>
                             <button
-                                onClick={async () => {
-                                    setIsLoadingConsent(true);
-                                    try {
-                                        const { data: { user } } = await supabase.auth.getUser();
-                                        if (user) {
-                                            const newValue = !aiConsent;
-
-                                            // Optimistic Update
-                                            setAiConsent(newValue);
-
-                                            // Determine operation based on existence check we did on mount
-                                            // Use upsert for safety
-                                            const { error } = await supabase
-                                                .from('user_preferences')
-                                                .upsert(
-                                                    {
-                                                        user_id: user.id,
-                                                        ai_data_consent: newValue,
-                                                        updated_at: new Date().toISOString()
-                                                    },
-                                                    { onConflict: 'user_id' }
-                                                );
-
-                                            if (error) {
-                                                console.error('Supabase error:', error);
-                                                throw error;
-                                            }
-                                        }
-                                    } catch (err) {
-                                        console.error(err);
-                                        // Revert on error
-                                        setAiConsent(!aiConsent);
-                                        alert("Failed to update setting. Please try again.");
-                                    } finally {
-                                        setIsLoadingConsent(false);
-                                    }
+                                onClick={() => {
+                                    setAiDataConsent(!aiConsent);
                                 }}
-                                disabled={isLoadingConsent}
                                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${aiConsent ? 'bg-purple-600' : 'bg-gray-200 dark:bg-gray-700'
                                     }`}
                             >

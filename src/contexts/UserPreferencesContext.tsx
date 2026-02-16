@@ -12,6 +12,7 @@ interface UserPreferencesContextType {
     effectiveTheme: 'light' | 'dark';
     isLoading: boolean;
     refreshPreferences: () => Promise<void>;
+    setAiDataConsent: (consent: boolean) => void;
 }
 
 const UserPreferencesContext = createContext<UserPreferencesContextType | undefined>(undefined);
@@ -86,6 +87,11 @@ export function UserPreferencesProvider({ children }: UserPreferencesProviderPro
         setPreferences(updated);
     };
 
+    const handleSetAiDataConsent = (consent: boolean) => {
+        const updated = userPreferencesService.setAiDataConsent(consent);
+        setPreferences(updated);
+    };
+
     // Sync language with DOM
     useEffect(() => {
         document.documentElement.dir = preferences.language === 'he' ? 'rtl' : 'ltr';
@@ -147,6 +153,7 @@ export function UserPreferencesProvider({ children }: UserPreferencesProviderPro
                 effectiveTheme,
                 isLoading,
                 refreshPreferences,
+                setAiDataConsent: handleSetAiDataConsent,
             }}
         >
             {children}

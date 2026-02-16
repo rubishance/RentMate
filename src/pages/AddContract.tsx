@@ -809,12 +809,16 @@ export function AddContract() {
                 case 'buildingNum':
                     scannedBuilding = val;
                     break;
-                case 'rooms':
-                    setValue('rooms', val, { shouldValidate: true });
+                case 'rooms': {
+                    const numVal = parseFloat(val);
+                    if (!isNaN(numVal)) setValue('rooms', numVal, { shouldValidate: true });
                     break;
-                case 'size':
-                    setValue('size', val, { shouldValidate: true });
+                }
+                case 'size': {
+                    const numVal = parseFloat(val);
+                    if (!isNaN(numVal)) setValue('size', numVal, { shouldValidate: true });
                     break;
+                }
                 case 'floor':
                     // floor is not in basic schema but might be added or used in UI
                     break;
@@ -845,9 +849,11 @@ export function AddContract() {
                     break;
 
                 // Financials
-                case 'rent':
-                    setValue('rent', val, { shouldValidate: true });
+                case 'rent': {
+                    const numVal = parseFloat(val);
+                    if (!isNaN(numVal)) setValue('rent', numVal, { shouldValidate: true });
                     break;
+                }
                 case 'currency':
                     if (['ILS', 'USD', 'EUR'].includes(val)) {
                         setValue('currency', val as any, { shouldValidate: true });
@@ -858,9 +864,11 @@ export function AddContract() {
                         setValue('paymentFrequency', val as any, { shouldValidate: true });
                     }
                     break;
-                case 'paymentDay':
-                    setValue('paymentDay', val, { shouldValidate: true });
+                case 'paymentDay': {
+                    const numVal = parseInt(val);
+                    if (!isNaN(numVal)) setValue('paymentDay', numVal, { shouldValidate: true });
                     break;
+                }
 
                 // Linkage
                 case 'linkageType':
@@ -875,18 +883,26 @@ export function AddContract() {
                 case 'baseIndexDate':
                     setValue('baseIndexDate', val, { shouldValidate: true });
                     break;
-                case 'baseIndexValue':
-                    setValue('baseIndexValue', val, { shouldValidate: true });
+                case 'baseIndexValue': {
+                    const numVal = parseFloat(val);
+                    if (!isNaN(numVal)) setValue('baseIndexValue', numVal, { shouldValidate: true });
                     break;
-                case 'linkageCeiling':
-                    setValue('linkageCeiling', val, { shouldValidate: true });
-                    setValue('hasLinkageCeiling', !!val && val !== '0', { shouldValidate: true });
+                }
+                case 'linkageCeiling': {
+                    const numVal = parseFloat(val);
+                    if (!isNaN(numVal)) {
+                        setValue('linkageCeiling', numVal, { shouldValidate: true });
+                        setValue('hasLinkageCeiling', numVal > 0, { shouldValidate: true });
+                    }
                     break;
+                }
 
                 // Security
-                case 'securityDeposit':
-                    setValue('securityDeposit', val, { shouldValidate: true });
+                case 'securityDeposit': {
+                    const numVal = parseFloat(val);
+                    if (!isNaN(numVal)) setValue('securityDeposit', numVal, { shouldValidate: true });
                     break;
+                }
                 case 'guaranteeType':
                     setValue('guarantees', val, { shouldValidate: true });
                     break;

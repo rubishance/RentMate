@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import type { User } from '@supabase/supabase-js';
-import { Send, Paperclip, X, Maximize2, Minimize2, Settings, Sparkles, Bot, User as UserIcon, Trash2, FileIcon, ImageIcon, CheckCircle2, AlertCircle, Mic, MicOff, Loader2, ArrowLeft, MessageCircle } from 'lucide-react';
+import { Send, Paperclip, X, Loader2, MessageCircle, Mic, MicOff } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ActionCard } from '../dashboard/ActionCard';
 import { supabase } from '../../lib/supabase';
@@ -22,6 +22,19 @@ import { RentyMascot } from '../common/RentyMascot';
 import { AddPaymentModal } from '../modals/AddPaymentModal';
 import { AddMaintenanceModal } from '../modals/AddMaintenanceModal';
 
+type ModalData = {
+    contract_id?: string;
+    amount?: number | string;
+    due_date?: string;
+    status?: 'pending' | 'paid' | 'overdue';
+    payment_method?: string;
+    property_id?: string;
+    description?: string;
+    vendor_name?: string;
+    issue_type?: string;
+    date?: string;
+};
+
 export function ChatWidget() {
     const { t } = useTranslation();
     const { preferences } = useUserPreferences();
@@ -35,7 +48,6 @@ export function ChatWidget() {
 
     const { push } = useStack();
     const { clear } = useDataCache();
-    const inputRef = useRef<HTMLInputElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isUploading, setIsUploading] = useState(false);
@@ -43,9 +55,10 @@ export function ChatWidget() {
 
     // Modal States
     const [activeModal, setActiveModal] = useState<string | null>(null);
-    const [modalData, setModalData] = useState<any>(null);
+    const [modalData, setModalData] = useState<ModalData | null>(null);
 
     const [user, setUser] = useState<User | null>(null);
+    const [inputText, setInputText] = useState('');
 
     // Bill Scan States
     const [scannedBill, setScannedBill] = useState<(ExtractedBillData & { fileName: string; file: File }) | null>(null);
@@ -211,19 +224,20 @@ export function ChatWidget() {
 
     // Sync transcript to input
     useEffect(() => {
-        if (transcript && inputRef.current) {
-            inputRef.current.value = transcript;
+        if (transcript) {
+            setInputText(transcript);
         }
     }, [transcript]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const text = inputRef.current?.value;
+        const text = inputText.trim();
         if (!text) return;
 
-        await sendBotMessage(text);
+        // Clear immediately for better UX
+        setInputText('');
 
-        if (inputRef.current) inputRef.current.value = '';
+        await sendBotMessage(text);
     };
 
     const toggleVoiceInput = () => {
@@ -318,11 +332,10 @@ export function ChatWidget() {
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className={cn(
-                "fixed bottom-36 sm:bottom-32 z-[60] flex flex-col items-end space-y-4",
-                isRtl ? "left-6" : "right-6"
+                "fixed top-4 left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center space-y-4 w-full px-4 max-w-[500px]"
             )}
         >
             <AnimatePresence>
@@ -332,10 +345,10 @@ export function ChatWidget() {
                         dragConstraints={{ left: -window.innerWidth + 80, right: 0, top: -window.innerHeight + 80, bottom: 0 }}
                         dragElastic={0.1}
                         dragTransition={{ bounceStiffness: 600, bounceDamping: 20 }}
-                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                        initial={{ opacity: 0, y: -20, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                        className="w-[350px] h-[540px] bg-white/90 dark:bg-black/80 backdrop-blur-xl border border-gray-200 dark:border-white/20 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+                        exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                        className="w-full max-w-[400px] h-[540px] bg-white/90 dark:bg-black/80 backdrop-blur-xl border border-gray-200 dark:border-white/20 rounded-2xl shadow-2xl flex flex-col overflow-hidden origin-top"
                     >
                         {/* Header */}
                         <div className="p-4 border-b border-gray-200 dark:border-white/10 flex justify-between items-center cursor-move transition-colors bg-white dark:bg-black text-gray-900 dark:text-white">
@@ -549,9 +562,9 @@ export function ChatWidget() {
                                     <label htmlFor="chat-input" className="sr-only">שאלה לצ׳אט</label>
                                     <input
                                         id="chat-input"
-                                        ref={inputRef}
                                         type="text"
-                                        // I'll check BotIcon.tsx first to see how it's styled.
+                                        value={inputText}
+                                        onChange={(e) => setInputText(e.target.value)}
                                         placeholder={
                                             !user
                                                 ? (isRtl ? "שאל על RentMate..." : "Ask about RentMate...")
@@ -571,30 +584,34 @@ export function ChatWidget() {
             {!isOpen && (
                 <motion.button
                     onClick={toggleChat}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    initial={{ opacity: 0, y: 20 }}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                    initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 20 }}
-                    className="flex items-center bg-white/80 dark:bg-black/80 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-full shadow-lg p-1.5 px-4 w-[calc(100vw-3rem)] max-w-[500px] group transition-all"
-                    dir="ltr" // Container is LTR for icon placement, contents inside will handle RTL
+                    exit={{ opacity: 0, y: -20 }}
+                    className="flex items-center bg-white/80 dark:bg-black/80 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-full shadow-lg p-1.5 px-4 w-full group transition-all"
+                    dir="ltr"
                 >
                     <div className="flex items-center gap-3">
-                        <ArrowLeft className="w-5 h-5 text-gray-400" />
-                        <div className="p-2 bg-gray-100 dark:bg-white/5 rounded-full">
-                            <Paperclip className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                        <div className="flex items-center justify-center w-8 h-8 bg-indigo-500 rounded-full shadow-sm text-white shrink-0">
+                            <MessageCircle className="w-5 h-5" />
                         </div>
-                        <Mic className="w-5 h-5 text-gray-400" />
+                        <div className="p-1.5 bg-gray-100 dark:bg-white/5 rounded-full">
+                            <Paperclip className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+                        </div>
+                        <Mic className="w-4 h-4 text-gray-400" />
                     </div>
 
                     <div className="flex-1 px-4 text-right" dir="rtl">
-                        <span className="text-gray-400 dark:text-gray-500 text-sm truncate">
+                        <span className="text-gray-400 dark:text-gray-500 text-sm truncate font-medium">
                             {isRtl ? 'איך אוכל לעזור לך לנהל את הנכסים היום?' : 'How can I help you manage your properties today?'}
                         </span>
                     </div>
 
-                    <div className="flex items-center justify-center w-10 h-10 bg-indigo-500 rounded-full shadow-sm text-white shrink-0">
-                        <MessageCircle className="w-6 h-6" />
+                    <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 flex items-center justify-center overflow-hidden">
+                            <RentyMascot size={24} showBackground={false} />
+                        </div>
                     </div>
                 </motion.button>
             )}
@@ -607,7 +624,8 @@ export function ChatWidget() {
                     clear();
                     setActiveModal(null);
                 }}
-                initialData={modalData}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                initialData={modalData as any}
             />
             <AddMaintenanceModal
                 isOpen={activeModal === 'maintenance' || activeModal === 'add_maintenance'}
@@ -616,7 +634,8 @@ export function ChatWidget() {
                     clear();
                     setActiveModal(null);
                 }}
-                initialData={modalData}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                initialData={modalData as any}
             />
         </motion.div>
     );

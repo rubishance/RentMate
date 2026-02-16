@@ -261,20 +261,53 @@ const FUNCTION_TOOLS = [
                 required: ["tenant_name", "type"]
             }
         }
+    },
+    {
+        type: "function",
+        function: {
+            name: "debug_entity",
+            description: "Diagnostic tool for admins to inspect database records. (Hebrew: כלי אבחון למנהלים).",
+            parameters: {
+                type: "object",
+                properties: {
+                    table: { type: "string", enum: ["contracts", "payments", "properties", "user_profiles"] },
+                    filter_column: { type: "string" },
+                    filter_value: { type: "string" }
+                },
+                required: ["table", "filter_column", "filter_value"]
+            }
+        }
     }
 ];
 
 // Function implementations
 // Function implementations
 async function checkConsent(userId: string, supabase: any) {
-    const { data: preferences } = await supabase
+    console.log(`Checking AI consent for user: ${userId}`);
+
+    // EXCEPTION: Admins and Super Admins bypass the consent check for diagnostic/support purposes
+    const { data: profile } = await supabase.from('user_profiles').select('role, is_super_admin').eq('id', userId).single();
+    if (profile?.role === 'admin' || profile?.is_super_admin === true) {
+        console.log(`Admin bypass for user ${userId}`);
+        return true;
+    }
+
+    const { data: preferences, error } = await supabase
         .from('user_preferences')
         .select('ai_data_consent')
         .eq('user_id', userId)
         .single();
 
+    if (error) {
+        console.error(`Error fetching preferences for ${userId}:`, error);
+        return false;
+    }
+
+    const hasConsent = preferences?.ai_data_consent === true;
+    console.log(`Consent result for ${userId}: ${hasConsent}`);
+
     // Default to false if no record found, requiring explicit consent
-    return preferences?.ai_data_consent === true;
+    return hasConsent;
 }
 
 async function searchContracts(query: string, userId: string) {
@@ -709,6 +742,61 @@ async function logMaintenanceExpense(args: any, userId: string) {
     };
 }
 
+async function debugEntity(args: any, userId: string) {
+    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+    const { table, filter_column, filter_value } = args;
+
+    // SECURITY CHECK: Only admins can use debug tools
+    const { data: profile } = await supabase.from('user_profiles').select('role, is_super_admin').eq('id', userId).single();
+    const isAdmin = profile?.role === 'admin' || profile?.is_super_admin === true;
+
+    if (!isAdmin) {
+        await supabase.from('debug_logs').insert({
+            function_name: 'chat-support:debugEntity',
+            level: 'error',
+            message: `Unauthorized debug attempt on ${table}`,
+            details: { userId, args }
+        });
+        return { success: false, message: "Security Warning: Unauthorized access attempt. Debug tools are for admins only." };
+    }
+
+    let query = supabase.from(table).select('*');
+    if (filter_column && filter_value) {
+        if (filter_value.includes('%')) {
+            query = query.ilike(filter_column, filter_value);
+        } else {
+            query = query.eq(filter_column, filter_value);
+        }
+    }
+
+    const { data, error } = await query.limit(20);
+
+    if (error) {
+        await supabase.from('debug_logs').insert({
+            function_name: 'chat-support:debugEntity',
+            level: 'error',
+            message: `Error querying ${table}`,
+            details: { userId, args, error: error.message }
+        });
+        return { success: false, message: error.message };
+    }
+
+    // Log the result for Antigravity's inspection
+    await supabase.from('debug_logs').insert({
+        function_name: 'chat-support:debugEntity',
+        level: 'info',
+        message: `Debug results for ${table} (${filter_column}=${filter_value})`,
+        details: { userId, args, count: data?.length || 0, results: data }
+    });
+
+    return {
+        success: true,
+        table,
+        count: data?.length || 0,
+        results: data
+    };
+}
+
 serve(async (req) => {
     if (req.method === "OPTIONS") {
         return new Response("ok", { headers: corsHeaders });
@@ -762,8 +850,14 @@ serve(async (req) => {
 
         if (authHeader) {
             const token = authHeader.replace("Bearer ", "");
-            const { data: { user } } = await supabase.auth.getUser(token);
+            const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+            if (authError) {
+                console.error("Auth error extracting user:", authError);
+            }
             userId = user?.id;
+            console.log("Extracted userId from token:", userId);
+        } else {
+            console.log("No authorization header provided.");
         }
 
         // Check usage limits (if user is authenticated)
@@ -1006,6 +1100,8 @@ ${knowledgeBase}`;
                     functionResult = await organizeDocument(functionArgs, userId);
                 } else if (functionName === "calculate_rent_linkage") {
                     functionResult = await calculateRentLinkage(functionArgs, userId);
+                } else if (functionName === "debug_entity") {
+                    functionResult = await debugEntity(functionArgs, userId);
                 } else {
                     functionResult = { success: false, message: "Unknown function" };
                 }
