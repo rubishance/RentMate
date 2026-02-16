@@ -1,9 +1,10 @@
 import { motion } from 'framer-motion';
 import { useTranslation } from '../../hooks/useTranslation';
-import { CalendarIcon as Calendar, ArrowRightIcon as ArrowRight } from '../icons/NavIcons';
-import { NotificationWarningIcon, NotificationInfoIcon, NotificationErrorIcon, NotificationSuccessIcon } from '../icons/NotificationIcons';
+import { ArrowRightIcon as ArrowRight, AlertCircleIcon as AlertCircle } from '../icons/NavIcons';
 import { cn } from '../../lib/utils';
 import { Card, CardContent } from '../ui/Card';
+import { DashboardChatBar } from './DashboardChatBar';
+import { CheckCircle2 } from 'lucide-react';
 
 interface FeedItem {
     id: string;
@@ -21,8 +22,7 @@ interface DashboardHeroProps {
 }
 
 export function DashboardHero({ firstName, feedItems }: DashboardHeroProps) {
-    const { t } = useTranslation();
-    const primaryAlert = feedItems[0];
+    const { t, lang } = useTranslation();
 
     return (
         <div className="space-y-8">
@@ -36,57 +36,63 @@ export function DashboardHero({ firstName, feedItems }: DashboardHeroProps) {
                 </h1>
             </div>
 
-            {/* High Impact Alert Card */}
-            {primaryAlert && primaryAlert.id !== 'welcome' && (
-                <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                >
-                    <Card
-                        className={cn(
-                            "rounded-[2rem] border-0 cursor-pointer transition-all duration-500",
-                            primaryAlert.type === 'urgent'
-                                ? "bg-rose-50/50 border-rose-100 dark:bg-rose-900/10 dark:border-rose-900/30"
-                                : "bg-card hover:shadow-lg hover:translate-y-[-2px]"
-                        )}
-                        onClick={primaryAlert.onAction}
-                        hoverEffect={primaryAlert.type !== 'urgent'}
-                    >
-                        <CardContent className="p-6 md:p-8 flex flex-col md:flex-row items-center gap-6">
-                            <div className={cn(
-                                "w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-sm transition-all group-hover:scale-110 duration-500",
-                                primaryAlert.type === 'warning' ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400' :
-                                    primaryAlert.type === 'urgent' ? 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400' :
-                                        'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-                            )}>
-                                {primaryAlert.type === 'warning' ? <NotificationWarningIcon className="w-8 h-8" /> :
-                                    primaryAlert.type === 'urgent' ? <NotificationErrorIcon className="w-8 h-8" /> :
-                                        <NotificationInfoIcon className="w-8 h-8" />}
-                            </div>
+            {/* Dashboard AI Chat Bar */}
+            <DashboardChatBar className="mb-4" />
 
-                            <div className="flex-1 text-center md:text-left rtl:md:text-right space-y-2">
-                                <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
-                                    <span className={cn(
-                                        "px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest",
-                                        primaryAlert.type === 'urgent' ? "bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-200" : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
-                                    )}>
-                                        {primaryAlert.type === 'urgent' ? t('urgent') : t('recommendation')}
-                                    </span>
-                                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">{primaryAlert.date}</span>
-                                </div>
-                                <h2 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">{primaryAlert.title}</h2>
-                                <p className="text-muted-foreground text-sm max-w-xl font-medium leading-relaxed">{primaryAlert.desc}</p>
-                            </div>
+            {/* High Impact Alert Card / Carousel */}
+            {feedItems.length > 0 && (
+                <div className="flex overflow-x-auto pb-6 -mx-4 px-4 gap-4 snap-x snap-mandatory scrollbar-hide md:justify-center">
+                    {feedItems.filter(item => item.id !== 'welcome').map((item, idx) => (
+                        <motion.div
+                            key={item.id}
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            transition={{ delay: 0.1 * idx, duration: 0.5 }}
+                            className="flex-shrink-0 snap-center w-[300px] md:w-[350px]"
+                        >
+                            <Card
+                                className={cn(
+                                    "h-full rounded-[2.5rem] border border-white/20 dark:border-white/10 transition-all duration-300 hover:scale-[1.02]",
+                                    item.type === 'urgent'
+                                        ? "bg-rose-50/50 border-rose-200 dark:bg-rose-900/10 dark:border-rose-900/30"
+                                        : item.type === 'warning'
+                                            ? "bg-amber-50/50 border-amber-200 dark:bg-amber-900/10 dark:border-amber-900/30"
+                                            : "bg-white/40 dark:bg-slate-900/40 backdrop-blur-md"
+                                )}
+                                onClick={item.onAction}
+                                hoverEffect
+                            >
+                                <CardContent className="p-5 h-full flex flex-col justify-between">
+                                    <div>
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className={cn(
+                                                "p-2.5 rounded-2xl",
+                                                item.type === 'urgent' ? "bg-rose-100 text-rose-600 dark:bg-rose-900/50 dark:text-rose-400" :
+                                                    item.type === 'warning' ? "bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-400" :
+                                                        "bg-indigo-50 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400"
+                                            )}>
+                                                {item.type === 'urgent' || item.type === 'warning' ? <AlertCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
+                                            </div>
+                                            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-60 font-mono">{item.date}</span>
+                                        </div>
 
-                            <div className="shrink-0">
-                                <div className="w-12 h-12 rounded-full bg-foreground text-background flex items-center justify-center shadow-md group-hover:scale-110 transition-all duration-500">
-                                    <ArrowRight className="w-5 h-5 rtl:rotate-180" />
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </motion.div>
+                                        <h3 className="font-bold text-base leading-tight mb-2 line-clamp-2 text-foreground">
+                                            {item.title}
+                                        </h3>
+                                        <p className="text-xs text-muted-foreground line-clamp-2 font-medium">
+                                            {item.desc}
+                                        </p>
+                                    </div>
+
+                                    <div className="flex items-center gap-2 mt-4 text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">
+                                        {t('rentySuggestsAction')}
+                                        <ArrowRight className={cn("w-3 h-3", lang === 'he' && "rotate-180")} />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    ))}
+                </div>
             )}
         </div>
     );

@@ -1,9 +1,8 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useUserPreferences } from '../contexts/UserPreferencesContext';
 import { useTranslation } from '../hooks/useTranslation';
 import { useNavigate } from 'react-router-dom';
-import { RentyCommandCenter } from '../components/dashboard/RentyCommandCenter';
 import { useDataCache } from '../contexts/DataCacheContext';
 import { DashboardHero } from '../components/dashboard/DashboardHero';
 import { DEFAULT_WIDGET_LAYOUT, WidgetConfig, DashboardData, WIDGET_REGISTRY } from '../components/dashboard/WidgetRegistry';
@@ -34,7 +33,7 @@ export function Dashboard() {
     const [activeContracts, setActiveContracts] = useState<any[]>([]);
     const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
     const [layout, setLayout] = useState<WidgetConfig[]>(DEFAULT_WIDGET_LAYOUT);
-    const [counts, setCounts] = useState({ properties: 0, contracts: 0, tenants: 0 });
+    const [counts, setCounts] = useState<{ properties: number; contracts: number; tenants: number } | null>(null);
     const [isRefetching, setIsRefetching] = useState(false);
 
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
@@ -71,10 +70,10 @@ export function Dashboard() {
             setStorageCounts(cached.storageCounts);
             setActiveContracts(cached.activeContracts);
             setFeedItems(cached.feedItems);
-            setCounts(cached.counts || { properties: 0, contracts: 0, tenants: 0 });
+            setCounts(cached.counts || null);
             setLayout(cached.layout || layout);
-            setLoading(false);
             setIsRefetching(true); // Background update starts
+            setLoading(false);
         }
 
         try {
@@ -154,7 +153,7 @@ export function Dashboard() {
 
     const firstName = authProfile?.full_name?.split(' ')[0] || '';
 
-    const handleBriefingAction = (item: FeedItem) => {
+    const handleBriefingAction = useCallback((item: FeedItem) => {
         if (!item.metadata) return;
 
         console.log('[Dashboard] Action triggered:', item.metadata.type, item.metadata);
@@ -172,7 +171,7 @@ export function Dashboard() {
                 // Default: toggle notifications if we don't know where to go
                 window.dispatchEvent(new CustomEvent('TOGGLE_NOTIFICATIONS'));
         }
-    };
+    }, [navigate]);
 
     const feedItemsWithActions = useMemo(() => {
         return feedItems.map(item => ({
@@ -206,8 +205,8 @@ export function Dashboard() {
                 </div>
 
                 {/* Gamification: Setup Progress */}
-                {!loading && !isRefetching && (counts.properties === 0 || counts.tenants === 0) && (
-                    <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                {!loading && !isRefetching && counts && (counts.properties === 0 || counts.tenants === 0) && (
+                    <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
                         <SetupProgressWidget
                             hasProperty={counts.properties > 0}
                             hasTenant={counts.tenants > 0}
@@ -268,17 +267,6 @@ export function Dashboard() {
                                 </div>
                             );
                         })}
-                </div>
-            </div>
-
-            {/* Renty Command Center - Bottom Fixed (Mobile) / Floating (Desktop) */}
-            <div id="renty-command-center" className="fixed bottom-0 left-0 right-0 z-50 p-2 pb-4 md:p-4 pointer-events-none flex justify-center transition-transform duration-500 ease-out translate-y-0">
-                <div className="w-full max-w-xl pointer-events-auto shadow-xl shadow-primary/10 rounded-[1.5rem] overflow-hidden transform transition-all hover:scale-[1.01]">
-                    <RentyCommandCenter
-                        firstName={firstName}
-                        feedItems={feedItemsWithActions}
-                        className="glass-premium border-t border-white/40 md:border md:rounded-[2rem] bg-white/80 dark:bg-black/80 backdrop-blur-2xl"
-                    />
                 </div>
             </div>
 
