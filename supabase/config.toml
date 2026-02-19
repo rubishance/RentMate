@@ -9,6 +9,11 @@ enabled = true
 verify_jwt = false
 entrypoint = "./functions/chat-support/index.ts"
 
+[functions.fetch-index-data]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/fetch-index-data/index.ts"
+
 [functions.analyze-contract]
 enabled = true
 verify_jwt = true

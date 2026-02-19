@@ -79,36 +79,15 @@ serve(async (req) => {
         const results: IndexData[] = [];
         const errors: string[] = [];
 
-        // 1. Fetch CPI (Consumer Price Index) from CBS with retry logic
-        // Series 120010 = General CPI (Madad Klali)
+        // 1. Fetch All Latest CBS Indices from price_selected_b
         try {
-            console.log('Fetching CPI data from CBS...');
-            // Fetch last 3 months to ensure we catch the latest update
-            const cpiUrl = 'https://api.cbs.gov.il/index/data/price?series=120010&format=json&download=false&last=6';
-            await fetchCbsSeries(cpiUrl, 'cpi', results, errors);
+            console.log('Fetching all latest Indices from CBS...');
+            // This endpoint is more reliable and returns the latest for all major indices
+            const selectedUrl = 'https://api.cbs.gov.il/index/data/price_selected_b?lang=en&format=json';
+            await fetchCbsSelectedXml(selectedUrl, results, errors);
         } catch (e) {
-            console.error('Error fetching CPI:', e);
-            errors.push(`CPI Fetch Error: ${e instanceof Error ? e.message : String(e)}`);
-        }
-
-        // 2. Fetch Construction Index (Series 200010)
-        try {
-            console.log('Fetching Construction index data from CBS...');
-            const constructionUrl = 'https://api.cbs.gov.il/index/data/price?series=200010&format=json&download=false&last=6';
-            await fetchCbsSeries(constructionUrl, 'construction', results, errors);
-        } catch (e) {
-            console.error('Error fetching Construction Index:', e);
-            errors.push(`Construction Fetch Error: ${e instanceof Error ? e.message : String(e)}`);
-        }
-
-        // 3. Fetch Housing Price Index (Series 40010)
-        try {
-            console.log('Fetching Housing index data from CBS...');
-            const housingUrl = 'https://api.cbs.gov.il/index/data/price?series=40010&format=json&download=false&last=6';
-            await fetchCbsSeries(housingUrl, 'housing', results, errors);
-        } catch (e) {
-            console.error('Error fetching Housing Index:', e);
-            errors.push(`Housing Fetch Error: ${e instanceof Error ? e.message : String(e)}`);
+            console.error('Error fetching CBS Selected:', e);
+            errors.push(`CBS Selected Fetch Error: ${e instanceof Error ? e.message : String(e)}`);
         }
 
         // 4. Fetch Exchange Rates from Bank of Israel (XML API)
@@ -135,6 +114,61 @@ serve(async (req) => {
             }
         }
 
+        // 2. Populate Missing Index Bases & Settings
+        try {
+            console.log('Checking for missing Index Bases and Settings...');
+            await populateIndexBases(adminSupabase);
+
+            // Ensure Admin Notification Settings exist
+            const settings = [
+                { key: 'admin_notification_email', value: 'admin@rentmate.co.il' },
+                { key: 'admin_security_whatsapp', value: '+972503602000' }
+            ];
+            await adminSupabase.from('system_settings').upsert(settings, { onConflict: 'key' });
+            console.log('Admin settings updated.');
+
+        } catch (e) {
+            console.error('Error populating index bases/settings:', e);
+            errors.push(`System Config Error: ${e instanceof Error ? e.message : String(e)}`);
+        }
+
+        // 3. Send Notification to Admin
+        try {
+            const currentMonth = new Date();
+            // Expected month is usually the previous month (e.g. in Feb we expect Jan)
+            const lastMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
+            const expectedMonthStr = lastMonth.toISOString().slice(0, 7);
+
+            const hasNewCbsData = results.some(r => r.source === 'cbs' && r.date === expectedMonthStr);
+            console.log(`Checking for new data (${expectedMonthStr}): ${hasNewCbsData ? 'FOUND' : 'NOT FOUND'}`);
+
+            const shouldNotify = hasNewCbsData || errors.length > 0;
+
+            if (shouldNotify) {
+                console.log('Sending update notification to admin...');
+                const notificationPayload = {
+                    type: 'index_update',
+                    success: hasNewCbsData && errors.length === 0,
+                    records_processed: results.length,
+                    errors: errors
+                };
+
+                await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-admin-alert`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${serviceRoleKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(notificationPayload)
+                });
+                console.log('Notification sent.');
+            } else {
+                console.log('No new data found and no system errors. Staying silent for retry.');
+            }
+        } catch (e) {
+            console.error('Error sending notification:', e);
+        }
+
         return new Response(JSON.stringify({
             success: true,
             records_processed: results.length,
@@ -152,6 +186,28 @@ serve(async (req) => {
         });
     }
 });
+
+async function populateIndexBases(supabase: any) {
+    const bases = [
+        // CPI Bases
+        { index_type: 'cpi', base_period_start: '2025-01-01', base_value: 100, chain_factor: 1.074 },
+        { index_type: 'cpi', base_period_start: '2023-01-01', base_value: 100, chain_factor: 1.026 },
+
+        // Construction Bases
+        { index_type: 'construction', base_period_start: '2025-07-01', base_value: 100, chain_factor: 1.387 },
+        { index_type: 'construction', base_period_start: '2011-08-01', base_value: 100, chain_factor: 1.0 }
+    ];
+
+    console.log('Upserting index_bases...');
+    const { error } = await supabase
+        .from('index_bases')
+        .upsert(bases, { onConflict: 'index_type,base_period_start' });
+
+    if (error) {
+        console.error('Error upserting index_bases:', error);
+        throw error;
+    }
+}
 
 async function fetchExchangeRatesXml(
     supabase: any,
@@ -209,36 +265,63 @@ async function fetchExchangeRatesXml(
     }
 }
 
-async function fetchCbsSeries(
+async function fetchCbsSelectedXml(
     url: string,
-    dbType: 'cpi' | 'housing' | 'construction',
     results: IndexData[],
     errors: string[]
 ) {
-    const resp = await fetchWithRetry(url, 3, 2000);
-    const json = await resp.json();
+    try {
+        console.log(`Fetching selected XML from ${url}...`);
+        // We use Mozilla User Agent to avoid being blocked by CBS
+        const resp = await fetch(url, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36' }
+        });
+        const text = await resp.text();
 
-    let points = [];
-    if (json.month) points = json.month;
-    else if (json.day) points = json.day;
-    else if (json.data) points = json.data;
+        // 1. Get the last_update date (e.g. 2026-01)
+        const dateMatch = text.match(/<last_update>(.*?)<\/last_update>/);
+        if (!dateMatch) {
+            errors.push('CBS XML Error: <last_update> not found');
+            return;
+        }
+        const lastUpdateDate = dateMatch[1].trim();
+        console.log(`CBS Last Update: ${lastUpdateDate}`);
 
-    if (Array.isArray(points)) {
-        for (const point of points) {
-            const dateStr = point.date.split('T')[0].slice(0, 7);
-            const value = parseFloat(point.value);
+        // 2. Parse individual indices
+        const indBlocks = text.match(/<ind>(.*?)<\/ind>/gs);
+        if (!indBlocks) {
+            errors.push('CBS XML Error: No <ind> blocks found');
+            return;
+        }
 
-            if (dateStr && !isNaN(value)) {
-                results.push({
-                    index_type: dbType,
-                    date: dateStr,
-                    value: value,
-                    source: 'cbs'
-                });
+        const typeMap: Record<string, 'cpi' | 'housing' | 'construction'> = {
+            '120010': 'cpi',
+            '120490': 'housing',
+            '200010': 'construction'
+        };
+
+        for (const block of indBlocks) {
+            const codeMatch = block.match(/<code>(.*?)<\/code>/);
+            const valueMatch = block.match(/<index>(.*?)<\/index>/);
+
+            if (codeMatch && valueMatch) {
+                const code = codeMatch[1].trim();
+                const value = parseFloat(valueMatch[1]);
+                const type = typeMap[code];
+
+                if (type && !isNaN(value)) {
+                    results.push({
+                        index_type: type,
+                        date: lastUpdateDate,
+                        value: value,
+                        source: 'cbs'
+                    });
+                    console.log(`Parsed ${type}: ${value} for ${lastUpdateDate}`);
+                }
             }
         }
-        console.log(`Successfully fetched ${points.length} ${dbType} records`);
-    } else {
-        errors.push(`${dbType} Parse Error: content structure unknown`);
+    } catch (e) {
+        console.error('Failed to parse CBS XML:', e);
+        errors.push(`CBS XML Parse Error: ${e instanceof Error ? e.message : String(e)}`);
     }
 }

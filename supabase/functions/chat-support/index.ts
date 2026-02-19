@@ -803,7 +803,21 @@ serve(async (req) => {
     }
 
     try {
+        const startTime = Date.now();
         console.log("Chat support function invoked.");
+
+        const logPerf = async (step: string, duration: number, details?: any) => {
+            console.log(`[PERF] ${step}: ${duration.toFixed(2)}ms`);
+            if (userId) {
+                const sb = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+                await sb.from('debug_logs').insert({
+                    function_name: 'chat-support:perf',
+                    level: 'info',
+                    message: `Step: ${step}`,
+                    details: { ...details, duration, userId }
+                }).catch(e => console.error("Logging failed", e));
+            }
+        };
 
         if (!OPENAI_API_KEY && !GEMINI_API_KEY) {
             console.error("Critical: AI API Keys missing from environment.");
@@ -856,6 +870,7 @@ serve(async (req) => {
             }
             userId = user?.id;
             console.log("Extracted userId from token:", userId);
+            await logPerf("auth_extraction", Date.now() - startTime);
         } else {
             console.log("No authorization header provided.");
         }
@@ -870,9 +885,12 @@ serve(async (req) => {
             if (usageError) {
                 console.error("Usage check error:", usageError);
             } else if (usageCheck && !usageCheck.allowed) {
+                // ... message generation ...
                 const errorMessage = usageCheck.reason === 'message_limit_exceeded'
                     ? `הגעת למגבלת ההודעות החודשית (${usageCheck.limit} הודעות). שדרג את המנוי שלך להמשך שימוש. / You've reached your monthly message limit (${usageCheck.limit} messages). Please upgrade your subscription.`
                     : `הגעת למגבלת הטוקנים החודשית. שדרג את המנוי שלך. / You've reached your monthly token limit. Please upgrade your subscription.`;
+
+                await logPerf("usage_limit_hit", Date.now() - startTime, { reason: usageCheck.reason });
 
                 return new Response(
                     JSON.stringify({
@@ -883,6 +901,7 @@ serve(async (req) => {
                     { headers: { ...corsHeaders, "Content-Type": "application/json" } }
                 );
             }
+            await logPerf("usage_check", Date.now() - startTime);
         }
 
         // Detect user language and load appropriate knowledge base
@@ -978,6 +997,7 @@ ${knowledgeBase}`;
             model = "gemini-1.5-flash";
         }
 
+        const aiStartTime = Date.now();
         let response = await fetch(apiUrl, {
             method: "POST",
             headers: {
@@ -991,9 +1011,11 @@ ${knowledgeBase}`;
                 temperature: 0.7,
                 max_tokens: 800,
             }),
+            signal: AbortSignal.timeout(50000) // 50s timeout
         });
 
         let result = await response.json();
+        await logPerf(`ai_first_turn_${model}`, Date.now() - aiStartTime);
 
         if (!response.ok) {
             return new Response(
@@ -1029,6 +1051,7 @@ ${knowledgeBase}`;
             const functionArgs = JSON.parse(toolCall.function.arguments);
 
             let functionResult;
+            const toolStartTime = Date.now();
 
             // Execute the function
             if (!userId) {
@@ -1103,8 +1126,9 @@ ${knowledgeBase}`;
                 } else if (functionName === "debug_entity") {
                     functionResult = await debugEntity(functionArgs, userId);
                 } else {
-                    functionResult = { success: false, message: "Unknown function" };
                 }
+                const functionName = toolCall.function.name;
+                await logPerf(`tool_execution_${functionName}`, Date.now() - toolStartTime);
             }
 
             // Send function result back to OpenAI
@@ -1128,9 +1152,12 @@ ${knowledgeBase}`;
                     temperature: 0.7,
                     max_tokens: 800,
                 }),
+                signal: AbortSignal.timeout(50000) // 50s timeout
             });
 
+            const aiSecondTurnStartTime = Date.now();
             result = await response.json();
+            await logPerf(`ai_second_turn_${model}`, Date.now() - aiSecondTurnStartTime);
 
             // Log final usage if authentication and usage info are present
             if (userId && result.usage) {
@@ -1185,6 +1212,9 @@ ${knowledgeBase}`;
             try { return JSON.parse(m.content); } catch (e) { return null; }
         });
         const uiAction = toolOutputs.find(o => o && o.ui_action);
+
+        const totalDuration = Date.now() - startTime;
+        await logPerf("total_request_duration", totalDuration);
 
         return new Response(
             JSON.stringify({

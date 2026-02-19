@@ -1,5 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
@@ -166,6 +167,43 @@ serve(async (req) => {
                     });
                     const waData = await waRes.json();
                     if (!waRes.ok) console.error("WhatsApp API Error:", waData);
+                } catch (waErr) {
+                    console.error("WhatsApp Send Failed:", waErr);
+                }
+            }
+        } else if (record.type === 'index_update') {
+            const isSuccess = record.success !== false;
+            subject = isSuccess ? "Economic Indices Updated Successfully ✅" : "Index Update Failed or Partial ⚠️";
+
+            const message = `
+                <p><strong>Status:</strong> ${isSuccess ? '<span style="color: green;">Success</span>' : '<span style="color: red;">Failed/Partial</span>'}</p>
+                <p><strong>Records Processed:</strong> ${record.records_processed || 0}</p>
+                <p><strong>Errors:</strong> ${record.errors?.length > 0 ? record.errors.join(', ') : 'None'}</p>
+                <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+            `;
+            htmlBody = wrapInTemplate(isSuccess ? "עדכון מדדים הושלם בהצלחה" : "שגיאה בעדכון מדדים", message, "http://localhost:5173/admin/indices", "ניהול מדדים");
+
+            // --- SEND WHATSAPP ---
+            if (WHATSAPP_ACCESS_TOKEN && WHATSAPP_PHONE_NUMBER_ID && adminWhatsApp) {
+                try {
+                    console.log(`Sending Index Update WhatsApp to ${adminWhatsApp}...`);
+                    const waBody = isSuccess
+                        ? `✅ *עדכון מדדים RentMate*\n\nהמדדים עודכנו בהצלחה.\nרשומות שעובדו: ${record.records_processed || 0}\nזמן: ${new Date().toLocaleString()}`
+                        : `⚠️ *שגיאה בעדכון מדדים RentMate*\n\nחלו שגיאות במהלך העדכון.\nשגיאות: ${record.errors?.join(', ')}\nבדוק את לוג המערכת.`;
+
+                    await fetch(`https://graph.facebook.com/v18.0/${WHATSAPP_PHONE_NUMBER_ID}/messages`, {
+                        method: "POST",
+                        headers: {
+                            "Authorization": `Bearer ${WHATSAPP_ACCESS_TOKEN}`,
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            messaging_product: "whatsapp",
+                            to: adminWhatsApp,
+                            type: "text",
+                            text: { body: waBody }
+                        }),
+                    });
                 } catch (waErr) {
                     console.error("WhatsApp Send Failed:", waErr);
                 }
