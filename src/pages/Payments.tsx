@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { format, subMonths } from 'date-fns';
+import { format, subMonths, addMonths, isBefore, isAfter, startOfDay } from 'date-fns';
 import { supabase } from '../lib/supabase';
 import { cn } from '../lib/utils';
 import type { Payment } from '../types/database';
@@ -8,6 +8,7 @@ import { AddPaymentModal } from '../components/modals/AddPaymentModal';
 import { PaymentDetailsModal } from '../components/modals/PaymentDetailsModal';
 import { BulkCheckModal } from '../components/modals/BulkCheckModal';
 import { DatePicker } from '../components/ui/DatePicker';
+import { MultiSelect } from '../components/ui/MultiSelect';
 import { RegeneratePaymentsModal } from '../components/modals/RegeneratePaymentsModal';
 import { useTranslation } from '../hooks/useTranslation';
 import { useDataCache } from '../contexts/DataCacheContext';
@@ -44,7 +45,7 @@ export function Payments() {
     }, [scanAndRepair]);
 
     const [loading, setLoading] = useState(true);
-    const [periodFilter, setPeriodFilter] = useState<'all' | '3m' | '6m' | '1y'>('all');
+    const [periodFilter, setPeriodFilter] = useState<'all' | '3m' | '6m' | '1y' | 'next3m' | 'next6m' | 'next1y' | 'currentWindow'>('all');
     const [stats, setStats] = useState({
         monthlyExpected: 0,
         monthlyIndexSum: 0,
@@ -59,12 +60,12 @@ export function Payments() {
     const [detailsModalProps, setDetailsModalProps] = useState<{ editMode: boolean, status?: any }>({ editMode: false });
     const [showFilters, setShowFilters] = useState(false);
     const [filters, setFilters] = useState({
-        tenantId: 'all',
-        propertyId: 'all',
+        tenantIds: [] as string[],
+        propertyIds: [] as string[],
         startDate: '',
         endDate: '',
-        paymentMethod: 'all',
-        type: 'all' as 'all' | 'rent' | 'bills'
+        paymentMethods: [] as string[],
+        types: [] as string[]
     });
 
     useEffect(() => {
@@ -196,29 +197,45 @@ export function Payments() {
 
     const filteredPayments = payments.filter(payment => {
         const p = payment as any;
-        if (filters.type !== 'all' && p.displayType !== filters.type) return false;
-        if (filters.tenantId !== 'all') {
+        if (filters.types.length > 0 && !filters.types.includes(p.displayType)) return false;
+
+        if (filters.tenantIds.length > 0) {
             const tenantsArray = Array.isArray(p.contracts?.tenants) ? p.contracts.tenants : (p.contracts?.tenants ? [p.contracts.tenants] : []);
             const matches = tenantsArray.some((t: any) =>
-                t.id === filters.tenantId ||
-                t.id_number === filters.tenantId ||
-                t.name === filters.tenantId
+                filters.tenantIds.includes(t.id) ||
+                filters.tenantIds.includes(t.id_number) ||
+                filters.tenantIds.includes(t.name)
             );
             if (!matches) return false;
         }
-        if (filters.propertyId !== 'all') {
+
+        if (filters.propertyIds.length > 0) {
             const propertyId = p.contracts?.properties?.id || p.property_id;
-            if (propertyId !== filters.propertyId) return false;
+            if (!filters.propertyIds.includes(propertyId)) return false;
         }
-        if (filters.paymentMethod !== 'all' && p.payment_method !== filters.paymentMethod) return false;
+
+        if (filters.paymentMethods.length > 0 && !filters.paymentMethods.includes(p.payment_method)) return false;
+
         if (filters.startDate && p.due_date < filters.startDate) return false;
         if (filters.endDate && p.due_date > filters.endDate) return false;
 
         if (periodFilter !== 'all') {
             const dueDate = new Date(p.due_date);
-            const months = periodFilter === '3m' ? 3 : periodFilter === '6m' ? 6 : 12;
-            const threshold = subMonths(new Date(), months);
-            if (dueDate < threshold) return false;
+            const now = startOfDay(new Date());
+
+            if (periodFilter === '3m' || periodFilter === '6m' || periodFilter === '1y') {
+                const months = periodFilter === '3m' ? 3 : periodFilter === '6m' ? 6 : 12;
+                const threshold = subMonths(now, months);
+                if (isBefore(dueDate, threshold) || isAfter(dueDate, now)) return false;
+            } else if (periodFilter === 'next3m' || periodFilter === 'next6m' || periodFilter === 'next1y') {
+                const months = periodFilter === 'next3m' ? 3 : periodFilter === 'next6m' ? 6 : 12;
+                const threshold = addMonths(now, months);
+                if (isAfter(dueDate, threshold) || isBefore(dueDate, now)) return false;
+            } else if (periodFilter === 'currentWindow') {
+                const start = subMonths(now, 1);
+                const end = addMonths(now, 3);
+                if (isBefore(dueDate, start) || isAfter(dueDate, end)) return false;
+            }
         }
 
         return true;
@@ -243,12 +260,12 @@ export function Payments() {
 
     const resetFilters = () => {
         setFilters({
-            tenantId: 'all',
-            propertyId: 'all',
+            tenantIds: [],
+            propertyIds: [],
             startDate: '',
             endDate: '',
-            paymentMethod: 'all',
-            type: 'all'
+            paymentMethods: [],
+            types: []
         });
         setPeriodFilter('all');
     };
@@ -291,54 +308,147 @@ export function Payments() {
 
                 <div className="flex items-center gap-3">
                     <Button
-                        variant="ghost"
-                        onClick={() => setShowFilters(true)}
-                        className="w-12 h-12 rounded-[1.2rem] p-0 flex items-center justify-center shrink-0"
+                        variant="secondary"
+                        onClick={() => setIsBulkCheckModalOpen(true)}
+                        className="hidden sm:flex"
                     >
-                        <Filter className="w-6 h-6" />
+                        <Wallet className="w-4 h-4 mr-2 text-amber-500" />
+                        {t('bulkCheckEntryTitle')}
                     </Button>
-                    <div className="flex items-center gap-3">
-                        <Button
-                            variant="secondary"
-                            onClick={() => setIsBulkCheckModalOpen(true)}
-                            className="hidden sm:flex"
-                        >
-                            <Wallet className="w-4 h-4 mr-2 text-amber-500" />
-                            {t('bulkCheckEntryTitle')}
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            onClick={() => scanAndRepair(false)} // manual mode with toasts
-                            className="hidden md:flex bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20"
-                            title={t('troubleshootPayments') || 'Troubleshoot'}
-                        >
-                            <RefreshCw className="w-4 h-4 mr-2" />
-                            {t('troubleshoot') || 'Troubleshoot'}
-                        </Button>
-                        <Button
-                            onClick={() => setIsAddModalOpen(true)}
-                            className="shadow-jewel"
-                        >
-                            <Plus className="w-5 h-5 mr-2" />
-                            {t('addPayment')}
-                        </Button>
-                    </div>
+                    <Button
+                        onClick={() => setIsAddModalOpen(true)}
+                        className="h-14 w-14 rounded-2xl p-0 flex items-center justify-center shadow-jewel"
+                        title={t('addPayment')}
+                    >
+                        <Plus className="w-7 h-7" />
+                    </Button>
                 </div>
             </div>
 
+            {/* Inline Filters */}
+            <Card glass className="relative z-50 rounded-[2rem] border shadow-minimal bg-slate-500/5 border-slate-500/10 overflow-visible">
+                <CardContent className="p-6">
+                    <div className="flex flex-col gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('timePeriod')}</label>
+                                <Select
+                                    value={periodFilter}
+                                    onChange={(v: any) => setPeriodFilter(v)}
+                                    options={[
+                                        { value: 'all', label: t('allTime') },
+                                        { value: '3m', label: t('last3Months') },
+                                        { value: '6m', label: t('last6Months') },
+                                        { value: '1y', label: t('lastYear') },
+                                        { value: 'next3m', label: t('next3Months') || 'Next 3 Months' },
+                                        { value: 'next6m', label: t('next6Months') || 'Next 6 Months' },
+                                        { value: 'next1y', label: t('nextYear') || 'Next Year' },
+                                        { value: 'currentWindow', label: t('currentWindow') || 'Current Window' }
+                                    ]}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('tenant')}</label>
+                                <MultiSelect
+                                    placeholder={t('allTenants')}
+                                    options={uniqueTenants.map((t: any) => ({ value: t.id, label: t.name }))}
+                                    selected={filters.tenantIds}
+                                    onChange={(vals) => setFilters(prev => ({ ...prev, tenantIds: vals }))}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('asset')}</label>
+                                <MultiSelect
+                                    placeholder={t('allAssets')}
+                                    options={uniqueProperties.map((p: any) => ({ value: p.id, label: p.address }))}
+                                    selected={filters.propertyIds}
+                                    onChange={(vals) => setFilters(prev => ({ ...prev, propertyIds: vals }))}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('method')}</label>
+                                <MultiSelect
+                                    placeholder={t('allMethods')}
+                                    options={[
+                                        { value: 'transfer', label: t('transfer') },
+                                        { value: 'check', label: t('check') },
+                                        { value: 'cash', label: t('cash') },
+                                        { value: 'bit', label: t('bit') || 'Bit' }
+                                    ]}
+                                    selected={filters.paymentMethods}
+                                    onChange={(vals) => setFilters(prev => ({ ...prev, paymentMethods: vals }))}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t border-slate-500/10">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <div className="flex items-center gap-2 bg-slate-500/5 px-4 py-2 rounded-xl border border-slate-500/10">
+                                    <DatePicker
+                                        placeholder={t('from')}
+                                        value={filters.startDate ? new Date(filters.startDate) : undefined}
+                                        onChange={(date) => setFilters(prev => ({
+                                            ...prev,
+                                            startDate: date ? format(date, 'yyyy-MM-dd') : ''
+                                        }))}
+                                        className="bg-transparent border-0 h-auto p-0 w-24 text-xs font-bold"
+                                    />
+                                    <span className="text-muted-foreground text-[10px]">—</span>
+                                    <DatePicker
+                                        placeholder={t('to')}
+                                        value={filters.endDate ? new Date(filters.endDate) : undefined}
+                                        onChange={(date) => setFilters(prev => ({
+                                            ...prev,
+                                            endDate: date ? format(date, 'yyyy-MM-dd') : ''
+                                        }))}
+                                        className="bg-transparent border-0 h-auto p-0 w-24 text-xs font-bold"
+                                    />
+                                </div>
+
+                                <Select
+                                    value={filters.types.length === 1 ? filters.types[0] : 'all'}
+                                    onChange={(v: any) => setFilters(prev => ({ ...prev, types: v === 'all' ? [] : [v] }))}
+                                    options={[
+                                        { value: 'all', label: t('allTypes') },
+                                        { value: 'rent', label: t('rent') },
+                                        { value: 'bills', label: t('bills') }
+                                    ]}
+                                    className="w-32"
+                                />
+                            </div>
+
+                            {(periodFilter !== 'all' || filters.tenantIds.length > 0 || filters.propertyIds.length > 0 || filters.paymentMethods.length > 0 || filters.startDate || filters.endDate || filters.types.length > 0) && (
+                                <Button
+                                    variant="ghost"
+                                    onClick={resetFilters}
+                                    className="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-700"
+                                >
+                                    <RotateCcw className="w-3 h-3 mr-2" />
+                                    {t('resetFilters') || 'Reset'}
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
             {/* Active Filters Summary (Quick remove) */}
-            {(periodFilter !== 'all' || Object.values(filters).some(v => v !== 'all' && v !== '')) && (
+            {(periodFilter !== 'all' || filters.tenantIds.length > 0 || filters.propertyIds.length > 0) && (
                 <div className="flex flex-wrap gap-2">
                     {periodFilter !== 'all' && (
                         <div className="px-4 py-2 bg-brand-50 dark:bg-brand-900/20 text-brand-600 rounded-full text-[10px] font-black uppercase flex items-center gap-2 border border-brand-100 dark:border-brand-900/30">
-                            {periodFilter === '3m' ? t('last3Months') : periodFilter === '6m' ? t('last6Months') : t('lastYear')}
+                            {periodFilter === '3m' ? t('last3Months') :
+                                periodFilter === '6m' ? t('last6Months') :
+                                    periodFilter === '1y' ? t('lastYear') :
+                                        periodFilter === 'next3m' ? (t('next3Months') || 'Next 3 Months') :
+                                            periodFilter === 'next6m' ? (t('next6Months') || 'Next 6 Months') :
+                                                periodFilter === 'next1y' ? (t('nextYear') || 'Next Year') :
+                                                    periodFilter === 'currentWindow' ? (t('currentWindow') || 'Current Window') :
+                                                        t('allTime')}
                             <X className="w-3 h-3 cursor-pointer" onClick={() => setPeriodFilter('all')} />
-                        </div>
-                    )}
-                    {filters.type !== 'all' && (
-                        <div className="px-4 py-2 bg-brand-50 dark:bg-brand-900/20 text-brand-600 rounded-full text-[10px] font-black uppercase flex items-center gap-2 border border-brand-100 dark:border-brand-900/30">
-                            {t(filters.type as any)}
-                            <X className="w-3 h-3 cursor-pointer" onClick={() => setFilters(f => ({ ...f, type: 'all' }))} />
                         </div>
                     )}
                 </div>
@@ -383,86 +493,7 @@ export function Payments() {
                 </Card>
             </div>
 
-            {/* Filter Drawer */}
-            <FilterDrawer
-                isOpen={showFilters}
-                onClose={() => setShowFilters(false)}
-                onReset={resetFilters}
-                title={t('paymentFilters')}
-            >
-                <div className="space-y-8">
-                    <div className="space-y-4">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('timePeriod')}</label>
-                        <div className="grid grid-cols-2 gap-2">
-                            {(['3m', '6m', '1y', 'all'] as const).map((p) => (
-                                <Button
-                                    key={p}
-                                    variant={periodFilter === p ? 'primary' : 'outline'}
-                                    onClick={() => setPeriodFilter(p)}
-                                    className="h-12"
-                                >
-                                    {p === '3m' ? t('last3Months') : p === '6m' ? t('last6Months') : p === '1y' ? t('lastYear') : t('allTime')}
-                                </Button>
-                            ))}
-                        </div>
-                    </div>
 
-                    <div className="space-y-6">
-                        <Select
-                            label={t('paymentType')}
-                            value={filters.type}
-                            onChange={(value) => setFilters(prev => ({ ...prev, type: value as any }))}
-                            options={[
-                                { value: 'all', label: t('allTypes') },
-                                { value: 'rent', label: t('rent') },
-                                { value: 'bills', label: t('bills') }
-                            ]}
-                        />
-
-                        <Select
-                            label={t('tenant')}
-                            value={filters.tenantId}
-                            onChange={(value) => setFilters(prev => ({ ...prev, tenantId: value }))}
-                            options={[
-                                { value: 'all', label: t('allTenants') },
-                                ...uniqueTenants.map((t: any) => ({ value: t.id, label: t.name }))
-                            ]}
-                        />
-
-                        <Select
-                            label={t('asset')}
-                            value={filters.propertyId}
-                            onChange={(value) => setFilters(prev => ({ ...prev, propertyId: value }))}
-                            options={[
-                                { value: 'all', label: t('allAssets') },
-                                ...uniqueProperties.map((p: any) => ({ value: p.id, label: p.address }))
-                            ]}
-                        />
-
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('period')}</label>
-                            <div className="flex flex-col gap-3">
-                                <DatePicker
-                                    placeholder={t('from')}
-                                    value={filters.startDate ? new Date(filters.startDate) : undefined}
-                                    onChange={(date) => setFilters(prev => ({
-                                        ...prev,
-                                        startDate: date ? format(date, 'yyyy-MM-dd') : ''
-                                    }))}
-                                />
-                                <DatePicker
-                                    placeholder={t('to')}
-                                    value={filters.endDate ? new Date(filters.endDate) : undefined}
-                                    onChange={(date) => setFilters(prev => ({
-                                        ...prev,
-                                        endDate: date ? format(date, 'yyyy-MM-dd') : ''
-                                    }))}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </FilterDrawer>
 
             {/* Payments List */}
             <div className="space-y-4">

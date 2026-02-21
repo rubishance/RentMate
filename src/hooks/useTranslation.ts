@@ -265,6 +265,10 @@ export type TranslationKeys =
     | 'last3Months'
     | 'last6Months'
     | 'lastYear'
+    | 'next3Months'
+    | 'next6Months'
+    | 'nextYear'
+    | 'currentWindow'
     | 'allTime'
     | 'filters'
     | 'tenant'
@@ -1666,6 +1670,10 @@ export const translations: Record<string, any> = {
         stable: 'יציב',
         stable_female: 'יציבה',
         stable_male: 'יציב',
+        next3Months: '3 חודשים הבאים',
+        next6Months: '6 חודשים הבאים',
+        nextYear: 'השנה הבאה',
+        currentWindow: 'חלון נוכחי (חודש אחורה - 3 קדימה)',
         knowledgeBase: 'מרכז ידע',
         errorTitle404: 'אופס! הדף לא נמצא',
         errorDesc404: 'מצטערים, הדף שחיפשת אינו קיים או שהועבר לכתובת אחרת.',
@@ -2266,6 +2274,10 @@ export const translations: Record<string, any> = {
         'North': 'North',
         'South': 'South',
         'Center': 'Center',
+        next3Months: 'Next 3 Months',
+        next6Months: 'Next 6 Months',
+        nextYear: 'Next Year',
+        currentWindow: 'Current Window (-1m to +3m)',
     },
 };
 
