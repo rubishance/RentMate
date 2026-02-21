@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Save, User as UserIcon, Loader2, Edit } from 'lucide-react';
+import { X, Save, User as UserIcon, Loader2, Edit, Lock } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Checkbox } from '../ui/Checkbox';
@@ -22,6 +22,12 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
     const [phone, setPhone] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isReadOnly, setIsReadOnly] = useState(true);
+
+    // Password change state
+    const [isChangingPassword, setIsChangingPassword] = useState(false);
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [showPasswords, setShowPasswords] = useState(false);
 
     useScrollLock(isOpen);
 
@@ -46,11 +52,56 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
             return;
         }
 
+        if (isChangingPassword) {
+            if (!currentPassword || !newPassword) {
+                alert(lang === 'he' ? 'נא להזין סיסמה נוכחית וחדשה' : 'Please enter both current and new passwords');
+                return;
+            }
+            if (newPassword.length < 6) {
+                alert(lang === 'he' ? 'הסיסמה חייבת להכיל לפחות 6 תווים' : 'Password must be at least 6 characters');
+                return;
+            }
+        }
+
         setIsLoading(true);
         try {
             const { data: { user } } = await supabase.auth.getUser();
 
             if (!user) throw new Error('No user found');
+
+            // Handle password change first if requested
+            if (isChangingPassword) {
+                // Verify current password by signing in
+                const { error: signInError } = await supabase.auth.signInWithPassword({
+                    email: user.email!,
+                    password: currentPassword
+                });
+
+                if (signInError) {
+                    throw new Error(lang === 'he' ? 'הסיסמה הנוכחית שגויה' : 'Incorrect current password');
+                }
+
+                // Update password
+                const { error: updateError } = await supabase.auth.updateUser({
+                    password: newPassword
+                });
+
+                if (updateError) throw updateError;
+
+                // Send notification email
+                await supabase.functions.invoke('send-notification-email', {
+                    body: {
+                        email: user.email,
+                        lang: lang,
+                        notification: {
+                            title: lang === 'he' ? 'הסיסמה שונתה בהצלחה' : 'Password Changed Successfully',
+                            message: lang === 'he'
+                                ? 'הסיסמה לחשבון ה-RentMate שלך שונתה בהצלחה. אם לא ביצעת פעולה זו, אנא צור קשר עם התמיכה מיד.'
+                                : 'The password for your RentMate account has been successfully changed. If you did not perform this action, please contact support immediately.'
+                        }
+                    }
+                });
+            }
 
             const fullName = `${firstName.trim()} ${lastName.trim()}`;
             const updates = {
@@ -72,7 +123,14 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                 data: { full_name: fullName }
             });
 
+            // Reset password fields
+            setIsChangingPassword(false);
+            setCurrentPassword('');
+            setNewPassword('');
+
             onSuccess();
+            alert(lang === 'he' ? 'הפרופיל עודכן בהצלחה' : 'Profile updated successfully');
+
         } catch (error) {
             console.error('Error updating profile:', error);
             alert(lang === 'he' ? `שגיאה בעדכון פרופיל: ${(error as any).message || 'שגיאה לא ידועה'}` : `Failed to update profile: ${(error as any).message || 'Unknown error'}`);
@@ -147,6 +205,54 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                                     : 'bg-secondary border-border focus:ring-2 focus:ring-indigo-500'
                                     }`}
                             />
+                        </div>
+
+                        <div className="space-y-4 pt-4 border-t border-border">
+                            <button
+                                onClick={() => setIsChangingPassword(!isChangingPassword)}
+                                className="text-sm font-semibold text-primary hover:underline flex items-center gap-2"
+                            >
+                                <Lock className="w-4 h-4" />
+                                {lang === 'he' ? 'שינוי סיסמה' : 'Change Password'}
+                            </button>
+
+                            {isChangingPassword && (
+                                <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block ml-1">
+                                            {lang === 'he' ? 'סיסמה נוכחית' : 'Current Password'}
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type={showPasswords ? "text" : "password"}
+                                                value={currentPassword}
+                                                onChange={(e) => setCurrentPassword(e.target.value)}
+                                                className="w-full p-3 border border-border bg-secondary rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block ml-1">
+                                            {lang === 'he' ? 'סיסמה חדשה' : 'New Password'}
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type={showPasswords ? "text" : "password"}
+                                                value={newPassword}
+                                                onChange={(e) => setNewPassword(e.target.value)}
+                                                className="w-full p-3 border border-border bg-secondary rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"
+                                            />
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPasswords(!showPasswords)}
+                                        className="text-xs text-muted-foreground hover:text-foreground"
+                                    >
+                                        {showPasswords ? (lang === 'he' ? 'הסתר סיסמאות' : 'Hide Passwords') : (lang === 'he' ? 'הצג סיסמאות' : 'Show Passwords')}
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

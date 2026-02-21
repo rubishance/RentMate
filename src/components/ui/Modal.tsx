@@ -43,7 +43,7 @@ export const Modal: React.FC<ModalProps> = ({
         <AnimatePresence>
             {isOpen && (
                 <div className={cn(
-                    "fixed inset-0 z-[100] flex items-start justify-center p-4 sm:p-6 pt-20 sm:pt-24",
+                    "fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6",
                     modeless && "pointer-events-none"
                 )}>
                     {/* Backdrop */}

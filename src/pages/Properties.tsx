@@ -24,7 +24,7 @@ import { useDataCache } from '../contexts/DataCacheContext';
 import { useSubscription } from '../hooks/useSubscription';
 import { SecureImage } from '../components/common/SecureImage';
 
-import { Trash2 } from 'lucide-react';
+import { Trash2, Plus } from 'lucide-react';
 
 import { cn } from '../lib/utils';
 import { useStack } from '../contexts/StackContext';
@@ -281,8 +281,12 @@ export function Properties() {
                         {lang === 'he' ? 'נכסים' : 'properties'}
                     </h1>
                 </div>
-
-
+                <Button
+                    onClick={handleAdd}
+                    className="w-12 h-12 rounded-[1.2rem] shadow-jewel p-0 flex items-center justify-center shrink-0"
+                >
+                    <Plus className="w-6 h-6" />
+                </Button>
             </div>
 
             {/* Empty State */}

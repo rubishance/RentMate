@@ -214,13 +214,13 @@ export function ChatWidget() {
         }
     }, [uiAction, navigate, clearUiAction, push, clear, t]);
 
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const scrollToBottom = (instant = false) => {
+        messagesEndRef.current?.scrollIntoView({ behavior: instant ? 'auto' : 'smooth' });
     };
 
     useEffect(() => {
-        scrollToBottom();
-    }, [botMessages]);
+        scrollToBottom(isLoading);
+    }, [botMessages, isLoading]);
 
     // Sync transcript to input
     useEffect(() => {
@@ -335,7 +335,10 @@ export function ChatWidget() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className={cn(
-                "fixed top-4 left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center space-y-4 w-full px-4 max-w-[500px]"
+                "fixed z-[60] flex flex-col transition-all duration-300",
+                isOpen
+                    ? "inset-0 items-center justify-center pointer-events-none"
+                    : "top-4 left-0 right-0 mx-auto w-full px-4 max-w-[500px] items-center space-y-4"
             )}
         >
             <AnimatePresence>
@@ -348,7 +351,7 @@ export function ChatWidget() {
                         initial={{ opacity: 0, y: -20, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                        className="w-full max-w-[400px] h-[540px] bg-white/90 dark:bg-black/80 backdrop-blur-xl border border-gray-200 dark:border-white/20 rounded-2xl shadow-2xl flex flex-col overflow-hidden origin-top"
+                        className="pointer-events-auto w-full max-w-[400px] h-[540px] bg-white/90 dark:bg-black/80 backdrop-blur-xl border border-gray-200 dark:border-white/20 rounded-2xl shadow-2xl flex flex-col overflow-hidden origin-center"
                     >
                         {/* Header */}
                         <div className="p-4 border-b border-gray-200 dark:border-white/10 flex justify-between items-center cursor-move transition-colors bg-white dark:bg-black text-gray-900 dark:text-white">

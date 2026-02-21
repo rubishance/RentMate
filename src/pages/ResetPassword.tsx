@@ -52,6 +52,24 @@ export function ResetPassword() {
             });
 
             if (error) throw error;
+
+            // Send notification email
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user?.email) {
+                await supabase.functions.invoke('send-notification-email', {
+                    body: {
+                        email: user.email,
+                        lang: lang,
+                        notification: {
+                            title: lang === 'he' ? 'הסיסמה שונתה בהצלחה' : 'Password Changed Successfully',
+                            message: lang === 'he'
+                                ? 'הסיסמה לחשבון ה-RentMate שלך שונתה בהצלחה. אם לא ביצעת פעולה זו, אנא צור קשר עם התמיכה מיד.'
+                                : 'The password for your RentMate account has been successfully changed. If you did not perform this action, please contact support immediately.'
+                        }
+                    }
+                });
+            }
+
             setSuccess(true);
             setTimeout(() => navigate('/login'), 3000);
         } catch (err: any) {

@@ -146,7 +146,13 @@ export function PaymentDetailsModal({ isOpen, onClose, payment, onSuccess, initi
                                     <div className="p-4 bg-gray-50 dark:bg-neutral-800 rounded-2xl border border-gray-100 dark:border-neutral-800">
                                         <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1 block">{t('tenant')}</span>
                                         <span className="text-sm font-bold text-black dark:text-white line-clamp-1">
-                                            {(payment as any).contracts?.tenants?.name || t('unknown')}
+                                            {(() => {
+                                                const tenants = (payment as any).contracts?.tenants;
+                                                if (Array.isArray(tenants)) {
+                                                    return tenants.map((t: any) => t.name).filter(Boolean).join(', ');
+                                                }
+                                                return tenants?.name || t('unknown');
+                                            })()}
                                         </span>
                                     </div>
                                 </div>

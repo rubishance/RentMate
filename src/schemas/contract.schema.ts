@@ -92,6 +92,14 @@ export const contractSchema = z.object({
 }, {
     message: 'propertyRequired',
     path: ['selectedPropertyId']
+}).refine(data => {
+    if (data.hasLinkageCeiling) {
+        return !!data.linkageCeiling && data.linkageCeiling > 0;
+    }
+    return true;
+}, {
+    message: 'linkageCeilingRequired',
+    path: ['linkageCeiling']
 });
 
 export type ContractFormData = z.infer<typeof contractSchema>;

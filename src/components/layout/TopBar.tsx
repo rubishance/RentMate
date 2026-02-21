@@ -24,10 +24,17 @@ export function TopBar() {
                         className="w-5 h-5 invert dark:invert-0"
                     />
                 </div>
-                <span className="text-2xl tracking-tighter text-black dark:text-white leading-none font-sans lowercase hidden sm:inline-block">
-                    <span className="font-black">Rent</span>
-                    <span className="font-normal opacity-40">Mate</span>
-                </span>
+                <div className="flex flex-col">
+                    <span className="text-2xl tracking-tighter text-black dark:text-white leading-none font-sans lowercase hidden sm:inline-block">
+                        <span className="font-black">Rent</span>
+                        <span className="font-normal opacity-40">Mate</span>
+                    </span>
+                    {import.meta.env.VITE_ENVIRONMENT === 'staging' && (
+                        <span className="text-[10px] font-black tracking-widest text-orange-500 dark:text-orange-400 uppercase leading-none mt-1 bg-orange-500/10 px-1 rounded animate-pulse">
+                            STAGING TESTS
+                        </span>
+                    )}
+                </div>
             </div>
 
             {/* Right: Actions */}

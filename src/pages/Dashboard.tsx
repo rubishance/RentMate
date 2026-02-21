@@ -18,6 +18,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { SmartActionsRow } from '../components/dashboard/SmartActionsRow';
 import { SetupProgressWidget } from '../components/dashboard/SetupProgressWidget';
 import { Button } from '../components/ui/Button';
+import { QuickActions } from '../components/dashboard/QuickActions';
+import { AddPaymentModal } from '../components/modals/AddPaymentModal';
 
 export function Dashboard() {
     const { lang, t } = useTranslation();
@@ -37,6 +39,7 @@ export function Dashboard() {
     const [isRefetching, setIsRefetching] = useState(false);
 
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+    const [isAddPaymentModalOpen, setIsAddPaymentModalOpen] = useState(false);
     const [showProBanner, setShowProBanner] = useState(false);
 
     const [mountId] = useState(() => Math.random().toString(36).substring(7));
@@ -201,7 +204,35 @@ export function Dashboard() {
 
                 {/* Dashboard Hero (Welcome & Alerts) */}
                 <div className="mb-6 md:mb-10">
-                    <DashboardHero firstName={firstName} feedItems={feedItemsWithActions} />
+                    <DashboardHero
+                        firstName={firstName}
+                        feedItems={feedItemsWithActions}
+                        actions={
+                            <>
+                                <div className="hidden md:inline-flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-full border border-primary/10">
+                                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                                        {lang === 'he' ? 'מחובר' : 'online'}
+                                    </span>
+                                </div>
+
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setIsReportModalOpen(true)}
+                                    className="text-[10px] uppercase tracking-widest font-bold bg-white/50 dark:bg-black/20 backdrop-blur-md border border-white/20 hover:bg-white/80 transition-all"
+                                >
+                                    <FileSearch className="w-3.5 h-3.5 mr-2" />
+                                    {t('generateReport')}
+                                </Button>
+
+                                <QuickActions
+                                    onPropertyAdded={loadData}
+                                    onPaymentTrigger={() => setIsAddPaymentModalOpen(true)}
+                                />
+                            </>
+                        }
+                    />
                 </div>
 
                 {/* Gamification: Setup Progress */}
@@ -213,27 +244,6 @@ export function Dashboard() {
                         />
                     </div>
                 )}
-
-                {/* Edit Mode Toggle & Status */}
-                <div className="flex flex-wrap items-center justify-end gap-3">
-                    <div className="hidden md:inline-flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-full border border-primary/10 mr-auto">
-                        <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                            {lang === 'he' ? 'מחובר' : 'online'}
-                        </span>
-                    </div>
-
-
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setIsReportModalOpen(true)}
-                        className="text-[10px] uppercase tracking-widest font-bold bg-white/50 dark:bg-black/20 backdrop-blur-md border border-white/20 hover:bg-white/80 transition-all"
-                    >
-                        <FileSearch className="w-3.5 h-3.5 mr-2" />
-                        {t('generateReport')}
-                    </Button>
-                </div>
 
                 {/* Bento Stack / Grid Layout */}
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-8 auto-rows-min">
@@ -273,6 +283,15 @@ export function Dashboard() {
             <ReportGenerationModal
                 isOpen={isReportModalOpen}
                 onClose={() => setIsReportModalOpen(false)}
+            />
+
+            <AddPaymentModal
+                isOpen={isAddPaymentModalOpen}
+                onClose={() => setIsAddPaymentModalOpen(false)}
+                onSuccess={() => {
+                    setIsAddPaymentModalOpen(false);
+                    loadData();
+                }}
             />
         </div>
     );

@@ -63,7 +63,7 @@ export function AddContract() {
     } = useForm<ContractFormData>({
         resolver: zodResolver(contractSchema) as any,
         defaultValues: {
-            isExistingProperty: false,
+            isExistingProperty: true,
             property_type: 'apartment',
             tenants: [{ name: '', id_number: '', email: '', phone: '' }],
             rent: 0,
@@ -120,17 +120,17 @@ export function AddContract() {
                 hasBalcony: prefill.has_balcony ?? formData.hasBalcony,
                 hasSafeRoom: prefill.has_safe_room ?? formData.hasSafeRoom,
                 property_type: (prefill?.property_type || formData.property_type || 'apartment') as any,
-                isExistingProperty: hasProperty
             };
 
             if (hasProperty) {
                 updatedData.selectedPropertyId = prefill.property_id;
+                updatedData.isExistingProperty = true;
                 setIsPropertyLocked(true);
+                // Smart Step Jumping: skip to Step 2 if property is known
+                setStep(2);
+            } else {
+                setStep(1);
             }
-
-            // Smart Step Jumping - Per user request, always start on first page (Step 1)
-            // but all provided fields will be filled on all pages.
-            setStep(1);
 
             reset(updatedData);
             // Clear state after reading to prevent re-fill on refresh
@@ -583,14 +583,27 @@ export function AddContract() {
 
                 const schedule = genData?.payments || [];
 
+                console.log('Generated Schedule:', schedule); // DEBUG
+
+                if (schedule.length === 0) {
+                    console.warn('Payment schedule returned empty from Edge Function');
+                    toastError('Warning', 'Payment schedule was empty. No payments created.');
+                }
+
                 if (schedule.length > 0) {
-                    await supabase.from('payments').insert(
+                    const { error: insertError } = await supabase.from('payments').insert(
                         schedule.map((p: any) => ({
                             ...p,
                             contract_id: newContract.id,
                             user_id: user.id
                         }))
                     );
+
+                    if (insertError) {
+                        console.error('Payment Insert Error:', insertError);
+                        toastError('Error', `Failed to save payments: ${insertError.message}`);
+                        // Don't throw, let the contract be created, but warn.
+                    }
                 }
             }
 
@@ -1060,12 +1073,12 @@ export function AddContract() {
                                     const Icon = s.icon;
 
                                     return (
-                                        <div key={s.id} className="flex flex-col items-center gap-2 bg-background px-2">
+                                        <div key={s.id} className="flex flex-col items-center gap-2 bg-transparent px-2">
                                             <div
                                                 className={cn(
                                                     "w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300",
                                                     isActive ? "border-primary bg-primary text-primary-foreground scale-110" :
-                                                        isCompleted ? "border-primary bg-primary text-primary-foreground" : "border-muted-foreground/30 text-muted-foreground bg-background"
+                                                        isCompleted ? "border-primary bg-primary text-primary-foreground" : "border-muted-foreground/30 text-muted-foreground bg-transparent"
                                                 )}
                                             >
                                                 {isCompleted ? <Check className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
@@ -1124,63 +1137,109 @@ export function AddContract() {
                                                 <div className="flex items-center justify-between">
                                                     <h3 className="font-semibold text-lg flex items-center gap-2"><Building className="w-4 h-4" /> {t('propertyDetails')}</h3>
 
-                                                    {!isPropertyLocked && (
-                                                        <div className="flex bg-secondary/50 p-1 rounded-lg">
-                                                            <button
-                                                                onClick={() => setValue('isExistingProperty', false)}
-                                                                className={cn(
-                                                                    "px-3 py-1 text-xs font-medium rounded-md transition-all",
-                                                                    !formData.isExistingProperty ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-                                                                )}
-                                                            >
-                                                                {t('newProperty')}
-                                                            </button>
-                                                            <button
-                                                                onClick={() => setValue('isExistingProperty', true)}
-                                                                className={cn(
-                                                                    "px-3 py-1 text-xs font-medium rounded-md transition-all",
-                                                                    formData.isExistingProperty ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-                                                                )}
-                                                            >
-                                                                {t('existingProperty')}
-                                                            </button>
+                                                    {isPropertyLocked && (
+                                                        <div className="flex items-center gap-2 px-3 py-1 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-lg border border-indigo-100 dark:border-indigo-800/50">
+                                                            <Lock className="w-3.5 h-3.5" />
+                                                            <span className="text-xs font-bold uppercase tracking-wider">{t('propertyLocked') || 'Context Locked'}</span>
                                                         </div>
                                                     )}
                                                 </div>
 
-                                                {formData.isExistingProperty ? (
+                                                {isPropertyLocked ? (
+                                                    <div className="space-y-4">
+                                                        <div className="p-4 rounded-xl border-2 border-indigo-500 bg-indigo-500/5 shadow-md text-right relative overflow-hidden">
+                                                            <div className="absolute top-0 right-0 w-12 h-12 bg-indigo-500 flex items-center justify-center rounded-bl-3xl">
+                                                                <Lock className="w-5 h-5 text-white" />
+                                                            </div>
+                                                            <div className="flex flex-col h-full justify-between">
+                                                                <div>
+                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500 mb-2 block">{t('selectedProperty') || 'Selected Property'}</span>
+                                                                    <p className="font-bold text-lg text-foreground leading-tight">{formData.address}</p>
+                                                                </div>
+                                                                <p className="text-sm text-muted-foreground font-medium mt-4">{formData.city}</p>
+                                                            </div>
+                                                        </div>
+                                                        <p className="text-xs text-muted-foreground italic">
+                                                            {t('changePropertyWarning') || 'Property is locked based on the context you started from.'}
+                                                        </p>
+                                                    </div>
+                                                ) : formData.isExistingProperty ? (
                                                     <div className="space-y-2">
                                                         <label className="text-sm font-medium">{t('chooseProperty')}</label>
                                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            {/* Add New Property Card */}
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setValue('isExistingProperty', false);
+                                                                    setValue('selectedPropertyId', '');
+                                                                }}
+                                                                className={cn(
+                                                                    "p-4 rounded-xl border-2 border-dashed text-center flex flex-col items-center justify-center gap-3 transition-all h-full min-h-[140px]",
+                                                                    "border-indigo-500 bg-indigo-500/10 hover:border-indigo-600 hover:bg-indigo-600/10 group shadow-sm hover:shadow-md"
+                                                                )}
+                                                            >
+                                                                <div className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                                                                    <Plus className="w-6 h-6 text-white" />
+                                                                </div>
+                                                                <div>
+                                                                    <p className="font-bold text-indigo-700 dark:text-indigo-400 leading-tight text-lg">{t('addAsset')}</p>
+                                                                    <p className="text-[10px] font-black uppercase tracking-widest text-indigo-500/70 mt-1">
+                                                                        {t('newProperty') || 'NEW PROPERTY'}
+                                                                    </p>
+                                                                </div>
+                                                            </button>
+
                                                             {existingProperties.map((p) => (
                                                                 <button
                                                                     key={p.id}
+                                                                    type="button"
                                                                     onClick={() => {
                                                                         setValue('selectedPropertyId', p.id);
                                                                         if (p.address && p.city) {
                                                                             setValue('address', p.address);
                                                                             setValue('city', p.city);
                                                                         }
+                                                                        setValue('isExistingProperty', true);
                                                                     }}
                                                                     className={cn(
-                                                                        "p-4 rounded-xl border-2 text-right transition-all group",
+                                                                        "p-4 rounded-xl border-2 text-right transition-all group h-full relative overflow-hidden",
                                                                         formData.selectedPropertyId === p.id
-                                                                            ? "border-primary bg-primary/5 shadow-md"
-                                                                            : "border-secondary dark:border-gray-800 hover:border-primary/50"
+                                                                            ? "border-indigo-500 bg-indigo-500/5 shadow-md"
+                                                                            : "border-slate-200 dark:border-neutral-800 hover:border-indigo-500/50"
                                                                     )}
                                                                 >
-                                                                    <div className="flex items-center justify-between mb-2">
-                                                                        <span className="text-xs font-semibold text-primary">{t('property')}</span>
-                                                                        {formData.selectedPropertyId === p.id && <CheckCircle className="w-5 h-5 text-primary" />}
+                                                                    {formData.selectedPropertyId === p.id && (
+                                                                        <motion.div
+                                                                            layoutId="active-prop"
+                                                                            className="absolute top-0 right-0 w-12 h-12 bg-indigo-500 flex items-center justify-center rounded-bl-3xl"
+                                                                        >
+                                                                            <CheckCircle className="w-5 h-5 text-white" />
+                                                                        </motion.div>
+                                                                    )}
+                                                                    <div className="flex flex-col h-full justify-between">
+                                                                        <div>
+                                                                            <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500 mb-2 block">{t('property')}</span>
+                                                                            <p className="font-bold text-lg text-foreground leading-tight">{p.address}</p>
+                                                                        </div>
+                                                                        <p className="text-sm text-muted-foreground font-medium mt-4">{p.city}</p>
                                                                     </div>
-                                                                    <p className="font-bold text-lg text-foreground">{p.address}</p>
-                                                                    <p className="text-sm text-muted-foreground">{p.city}</p>
                                                                 </button>
                                                             ))}
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <div className="space-y-4">
+                                                    <div className="space-y-6">
+                                                        {!isPropertyLocked && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setValue('isExistingProperty', true)}
+                                                                className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-bold text-sm transition-colors group mb-4"
+                                                            >
+                                                                <ArrowLeft className={cn("w-4 h-4 transition-transform group-hover:-translate-x-1", lang === 'he' ? "rotate-180 group-hover:translate-x-1" : "")} />
+                                                                {t('backToSelection') || 'Back to Selection'}
+                                                            </button>
+                                                        )}
                                                         <div className="grid grid-cols-2 gap-4">
                                                             {/* Asset Type */}
                                                             <div className="space-y-2">
@@ -1688,12 +1747,9 @@ export function AddContract() {
                                             <div className="space-y-6">
                                                 {/* 1. Rent Amount */}
                                                 <div className="space-y-3">
-                                                    <label className="text-sm font-medium flex items-center gap-2">
-                                                        {t('monthlyRent')} <span className="text-red-500">*</span>
-                                                        {scannedQuotes.rent && <Tooltip quote={scannedQuotes.rent} />} <ConfidenceDot field="rent" />
-                                                    </label>
                                                     <Input
-                                                        label={<span>{t('monthlyRent')} <span className="text-red-500">*</span> {scannedQuotes.rent && <Tooltip quote={scannedQuotes.rent} />} <ConfidenceDot field="rent" /></span>}
+                                                        label={<span>{t('monthlyRent')} {scannedQuotes.rent && <Tooltip quote={scannedQuotes.rent} />} <ConfidenceDot field="rent" /></span>}
+                                                        required
                                                         value={formatNumber(formData.rent)}
                                                         onChange={e => {
                                                             const val = parseNumber(e.target.value);
@@ -1735,8 +1791,8 @@ export function AddContract() {
                                                     </div>
                                                 ))}
 
-                                                {/* 2. Frequency & Method Grid */}
-                                                <div className="grid grid-cols-2 gap-4">
+                                                {/* 2. Frequency, Day & Method Grid */}
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                     <div className="space-y-2">
                                                         <Select
                                                             label={<span>{t('paymentFrequency')} <ConfidenceDot field="paymentFrequency" /></span>}
@@ -1748,6 +1804,18 @@ export function AddContract() {
                                                                 { value: 'Bi-Annually', label: t('biAnnually') },
                                                                 { value: 'Annually', label: t('annually') }
                                                             ]}
+                                                        />
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <Select
+                                                            label={<span>{t('paymentDay')} <ConfidenceDot field="paymentDay" /></span>}
+                                                            value={String(formData.paymentDay)}
+                                                            onChange={val => setValue('paymentDay', parseInt(val as string))}
+                                                            options={Array.from({ length: 31 }, (_, i) => ({
+                                                                value: String(i + 1),
+                                                                label: `${i + 1} ${t('thOfMonth') || 'בחודש'}`
+                                                            }))}
                                                         />
                                                     </div>
 
@@ -1879,70 +1947,17 @@ export function AddContract() {
 
                                                                 {/* Base Index Rate & Date */}
                                                                 <div className="bg-background/80 p-4 rounded-xl border border-border/50 space-y-4">
-                                                                    <div className="space-y-3">
-                                                                        <div className="flex bg-secondary/30 p-1 rounded-lg gap-1">
-                                                                            <Button
-                                                                                type="button"
-                                                                                variant="ghost"
-                                                                                size="sm"
-                                                                                onClick={() => {
-                                                                                    setValue('linkageSubType', 'base');
-                                                                                    setValue('baseIndexValue', '' as any);
-                                                                                }}
-                                                                                className={cn(
-                                                                                    "flex-1 py-1 text-[10px] font-bold rounded-md transition-all border-none h-auto",
-                                                                                    formData.linkageSubType !== 'known' ? "bg-white dark:bg-black shadow-sm" : "bg-transparent opacity-60 hover:bg-white/50 dark:hover:bg-black/50"
-                                                                                )}
-                                                                            >
-                                                                                {t('indexByDate')}
-                                                                            </Button>
-                                                                            <Button
-                                                                                type="button"
-                                                                                variant="ghost"
-                                                                                size="sm"
-                                                                                onClick={() => {
-                                                                                    setValue('linkageSubType', 'known');
-                                                                                    setValue('baseIndexDate', '');
-                                                                                }}
-                                                                                className={cn(
-                                                                                    "px-3 py-1 text-[10px] font-bold rounded-md transition-all border-none h-auto",
-                                                                                    formData.linkageSubType === 'known' ? "bg-white dark:bg-black shadow-sm" : "bg-transparent opacity-60 hover:bg-white/50 dark:hover:bg-black/50"
-                                                                                )}
-                                                                            >
-                                                                                {t('manualRate')}
-                                                                            </Button>
-                                                                        </div>
+                                                                    <div className="space-y-1">
+                                                                        <label className="text-xs font-medium flex items-center gap-2">
+                                                                            {t('baseDate')}
+                                                                            {scannedQuotes.baseIndexDate && <Tooltip quote={scannedQuotes.baseIndexDate} />} <ConfidenceDot field="baseIndexDate" />
+                                                                        </label>
+                                                                        <DatePicker
+                                                                            value={formData.baseIndexDate ? parseISO(formData.baseIndexDate) : undefined}
+                                                                            onChange={(date) => setValue('baseIndexDate', date ? format(date, 'yyyy-MM-dd') : '')}
+                                                                            className="w-full text-sm"
+                                                                        />
                                                                     </div>
-
-                                                                    {formData.linkageSubType === 'known' ? (
-                                                                        <div className="space-y-1">
-                                                                            <label className="text-xs font-medium flex items-center gap-2">
-                                                                                {t('baseIndexValue')} <ConfidenceDot field="baseIndexValue" />
-                                                                            </label>
-                                                                            <Input
-                                                                                label={<span>{t('baseIndexValue')} <ConfidenceDot field="baseIndexValue" /></span>}
-                                                                                value={formatNumber(formData.baseIndexValue)}
-                                                                                onChange={(e) => {
-                                                                                    const val = parseNumber(e.target.value);
-                                                                                    if (/^\d*\.?\d*$/.test(val)) setValue('baseIndexValue', val as any);
-                                                                                }}
-                                                                                placeholder="e.g. 105.2"
-                                                                                className="w-full font-mono text-sm bg-background"
-                                                                            />
-                                                                        </div>
-                                                                    ) : (
-                                                                        <div className="space-y-1">
-                                                                            <label className="text-xs font-medium flex items-center gap-2">
-                                                                                {t('baseDate')}
-                                                                                {scannedQuotes.baseIndexDate && <Tooltip quote={scannedQuotes.baseIndexDate} />} <ConfidenceDot field="baseIndexDate" />
-                                                                            </label>
-                                                                            <DatePicker
-                                                                                value={formData.baseIndexDate ? parseISO(formData.baseIndexDate) : undefined}
-                                                                                onChange={(date) => setValue('baseIndexDate', date ? format(date, 'yyyy-MM-dd') : '')}
-                                                                                className="w-full text-sm"
-                                                                            />
-                                                                        </div>
-                                                                    )}
                                                                 </div>
 
                                                                 {/* Index Type (מדד ידוע vs מדד קובע) */}
@@ -1989,11 +2004,13 @@ export function AddContract() {
                                                                         {formData.hasLinkageCeiling && (
                                                                             <div className="relative mt-1">
                                                                                 <Input
+                                                                                    label={<span>{t('linkageCeiling')} <span className="text-red-500">*</span></span>}
                                                                                     value={formatNumber(formData.linkageCeiling)}
                                                                                     onChange={(e) => {
                                                                                         const val = parseNumber(e.target.value);
                                                                                         if (/^\d*\.?\d*$/.test(val)) setValue('linkageCeiling', val as any);
                                                                                     }}
+                                                                                    error={errors.linkageCeiling ? (t(errors.linkageCeiling.message as any) || " ") : undefined}
                                                                                     className="w-full text-xs no-spinner bg-background"
                                                                                     placeholder="%"
                                                                                     rightIcon={<span className="text-muted-foreground text-[10px]">%</span>}

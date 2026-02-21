@@ -3,7 +3,6 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { ArrowRightIcon as ArrowRight, AlertCircleIcon as AlertCircle } from '../icons/NavIcons';
 import { cn } from '../../lib/utils';
 import { Card, CardContent } from '../ui/Card';
-import { DashboardChatBar } from './DashboardChatBar';
 import { CheckCircle2 } from 'lucide-react';
 
 interface FeedItem {
@@ -19,25 +18,33 @@ interface FeedItem {
 interface DashboardHeroProps {
     firstName: string;
     feedItems: FeedItem[];
+    actions?: React.ReactNode;
 }
 
-export function DashboardHero({ firstName, feedItems }: DashboardHeroProps) {
+export function DashboardHero({ firstName, feedItems, actions }: DashboardHeroProps) {
     const { t, lang } = useTranslation();
 
     return (
         <div className="space-y-8">
-            {/* Zen Welcome */}
-            <div className="flex flex-col space-y-1">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.4em]">
-                    {getTimeBasedGreeting(t)}
-                </span>
-                <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground lowercase">
-                    {firstName || t('user_generic')}
-                </h1>
+            {/* Zen Welcome + Actions */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div className="flex flex-col space-y-1">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.4em]">
+                        {getTimeBasedGreeting(t)}
+                    </span>
+                    <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground lowercase">
+                        {firstName || t('user_generic')}
+                    </h1>
+                </div>
+
+                {actions && (
+                    <div className="flex items-center gap-3 animate-in fade-in slide-in-from-right-4 duration-700 delay-300">
+                        {actions}
+                    </div>
+                )}
             </div>
 
-            {/* Dashboard AI Chat Bar */}
-            <DashboardChatBar className="mb-4" />
+
 
             {/* High Impact Alert Card / Carousel */}
             {feedItems.length > 0 && (

@@ -101,8 +101,12 @@ export const userPreferencesService = {
                 }, { onConflict: 'user_id' });
 
             if (error) throw error;
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error syncing user preferences with Supabase:', error);
+            // Dynamic import to avoid circular dependencies if sonner uses services
+            import('sonner').then(({ toast }) => {
+                toast.error('Failed to save preferences: ' + (error.message || 'Unknown error'));
+            });
         }
     },
 

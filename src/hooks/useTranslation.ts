@@ -151,6 +151,7 @@ export type TranslationKeys =
     | 'pending'
     | 'contractEnded'
     | 'contractEndedDesc'
+    | 'contractIsIndexedDesc'
     | 'archiveAndCalculate' | 'archiveAndCalculate_female'
     | 'welcomeMessage'
     | 'allLooksQuiet'
@@ -190,6 +191,7 @@ export type TranslationKeys =
     | 'indexByDate'
     | 'byDate'
     | 'linkageCeiling'
+    | 'linkageCeilingRequired'
     | 'maxRisePercentage'
     | 'needsPainting'
     | 'contractReadySummary'
@@ -265,6 +267,10 @@ export type TranslationKeys =
     | 'last3Months'
     | 'last6Months'
     | 'lastYear'
+    | 'next3Months'
+    | 'next6Months'
+    | 'nextYear'
+    | 'currentWindow'
     | 'allTime'
     | 'filters'
     | 'tenant'
@@ -441,6 +447,7 @@ export type TranslationKeys =
     | 'paymentFrequency'
     | 'bimonthly'
     | 'monthly'
+    | 'paymentDay'
     | 'paymentMethod'
     | 'securityAndAppendices'
     | 'securityDeposit'
@@ -967,7 +974,8 @@ export type TranslationKeys =
     | 'Yokneam Illit'
     | 'Beer Sheba'
     | 'Ness Ziona'
-    | 'Zefat';
+    | 'Zefat'
+    | 'currentWindow';
 
 export const translations: Record<string, any> = {
     he: {
@@ -1422,10 +1430,12 @@ export const translations: Record<string, any> = {
         notLinked: 'לא צמוד',
         indexType: 'סוג מדד',
         ceiling: 'תקרה (מקסימום %)',
+        linkageCeilingRequired: 'יש להזין אחוז תקרת הצמדה',
         floorIndex: 'מדד בסיס מהווה רצפה',
         paymentFrequency: 'תדירות תשלום',
-        bimonthly: 'דו-חודשי',
+
         monthly: 'חודשי',
+
         paymentMethod: 'אמצעי תשלום',
         securityAndAppendices: 'ביטחונות ונספחים',
         securityDeposit: 'פיקדון כספי',
@@ -1459,6 +1469,9 @@ export const translations: Record<string, any> = {
         other: 'אחר',
         semiAnnually: 'חצי שנתי',
         contractIsIndexed: 'החוזה צמוד למדד',
+        contractIsIndexedDesc: 'החלת הצמדה למדד או למטבע על תשלומי השכירות',
+        linkedToCpi: 'צמוד למדד המחירים לצרכן',
+        linkedToHousing: 'צמוד למדד שירותי דיור',
         and: 'ו-',
         days: 'ימים',
         enterAddressAndCityFirst: 'הזן כתובת ועיר תחילה',
@@ -1666,6 +1679,10 @@ export const translations: Record<string, any> = {
         stable: 'יציב',
         stable_female: 'יציבה',
         stable_male: 'יציב',
+        next3Months: '3 חודשים הבאים',
+        next6Months: '6 חודשים הבאים',
+        nextYear: 'השנה הבאה',
+        currentWindow: 'חלון נוכחי (חודש אחורה - 3 קדימה)',
         knowledgeBase: 'מרכז ידע',
         errorTitle404: 'אופס! הדף לא נמצא',
         errorDesc404: 'מצטערים, הדף שחיפשת אינו קיים או שהועבר לכתובת אחרת.',
@@ -2094,6 +2111,7 @@ export const translations: Record<string, any> = {
         noCitiesPinnedDescription: 'You haven\'t pinned any cities yet. Select cities to track their rental trends at a glance.',
         chooseCities: 'Choose Cities',
         avgRent: 'Average Rent',
+        linkageCeilingRequired: 'Linkage ceiling percentage is required',
         manageTrackedCities: 'Manage Tracked Cities',
         searchCities: 'Search cities...',
         currentlyTracking: 'Currently Tracking',
@@ -2151,7 +2169,7 @@ export const translations: Record<string, any> = {
         'Nazareth Illit': 'Nazareth Illit',
         'Nof HaGalil': 'Nof HaGalil',
         'Nes Ziona': 'Nes Ziona',
-        'Ness Ziona': 'Ness Ziona',
+        'Ness Ziona': 'Nes Ziona',
         'Netivot': 'Netivot',
         'Ofakim': 'Ofakim',
         'Or Akiva': 'Or Akiva',
@@ -2197,6 +2215,9 @@ export const translations: Record<string, any> = {
         sharedCalculationDesc: 'This calculation has been shared with you. You can update values and recalculate.',
         shareMessage: 'I calculated the rent adjustment using RentMate\'s CPI calculator. See the result here:',
         loadFromContract: 'Load from contract (optional)',
+        contractIsIndexedDesc: 'Apply index or currency linkage to rent payments',
+        linkedToCpi: 'Linked to CPI',
+        linkedToHousing: 'Linked to Housing Services Index',
         calculateLinkageAndMore: 'Open Calculator',
         currentRent: 'Current Rent',
         projectedRent: 'Projected Rent',
@@ -2266,6 +2287,10 @@ export const translations: Record<string, any> = {
         'North': 'North',
         'South': 'South',
         'Center': 'Center',
+        next3Months: 'Next 3 Months',
+        next6Months: 'Next 6 Months',
+        nextYear: 'Next Year',
+        currentWindow: 'Current Window (-1m to +3m)',
     },
 };
 

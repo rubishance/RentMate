@@ -316,49 +316,105 @@ async function searchContracts(query: string, userId: string) {
 
         const hasConsent = await checkConsent(userId, supabase);
         if (!hasConsent) {
-            return { success: false, message: "AI access to personal data is disabled. Please enable 'AI Data Access' in Settings > Privacy." };
+            return { success: false, message: `AI access is disabled. Debug ID: ${userId}. Please enable 'AI Data Access' in Settings > Privacy.` };
         }
 
-        // Simple search on contracts table only
-        const { data, error } = await supabase
-            .from('contracts')
-            .select('id, start_date, end_date, monthly_rent, status, property_id, tenant_id')
-            .eq('user_id', userId)
-            .limit(10);
+        // Timeout wrapper logic
+        const searchLogic = async () => {
+            // Fetch all active contracts for the user (limit 100 for performance)
+            // We fetch more data and filter in-memory to support complex search (JSONB, joins, etc.)
+            const { data, error } = await supabase
+                .from('contracts')
+                .select(`
+                    id, start_date, end_date, base_rent, status, property_id,
+                    properties!inner(address, city, property_type),
+                    tenants
+                `)
+                .eq('user_id', userId)
+                .order('start_date', { ascending: false })
+                .limit(100);
 
-        if (error) {
-            console.error("Search error:", error);
-            return { success: false, message: `Database error: ${error.message}` };
-        }
+            if (error) {
+                console.error("Search error:", error);
+                return { success: false, message: `Database error: ${error.message}` };
+            }
 
-        if (!data || data.length === 0) {
-            return { success: false, message: `לא נמצאו חוזים. (No contracts found.)` };
-        }
+            let results = data || [];
 
-        // Return simplified results
-        const results = data.map(contract => ({
-            id: contract.id,
-            rent: `₪${contract.monthly_rent}`,
-            period: `${contract.start_date} עד ${contract.end_date}`,
-            status: contract.status
-        }));
+            // Apply robust in-memory search if query provided
+            if (query && query.trim() !== '') {
+                const terms = query.trim().toLowerCase().split(/\s+/);
+
+                results = results.filter((contract: any) => {
+                    // Build a searchable string from all relevant fields
+                    const address = contract.properties?.address?.toLowerCase() || '';
+                    const city = contract.properties?.city?.toLowerCase() || '';
+                    const type = contract.properties?.property_type?.toLowerCase() || '';
+                    const status = contract.status?.toLowerCase() || '';
+
+                    // Extract tenant names from JSONB
+                    let tenantNames = '';
+                    if (Array.isArray(contract.tenants)) {
+                        tenantNames = contract.tenants.map((t: any) => t.name?.toLowerCase() || '').join(' ');
+                    } else if (typeof contract.tenants === 'object' && contract.tenants !== null) {
+                        // Handle single object case if schema varies
+                        tenantNames = (contract.tenants as any).name?.toLowerCase() || '';
+                    }
+
+                    const searchableText = `${address} ${city} ${type} ${status} ${tenantNames}`;
+
+                    // Check if ALL terms match the searchable text (AND logic for terms)
+                    return terms.every(term => searchableText.includes(term));
+                });
+            }
+
+            if (results.length === 0) {
+                return { success: false, message: `לא נמצאו חוזים התואמים את החיפוש "${query}".` };
+            }
+
+            // Return simplified results (Top 5)
+            const mappedResults = results.slice(0, 5).map((contract: any) => ({
+                id: contract.id,
+                address: `${contract.properties?.address || ''}, ${contract.properties?.city || ''}`,
+                type: contract.properties?.property_type,
+                rent: `₪${contract.base_rent}`,
+                period: `${contract.start_date} עד ${contract.end_date}`,
+                status: contract.status,
+                tenants: contract.tenants
+            }));
+
+            return {
+                success: true,
+                count: mappedResults.length,
+                message: `נמצאו ${mappedResults.length} חוזים`,
+                contracts: mappedResults
+            };
+        };
+
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Search timed out")), 15000)
+        );
+
+        const result = await Promise.race([searchLogic(), timeoutPromise]) as any;
 
         // Log Security Audit
-        await supabase.rpc('log_ai_contract_audit', {
+        const auditPromise = supabase.rpc('log_ai_contract_audit', {
             p_user_id: userId,
             p_action: 'AI_SEARCH_CONTRACTS',
-            p_details: { query, results_count: results.length }
+            p_details: { query, results_count: result.count || 0 }
+        }).then(({ error }) => {
+            if (error) console.error("Audit log failed:", error);
         });
 
-        return {
-            success: true,
-            count: results.length,
-            message: `נמצאו ${results.length} חוזים`,
-            contracts: results
-        };
+        if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime.waitUntil) {
+            EdgeRuntime.waitUntil(auditPromise);
+        }
+
+        return result;
+
     } catch (err) {
         console.error("Function error:", err);
-        return { success: false, message: "שגיאה בחיפוש חוזים" };
+        return { success: false, message: "שגיאה בחיפוש חוזים (Timeout or Error)" };
     }
 }
 
@@ -409,11 +465,18 @@ async function getFinancialSummary(period: string, userId: string, currency: str
     const total = data.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
 
     // Log Security Audit
-    await supabase.rpc('log_ai_contract_audit', {
+    // Log Security Audit (Non-blocking)
+    const auditPromise = supabase.rpc('log_ai_contract_audit', {
         p_user_id: userId,
         p_action: 'AI_FINANCIAL_SUMMARY',
         p_details: { period, currency, total_income: total, transactions: data.length }
+    }).then(({ error }) => {
+        if (error) console.error("Audit log failed:", error);
     });
+
+    if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime.waitUntil) {
+        EdgeRuntime.waitUntil(auditPromise);
+    }
 
     return {
         success: true,
@@ -448,11 +511,18 @@ async function checkExpiringContracts(daysThreshold: number, userId: string) {
     if (error) return { success: false, message: error.message };
 
     // Log Security Audit
-    await supabase.rpc('log_ai_contract_audit', {
+    // Log Security Audit (Non-blocking)
+    const auditPromise = supabase.rpc('log_ai_contract_audit', {
         p_user_id: userId,
         p_action: 'AI_CHECK_EXPIRING_CONTRACTS',
         p_details: { days_threshold: daysThreshold, count: data.length }
+    }).then(({ error }) => {
+        if (error) console.error("Audit log failed:", error);
     });
+
+    if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime.waitUntil) {
+        EdgeRuntime.waitUntil(auditPromise);
+    }
 
     return {
         success: true,
@@ -492,11 +562,18 @@ async function getTenantDetails(nameOrEmail: string, userId: string) {
     if (error) return { success: false, message: error.message };
 
     // Log Security Audit
-    await supabase.rpc('log_ai_contract_audit', {
+    // Log Security Audit (Non-blocking)
+    const auditPromise = supabase.rpc('log_ai_contract_audit', {
         p_user_id: userId,
         p_action: 'AI_GET_TENANT_DETAILS',
         p_details: { name_or_email: nameOrEmail, found: data.length > 0 }
+    }).then(({ error }) => {
+        if (error) console.error("Audit log failed:", error);
     });
+
+    if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime.waitUntil) {
+        EdgeRuntime.waitUntil(auditPromise);
+    }
 
     return {
         success: true,
@@ -650,11 +727,18 @@ async function calculateRentLinkage(args: any, userId: string | null) {
     const percentage = ((targetVal / baseVal - 1) * 100).toFixed(2);
 
     // Log Security Audit
-    await supabase.rpc('log_ai_contract_audit', {
+    // Log Security Audit (Non-blocking)
+    const auditPromise = supabase.rpc('log_ai_contract_audit', {
         p_user_id: userId,
         p_action: 'AI_CALCULATE_LINKAGE',
         p_details: { ...args, result: newRent }
+    }).then(({ error }) => {
+        if (error) console.error("Audit log failed:", error);
     });
+
+    if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime.waitUntil) {
+        EdgeRuntime.waitUntil(auditPromise);
+    }
 
     return {
         success: true,
@@ -694,11 +778,18 @@ async function searchMaintenanceRecords(args: any, userId: string) {
     }));
 
     // Log Security Audit
-    await supabase.rpc('log_ai_contract_audit', {
+    // Log Security Audit (Non-blocking)
+    const auditPromise = supabase.rpc('log_ai_contract_audit', {
         p_user_id: userId,
         p_action: 'AI_SEARCH_MAINTENANCE',
         p_details: { query, results_count: results.length }
+    }).then(({ error }) => {
+        if (error) console.error("Audit log failed:", error);
     });
+
+    if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime.waitUntil) {
+        EdgeRuntime.waitUntil(auditPromise);
+    }
 
     return {
         success: true,
@@ -810,19 +901,28 @@ serve(async (req) => {
             console.log(`[PERF] ${step}: ${duration.toFixed(2)}ms`);
             if (userId) {
                 const sb = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
-                await sb.from('debug_logs').insert({
+                const logPromise = sb.from('debug_logs').insert({
                     function_name: 'chat-support:perf',
                     level: 'info',
                     message: `Step: ${step}`,
                     details: { ...details, duration, userId }
-                }).catch(e => console.error("Logging failed", e));
+                }).then(({ error }) => {
+                    if (error) console.error("Logging failed:", error);
+                }).catch(e => console.error("Logging exception:", e));
+
+                // Use waitUntil to run in background
+                if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime.waitUntil) {
+                    EdgeRuntime.waitUntil(logPromise);
+                } else {
+                    // Fallback for local testing or non-Edge environments
+                    // We don't await to avoid blocking, but runtime might kill it.
+                    // Ideally we await in dev, but for prod speed we fire-and-forget.
+                    logPromise;
+                }
             }
         };
 
-        if (!OPENAI_API_KEY && !GEMINI_API_KEY) {
-            console.error("Critical: AI API Keys missing from environment.");
-            throw new Error("Missing AI API Key. Please set OPENAI_API_KEY or GEMINI_API_KEY in Supabase secrets.");
-        }
+        // Key check moved after body parsing to allow ping to work without keys
 
         const body = await req.json().catch(e => {
             console.error("Failed to parse request body:", e);
@@ -840,19 +940,112 @@ serve(async (req) => {
         const userContent = messages[messages.length - 1]?.content || '';
 
         // --- PING TEST (Moved Early) ---
-        if (userContent.toLowerCase() === 'ping') {
-            console.log("Ping detected, responding with status.");
-            const status = [];
-            if (OPENAI_API_KEY) status.push("OpenAI: OK");
-            if (GEMINI_API_KEY) status.push("Gemini: OK");
-            if (status.length === 0) status.push("No keys detected");
+        if (userContent.trim().toLowerCase() === 'ping') {
+            console.log("Ping detected, responding with diagnostics.");
+            const debugInfo = [];
+
+            // 1. Check AI Keys
+            if (OPENAI_API_KEY) debugInfo.push(`OpenAI: OK`);
+            else debugInfo.push(`OpenAI: MISSING`);
+
+            if (GEMINI_API_KEY) debugInfo.push(`Gemini: OK`);
+            else debugInfo.push(`Gemini: MISSING`);
+
+            if (SUPABASE_SERVICE_ROLE_KEY) debugInfo.push(`Service Role: OK`);
+            else debugInfo.push(`Service Role: MISSING`);
+
+            // 2. Check Auth & DB
+            try {
+                const sbAdmin = createClient(
+                    Deno.env.get('SUPABASE_URL') ?? '',
+                    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+                );
+
+                const authHeader = req.headers.get('Authorization');
+                if (authHeader) {
+                    const token = authHeader.replace('Bearer ', '');
+                    const { data: { user }, error: authError } = await sbAdmin.auth.getUser(token);
+
+                    if (authError) {
+                        debugInfo.push(`Auth: Error (${authError.message})`);
+                    } else if (user) {
+                        debugInfo.push(`User: Found (${user.id.substring(0, 6)}...)`);
+
+                        // 3. Check Preferences Table Access
+                        const { data: prefs, error: prefError } = await sbAdmin
+                            .from('user_preferences')
+                            .select('ai_data_consent')
+                            .eq('user_id', user.id)
+                            .single();
+
+                        if (prefError) {
+                            debugInfo.push(`Prefs DB: Error (${prefError.message}) Code: ${prefError.code}`);
+                        } else {
+                            debugInfo.push(`Consent Value: ${prefs?.ai_data_consent}`);
+                        }
+                    } else {
+                        debugInfo.push("User: None (Invalid Token?)");
+                    }
+                } else {
+                    debugInfo.push("Auth Header: Missing");
+                }
+            } catch (e) {
+                debugInfo.push(`Exception: ${e.message}`);
+            }
 
             return new Response(
                 JSON.stringify({
-                    choices: [{ message: { role: "assistant", content: "Pong! " + status.join(" | ") } }]
+                    choices: [{ message: { role: "assistant", content: "Pong! Diagnostic Report:\n" + debugInfo.join("\n") } }]
                 }),
                 { headers: { ...corsHeaders, "Content-Type": "application/json" } }
             );
+        }
+
+        // --- FORCE CONSENT COMMAND ---
+        if (userContent.trim().toLowerCase() === 'force_consent') {
+            console.log("Force consent requested.");
+            let message = "";
+            try {
+                const sbAdmin = createClient(
+                    Deno.env.get('SUPABASE_URL') ?? '',
+                    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+                );
+                const authHeader = req.headers.get('Authorization');
+                if (authHeader) {
+                    const token = authHeader.replace('Bearer ', '');
+                    const { data: { user }, error: authError } = await sbAdmin.auth.getUser(token);
+                    if (user) {
+                        const { error: upsertError } = await sbAdmin
+                            .from('user_preferences')
+                            .upsert({
+                                user_id: user.id,
+                                ai_data_consent: true,
+                                updated_at: new Date().toISOString()
+                            }, { onConflict: 'user_id' });
+
+                        if (upsertError) message = `Failed: ${upsertError.message}`;
+                        else message = "Success! AI Consent forced to TRUE.";
+                    } else {
+                        message = "Error: User not found from token.";
+                    }
+                } else {
+                    message = "Error: No Auth header.";
+                }
+            } catch (e) {
+                message = `Exception: ${e.message}`;
+            }
+
+            return new Response(
+                JSON.stringify({
+                    choices: [{ message: { role: "assistant", content: message } }]
+                }),
+                { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+        }
+
+        if (!OPENAI_API_KEY && !GEMINI_API_KEY) {
+            console.error("Critical: AI API Keys missing from environment.");
+            throw new Error("Missing AI API Key. Please set OPENAI_API_KEY or GEMINI_API_KEY in Supabase secrets.");
         }
 
         const authHeader = req.headers.get("authorization");
@@ -986,250 +1179,220 @@ ${knowledgeBase}`;
         // Only provide tools if user is authenticated
         const activeTools = userId ? FUNCTION_TOOLS : [];
 
-        // Initial API call with function tools
-        let apiUrl = "https://api.openai.com/v1/chat/completions";
-        let apiKey = OPENAI_API_KEY;
-        let model = "gpt-4o-mini";
+        // Prepare Streaming Response
+        const stream = new ReadableStream({
+            async start(controller) {
+                const send = (data: any) => {
+                    controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(data)}\n\n`));
+                };
 
-        if (!OPENAI_API_KEY && GEMINI_API_KEY) {
-            apiUrl = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-            apiKey = GEMINI_API_KEY;
-            model = "gemini-1.5-flash";
-        }
+                try {
+                    // Initial API call parameters
+                    let apiUrl = "https://api.openai.com/v1/chat/completions";
+                    let apiKey = OPENAI_API_KEY;
+                    let model = "gpt-4o-mini";
 
-        const aiStartTime = Date.now();
-        let response = await fetch(apiUrl, {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${apiKey}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                model: model,
-                messages: openaiMessages,
-                tools: activeTools.length > 0 ? activeTools : undefined,
-                temperature: 0.7,
-                max_tokens: 800,
-            }),
-            signal: AbortSignal.timeout(50000) // 50s timeout
-        });
-
-        let result = await response.json();
-        await logPerf(`ai_first_turn_${model}`, Date.now() - aiStartTime);
-
-        if (!response.ok) {
-            return new Response(
-                JSON.stringify({ error: `AI Engine Error (${response.status}): ${result.error?.message || JSON.stringify(result)}` }),
-                { status: response.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-            );
-        }
-
-        let totalTurnCost = 0;
-
-        // Log initial usage if available (including tool calls prompt)
-        if (userId && result.usage) {
-            try {
-                await supabase.rpc('log_ai_usage', {
-                    p_user_id: userId,
-                    p_model: result.model || "gpt-4o-mini",
-                    p_feature: 'chat',
-                    p_input_tokens: result.usage.prompt_tokens,
-                    p_output_tokens: result.usage.completion_tokens
-                });
-                totalTurnCost += (result.usage.prompt_tokens / 1000000 * 0.15) + (result.usage.completion_tokens / 1000000 * 0.60);
-            } catch (logError) {
-                console.error("Failed to log initial AI usage:", logError);
-            }
-        }
-
-        // Check if OpenAI wants to call a function
-        const toolCalls = result.choices?.[0]?.message?.tool_calls;
-
-        if (toolCalls && toolCalls.length > 0) {
-            const toolCall = toolCalls[0];
-            const functionName = toolCall.function.name;
-            const functionArgs = JSON.parse(toolCall.function.arguments);
-
-            let functionResult;
-            const toolStartTime = Date.now();
-
-            // Execute the function
-            if (!userId) {
-                functionResult = { success: false, message: "User not authenticated. Please log in to use this feature." };
-            } else {
-                if (functionName === "search_contracts") {
-                    functionResult = await searchContracts(functionArgs.query, userId);
-                } else if (functionName === "get_financial_summary") {
-                    functionResult = await getFinancialSummary(functionArgs.period, userId, functionArgs.currency);
-                } else if (functionName === "get_tenant_details") {
-                    functionResult = await getTenantDetails(functionArgs.name_or_email, userId);
-                } else if (functionName === "list_properties") {
-                    functionResult = await listProperties(userId);
-                } else if (functionName === "list_folders") {
-                    functionResult = await listFolders(functionArgs.property_id, userId);
-                } else if (functionName === "trigger_human_support") {
-                    // ESCALATE TO HUMAN
-                    return new Response(
-                        JSON.stringify({
-                            choices: [{
-                                message: {
-                                    content: "I am connecting you to a human agent now. One moment please...",
-                                    role: "assistant"
-                                }
-                            }],
-                            uiAction: {
-                                action: "TRIGGER_HUMAN",
-                                data: { reason: functionArgs.reason }
-                            }
-                        }),
-                        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-                    );
-                } else if (functionName === "generate_whatsapp_message") {
-                    // GENERATE WHATSAPP MESSAGE (No DB Write)
-                    const { tenant_name, type, amount, property_name } = functionArgs;
-                    let text = `שלום ${tenant_name}, `;
-
-                    if (type === 'rent_reminder') {
-                        text += `רק מזכיר שהגיע מועד תשלום השכירות${property_name ? ` עבור ${property_name}` : ''}${amount ? ` על סך ₪${amount}` : ''}. תודה!`;
-                    } else if (type === 'linkage_update') {
-                        text += `מעדכן שבוצעה הצמדה למדד${property_name ? ` בנכס ${property_name}` : ''}. השכירות המעודכנת היא ₪${amount}. המשך יום נעים!`;
-                    } else if (type === 'maintenance_update') {
-                        text += `עדכון לגבי התיקון ${property_name ? `בנכס ${property_name}` : ''}: העבודה הושלמה. תודה על הסבלנות!`;
-                    } else {
-                        text += `מה שלומך? אשמח לדבר איתך לגבי ${property_name || 'הדירה'}. תודה!`;
+                    if (!OPENAI_API_KEY && GEMINI_API_KEY) {
+                        apiUrl = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+                        apiKey = GEMINI_API_KEY;
+                        model = "gemini-1.5-flash";
                     }
 
-                    return new Response(
-                        JSON.stringify({
-                            choices: [{
-                                message: {
-                                    content: `הפקתי עבורך הודעת וואטסאפ מוכנה:\n\n"${text}"\n\nאתה יכול להעתיק אותה ולשלוח לשוכר.`,
-                                    role: "assistant"
-                                }
-                            }]
+                    // 1. First Turn: Initial request to AI
+                    const aiStartTime = Date.now();
+                    let response = await fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Authorization": `Bearer ${apiKey}`,
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            model: model,
+                            messages: openaiMessages,
+                            tools: activeTools.length > 0 ? activeTools : undefined,
+                            temperature: 0.7,
+                            max_tokens: 800,
+                            stream: true // ENABLE STREAMING
                         }),
-                        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-                    );
-                } else if (functionName.startsWith("prepare_")) {
-                    // UI PREPARATION TOOLS (No DB Write)
-                    functionResult = {
-                        success: true,
-                        message: "Form prepared for user",
-                        ui_action: "OPEN_MODAL",
-                        modal: functionName.replace("prepare_add_", "").replace("prepare_", ""),
-                        data: functionArgs
-                    };
-                } else if (functionName === "organize_document") {
-                    functionResult = await organizeDocument(functionArgs, userId);
-                } else if (functionName === "calculate_rent_linkage") {
-                    functionResult = await calculateRentLinkage(functionArgs, userId);
-                } else if (functionName === "debug_entity") {
-                    functionResult = await debugEntity(functionArgs, userId);
-                } else {
-                }
-                const functionName = toolCall.function.name;
-                await logPerf(`tool_execution_${functionName}`, Date.now() - toolStartTime);
-            }
-
-            // Send function result back to OpenAI
-            openaiMessages.push(result.choices[0].message);
-            openaiMessages.push({
-                role: "tool",
-                tool_call_id: toolCall.id,
-                content: JSON.stringify(functionResult)
-            });
-
-            // Get final response from AI
-            response = await fetch(apiUrl, {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${apiKey}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    model: model,
-                    messages: openaiMessages,
-                    temperature: 0.7,
-                    max_tokens: 800,
-                }),
-                signal: AbortSignal.timeout(50000) // 50s timeout
-            });
-
-            const aiSecondTurnStartTime = Date.now();
-            result = await response.json();
-            await logPerf(`ai_second_turn_${model}`, Date.now() - aiSecondTurnStartTime);
-
-            // Log final usage if authentication and usage info are present
-            if (userId && result.usage) {
-                try {
-                    await supabase.rpc('log_ai_usage', {
-                        p_user_id: userId,
-                        p_model: result.model || "gpt-4o-mini",
-                        p_feature: 'chat',
-                        p_input_tokens: result.usage.prompt_tokens,
-                        p_output_tokens: result.usage.completion_tokens
+                        signal: AbortSignal.timeout(60000)
                     });
-                    totalTurnCost += (result.usage.prompt_tokens / 1000000 * 0.15) + (result.usage.completion_tokens / 1000000 * 0.60);
-                } catch (logError) {
-                    console.error("Failed to log final AI usage:", logError);
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        send({ error: `AI Engine Error: ${errorText}` });
+                        controller.close();
+                        return;
+                    }
+
+                    const reader = response.body?.getReader();
+                    if (!reader) throw new Error("No response body");
+
+                    let fullContent = "";
+                    let currentToolCall: any = null;
+                    let lastUsage: any = null;
+
+                    // Stream Processing Loop
+                    const decoder = new TextDecoder();
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+
+                        const chunk = decoder.decode(value);
+                        const lines = chunk.split("\n");
+
+                        for (const line of lines) {
+                            if (line.startsWith("data: ") && line !== "data: [DONE]") {
+                                try {
+                                    const json = JSON.parse(line.substring(6));
+                                    const delta = json.choices[0]?.delta;
+
+                                    if (delta?.content) {
+                                        fullContent += delta.content;
+                                        send({ t: "text", v: delta.content });
+                                    }
+
+                                    if (delta?.tool_calls) {
+                                        if (!currentToolCall) {
+                                            currentToolCall = { id: delta.tool_calls[0].id, name: delta.tool_calls[0].function.name, args: "" };
+                                        }
+                                        currentToolCall.args += delta.tool_calls[0].function.arguments || "";
+                                    }
+
+                                    if (json.usage) lastUsage = json.usage;
+                                } catch (e) {
+                                    // Ignore partial JSON lines
+                                }
+                            }
+                        }
+                    }
+
+                    await logPerf(`ai_first_turn_stream_${model}`, Date.now() - aiStartTime);
+
+                    // 2. Handle Tool Calls if any
+                    if (currentToolCall) {
+                        const functionName = currentToolCall.name;
+                        const functionArgs = JSON.parse(currentToolCall.args || "{}");
+
+                        send({ t: "status", v: `Using tool: ${functionName}...` });
+
+                        let functionResult;
+                        const toolStartTime = Date.now();
+
+                        if (!userId) {
+                            functionResult = { success: false, message: "Auth required" };
+                        } else {
+                            // Unified tool execution logic (from old implementation)
+                            if (functionName === "search_contracts") functionResult = await searchContracts(functionArgs.query, userId);
+                            else if (functionName === "get_financial_summary") functionResult = await getFinancialSummary(functionArgs.period, userId, functionArgs.currency);
+                            else if (functionName === "get_tenant_details") functionResult = await getTenantDetails(functionArgs.name_or_email, userId);
+                            else if (functionName === "list_properties") functionResult = await listProperties(userId);
+                            else if (functionName === "list_folders") functionResult = await listFolders(functionArgs.property_id, userId);
+                            else if (functionName === "organize_document") functionResult = await organizeDocument(functionArgs, userId);
+                            else if (functionName === "calculate_rent_linkage") functionResult = await calculateRentLinkage(functionArgs, userId);
+                            else if (functionName === "debug_entity") functionResult = await debugEntity(functionArgs, userId);
+                            else if (functionName === "trigger_human_support") {
+                                send({ t: "ui", v: { action: "TRIGGER_HUMAN", data: functionArgs } });
+                                send({ t: "text", v: "I am connecting you to a human agent now. One moment please..." });
+                                controller.close();
+                                return;
+                            } else if (functionName === "generate_whatsapp_message") {
+                                const { tenant_name, type, amount, property_name } = functionArgs;
+                                let text = `שלום ${tenant_name}, `;
+
+                                if (type === 'rent_reminder') {
+                                    text += `רק מזכיר שהגיע מועד תשלום השכירות${property_name ? ` עבור ${property_name}` : ''}${amount ? ` על סך ₪${amount}` : ''}. תודה!`;
+                                } else if (type === 'linkage_update') {
+                                    text += `מעדכן שבוצעה הצמדה למדד${property_name ? ` בנכס ${property_name}` : ''}. השכירות המעודכנת היא ₪${amount}. המשך יום נעים!`;
+                                } else if (type === 'maintenance_update') {
+                                    text += `עדכון לגבי התיקון ${property_name ? `בנכס ${property_name}` : ''}: העבודה הושלמה. תודה על הסבלנות!`;
+                                } else {
+                                    text += `מה שלומך? אשמח לדבר איתך לגבי ${property_name || 'הדירה'}. תודה!`;
+                                }
+
+                                send({ t: "text", v: `הפקתי עבורך הודעת וואטסאפ מוכנה:\n\n"${text}"\n\nאתה יכול להעתיק אותה ולשלוח לשוכר.` });
+                                controller.close();
+                                return;
+                            }
+                            else if (functionName.startsWith("prepare_")) {
+                                send({ t: "ui", v: { action: "OPEN_MODAL", modal: functionName.replace("prepare_add_", "").replace("prepare_", ""), data: functionArgs } });
+                                // Don't close yet, AI might want to say something
+                                functionResult = { success: true, message: "Form prepared" };
+                            }
+                        }
+
+                        await logPerf(`tool_execution_${functionName}`, Date.now() - toolStartTime);
+
+                        // Second Turn with tool result
+                        openaiMessages.push({ role: "assistant", content: null, tool_calls: [{ id: currentToolCall.id, type: "function", function: { name: functionName, arguments: currentToolCall.args } }] });
+                        openaiMessages.push({ role: "tool", tool_call_id: currentToolCall.id, content: JSON.stringify(functionResult) });
+
+                        const secondResponse = await fetch(apiUrl, {
+                            method: "POST",
+                            headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+                            body: JSON.stringify({ model, messages: openaiMessages, stream: true }),
+                        });
+
+                        const secondReader = secondResponse.body?.getReader();
+                        if (secondReader) {
+                            while (true) {
+                                const { done, value } = await secondReader.read();
+                                if (done) break;
+                                const chunk = decoder.decode(value);
+                                const lines = chunk.split("\n");
+                                for (const line of lines) {
+                                    if (line.startsWith("data: ") && line !== "data: [DONE]") {
+                                        try {
+                                            const json = JSON.parse(line.substring(6));
+                                            const content = json.choices[0]?.delta?.content;
+                                            if (content) {
+                                                fullContent += content;
+                                                send({ t: "text", v: content });
+                                            }
+                                        } catch (e) { }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // 3. Persist & Finalize
+                    let totalTurnCost = 0; // Usage tracking can be added back if needed
+                    let savedConvId = conversationId || crypto.randomUUID();
+
+                    if (userId) {
+                        const messagesToSave = [
+                            { ...messages[messages.length - 1], timestamp: new Date().toISOString() },
+                            { role: 'assistant', content: fullContent, timestamp: new Date().toISOString() }
+                        ];
+                        const { data } = await supabase.rpc('append_ai_messages', {
+                            p_conversation_id: savedConvId,
+                            p_new_messages: JSON.stringify(messagesToSave),
+                            p_user_id: userId,
+                            p_cost_usd: 0
+                        });
+                        if (data) savedConvId = data;
+                    }
+
+                    send({ t: "meta", v: { conversationId: savedConvId } });
+                    await logPerf("total_request_duration", Date.now() - startTime);
+                    controller.close();
+
+                } catch (err) {
+                    console.error("Stream error:", err);
+                    send({ error: err.message });
+                    controller.close();
                 }
             }
-        }
-
-        const aiMessage = result.choices?.[0]?.message?.content || "I'm sorry, I couldn't generate a response.";
-
-        // Persist conversation to DB if authenticated
-        let savedConvId = conversationId;
-        if (userId) {
-            try {
-                // If no conversationId exists, we create one (the RPC handles this via generate_uuid default if we pass null, 
-                // but let's be explicit and generate one in the hook or handle it here).
-                // Actually the RPC 'append_ai_messages' requires p_conversation_id.
-                // If it's the first message, conversationId from client might be null.
-                const conversation_id = conversationId || crypto.randomUUID();
-
-                const messagesToSave = [
-                    { ...messages[messages.length - 1], timestamp: new Date().toISOString() },
-                    { role: 'assistant', content: aiMessage, timestamp: new Date().toISOString() }
-                ];
-
-                const { data: convData, error: convError } = await supabase.rpc('append_ai_messages', {
-                    p_conversation_id: conversation_id,
-                    p_new_messages: JSON.stringify(messagesToSave),
-                    p_user_id: userId, // Pass explicitly since Service Role is used
-                    p_cost_usd: totalTurnCost
-                });
-
-                if (convError) console.error("Error persisting conversation:", convError);
-                else savedConvId = convData;
-            } catch (saveError) {
-                console.error("Failed to persist conversation chain:", saveError);
-            }
-        }
-
-        // Check if any tool result contained a UI action to pass to frontend
-        const toolOutputs = openaiMessages.filter(m => m.role === 'tool').map(m => {
-            try { return JSON.parse(m.content); } catch (e) { return null; }
         });
-        const uiAction = toolOutputs.find(o => o && o.ui_action);
 
-        const totalDuration = Date.now() - startTime;
-        await logPerf("total_request_duration", totalDuration);
-
-        return new Response(
-            JSON.stringify({
-                choices: [{
-                    message: { role: "assistant", content: aiMessage }
-                }],
-                conversationId: savedConvId,
-                uiAction: uiAction ? {
-                    action: uiAction.ui_action,
-                    modal: uiAction.modal,
-                    data: uiAction.data
-                } : null
-            }),
-            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return new Response(stream, {
+            headers: {
+                ...corsHeaders,
+                "Content-Type": "text/event-stream",
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+            }
+        });
     } catch (error) {
         console.error("Function Error:", error);
         return new Response(

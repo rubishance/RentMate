@@ -19,7 +19,7 @@ export function usePaymentRepair() {
             // 1. Get all active contracts
             const { data: contracts, error: contractError } = await supabase
                 .from('contracts')
-                .select('id, property_id, properties(address, city), start_date, end_date, base_rent, currency, payment_frequency, payment_day, linkage_type, linkage_sub_type, base_index_date, base_index_value, linkage_ceiling, linkage_floor, rent_periods(startDate, amount, currency)')
+                .select('id, property_id, properties(address, city), start_date, end_date, base_rent, currency, payment_frequency, payment_day, linkage_type, linkage_sub_type, base_index_date, base_index_value, linkage_ceiling, linkage_floor, rent_periods')
                 .eq('user_id', user.id)
                 .eq('status', 'active');
 

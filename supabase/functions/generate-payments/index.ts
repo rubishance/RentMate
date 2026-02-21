@@ -68,20 +68,29 @@ serve(async (req) => {
         if (authError || !user) throw new Error('Unauthorized');
 
         // 3. Parse Body
+        const body = await req.json();
+        console.log('Incoming Payload:', body); // LOGGING
+
         const {
             startDate, endDate, baseRent, currency, paymentFrequency, paymentDay,
             linkageType, linkageSubType, baseIndexDate, baseIndexValue,
             linkageCeiling, linkageFloor, rent_periods
-        } = await req.json() as GenerationParams;
+        } = body as GenerationParams;
 
         if (!startDate || !endDate || !baseRent) {
             throw new Error('Missing required fields: startDate, endDate, baseRent');
         }
 
+        // 3b. Safe Payment Day
+        const pDay = parseInt(String(paymentDay)) || 1;
+        console.log('Using Payment Day:', pDay);
+
         const payments: PaymentScheduleItem[] = [];
         const start = new Date(startDate);
         const end = new Date(endDate);
         let current = new Date(start);
+
+        console.log('Contract Boundaries:', { start: start.toISOString(), end: end.toISOString() });
 
         // 4. Fetch Index Data (if needed)
         const indexMap: Record<string, number> = {};
@@ -117,8 +126,14 @@ serve(async (req) => {
             const year = current.getFullYear();
             const month = current.getMonth();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const actualDay = Math.min(paymentDay, daysInMonth);
+            const actualDay = Math.min(pDay, daysInMonth);
             const dueDate = new Date(year, month, actualDay);
+
+            if (isNaN(dueDate.getTime())) {
+                console.error('Generated Invalid Date!', { year, month, actualDay, pDay });
+                throw new Error('Failure generating payment dates: Invalid date calculated');
+            }
+
             const dueStr = format(dueDate, 'yyyy-MM-dd');
             const monthKey = dueStr.substring(0, 7);
 

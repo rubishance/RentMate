@@ -41,24 +41,36 @@ export function ContractScanner({ onScanComplete, onCancel, mode = 'modal', skip
     };
 
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) return;
 
-        setStep('processing');
         setError('');
 
         try {
-            setProgress('מעבד קובץ באופן מקומי...');
+            const allProcessedImages: File[] = [...scannedImages];
+            setProgress('מעבד קבצים באופן מקומי...');
 
-            // 1. Convert PDF to images locally for redaction
-            const images = await ScannerUtils.processFile(file);
-            setScannedImages(images);
-            setStep('redact');
+            for (const file of files) {
+                const images = await ScannerUtils.processFile(file);
+                allProcessedImages.push(...images);
+            }
+
+            setScannedImages(allProcessedImages);
+
+            // For single PDF or single capture, we might want to jump straight to redact.
+            // But if they are adding one by one, we stay in 'upload' to show total count.
+            // However, to make it seamless, if it's the FIRST upload and it's a PDF, we go to redact.
+            if (scannedImages.length === 0 && files.length === 1 && files[0].type === 'application/pdf') {
+                setStep('redact');
+            }
+            // If they just captured one or more images, we let them see the "Add more" UI in step 'upload'
 
         } catch (err) {
             console.error('Scanning error:', err);
             setError(err instanceof Error ? err.message : 'נכשל בעיבוד הקובץ');
-            setStep('upload');
+        } finally {
+            // Clear input so same file can be selected again
+            e.target.value = '';
         }
     };
 
@@ -255,6 +267,10 @@ export function ContractScanner({ onScanComplete, onCancel, mode = 'modal', skip
         setStep('success');
     };
 
+    const handleAddMore = () => {
+        setStep('upload');
+    };
+
     useEffect(() => {
         if (step === 'success') {
             const timer = setTimeout(() => {
@@ -397,6 +413,7 @@ export function ContractScanner({ onScanComplete, onCancel, mode = 'modal', skip
                             <input
                                 id="contract-file-upload"
                                 type="file"
+                                multiple
                                 accept="application/pdf,.pdf,image/png,image/jpeg,image/jpg"
                                 onChange={handleFileSelect}
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
@@ -409,16 +426,37 @@ export function ContractScanner({ onScanComplete, onCancel, mode = 'modal', skip
                                 >
                                     <FileText className="w-full h-full text-slate-400 group-hover:text-primary transition-colors" />
                                 </motion.div>
-                                <h3 className="text-lg font-bold text-slate-700 mb-1">בחר קובץ להעלאה</h3>
+                                <h3 className="text-lg font-bold text-slate-700 mb-1">
+                                    {scannedImages.length > 0 ? `נוספו ${scannedImages.length} עמודים` : 'בחר קובץ להעלאה'}
+                                </h3>
                                 <p className="text-sm text-slate-500 mb-4">
-                                    PDF או תמונה (JPG, PNG)
+                                    PDF או תמונות (JPG, PNG) - ניתן לבחור מספר תמונות
                                 </p>
                                 <div className="inline-flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white rounded-lg text-sm font-bold shadow-lg shadow-slate-900/20 group-hover:bg-primary group-hover:shadow-blue-600/30 transition-all">
                                     <Upload className="w-4 h-4" />
-                                    בחר קובץ מהמחשב
+                                    {scannedImages.length > 0 ? 'הוסף עמודים נוספים' : 'בחר קבצים'}
                                 </div>
                             </div>
                         </div>
+
+                        {scannedImages.length > 0 && (
+                            <div className="flex gap-3">
+                                <Button
+                                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                                    onClick={() => setStep('redact')}
+                                >
+                                    <CheckCircle2 className="w-4 h-4 ml-2" />
+                                    המשך לניתוח ({scannedImages.length} עמודים)
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    className="px-4"
+                                    onClick={() => setScannedImages([])}
+                                >
+                                    התחל מחדש
+                                </Button>
+                            </div>
+                        )}
 
                         <div className="bg-primary/10/50 rounded-xl p-4 flex items-start gap-3">
                             <Shield className="w-5 h-5 text-primary shrink-0 mt-0.5" />

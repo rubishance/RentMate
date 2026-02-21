@@ -58,7 +58,6 @@ export function useChatBot() {
             timestamp: new Date().toISOString()
         };
 
-        // If file or analysis exists, we inject private context for the AI to know about the file
         const apiMessages = [...messages];
         if (fileInfo) {
             let context = `USER UPLOADED FILE: ${fileInfo.name}. Storage Path: ${fileInfo.path}.`;
@@ -78,63 +77,92 @@ export function useChatBot() {
         setMessages(newMessagesForDisplay);
         setIsLoading(true);
 
+        // Add an empty assistant message to be populated by the stream
+        const assistantPlaceholder: Message = {
+            role: 'assistant',
+            content: '',
+            timestamp: new Date().toISOString()
+        };
+        setMessages(prev => [...prev, assistantPlaceholder]);
+
         try {
             const { data: { session } } = await supabase.auth.getSession();
+            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+            const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-            const { data, error } = await supabase.functions.invoke('chat-support', {
-                body: {
+            const response = await fetch(`${supabaseUrl}/functions/v1/chat-support`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session?.access_token || supabaseAnonKey}`,
+                    'apikey': supabaseAnonKey
+                },
+                body: JSON.stringify({
                     messages: apiMessages,
                     conversationId: conversationId
-                },
-                headers: session?.access_token ? {
-                    Authorization: `Bearer ${session.access_token}`
-                } : {}
+                })
             });
 
-            if (error) throw error;
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || `Server error: ${response.status}`);
+            }
 
-            if (data && data.choices?.[0]) {
-                const assistantMessage: Message = {
-                    role: 'assistant',
-                    content: data.choices[0].message.content || "I couldn't get an answer.",
-                    timestamp: new Date().toISOString()
-                };
-                setMessages(prev => [...prev, assistantMessage]);
+            const reader = response.body?.getReader();
+            if (!reader) throw new Error("No response reader available");
 
-                if (data.conversationId) {
-                    setConversationId(data.conversationId);
-                }
+            const decoder = new TextDecoder();
+            let accumulatedContent = "";
 
-                // Handle UI Action
-                if (data.uiAction) {
-                    setUiAction(data.uiAction);
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value);
+                const lines = chunk.split('\n');
+
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        try {
+                            const data = JSON.parse(line.substring(6));
+
+                            if (data.t === 'text') {
+                                accumulatedContent += data.v;
+                                setMessages(prev => {
+                                    const next = [...prev];
+                                    if (next.length > 0) {
+                                        next[next.length - 1] = {
+                                            ...next[next.length - 1],
+                                            content: accumulatedContent
+                                        };
+                                    }
+                                    return next;
+                                });
+                            } else if (data.t === 'meta' && data.v.conversationId) {
+                                setConversationId(data.v.conversationId);
+                            } else if (data.t === 'ui') {
+                                setUiAction(data.v);
+                            } else if (data.error) {
+                                throw new Error(data.error);
+                            }
+                        } catch (e) {
+                            // Partial JSON or heartbeat
+                        }
+                    }
                 }
             }
 
         } catch (err: any) {
-            console.error('Chat error details:', err);
+            console.error('Chat error:', err);
+            const errorMessage = err.message || "Unknown error";
 
-            let errorMessage = err.message || "Unknown connection error";
-
-            // Attempt to extract detailed error from response body if available
-            if (err && typeof err === 'object' && 'context' in err) {
-                try {
-                    const responseBody = await (err as any).context.json();
-                    if (responseBody.error) {
-                        errorMessage = responseBody.error;
-                    }
-                } catch (e) {
-                    // Ignore JSON parse error
-                    console.warn('Failed to parse error context JSON', e);
+            setMessages(prev => {
+                const next = [...prev];
+                if (next.length > 0 && next[next.length - 1].role === 'assistant') {
+                    next[next.length - 1].content = `Error: ${errorMessage}. Please try again.`;
                 }
-            } else if (err.message && (err.message.toLowerCase().includes("non-2xx") || err.message.toLowerCase().includes("failed to fetch"))) {
-                errorMessage = "שירות ה-AI אינו זמין כרגע. וודא שהגדרת את מפתח ה-API (OpenAI או Gemini) בסודות של Supabase.";
-            }
-
-            setMessages(prev => [...prev, {
-                role: 'assistant',
-                content: `Error: ${errorMessage}`
-            }]);
+                return next;
+            });
         } finally {
             setIsLoading(false);
         }
