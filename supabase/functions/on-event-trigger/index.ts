@@ -106,6 +106,9 @@ serve(async (req) => {
                     ? (isHe ? 'כתובת האימייל' : 'email address')
                     : (isHe ? 'מספר הטלפון' : 'phone number');
 
+                const supportEmailSetting = await supabase.from('system_settings').select('value').eq('key', 'global_email_support').single();
+                const supportEmail = supportEmailSetting.data?.value as string || 'support@rentmate.co.il';
+
                 await supabase.functions.invoke('send-notification-email', {
                     body: {
                         email: record.email,
@@ -113,8 +116,8 @@ serve(async (req) => {
                         notification: {
                             title: isHe ? 'עדכון פרטי חשבון' : 'Account Details Updated',
                             message: isHe
-                                ? `שלום ${record.full_name || ''}, רצינו לעדכן שבוצע שינוי ב-${field} בחשבון ה-RentMate שלך. אם לא ביצעת את השינוי, פנה אלינו מיד ב-support@rentmate.co.il.`
-                                : `Hello ${record.full_name || ''}, we wanted to let you know that your ${field} was updated. If you didn't perform this action, contact us immediately at support@rentmate.co.il.`
+                                ? `שלום ${record.full_name || ''}, רצינו לעדכן שבוצע שינוי ב-${field} בחשבון ה-RentMate שלך. אם לא ביצעת את השינוי, פנה אלינו מיד ב-${supportEmail}.`
+                                : `Hello ${record.full_name || ''}, we wanted to let you know that your ${field} was updated. If you didn't perform this action, contact us immediately at ${supportEmail}.`
                         }
                     }
                 });

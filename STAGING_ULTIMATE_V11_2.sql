@@ -1,4 +1,26 @@
-﻿-- ============================================
+-- RENTMATE GOLDEN SNAPSHOT V11.2 (LITERAL BLOCK PARSED)
+-- PURPOSE: TOTAL FUNCTIONAL CORRECTNESS
+SET check_function_bodies = false;
+
+-- ============================================
+-- RENTMATE GOLDEN SNAPSHOT (CLEAN BASELINE)
+-- ============================================
+-- This script sets up the final target structure of the database.
+-- It skips migration history and focuses on the CURRENT state.
+
+-- PRE-FLIGHT: ENSURE CRITICAL COLUMNS EXIST BEFORE ANY INSERTS
+DO $$ 
+BEGIN
+    ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS first_name TEXT;
+    ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS last_name TEXT;
+    ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS phone TEXT;
+    ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS marketing_consent BOOLEAN DEFAULT FALSE;
+    ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS marketing_consent_at TIMESTAMPTZ;
+    ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+    ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS plan_id TEXT;
+-- [HEADER] EXCEPTION WHEN OTHERS THEN NULL; END $$;
+
+-- ============================================
 -- FOUNDATION: CORE TABLES AND EXTENSIONS
 -- ============================================
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -6,51 +28,51 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- USER PROFILES (The Pivot)
 CREATE TABLE IF NOT EXISTS public.user_profiles (
-    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    email TEXT,
-    full_name TEXT,
-    role TEXT DEFAULT 'user',
-    subscription_status TEXT DEFAULT 'active',
-    subscription_plan TEXT DEFAULT 'free_forever',
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+-- [HEADER]     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [HEADER]     email TEXT,
+-- [HEADER]     full_name TEXT,
+-- [HEADER]     role TEXT DEFAULT 'user',
+-- [HEADER]     subscription_status TEXT DEFAULT 'active',
+-- [HEADER]     subscription_plan TEXT DEFAULT 'free_forever',
+-- [HEADER]     created_at TIMESTAMPTZ DEFAULT NOW(),
+-- [HEADER]     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- PROPERTIES
 CREATE TABLE IF NOT EXISTS public.properties (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE,
-    title TEXT,
-    address TEXT,
-    city TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- [HEADER]     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+-- [HEADER]     user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE,
+-- [HEADER]     title TEXT,
+-- [HEADER]     address TEXT,
+-- [HEADER]     city TEXT,
+-- [HEADER]     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- TENANTS
 CREATE TABLE IF NOT EXISTS public.tenants (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE,
-    name TEXT,
-    email TEXT,
-    phone TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- [HEADER]     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+-- [HEADER]     user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE,
+-- [HEADER]     name TEXT,
+-- [HEADER]     email TEXT,
+-- [HEADER]     phone TEXT,
+-- [HEADER]     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- CONTRACTS
 CREATE TABLE IF NOT EXISTS public.contracts (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE,
-    property_id UUID REFERENCES public.properties(id) ON DELETE CASCADE,
-    tenant_id UUID REFERENCES public.tenants(id) ON DELETE CASCADE,
-    start_date DATE,
+-- [HEADER]     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+-- [HEADER]     user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE,
+-- [HEADER]     property_id UUID REFERENCES public.properties(id) ON DELETE CASCADE,
+-- [HEADER]     tenant_id UUID REFERENCES public.tenants(id) ON DELETE CASCADE,
+-- [HEADER]     start_date DATE,
     end_date DATE,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- [HEADER]     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Add extraction fields to contracts table
 ALTER TABLE contracts 
-ADD COLUMN IF NOT EXISTS guarantors_info TEXT, -- Summarized text of all guarantors
-ADD COLUMN IF NOT EXISTS special_clauses TEXT; -- Summarized text of special clauses
+-- [HEADER] ADD COLUMN IF NOT EXISTS guarantors_info TEXT, -- Summarized text of all guarantors
+-- [HEADER] ADD COLUMN IF NOT EXISTS special_clauses TEXT; -- Summarized text of special clauses
 
 -- Update RLS if needed (usually unrelated to column addition, but good practice to verify)
 -- Existing policies should cover these new columns automatically if they are SELECT * / INSERT / UPDATE
@@ -73,20 +95,20 @@ BEGIN
 
     -- Fetch property address
     SELECT city || ', ' || address INTO property_address
-    FROM public.properties
+-- [HEADER]     FROM public.properties
     WHERE id = NEW.property_id;
 
     -- Determine message
-    notification_title := 'Contract Status Updated';
-    notification_body := format('Contract for %s is now %s.', property_address, NEW.status);
+-- [HEADER]     notification_title := 'Contract Status Updated';
+-- [HEADER]     notification_body := format('Contract for %s is now %s.', property_address, NEW.status);
 
     -- Insert Notification
     INSERT INTO public.notifications (user_id, type, title, message, metadata)
     VALUES (
-        NEW.user_id,
+-- [HEADER]         NEW.user_id,
         'info', -- Status change is informational/important but not necessarily a warning
-        notification_title,
-        notification_body,
+-- [HEADER]         notification_title,
+-- [HEADER]         notification_body,
         json_build_object(
             'contract_id', NEW.id,
             'event', 'status_change',
@@ -100,9 +122,9 @@ END;
 $$;
 
 DROP TRIGGER IF EXISTS on_contract_status_change ON public.contracts;
-
+DROP TRIGGER IF EXISTS "on_contract_status_change" ON public.contracts;
 CREATE TRIGGER on_contract_status_change
-    AFTER UPDATE ON public.contracts
+-- [HEADER]     AFTER UPDATE ON public.contracts
     FOR EACH ROW
     EXECUTE FUNCTION public.notify_contract_status_change();
 -- Function: Process Daily Notifications
@@ -153,25 +175,25 @@ BEGIN
     
     FOR r IN
         SELECT c.id, c.user_id, c.end_date, p.city, p.address
-        FROM public.contracts c
-        JOIN public.properties p ON p.id = c.property_id
-        WHERE c.status = 'active'
-        AND c.extension_option = TRUE
+-- [HEADER]         FROM public.contracts c
+-- [HEADER]         JOIN public.properties p ON p.id = c.property_id
+-- [HEADER]         WHERE c.status = 'active'
+-- [HEADER]         AND c.extension_option = TRUE
         -- Assuming deadline IS the end_date if not specified otherwise, or checking user preference
-        AND c.end_date = CURRENT_DATE + (extension_days || ' days')::INTERVAL
+-- [HEADER]         AND c.end_date = CURRENT_DATE + (extension_days || ' days')::INTERVAL
     LOOP
         IF NOT EXISTS (
             SELECT 1 FROM public.notifications 
-            WHERE user_id = r.user_id 
-            AND metadata->>'contract_id' = r.id::text 
-            AND metadata->>'event' = 'extension_deadline'
+-- [HEADER]             WHERE user_id = r.user_id 
+-- [HEADER]             AND metadata->>'contract_id' = r.id::text 
+-- [HEADER]             AND metadata->>'event' = 'extension_deadline'
         ) THEN
             INSERT INTO public.notifications (user_id, type, title, message, metadata)
             VALUES (
-                r.user_id,
+-- [HEADER]                 r.user_id,
                 'action', -- Custom type 'action' or 'info'
                 'Extension Deadline Approaching',
-                format('Extension option for %s, %s ends in %s days.', r.city, r.address, extension_days),
+-- [HEADER]                 format('Extension option for %s, %s ends in %s days.', r.city, r.address, extension_days),
                 json_build_object('contract_id', r.id, 'event', 'extension_deadline')::jsonb
             );
         END IF;
@@ -182,29 +204,29 @@ BEGIN
     -------------------------------------------------------
     FOR r IN
         SELECT c.id, c.user_id, c.start_date, p.city, p.address
-        FROM public.contracts c
-        JOIN public.properties p ON p.id = c.property_id
-        WHERE c.status = 'active'
-        AND c.linkage_type != 'none' -- Only if linked
-        AND (
-            c.start_date + INTERVAL '1 year' = CURRENT_DATE OR
-            c.start_date + INTERVAL '2 years' = CURRENT_DATE OR
-            c.start_date + INTERVAL '3 years' = CURRENT_DATE
+-- [HEADER]         FROM public.contracts c
+-- [HEADER]         JOIN public.properties p ON p.id = c.property_id
+-- [HEADER]         WHERE c.status = 'active'
+-- [HEADER]         AND c.linkage_type != 'none' -- Only if linked
+-- [HEADER]         AND (
+-- [HEADER]             c.start_date + INTERVAL '1 year' = CURRENT_DATE OR
+-- [HEADER]             c.start_date + INTERVAL '2 years' = CURRENT_DATE OR
+-- [HEADER]             c.start_date + INTERVAL '3 years' = CURRENT_DATE
         )
     LOOP
         IF NOT EXISTS (
             SELECT 1 FROM public.notifications 
-            WHERE user_id = r.user_id 
-            AND metadata->>'contract_id' = r.id::text 
-            AND metadata->>'event' = 'index_update'
-            AND metadata->>'date' = CURRENT_DATE::text
+-- [HEADER]             WHERE user_id = r.user_id 
+-- [HEADER]             AND metadata->>'contract_id' = r.id::text 
+-- [HEADER]             AND metadata->>'event' = 'index_update'
+-- [HEADER]             AND metadata->>'date' = CURRENT_DATE::text
         ) THEN
             INSERT INTO public.notifications (user_id, type, title, message, metadata)
             VALUES (
-                r.user_id,
+-- [HEADER]                 r.user_id,
                 'urgent',
                 'Annual Index Update',
-                format('Annual index update required for %s, %s.', r.city, r.address),
+-- [HEADER]                 format('Annual index update required for %s, %s.', r.city, r.address),
                 json_build_object('contract_id', r.id, 'event', 'index_update', 'date', CURRENT_DATE)::jsonb
             );
         END IF;
@@ -215,24 +237,24 @@ BEGIN
     -------------------------------------------------------
     FOR r IN
         SELECT py.id, py.user_id, py.amount, py.date, p.city, p.address
-        FROM public.payments py
-        JOIN public.contracts c ON c.id = py.contract_id
-        JOIN public.properties p ON p.id = c.property_id
-        WHERE py.status = 'pending'
-        AND py.date = CURRENT_DATE
+-- [HEADER]         FROM public.payments py
+-- [HEADER]         JOIN public.contracts c ON c.id = py.contract_id
+-- [HEADER]         JOIN public.properties p ON p.id = c.property_id
+-- [HEADER]         WHERE py.status = 'pending'
+-- [HEADER]         AND py.date = CURRENT_DATE
     LOOP
         IF NOT EXISTS (
             SELECT 1 FROM public.notifications 
-            WHERE user_id = r.user_id 
-            AND metadata->>'payment_id' = r.id::text 
-            AND metadata->>'event' = 'payment_due'
+-- [HEADER]             WHERE user_id = r.user_id 
+-- [HEADER]             AND metadata->>'payment_id' = r.id::text 
+-- [HEADER]             AND metadata->>'event' = 'payment_due'
         ) THEN
             INSERT INTO public.notifications (user_id, type, title, message, metadata)
             VALUES (
-                r.user_id,
+-- [HEADER]                 r.user_id,
                 'warning',
                 'Payment Due Today',
-                format('Payment of ג‚×%s for %s, %s is due today.', r.amount, r.city, r.address),
+-- [HEADER]                 format('Payment of ג‚×%s for %s, %s is due today.', r.amount, r.city, r.address),
                 json_build_object('payment_id', r.id, 'event', 'payment_due')::jsonb
             );
         END IF;
@@ -242,7 +264,7 @@ END;
 $$;
 -- Add needs_painting column to contracts table
 ALTER TABLE contracts 
-ADD COLUMN needs_painting BOOLEAN DEFAULT false;
+-- [HEADER] ADD COLUMN IF NOT EXISTS needs_painting BOOLEAN DEFAULT false;
 
 -- Add option_periods column to contracts table
 -- Use JSONB to store an array of options, e.g., [{"length": 12, "unit": "months"}, {"length": 1, "unit": "years"}]
@@ -250,7 +272,7 @@ ADD COLUMN needs_painting BOOLEAN DEFAULT false;
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contracts' AND column_name = 'option_periods') THEN
-        ALTER TABLE public.contracts ADD COLUMN option_periods JSONB DEFAULT '[]'::jsonb;
+        ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS option_periods JSONB DEFAULT '[]'::jsonb;
     END IF;
 END $$;
 -- Migration to add 'other' to the property_type check constraint
@@ -260,30 +282,30 @@ ALTER TABLE properties DROP CONSTRAINT IF EXISTS properties_property_type_check;
 
 -- Re-add the check constraint with 'other' included
 ALTER TABLE properties 
-ADD CONSTRAINT properties_property_type_check 
-CHECK (property_type IN ('apartment', 'penthouse', 'garden', 'house', 'other'));
+-- [HEADER] ADD CONSTRAINT properties_property_type_check 
+-- [HEADER] CHECK (property_type IN ('apartment', 'penthouse', 'garden', 'house', 'other'));
 -- Add parking and storage columns to properties
 ALTER TABLE properties
-ADD COLUMN IF NOT EXISTS has_parking BOOLEAN DEFAULT false,
-ADD COLUMN IF NOT EXISTS has_storage BOOLEAN DEFAULT false;
+-- [HEADER] ADD COLUMN IF NOT EXISTS has_parking BOOLEAN DEFAULT false,
+-- [HEADER] ADD COLUMN IF NOT EXISTS has_storage BOOLEAN DEFAULT false;
 -- Add property_type column
 ALTER TABLE properties
-ADD COLUMN IF NOT EXISTS property_type TEXT DEFAULT 'apartment';
+-- [HEADER] ADD COLUMN IF NOT EXISTS property_type TEXT DEFAULT 'apartment';
 -- Migration to add missing rent_price column to properties table
 -- Fixes error: Could not find the 'rent_price' column of 'properties' in the schema cache
 
 ALTER TABLE public.properties 
-ADD COLUMN IF NOT EXISTS rent_price NUMERIC(10, 2);
+-- [HEADER] ADD COLUMN IF NOT EXISTS rent_price NUMERIC(10, 2);
 
 -- Also ensure RLS is enabled as a best practice, though likely already on
 ALTER TABLE public.properties ENABLE ROW LEVEL SECURITY;
 -- Add Stripe-related fields to user_profiles table
 ALTER TABLE user_profiles
-ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT,
-ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT,
-ADD COLUMN IF NOT EXISTS subscription_status TEXT DEFAULT 'inactive' CHECK (subscription_status IN ('active', 'inactive', 'canceled', 'past_due'));
+-- [HEADER] ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT,
+-- [HEADER] ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT,
+-- [HEADER] ADD COLUMN IF NOT EXISTS subscription_status TEXT DEFAULT 'inactive' CHECK (subscription_status IN ('active', 'inactive', 'canceled', 'past_due'));
 
--- Create index for faster lookups
+-- CREATE INDEX IF NOT EXISTS for faster lookups
 CREATE INDEX IF NOT EXISTS idx_user_profiles_stripe_customer ON user_profiles(stripe_customer_id);
 CREATE INDEX IF NOT EXISTS idx_user_profiles_stripe_subscription ON user_profiles(stripe_subscription_id);
 
@@ -317,12 +339,12 @@ BEGIN
 END $$;
 -- Create admin_notifications table
 create table if not exists admin_notifications (
-  id uuid default gen_random_uuid() primary key,
-  user_id uuid references auth.users(id) not null,
-  type text not null check (type in ('upgrade_request', 'system_alert')),
-  content jsonb not null default '{}'::jsonb,
-  status text not null default 'pending' check (status in ('pending', 'processing', 'resolved', 'dismissed')),
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+-- [HEADER]   id uuid default gen_random_uuid() primary key,
+-- [HEADER]   user_id uuid references auth.users(id) not null,
+-- [HEADER]   type text not null check (type in ('upgrade_request', 'system_alert')),
+-- [HEADER]   content jsonb not null default '{}'::jsonb,
+-- [HEADER]   status text not null default 'pending' check (status in ('pending', 'processing', 'resolved', 'dismissed')),
+-- [HEADER]   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
 -- Enable RLS
@@ -330,47 +352,47 @@ alter table admin_notifications enable row level security;
 
 -- Policy: Admins can view all notifications
 create policy "Admins can view all notifications"
-  on admin_notifications for select
-  to authenticated
+-- [HEADER]   on admin_notifications for select
+-- [HEADER]   to authenticated
   using (
-    exists (
+-- [HEADER]     exists (
       select 1 from user_profiles
-      where id = auth.uid() and role = 'admin'
+-- [HEADER]       where id = auth.uid() and role = 'admin'
     )
   );
 
 -- Policy: Admins can update notifications
 create policy "Admins can update notifications"
-  on admin_notifications for update
-  to authenticated
+-- [HEADER]   on admin_notifications for update
+-- [HEADER]   to authenticated
   using (
-    exists (
+-- [HEADER]     exists (
       select 1 from user_profiles
-      where id = auth.uid() and role = 'admin'
+-- [HEADER]       where id = auth.uid() and role = 'admin'
     )
   );
 
 -- Policy: Users can insert their own upgrade requests
 create policy "Users can insert upgrade requests"
-  on admin_notifications for insert
-  to authenticated
+-- [HEADER]   on admin_notifications for insert
+-- [HEADER]   to authenticated
   with check (
-    user_id = auth.uid() 
-    and type = 'upgrade_request'
+-- [HEADER]     user_id = auth.uid() 
+-- [HEADER]     and type = 'upgrade_request'
   );
 
 -- Optional: Index for filtering by status
 create index if not exists idx_admin_notifications_status on admin_notifications(status);
 -- Create contact_messages table
 CREATE TABLE IF NOT EXISTS public.contact_messages (
-    id UUID NOT NULL DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    user_name TEXT NOT NULL,
-    user_email TEXT NOT NULL,
-    message TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'read', 'replied', 'archived')),
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-    CONSTRAINT contact_messages_pkey PRIMARY KEY (id)
+-- [HEADER]     id UUID NOT NULL DEFAULT gen_random_uuid(),
+-- [HEADER]     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [HEADER]     user_name TEXT NOT NULL,
+-- [HEADER]     user_email TEXT NOT NULL,
+-- [HEADER]     message TEXT NOT NULL,
+-- [HEADER]     status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'read', 'replied', 'archived')),
+-- [HEADER]     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+-- [HEADER]     CONSTRAINT contact_messages_pkey PRIMARY KEY (id)
 );
 
 -- Enable RLS
@@ -378,69 +400,69 @@ ALTER TABLE public.contact_messages ENABLE ROW LEVEL SECURITY;
 
 -- Policies
 CREATE POLICY "Users can view own messages"
-    ON contact_messages FOR SELECT
+-- [HEADER]     ON contact_messages FOR SELECT
     USING (user_id = auth.uid());
 
 CREATE POLICY "Users can insert own messages"
-    ON contact_messages FOR INSERT
+-- [HEADER]     ON contact_messages FOR INSERT
     WITH CHECK (user_id = auth.uid());
 
 -- Admin policy (if you want admins to see all messages)
 CREATE POLICY "Admins can view all messages"
-    ON contact_messages FOR SELECT
+-- [HEADER]     ON contact_messages FOR SELECT
     USING (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [HEADER]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
--- Create index for faster queries
-CREATE INDEX idx_contact_messages_user_id ON contact_messages(user_id);
-CREATE INDEX idx_contact_messages_status ON contact_messages(status);
-CREATE INDEX idx_contact_messages_created_at ON contact_messages(created_at DESC);
+-- CREATE INDEX IF NOT EXISTS for faster queries
+CREATE INDEX IF NOT EXISTS idx_contact_messages_user_id ON contact_messages(user_id);
+CREATE INDEX IF NOT EXISTS idx_contact_messages_status ON contact_messages(status);
+CREATE INDEX IF NOT EXISTS idx_contact_messages_created_at ON contact_messages(created_at DESC);
 -- Create the 'contracts' storage bucket if it doesn't exist
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('contracts', 'contracts', true)
-ON CONFLICT (id) DO NOTHING;
+-- [HEADER] ON CONFLICT (id) DO NOTHING;
 
 -- Policy: Allow authenticated users to upload files to 'contracts' bucket
 CREATE POLICY "Allow authenticated uploads"
-ON storage.objects FOR INSERT
-TO authenticated
+-- [HEADER] ON storage.objects FOR INSERT
+-- [HEADER] TO authenticated
 WITH CHECK (bucket_id = 'contracts');
 
 -- Policy: Allow authenticated users to view files in 'contracts' bucket
 CREATE POLICY "Allow authenticated view"
-ON storage.objects FOR SELECT
-TO authenticated
+-- [HEADER] ON storage.objects FOR SELECT
+-- [HEADER] TO authenticated
 USING (bucket_id = 'contracts');
 
 -- Policy: Allow users to update their own files (optional, but good for redaction flow)
 CREATE POLICY "Allow authenticated update"
-ON storage.objects FOR UPDATE
-TO authenticated
+-- [HEADER] ON storage.objects FOR UPDATE
+-- [HEADER] TO authenticated
 USING (bucket_id = 'contracts');
 
 -- Policy: Allow users to delete their own files
 CREATE POLICY "Allow authenticated delete"
-ON storage.objects FOR DELETE
-TO authenticated
+-- [HEADER] ON storage.objects FOR DELETE
+-- [HEADER] TO authenticated
 USING (bucket_id = 'contracts');
--- Create table for storing index base periods and chaining factors
+-- CREATE TABLE IF NOT EXISTS for storing index base periods and chaining factors
 CREATE TABLE IF NOT EXISTS index_bases (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    index_type TEXT NOT NULL, -- e.g., 'cpi', 'construction', 'housing'
-    base_period_start DATE NOT NULL, -- The start date of this base period (e.g., '2023-01-01')
-    base_value NUMERIC NOT NULL DEFAULT 100.0, -- The value of the base index (usually 100.0)
-    previous_base_period_start DATE, -- The start date of the *previous* base period
-    chain_factor NUMERIC, -- The factor to multiply when moving FROM this base TO the previous base (or vice versa depending on logic)
+-- [HEADER]     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+-- [HEADER]     index_type TEXT NOT NULL, -- e.g., 'cpi', 'construction', 'housing'
+-- [HEADER]     base_period_start DATE NOT NULL, -- The start date of this base period (e.g., '2023-01-01')
+-- [HEADER]     base_value NUMERIC NOT NULL DEFAULT 100.0, -- The value of the base index (usually 100.0)
+-- [HEADER]     previous_base_period_start DATE, -- The start date of the *previous* base period
+-- [HEADER]     chain_factor NUMERIC, -- The factor to multiply when moving FROM this base TO the previous base (or vice versa depending on logic)
                           -- CBS usually publishes "Linkage Coefficient" (׳׳§׳“׳ ׳§׳©׳¨) to the previous base.
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+-- [HEADER]     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Index for fast lookup
-CREATE INDEX idx_index_bases_type_date ON index_bases (index_type, base_period_start);
+CREATE INDEX IF NOT EXISTS idx_index_bases_type_date ON index_bases (index_type, base_period_start);
 
 -- Insert known recent Israeli CPI Base Periods (Example Data - verified from CBS knowledge)
 -- Note: CBS updates bases typically every 2 years recently.
@@ -462,17 +484,17 @@ CREATE INDEX idx_index_bases_type_date ON index_bases (index_type, base_period_s
 
 -- Create index_data table for storing economic indices
 CREATE TABLE IF NOT EXISTS index_data (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  index_type TEXT NOT NULL CHECK (index_type IN ('cpi', 'housing', 'construction', 'usd', 'eur')),
+-- [HEADER]   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+-- [HEADER]   index_type TEXT NOT NULL CHECK (index_type IN ('cpi', 'housing', 'construction', 'usd', 'eur')),
   date TEXT NOT NULL, -- Format: 'YYYY-MM'
-  value DECIMAL(10, 4) NOT NULL,
-  source TEXT DEFAULT 'cbs' CHECK (source IN ('cbs', 'exchange-api', 'manual')),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  UNIQUE(index_type, date)
+-- [HEADER]   value DECIMAL(10, 4) NOT NULL,
+-- [HEADER]   source TEXT DEFAULT 'cbs' CHECK (source IN ('cbs', 'exchange-api', 'manual')),
+-- [HEADER]   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+-- [HEADER]   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+-- [HEADER]   UNIQUE(index_type, date)
 );
 
--- Create index for faster queries
+-- CREATE INDEX IF NOT EXISTS for faster queries
 CREATE INDEX IF NOT EXISTS idx_index_data_type_date ON index_data(index_type, date);
 
 -- Enable Row Level Security
@@ -480,41 +502,41 @@ ALTER TABLE index_data ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Allow all authenticated users to read index data
 CREATE POLICY "Allow authenticated users to read index data"
-  ON index_data
+-- [HEADER]   ON index_data
   FOR SELECT
-  TO authenticated
+-- [HEADER]   TO authenticated
   USING (true);
 
 -- Policy: Only admins can insert/update index data (will be done via Edge Function)
 -- Policy: Allow authenticated users to manage index data (needed for manual refresh button)
 CREATE POLICY "Allow authenticated users to manage index data"
-  ON index_data
+-- [HEADER]   ON index_data
   FOR ALL
-  TO authenticated
+-- [HEADER]   TO authenticated
   USING (true)
   WITH CHECK (true);
 
 -- Add comment
 -- Create notifications table
 CREATE TABLE IF NOT EXISTS public.notifications (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    type TEXT NOT NULL CHECK (type IN ('info', 'success', 'warning', 'error')),
-    title TEXT NOT NULL,
-    message TEXT NOT NULL,
-    read_at TIMESTAMP WITH TIME ZONE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+-- [HEADER]     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+-- [HEADER]     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [HEADER]     type TEXT NOT NULL CHECK (type IN ('info', 'success', 'warning', 'error')),
+-- [HEADER]     title TEXT NOT NULL,
+-- [HEADER]     message TEXT NOT NULL,
+-- [HEADER]     read_at TIMESTAMP WITH TIME ZONE,
+-- [HEADER]     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- RLS Policies
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Users can view their own notifications"
-    ON public.notifications FOR SELECT
+-- [HEADER]     ON public.notifications FOR SELECT
     USING (auth.uid() = user_id);
 
 CREATE POLICY "Users can update their own notifications (mark as read)"
-    ON public.notifications FOR UPDATE
+-- [HEADER]     ON public.notifications FOR UPDATE
     USING (auth.uid() = user_id);
 
 -- Check if trigger exists before creating
@@ -530,47 +552,47 @@ $$;
 -- Create a public bucket for property images
 INSERT INTO storage.buckets (id, name, public, avif_autodetection, file_size_limit, allowed_mime_types)
 VALUES ('property-images', 'property-images', true, false, 5242880, ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
-ON CONFLICT (id) DO NOTHING;
+-- [HEADER] ON CONFLICT (id) DO NOTHING;
 
 -- Policy: Public can VIEW files (It's a public bucket, but good to be explicit for SELECT)
 DROP POLICY IF EXISTS "Public can view property images" ON storage.objects;
 CREATE POLICY "Public can view property images"
-    ON storage.objects
+-- [HEADER]     ON storage.objects
     FOR SELECT
     USING ( bucket_id = 'property-images' );
 
 -- Policy: Authenticated users can UPLOAD files
 DROP POLICY IF EXISTS "Authenticated users can upload property images" ON storage.objects;
 CREATE POLICY "Authenticated users can upload property images"
-    ON storage.objects
+-- [HEADER]     ON storage.objects
     FOR INSERT
     WITH CHECK (
-        bucket_id = 'property-images'
-        AND
-        auth.role() = 'authenticated'
+-- [HEADER]         bucket_id = 'property-images'
+-- [HEADER]         AND
+-- [HEADER]         auth.role() = 'authenticated'
     );
 
 -- Policy: Users can UPDATE their own files (or all authenticated for now for simplicity in this context, but better to restrict)
 -- For now, allowing authenticated users to update/delete for simplicity as ownership tracking on files might be complex without folder structure
 DROP POLICY IF EXISTS "Authenticated users can update property images" ON storage.objects;
 CREATE POLICY "Authenticated users can update property images"
-    ON storage.objects
+-- [HEADER]     ON storage.objects
     FOR UPDATE
     USING ( bucket_id = 'property-images' AND auth.role() = 'authenticated' );
 
 DROP POLICY IF EXISTS "Authenticated users can delete property images" ON storage.objects;
 CREATE POLICY "Authenticated users can delete property images"
-    ON storage.objects
+-- [HEADER]     ON storage.objects
     FOR DELETE
     USING ( bucket_id = 'property-images' AND auth.role() = 'authenticated' );
 -- Create a table to track rate limits
 CREATE TABLE IF NOT EXISTS public.rate_limits (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    ip_address TEXT,
-    endpoint TEXT NOT NULL,
-    request_count INTEGER DEFAULT 1,
-    last_request_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
+-- [HEADER]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [HEADER]     ip_address TEXT,
+-- [HEADER]     endpoint TEXT NOT NULL,
+-- [HEADER]     request_count INTEGER DEFAULT 1,
+-- [HEADER]     last_request_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()),
+-- [HEADER]     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
 );
 
 -- Index for fast lookups
@@ -589,6 +611,8 @@ $$ LANGUAGE plpgsql;
 ALTER TABLE public.rate_limits ENABLE ROW LEVEL SECURITY;
 
 -- Deny public access by default (only service role should write)
+;
+DROP POLICY IF EXISTS "No public access" ON public.rate_limits;
 CREATE POLICY "No public access" ON public.rate_limits
     FOR ALL
     USING (false);
@@ -596,63 +620,67 @@ CREATE POLICY "No public access" ON public.rate_limits
 
 -- 1. Create system_settings table
 CREATE TABLE IF NOT EXISTS public.system_settings (
-    key TEXT PRIMARY KEY,
-    value JSONB NOT NULL,
-    description TEXT,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_by UUID REFERENCES auth.users(id)
+-- [HEADER]     key TEXT PRIMARY KEY,
+-- [HEADER]     value JSONB NOT NULL,
+-- [HEADER]     description TEXT,
+-- [HEADER]     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+-- [HEADER]     updated_by UUID REFERENCES auth.users(id)
 );
 
 -- Enable RLS
 ALTER TABLE public.system_settings ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Authenticated users can read (for app config), only Admins can write
+;
+DROP POLICY IF EXISTS "Admins can manage system settings" ON public.system_settings;
 CREATE POLICY "Admins can manage system settings" ON public.system_settings
     USING (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM public.user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [HEADER]             WHERE id = auth.uid() AND role = 'admin'
         )
     )
     WITH CHECK (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM public.user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [HEADER]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
-    
+DROP POLICY IF EXISTS "Everyone can read system settings" ON public.system_settings;
 CREATE POLICY "Everyone can read system settings" ON public.system_settings
     FOR SELECT
     USING (true); -- Public read for generic configs like 'maintenance_mode'
 
 -- 2. Create notification_rules table
 CREATE TABLE IF NOT EXISTS public.notification_rules (
-    id TEXT PRIMARY KEY, -- e.g. 'contract_ending', 'payment_due'
-    name TEXT NOT NULL,
-    description TEXT,
-    is_enabled BOOLEAN DEFAULT true,
-    days_offset INT DEFAULT 0, -- e.g. 30 (days before)
-    channels JSONB DEFAULT '["in_app"]'::jsonb, -- e.g. ["in_app", "email", "push"]
-    target_audience TEXT DEFAULT 'user' CHECK (target_audience IN ('user', 'admin', 'both')),
-    message_template TEXT NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+-- [HEADER]     id TEXT PRIMARY KEY, -- e.g. 'contract_ending', 'payment_due'
+-- [HEADER]     name TEXT NOT NULL,
+-- [HEADER]     description TEXT,
+-- [HEADER]     is_enabled BOOLEAN DEFAULT true,
+-- [HEADER]     days_offset INT DEFAULT 0, -- e.g. 30 (days before)
+-- [HEADER]     channels JSONB DEFAULT '["in_app"]'::jsonb, -- e.g. ["in_app", "email", "push"]
+-- [HEADER]     target_audience TEXT DEFAULT 'user' CHECK (target_audience IN ('user', 'admin', 'both')),
+-- [HEADER]     message_template TEXT NOT NULL,
+-- [HEADER]     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Enable RLS
 ALTER TABLE public.notification_rules ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Only Admins can manage rules
+;
+DROP POLICY IF EXISTS "Admins can manage notification rules" ON public.notification_rules;
 CREATE POLICY "Admins can manage notification rules" ON public.notification_rules
     USING (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM public.user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [HEADER]             WHERE id = auth.uid() AND role = 'admin'
         )
     )
     WITH CHECK (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM public.user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [HEADER]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
@@ -662,7 +690,7 @@ VALUES
     ('trial_duration_days', '14'::jsonb, 'Duration of the free trial in days'),
     ('maintenance_mode', 'false'::jsonb, 'If true, shows maintenance screen to non-admins'),
     ('enable_signups', 'true'::jsonb, 'Master switch to allow new user registrations')
-ON CONFLICT (key) DO NOTHING;
+-- [HEADER] ON CONFLICT (key) DO NOTHING;
 
 INSERT INTO public.notification_rules (id, name, description, is_enabled, days_offset, channels, target_audience, message_template)
 VALUES
@@ -670,7 +698,7 @@ VALUES
     ('extension_deadline', 'Extension Deadline', 'Warns before extension option expires', true, 60, '["in_app", "push"]'::jsonb, 'user', 'Extension option for %s, %s ends in %s days.'),
     ('index_update', 'Annual Index Update', 'Reminder to update rent based on index', true, 0, '["in_app", "push"]'::jsonb, 'user', 'Annual index update required for %s, %s.'),
     ('payment_due', 'Payment Due Today', 'Alerts when a pending payment date is reached', true, 0, '["in_app", "push"]'::jsonb, 'user', 'Payment of ג‚×%s for %s, %s is due today.')
-ON CONFLICT (id) DO NOTHING;
+-- [HEADER] ON CONFLICT (id) DO NOTHING;
 
 -- 4. Update process_daily_notifications to use these rules
 CREATE OR REPLACE FUNCTION public.process_daily_notifications()
@@ -700,18 +728,18 @@ BEGIN
     IF (rule_ending_soon->>'is_enabled')::boolean IS TRUE THEN
         FOR r IN
             SELECT c.id, c.user_id, c.end_date, p.city, p.address
-            FROM public.contracts c
-            JOIN public.properties p ON p.id = c.property_id
-            WHERE c.status = 'active'
-            AND c.end_date = CURRENT_DATE + ((rule_ending_soon->>'days_offset')::int || ' days')::INTERVAL
+-- [HEADER]             FROM public.contracts c
+-- [HEADER]             JOIN public.properties p ON p.id = c.property_id
+-- [HEADER]             WHERE c.status = 'active'
+-- [HEADER]             AND c.end_date = CURRENT_DATE + ((rule_ending_soon->>'days_offset')::int || ' days')::INTERVAL
         LOOP
             IF NOT EXISTS (SELECT 1 FROM public.notifications WHERE user_id = r.user_id AND metadata->>'contract_id' = r.id::text AND metadata->>'event' = 'ending_soon') THEN
                 INSERT INTO public.notifications (user_id, type, title, message, metadata)
                 VALUES (
-                    r.user_id, 
+-- [HEADER]                     r.user_id, 
                     'warning', 
                     (rule_ending_soon->>'name')::text, 
-                    format((rule_ending_soon->>'message_template')::text, r.city, r.address, (rule_ending_soon->>'days_offset')::text), 
+-- [HEADER]                     format((rule_ending_soon->>'message_template')::text, r.city, r.address, (rule_ending_soon->>'days_offset')::text), 
                     json_build_object('contract_id', r.id, 'event', 'ending_soon')::jsonb
                 );
             END IF;
@@ -724,19 +752,19 @@ BEGIN
     IF (rule_extension->>'is_enabled')::boolean IS TRUE THEN
         FOR r IN
             SELECT c.id, c.user_id, c.end_date, p.city, p.address
-            FROM public.contracts c
-            JOIN public.properties p ON p.id = c.property_id
-            WHERE c.status = 'active'
-            AND c.extension_option = TRUE
-            AND c.end_date = CURRENT_DATE + ((rule_extension->>'days_offset')::int || ' days')::INTERVAL
+-- [HEADER]             FROM public.contracts c
+-- [HEADER]             JOIN public.properties p ON p.id = c.property_id
+-- [HEADER]             WHERE c.status = 'active'
+-- [HEADER]             AND c.extension_option = TRUE
+-- [HEADER]             AND c.end_date = CURRENT_DATE + ((rule_extension->>'days_offset')::int || ' days')::INTERVAL
         LOOP
             IF NOT EXISTS (SELECT 1 FROM public.notifications WHERE user_id = r.user_id AND metadata->>'contract_id' = r.id::text AND metadata->>'event' = 'extension_deadline') THEN
                 INSERT INTO public.notifications (user_id, type, title, message, metadata)
                 VALUES (
-                    r.user_id, 
+-- [HEADER]                     r.user_id, 
                     'action', 
                     (rule_extension->>'name')::text, 
-                    format((rule_extension->>'message_template')::text, r.city, r.address, (rule_extension->>'days_offset')::text), 
+-- [HEADER]                     format((rule_extension->>'message_template')::text, r.city, r.address, (rule_extension->>'days_offset')::text), 
                     json_build_object('contract_id', r.id, 'event', 'extension_deadline')::jsonb
                 );
             END IF;
@@ -749,23 +777,23 @@ BEGIN
     IF (rule_index->>'is_enabled')::boolean IS TRUE THEN
         FOR r IN
             SELECT c.id, c.user_id, c.start_date, p.city, p.address
-            FROM public.contracts c
-            JOIN public.properties p ON p.id = c.property_id
-            WHERE c.status = 'active'
-            AND c.linkage_type != 'none'
-            AND (
-                c.start_date + INTERVAL '1 year' = CURRENT_DATE OR
-                c.start_date + INTERVAL '2 years' = CURRENT_DATE OR
-                c.start_date + INTERVAL '3 years' = CURRENT_DATE
+-- [HEADER]             FROM public.contracts c
+-- [HEADER]             JOIN public.properties p ON p.id = c.property_id
+-- [HEADER]             WHERE c.status = 'active'
+-- [HEADER]             AND c.linkage_type != 'none'
+-- [HEADER]             AND (
+-- [HEADER]                 c.start_date + INTERVAL '1 year' = CURRENT_DATE OR
+-- [HEADER]                 c.start_date + INTERVAL '2 years' = CURRENT_DATE OR
+-- [HEADER]                 c.start_date + INTERVAL '3 years' = CURRENT_DATE
             )
         LOOP
             IF NOT EXISTS (SELECT 1 FROM public.notifications WHERE user_id = r.user_id AND metadata->>'contract_id' = r.id::text AND metadata->>'event' = 'index_update' AND metadata->>'date' = CURRENT_DATE::text) THEN
                 INSERT INTO public.notifications (user_id, type, title, message, metadata)
                 VALUES (
-                    r.user_id, 
+-- [HEADER]                     r.user_id, 
                     'urgent', 
                     (rule_index->>'name')::text, 
-                    format((rule_index->>'message_template')::text, r.city, r.address), 
+-- [HEADER]                     format((rule_index->>'message_template')::text, r.city, r.address), 
                     json_build_object('contract_id', r.id, 'event', 'index_update', 'date', CURRENT_DATE)::jsonb
                 );
             END IF;
@@ -778,19 +806,19 @@ BEGIN
     IF (rule_payment->>'is_enabled')::boolean IS TRUE THEN
         FOR r IN
             SELECT py.id, py.user_id, py.amount, py.date, p.city, p.address
-            FROM public.payments py
-            JOIN public.contracts c ON c.id = py.contract_id
-            JOIN public.properties p ON p.id = c.property_id
-            WHERE py.status = 'pending'
-            AND py.date = CURRENT_DATE
+-- [HEADER]             FROM public.payments py
+-- [HEADER]             JOIN public.contracts c ON c.id = py.contract_id
+-- [HEADER]             JOIN public.properties p ON p.id = c.property_id
+-- [HEADER]             WHERE py.status = 'pending'
+-- [HEADER]             AND py.date = CURRENT_DATE
         LOOP
             IF NOT EXISTS (SELECT 1 FROM public.notifications WHERE user_id = r.user_id AND metadata->>'payment_id' = r.id::text AND metadata->>'event' = 'payment_due') THEN
                 INSERT INTO public.notifications (user_id, type, title, message, metadata)
                 VALUES (
-                    r.user_id, 
+-- [HEADER]                     r.user_id, 
                     'warning', 
                     (rule_payment->>'name')::text, 
-                    format((rule_payment->>'message_template')::text, r.amount, r.city, r.address), 
+-- [HEADER]                     format((rule_payment->>'message_template')::text, r.amount, r.city, r.address), 
                     json_build_object('payment_id', r.id, 'event', 'payment_due')::jsonb
                 );
             END IF;
@@ -803,67 +831,67 @@ $$;
 -- Using array_agg with ORDER BY created_at to keep the oldest record
 WITH duplicates AS (
   SELECT
-    address,
-    city,
-    user_id,
+-- [HEADER]     address,
+-- [HEADER]     city,
+-- [HEADER]     user_id,
     (array_agg(id ORDER BY created_at ASC))[1] as keep_id,
-    array_agg(id) as all_ids
-  FROM properties
-  GROUP BY address, city, user_id
-  HAVING COUNT(*) > 1
+-- [HEADER]     array_agg(id) as all_ids
+-- [HEADER]   FROM properties
+-- [HEADER]   GROUP BY address, city, user_id
+-- [HEADER]   HAVING COUNT(*) > 1
 ),
-busted_duplicates AS (
+-- [HEADER] busted_duplicates AS (
   SELECT
-    keep_id,
-    unnest(all_ids) as duplicate_id
-  FROM duplicates
+-- [HEADER]     keep_id,
+-- [HEADER]     unnest(all_ids) as duplicate_id
+-- [HEADER]   FROM duplicates
 )
 -- 1. Update Tenants to point to the kept property
 UPDATE tenants
 SET property_id = bd.keep_id
-FROM busted_duplicates bd
-WHERE tenants.property_id = bd.duplicate_id
+-- [HEADER] FROM busted_duplicates bd
+-- [HEADER] WHERE tenants.property_id = bd.duplicate_id
 AND tenants.property_id != bd.keep_id;
 
 -- 2. Update Contracts to point to the kept property
 -- Re-calculate duplicates for safety in this transaction block step
 WITH duplicates AS (
   SELECT
-    address,
-    city,
-    user_id,
+-- [HEADER]     address,
+-- [HEADER]     city,
+-- [HEADER]     user_id,
     (array_agg(id ORDER BY created_at ASC))[1] as keep_id,
-    array_agg(id) as all_ids
-  FROM properties
-  GROUP BY address, city, user_id
-  HAVING COUNT(*) > 1
+-- [HEADER]     array_agg(id) as all_ids
+-- [HEADER]   FROM properties
+-- [HEADER]   GROUP BY address, city, user_id
+-- [HEADER]   HAVING COUNT(*) > 1
 ),
-busted_duplicates AS (
+-- [HEADER] busted_duplicates AS (
   SELECT
-    keep_id,
-    unnest(all_ids) as duplicate_id
-  FROM duplicates
+-- [HEADER]     keep_id,
+-- [HEADER]     unnest(all_ids) as duplicate_id
+-- [HEADER]   FROM duplicates
 )
 UPDATE contracts
 SET property_id = bd.keep_id
-FROM busted_duplicates bd
-WHERE contracts.property_id = bd.duplicate_id
+-- [HEADER] FROM busted_duplicates bd
+-- [HEADER] WHERE contracts.property_id = bd.duplicate_id
 AND contracts.property_id != bd.keep_id;
 
 -- 3. Delete the duplicate properties
 WITH duplicates AS (
   SELECT
-    address,
-    city,
-    user_id,
+-- [HEADER]     address,
+-- [HEADER]     city,
+-- [HEADER]     user_id,
     (array_agg(id ORDER BY created_at ASC))[1] as keep_id,
-    array_agg(id) as all_ids
-  FROM properties
-  GROUP BY address, city, user_id
-  HAVING COUNT(*) > 1
+-- [HEADER]     array_agg(id) as all_ids
+-- [HEADER]   FROM properties
+-- [HEADER]   GROUP BY address, city, user_id
+-- [HEADER]   HAVING COUNT(*) > 1
 )
 DELETE FROM properties
-WHERE id IN (
+-- [HEADER] WHERE id IN (
     SELECT unnest(all_ids) FROM duplicates
 ) AND id NOT IN (
     SELECT keep_id FROM duplicates
@@ -875,16 +903,16 @@ WHERE id IN (
 
 -- 1. ENSURE USER_ID COLUMNS EXIST
 ALTER TABLE properties 
-ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
+-- [HEADER] ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
 
 ALTER TABLE tenants
-ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
+-- [HEADER] ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
 
 ALTER TABLE contracts
-ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
+-- [HEADER] ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
 
 ALTER TABLE payments
-ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
+-- [HEADER] ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
 
 -- 2. ENABLE RLS ON ALL TABLES
 ALTER TABLE properties ENABLE ROW LEVEL SECURITY;
@@ -909,74 +937,74 @@ DROP POLICY IF EXISTS "Users can delete own contracts" ON contracts;
 
 -- 4. CREATE SECURE POLICIES FOR PROPERTIES
 CREATE POLICY "Users can view own properties"
-    ON properties FOR SELECT
+-- [HEADER]     ON properties FOR SELECT
     USING (user_id = auth.uid());
 
 CREATE POLICY "Users can insert own properties"
-    ON properties FOR INSERT
+-- [HEADER]     ON properties FOR INSERT
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can update own properties"
-    ON properties FOR UPDATE
+-- [HEADER]     ON properties FOR UPDATE
     USING (user_id = auth.uid())
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can delete own properties"
-    ON properties FOR DELETE
+-- [HEADER]     ON properties FOR DELETE
     USING (user_id = auth.uid());
 
 -- 5. CREATE SECURE POLICIES FOR TENANTS
 CREATE POLICY "Users can view own tenants"
-    ON tenants FOR SELECT
+-- [HEADER]     ON tenants FOR SELECT
     USING (user_id = auth.uid());
 
 CREATE POLICY "Users can insert own tenants"
-    ON tenants FOR INSERT
+-- [HEADER]     ON tenants FOR INSERT
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can update own tenants"
-    ON tenants FOR UPDATE
+-- [HEADER]     ON tenants FOR UPDATE
     USING (user_id = auth.uid())
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can delete own tenants"
-    ON tenants FOR DELETE
+-- [HEADER]     ON tenants FOR DELETE
     USING (user_id = auth.uid());
 
 -- 6. CREATE SECURE POLICIES FOR CONTRACTS
 CREATE POLICY "Users can view own contracts"
-    ON contracts FOR SELECT
+-- [HEADER]     ON contracts FOR SELECT
     USING (user_id = auth.uid());
 
 CREATE POLICY "Users can insert own contracts"
-    ON contracts FOR INSERT
+-- [HEADER]     ON contracts FOR INSERT
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can update own contracts"
-    ON contracts FOR UPDATE
+-- [HEADER]     ON contracts FOR UPDATE
     USING (user_id = auth.uid())
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can delete own contracts"
-    ON contracts FOR DELETE
+-- [HEADER]     ON contracts FOR DELETE
     USING (user_id = auth.uid());
 
 -- 7. CREATE SECURE POLICIES FOR PAYMENTS
 CREATE POLICY "Users can view own payments"
-    ON payments FOR SELECT
+-- [HEADER]     ON payments FOR SELECT
     USING (user_id = auth.uid());
 
 CREATE POLICY "Users can insert own payments"
-    ON payments FOR INSERT
+-- [HEADER]     ON payments FOR INSERT
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can update own payments"
-    ON payments FOR UPDATE
+-- [HEADER]     ON payments FOR UPDATE
     USING (user_id = auth.uid())
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can delete own payments"
-    ON payments FOR DELETE
+-- [HEADER]     ON payments FOR DELETE
     USING (user_id = auth.uid());
 
 -- 8. BACKFILL EXISTING DATA (CRITICAL!)
@@ -1022,16 +1050,16 @@ END $$;
 
 -- 2. ENSURE USER_ID COLUMNS EXIST
 ALTER TABLE properties 
-ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
+-- [HEADER] ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
 
 ALTER TABLE tenants
-ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
+-- [HEADER] ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
 
 ALTER TABLE contracts
-ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
+-- [HEADER] ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
 
 ALTER TABLE payments
-ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
+-- [HEADER] ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
 
 -- 3. ENABLE RLS ON ALL TABLES
 ALTER TABLE properties ENABLE ROW LEVEL SECURITY;
@@ -1041,74 +1069,74 @@ ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
 
 -- 4. CREATE SECURE POLICIES FOR PROPERTIES
 CREATE POLICY "Users can view own properties"
-    ON properties FOR SELECT
+-- [HEADER]     ON properties FOR SELECT
     USING (user_id = auth.uid());
 
 CREATE POLICY "Users can insert own properties"
-    ON properties FOR INSERT
+-- [HEADER]     ON properties FOR INSERT
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can update own properties"
-    ON properties FOR UPDATE
+-- [HEADER]     ON properties FOR UPDATE
     USING (user_id = auth.uid())
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can delete own properties"
-    ON properties FOR DELETE
+-- [HEADER]     ON properties FOR DELETE
     USING (user_id = auth.uid());
 
 -- 5. CREATE SECURE POLICIES FOR TENANTS
 CREATE POLICY "Users can view own tenants"
-    ON tenants FOR SELECT
+-- [HEADER]     ON tenants FOR SELECT
     USING (user_id = auth.uid());
 
 CREATE POLICY "Users can insert own tenants"
-    ON tenants FOR INSERT
+-- [HEADER]     ON tenants FOR INSERT
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can update own tenants"
-    ON tenants FOR UPDATE
+-- [HEADER]     ON tenants FOR UPDATE
     USING (user_id = auth.uid())
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can delete own tenants"
-    ON tenants FOR DELETE
+-- [HEADER]     ON tenants FOR DELETE
     USING (user_id = auth.uid());
 
 -- 6. CREATE SECURE POLICIES FOR CONTRACTS
 CREATE POLICY "Users can view own contracts"
-    ON contracts FOR SELECT
+-- [HEADER]     ON contracts FOR SELECT
     USING (user_id = auth.uid());
 
 CREATE POLICY "Users can insert own contracts"
-    ON contracts FOR INSERT
+-- [HEADER]     ON contracts FOR INSERT
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can update own contracts"
-    ON contracts FOR UPDATE
+-- [HEADER]     ON contracts FOR UPDATE
     USING (user_id = auth.uid())
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can delete own contracts"
-    ON contracts FOR DELETE
+-- [HEADER]     ON contracts FOR DELETE
     USING (user_id = auth.uid());
 
 -- 7. CREATE SECURE POLICIES FOR PAYMENTS
 CREATE POLICY "Users can view own payments"
-    ON payments FOR SELECT
+-- [HEADER]     ON payments FOR SELECT
     USING (user_id = auth.uid());
 
 CREATE POLICY "Users can insert own payments"
-    ON payments FOR INSERT
+-- [HEADER]     ON payments FOR INSERT
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can update own payments"
-    ON payments FOR UPDATE
+-- [HEADER]     ON payments FOR UPDATE
     USING (user_id = auth.uid())
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can delete own payments"
-    ON payments FOR DELETE
+-- [HEADER]     ON payments FOR DELETE
     USING (user_id = auth.uid());
 
 -- 8. BACKFILL EXISTING DATA
@@ -1195,22 +1223,24 @@ BEGIN
     END;
 
     RETURN NEW;
-EXCEPTION WHEN OTHERS THEN
+-- [HEADER] EXCEPTION WHEN OTHERS THEN
     -- If the main profile creation fails, we must fail the signup to prevent phantom users.
     RAISE EXCEPTION 'Signup Critical Error: %', SQLERRM;
 END;
 $$;
 
 -- 3. RE-ATTACH SINGLE TRIGGER
+;
+DROP TRIGGER IF EXISTS "on_auth_user_created" ON auth.users;
 CREATE TRIGGER on_auth_user_created
-    AFTER INSERT ON auth.users
+-- [HEADER]     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 -- Enable RLS just in case
 ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
 
 -- Allow Admins to UPDATE any profile
 CREATE POLICY "Admins can update all profiles" 
-ON public.user_profiles 
+-- [HEADER] ON public.user_profiles 
 FOR UPDATE 
 USING (
   (SELECT role FROM public.user_profiles WHERE id = auth.uid()) = 'admin'
@@ -1242,8 +1272,9 @@ $$ LANGUAGE plpgsql;
 
 -- Trigger: Check before insert or update on contracts
 DROP TRIGGER IF EXISTS trigger_check_active_contract ON public.contracts;
+DROP TRIGGER IF EXISTS "trigger_check_active_contract" ON contracts;
 CREATE TRIGGER trigger_check_active_contract
-BEFORE INSERT OR UPDATE ON public.contracts
+-- [HEADER] BEFORE INSERT OR UPDATE ON public.contracts
 FOR EACH ROW
 EXECUTE FUNCTION public.check_active_contract();
 
@@ -1270,9 +1301,9 @@ BEGIN
         -- Unlink tenant (set to past)
         UPDATE public.tenants
         SET property_id = NULL,
-            status = 'past'
-        WHERE id = NEW.tenant_id 
-        AND property_id = NEW.property_id; -- Only if they are still linked to this property
+-- [HEADER]             status = 'past'
+-- [HEADER]         WHERE id = NEW.tenant_id 
+-- [HEADER]         AND property_id = NEW.property_id; -- Only if they are still linked to this property
     END IF;
     
     RETURN NEW;
@@ -1281,8 +1312,9 @@ $$ LANGUAGE plpgsql;
 
 -- Trigger: Sync Tenant Status
 DROP TRIGGER IF EXISTS trigger_sync_tenant_status ON public.contracts;
+DROP TRIGGER IF EXISTS "trigger_sync_tenant_status" ON public.contracts;
 CREATE TRIGGER trigger_sync_tenant_status
-AFTER INSERT OR UPDATE ON public.contracts
+-- [HEADER] AFTER INSERT OR UPDATE ON public.contracts
 FOR EACH ROW
 EXECUTE FUNCTION public.sync_tenant_status_from_contract();
 
@@ -1298,15 +1330,15 @@ BEGIN
         WHERE id = NEW.property_id;
     
     -- If contract ends (ended/terminated) and was previously active
-    ELSIF (NEW.status IN ('ended', 'terminated')) THEN
+-- [HEADER]     ELSIF (NEW.status IN ('ended', 'terminated')) THEN
         -- Check if there are ANY other active contracts currently valid (by date)
         -- Actually, simplistically, if we just ended the active one, we might differ to Vacant unless another covers TODAY.
         -- For simplicity, if NO active contracts exist at all, set Vacant.
         IF NOT EXISTS (
             SELECT 1 FROM public.contracts 
-            WHERE property_id = NEW.property_id 
-            AND status = 'active' 
-            AND id != NEW.id
+-- [HEADER]             WHERE property_id = NEW.property_id 
+-- [HEADER]             AND status = 'active' 
+-- [HEADER]             AND id != NEW.id
         ) THEN
             UPDATE public.properties
             SET status = 'Vacant'
@@ -1320,13 +1352,14 @@ $$ LANGUAGE plpgsql;
 
 -- Trigger: Update Property Status after contract changes
 DROP TRIGGER IF EXISTS trigger_update_property_status ON public.contracts;
+DROP TRIGGER IF EXISTS "trigger_update_property_status" ON public.contracts;
 CREATE TRIGGER trigger_update_property_status
-AFTER INSERT OR UPDATE ON public.contracts
+-- [HEADER] AFTER INSERT OR UPDATE ON public.contracts
 FOR EACH ROW
 EXECUTE FUNCTION public.update_property_status_from_contract();
 -- Add metadata column to notifications for storing context (e.g., contract_id)
 ALTER TABLE public.notifications 
-ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;
+-- [HEADER] ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;
 
 -- Update RLS policies to allow new column usage if necessary (usually robust enough)
 -- ============================================
@@ -1336,9 +1369,9 @@ ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;
 -- 1. ENSURE SCHEMA IS CORRECT (Idempotent)
 -- We make sure the columns exist. If they were missing, this fixes the "Database Error".
 ALTER TABLE public.invoices 
-ADD COLUMN IF NOT EXISTS billing_name TEXT,
-ADD COLUMN IF NOT EXISTS billing_email TEXT,
-ADD COLUMN IF NOT EXISTS billing_address TEXT;
+-- [HEADER] ADD COLUMN IF NOT EXISTS billing_name TEXT,
+-- [HEADER] ADD COLUMN IF NOT EXISTS billing_email TEXT,
+-- [HEADER] ADD COLUMN IF NOT EXISTS billing_address TEXT;
 
 -- 2. RESET TRIGGERS (Clean Slate)
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
@@ -1380,7 +1413,7 @@ BEGIN
     END;
 
     RETURN NEW;
-EXCEPTION WHEN OTHERS THEN
+-- [HEADER] EXCEPTION WHEN OTHERS THEN
     -- Fallback: If profile creation fails, we allow the auth user but log the error.
     -- (Actually, we should probably raise to fail auth, but let's be safe for now)
     RAISE WARNING 'Profile creation error: %', SQLERRM;
@@ -1389,8 +1422,10 @@ END;
 $$;
 
 -- 4. ATTACH TRIGGER
+;
+DROP TRIGGER IF EXISTS "on_auth_user_created" ON auth.users;
 CREATE TRIGGER on_auth_user_created
-    AFTER INSERT ON auth.users
+-- [HEADER]     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- 5. VERIFY PERMISSIONS
@@ -1401,29 +1436,29 @@ GRANT ALL ON TABLE public.user_profiles TO postgres, service_role;
 
 -- 1. Foreign Keys (Crucial for the error you saw)
 ALTER TABLE public.contracts 
-ADD COLUMN IF NOT EXISTS property_id uuid REFERENCES public.properties(id),
-ADD COLUMN IF NOT EXISTS tenant_id uuid REFERENCES public.tenants(id);
+-- [HEADER] ADD COLUMN IF NOT EXISTS property_id uuid REFERENCES public.properties(id),
+-- [HEADER] ADD COLUMN IF NOT EXISTS tenant_id uuid REFERENCES public.tenants(id);
 
 -- 2. Other Missing Columns (preventing future errors)
 ALTER TABLE public.contracts
-ADD COLUMN IF NOT EXISTS signing_date date,
-ADD COLUMN IF NOT EXISTS start_date date,
-ADD COLUMN IF NOT EXISTS end_date date,
-ADD COLUMN IF NOT EXISTS base_rent numeric(10, 2),
-ADD COLUMN IF NOT EXISTS currency text DEFAULT 'ILS',
-ADD COLUMN IF NOT EXISTS payment_frequency text,
-ADD COLUMN IF NOT EXISTS payment_day integer,
-ADD COLUMN IF NOT EXISTS linkage_type text DEFAULT 'none',
-ADD COLUMN IF NOT EXISTS security_deposit_amount numeric(10, 2),
-ADD COLUMN IF NOT EXISTS status text DEFAULT 'active';
+-- [HEADER] ADD COLUMN IF NOT EXISTS signing_date date,
+-- [HEADER] ADD COLUMN IF NOT EXISTS start_date date,
+-- [HEADER] ADD COLUMN IF NOT EXISTS end_date date,
+-- [HEADER] ADD COLUMN IF NOT EXISTS base_rent numeric(10, 2),
+-- [HEADER] ADD COLUMN IF NOT EXISTS currency text DEFAULT 'ILS',
+-- [HEADER] ADD COLUMN IF NOT EXISTS payment_frequency text,
+-- [HEADER] ADD COLUMN IF NOT EXISTS payment_day integer,
+-- [HEADER] ADD COLUMN IF NOT EXISTS linkage_type text DEFAULT 'none',
+-- [HEADER] ADD COLUMN IF NOT EXISTS security_deposit_amount numeric(10, 2),
+-- [HEADER] ADD COLUMN IF NOT EXISTS status text DEFAULT 'active';
 
 -- 3. Linkage Details
 ALTER TABLE public.contracts
-ADD COLUMN IF NOT EXISTS base_index_date date,
-ADD COLUMN IF NOT EXISTS base_index_value numeric(10, 4),
-ADD COLUMN IF NOT EXISTS linkage_sub_type text,
-ADD COLUMN IF NOT EXISTS linkage_ceiling numeric(5, 2),
-ADD COLUMN IF NOT EXISTS linkage_floor numeric(5, 2);
+-- [HEADER] ADD COLUMN IF NOT EXISTS base_index_date date,
+-- [HEADER] ADD COLUMN IF NOT EXISTS base_index_value numeric(10, 4),
+-- [HEADER] ADD COLUMN IF NOT EXISTS linkage_sub_type text,
+-- [HEADER] ADD COLUMN IF NOT EXISTS linkage_ceiling numeric(5, 2),
+-- [HEADER] ADD COLUMN IF NOT EXISTS linkage_floor numeric(5, 2);
 
 -- 4. Permissions
 GRANT ALL ON public.contracts TO postgres, service_role, authenticated;
@@ -1465,29 +1500,29 @@ DROP POLICY IF EXISTS "Users can update own profile" ON user_profiles;
 
 -- A. User Profiles
 CREATE POLICY "Users can view own profile" 
-    ON user_profiles FOR SELECT 
+-- [HEADER]     ON user_profiles FOR SELECT 
     USING (auth.uid() = id);
 
 CREATE POLICY "Users can update own profile" 
-    ON user_profiles FOR UPDATE 
+-- [HEADER]     ON user_profiles FOR UPDATE 
     USING (auth.uid() = id);
 
 CREATE POLICY "Admins can view all profiles" 
-    ON user_profiles FOR SELECT 
+-- [HEADER]     ON user_profiles FOR SELECT 
     USING (is_admin());
 
 CREATE POLICY "Admins can update all profiles" 
-    ON user_profiles FOR UPDATE 
+-- [HEADER]     ON user_profiles FOR UPDATE 
     USING (is_admin());
 
 -- B. CRM Interactions (Admin Only)
 CREATE POLICY "Admins manage CRM"
-    ON crm_interactions FOR ALL
+-- [HEADER]     ON crm_interactions FOR ALL
     USING (is_admin());
 
 -- C. Audit Logs (Admin Only)
 CREATE POLICY "Admins view audit logs"
-    ON audit_logs FOR SELECT
+-- [HEADER]     ON audit_logs FOR SELECT
     USING (is_admin());
 
 -- D. Invoices (Users own, Admins all)
@@ -1495,15 +1530,15 @@ DROP POLICY IF EXISTS "Users view own invoices" ON invoices;
 DROP POLICY IF EXISTS "Admins view all invoices" ON invoices;
 
 CREATE POLICY "Users view own invoices"
-    ON invoices FOR SELECT
+-- [HEADER]     ON invoices FOR SELECT
     USING (auth.uid() = user_id);
 
 CREATE POLICY "Admins view all invoices"
-    ON invoices FOR SELECT
+-- [HEADER]     ON invoices FOR SELECT
     USING (is_admin());
 -- Ensure contract_file_url exists on contracts table
 ALTER TABLE contracts
-ADD COLUMN IF NOT EXISTS contract_file_url TEXT;
+-- [HEADER] ADD COLUMN IF NOT EXISTS contract_file_url TEXT;
 
 -- ============================================
 -- RESCUE SCRIPT: Fix Missing Profile
@@ -1526,22 +1561,22 @@ BEGIN
 
     -- 2. Create the Profile manually if it's missing
     INSERT INTO public.user_profiles (
-        id, 
-        email, 
-        full_name, 
-        role, 
-        subscription_status, 
-        subscription_plan
+-- [HEADER]         id, 
+-- [HEADER]         email, 
+-- [HEADER]         full_name, 
+-- [HEADER]         role, 
+-- [HEADER]         subscription_status, 
+-- [HEADER]         subscription_plan
     )
     VALUES (
-        v_user_id,
-        target_email,
+-- [HEADER]         v_user_id,
+-- [HEADER]         target_email,
         'Admin User', -- Default name
         'admin',      -- Give yourself Admin access
         'active',
         'free_forever'
     )
-    ON CONFLICT (id) DO UPDATE 
+-- [HEADER]     ON CONFLICT (id) DO UPDATE 
     SET role = 'admin', subscription_status = 'active';
 
     RAISE NOTICE 'Fixed profile for %', target_email;
@@ -1555,32 +1590,32 @@ $$;
 
 -- 1. Create missing profiles for orphaned auth users
 INSERT INTO public.user_profiles (
-    id, 
-    email, 
-    full_name,
-    first_name,
-    last_name,
-    role, 
-    subscription_status, 
-    plan_id
+-- [HEADER]     id, 
+-- [HEADER]     email, 
+-- [HEADER]     full_name,
+-- [HEADER]     first_name,
+-- [HEADER]     last_name,
+-- [HEADER]     role, 
+-- [HEADER]     subscription_status, 
+-- [HEADER]     plan_id
 )
 SELECT 
-    au.id,
-    au.email,
-    COALESCE(au.raw_user_meta_data->>'full_name', split_part(au.email, '@', 1)),
-    COALESCE(au.raw_user_meta_data->>'full_name', split_part(au.email, '@', 1)),
+-- [HEADER]     au.id,
+-- [HEADER]     au.email,
+-- [HEADER]     COALESCE(au.raw_user_meta_data->>'full_name', split_part(au.email, '@', 1)),
+-- [HEADER]     COALESCE(au.raw_user_meta_data->>'full_name', split_part(au.email, '@', 1)),
     'User',
     'user',
     'active',
     'free'
-FROM auth.users au
-LEFT JOIN public.user_profiles up ON au.id = up.id
-WHERE up.id IS NULL
-ON CONFLICT (id) DO UPDATE SET
-    email = EXCLUDED.email,
-    full_name = COALESCE(EXCLUDED.full_name, user_profiles.full_name),
-    first_name = COALESCE(EXCLUDED.first_name, user_profiles.first_name),
-    last_name = COALESCE(EXCLUDED.last_name, user_profiles.last_name),
+-- [HEADER] FROM auth.users au
+-- [HEADER] LEFT JOIN public.user_profiles up ON au.id = up.id
+-- [HEADER] WHERE up.id IS NULL
+-- [HEADER] ON CONFLICT (id) DO UPDATE SET
+-- [HEADER]     email = EXCLUDED.email,
+-- [HEADER]     full_name = COALESCE(EXCLUDED.full_name, user_profiles.full_name),
+-- [HEADER]     first_name = COALESCE(EXCLUDED.first_name, user_profiles.first_name),
+-- [HEADER]     last_name = COALESCE(EXCLUDED.last_name, user_profiles.last_name),
     updated_at = NOW();
 
 -- 2. Log the fix
@@ -1621,7 +1656,7 @@ BEGIN
     AND billing_email = NEW.email;
 
     RETURN NEW;
-EXCEPTION WHEN OTHERS THEN
+-- [HEADER] EXCEPTION WHEN OTHERS THEN
     -- If this fails, we Log it but ALLOW the user to sign up.
     -- We don't want to block registration just because of an invoice linking error.
     RAISE WARNING 'Failed to relink invoices for user %: %', NEW.email, SQLERRM;
@@ -1631,8 +1666,9 @@ $$;
 
 -- 3. Ensure the Trigger is attached
 DROP TRIGGER IF EXISTS on_auth_user_created_relink_invoices ON auth.users;
+DROP TRIGGER IF EXISTS "on_auth_user_created_relink_invoices" ON auth.users;
 CREATE TRIGGER on_auth_user_created_relink_invoices
-    AFTER INSERT ON auth.users
+-- [HEADER]     AFTER INSERT ON auth.users
     FOR EACH ROW
     EXECUTE FUNCTION relink_past_invoices();
 -- Comprehensive Fix for "Failed to Update Profile"
@@ -1641,19 +1677,19 @@ DO $$
 BEGIN
     -- 1. Ensure Columns Exist
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_profiles' AND column_name = 'first_name') THEN
-        ALTER TABLE public.user_profiles ADD COLUMN first_name TEXT;
+        ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS first_name TEXT;
     END IF;
 
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_profiles' AND column_name = 'last_name') THEN
-        ALTER TABLE public.user_profiles ADD COLUMN last_name TEXT;
+        ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS last_name TEXT;
     END IF;
 
     -- 2. Populate NULLs (Safety Check)
     UPDATE public.user_profiles
     SET 
-        first_name = COALESCE(full_name, 'User'),
-        last_name = 'aaa'
-    WHERE first_name IS NULL OR last_name IS NULL;
+-- [HEADER]         first_name = COALESCE(full_name, 'User'),
+-- [HEADER]         last_name = 'aaa'
+-- [HEADER]     WHERE first_name IS NULL OR last_name IS NULL;
 
     -- 3. Reset RLS Policies for user_profiles (The Nuclear Option for Permissions)
     -- First, ensure RLS is on
@@ -1669,17 +1705,17 @@ BEGIN
     
     -- SELECT
     CREATE POLICY "Users view own"
-    ON public.user_profiles FOR SELECT
+-- [HEADER]     ON public.user_profiles FOR SELECT
     USING (auth.uid() = id);
 
     -- UPDATE (Explicitly Allow)
     CREATE POLICY "Users update own"
-    ON public.user_profiles FOR UPDATE
+-- [HEADER]     ON public.user_profiles FOR UPDATE
     USING (auth.uid() = id);
 
     -- INSERT (Crucial for 'upsert' if row is missing/ghosted)
     CREATE POLICY "Users insert own"
-    ON public.user_profiles FOR INSERT
+-- [HEADER]     ON public.user_profiles FOR INSERT
     WITH CHECK (auth.uid() = id);
 
 END $$;
@@ -1688,22 +1724,22 @@ DO $$
 BEGIN
     -- Add has_parking
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'properties' AND column_name = 'has_parking') THEN
-        ALTER TABLE properties ADD COLUMN has_parking BOOLEAN DEFAULT false;
+        ALTER TABLE properties ADD COLUMN IF NOT EXISTS has_parking BOOLEAN DEFAULT false;
     END IF;
 
     -- Add has_storage
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'properties' AND column_name = 'has_storage') THEN
-        ALTER TABLE properties ADD COLUMN has_storage BOOLEAN DEFAULT false;
+        ALTER TABLE properties ADD COLUMN IF NOT EXISTS has_storage BOOLEAN DEFAULT false;
     END IF;
 
     -- Add property_type
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'properties' AND column_name = 'property_type') THEN
-        ALTER TABLE properties ADD COLUMN property_type TEXT DEFAULT 'apartment';
+        ALTER TABLE properties ADD COLUMN IF NOT EXISTS property_type TEXT DEFAULT 'apartment';
     END IF;
 
     -- Add image_url
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'properties' AND column_name = 'image_url') THEN
-        ALTER TABLE properties ADD COLUMN image_url TEXT;
+        ALTER TABLE properties ADD COLUMN IF NOT EXISTS image_url TEXT;
     END IF;
 END $$;
 
@@ -1713,7 +1749,7 @@ BEGIN
     ALTER TABLE properties DROP CONSTRAINT IF EXISTS properties_property_type_check;
     ALTER TABLE properties ADD CONSTRAINT properties_property_type_check 
     CHECK (property_type IN ('apartment', 'penthouse', 'garden', 'house', 'other'));
-EXCEPTION
+-- [HEADER] EXCEPTION
     WHEN OTHERS THEN NULL;
 END $$;
 -- FIX: Re-create the handle_new_user function with explicit search_path and permissions
@@ -1750,7 +1786,7 @@ BEGIN
         'free_forever'::subscription_plan_type
     );
     RETURN NEW;
-EXCEPTION WHEN OTHERS THEN
+-- [HEADER] EXCEPTION WHEN OTHERS THEN
     -- In case of error, we raise it so we know WHY it failed in the logs, 
     -- but for the user it will just say "Database error".
     -- We try to make the above INSERT bulletproof by casting.
@@ -1759,8 +1795,10 @@ END;
 $$;
 
 -- 4. Re-attach the trigger
+;
+DROP TRIGGER IF EXISTS "on_auth_user_created" ON auth.users;
 CREATE TRIGGER on_auth_user_created
-    AFTER INSERT ON auth.users
+-- [HEADER]     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 -- ============================================
 -- FIX SIGNUP TRIGGER (Proper Plan Linking)
@@ -1769,7 +1807,7 @@ CREATE TRIGGER on_auth_user_created
 -- 1. Ensure the 'free' plan exists to avoid foreign key errors
 INSERT INTO public.subscription_plans (id, name, price_monthly, max_properties, max_tenants)
 VALUES ('free', 'Free Forever', 0, 1, 2)
-ON CONFLICT (id) DO NOTHING;
+-- [HEADER] ON CONFLICT (id) DO NOTHING;
 
 -- 2. Re-define the handler to set plan_id
 CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -1797,7 +1835,7 @@ BEGIN
         'free_forever'::subscription_plan_type -- Legacy fallback
     );
     RETURN NEW;
-EXCEPTION WHEN OTHERS THEN
+-- [HEADER] EXCEPTION WHEN OTHERS THEN
     RAISE EXCEPTION 'Profile creation failed: %', SQLERRM;
 END;
 $$;
@@ -1805,30 +1843,30 @@ $$;
 
 -- 1. Fix Tenants Table
 ALTER TABLE public.tenants 
-ADD COLUMN IF NOT EXISTS id_number TEXT,
-ADD COLUMN IF NOT EXISTS email TEXT,
-ADD COLUMN IF NOT EXISTS phone TEXT;
+-- [HEADER] ADD COLUMN IF NOT EXISTS id_number TEXT,
+-- [HEADER] ADD COLUMN IF NOT EXISTS email TEXT,
+-- [HEADER] ADD COLUMN IF NOT EXISTS phone TEXT;
 
 -- 2. Fix Contracts Table (Financials & Linkage)
 ALTER TABLE public.contracts
-ADD COLUMN IF NOT EXISTS base_rent NUMERIC(10, 2),
-ADD COLUMN IF NOT EXISTS currency TEXT DEFAULT 'ILS',
-ADD COLUMN IF NOT EXISTS payment_frequency TEXT,
-ADD COLUMN IF NOT EXISTS payment_day INTEGER,
-ADD COLUMN IF NOT EXISTS linkage_type TEXT DEFAULT 'none',
-ADD COLUMN IF NOT EXISTS base_index_date DATE,
-ADD COLUMN IF NOT EXISTS base_index_value NUMERIC(10, 4), -- More precision for index
-ADD COLUMN IF NOT EXISTS security_deposit_amount NUMERIC(10, 2),
-ADD COLUMN IF NOT EXISTS signing_date DATE,
-ADD COLUMN IF NOT EXISTS start_date DATE,
-ADD COLUMN IF NOT EXISTS end_date DATE,
-ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'active';
+-- [HEADER] ADD COLUMN IF NOT EXISTS base_rent NUMERIC(10, 2),
+-- [HEADER] ADD COLUMN IF NOT EXISTS currency TEXT DEFAULT 'ILS',
+-- [HEADER] ADD COLUMN IF NOT EXISTS payment_frequency TEXT,
+-- [HEADER] ADD COLUMN IF NOT EXISTS payment_day INTEGER,
+-- [HEADER] ADD COLUMN IF NOT EXISTS linkage_type TEXT DEFAULT 'none',
+-- [HEADER] ADD COLUMN IF NOT EXISTS base_index_date DATE,
+-- [HEADER] ADD COLUMN IF NOT EXISTS base_index_value NUMERIC(10, 4), -- More precision for index
+-- [HEADER] ADD COLUMN IF NOT EXISTS security_deposit_amount NUMERIC(10, 2),
+-- [HEADER] ADD COLUMN IF NOT EXISTS signing_date DATE,
+-- [HEADER] ADD COLUMN IF NOT EXISTS start_date DATE,
+-- [HEADER] ADD COLUMN IF NOT EXISTS end_date DATE,
+-- [HEADER] ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'active';
 
 -- 3. Add New Linkage Features (Sub-Type and Caps)
 ALTER TABLE public.contracts
-ADD COLUMN IF NOT EXISTS linkage_sub_type TEXT, -- 'known', 'respect_of', 'base'
-ADD COLUMN IF NOT EXISTS linkage_ceiling NUMERIC(5, 2), -- Percentage
-ADD COLUMN IF NOT EXISTS linkage_floor NUMERIC(5, 2); -- Percentage
+-- [HEADER] ADD COLUMN IF NOT EXISTS linkage_sub_type TEXT, -- 'known', 'respect_of', 'base'
+-- [HEADER] ADD COLUMN IF NOT EXISTS linkage_ceiling NUMERIC(5, 2), -- Percentage
+-- [HEADER] ADD COLUMN IF NOT EXISTS linkage_floor NUMERIC(5, 2); -- Percentage
 
 -- 4. Enable RLS
 ALTER TABLE public.tenants ENABLE ROW LEVEL SECURITY;
@@ -1840,12 +1878,12 @@ ALTER TABLE public.contracts ENABLE ROW LEVEL SECURITY;
 -- 1. CONFIRM EMAIL MANUALLY (So you don't need to wait for it)
 UPDATE auth.users
 SET email_confirmed_at = now()
-WHERE email = 'rentmate.rubi@gmail.com';  -- Your Email
+-- [HEADER] WHERE email = 'rentmate.rubi@gmail.com';  -- Your Email
 
 -- 2. FIX DATABASE SCHEMA (Add missing columns)
 ALTER TABLE public.user_profiles 
-ADD COLUMN IF NOT EXISTS subscription_status TEXT DEFAULT 'active',
-ADD COLUMN IF NOT EXISTS subscription_plan TEXT DEFAULT 'free_forever';
+-- [HEADER] ADD COLUMN IF NOT EXISTS subscription_status TEXT DEFAULT 'active',
+-- [HEADER] ADD COLUMN IF NOT EXISTS subscription_plan TEXT DEFAULT 'free_forever';
 
 -- 3. FORCE CREATE ADMIN PROFILE
 DO $$
@@ -1858,18 +1896,18 @@ BEGIN
     IF v_user_id IS NOT NULL THEN
         -- Insert or Update the profile to be an Admin
         INSERT INTO public.user_profiles (
-            id, email, full_name, role, subscription_status, subscription_plan
+-- [HEADER]             id, email, full_name, role, subscription_status, subscription_plan
         )
         VALUES (
-            v_user_id, target_email, 'Admin User', 'admin', 'active', 'free_forever'
+-- [HEADER]             v_user_id, target_email, 'Admin User', 'admin', 'active', 'free_forever'
         )
-        ON CONFLICT (id) DO UPDATE 
+-- [HEADER]         ON CONFLICT (id) DO UPDATE 
         SET role = 'admin', 
-            subscription_status = 'active', 
+-- [HEADER]             subscription_status = 'active', 
             subscription_plan = 'free_forever';
             
         RAISE NOTICE 'User % has been fully activated and promoted to Admin.', target_email;
-    ELSE
+-- [HEADER]     ELSE
         RAISE WARNING 'User % not found in Auth system. Did you sign up?', target_email;
     END IF;
 END;
@@ -1934,9 +1972,9 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- We'll attach it to auth.users AFTER INSERT.
 
 DROP TRIGGER IF EXISTS on_auth_user_created_relink_invoices ON auth.users;
-
+DROP TRIGGER IF EXISTS "on_auth_user_created_relink_invoices" ON auth.users;
 CREATE TRIGGER on_auth_user_created_relink_invoices
-    AFTER INSERT ON auth.users
+-- [HEADER]     AFTER INSERT ON auth.users
     FOR EACH ROW
     EXECUTE FUNCTION relink_past_invoices();
 -- ============================================
@@ -1946,29 +1984,29 @@ CREATE TRIGGER on_auth_user_created_relink_invoices
 -- 1. Modify Invoices to survive User Deletion
 -- We drop the "Cascade" constraint and replace it with "Set Null"
 ALTER TABLE invoices
-DROP CONSTRAINT invoices_user_id_fkey;
+DROP CONSTRAINT IF EXISTS invoices_user_id_fkey;
 
 ALTER TABLE invoices
-ADD CONSTRAINT invoices_user_id_fkey
-FOREIGN KEY (user_id)
-REFERENCES user_profiles(id)
+-- [HEADER] ADD CONSTRAINT invoices_user_id_fkey
+-- [HEADER] FOREIGN KEY (user_id)
+-- [HEADER] REFERENCES user_profiles(id)
 ON DELETE SET NULL;
 
 -- 2. Add "Snapshot" fields
 -- If the user is deleted, "user_id" becomes NULL.
 -- We need these text fields to know who the invoice was for (Tax Law Requirement).
 ALTER TABLE invoices
-ADD COLUMN IF NOT EXISTS billing_name TEXT,
-ADD COLUMN IF NOT EXISTS billing_email TEXT,
-ADD COLUMN IF NOT EXISTS billing_address TEXT;
+-- [HEADER] ADD COLUMN IF NOT EXISTS billing_name TEXT,
+-- [HEADER] ADD COLUMN IF NOT EXISTS billing_email TEXT,
+-- [HEADER] ADD COLUMN IF NOT EXISTS billing_address TEXT;
 
 -- 3. Update existing invoices (Backfill)
 -- Copy current profile data into the snapshot fields so we don't lose it.
 UPDATE invoices i
 SET 
-  billing_name = p.full_name,
-  billing_email = p.email
-FROM user_profiles p
+-- [HEADER]   billing_name = p.full_name,
+-- [HEADER]   billing_email = p.email
+-- [HEADER] FROM user_profiles p
 WHERE i.user_id = p.id;
 
 -- 4. Automatic Snapshot Trigger
@@ -1988,8 +2026,9 @@ END;
 $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS on_invoice_created ON invoices;
+DROP TRIGGER IF EXISTS "on_invoice_created" ON invoices;
 CREATE TRIGGER on_invoice_created
-    BEFORE INSERT ON invoices
+-- [HEADER]     BEFORE INSERT ON invoices
     FOR EACH ROW
     EXECUTE FUNCTION snapshot_invoice_details();
 -- ============================================
@@ -2015,9 +2054,9 @@ BEGIN
 
     -- Count EXISTING sessions for this user of the SAME type
     SELECT COUNT(*)
-    INTO session_count
-    FROM auth.sessions
-    WHERE user_id = NEW.user_id
+-- [HEADER]     INTO session_count
+-- [HEADER]     FROM auth.sessions
+-- [HEADER]     WHERE user_id = NEW.user_id
     AND public.get_device_type(user_agent) = new_device_type;
 
     -- If we are at (or above) the limit, we need to make room.
@@ -2025,11 +2064,11 @@ BEGIN
         
         -- Identify the Oldest Session to remove
         SELECT id
-        INTO oldest_session_id
-        FROM auth.sessions
-        WHERE user_id = NEW.user_id
-        AND public.get_device_type(user_agent) = new_device_type
-        ORDER BY created_at ASC
+-- [HEADER]         INTO oldest_session_id
+-- [HEADER]         FROM auth.sessions
+-- [HEADER]         WHERE user_id = NEW.user_id
+-- [HEADER]         AND public.get_device_type(user_agent) = new_device_type
+-- [HEADER]         ORDER BY created_at ASC
         LIMIT 1;
 
         -- Delete it
@@ -2060,12 +2099,12 @@ ALTER TABLE public.properties ALTER COLUMN rent_price DROP NOT NULL;
 -- 1. FIX TABLE SCHEMA (Add missing columns)
 -- We use TEXT to avoid Enum complexities. It works perfectly with TS enums.
 ALTER TABLE public.user_profiles 
-ADD COLUMN IF NOT EXISTS subscription_status TEXT DEFAULT 'active',
-ADD COLUMN IF NOT EXISTS subscription_plan TEXT DEFAULT 'free_forever';
+-- [HEADER] ADD COLUMN IF NOT EXISTS subscription_status TEXT DEFAULT 'active',
+-- [HEADER] ADD COLUMN IF NOT EXISTS subscription_plan TEXT DEFAULT 'free_forever';
 
 -- Ensure role exists too
 ALTER TABLE public.user_profiles 
-ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'user';
+-- [HEADER] ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'user';
 
 -- 2. RESCUE THE ADMIN USER (rentmate.rubi@gmail.com)
 DO $$
@@ -2077,23 +2116,23 @@ BEGIN
 
     IF v_user_id IS NOT NULL THEN
         INSERT INTO public.user_profiles (
-            id, email, full_name, role, subscription_status, subscription_plan
+-- [HEADER]             id, email, full_name, role, subscription_status, subscription_plan
         )
         VALUES (
-            v_user_id, 
-            target_email, 
+-- [HEADER]             v_user_id, 
+-- [HEADER]             target_email, 
             'Admin User', 
             'admin', 
             'active', 
             'free_forever'
         )
-        ON CONFLICT (id) DO UPDATE 
+-- [HEADER]         ON CONFLICT (id) DO UPDATE 
         SET role = 'admin', 
-            subscription_status = 'active',
+-- [HEADER]             subscription_status = 'active',
             subscription_plan = 'free_forever';
             
         RAISE NOTICE 'Admin profile repaired for %', target_email;
-    ELSE
+-- [HEADER]     ELSE
         RAISE NOTICE 'User % not found in Auth, skipping rescue.', target_email;
     END IF;
 END;
@@ -2157,7 +2196,7 @@ DROP FUNCTION IF EXISTS public.relink_past_invoices();
 -- 4. FIX TYPES (Ensure Enums exist)
 DO $$ BEGIN
     CREATE TYPE user_role AS ENUM ('user', 'admin', 'manager');
-EXCEPTION WHEN duplicate_object THEN null; END $$;
+-- [HEADER] EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- 5. RE-CREATE SAFE ADMIN CHECK (SECURITY DEFINER is Key)
 CREATE OR REPLACE FUNCTION public.is_admin()
@@ -2198,8 +2237,10 @@ END;
 $$;
 
 -- 7. RE-ATTACH TRIGGER
+;
+DROP TRIGGER IF EXISTS "on_auth_user_created" ON auth.users;
 CREATE TRIGGER on_auth_user_created
-    AFTER INSERT ON auth.users
+-- [HEADER]     AFTER INSERT ON auth.users
     FOR EACH ROW
     EXECUTE FUNCTION public.handle_new_user();
 
@@ -2208,22 +2249,22 @@ ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Users see themselves
 CREATE POLICY "Users view own" 
-    ON public.user_profiles FOR SELECT 
+-- [HEADER]     ON public.user_profiles FOR SELECT 
     USING (auth.uid() = id);
 
 -- Policy: Users update themselves
 CREATE POLICY "Users update own" 
-    ON public.user_profiles FOR UPDATE 
+-- [HEADER]     ON public.user_profiles FOR UPDATE 
     USING (auth.uid() = id);
 
 -- Policy: Admins see all (Using Safe Function)
 CREATE POLICY "Admins view all" 
-    ON public.user_profiles FOR SELECT 
+-- [HEADER]     ON public.user_profiles FOR SELECT 
     USING (public.is_admin());
 
 -- Policy: Admins update all
 CREATE POLICY "Admins update all" 
-    ON public.user_profiles FOR UPDATE 
+-- [HEADER]     ON public.user_profiles FOR UPDATE 
     USING (public.is_admin());
 -- Migration: Safe Tenant Deletion (Set NULL on Property Delete)
 
@@ -2237,7 +2278,7 @@ BEGIN
     
     -- Attempt to identify and drop the constraint on column 'property_id'
     IF EXISTS (SELECT 1 FROM information_schema.table_constraints 
-               WHERE table_name = 'tenants' AND constraint_type = 'FOREIGN KEY') THEN
+-- [HEADER]                WHERE table_name = 'tenants' AND constraint_type = 'FOREIGN KEY') THEN
                
         -- Drop the constraint causing "ON DELETE CASCADE" or "RESTRICT" behavior
         -- Note: We might not know the exact name, so in production we'd look it up.
@@ -2251,9 +2292,9 @@ BEGIN
 
     -- 2. Add the new Safe Constraint
     ALTER TABLE public.tenants
-    ADD CONSTRAINT tenants_property_id_fkey
-    FOREIGN KEY (property_id)
-    REFERENCES public.properties(id)
+-- [HEADER]     ADD CONSTRAINT tenants_property_id_fkey
+-- [HEADER]     FOREIGN KEY (property_id)
+-- [HEADER]     REFERENCES public.properties(id)
     ON DELETE SET NULL;
 
 END $$;
@@ -2295,15 +2336,17 @@ BEGIN
     );
 
     RETURN NEW;
-EXCEPTION WHEN OTHERS THEN
+-- [HEADER] EXCEPTION WHEN OTHERS THEN
     -- If this fails, we catch it and raise a VERY CLEAR error
     RAISE EXCEPTION 'DEBUG ERROR: %', SQLERRM;
 END;
 $$;
 
 -- 3. Re-Attach
+;
+DROP TRIGGER IF EXISTS "on_auth_user_created" ON auth.users;
 CREATE TRIGGER on_auth_user_created
-    AFTER INSERT ON auth.users
+-- [HEADER]     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 -- Migration: secure_tables_rls
 -- Description: Enforces strict RLS on properties (assets), contracts, tenants, and payments.
@@ -2312,13 +2355,13 @@ CREATE TRIGGER on_auth_user_created
 -- 1. ENSURE PAYMENTS HAS USER_ID (Denormalization for Performance & Strict RLS)
 -- ==============================================================================
 ALTER TABLE public.payments 
-ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE;
+-- [HEADER] ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE;
 
 -- Backfill user_id for payments from contracts
 UPDATE public.payments p
 SET user_id = c.user_id
-FROM public.contracts c
-WHERE p.contract_id = c.id
+-- [HEADER] FROM public.contracts c
+-- [HEADER] WHERE p.contract_id = c.id
 AND p.user_id IS NULL;
 
 -- ==============================================================================
@@ -2344,10 +2387,13 @@ DROP POLICY IF EXISTS "Users can update own properties" ON public.properties;
 DROP POLICY IF EXISTS "Users can delete own properties" ON public.properties;
 -- Also drop any permissive policies from previous migrations
 DROP POLICY IF EXISTS "Enable all access for authenticated users" ON public.properties;
-
+DROP POLICY IF EXISTS "Users can view own properties" ON public.properties;
 CREATE POLICY "Users can view own properties"   ON public.properties FOR SELECT USING (user_id = auth.uid());
+DROP POLICY IF EXISTS "Users can insert own properties" ON public.properties;
 CREATE POLICY "Users can insert own properties" ON public.properties FOR INSERT WITH CHECK (user_id = auth.uid());
+DROP POLICY IF EXISTS "Users can update own properties" ON public.properties;
 CREATE POLICY "Users can update own properties" ON public.properties FOR UPDATE USING (user_id = auth.uid());
+DROP POLICY IF EXISTS "Users can delete own properties" ON public.properties;
 CREATE POLICY "Users can delete own properties" ON public.properties FOR DELETE USING (user_id = auth.uid());
 
 ---------------------------------------------------------------------------------
@@ -2358,10 +2404,13 @@ DROP POLICY IF EXISTS "Users can insert own contracts" ON public.contracts;
 DROP POLICY IF EXISTS "Users can update own contracts" ON public.contracts;
 DROP POLICY IF EXISTS "Users can delete own contracts" ON public.contracts;
 DROP POLICY IF EXISTS "Enable all access for authenticated users" ON public.contracts;
-
+DROP POLICY IF EXISTS "Users can view own contracts" ON public.contracts;
 CREATE POLICY "Users can view own contracts"   ON public.contracts FOR SELECT USING (user_id = auth.uid());
+DROP POLICY IF EXISTS "Users can insert own contracts" ON public.contracts;
 CREATE POLICY "Users can insert own contracts" ON public.contracts FOR INSERT WITH CHECK (user_id = auth.uid());
+DROP POLICY IF EXISTS "Users can update own contracts" ON public.contracts;
 CREATE POLICY "Users can update own contracts" ON public.contracts FOR UPDATE USING (user_id = auth.uid());
+DROP POLICY IF EXISTS "Users can delete own contracts" ON public.contracts;
 CREATE POLICY "Users can delete own contracts" ON public.contracts FOR DELETE USING (user_id = auth.uid());
 
 ---------------------------------------------------------------------------------
@@ -2372,10 +2421,13 @@ DROP POLICY IF EXISTS "Users can insert own tenants" ON public.tenants;
 DROP POLICY IF EXISTS "Users can update own tenants" ON public.tenants;
 DROP POLICY IF EXISTS "Users can delete own tenants" ON public.tenants;
 DROP POLICY IF EXISTS "Enable all access for authenticated users" ON public.tenants;
-
+DROP POLICY IF EXISTS "Users can view own tenants" ON public.tenants;
 CREATE POLICY "Users can view own tenants"   ON public.tenants FOR SELECT USING (user_id = auth.uid());
+DROP POLICY IF EXISTS "Users can insert own tenants" ON public.tenants;
 CREATE POLICY "Users can insert own tenants" ON public.tenants FOR INSERT WITH CHECK (user_id = auth.uid());
+DROP POLICY IF EXISTS "Users can update own tenants" ON public.tenants;
 CREATE POLICY "Users can update own tenants" ON public.tenants FOR UPDATE USING (user_id = auth.uid());
+DROP POLICY IF EXISTS "Users can delete own tenants" ON public.tenants;
 CREATE POLICY "Users can delete own tenants" ON public.tenants FOR DELETE USING (user_id = auth.uid());
 
 ---------------------------------------------------------------------------------
@@ -2387,10 +2439,13 @@ DROP POLICY IF EXISTS "Users can view own payments" ON public.payments;
 DROP POLICY IF EXISTS "Users can insert own payments" ON public.payments;
 DROP POLICY IF EXISTS "Users can update own payments" ON public.payments;
 DROP POLICY IF EXISTS "Users can delete own payments" ON public.payments;
-
+DROP POLICY IF EXISTS "Users can view own payments" ON public.payments;
 CREATE POLICY "Users can view own payments"   ON public.payments FOR SELECT USING (user_id = auth.uid());
+DROP POLICY IF EXISTS "Users can insert own payments" ON public.payments;
 CREATE POLICY "Users can insert own payments" ON public.payments FOR INSERT WITH CHECK (user_id = auth.uid());
+DROP POLICY IF EXISTS "Users can update own payments" ON public.payments;
 CREATE POLICY "Users can update own payments" ON public.payments FOR UPDATE USING (user_id = auth.uid());
+DROP POLICY IF EXISTS "Users can delete own payments" ON public.payments;
 CREATE POLICY "Users can delete own payments" ON public.payments FOR DELETE USING (user_id = auth.uid());
 
 -- Seed Index Bases for CPI (Consumer Price Index)
@@ -2420,7 +2475,7 @@ VALUES
 CREATE OR REPLACE FUNCTION public.get_device_type(user_agent TEXT)
 RETURNS TEXT
 LANGUAGE plpgsql
-IMMUTABLE -- Optimization: Always returns same result for same input
+-- [HEADER] IMMUTABLE -- Optimization: Always returns same result for same input
 AS $$
 BEGIN
     IF user_agent IS NULL THEN
@@ -2431,7 +2486,7 @@ BEGIN
     -- "Mobi" catches many browsers, "Android", "iPhone", "iPad" are specific
     IF user_agent ~* '(Mobi|Android|iPhone|iPad|iPod)' THEN
         RETURN 'mobile';
-    ELSE
+-- [HEADER]     ELSE
         RETURN 'desktop';
     END IF;
 END;
@@ -2456,9 +2511,9 @@ BEGIN
     -- Count EXISTING sessions for this user of the SAME type
     -- We filter by the computed device type
     SELECT COUNT(*)
-    INTO session_count
-    FROM auth.sessions
-    WHERE user_id = NEW.user_id
+-- [HEADER]     INTO session_count
+-- [HEADER]     FROM auth.sessions
+-- [HEADER]     WHERE user_id = NEW.user_id
     AND public.get_device_type(user_agent) = new_device_type;
 
     -- If we are at (or above) the limit, we need to make room.
@@ -2467,11 +2522,11 @@ BEGIN
         
         -- Identify the Oldest Session to remove
         SELECT id
-        INTO oldest_session_id
-        FROM auth.sessions
-        WHERE user_id = NEW.user_id
-        AND public.get_device_type(user_agent) = new_device_type
-        ORDER BY created_at ASC
+-- [HEADER]         INTO oldest_session_id
+-- [HEADER]         FROM auth.sessions
+-- [HEADER]         WHERE user_id = NEW.user_id
+-- [HEADER]         AND public.get_device_type(user_agent) = new_device_type
+-- [HEADER]         ORDER BY created_at ASC
         LIMIT 1;
 
         -- Delete it
@@ -2490,24 +2545,24 @@ $$;
 -- 3. Attach Trigger to auth.sessions
 -- We use BEFORE INSERT so we can clean up *before* the new session lands.
 DROP TRIGGER IF EXISTS enforce_session_limits ON auth.sessions;
-
+DROP TRIGGER IF EXISTS "enforce_session_limits" ON auth.sessions;
 CREATE TRIGGER enforce_session_limits
-    BEFORE INSERT ON auth.sessions
+-- [HEADER]     BEFORE INSERT ON auth.sessions
     FOR EACH ROW
     EXECUTE FUNCTION public.manage_session_limits();
 -- COMPLETE NOTIFICATION SYSTEM SETUP
 -- Run this file to set up the entire system (Table, Columns, Functions, Triggers)
 
--- 1. Create Table (if not exists)
+-- 1. CREATE TABLE IF NOT EXISTS (if not exists)
 CREATE TABLE IF NOT EXISTS public.notifications (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    type TEXT NOT NULL CHECK (type IN ('info', 'success', 'warning', 'error', 'action', 'urgent')),
-    title TEXT NOT NULL,
-    message TEXT NOT NULL,
-    read_at TIMESTAMP WITH TIME ZONE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    metadata JSONB DEFAULT '{}'::jsonb
+-- [HEADER]     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+-- [HEADER]     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [HEADER]     type TEXT NOT NULL CHECK (type IN ('info', 'success', 'warning', 'error', 'action', 'urgent')),
+-- [HEADER]     title TEXT NOT NULL,
+-- [HEADER]     message TEXT NOT NULL,
+-- [HEADER]     read_at TIMESTAMP WITH TIME ZONE,
+-- [HEADER]     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+-- [HEADER]     metadata JSONB DEFAULT '{}'::jsonb
 );
 
 -- 2. Enable RLS
@@ -2516,12 +2571,12 @@ ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 -- 3. RLS Policies
 DROP POLICY IF EXISTS "Users can view their own notifications" ON public.notifications;
 CREATE POLICY "Users can view their own notifications"
-    ON public.notifications FOR SELECT
+-- [HEADER]     ON public.notifications FOR SELECT
     USING (auth.uid() = user_id);
 
 DROP POLICY IF EXISTS "Users can update their own notifications" ON public.notifications;
 CREATE POLICY "Users can update their own notifications"
-    ON public.notifications FOR UPDATE
+-- [HEADER]     ON public.notifications FOR UPDATE
     USING (auth.uid() = user_id);
 
 -- 4. Contract Status Change Trigger
@@ -2540,18 +2595,18 @@ BEGIN
     END IF;
 
     SELECT city || ', ' || address INTO property_address
-    FROM public.properties
+-- [HEADER]     FROM public.properties
     WHERE id = NEW.property_id;
 
-    notification_title := 'Contract Status Updated';
-    notification_body := format('Contract for %s is now %s.', property_address, NEW.status);
+-- [HEADER]     notification_title := 'Contract Status Updated';
+-- [HEADER]     notification_body := format('Contract for %s is now %s.', property_address, NEW.status);
 
     INSERT INTO public.notifications (user_id, type, title, message, metadata)
     VALUES (
-        NEW.user_id,
+-- [HEADER]         NEW.user_id,
         'info',
-        notification_title,
-        notification_body,
+-- [HEADER]         notification_title,
+-- [HEADER]         notification_body,
         json_build_object(
             'contract_id', NEW.id,
             'event', 'status_change',
@@ -2565,8 +2620,9 @@ END;
 $$;
 
 DROP TRIGGER IF EXISTS on_contract_status_change ON public.contracts;
+DROP TRIGGER IF EXISTS "on_contract_status_change" ON public.contracts;
 CREATE TRIGGER on_contract_status_change
-    AFTER UPDATE ON public.contracts
+-- [HEADER]     AFTER UPDATE ON public.contracts
     FOR EACH ROW
     EXECUTE FUNCTION public.notify_contract_status_change();
 
@@ -2598,11 +2654,11 @@ BEGIN
     -- Extension Deadline
     FOR r IN
         SELECT c.id, c.user_id, c.end_date, p.city, p.address
-        FROM public.contracts c
-        JOIN public.properties p ON p.id = c.property_id
-        WHERE c.status = 'active'
-        AND c.extension_option = TRUE
-        AND c.end_date = CURRENT_DATE + (extension_days || ' days')::INTERVAL
+-- [HEADER]         FROM public.contracts c
+-- [HEADER]         JOIN public.properties p ON p.id = c.property_id
+-- [HEADER]         WHERE c.status = 'active'
+-- [HEADER]         AND c.extension_option = TRUE
+-- [HEADER]         AND c.end_date = CURRENT_DATE + (extension_days || ' days')::INTERVAL
     LOOP
         IF NOT EXISTS (SELECT 1 FROM public.notifications WHERE user_id = r.user_id AND metadata->>'contract_id' = r.id::text AND metadata->>'event' = 'extension_deadline') THEN
             INSERT INTO public.notifications (user_id, type, title, message, metadata)
@@ -2613,11 +2669,11 @@ BEGIN
     -- Annual Index Update
     FOR r IN
         SELECT c.id, c.user_id, c.start_date, p.city, p.address
-        FROM public.contracts c
-        JOIN public.properties p ON p.id = c.property_id
-        WHERE c.status = 'active'
-        AND c.linkage_type != 'none'
-        AND (c.start_date + INTERVAL '1 year' = CURRENT_DATE OR c.start_date + INTERVAL '2 years' = CURRENT_DATE OR c.start_date + INTERVAL '3 years' = CURRENT_DATE)
+-- [HEADER]         FROM public.contracts c
+-- [HEADER]         JOIN public.properties p ON p.id = c.property_id
+-- [HEADER]         WHERE c.status = 'active'
+-- [HEADER]         AND c.linkage_type != 'none'
+-- [HEADER]         AND (c.start_date + INTERVAL '1 year' = CURRENT_DATE OR c.start_date + INTERVAL '2 years' = CURRENT_DATE OR c.start_date + INTERVAL '3 years' = CURRENT_DATE)
     LOOP
         IF NOT EXISTS (SELECT 1 FROM public.notifications WHERE user_id = r.user_id AND metadata->>'contract_id' = r.id::text AND metadata->>'event' = 'index_update' AND metadata->>'date' = CURRENT_DATE::text) THEN
             INSERT INTO public.notifications (user_id, type, title, message, metadata)
@@ -2628,11 +2684,11 @@ BEGIN
     -- Payment Due Today
     FOR r IN
         SELECT py.id, py.user_id, py.amount, py.date, p.city, p.address
-        FROM public.payments py
-        JOIN public.contracts c ON c.id = py.contract_id
-        JOIN public.properties p ON p.id = c.property_id
-        WHERE py.status = 'pending'
-        AND py.date = CURRENT_DATE
+-- [HEADER]         FROM public.payments py
+-- [HEADER]         JOIN public.contracts c ON c.id = py.contract_id
+-- [HEADER]         JOIN public.properties p ON p.id = c.property_id
+-- [HEADER]         WHERE py.status = 'pending'
+-- [HEADER]         AND py.date = CURRENT_DATE
     LOOP
         IF NOT EXISTS (SELECT 1 FROM public.notifications WHERE user_id = r.user_id AND metadata->>'payment_id' = r.id::text AND metadata->>'event' = 'payment_due') THEN
             INSERT INTO public.notifications (user_id, type, title, message, metadata)
@@ -2649,7 +2705,7 @@ WHERE status = 'pending';
 
 UPDATE public.contracts 
 SET status = 'archived' 
-WHERE status IN ('ended', 'terminated');
+-- [HEADER] WHERE status IN ('ended', 'terminated');
 
 -- 2. Drop existing check constraint if it exists (it might be implicit or named)
 -- We'll try to drop any existing constraint on status just in case, but usually it's just a text column.
@@ -2658,8 +2714,8 @@ WHERE status IN ('ended', 'terminated');
 
 -- 3. Add new check constraint
 ALTER TABLE public.contracts 
-ADD CONSTRAINT contracts_status_check 
-CHECK (status IN ('active', 'archived'));
+-- [HEADER] ADD CONSTRAINT contracts_status_check 
+-- [HEADER] CHECK (status IN ('active', 'archived'));
 
 -- 4. Set default value to 'active'
 ALTER TABLE public.contracts 
@@ -2671,8 +2727,8 @@ BEGIN
 
     -- 1. Add Columns (Allow NULL initially to populate)
     ALTER TABLE public.user_profiles
-    ADD COLUMN IF NOT EXISTS first_name TEXT,
-    ADD COLUMN IF NOT EXISTS last_name TEXT;
+-- [HEADER]     ADD COLUMN IF NOT EXISTS first_name TEXT,
+-- [HEADER]     ADD COLUMN IF NOT EXISTS last_name TEXT;
 
     -- 2. Migrate Data
     -- Strategy:
@@ -2680,9 +2736,9 @@ BEGIN
     -- Last Name = 'aaa' (Mandatory default for existing)
     UPDATE public.user_profiles
     SET 
-        first_name = COALESCE(full_name, 'User'),
-        last_name = 'aaa'
-    WHERE first_name IS NULL OR last_name IS NULL;
+-- [HEADER]         first_name = COALESCE(full_name, 'User'),
+-- [HEADER]         last_name = 'aaa'
+-- [HEADER]     WHERE first_name IS NULL OR last_name IS NULL;
 
     -- 3. Enforce Not Null
     ALTER TABLE public.user_profiles
@@ -2697,7 +2753,7 @@ END $$;
 -- 1. Create Bucket (if it doesn't exist)
 INSERT INTO storage.buckets (id, name, public, avif_autodetection, file_size_limit, allowed_mime_types)
 VALUES ('secure_documents', 'secure_documents', false, false, 5242880, ARRAY['application/pdf', 'image/jpeg', 'image/png'])
-ON CONFLICT (id) DO NOTHING;
+-- [HEADER] ON CONFLICT (id) DO NOTHING;
 
 -- 2. ENABLE RLS - SKIPPED
 -- This command often fails due to permissions on the system 'storage' schema. 
@@ -2709,41 +2765,41 @@ ON CONFLICT (id) DO NOTHING;
 -- Policy: Admin can do ANYTHING in 'secure_documents'
 DROP POLICY IF EXISTS "Admins full access to secure_documents" ON storage.objects;
 CREATE POLICY "Admins full access to secure_documents"
-    ON storage.objects
+-- [HEADER]     ON storage.objects
     FOR ALL
     USING (
-        bucket_id = 'secure_documents' 
-        AND 
-        EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin')
+-- [HEADER]         bucket_id = 'secure_documents' 
+-- [HEADER]         AND 
+-- [HEADER]         EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin')
     )
     WITH CHECK (
-        bucket_id = 'secure_documents' 
-        AND 
-        EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin')
+-- [HEADER]         bucket_id = 'secure_documents' 
+-- [HEADER]         AND 
+-- [HEADER]         EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin')
     );
 
 -- Policy: Users can VIEW their OWN files
 DROP POLICY IF EXISTS "Users view own secure documents" ON storage.objects;
 CREATE POLICY "Users view own secure documents"
-    ON storage.objects
+-- [HEADER]     ON storage.objects
     FOR SELECT
     USING (
-        bucket_id = 'secure_documents'
-        AND
+-- [HEADER]         bucket_id = 'secure_documents'
+-- [HEADER]         AND
         (storage.foldername(name))[1] = auth.uid()::text
     );
 
 -- Policy: Users can UPLOAD to their OWN folder (Optional)
 DROP POLICY IF EXISTS "Users upload own documents" ON storage.objects;
 CREATE POLICY "Users upload own documents"
-    ON storage.objects
+-- [HEADER]     ON storage.objects
     FOR INSERT
     WITH CHECK (
-        bucket_id = 'secure_documents'
-        AND
+-- [HEADER]         bucket_id = 'secure_documents'
+-- [HEADER]         AND
         (storage.foldername(name))[1] = auth.uid()::text
-        AND
-        auth.role() = 'authenticated'
+-- [HEADER]         AND
+-- [HEADER]         auth.role() = 'authenticated'
     );
 -- ============================================
 -- TRACK DELETED USERS (Audit & Abuse Prevention)
@@ -2752,12 +2808,12 @@ CREATE POLICY "Users upload own documents"
 -- 1. Create a log table that is NOT connected to the user_id via foreign key
 -- (So it survives the deletion)
 CREATE TABLE IF NOT EXISTS deleted_users_log (
-    id BIGSERIAL PRIMARY KEY,
-    original_user_id UUID,
-    email TEXT,
-    phone TEXT,
-    subscription_status_at_deletion TEXT,
-    deleted_at TIMESTAMPTZ DEFAULT NOW()
+-- [HEADER]     id BIGSERIAL PRIMARY KEY,
+-- [HEADER]     original_user_id UUID,
+-- [HEADER]     email TEXT,
+-- [HEADER]     phone TEXT,
+-- [HEADER]     subscription_status_at_deletion TEXT,
+-- [HEADER]     deleted_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 2. Create the Trigger Function
@@ -2780,9 +2836,9 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 3. Attach Trigger (BEFORE DELETE) to user_profiles
 DROP TRIGGER IF EXISTS on_user_profile_deleted ON user_profiles;
-
+DROP TRIGGER IF EXISTS "on_user_profile_deleted" ON user_profiles;
 CREATE TRIGGER on_user_profile_deleted
-    BEFORE DELETE ON user_profiles
+-- [HEADER]     BEFORE DELETE ON user_profiles
     FOR EACH ROW
     EXECUTE FUNCTION log_user_deletion();
 -- Migration: trigger_signup_notification
@@ -2813,10 +2869,10 @@ BEGIN
     -- Assuming pg_net is installed.
     
     PERFORM
-      net.http_post(
-        url := project_url || '/functions/v1/send-admin-alert',
-        headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
-        body := json_build_object(
+-- [HEADER]       net.http_post(
+-- [HEADER]         url := project_url || '/functions/v1/send-admin-alert',
+-- [HEADER]         headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
+-- [HEADER]         body := json_build_object(
             'type', 'INSERT',
             'table', 'user_profiles',
             'record', row_to_json(NEW)
@@ -2824,7 +2880,7 @@ BEGIN
       );
       
     RETURN NEW;
-EXCEPTION WHEN OTHERS THEN
+-- [HEADER] EXCEPTION WHEN OTHERS THEN
     -- Swallow errors to not block signup
     RAISE WARNING 'Failed to trigger admin notification: %', SQLERRM;
     RETURN NEW;
@@ -2833,17 +2889,17 @@ $$;
 
 -- 2. Create the Trigger
 DROP TRIGGER IF EXISTS on_user_signup_notify_admin ON public.user_profiles;
-
+DROP TRIGGER IF EXISTS "on_user_signup_notify_admin" ON public.user_profiles;
 CREATE TRIGGER on_user_signup_notify_admin
-    AFTER INSERT ON public.user_profiles
+-- [HEADER]     AFTER INSERT ON public.user_profiles
     FOR EACH ROW
     EXECUTE FUNCTION public.notify_admin_on_signup();
 -- VERIFICATION SCRIPT
 -- Run this to confirm RLS is active and correct
 
 SELECT tablename, policyname, cmd, qual, with_check 
-FROM pg_policies 
-WHERE tablename IN ('properties', 'contracts', 'tenants', 'payments')
+-- [HEADER] FROM pg_policies 
+-- [HEADER] WHERE tablename IN ('properties', 'contracts', 'tenants', 'payments')
 ORDER BY tablename, cmd;
 
 -- EXPECTED OUTPUT:
@@ -2853,13 +2909,13 @@ ORDER BY tablename, cmd;
 -- This migration is NOT deployed yet - it's ready for when auth is implemented
 
 CREATE TABLE IF NOT EXISTS user_preferences (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [HEADER]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [HEADER]     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     language TEXT NOT NULL DEFAULT 'he' CHECK (language IN ('he', 'en')),
-    gender TEXT CHECK (gender IN ('male', 'female', 'unspecified')),
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE(user_id)
+-- [HEADER]     gender TEXT CHECK (gender IN ('male', 'female', 'unspecified')),
+-- [HEADER]     created_at TIMESTAMPTZ DEFAULT NOW(),
+-- [HEADER]     updated_at TIMESTAMPTZ DEFAULT NOW(),
+-- [HEADER]     UNIQUE(user_id)
 );
 
 -- Index for faster lookups by user_id
@@ -2871,7 +2927,7 @@ ALTER TABLE user_preferences ENABLE ROW LEVEL SECURITY;
 -- RLS Policy: Users can only read/write their own preferences
 DROP POLICY IF EXISTS "Users can manage their own preferences" ON user_preferences;
 CREATE POLICY "Users can manage their own preferences"
-    ON user_preferences
+-- [HEADER]     ON user_preferences
     FOR ALL
     USING (auth.uid() = user_id)
     WITH CHECK (auth.uid() = user_id);
@@ -2886,8 +2942,10 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger to call the function
+;
+DROP TRIGGER IF EXISTS "user_preferences_updated_at" ON CREATE;
 CREATE TRIGGER user_preferences_updated_at
-    BEFORE UPDATE ON user_preferences
+-- [HEADER]     BEFORE UPDATE ON user_preferences
     FOR EACH ROW
     EXECUTE FUNCTION update_user_preferences_updated_at();
 -- Enable required extensions
@@ -2904,10 +2962,10 @@ SELECT cron.schedule(
     '0 6 * * *',              -- Schedule (6:00 AM daily)
     $$
     SELECT
-        net.http_post(
-            url:='https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/fetch-index-data',
-            headers:='{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmdnJla3Z1Z2RqbndobmF1Y216Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0MzY0MTYsImV4cCI6MjA4MzAxMjQxNn0.xA3JI4iGElpIpZjVHLCA_FGw0hfmNUJTtw_fuLlhkoA"}'::jsonb,
-            body:='{}'::jsonb
+-- [HEADER]         net.http_post(
+-- [HEADER]             url:='https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/fetch-index-data',
+-- [HEADER]             headers:='{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmdnJla3Z1Z2RqbndobmF1Y216Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0MzY0MTYsImV4cCI6MjA4MzAxMjQxNn0.xA3JI4iGElpIpZjVHLCA_FGw0hfmNUJTtw_fuLlhkoA"}'::jsonb,
+-- [HEADER]             body:='{}'::jsonb
         ) as request_id;
     $$
 );
@@ -2915,17 +2973,17 @@ SELECT cron.schedule(
 -- Comment to explain
 -- Create payments table
 CREATE TABLE IF NOT EXISTS public.payments (
-    id UUID NOT NULL DEFAULT gen_random_uuid(),
-    contract_id UUID NOT NULL REFERENCES public.contracts(id) ON DELETE CASCADE,
-    amount NUMERIC NOT NULL,
-    currency TEXT NOT NULL CHECK (currency IN ('ILS', 'USD', 'EUR')),
-    due_date DATE NOT NULL,
-    status TEXT NOT NULL CHECK (status IN ('pending', 'paid', 'overdue', 'cancelled')),
-    paid_date DATE DEFAULT NULL,
-    payment_method TEXT DEFAULT NULL,
-    reference TEXT DEFAULT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-    CONSTRAINT payments_pkey PRIMARY KEY (id)
+-- [HEADER]     id UUID NOT NULL DEFAULT gen_random_uuid(),
+-- [HEADER]     contract_id UUID NOT NULL REFERENCES public.contracts(id) ON DELETE CASCADE,
+-- [HEADER]     amount NUMERIC NOT NULL,
+-- [HEADER]     currency TEXT NOT NULL CHECK (currency IN ('ILS', 'USD', 'EUR')),
+-- [HEADER]     due_date DATE NOT NULL,
+-- [HEADER]     status TEXT NOT NULL CHECK (status IN ('pending', 'paid', 'overdue', 'cancelled')),
+-- [HEADER]     paid_date DATE DEFAULT NULL,
+-- [HEADER]     payment_method TEXT DEFAULT NULL,
+-- [HEADER]     reference TEXT DEFAULT NULL,
+-- [HEADER]     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+-- [HEADER]     CONSTRAINT payments_pkey PRIMARY KEY (id)
 );
 
 -- Enable RLS
@@ -2937,67 +2995,28 @@ ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
 -- USING (contract_id IN (SELECT id FROM public.contracts WHERE user_id = auth.uid()));
 
 -- Fallback permissive policy for development if user_id logic is flaky
+;
+DROP POLICY IF EXISTS "Enable all access for authenticated users" ON public.payments;
 CREATE POLICY "Enable all access for authenticated users" ON public.payments
     FOR ALL
-    TO authenticated
+-- [HEADER]     TO authenticated
     USING (true)
     WITH CHECK (true);
 -- Seed dummy CPI data for 2024-2025
 -- Using approximate values based on recent trends (base 2022 ~105-110)
 
-INSERT INTO index_data (index_type, date, value, source)
-VALUES 
-  ('cpi', '2024-01', 105.0, 'manual'),
-  ('cpi', '2024-02', 105.2, 'manual'),
-  ('cpi', '2024-03', 105.5, 'manual'),
-  ('cpi', '2024-04', 106.0, 'manual'),
-  ('cpi', '2024-05', 106.3, 'manual'),
-  ('cpi', '2024-06', 106.5, 'manual'),
-  ('cpi', '2024-07', 107.0, 'manual'),
-  ('cpi', '2024-08', 107.2, 'manual'),
-  ('cpi', '2024-09', 107.5, 'manual'),
-  ('cpi', '2024-10', 107.8, 'manual'),
-  ('cpi', '2024-11', 108.0, 'manual'),
-  ('cpi', '2024-12', 108.2, 'manual'),
-  ('cpi', '2025-01', 108.5, 'manual'),
-  ('cpi', '2025-02', 108.8, 'manual'),
-  ('cpi', '2025-03', 109.0, 'manual'),
-  ('cpi', '2025-04', 109.3, 'manual'),
-  ('cpi', '2025-05', 109.5, 'manual'),
-  ('cpi', '2025-06', 109.8, 'manual'),
-  ('cpi', '2025-07', 110.0, 'manual'),
-  ('cpi', '2025-08', 110.2, 'manual'),
-  ('cpi', '2025-09', 110.5, 'manual'),
-  ('cpi', '2025-10', 110.8, 'manual'),
-  ('cpi', '2025-11', 111.0, 'manual'),
-  ('cpi', '2025-12', 111.2, 'manual')
-ON CONFLICT (index_type, date) DO UPDATE 
-SET value = EXCLUDED.value;
--- Add columns for linkage tracking to payments
-ALTER TABLE public.payments 
-ADD COLUMN IF NOT EXISTS original_amount NUMERIC, -- The base amount before linkage
-ADD COLUMN IF NOT EXISTS index_linkage_rate NUMERIC, -- The linkage percentage applied
-ADD COLUMN IF NOT EXISTS paid_amount NUMERIC; -- What was actually paid
--- Create saved_calculations table
-create table if not exists public.saved_calculations (
-    id uuid default gen_random_uuid() primary key,
-    created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-    user_id uuid references auth.users(id) on delete set null,
-    input_data jsonb not null,
-    result_data jsonb not null
-);
-
+-- [Index Data Stripped]
 -- RLS Policies
 alter table public.saved_calculations enable row level security;
 
 -- Allow public read access (so anyone with the link can view)
 create policy "Allow public read access"
-    on public.saved_calculations for select
+-- [HEADER]     on public.saved_calculations for select
     using (true);
 
 -- Allow authenticated users to insert their own calculations
 create policy "Allow authenticated insert"
-    on public.saved_calculations for insert
+-- [HEADER]     on public.saved_calculations for insert
     with check (auth.uid() = user_id);
 
 -- Add indexes for faster lookups if needed (though UUID lookup is fast)
@@ -3012,7 +3031,7 @@ drop policy if exists "Allow authenticated insert" on public.saved_calculations;
 -- 1. The user is authenticated and the user_id matches their UID
 -- 2. The user is anonymous (or authenticated) and provides no user_id (NULL)
 create policy "Allow public insert"
-    on public.saved_calculations for insert
+-- [HEADER]     on public.saved_calculations for insert
     with check (
         (auth.uid() = user_id) OR (user_id is null)
     );
@@ -3047,13 +3066,13 @@ SELECT cron.schedule(
     '0 */2 15 * *',  -- Every 2 hours on day 15
     $$
     SELECT
-        net.http_post(
-            url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/fetch-index-data',
-            headers := jsonb_build_object(
+-- [HEADER]         net.http_post(
+-- [HEADER]             url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/fetch-index-data',
+-- [HEADER]             headers := jsonb_build_object(
                 'Content-Type', 'application/json',
                 'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmdnJla3Z1Z2RqbndobmF1Y216Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzQzNjQxNiwiZXhwIjoyMDgzMDEyNDE2fQ._Fmq-2x4zpzPkHP9btdqSUj0gbX7RmqscwvGElNbdNA'
             ),
-            body := '{}'::jsonb
+-- [HEADER]             body := '{}'::jsonb
         ) AS request_id;
     $$
 );
@@ -3064,13 +3083,13 @@ SELECT cron.schedule(
     '0 */2 16 * *',  -- Every 2 hours on day 16
     $$
     SELECT
-        net.http_post(
-            url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/fetch-index-data',
-            headers := jsonb_build_object(
+-- [HEADER]         net.http_post(
+-- [HEADER]             url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/fetch-index-data',
+-- [HEADER]             headers := jsonb_build_object(
                 'Content-Type', 'application/json',
                 'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmdnJla3Z1Z2RqbndobmF1Y216Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzQzNjQxNiwiZXhwIjoyMDgzMDEyNDE2fQ._Fmq-2x4zpzPkHP9btdqSUj0gbX7RmqscwvGElNbdNA'
             ),
-            body := '{}'::jsonb
+-- [HEADER]             body := '{}'::jsonb
         ) AS request_id;
     $$
 );
@@ -3081,13 +3100,13 @@ SELECT cron.schedule(
     '0 */2 17 * *',  -- Every 2 hours on day 17
     $$
     SELECT
-        net.http_post(
-            url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/fetch-index-data',
-            headers := jsonb_build_object(
+-- [HEADER]         net.http_post(
+-- [HEADER]             url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/fetch-index-data',
+-- [HEADER]             headers := jsonb_build_object(
                 'Content-Type', 'application/json',
                 'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmdnJla3Z1Z2RqbndobmF1Y216Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzQzNjQxNiwiZXhwIjoyMDgzMDEyNDE2fQ._Fmq-2x4zpzPkHP9btdqSUj0gbX7RmqscwvGElNbdNA'
             ),
-            body := '{}'::jsonb
+-- [HEADER]             body := '{}'::jsonb
         ) AS request_id;
     $$
 );
@@ -3103,21 +3122,21 @@ DROP TABLE IF EXISTS saved_calculations;
 -- ============================================
 
 CREATE TABLE IF NOT EXISTS subscription_plans (
-    id TEXT PRIMARY KEY, -- 'free', 'pro', 'enterprise'
-    name TEXT NOT NULL,
-    price_monthly NUMERIC(10, 2) DEFAULT 0,
+-- [HEADER]     id TEXT PRIMARY KEY, -- 'free', 'pro', 'enterprise'
+-- [HEADER]     name TEXT NOT NULL,
+-- [HEADER]     price_monthly NUMERIC(10, 2) DEFAULT 0,
     
     -- Resource Limits (-1 for unlimited)
-    max_properties INTEGER DEFAULT 1,
-    max_tenants INTEGER DEFAULT 1,
-    max_contracts INTEGER DEFAULT 1,
-    max_sessions INTEGER DEFAULT 1,
+-- [HEADER]     max_properties INTEGER DEFAULT 1,
+-- [HEADER]     max_tenants INTEGER DEFAULT 1,
+-- [HEADER]     max_contracts INTEGER DEFAULT 1,
+-- [HEADER]     max_sessions INTEGER DEFAULT 1,
     
     -- Modular Features
-    features JSONB DEFAULT '{}'::jsonb, -- e.g. {"can_export": true, "ai_assistant": false}
+-- [HEADER]     features JSONB DEFAULT '{}'::jsonb, -- e.g. {"can_export": true, "ai_assistant": false}
     
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+-- [HEADER]     created_at TIMESTAMPTZ DEFAULT NOW(),
+-- [HEADER]     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Enable RLS
@@ -3125,7 +3144,7 @@ ALTER TABLE subscription_plans ENABLE ROW LEVEL SECURITY;
 
 -- Policies: Everyone can read plans, only admins can modify (if we build UI for it)
 CREATE POLICY "Public Read Plans" 
-    ON subscription_plans FOR SELECT 
+-- [HEADER]     ON subscription_plans FOR SELECT 
     USING (true);
 
 -- Seed Data
@@ -3134,13 +3153,13 @@ VALUES
     ('free', 'Free Forever', 0, 1, 2, 1, 1, '{"support_level": "basic"}'::jsonb),
     ('pro', 'Pro', 29.99, 10, 20, -1, 3, '{"support_level": "priority", "export_data": true}'::jsonb),
     ('enterprise', 'Enterprise', 99.99, -1, -1, -1, -1, '{"support_level": "dedicated", "export_data": true, "api_access": true}'::jsonb)
-ON CONFLICT (id) DO UPDATE SET
-    name = EXCLUDED.name,
-    price_monthly = EXCLUDED.price_monthly,
-    max_properties = EXCLUDED.max_properties,
-    max_tenants = EXCLUDED.max_tenants,
-    max_contracts = EXCLUDED.max_contracts,
-    max_sessions = EXCLUDED.max_sessions,
+-- [HEADER] ON CONFLICT (id) DO UPDATE SET
+-- [HEADER]     name = EXCLUDED.name,
+-- [HEADER]     price_monthly = EXCLUDED.price_monthly,
+-- [HEADER]     max_properties = EXCLUDED.max_properties,
+-- [HEADER]     max_tenants = EXCLUDED.max_tenants,
+-- [HEADER]     max_contracts = EXCLUDED.max_contracts,
+-- [HEADER]     max_sessions = EXCLUDED.max_sessions,
     features = EXCLUDED.features;
 -- ============================================
 -- 2. Link User Profiles to Subscription Plans
@@ -3148,7 +3167,7 @@ ON CONFLICT (id) DO UPDATE SET
 
 -- 1. Add plan_id column
 ALTER TABLE user_profiles 
-ADD COLUMN IF NOT EXISTS plan_id TEXT REFERENCES subscription_plans(id) DEFAULT 'free';
+-- [HEADER] ADD COLUMN IF NOT EXISTS plan_id TEXT REFERENCES subscription_plans(id) DEFAULT 'free';
 
 -- 2. Migrate existing users based on old enum (if needed)
 -- Assuming 'free_forever' -> 'free', anything else -> 'free' or 'enterprise'
@@ -3215,8 +3234,8 @@ BEGIN
 
     -- 3. Count EXISTING sessions
     SELECT COUNT(*)
-    INTO session_count
-    FROM auth.sessions
+-- [HEADER]     INTO session_count
+-- [HEADER]     FROM auth.sessions
     WHERE user_id = NEW.user_id;
     -- Note: We removed the "per device type" logic to enforce a GLOBAL session limit per plan.
     -- If you want per-device, uncomment the AND clause below, but usually plans limit total active sessions.
@@ -3226,10 +3245,10 @@ BEGIN
     IF session_count >= user_plan_limit THEN
         -- Delete Oldest Session
         SELECT id
-        INTO oldest_session_id
-        FROM auth.sessions
-        WHERE user_id = NEW.user_id
-        ORDER BY created_at ASC
+-- [HEADER]         INTO oldest_session_id
+-- [HEADER]         FROM auth.sessions
+-- [HEADER]         WHERE user_id = NEW.user_id
+-- [HEADER]         ORDER BY created_at ASC
         LIMIT 1;
 
         IF oldest_session_id IS NOT NULL THEN
@@ -3247,18 +3266,18 @@ $$;
 CREATE OR REPLACE FUNCTION get_users_with_stats()
 RETURNS TABLE (
     -- User Profile Columns
-    id UUID,
-    email TEXT,
-    full_name TEXT,
-    role user_role,
-    subscription_status subscription_status,
-    plan_id TEXT,
-    created_at TIMESTAMPTZ,
+-- [HEADER]     id UUID,
+-- [HEADER]     email TEXT,
+-- [HEADER]     full_name TEXT,
+-- [HEADER]     role user_role,
+-- [HEADER]     subscription_status subscription_status,
+-- [HEADER]     plan_id TEXT,
+-- [HEADER]     created_at TIMESTAMPTZ,
     
     -- Stats
-    properties_count BIGINT,
-    tenants_count BIGINT,
-    contracts_count BIGINT
+-- [HEADER]     properties_count BIGINT,
+-- [HEADER]     tenants_count BIGINT,
+-- [HEADER]     contracts_count BIGINT
 ) 
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -3275,27 +3294,27 @@ BEGIN
         up.created_at,
         
         -- Counts (Coalesce to 0)
-        COALESCE(p.count, 0) as properties_count,
-        COALESCE(t.count, 0) as tenants_count,
-        COALESCE(c.count, 0) as contracts_count
-    FROM user_profiles up
+-- [HEADER]         COALESCE(p.count, 0) as properties_count,
+-- [HEADER]         COALESCE(t.count, 0) as tenants_count,
+-- [HEADER]         COALESCE(c.count, 0) as contracts_count
+-- [HEADER]     FROM user_profiles up
     -- Join Property Counts
-    LEFT JOIN (
+-- [HEADER]     LEFT JOIN (
         SELECT user_id, count(*) as count 
-        FROM properties 
-        GROUP BY user_id
+-- [HEADER]         FROM properties 
+-- [HEADER]         GROUP BY user_id
     ) p ON up.id = p.user_id
     -- Join Tenant Counts
-    LEFT JOIN (
+-- [HEADER]     LEFT JOIN (
         SELECT user_id, count(*) as count 
-        FROM tenants 
-        GROUP BY user_id
+-- [HEADER]         FROM tenants 
+-- [HEADER]         GROUP BY user_id
     ) t ON up.id = t.user_id
     -- Join Contract Counts
-    LEFT JOIN (
+-- [HEADER]     LEFT JOIN (
         SELECT user_id, count(*) as count 
-        FROM contracts 
-        GROUP BY user_id
+-- [HEADER]         FROM contracts 
+-- [HEADER]         GROUP BY user_id
     ) c ON up.id = c.user_id
     
     ORDER BY up.created_at DESC;
@@ -3340,10 +3359,10 @@ $$;
 GRANT EXECUTE ON FUNCTION delete_user_account(UUID) TO authenticated;
 -- Add fields for account deletion tracking
 ALTER TABLE user_profiles
-ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE,
-ADD COLUMN IF NOT EXISTS account_status TEXT DEFAULT 'active' CHECK (account_status IN ('active', 'suspended', 'deleted'));
+-- [HEADER] ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE,
+-- [HEADER] ADD COLUMN IF NOT EXISTS account_status TEXT DEFAULT 'active' CHECK (account_status IN ('active', 'suspended', 'deleted'));
 
--- Create index for efficient querying of suspended accounts
+-- CREATE INDEX IF NOT EXISTS for efficient querying of suspended accounts
 CREATE INDEX IF NOT EXISTS idx_user_profiles_deleted_at ON user_profiles(deleted_at) WHERE deleted_at IS NOT NULL;
 
 -- Create function to permanently delete accounts after 14 days
@@ -3362,10 +3381,10 @@ BEGIN
     -- Find all users marked for deletion more than 14 days ago
     FOR user_record IN 
         SELECT id 
-        FROM user_profiles 
-        WHERE deleted_at IS NOT NULL 
-        AND deleted_at < cutoff_date
-        AND account_status = 'suspended'
+-- [HEADER]         FROM user_profiles 
+-- [HEADER]         WHERE deleted_at IS NOT NULL 
+-- [HEADER]         AND deleted_at < cutoff_date
+-- [HEADER]         AND account_status = 'suspended'
     LOOP
         -- Delete user data (cascades will handle related records)
         DELETE FROM user_profiles WHERE id = user_record.id;
@@ -3411,7 +3430,7 @@ BEGIN
     -- 3. Log the action
     INSERT INTO public.audit_logs (user_id, action, details)
     VALUES (
-        auth.uid(), 
+-- [HEADER]         auth.uid(), 
         'delete_user', 
         jsonb_build_object('target_user_id', target_user_id, 'target_email', target_email)
     );
@@ -3436,7 +3455,7 @@ BEGIN
        
         INSERT INTO public.audit_logs (user_id, action, details)
         VALUES (
-            auth.uid(), -- The admin performing the update
+-- [HEADER]             auth.uid(), -- The admin performing the update
             'update_user_profile',
             jsonb_build_object(
                 'target_user_id', NEW.id,
@@ -3456,20 +3475,22 @@ $$;
 DROP TRIGGER IF EXISTS on_profile_change_audit ON public.user_profiles;
 
 -- Create Trigger
+;
+DROP TRIGGER IF EXISTS "on_profile_change_audit" ON public.user_profiles;
 CREATE TRIGGER on_profile_change_audit
-AFTER UPDATE ON public.user_profiles
+-- [HEADER] AFTER UPDATE ON public.user_profiles
 FOR EACH ROW
 EXECUTE FUNCTION audit_profile_changes();
 -- Create Feedback Table
 CREATE TABLE IF NOT EXISTS public.feedback (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-    user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL, -- Nullable for anonymous feedback
-    message TEXT NOT NULL,
-    type TEXT DEFAULT 'bug', -- 'bug', 'feature', 'other'
-    status TEXT DEFAULT 'new', -- 'new', 'in_progress', 'resolved'
-    screenshot_url TEXT,
-    device_info JSONB
+-- [HEADER]     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+-- [HEADER]     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+-- [HEADER]     user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL, -- Nullable for anonymous feedback
+-- [HEADER]     message TEXT NOT NULL,
+-- [HEADER]     type TEXT DEFAULT 'bug', -- 'bug', 'feature', 'other'
+-- [HEADER]     status TEXT DEFAULT 'new', -- 'new', 'in_progress', 'resolved'
+-- [HEADER]     screenshot_url TEXT,
+-- [HEADER]     device_info JSONB
 );
 
 -- RLS
@@ -3478,75 +3499,75 @@ ALTER TABLE public.feedback ENABLE ROW LEVEL SECURITY;
 -- Allow anyone to insert (Anon or Authenticated)
 DROP POLICY IF EXISTS "Enable insert for everyone" ON public.feedback;
 CREATE POLICY "Enable insert for everyone"
-ON public.feedback FOR INSERT
-TO public, anon, authenticated
+-- [HEADER] ON public.feedback FOR INSERT
+-- [HEADER] TO public, anon, authenticated
 WITH CHECK (true);
 
 -- Allow Admins to see all
 DROP POLICY IF EXISTS "Admins can view all feedback" ON public.feedback;
 CREATE POLICY "Admins can view all feedback"
-ON public.feedback FOR SELECT
-TO authenticated
+-- [HEADER] ON public.feedback FOR SELECT
+-- [HEADER] TO authenticated
 USING (
-    EXISTS (
+-- [HEADER]     EXISTS (
         SELECT 1 FROM public.user_profiles
-        WHERE id = auth.uid() AND role = 'admin'
+-- [HEADER]         WHERE id = auth.uid() AND role = 'admin'
     )
 );
 
 -- Support updating status by Admins
 DROP POLICY IF EXISTS "Admins can update feedback" ON public.feedback;
 CREATE POLICY "Admins can update feedback"
-ON public.feedback FOR UPDATE
-TO authenticated
+-- [HEADER] ON public.feedback FOR UPDATE
+-- [HEADER] TO authenticated
 USING (
-    EXISTS (
+-- [HEADER]     EXISTS (
         SELECT 1 FROM public.user_profiles
-        WHERE id = auth.uid() AND role = 'admin'
+-- [HEADER]         WHERE id = auth.uid() AND role = 'admin'
     )
 );
 
 -- Storage Bucket for Screenshots
 INSERT INTO storage.buckets (id, name, public) 
 VALUES ('feedback-screenshots', 'feedback-screenshots', true)
-ON CONFLICT (id) DO NOTHING;
+-- [HEADER] ON CONFLICT (id) DO NOTHING;
 
 -- Storage Policies
 DROP POLICY IF EXISTS "Anyone can upload feedback screenshots" ON storage.objects;
 CREATE POLICY "Anyone can upload feedback screenshots"
-ON storage.objects FOR INSERT
-TO public, anon, authenticated
+-- [HEADER] ON storage.objects FOR INSERT
+-- [HEADER] TO public, anon, authenticated
 WITH CHECK ( bucket_id = 'feedback-screenshots' );
 
 DROP POLICY IF EXISTS "Anyone can view feedback screenshots" ON storage.objects;
 CREATE POLICY "Anyone can view feedback screenshots"
-ON storage.objects FOR SELECT
-TO public, anon, authenticated
+-- [HEADER] ON storage.objects FOR SELECT
+-- [HEADER] TO public, anon, authenticated
 USING ( bucket_id = 'feedback-screenshots' );
 -- Add Granular Storage Quota Fields to Subscription Plans
 -- Migration: 20260119_add_granular_storage_quotas.sql
 
 -- Add category-specific storage columns
 ALTER TABLE subscription_plans
-ADD COLUMN IF NOT EXISTS max_media_mb INTEGER DEFAULT -1,      -- -1 for unlimited within global cap
-ADD COLUMN IF NOT EXISTS max_utilities_mb INTEGER DEFAULT -1,
-ADD COLUMN IF NOT EXISTS max_maintenance_mb INTEGER DEFAULT -1,
-ADD COLUMN IF NOT EXISTS max_documents_mb INTEGER DEFAULT -1;
+-- [HEADER] ADD COLUMN IF NOT EXISTS max_media_mb INTEGER DEFAULT -1,      -- -1 for unlimited within global cap
+-- [HEADER] ADD COLUMN IF NOT EXISTS max_utilities_mb INTEGER DEFAULT -1,
+-- [HEADER] ADD COLUMN IF NOT EXISTS max_maintenance_mb INTEGER DEFAULT -1,
+-- [HEADER] ADD COLUMN IF NOT EXISTS max_documents_mb INTEGER DEFAULT -1;
 
 -- Update existing plans with sensible defaults
 -- (Assuming Free gets restricted media but more room for documents)
 UPDATE subscription_plans SET 
-    max_media_mb = 50,         -- 50MB for photos/video max on free
-    max_utilities_mb = 20,     -- 20MB for bills
-    max_maintenance_mb = 20,   -- 20MB for repairs
-    max_documents_mb = 10      -- 10MB for contracts
+-- [HEADER]     max_media_mb = 50,         -- 50MB for photos/video max on free
+-- [HEADER]     max_utilities_mb = 20,     -- 20MB for bills
+-- [HEADER]     max_maintenance_mb = 20,   -- 20MB for repairs
+-- [HEADER]     max_documents_mb = 10      -- 10MB for contracts
 WHERE id = 'free';
 
 -- Update the quota check function to support categories
 CREATE OR REPLACE FUNCTION check_storage_quota(
-    p_user_id UUID,
-    p_file_size BIGINT,
-    p_category TEXT DEFAULT NULL
+-- [HEADER]     p_user_id UUID,
+-- [HEADER]     p_file_size BIGINT,
+-- [HEADER]     p_category TEXT DEFAULT NULL
 ) RETURNS BOOLEAN AS $$
 DECLARE
     v_total_usage BIGINT;
@@ -3605,34 +3626,34 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Add storage quota columns
 ALTER TABLE subscription_plans
-ADD COLUMN IF NOT EXISTS max_storage_mb INTEGER DEFAULT 100,  -- MB per user
-ADD COLUMN IF NOT EXISTS max_file_size_mb INTEGER DEFAULT 10; -- MB per file
+-- [HEADER] ADD COLUMN IF NOT EXISTS max_storage_mb INTEGER DEFAULT 100,  -- MB per user
+-- [HEADER] ADD COLUMN IF NOT EXISTS max_file_size_mb INTEGER DEFAULT 10; -- MB per file
 
 -- Update existing plans with storage limits
 UPDATE subscription_plans SET 
-    max_storage_mb = 100,    -- 100MB total
-    max_file_size_mb = 5     -- 5MB per file
+-- [HEADER]     max_storage_mb = 100,    -- 100MB total
+-- [HEADER]     max_file_size_mb = 5     -- 5MB per file
 WHERE id = 'free';
 
 UPDATE subscription_plans SET 
-    max_storage_mb = 5120,   -- 5GB total
-    max_file_size_mb = 50    -- 50MB per file
+-- [HEADER]     max_storage_mb = 5120,   -- 5GB total
+-- [HEADER]     max_file_size_mb = 50    -- 50MB per file
 WHERE id = 'pro';
 
 UPDATE subscription_plans SET 
-    max_storage_mb = -1,     -- Unlimited
-    max_file_size_mb = 500   -- 500MB per file
+-- [HEADER]     max_storage_mb = -1,     -- Unlimited
+-- [HEADER]     max_file_size_mb = 500   -- 500MB per file
 WHERE id = 'enterprise';
 
 -- Comments
--- Create table for short URLs
+-- CREATE TABLE IF NOT EXISTS for short URLs
 CREATE TABLE IF NOT EXISTS calculation_shares (
-    id TEXT PRIMARY KEY, -- Short ID (e.g., "abc123")
-    user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-    calculation_data JSONB NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    expires_at TIMESTAMPTZ DEFAULT (NOW() + INTERVAL '30 days'),
-    view_count INTEGER DEFAULT 0
+-- [HEADER]     id TEXT PRIMARY KEY, -- Short ID (e.g., "abc123")
+-- [HEADER]     user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+-- [HEADER]     calculation_data JSONB NOT NULL,
+-- [HEADER]     created_at TIMESTAMPTZ DEFAULT NOW(),
+-- [HEADER]     expires_at TIMESTAMPTZ DEFAULT (NOW() + INTERVAL '30 days'),
+-- [HEADER]     view_count INTEGER DEFAULT 0
 );
 
 -- Index for cleanup
@@ -3643,17 +3664,17 @@ ALTER TABLE calculation_shares ENABLE ROW LEVEL SECURITY;
 
 -- Anyone can read (public shares)
 CREATE POLICY "Public can view calculation shares"
-    ON calculation_shares FOR SELECT
+-- [HEADER]     ON calculation_shares FOR SELECT
     USING (true);
 
 -- Authenticated users can create
 CREATE POLICY "Authenticated users can create shares"
-    ON calculation_shares FOR INSERT
+-- [HEADER]     ON calculation_shares FOR INSERT
     WITH CHECK (auth.uid() IS NOT NULL);
 
 -- Users can update their own shares (for view count)
 CREATE POLICY "Anyone can update view count"
-    ON calculation_shares FOR UPDATE
+-- [HEADER]     ON calculation_shares FOR UPDATE
     USING (true)
     WITH CHECK (true);
 
@@ -3689,8 +3710,8 @@ BEGIN
             VALUES (v_short_id, auth.uid(), p_calculation_data);
             
             RETURN v_short_id;
-        EXCEPTION WHEN unique_violation THEN
-            v_attempt := v_attempt + 1;
+-- [HEADER]         EXCEPTION WHEN unique_violation THEN
+-- [HEADER]             v_attempt := v_attempt + 1;
             IF v_attempt >= v_max_attempts THEN
                 RAISE EXCEPTION 'Failed to generate unique short ID after % attempts', v_max_attempts;
             END IF;
@@ -3718,12 +3739,12 @@ $$ LANGUAGE plpgsql;
 -- Migration: 20260119_create_property_documents.sql
 
 CREATE TABLE IF NOT EXISTS property_documents (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    property_id UUID NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
+-- [HEADER]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [HEADER]     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [HEADER]     property_id UUID NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
     
     -- Document Classification
-    category TEXT NOT NULL CHECK (category IN (
+-- [HEADER]     category TEXT NOT NULL CHECK (category IN (
         'photo',           -- Property photos
         'video',           -- Property videos
         'utility_water',   -- Water bills
@@ -3741,34 +3762,34 @@ CREATE TABLE IF NOT EXISTS property_documents (
     )),
     
     -- Storage Info
-    storage_bucket TEXT NOT NULL,
-    storage_path TEXT NOT NULL,
-    file_name TEXT NOT NULL,
-    file_size BIGINT,
-    mime_type TEXT,
+-- [HEADER]     storage_bucket TEXT NOT NULL,
+-- [HEADER]     storage_path TEXT NOT NULL,
+-- [HEADER]     file_name TEXT NOT NULL,
+-- [HEADER]     file_size BIGINT,
+-- [HEADER]     mime_type TEXT,
     
     -- Metadata
-    title TEXT,
-    description TEXT,
-    tags TEXT[],
+-- [HEADER]     title TEXT,
+-- [HEADER]     description TEXT,
+-- [HEADER]     tags TEXT[],
     
     -- Date Info
-    document_date DATE,  -- When the bill/invoice was issued
-    period_start DATE,   -- For recurring bills (e.g., monthly utility)
-    period_end DATE,
+-- [HEADER]     document_date DATE,  -- When the bill/invoice was issued
+-- [HEADER]     period_start DATE,   -- For recurring bills (e.g., monthly utility)
+-- [HEADER]     period_end DATE,
     
     -- Financial Data (for bills/invoices)
-    amount DECIMAL(10,2),
-    currency TEXT DEFAULT 'ILS',
-    paid BOOLEAN DEFAULT false,
-    payment_date DATE,
+-- [HEADER]     amount DECIMAL(10,2),
+-- [HEADER]     currency TEXT DEFAULT 'ILS',
+-- [HEADER]     paid BOOLEAN DEFAULT false,
+-- [HEADER]     payment_date DATE,
     
     -- Maintenance Specific
-    vendor_name TEXT,
-    issue_type TEXT,     -- e.g., "plumbing", "electrical", "painting"
+-- [HEADER]     vendor_name TEXT,
+-- [HEADER]     issue_type TEXT,     -- e.g., "plumbing", "electrical", "painting"
     
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+-- [HEADER]     created_at TIMESTAMPTZ DEFAULT NOW(),
+-- [HEADER]     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Indexes
@@ -3781,32 +3802,32 @@ CREATE INDEX IF NOT EXISTS idx_property_documents_user ON property_documents(use
 ALTER TABLE property_documents ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Users can view their property documents"
-    ON property_documents FOR SELECT
+-- [HEADER]     ON property_documents FOR SELECT
     USING (auth.uid() = user_id);
 
 CREATE POLICY "Users can insert their property documents"
-    ON property_documents FOR INSERT
+-- [HEADER]     ON property_documents FOR INSERT
     WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Users can update their property documents"
-    ON property_documents FOR UPDATE
+-- [HEADER]     ON property_documents FOR UPDATE
     USING (auth.uid() = user_id);
 
 CREATE POLICY "Users can delete their property documents"
-    ON property_documents FOR DELETE
+-- [HEADER]     ON property_documents FOR DELETE
     USING (auth.uid() = user_id);
 
 -- Comments
 -- Create document_folders table
 CREATE TABLE IF NOT EXISTS document_folders (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    property_id UUID NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
-    category TEXT NOT NULL, -- e.g., 'utility_electric', 'maintenance', 'media', 'other'
-    name TEXT NOT NULL, -- The user-friendly subject/title
-    folder_date DATE NOT NULL DEFAULT CURRENT_DATE,
-    description TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+-- [HEADER]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [HEADER]     property_id UUID NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
+-- [HEADER]     category TEXT NOT NULL, -- e.g., 'utility_electric', 'maintenance', 'media', 'other'
+-- [HEADER]     name TEXT NOT NULL, -- The user-friendly subject/title
+-- [HEADER]     folder_date DATE NOT NULL DEFAULT CURRENT_DATE,
+-- [HEADER]     description TEXT,
+-- [HEADER]     created_at TIMESTAMPTZ DEFAULT NOW(),
+-- [HEADER]     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Enable RLS
@@ -3814,64 +3835,64 @@ ALTER TABLE document_folders ENABLE ROW LEVEL SECURITY;
 
 -- Policies for document_folders
 CREATE POLICY "Users can view folders for their properties"
-    ON document_folders FOR SELECT
+-- [HEADER]     ON document_folders FOR SELECT
     USING (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM properties p
-            WHERE p.id = document_folders.property_id
-            AND p.user_id = auth.uid()
+-- [HEADER]             WHERE p.id = document_folders.property_id
+-- [HEADER]             AND p.user_id = auth.uid()
         )
     );
 
 CREATE POLICY "Users can insert folders for their properties"
-    ON document_folders FOR INSERT
+-- [HEADER]     ON document_folders FOR INSERT
     WITH CHECK (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM properties p
-            WHERE p.id = document_folders.property_id
-            AND p.user_id = auth.uid()
+-- [HEADER]             WHERE p.id = document_folders.property_id
+-- [HEADER]             AND p.user_id = auth.uid()
         )
     );
 
 CREATE POLICY "Users can update folders for their properties"
-    ON document_folders FOR UPDATE
+-- [HEADER]     ON document_folders FOR UPDATE
     USING (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM properties p
-            WHERE p.id = document_folders.property_id
-            AND p.user_id = auth.uid()
+-- [HEADER]             WHERE p.id = document_folders.property_id
+-- [HEADER]             AND p.user_id = auth.uid()
         )
     );
 
 CREATE POLICY "Users can delete folders for their properties"
-    ON document_folders FOR DELETE
+-- [HEADER]     ON document_folders FOR DELETE
     USING (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM properties p
-            WHERE p.id = document_folders.property_id
-            AND p.user_id = auth.uid()
+-- [HEADER]             WHERE p.id = document_folders.property_id
+-- [HEADER]             AND p.user_id = auth.uid()
         )
     );
 
 -- Add folder_id to property_documents
 ALTER TABLE property_documents
-ADD COLUMN IF NOT EXISTS folder_id UUID REFERENCES document_folders(id) ON DELETE CASCADE;
+-- [HEADER] ADD COLUMN IF NOT EXISTS folder_id UUID REFERENCES document_folders(id) ON DELETE CASCADE;
 
--- Create index for performance
+-- CREATE INDEX IF NOT EXISTS for performance
 CREATE INDEX IF NOT EXISTS idx_document_folders_property_category ON document_folders(property_id, category);
 CREATE INDEX IF NOT EXISTS idx_property_documents_folder ON property_documents(folder_id);
 -- Create property_media table
 CREATE TABLE IF NOT EXISTS public.property_media (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    property_id UUID NOT NULL REFERENCES public.properties(id) ON DELETE CASCADE,
-    drive_file_id TEXT NOT NULL,
-    drive_web_view_link TEXT NOT NULL,
-    drive_thumbnail_link TEXT,
-    name TEXT NOT NULL,
-    mime_type TEXT,
-    size BIGINT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+-- [HEADER]     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+-- [HEADER]     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [HEADER]     property_id UUID NOT NULL REFERENCES public.properties(id) ON DELETE CASCADE,
+-- [HEADER]     drive_file_id TEXT NOT NULL,
+-- [HEADER]     drive_web_view_link TEXT NOT NULL,
+-- [HEADER]     drive_thumbnail_link TEXT,
+-- [HEADER]     name TEXT NOT NULL,
+-- [HEADER]     mime_type TEXT,
+-- [HEADER]     size BIGINT,
+-- [HEADER]     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
 -- Enable RLS
@@ -3879,15 +3900,15 @@ ALTER TABLE public.property_media ENABLE ROW LEVEL SECURITY;
 
 -- Policies
 CREATE POLICY "Users can view their own property media"
-    ON public.property_media FOR SELECT
+-- [HEADER]     ON public.property_media FOR SELECT
     USING (auth.uid() = user_id);
 
 CREATE POLICY "Users can insert their own property media"
-    ON public.property_media FOR INSERT
+-- [HEADER]     ON public.property_media FOR INSERT
     WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Users can delete their own property media"
-    ON public.property_media FOR DELETE
+-- [HEADER]     ON public.property_media FOR DELETE
     USING (auth.uid() = user_id);
 
 -- Indexes
@@ -3897,11 +3918,11 @@ CREATE INDEX IF NOT EXISTS idx_property_media_user_id ON public.property_media(u
 -- Migration: 20260119_create_short_links.sql
 
 CREATE TABLE IF NOT EXISTS public.short_links (
-    slug TEXT PRIMARY KEY,
-    original_url TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-    expires_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now() + interval '90 days') NOT NULL,
-    user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL -- Optional: track who created it
+-- [HEADER]     slug TEXT PRIMARY KEY,
+-- [HEADER]     original_url TEXT NOT NULL,
+-- [HEADER]     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+-- [HEADER]     expires_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now() + interval '90 days') NOT NULL,
+-- [HEADER]     user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL -- Optional: track who created it
 );
 
 -- Enable RLS
@@ -3909,7 +3930,7 @@ ALTER TABLE public.short_links ENABLE ROW LEVEL SECURITY;
 
 -- Allow public read access (anyone with the link can use it)
 CREATE POLICY "Public can read short links"
-ON public.short_links FOR SELECT
+-- [HEADER] ON public.short_links FOR SELECT
 USING (true);
 
 -- Allow public insert access (since the calculator allows sharing without login, technically)
@@ -3923,13 +3944,13 @@ USING (true);
 -- If user is guest, we might need a stored procedure or standard anon policy.
 -- Adding "Public can insert" with limits would be safer, but for MVP:
 CREATE POLICY "Authenticated users can create short links"
-ON public.short_links FOR INSERT
+-- [HEADER] ON public.short_links FOR INSERT
 WITH CHECK (auth.role() = 'authenticated');
 
 -- Also allow anonymous creation if needed? The user removed server-side calc storage.
 -- Let's add anonymous policy for now to be safe with "demo" mode or guest usage.
 CREATE POLICY "Public can create short links"
-ON public.short_links FOR INSERT
+-- [HEADER] ON public.short_links FOR INSERT
 WITH CHECK (true);
 
 -- Auto-cleanup function (optional usually, but good for hygiene)
@@ -3938,25 +3959,25 @@ WITH CHECK (true);
 -- Migration: 20260119_create_user_storage_usage.sql
 
 CREATE TABLE IF NOT EXISTS user_storage_usage (
-    user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    total_bytes BIGINT DEFAULT 0,
-    file_count INTEGER DEFAULT 0,
-    last_calculated_at TIMESTAMPTZ DEFAULT NOW(),
+-- [HEADER]     user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [HEADER]     total_bytes BIGINT DEFAULT 0,
+-- [HEADER]     file_count INTEGER DEFAULT 0,
+-- [HEADER]     last_calculated_at TIMESTAMPTZ DEFAULT NOW(),
     
     -- Breakdown by category
-    media_bytes BIGINT DEFAULT 0,
-    utilities_bytes BIGINT DEFAULT 0,
-    maintenance_bytes BIGINT DEFAULT 0,
-    documents_bytes BIGINT DEFAULT 0,
+-- [HEADER]     media_bytes BIGINT DEFAULT 0,
+-- [HEADER]     utilities_bytes BIGINT DEFAULT 0,
+-- [HEADER]     maintenance_bytes BIGINT DEFAULT 0,
+-- [HEADER]     documents_bytes BIGINT DEFAULT 0,
     
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+-- [HEADER]     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- RLS
 ALTER TABLE user_storage_usage ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Users can view their own storage usage"
-    ON user_storage_usage FOR SELECT
+-- [HEADER]     ON user_storage_usage FOR SELECT
     USING (auth.uid() = user_id);
 
 -- Function to update storage usage
@@ -3971,12 +3992,12 @@ BEGIN
             file_count = user_storage_usage.file_count + 1,
             updated_at = NOW();
             
-    ELSIF TG_OP = 'DELETE' THEN
+-- [HEADER]     ELSIF TG_OP = 'DELETE' THEN
         UPDATE user_storage_usage
         SET 
-            total_bytes = GREATEST(0, total_bytes - OLD.file_size),
-            file_count = GREATEST(0, file_count - 1),
-            updated_at = NOW()
+-- [HEADER]             total_bytes = GREATEST(0, total_bytes - OLD.file_size),
+-- [HEADER]             file_count = GREATEST(0, file_count - 1),
+-- [HEADER]             updated_at = NOW()
         WHERE user_id = OLD.user_id;
     END IF;
     
@@ -3985,14 +4006,16 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger on property_documents
+;
+DROP TRIGGER IF EXISTS "update_storage_on_document_change" ON property_documents;
 CREATE TRIGGER update_storage_on_document_change
-AFTER INSERT OR DELETE ON property_documents
+-- [HEADER] AFTER INSERT OR DELETE ON property_documents
 FOR EACH ROW EXECUTE FUNCTION update_user_storage();
 
 -- Storage Quota Check Function
 CREATE OR REPLACE FUNCTION check_storage_quota(
-    p_user_id UUID,
-    p_file_size BIGINT
+-- [HEADER]     p_user_id UUID,
+-- [HEADER]     p_file_size BIGINT
 ) RETURNS BOOLEAN AS $$
 DECLARE
     v_current_usage BIGINT;
@@ -4007,9 +4030,9 @@ BEGIN
     
     -- Get plan limit
     SELECT sp.max_storage_mb
-    INTO v_max_storage_mb
-    FROM user_profiles up
-    JOIN subscription_plans sp ON up.plan_id = sp.id
+-- [HEADER]     INTO v_max_storage_mb
+-- [HEADER]     FROM user_profiles up
+-- [HEADER]     JOIN subscription_plans sp ON up.plan_id = sp.id
     WHERE up.id = p_user_id;
     
     -- -1 means unlimited
@@ -4017,10 +4040,10 @@ BEGIN
         RETURN TRUE;
     END IF;
     
-    v_max_storage_bytes := v_max_storage_mb * 1024 * 1024;
+-- [HEADER]     v_max_storage_bytes := v_max_storage_mb * 1024 * 1024;
     
     -- Check if adding this file would exceed quota
-    RETURN (v_current_usage + p_file_size) <= v_max_storage_bytes;
+-- [HEADER]     RETURN (v_current_usage + p_file_size) <= v_max_storage_bytes;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -4038,45 +4061,45 @@ DROP POLICY IF EXISTS "Users can delete folders for their properties" ON documen
 
 -- 1. SELECT
 CREATE POLICY "Users can view folders for their properties"
-    ON document_folders FOR SELECT
+-- [HEADER]     ON document_folders FOR SELECT
     USING (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM properties p
-            WHERE p.id = document_folders.property_id
-            AND p.user_id = auth.uid()
+-- [HEADER]             WHERE p.id = document_folders.property_id
+-- [HEADER]             AND p.user_id = auth.uid()
         )
     );
 
 -- 2. INSERT
 CREATE POLICY "Users can insert folders for their properties"
-    ON document_folders FOR INSERT
+-- [HEADER]     ON document_folders FOR INSERT
     WITH CHECK (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM properties p
-            WHERE p.id = document_folders.property_id
-            AND p.user_id = auth.uid()
+-- [HEADER]             WHERE p.id = document_folders.property_id
+-- [HEADER]             AND p.user_id = auth.uid()
         )
     );
 
 -- 3. UPDATE
 CREATE POLICY "Users can update folders for their properties"
-    ON document_folders FOR UPDATE
+-- [HEADER]     ON document_folders FOR UPDATE
     USING (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM properties p
-            WHERE p.id = document_folders.property_id
-            AND p.user_id = auth.uid()
+-- [HEADER]             WHERE p.id = document_folders.property_id
+-- [HEADER]             AND p.user_id = auth.uid()
         )
     );
 
 -- 4. DELETE
 CREATE POLICY "Users can delete folders for their properties"
-    ON document_folders FOR DELETE
+-- [HEADER]     ON document_folders FOR DELETE
     USING (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM properties p
-            WHERE p.id = document_folders.property_id
-            AND p.user_id = auth.uid()
+-- [HEADER]             WHERE p.id = document_folders.property_id
+-- [HEADER]             AND p.user_id = auth.uid()
         )
     );
 
@@ -4109,11 +4132,11 @@ BEGIN
     -- Determine which column to update based on category
     IF v_cat IN ('photo', 'video') THEN
         v_col := 'media_bytes';
-    ELSIF v_cat LIKE 'utility_%' THEN
+-- [HEADER]     ELSIF v_cat LIKE 'utility_%' THEN
         v_col := 'utilities_bytes';
-    ELSIF v_cat = 'maintenance' THEN
+-- [HEADER]     ELSIF v_cat = 'maintenance' THEN
         v_col := 'maintenance_bytes';
-    ELSE
+-- [HEADER]     ELSE
         v_col := 'documents_bytes';
     END IF;
 
@@ -4121,22 +4144,22 @@ BEGIN
         EXECUTE format('
             INSERT INTO user_storage_usage (user_id, total_bytes, file_count, %I)
             VALUES ($1, $2, 1, $2)
-            ON CONFLICT (user_id) DO UPDATE SET
-                total_bytes = user_storage_usage.total_bytes + $2,
-                file_count = user_storage_usage.file_count + 1,
-                %I = user_storage_usage.%I + $2,
-                updated_at = NOW()
+-- [HEADER]             ON CONFLICT (user_id) DO UPDATE SET
+-- [HEADER]                 total_bytes = user_storage_usage.total_bytes + $2,
+-- [HEADER]                 file_count = user_storage_usage.file_count + 1,
+-- [HEADER]                 %I = user_storage_usage.%I + $2,
+-- [HEADER]                 updated_at = NOW()
         ', v_col, v_col, v_col) USING v_user_id, v_size;
             
-    ELSIF TG_OP = 'DELETE' THEN
+-- [HEADER]     ELSIF TG_OP = 'DELETE' THEN
         EXECUTE format('
             UPDATE user_storage_usage
             SET 
-                total_bytes = GREATEST(0, total_bytes - $1),
-                file_count = GREATEST(0, file_count - 1),
-                %I = GREATEST(0, %I - $1),
-                updated_at = NOW()
-            WHERE user_id = $2
+-- [HEADER]                 total_bytes = GREATEST(0, total_bytes - $1),
+-- [HEADER]                 file_count = GREATEST(0, file_count - 1),
+-- [HEADER]                 %I = GREATEST(0, %I - $1),
+-- [HEADER]                 updated_at = NOW()
+-- [HEADER]             WHERE user_id = $2
         ', v_col, v_col) USING v_size, v_user_id;
     END IF;
     
@@ -4167,11 +4190,11 @@ BEGIN
     -- Determine which column to update based on category
     IF v_cat IN ('photo', 'video') THEN
         v_col := 'media_bytes';
-    ELSIF v_cat LIKE 'utility_%' THEN
+-- [HEADER]     ELSIF v_cat LIKE 'utility_%' THEN
         v_col := 'utilities_bytes';
-    ELSIF v_cat = 'maintenance' THEN
+-- [HEADER]     ELSIF v_cat = 'maintenance' THEN
         v_col := 'maintenance_bytes';
-    ELSE
+-- [HEADER]     ELSE
         v_col := 'documents_bytes';
     END IF;
 
@@ -4179,54 +4202,54 @@ BEGIN
         EXECUTE format('
             INSERT INTO user_storage_usage (user_id, total_bytes, file_count, %I)
             VALUES ($1, $2, 1, $2)
-            ON CONFLICT (user_id) DO UPDATE SET
-                total_bytes = user_storage_usage.total_bytes + $2,
-                file_count = user_storage_usage.file_count + 1,
-                %I = user_storage_usage.%I + $2,
-                updated_at = NOW()
+-- [HEADER]             ON CONFLICT (user_id) DO UPDATE SET
+-- [HEADER]                 total_bytes = user_storage_usage.total_bytes + $2,
+-- [HEADER]                 file_count = user_storage_usage.file_count + 1,
+-- [HEADER]                 %I = user_storage_usage.%I + $2,
+-- [HEADER]                 updated_at = NOW()
         ', v_col, v_col, v_col) USING v_user_id, v_size;
             
-    ELSIF TG_OP = 'DELETE' THEN
+-- [HEADER]     ELSIF TG_OP = 'DELETE' THEN
         EXECUTE format('
             UPDATE user_storage_usage
             SET 
-                total_bytes = GREATEST(0, total_bytes - $1),
-                file_count = GREATEST(0, file_count - 1),
-                %I = GREATEST(0, %I - $1),
-                updated_at = NOW()
-            WHERE user_id = $2
+-- [HEADER]                 total_bytes = GREATEST(0, total_bytes - $1),
+-- [HEADER]                 file_count = GREATEST(0, file_count - 1),
+-- [HEADER]                 %I = GREATEST(0, %I - $1),
+-- [HEADER]                 updated_at = NOW()
+-- [HEADER]             WHERE user_id = $2
         ', v_col, v_col) USING v_size, v_user_id;
     END IF;
     
-    RETURN NULL; -- result is ignored since this is an AFTER trigger
+-- [HEADER]     RETURN NULL; -- result is ignored since this is an AFTER trigger
 END;
 $$ LANGUAGE plpgsql;
 -- Add extension_option_start column to contracts table
 -- This column stores when the tenant's extension option period begins
 
 ALTER TABLE public.contracts
-ADD COLUMN IF NOT EXISTS extension_option_start DATE;
+-- [HEADER] ADD COLUMN IF NOT EXISTS extension_option_start DATE;
 
 -- AI Chat Usage Tracking
 CREATE TABLE IF NOT EXISTS ai_chat_usage (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    message_count INTEGER DEFAULT 0,
-    tokens_used INTEGER DEFAULT 0,
-    last_reset_at TIMESTAMPTZ DEFAULT NOW(),
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE(user_id)
+-- [HEADER]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [HEADER]     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [HEADER]     message_count INTEGER DEFAULT 0,
+-- [HEADER]     tokens_used INTEGER DEFAULT 0,
+-- [HEADER]     last_reset_at TIMESTAMPTZ DEFAULT NOW(),
+-- [HEADER]     created_at TIMESTAMPTZ DEFAULT NOW(),
+-- [HEADER]     updated_at TIMESTAMPTZ DEFAULT NOW(),
+-- [HEADER]     UNIQUE(user_id)
 );
 
 -- AI Usage Limits per Subscription Tier
 CREATE TABLE IF NOT EXISTS ai_usage_limits (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    tier_name TEXT NOT NULL UNIQUE,
-    monthly_message_limit INTEGER NOT NULL,
-    monthly_token_limit INTEGER NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+-- [HEADER]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [HEADER]     tier_name TEXT NOT NULL UNIQUE,
+-- [HEADER]     monthly_message_limit INTEGER NOT NULL,
+-- [HEADER]     monthly_token_limit INTEGER NOT NULL,
+-- [HEADER]     created_at TIMESTAMPTZ DEFAULT NOW(),
+-- [HEADER]     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Insert default limits
@@ -4235,12 +4258,12 @@ INSERT INTO ai_usage_limits (tier_name, monthly_message_limit, monthly_token_lim
     ('basic', 200, 200000),         -- 200 messages, ~200k tokens
     ('pro', 1000, 1000000),         -- 1000 messages, ~1M tokens
     ('business', -1, -1)            -- Unlimited (-1)
-ON CONFLICT (tier_name) DO NOTHING;
+-- [HEADER] ON CONFLICT (tier_name) DO NOTHING;
 
 -- Function to check and log AI usage
 CREATE OR REPLACE FUNCTION check_ai_chat_usage(
-    p_user_id UUID,
-    p_tokens_used INTEGER DEFAULT 500
+-- [HEADER]     p_user_id UUID,
+-- [HEADER]     p_tokens_used INTEGER DEFAULT 500
 )
 RETURNS JSON AS $$
 DECLARE
@@ -4259,25 +4282,25 @@ BEGIN
     
     -- Get limits for this tier
     SELECT * INTO v_limit
-    FROM ai_usage_limits
+-- [HEADER]     FROM ai_usage_limits
     WHERE tier_name = v_user_tier;
     
     -- Get or create usage record
     INSERT INTO ai_chat_usage (user_id, message_count, tokens_used)
     VALUES (p_user_id, 0, 0)
-    ON CONFLICT (user_id) DO NOTHING;
+-- [HEADER]     ON CONFLICT (user_id) DO NOTHING;
     
     SELECT * INTO v_usage
-    FROM ai_chat_usage
+-- [HEADER]     FROM ai_chat_usage
     WHERE user_id = p_user_id;
     
     -- Check if we need to reset (monthly)
     IF v_usage.last_reset_at < DATE_TRUNC('month', NOW()) THEN
         UPDATE ai_chat_usage
         SET message_count = 0,
-            tokens_used = 0,
-            last_reset_at = NOW(),
-            updated_at = NOW()
+-- [HEADER]             tokens_used = 0,
+-- [HEADER]             last_reset_at = NOW(),
+-- [HEADER]             updated_at = NOW()
         WHERE user_id = p_user_id;
         
         v_usage.message_count := 0;
@@ -4286,7 +4309,7 @@ BEGIN
     
     -- Check limits (skip if unlimited)
     IF v_limit.monthly_message_limit != -1 AND v_usage.message_count >= v_limit.monthly_message_limit THEN
-        v_result := json_build_object(
+-- [HEADER]         v_result := json_build_object(
             'allowed', false,
             'reason', 'message_limit_exceeded',
             'current_usage', v_usage.message_count,
@@ -4297,7 +4320,7 @@ BEGIN
     END IF;
     
     IF v_limit.monthly_token_limit != -1 AND v_usage.tokens_used >= v_limit.monthly_token_limit THEN
-        v_result := json_build_object(
+-- [HEADER]         v_result := json_build_object(
             'allowed', false,
             'reason', 'token_limit_exceeded',
             'current_usage', v_usage.tokens_used,
@@ -4310,12 +4333,12 @@ BEGIN
     -- Increment usage
     UPDATE ai_chat_usage
     SET message_count = message_count + 1,
-        tokens_used = tokens_used + p_tokens_used,
-        updated_at = NOW()
+-- [HEADER]         tokens_used = tokens_used + p_tokens_used,
+-- [HEADER]         updated_at = NOW()
     WHERE user_id = p_user_id;
     
     -- Return success
-    v_result := json_build_object(
+-- [HEADER]     v_result := json_build_object(
         'allowed', true,
         'current_messages', v_usage.message_count + 1,
         'message_limit', v_limit.monthly_message_limit,
@@ -4334,32 +4357,32 @@ ALTER TABLE ai_usage_limits ENABLE ROW LEVEL SECURITY;
 
 -- Users can view their own usage
 CREATE POLICY "Users can view own AI usage"
-    ON ai_chat_usage FOR SELECT
+-- [HEADER]     ON ai_chat_usage FOR SELECT
     USING (auth.uid() = user_id);
 
 -- Admins can view all usage
 CREATE POLICY "Admins can view all AI usage"
-    ON ai_chat_usage FOR ALL
+-- [HEADER]     ON ai_chat_usage FOR ALL
     USING (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [HEADER]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
 -- Everyone can view limits (for UI display)
 CREATE POLICY "Anyone can view AI limits"
-    ON ai_usage_limits FOR SELECT
-    TO authenticated
+-- [HEADER]     ON ai_usage_limits FOR SELECT
+-- [HEADER]     TO authenticated
     USING (true);
 
 -- Only admins can modify limits
 CREATE POLICY "Admins can modify AI limits"
-    ON ai_usage_limits FOR ALL
+-- [HEADER]     ON ai_usage_limits FOR ALL
     USING (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [HEADER]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
@@ -4368,7 +4391,7 @@ CREATE INDEX IF NOT EXISTS idx_ai_chat_usage_user_id ON ai_chat_usage(user_id);
 CREATE INDEX IF NOT EXISTS idx_ai_chat_usage_last_reset ON ai_chat_usage(last_reset_at);
 -- 1. Add notification_preferences column to user_profiles
 ALTER TABLE public.user_profiles
-ADD COLUMN IF NOT EXISTS notification_preferences JSONB DEFAULT '{"contract_expiry_days": 60, "rent_due_days": 3}';
+-- [HEADER] ADD COLUMN IF NOT EXISTS notification_preferences JSONB DEFAULT '{"contract_expiry_days": 60, "rent_due_days": 3}';
 
 -- 2. Update Contract Expiration Check to use preferences
 CREATE OR REPLACE FUNCTION public.check_contract_expirations()
@@ -4402,32 +4425,32 @@ BEGIN
 
         -- Check if contract expires in this window
         IF expiring_contract.end_date <= (CURRENT_DATE + (pref_days || ' days')::interval)
-           AND expiring_contract.end_date >= CURRENT_DATE THEN
+-- [HEADER]            AND expiring_contract.end_date >= CURRENT_DATE THEN
            
             IF NOT EXISTS (
                 SELECT 1 
-                FROM public.notifications n 
-                WHERE n.user_id = expiring_contract.user_id
-                AND n.type = 'warning'
-                AND n.metadata->>'contract_id' = expiring_contract.id::text
+-- [HEADER]                 FROM public.notifications n 
+-- [HEADER]                 WHERE n.user_id = expiring_contract.user_id
+-- [HEADER]                 AND n.type = 'warning'
+-- [HEADER]                 AND n.metadata->>'contract_id' = expiring_contract.id::text
                 -- We allow re-notifying if the title implies a different "tier" of warning, but for now we keep it simple
                 -- Just alert once per contract expiry cycle is usually enough, or enable duplicates if significant time passed
-                 AND n.created_at > (CURRENT_DATE - INTERVAL '6 months') -- Simple debounce for same contract
+-- [HEADER]                  AND n.created_at > (CURRENT_DATE - INTERVAL '6 months') -- Simple debounce for same contract
             ) THEN
                 INSERT INTO public.notifications (
-                    user_id,
-                    type,
-                    title,
-                    message,
-                    metadata
+-- [HEADER]                     user_id,
+-- [HEADER]                     type,
+-- [HEADER]                     title,
+-- [HEADER]                     message,
+-- [HEADER]                     metadata
                 ) VALUES (
-                    expiring_contract.user_id,
+-- [HEADER]                     expiring_contract.user_id,
                     'warning',
                     'Contract Expiring Soon',
                     'Contract for ' || expiring_contract.address || ' ends in ' || (expiring_contract.end_date - CURRENT_DATE)::text || ' days (' || to_char(expiring_contract.end_date, 'DD/MM/YYYY') || '). Review and renew today.',
                     jsonb_build_object('contract_id', expiring_contract.id)
                 );
-                count_new := count_new + 1;
+-- [HEADER]                 count_new := count_new + 1;
             END IF;
         END IF;
     END LOOP;
@@ -4465,29 +4488,29 @@ BEGIN
         IF pref_days > 180 THEN pref_days := 180; END IF;
 
         IF due_payment.due_date <= (CURRENT_DATE + (pref_days || ' days')::interval)
-           AND due_payment.due_date >= CURRENT_DATE THEN
+-- [HEADER]            AND due_payment.due_date >= CURRENT_DATE THEN
 
             IF NOT EXISTS (
                 SELECT 1 
-                FROM public.notifications n 
-                WHERE n.user_id = due_payment.user_id
-                AND n.type = 'info'
-                AND n.metadata->>'payment_id' = due_payment.id::text
+-- [HEADER]                 FROM public.notifications n 
+-- [HEADER]                 WHERE n.user_id = due_payment.user_id
+-- [HEADER]                 AND n.type = 'info'
+-- [HEADER]                 AND n.metadata->>'payment_id' = due_payment.id::text
             ) THEN
                 INSERT INTO public.notifications (
-                    user_id,
-                    type,
-                    title,
-                    message,
-                    metadata
+-- [HEADER]                     user_id,
+-- [HEADER]                     type,
+-- [HEADER]                     title,
+-- [HEADER]                     message,
+-- [HEADER]                     metadata
                 ) VALUES (
-                    due_payment.user_id,
+-- [HEADER]                     due_payment.user_id,
                     'info',
                     'Rent Due Soon',
                     'Rent of ' || due_payment.amount || ' ' || due_payment.currency || ' for ' || due_payment.address || ' is due on ' || to_char(due_payment.due_date, 'DD/MM/YYYY') || '.',
                     jsonb_build_object('payment_id', due_payment.id)
                 );
-                count_new := count_new + 1;
+-- [HEADER]                 count_new := count_new + 1;
             END IF;
         END IF;
     END LOOP;
@@ -4528,9 +4551,9 @@ CREATE INDEX IF NOT EXISTS idx_short_links_created_at ON public.short_links(crea
 -- ==============================================================================
 
 /**
- * Efficiently get counts of documents per category for a user.
- * Replaces client-side aggregation in Dashboard.
- */
+-- [HEADER]  * Efficiently get counts of documents per category for a user.
+-- [HEADER]  * Replaces client-side aggregation in Dashboard.
+-- [HEADER]  */
 CREATE OR REPLACE FUNCTION public.get_property_document_counts(p_user_id UUID)
 RETURNS JSONB
 LANGUAGE plpgsql
@@ -4553,9 +4576,9 @@ END;
 $$;
 
 /**
- * Get high-level dashboard stats in a single call.
- * Including income, pending payments, and document counts.
- */
+-- [HEADER]  * Get high-level dashboard stats in a single call.
+-- [HEADER]  * Including income, pending payments, and document counts.
+-- [HEADER]  */
 CREATE OR REPLACE FUNCTION public.get_dashboard_summary(p_user_id UUID)
 RETURNS JSONB
 LANGUAGE plpgsql
@@ -4579,7 +4602,7 @@ BEGIN
     -- 2. Get Document Counts (reuse RPC logic)
     doc_counts := public.get_property_document_counts(p_user_id);
 
-    RETURN jsonb_build_object(
+-- [HEADER]     RETURN jsonb_build_object(
         'income', jsonb_build_object(
             'collected', income_stats.collected,
             'pending', income_stats.pending,
@@ -4660,41 +4683,41 @@ BEGIN
 
     FOR due_payment IN
         SELECT 
-            pay.id,
-            pay.due_date,
-            pay.amount,
-            pay.currency,
-            p.user_id,
-            p.address
-        FROM public.payments pay
-        JOIN public.contracts c ON pay.contract_id = c.id
-        JOIN public.properties p ON c.property_id = p.id
-        WHERE pay.status = 'pending'
-        AND pay.due_date <= (CURRENT_DATE + INTERVAL '3 days')
-        AND pay.due_date >= CURRENT_DATE
+-- [HEADER]             pay.id,
+-- [HEADER]             pay.due_date,
+-- [HEADER]             pay.amount,
+-- [HEADER]             pay.currency,
+-- [HEADER]             p.user_id,
+-- [HEADER]             p.address
+-- [HEADER]         FROM public.payments pay
+-- [HEADER]         JOIN public.contracts c ON pay.contract_id = c.id
+-- [HEADER]         JOIN public.properties p ON c.property_id = p.id
+-- [HEADER]         WHERE pay.status = 'pending'
+-- [HEADER]         AND pay.due_date <= (CURRENT_DATE + INTERVAL '3 days')
+-- [HEADER]         AND pay.due_date >= CURRENT_DATE
     LOOP
         -- Avoid dupes for this specific payment ID
         IF NOT EXISTS (
             SELECT 1 
-            FROM public.notifications n 
-            WHERE n.user_id = due_payment.user_id
-            AND n.type = 'info'
-            AND n.metadata->>'payment_id' = due_payment.id::text
+-- [HEADER]             FROM public.notifications n 
+-- [HEADER]             WHERE n.user_id = due_payment.user_id
+-- [HEADER]             AND n.type = 'info'
+-- [HEADER]             AND n.metadata->>'payment_id' = due_payment.id::text
         ) THEN
             INSERT INTO public.notifications (
-                user_id,
-                type,
-                title,
-                message,
-                metadata
+-- [HEADER]                 user_id,
+-- [HEADER]                 type,
+-- [HEADER]                 title,
+-- [HEADER]                 message,
+-- [HEADER]                 metadata
             ) VALUES (
-                due_payment.user_id,
+-- [HEADER]                 due_payment.user_id,
                 'info',
                 'Rent Due Soon',
                 'Rent of ' || due_payment.amount || ' ' || due_payment.currency || ' for ' || due_payment.address || ' is due on ' || to_char(due_payment.due_date, 'DD/MM/YYYY') || '.',
                 jsonb_build_object('payment_id', due_payment.id)
             );
-            count_new := count_new + 1;
+-- [HEADER]             count_new := count_new + 1;
         END IF;
     END LOOP;
 END;
@@ -4715,18 +4738,18 @@ $$;
 
 -- 1. Add extension_option_end column to contracts table
 ALTER TABLE public.contracts
-ADD COLUMN IF NOT EXISTS extension_option_end DATE;
+-- [HEADER] ADD COLUMN IF NOT EXISTS extension_option_end DATE;
 
 
 -- 2. Add extension_option_end_days to notification preferences
 UPDATE public.user_profiles
 SET notification_preferences = jsonb_set(
-    COALESCE(notification_preferences, '{}'::jsonb),
+-- [HEADER]     COALESCE(notification_preferences, '{}'::jsonb),
     '{extension_option_end_days}',
     '7'
 )
-WHERE notification_preferences IS NULL 
-   OR NOT notification_preferences ? 'extension_option_end_days';
+-- [HEADER] WHERE notification_preferences IS NULL 
+-- [HEADER]    OR NOT notification_preferences ? 'extension_option_end_days';
 
 -- 3. Create function to check for upcoming extension option deadlines
 CREATE OR REPLACE FUNCTION public.check_extension_deadlines()
@@ -4766,31 +4789,31 @@ BEGIN
 
         -- Check if deadline is approaching
         IF deadline_record.extension_option_end <= (CURRENT_DATE + (pref_days || ' days')::interval)
-           AND deadline_record.extension_option_end >= CURRENT_DATE THEN
+-- [HEADER]            AND deadline_record.extension_option_end >= CURRENT_DATE THEN
            
             IF NOT EXISTS (
                 SELECT 1 
-                FROM public.notifications n 
-                WHERE n.user_id = deadline_record.user_id
-                AND n.type = 'warning'
-                AND n.metadata->>'contract_id' = deadline_record.id::text
-                AND n.title = 'Extension Option Deadline Approaching'
-                AND n.created_at > (CURRENT_DATE - INTERVAL '6 months')
+-- [HEADER]                 FROM public.notifications n 
+-- [HEADER]                 WHERE n.user_id = deadline_record.user_id
+-- [HEADER]                 AND n.type = 'warning'
+-- [HEADER]                 AND n.metadata->>'contract_id' = deadline_record.id::text
+-- [HEADER]                 AND n.title = 'Extension Option Deadline Approaching'
+-- [HEADER]                 AND n.created_at > (CURRENT_DATE - INTERVAL '6 months')
             ) THEN
                 INSERT INTO public.notifications (
-                    user_id,
-                    type,
-                    title,
-                    message,
-                    metadata
+-- [HEADER]                     user_id,
+-- [HEADER]                     type,
+-- [HEADER]                     title,
+-- [HEADER]                     message,
+-- [HEADER]                     metadata
                 ) VALUES (
-                    deadline_record.user_id,
+-- [HEADER]                     deadline_record.user_id,
                     'warning',
                     'Extension Option Deadline Approaching',
                     'Deadline to announce extension option for ' || deadline_record.address || ' is in ' || (deadline_record.extension_option_end - CURRENT_DATE)::text || ' days (' || to_char(deadline_record.extension_option_end, 'DD/MM/YYYY') || '). Contact tenant soon.',
                     jsonb_build_object('contract_id', deadline_record.id)
                 );
-                count_new := count_new + 1;
+-- [HEADER]                 count_new := count_new + 1;
             END IF;
         END IF;
     END LOOP;
@@ -4816,12 +4839,12 @@ $$;
 -- 1. Update existing records to include extension_option_days
 UPDATE public.user_profiles
 SET notification_preferences = jsonb_set(
-    COALESCE(notification_preferences, '{}'::jsonb),
+-- [HEADER]     COALESCE(notification_preferences, '{}'::jsonb),
     '{extension_option_days}',
     '30'
 )
-WHERE notification_preferences IS NULL 
-   OR NOT notification_preferences ? 'extension_option_days';
+-- [HEADER] WHERE notification_preferences IS NULL 
+-- [HEADER]    OR NOT notification_preferences ? 'extension_option_days';
 
 -- 2. Create function to check for upcoming extension option periods
 CREATE OR REPLACE FUNCTION public.check_extension_options()
@@ -4855,31 +4878,31 @@ BEGIN
 
         -- Check if extension option starts in this window
         IF extension_record.extension_option_start <= (CURRENT_DATE + (pref_days || ' days')::interval)
-           AND extension_record.extension_option_start >= CURRENT_DATE THEN
+-- [HEADER]            AND extension_record.extension_option_start >= CURRENT_DATE THEN
            
             IF NOT EXISTS (
                 SELECT 1 
-                FROM public.notifications n 
-                WHERE n.user_id = extension_record.user_id
-                AND n.type = 'info'
-                AND n.metadata->>'contract_id' = extension_record.id::text
-                AND n.title = 'Extension Option Available'
-                AND n.created_at > (CURRENT_DATE - INTERVAL '6 months')
+-- [HEADER]                 FROM public.notifications n 
+-- [HEADER]                 WHERE n.user_id = extension_record.user_id
+-- [HEADER]                 AND n.type = 'info'
+-- [HEADER]                 AND n.metadata->>'contract_id' = extension_record.id::text
+-- [HEADER]                 AND n.title = 'Extension Option Available'
+-- [HEADER]                 AND n.created_at > (CURRENT_DATE - INTERVAL '6 months')
             ) THEN
                 INSERT INTO public.notifications (
-                    user_id,
-                    type,
-                    title,
-                    message,
-                    metadata
+-- [HEADER]                     user_id,
+-- [HEADER]                     type,
+-- [HEADER]                     title,
+-- [HEADER]                     message,
+-- [HEADER]                     metadata
                 ) VALUES (
-                    extension_record.user_id,
+-- [HEADER]                     extension_record.user_id,
                     'info',
                     'Extension Option Available',
                     'Extension option period for ' || extension_record.address || ' starts in ' || (extension_record.extension_option_start - CURRENT_DATE)::text || ' days (' || to_char(extension_record.extension_option_start, 'DD/MM/YYYY') || '). Consider discussing with tenant.',
                     jsonb_build_object('contract_id', extension_record.id)
                 );
-                count_new := count_new + 1;
+-- [HEADER]                 count_new := count_new + 1;
             END IF;
         END IF;
     END LOOP;
@@ -4953,30 +4976,30 @@ BEGIN
 
         -- Check if contract expires in this window
         IF expiring_contract.end_date <= (CURRENT_DATE + (pref_days || ' days')::interval)
-           AND expiring_contract.end_date >= CURRENT_DATE THEN
+-- [HEADER]            AND expiring_contract.end_date >= CURRENT_DATE THEN
            
             IF NOT EXISTS (
                 SELECT 1 
-                FROM public.notifications n 
-                WHERE n.user_id = expiring_contract.user_id
-                AND n.type = 'warning'
-                AND n.metadata->>'contract_id' = expiring_contract.id::text
-                AND n.created_at > (CURRENT_DATE - INTERVAL '6 months')
+-- [HEADER]                 FROM public.notifications n 
+-- [HEADER]                 WHERE n.user_id = expiring_contract.user_id
+-- [HEADER]                 AND n.type = 'warning'
+-- [HEADER]                 AND n.metadata->>'contract_id' = expiring_contract.id::text
+-- [HEADER]                 AND n.created_at > (CURRENT_DATE - INTERVAL '6 months')
             ) THEN
                 INSERT INTO public.notifications (
-                    user_id,
-                    type,
-                    title,
-                    message,
-                    metadata
+-- [HEADER]                     user_id,
+-- [HEADER]                     type,
+-- [HEADER]                     title,
+-- [HEADER]                     message,
+-- [HEADER]                     metadata
                 ) VALUES (
-                    expiring_contract.user_id,
+-- [HEADER]                     expiring_contract.user_id,
                     'warning',
                     'Contract Expiring Soon',
                     'Contract for ' || expiring_contract.address || ' ends in ' || (expiring_contract.end_date - CURRENT_DATE)::text || ' days (' || to_char(expiring_contract.end_date, 'DD/MM/YYYY') || '). Review and renew today.',
                     jsonb_build_object('contract_id', expiring_contract.id)
                 );
-                count_new := count_new + 1;
+-- [HEADER]                 count_new := count_new + 1;
             END IF;
         END IF;
     END LOOP;
@@ -5020,29 +5043,29 @@ BEGIN
         IF pref_days > 180 THEN pref_days := 180; END IF;
 
         IF due_payment.due_date <= (CURRENT_DATE + (pref_days || ' days')::interval)
-           AND due_payment.due_date >= CURRENT_DATE THEN
+-- [HEADER]            AND due_payment.due_date >= CURRENT_DATE THEN
 
             IF NOT EXISTS (
                 SELECT 1 
-                FROM public.notifications n 
-                WHERE n.user_id = due_payment.user_id
-                AND n.type = 'info'
-                AND n.metadata->>'payment_id' = due_payment.id::text
+-- [HEADER]                 FROM public.notifications n 
+-- [HEADER]                 WHERE n.user_id = due_payment.user_id
+-- [HEADER]                 AND n.type = 'info'
+-- [HEADER]                 AND n.metadata->>'payment_id' = due_payment.id::text
             ) THEN
                 INSERT INTO public.notifications (
-                    user_id,
-                    type,
-                    title,
-                    message,
-                    metadata
+-- [HEADER]                     user_id,
+-- [HEADER]                     type,
+-- [HEADER]                     title,
+-- [HEADER]                     message,
+-- [HEADER]                     metadata
                 ) VALUES (
-                    due_payment.user_id,
+-- [HEADER]                     due_payment.user_id,
                     'info',
                     'Rent Due Soon',
                     'Rent of ' || due_payment.amount || ' ' || due_payment.currency || ' for ' || due_payment.address || ' is due on ' || to_char(due_payment.due_date, 'DD/MM/YYYY') || '.',
                     jsonb_build_object('payment_id', due_payment.id)
                 );
-                count_new := count_new + 1;
+-- [HEADER]                 count_new := count_new + 1;
             END IF;
         END IF;
     END LOOP;
@@ -5087,31 +5110,31 @@ BEGIN
 
         -- Check if extension option starts in this window
         IF extension_record.extension_option_start <= (CURRENT_DATE + (pref_days || ' days')::interval)
-           AND extension_record.extension_option_start >= CURRENT_DATE THEN
+-- [HEADER]            AND extension_record.extension_option_start >= CURRENT_DATE THEN
            
             IF NOT EXISTS (
                 SELECT 1 
-                FROM public.notifications n 
-                WHERE n.user_id = extension_record.user_id
-                AND n.type = 'info'
-                AND n.metadata->>'contract_id' = extension_record.id::text
-                AND n.title = 'Extension Option Available'
-                AND n.created_at > (CURRENT_DATE - INTERVAL '6 months')
+-- [HEADER]                 FROM public.notifications n 
+-- [HEADER]                 WHERE n.user_id = extension_record.user_id
+-- [HEADER]                 AND n.type = 'info'
+-- [HEADER]                 AND n.metadata->>'contract_id' = extension_record.id::text
+-- [HEADER]                 AND n.title = 'Extension Option Available'
+-- [HEADER]                 AND n.created_at > (CURRENT_DATE - INTERVAL '6 months')
             ) THEN
                 INSERT INTO public.notifications (
-                    user_id,
-                    type,
-                    title,
-                    message,
-                    metadata
+-- [HEADER]                     user_id,
+-- [HEADER]                     type,
+-- [HEADER]                     title,
+-- [HEADER]                     message,
+-- [HEADER]                     metadata
                 ) VALUES (
-                    extension_record.user_id,
+-- [HEADER]                     extension_record.user_id,
                     'info',
                     'Extension Option Available',
                     'Extension option period for ' || extension_record.address || ' starts in ' || (extension_record.extension_option_start - CURRENT_DATE)::text || ' days (' || to_char(extension_record.extension_option_start, 'DD/MM/YYYY') || '). Consider discussing with tenant.',
                     jsonb_build_object('contract_id', extension_record.id)
                 );
-                count_new := count_new + 1;
+-- [HEADER]                 count_new := count_new + 1;
             END IF;
         END IF;
     END LOOP;
@@ -5166,7 +5189,7 @@ BEGIN
                 jsonb_build_object('contract_id', expiring_contract.id)
             );
             
-            count_new := count_new + 1;
+-- [HEADER]             count_new := count_new + 1;
         END IF;
     END LOOP;
 
@@ -5180,7 +5203,7 @@ $$;
 
 -- 1. Add max_ai_scans to subscription_plans
 ALTER TABLE subscription_plans 
-ADD COLUMN IF NOT EXISTS max_ai_scans INTEGER DEFAULT 5;
+-- [HEADER] ADD COLUMN IF NOT EXISTS max_ai_scans INTEGER DEFAULT 5;
 
 -- 2. Update Seed Data for existing plans
 UPDATE subscription_plans SET max_ai_scans = 5 WHERE id = 'free';
@@ -5189,10 +5212,10 @@ UPDATE subscription_plans SET max_ai_scans = -1 WHERE id = 'enterprise';
 
 -- 3. Create AI Usage Logs Table
 CREATE TABLE IF NOT EXISTS ai_usage_logs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    feature_name TEXT NOT NULL, -- 'bill_scan', 'contract_analysis', etc.
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- [HEADER]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [HEADER]     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [HEADER]     feature_name TEXT NOT NULL, -- 'bill_scan', 'contract_analysis', etc.
+-- [HEADER]     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Enable RLS
@@ -5203,7 +5226,7 @@ CREATE INDEX IF NOT EXISTS idx_ai_usage_user_date ON ai_usage_logs (user_id, cre
 
 -- Policies
 CREATE POLICY "Users can view their own usage logs"
-    ON ai_usage_logs FOR SELECT
+-- [HEADER]     ON ai_usage_logs FOR SELECT
     USING (auth.uid() = user_id);
 
 -- 4. RPC to check and log usage
@@ -5233,8 +5256,8 @@ BEGIN
 
     -- 1. Get User's Limit from their plan
     SELECT p.max_ai_scans INTO v_limit
-    FROM user_profiles up
-    JOIN subscription_plans p ON up.plan_id = p.id
+-- [HEADER]     FROM user_profiles up
+-- [HEADER]     JOIN subscription_plans p ON up.plan_id = p.id
     WHERE up.id = p_user_id;
 
     -- Fallback to default free limit if not found
@@ -5244,8 +5267,8 @@ BEGIN
 
     -- 2. Count total AI usage this month
     SELECT COUNT(*)::INTEGER INTO v_current_usage
-    FROM ai_usage_logs
-    WHERE user_id = p_user_id
+-- [HEADER]     FROM ai_usage_logs
+-- [HEADER]     WHERE user_id = p_user_id
       AND created_at >= v_month_start;
 
     -- 3. Check if allowed
@@ -5256,13 +5279,13 @@ BEGIN
             VALUES (p_user_id, p_feature);
         END LOOP;
         
-        RETURN jsonb_build_object(
+-- [HEADER]         RETURN jsonb_build_object(
             'allowed', true,
             'current_usage', v_current_usage + p_count,
             'limit', v_limit
         );
-    ELSE
-        RETURN jsonb_build_object(
+-- [HEADER]     ELSE
+-- [HEADER]         RETURN jsonb_build_object(
             'allowed', false,
             'current_usage', v_current_usage,
             'limit', v_limit
@@ -5272,7 +5295,7 @@ END;
 $$;
 -- Add is_super_admin column
 ALTER TABLE public.user_profiles 
-ADD COLUMN IF NOT EXISTS is_super_admin BOOLEAN DEFAULT false;
+-- [HEADER] ADD COLUMN IF NOT EXISTS is_super_admin BOOLEAN DEFAULT false;
 
 -- Create RPC for financial metrics (Super Admin Only)
 CREATE OR REPLACE FUNCTION get_financial_metrics()
@@ -5304,25 +5327,25 @@ BEGIN
     -- Note: This depends on how you categorize 'active' payment plans. 
     -- We assume existence of plan_id implies a subscription if it's not the default free one.
     SELECT COUNT(*) INTO active_subs 
-    FROM user_profiles 
-    WHERE plan_id IS NOT NULL 
-    AND plan_id NOT IN ('free', 'free_forever')
+-- [HEADER]     FROM user_profiles 
+-- [HEADER]     WHERE plan_id IS NOT NULL 
+-- [HEADER]     AND plan_id NOT IN ('free', 'free_forever')
     AND subscription_status = 'active';
     
     -- 3. MRR Calculation
     -- Sum of price_monthly for all active users based on their plan_id
     SELECT COALESCE(SUM(sp.price_monthly), 0)
-    INTO total_mrr
-    FROM user_profiles up
-    JOIN subscription_plans sp ON up.plan_id = sp.id
+-- [HEADER]     INTO total_mrr
+-- [HEADER]     FROM user_profiles up
+-- [HEADER]     JOIN subscription_plans sp ON up.plan_id = sp.id
     WHERE up.subscription_status = 'active';
     
     -- 4. Growth (New users in last 30 days)
     SELECT COUNT(*) INTO new_users_30d
-    FROM user_profiles
-    WHERE created_at > (NOW() - INTERVAL '30 days');
+-- [HEADER]     FROM user_profiles
+-- [HEADER]     WHERE created_at > (NOW() - INTERVAL '30 days');
 
-    RETURN json_build_object(
+-- [HEADER]     RETURN json_build_object(
         'mrr', total_mrr,
         'total_users', total_users,
         'active_subscribers', active_subs,
@@ -5365,7 +5388,7 @@ BEGIN
 
     -- Get total users count
     SELECT COUNT(*) INTO total_users_count
-    FROM user_profiles
+-- [HEADER]     FROM user_profiles
     WHERE deleted_at IS NULL;
 
     -- Get total contracts count
@@ -5374,17 +5397,17 @@ BEGIN
 
     -- Get total revenue (sum of paid payments)
     SELECT COALESCE(SUM(paid_amount), 0) INTO total_revenue_amount
-    FROM payments
+-- [HEADER]     FROM payments
     WHERE status = 'paid';
 
     -- Get active users (users who logged in within last 30 days)
     SELECT COUNT(*) INTO active_users_count
-    FROM user_profiles
-    WHERE deleted_at IS NULL
-    AND updated_at > NOW() - INTERVAL '30 days';
+-- [HEADER]     FROM user_profiles
+-- [HEADER]     WHERE deleted_at IS NULL
+-- [HEADER]     AND updated_at > NOW() - INTERVAL '30 days';
 
     -- Build JSON result
-    result := json_build_object(
+-- [HEADER]     result := json_build_object(
         'totalUsers', total_users_count,
         'totalContracts', total_contracts_count,
         'totalRevenue', total_revenue_amount,
@@ -5413,14 +5436,14 @@ GRANT EXECUTE ON FUNCTION public.delete_user_account(UUID) TO service_role;
 -- user_storage_usage
 DROP POLICY IF EXISTS "Admins can view all storage usage" ON public.user_storage_usage;
 CREATE POLICY "Admins can view all storage usage"
-    ON public.user_storage_usage FOR SELECT
+-- [HEADER]     ON public.user_storage_usage FOR SELECT
     USING (public.is_admin());
 
 -- audit_logs
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Admins can view all audit logs" ON public.audit_logs;
 CREATE POLICY "Admins can view all audit logs"
-    ON public.audit_logs FOR SELECT
+-- [HEADER]     ON public.audit_logs FOR SELECT
     USING (public.is_admin());
 
 -- property_documents (Admin should be able to see metadata at least? usually handled by service role or specific rpc)
@@ -5438,7 +5461,7 @@ BEGIN
             
         DROP POLICY IF EXISTS "Admins update all" ON public.user_profiles;
         CREATE POLICY "Admins update all" 
-            ON public.user_profiles FOR UPDATE 
+-- [HEADER]             ON public.user_profiles FOR UPDATE 
             USING (public.is_admin());
     END IF;
 END $$;
@@ -5452,7 +5475,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-    project_url text := 'https://qfvrekvugdjnwhnaucmz.supabase.co'; -- UPDATED TO CORRECT PROJECT
+    project_url text := 'https://tipnjnfbbnbskdlodrww.supabase.co'; -- UPDATED TO CORRECT PROJECT
 BEGIN
     PERFORM
       net.http_post(
@@ -5466,7 +5489,7 @@ BEGIN
       );
       
     RETURN NEW;
-EXCEPTION WHEN OTHERS THEN
+-- [HEADER] EXCEPTION WHEN OTHERS THEN
     RAISE WARNING 'Failed to trigger admin notification: %', SQLERRM;
     RETURN NEW;
 END;
@@ -5480,7 +5503,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-    project_url text := 'https://qfvrekvugdjnwhnaucmz.supabase.co';
+    project_url text := 'https://tipnjnfbbnbskdlodrww.supabase.co';
     user_email text;
 BEGIN
     -- Only forward high-priority or action-oriented types
@@ -5490,10 +5513,10 @@ BEGIN
         
         IF user_email IS NOT NULL THEN
             PERFORM
-              net.http_post(
-                url := project_url || '/functions/v1/send-notification-email',
-                headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
-                body := json_build_object(
+-- [HEADER]               net.http_post(
+-- [HEADER]                 url := project_url || '/functions/v1/send-notification-email',
+-- [HEADER]                 headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
+-- [HEADER]                 body := json_build_object(
                     'email', user_email,
                     'notification', row_to_json(NEW)
                 )::jsonb
@@ -5502,7 +5525,7 @@ BEGIN
     END IF;
     
     RETURN NEW;
-EXCEPTION WHEN OTHERS THEN
+-- [HEADER] EXCEPTION WHEN OTHERS THEN
     RAISE WARNING 'Failed to forward notification to email: %', SQLERRM;
     RETURN NEW;
 END;
@@ -5510,15 +5533,16 @@ $$;
 
 -- Attach trigger to notifications table
 DROP TRIGGER IF EXISTS on_notification_created_forward_email ON public.notifications;
+DROP TRIGGER IF EXISTS "on_notification_created_forward_email" ON public.notifications;
 CREATE TRIGGER on_notification_created_forward_email
-    AFTER INSERT ON public.notifications
+-- [HEADER]     AFTER INSERT ON public.notifications
     FOR EACH ROW
     EXECUTE FUNCTION public.forward_notification_to_email();
 
 -- 3. Fix Storage RLS for Admins
 DROP POLICY IF EXISTS "Admins can view all storage usage" ON public.user_storage_usage;
 CREATE POLICY "Admins can view all storage usage"
-    ON public.user_storage_usage FOR SELECT
+-- [HEADER]     ON public.user_storage_usage FOR SELECT
     USING (public.is_admin());
 -- ============================================
 -- IMPROVED SIGNUP TRIGGER (Prevents Orphaned Users)
@@ -5575,15 +5599,17 @@ BEGIN
     END;
 
     RETURN NEW;
-EXCEPTION WHEN OTHERS THEN
+-- [HEADER] EXCEPTION WHEN OTHERS THEN
     -- Critical: If profile creation fails, we should fail the auth signup too
     RAISE EXCEPTION 'Failed to create user profile for %: %', NEW.email, SQLERRM;
 END;
 $$;
 
 -- Attach trigger
+;
+DROP TRIGGER IF EXISTS "on_auth_user_created" ON auth.users;
 CREATE TRIGGER on_auth_user_created
-    AFTER INSERT ON auth.users
+-- [HEADER]     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- Grant necessary permissions
@@ -5607,7 +5633,7 @@ VALUES
 ('maintenance_mode', 'false'::jsonb, 'When enabled, only Super Admins can access the application. Regular users see a maintenance screen.'),
 ('maintenance_message', '"RentMate is currently undergoing scheduled maintenance. We will be back shortly."'::jsonb, 'The message displayed to users during maintenance mode.'),
 ('disable_ai_processing', 'false'::jsonb, 'Emergency toggle to disable all AI-powered features (Contract Analysis, Chat, etc.) to save costs or during API outages.')
-ON CONFLICT (key) DO UPDATE 
+-- [HEADER] ON CONFLICT (key) DO UPDATE 
 SET description = EXCLUDED.description;
 
 -- Update get_financial_metrics to include storage distribution and system stats
@@ -5642,8 +5668,8 @@ BEGIN
     SELECT COUNT(*) INTO active_subs FROM user_profiles WHERE plan_id IS NOT NULL AND plan_id NOT IN ('free', 'free_forever') AND subscription_status = 'active';
     
     SELECT COALESCE(SUM(sp.price_monthly), 0) INTO total_mrr 
-    FROM user_profiles up 
-    JOIN subscription_plans sp ON up.plan_id = sp.id 
+-- [HEADER]     FROM user_profiles up 
+-- [HEADER]     JOIN subscription_plans sp ON up.plan_id = sp.id 
     WHERE up.subscription_status = 'active';
     
     SELECT COUNT(*) INTO new_users_30d FROM user_profiles WHERE created_at > (NOW() - INTERVAL '30 days');
@@ -5651,17 +5677,17 @@ BEGIN
     -- 2. Storage Aggregation (Aggregating from user_storage_usage if it exists, or files)
     -- Assuming a table user_storage_usage exists based on types/database.ts line 79
     SELECT 
-        COALESCE(SUM(total_bytes) / (1024 * 1024), 0),
-        COALESCE(SUM(media_bytes) / (1024 * 1024), 0),
-        COALESCE(SUM(documents_bytes + utilities_bytes + maintenance_bytes) / (1024 * 1024), 0)
-    INTO total_storage_mb, media_storage_mb, docs_storage_mb
+-- [HEADER]         COALESCE(SUM(total_bytes) / (1024 * 1024), 0),
+-- [HEADER]         COALESCE(SUM(media_bytes) / (1024 * 1024), 0),
+-- [HEADER]         COALESCE(SUM(documents_bytes + utilities_bytes + maintenance_bytes) / (1024 * 1024), 0)
+-- [HEADER]     INTO total_storage_mb, media_storage_mb, docs_storage_mb
     FROM public.user_storage_usage;
 
     -- 3. System Flags (Casting jsonb safely)
     SELECT (value::text::boolean) INTO is_maint_active FROM system_settings WHERE key = 'maintenance_mode';
     SELECT (value::text::boolean) INTO is_ai_disabled FROM system_settings WHERE key = 'disable_ai_processing';
 
-    RETURN json_build_object(
+-- [HEADER]     RETURN json_build_object(
         'mrr', total_mrr,
         'total_users', total_users,
         'active_subscribers', active_subs,
@@ -5680,14 +5706,14 @@ END;
 $$;
 -- Create system_broadcasts table
 CREATE TABLE IF NOT EXISTS public.system_broadcasts (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    message TEXT NOT NULL,
-    type TEXT NOT NULL CHECK (type IN ('info', 'warning', 'error', 'success')),
-    is_active BOOLEAN DEFAULT true,
-    expires_at TIMESTAMPTZ,
-    target_link TEXT,
-    created_at TIMESTAMPTZ DEFAULT now(),
-    updated_at TIMESTAMPTZ DEFAULT now()
+-- [HEADER]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [HEADER]     message TEXT NOT NULL,
+-- [HEADER]     type TEXT NOT NULL CHECK (type IN ('info', 'warning', 'error', 'success')),
+-- [HEADER]     is_active BOOLEAN DEFAULT true,
+-- [HEADER]     expires_at TIMESTAMPTZ,
+-- [HEADER]     target_link TEXT,
+-- [HEADER]     created_at TIMESTAMPTZ DEFAULT now(),
+-- [HEADER]     updated_at TIMESTAMPTZ DEFAULT now()
 );
 
 -- RLS Policies
@@ -5696,21 +5722,21 @@ ALTER TABLE public.system_broadcasts ENABLE ROW LEVEL SECURITY;
 -- 1. Viewable by ALL users (even unauthenticated potentially, though usually app users)
 DROP POLICY IF EXISTS "Broadcasts are viewable by everyone" ON public.system_broadcasts;
 CREATE POLICY "Broadcasts are viewable by everyone"
-    ON public.system_broadcasts FOR SELECT
+-- [HEADER]     ON public.system_broadcasts FOR SELECT
     USING (is_active = true AND (expires_at IS NULL OR expires_at > now()));
 
 -- 2. CRUD only for Super Admins
 DROP POLICY IF EXISTS "Super Admins have full access to broadcasts" ON public.system_broadcasts;
 CREATE POLICY "Super Admins have full access to broadcasts"
-    ON public.system_broadcasts FOR ALL
-    TO authenticated
+-- [HEADER]     ON public.system_broadcasts FOR ALL
+-- [HEADER]     TO authenticated
     USING (EXISTS (
         SELECT 1 FROM user_profiles 
-        WHERE id = auth.uid() AND is_super_admin = true
+-- [HEADER]         WHERE id = auth.uid() AND is_super_admin = true
     ))
     WITH CHECK (EXISTS (
         SELECT 1 FROM user_profiles 
-        WHERE id = auth.uid() AND is_super_admin = true
+-- [HEADER]         WHERE id = auth.uid() AND is_super_admin = true
     ));
 
 -- Trigger for updated_at
@@ -5721,15 +5747,15 @@ BEGIN
     RETURN NEW;
 END;
 $$ language 'plpgsql';
-
+DROP TRIGGER IF EXISTS "update_system_broadcasts_updated_at" ON public.system_broadcasts;
 CREATE TRIGGER update_system_broadcasts_updated_at
-    BEFORE UPDATE ON public.system_broadcasts
+-- [HEADER]     BEFORE UPDATE ON public.system_broadcasts
     FOR EACH ROW
     EXECUTE PROCEDURE update_broadcast_updated_at();
 -- Add marketing consent fields to user_profiles
 ALTER TABLE public.user_profiles 
-ADD COLUMN IF NOT EXISTS marketing_consent BOOLEAN DEFAULT FALSE,
-ADD COLUMN IF NOT EXISTS marketing_consent_at TIMESTAMPTZ;
+-- [HEADER] ADD COLUMN IF NOT EXISTS marketing_consent BOOLEAN DEFAULT FALSE,
+-- [HEADER] ADD COLUMN IF NOT EXISTS marketing_consent_at TIMESTAMPTZ;
 
 -- Update the handle_new_user function to capture marketing_consent
 CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -5783,7 +5809,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-    project_url text := 'https://qfvrekvugdjnwhnaucmz.supabase.co';
+    project_url text := 'https://tipnjnfbbnbskdlodrww.supabase.co';
 BEGIN
     -- Only trigger if it's a new profile (usually only happen at signup)
     IF TG_OP = 'INSERT' THEN
@@ -5799,7 +5825,7 @@ BEGIN
     END IF;
       
     RETURN NEW;
-EXCEPTION WHEN OTHERS THEN
+-- [HEADER] EXCEPTION WHEN OTHERS THEN
     -- Log warning but don't crash
     RAISE WARNING 'Failed to trigger welcome email for %: %', NEW.email, SQLERRM;
     RETURN NEW;
@@ -5808,9 +5834,9 @@ $$;
 
 -- Attach trigger to user_profiles
 DROP TRIGGER IF EXISTS on_profile_created_send_welcome_email ON public.user_profiles;
-
+DROP TRIGGER IF EXISTS "on_profile_created_send_welcome_email" ON public.user_profiles;
 CREATE TRIGGER on_profile_created_send_welcome_email
-    AFTER INSERT ON public.user_profiles
+-- [HEADER]     AFTER INSERT ON public.user_profiles
     FOR EACH ROW
     EXECUTE FUNCTION public.send_welcome_email_on_signup();
 -- Migration to add counter_read to property_documents
@@ -5821,7 +5847,7 @@ DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
                    WHERE table_name='property_documents' AND column_name='counter_read') THEN
-        ALTER TABLE property_documents ADD COLUMN counter_read DECIMAL(12,2);
+        ALTER TABLE property_documents ADD COLUMN IF NOT EXISTS counter_read DECIMAL(12,2);
     END IF;
 END $$;
 
@@ -5848,30 +5874,30 @@ BEGIN
 
     -- Get property address
     SELECT COALESCE(city, '') || ', ' || COALESCE(address, '') INTO property_address
-    FROM public.properties
+-- [HEADER]     FROM public.properties
     WHERE id = NEW.property_id;
 
     -- Get user language preference (defaults to 'he')
     SELECT COALESCE(language, 'he') INTO user_lang
-    FROM public.user_profiles
+-- [HEADER]     FROM public.user_profiles
     WHERE id = NEW.user_id;
 
     -- Set localized content
     IF user_lang = 'he' THEN
-        notif_title := '׳ ׳•׳¡׳£ ׳×׳™׳¢׳•׳“ ׳×׳—׳–׳•׳§׳”';
-        notif_message := format('׳ ׳•׳¡׳£ ׳×׳™׳¢׳•׳“ ׳×׳—׳–׳•׳§׳” ׳—׳“׳© ("%s") ׳¢׳‘׳•׳¨ ׳”׳ ׳›׳¡ %s.', COALESCE(NEW.title, '׳׳׳ ׳›׳•׳×׳¨׳×'), property_address);
-    ELSE
-        notif_title := 'Maintenance Record Added';
-        notif_message := format('A new maintenance record ("%s") was added for %s.', COALESCE(NEW.title, 'Untitled'), property_address);
+-- [HEADER]         notif_title := '׳ ׳•׳¡׳£ ׳×׳™׳¢׳•׳“ ׳×׳—׳–׳•׳§׳”';
+-- [HEADER]         notif_message := format('׳ ׳•׳¡׳£ ׳×׳™׳¢׳•׳“ ׳×׳—׳–׳•׳§׳” ׳—׳“׳© ("%s") ׳¢׳‘׳•׳¨ ׳”׳ ׳›׳¡ %s.', COALESCE(NEW.title, '׳׳׳ ׳›׳•׳×׳¨׳×'), property_address);
+-- [HEADER]     ELSE
+-- [HEADER]         notif_title := 'Maintenance Record Added';
+-- [HEADER]         notif_message := format('A new maintenance record ("%s") was added for %s.', COALESCE(NEW.title, 'Untitled'), property_address);
     END IF;
 
     -- Insert into notifications table
     INSERT INTO public.notifications (user_id, type, title, message, metadata)
     VALUES (
-        NEW.user_id,
+-- [HEADER]         NEW.user_id,
         'info',
-        notif_title,
-        notif_message,
+-- [HEADER]         notif_title,
+-- [HEADER]         notif_message,
         json_build_object(
             'document_id', NEW.id,
             'property_id', NEW.property_id,
@@ -5885,8 +5911,9 @@ $$;
 
 -- Attach trigger to property_documents
 DROP TRIGGER IF EXISTS on_maintenance_record_created ON public.property_documents;
+DROP TRIGGER IF EXISTS "on_maintenance_record_created" ON public.property_documents;
 CREATE TRIGGER on_maintenance_record_created
-    AFTER INSERT ON public.property_documents
+-- [HEADER]     AFTER INSERT ON public.property_documents
     FOR EACH ROW
     EXECUTE FUNCTION public.notify_on_maintenance_record();
 
@@ -5897,7 +5924,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-    project_url text := 'https://qfvrekvugdjnwhnaucmz.supabase.co';
+    project_url text := 'https://tipnjnfbbnbskdlodrww.supabase.co';
     target_email text;
     asset_alerts_enabled boolean;
 BEGIN
@@ -5916,13 +5943,13 @@ BEGIN
     -- 2. OR is a maintenance event AND the user hasn't explicitly disabled asset alerts
     IF (NEW.type IN ('warning', 'error', 'urgent', 'action')) OR 
        (NEW.metadata->>'event' = 'maintenance_record' AND asset_alerts_enabled = true) 
-    THEN
+-- [HEADER]     THEN
         IF target_email IS NOT NULL THEN
             PERFORM
-              net.http_post(
-                url := project_url || '/functions/v1/send-notification-email',
-                headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
-                body := json_build_object(
+-- [HEADER]               net.http_post(
+-- [HEADER]                 url := project_url || '/functions/v1/send-notification-email',
+-- [HEADER]                 headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
+-- [HEADER]                 body := json_build_object(
                     'email', target_email,
                     'notification', row_to_json(NEW)
                 )::jsonb
@@ -5931,7 +5958,7 @@ BEGIN
     END IF;
     
     RETURN NEW;
-EXCEPTION WHEN OTHERS THEN
+-- [HEADER] EXCEPTION WHEN OTHERS THEN
     RAISE WARNING 'Failed to forward notification to email: %', SQLERRM;
     RETURN NEW;
 END;
@@ -5940,7 +5967,7 @@ $$;
 DO $$ 
 BEGIN
     ALTER TYPE crm_interaction_type ADD VALUE IF NOT EXISTS 'chat';
-EXCEPTION
+-- [HEADER] EXCEPTION
     WHEN others THEN
         -- If the type doesn't exist yet (though it should), this will fail silently
         RAISE NOTICE 'Skipping type update: crm_interaction_type might not exist or already has chat value.';
@@ -5968,7 +5995,7 @@ BEGIN
         SELECT 1 FROM information_schema.columns 
         WHERE table_name = 'subscription_plans' AND column_name = 'price_yearly'
     ) THEN
-        ALTER TABLE subscription_plans ADD COLUMN price_yearly NUMERIC(10, 2) DEFAULT 0;
+        ALTER TABLE subscription_plans ADD COLUMN IF NOT EXISTS price_yearly NUMERIC(10, 2) DEFAULT 0;
     END IF;
 END $$;
 
@@ -6014,7 +6041,7 @@ BEGIN
 
     -- Get total users count
     SELECT COUNT(*) INTO total_users_count
-    FROM user_profiles
+-- [HEADER]     FROM user_profiles
     WHERE deleted_at IS NULL;
 
     -- Get total contracts count
@@ -6023,17 +6050,17 @@ BEGIN
 
     -- Get total revenue (sum of paid payments)
     SELECT COALESCE(SUM(paid_amount), 0) INTO total_revenue_amount
-    FROM payments
+-- [HEADER]     FROM payments
     WHERE status = 'paid';
 
     -- Get active users (users who logged in within last 30 days)
     SELECT COUNT(*) INTO active_users_count
-    FROM user_profiles
-    WHERE deleted_at IS NULL
-    AND updated_at > NOW() - INTERVAL '30 days';
+-- [HEADER]     FROM user_profiles
+-- [HEADER]     WHERE deleted_at IS NULL
+-- [HEADER]     AND updated_at > NOW() - INTERVAL '30 days';
 
     -- Build JSONB result
-    result := jsonb_build_object(
+-- [HEADER]     result := jsonb_build_object(
         'totalUsers', total_users_count,
         'totalContracts', total_contracts_count,
         'totalRevenue', total_revenue_amount,
@@ -6053,10 +6080,10 @@ BEGIN
     -- Alternatively, we can use a simpler approach if the Netlify/Edge function is public or has a secret key
     PERFORM
       net.http_post(
-        url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/admin-notifications',
+        url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/admin-notifications',
         headers := jsonb_build_object(
           'Content-Type', 'application/json',
-          'Authorization', 'Bearer ' || (SELECT value FROM vault.secrets WHERE name = 'SERVICE_ROLE_KEY' LIMIT 1)
+          'Authorization', 'Bearer ' || COALESCE(current_setting('app.settings.service_role_key', true), 'DUMMY_KEY')
         ),
         body := jsonb_build_object(
           'type', TG_ARGV[0],
@@ -6074,8 +6101,9 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- Trigger for New User
 -- This needs to happen after the profile is created
 DROP TRIGGER IF EXISTS on_user_profile_created_notify_admin ON user_profiles;
+DROP TRIGGER IF EXISTS "on_user_profile_created_notify_admin" ON user_profiles;
 CREATE TRIGGER on_user_profile_created_notify_admin
-    AFTER INSERT ON user_profiles
+-- [HEADER]     AFTER INSERT ON user_profiles
     FOR EACH ROW
     EXECUTE FUNCTION notify_admin_of_event('new_user');
 
@@ -6101,10 +6129,11 @@ $$ LANGUAGE plpgsql;
 
 -- Actually, let's keep it simple. The trigger itself will check
 DROP TRIGGER IF EXISTS on_first_payment_notify_admin ON payments;
+DROP TRIGGER IF EXISTS "on_first_payment_notify_admin" ON payments;
 CREATE TRIGGER on_first_payment_notify_admin
-    AFTER UPDATE ON payments
+-- [HEADER]     AFTER UPDATE ON payments
     FOR EACH ROW
-    WHEN (OLD.status != 'paid' AND NEW.status = 'paid')
+-- [HEADER]     WHEN (OLD.status != 'paid' AND NEW.status = 'paid')
     EXECUTE FUNCTION notify_admin_of_event('first_payment');
 
 -- 6. Cron Job for Daily Summary
@@ -6116,12 +6145,12 @@ SELECT cron.schedule(
     '0 8 * * *', -- 8:00 AM every day
     $$
     SELECT net.http_post(
-        url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/admin-notifications',
-        headers := jsonb_build_object(
+-- [HEADER]         url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/admin-notifications',
+-- [HEADER]         headers := jsonb_build_object(
           'Content-Type', 'application/json',
-          'Authorization', 'Bearer ' || (SELECT value FROM vault.secrets WHERE name = 'SERVICE_ROLE_KEY' LIMIT 1)
+          'Authorization', 'Bearer ' || COALESCE(current_setting('app.settings.service_role_key', true), 'DUMMY_KEY')
         ),
-        body := jsonb_build_object('type', 'daily_summary')
+-- [HEADER]         body := jsonb_build_object('type', 'daily_summary')
     );
     $$
 );
@@ -6130,7 +6159,7 @@ SELECT cron.schedule(
 
 -- 1. Correct Project URL for triggers (Consolidated)
 -- We'll use a variable or just hardcode the current known correctly fixed URL
--- Current Project URL: https://qfvrekvugdjnwhnaucmz.supabase.co
+-- Current Project URL: https://tipnjnfbbnbskdlodrww.supabase.co
 
 -- 2. Trigger Function for Signups & Plan Changes (Admin Alerts)
 CREATE OR REPLACE FUNCTION public.notify_admin_on_user_event()
@@ -6139,7 +6168,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-    project_url text := 'https://qfvrekvugdjnwhnaucmz.supabase.co';
+    project_url text := 'https://tipnjnfbbnbskdlodrww.supabase.co';
 BEGIN
     -- Only trigger if it's a new user OR a plan change
     IF (TG_OP = 'INSERT') OR (TG_OP = 'UPDATE' AND OLD.subscription_plan IS DISTINCT FROM NEW.subscription_plan) THEN
@@ -6157,7 +6186,7 @@ BEGIN
     END IF;
       
     RETURN NEW;
-EXCEPTION WHEN OTHERS THEN
+-- [HEADER] EXCEPTION WHEN OTHERS THEN
     RAISE WARNING 'Failed to trigger admin notification: %', SQLERRM;
     RETURN NEW;
 END;
@@ -6170,7 +6199,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-    project_url text := 'https://qfvrekvugdjnwhnaucmz.supabase.co';
+    project_url text := 'https://tipnjnfbbnbskdlodrww.supabase.co';
     user_record RECORD;
 BEGIN
     -- Only trigger when an invoice is marked as 'paid'
@@ -6179,10 +6208,10 @@ BEGIN
         SELECT * INTO user_record FROM public.user_profiles WHERE id = NEW.user_id;
 
         PERFORM
-          net.http_post(
-            url := project_url || '/functions/v1/send-admin-alert',
-            headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
-            body := json_build_object(
+-- [HEADER]           net.http_post(
+-- [HEADER]             url := project_url || '/functions/v1/send-admin-alert',
+-- [HEADER]             headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
+-- [HEADER]             body := json_build_object(
                 'type', 'UPDATE',
                 'table', 'invoices',
                 'record', row_to_json(NEW),
@@ -6192,7 +6221,7 @@ BEGIN
     END IF;
 
     RETURN NEW;
-EXCEPTION WHEN OTHERS THEN
+-- [HEADER] EXCEPTION WHEN OTHERS THEN
     RAISE WARNING 'Failed to trigger payment notification: %', SQLERRM;
     RETURN NEW;
 END;
@@ -6201,15 +6230,17 @@ $$;
 -- 4. Apply Triggers
 -- a. User Profiles (Signup & Plan Changes)
 DROP TRIGGER IF EXISTS on_user_event_notify_admin ON public.user_profiles;
+DROP TRIGGER IF EXISTS "on_user_event_notify_admin" ON public.user_profiles;
 CREATE TRIGGER on_user_event_notify_admin
-    AFTER INSERT OR UPDATE ON public.user_profiles
+-- [HEADER]     AFTER INSERT OR UPDATE ON public.user_profiles
     FOR EACH ROW
     EXECUTE FUNCTION public.notify_admin_on_user_event();
 
 -- b. Invoices (Subscription Starts)
 DROP TRIGGER IF EXISTS on_invoice_paid_notify_admin ON public.invoices;
+DROP TRIGGER IF EXISTS "on_invoice_paid_notify_admin" ON Starts;
 CREATE TRIGGER on_invoice_paid_notify_admin
-    AFTER UPDATE ON public.invoices
+-- [HEADER]     AFTER UPDATE ON public.invoices
     FOR EACH ROW
     EXECUTE FUNCTION public.notify_admin_on_payment();
 
@@ -6232,9 +6263,9 @@ SELECT cron.schedule(
     '0 8 * * *',
     $$
     SELECT net.http_post(
-        url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/send-daily-admin-summary',
-        headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
-        body := '{}'::jsonb
+-- [HEADER]         url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/send-daily-admin-summary',
+-- [HEADER]         headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
+-- [HEADER]         body := '{}'::jsonb
     );
     $$
 );
@@ -6266,56 +6297,56 @@ $$;
 -- PROPERTIES
 DROP POLICY IF EXISTS "Admins view all properties" ON public.properties;
 CREATE POLICY "Admins view all properties" 
-    ON public.properties FOR SELECT 
+-- [HEADER]     ON public.properties FOR SELECT 
     USING (public.is_admin());
 
 -- CONTRACTS
 DROP POLICY IF EXISTS "Admins view all contracts" ON public.contracts;
 CREATE POLICY "Admins view all contracts" 
-    ON public.contracts FOR SELECT 
+-- [HEADER]     ON public.contracts FOR SELECT 
     USING (public.is_admin());
 
 -- TENANTS
 DROP POLICY IF EXISTS "Admins view all tenants" ON public.tenants;
 CREATE POLICY "Admins view all tenants" 
-    ON public.tenants FOR SELECT 
+-- [HEADER]     ON public.tenants FOR SELECT 
     USING (public.is_admin());
 
 -- PAYMENTS
 DROP POLICY IF EXISTS "Admins view all payments" ON public.payments;
 CREATE POLICY "Admins view all payments" 
-    ON public.payments FOR SELECT 
+-- [HEADER]     ON public.payments FOR SELECT 
     USING (public.is_admin());
 
 -- PROPERTY DOCUMENTS
 DROP POLICY IF EXISTS "Admins view all property documents" ON public.property_documents;
 CREATE POLICY "Admins view all property documents" 
-    ON public.property_documents FOR SELECT 
+-- [HEADER]     ON public.property_documents FOR SELECT 
     USING (public.is_admin());
 
 -- DOCUMENT FOLDERS
 DROP POLICY IF EXISTS "Admins view all document folders" ON public.document_folders;
 CREATE POLICY "Admins view all document folders" 
-    ON public.document_folders FOR SELECT 
+-- [HEADER]     ON public.document_folders FOR SELECT 
     USING (public.is_admin());
 
 -- SHORT LINKS
 DROP POLICY IF EXISTS "Admins view all short links" ON public.short_links;
 CREATE POLICY "Admins view all short links" 
-    ON public.short_links FOR SELECT 
+-- [HEADER]     ON public.short_links FOR SELECT 
     USING (public.is_admin());
 
 -- STORAGE OBJECTS (God Mode for Admins)
 DROP POLICY IF EXISTS "Admins full access to secure_documents" ON storage.objects;
 CREATE POLICY "Admins full access to secure_documents"
-    ON storage.objects FOR ALL
+-- [HEADER]     ON storage.objects FOR ALL
     USING (
-        bucket_id = 'secure_documents' 
-        AND public.is_admin()
+-- [HEADER]         bucket_id = 'secure_documents' 
+-- [HEADER]         AND public.is_admin()
     )
     WITH CHECK (
-        bucket_id = 'secure_documents' 
-        AND public.is_admin()
+-- [HEADER]         bucket_id = 'secure_documents' 
+-- [HEADER]         AND public.is_admin()
     );
 
 -- 3. Notify Schema Reload
@@ -6333,53 +6364,53 @@ BEGIN
     IF EXISTS (SELECT 1 FROM auth.users WHERE email = 'rubi@rentmate.co.il') THEN
         INSERT INTO public.user_profiles (id, email, role, is_super_admin)
         SELECT id, email, 'admin', true
-        FROM auth.users
-        WHERE email = 'rubi@rentmate.co.il'
-        ON CONFLICT (id) DO UPDATE 
+-- [HEADER]         FROM auth.users
+-- [HEADER]         WHERE email = 'rubi@rentmate.co.il'
+-- [HEADER]         ON CONFLICT (id) DO UPDATE 
         SET role = 'admin', is_super_admin = true;
     END IF;
 END $$;
 -- Support Tickets Table
 CREATE TABLE IF NOT EXISTS support_tickets (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    title TEXT NOT NULL,
-    description TEXT NOT NULL,
-    category TEXT NOT NULL CHECK (category IN ('technical', 'billing', 'feature_request', 'bug', 'other')),
-    priority TEXT NOT NULL DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'urgent')),
-    status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'in_progress', 'waiting_user', 'resolved', 'closed')),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+-- [HEADER]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [HEADER]     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [HEADER]     title TEXT NOT NULL,
+-- [HEADER]     description TEXT NOT NULL,
+-- [HEADER]     category TEXT NOT NULL CHECK (category IN ('technical', 'billing', 'feature_request', 'bug', 'other')),
+-- [HEADER]     priority TEXT NOT NULL DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'urgent')),
+-- [HEADER]     status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'in_progress', 'waiting_user', 'resolved', 'closed')),
+-- [HEADER]     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+-- [HEADER]     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- Ensure columns exist if table was created by a previous version
 DO $$ 
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'support_tickets' AND column_name = 'assigned_to') THEN
-        ALTER TABLE public.support_tickets ADD COLUMN assigned_to UUID REFERENCES auth.users(id) ON DELETE SET NULL;
+        ALTER TABLE public.support_tickets ADD COLUMN IF NOT EXISTS assigned_to UUID REFERENCES auth.users(id) ON DELETE SET NULL;
     END IF;
     
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'support_tickets' AND column_name = 'chat_context') THEN
-        ALTER TABLE public.support_tickets ADD COLUMN chat_context JSONB;
+        ALTER TABLE public.support_tickets ADD COLUMN IF NOT EXISTS chat_context JSONB;
     END IF;
 
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'support_tickets' AND column_name = 'resolution_notes') THEN
-        ALTER TABLE public.support_tickets ADD COLUMN resolution_notes TEXT;
+        ALTER TABLE public.support_tickets ADD COLUMN IF NOT EXISTS resolution_notes TEXT;
     END IF;
 
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'support_tickets' AND column_name = 'resolved_at') THEN
-        ALTER TABLE public.support_tickets ADD COLUMN resolved_at TIMESTAMPTZ;
+        ALTER TABLE public.support_tickets ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMPTZ;
     END IF;
 END $$;
 
 -- Ticket Comments Table (for back-and-forth communication)
 CREATE TABLE IF NOT EXISTS ticket_comments (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    ticket_id UUID NOT NULL REFERENCES support_tickets(id) ON DELETE CASCADE,
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [HEADER]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [HEADER]     ticket_id UUID NOT NULL REFERENCES support_tickets(id) ON DELETE CASCADE,
+-- [HEADER]     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     comment TEXT NOT NULL,
-    is_admin BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+-- [HEADER]     is_admin BOOLEAN NOT NULL DEFAULT FALSE,
+-- [HEADER]     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- Indexes
@@ -6395,84 +6426,84 @@ ALTER TABLE ticket_comments ENABLE ROW LEVEL SECURITY;
 -- Users can view their own tickets
 DROP POLICY IF EXISTS "Users can view own tickets" ON support_tickets;
 CREATE POLICY "Users can view own tickets"
-    ON support_tickets FOR SELECT
+-- [HEADER]     ON support_tickets FOR SELECT
     USING (auth.uid() = user_id);
 
 -- Users can create tickets
 DROP POLICY IF EXISTS "Users can create tickets" ON support_tickets;
 CREATE POLICY "Users can create tickets"
-    ON support_tickets FOR INSERT
+-- [HEADER]     ON support_tickets FOR INSERT
     WITH CHECK (auth.uid() = user_id);
 
 -- Users can update their own open tickets
 DROP POLICY IF EXISTS "Users can update own open tickets" ON support_tickets;
 CREATE POLICY "Users can update own open tickets"
-    ON support_tickets FOR UPDATE
+-- [HEADER]     ON support_tickets FOR UPDATE
     USING (auth.uid() = user_id AND status = 'open');
 
 -- Admins can view all tickets
 DROP POLICY IF EXISTS "Admins can view all tickets" ON support_tickets;
 CREATE POLICY "Admins can view all tickets"
-    ON support_tickets FOR SELECT
+-- [HEADER]     ON support_tickets FOR SELECT
     USING (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [HEADER]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
 -- Admins can update all tickets
 DROP POLICY IF EXISTS "Admins can update all tickets" ON support_tickets;
 CREATE POLICY "Admins can update all tickets"
-    ON support_tickets FOR UPDATE
+-- [HEADER]     ON support_tickets FOR UPDATE
     USING (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [HEADER]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
 -- Users can view comments on their tickets
 DROP POLICY IF EXISTS "Users can view own ticket comments" ON ticket_comments;
 CREATE POLICY "Users can view own ticket comments"
-    ON ticket_comments FOR SELECT
+-- [HEADER]     ON ticket_comments FOR SELECT
     USING (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM support_tickets
-            WHERE id = ticket_comments.ticket_id AND user_id = auth.uid()
+-- [HEADER]             WHERE id = ticket_comments.ticket_id AND user_id = auth.uid()
         )
     );
 
 -- Users can add comments to their tickets
 DROP POLICY IF EXISTS "Users can comment on own tickets" ON ticket_comments;
 CREATE POLICY "Users can comment on own tickets"
-    ON ticket_comments FOR INSERT
+-- [HEADER]     ON ticket_comments FOR INSERT
     WITH CHECK (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM support_tickets
-            WHERE id = ticket_comments.ticket_id AND user_id = auth.uid()
+-- [HEADER]             WHERE id = ticket_comments.ticket_id AND user_id = auth.uid()
         )
     );
 
 -- Admins can view all comments
 DROP POLICY IF EXISTS "Admins can view all comments" ON ticket_comments;
 CREATE POLICY "Admins can view all comments"
-    ON ticket_comments FOR SELECT
+-- [HEADER]     ON ticket_comments FOR SELECT
     USING (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [HEADER]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
 -- Admins can add comments to any ticket
 DROP POLICY IF EXISTS "Admins can comment on all tickets" ON ticket_comments;
 CREATE POLICY "Admins can comment on all tickets"
-    ON ticket_comments FOR INSERT
+-- [HEADER]     ON ticket_comments FOR INSERT
     WITH CHECK (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [HEADER]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
@@ -6487,8 +6518,9 @@ $$ LANGUAGE plpgsql;
 
 -- Trigger for updated_at
 DROP TRIGGER IF EXISTS update_support_tickets_timestamp ON support_tickets;
+DROP TRIGGER IF EXISTS "update_support_tickets_timestamp" ON support_tickets;
 CREATE TRIGGER update_support_tickets_timestamp
-    BEFORE UPDATE ON support_tickets
+-- [HEADER]     BEFORE UPDATE ON support_tickets
     FOR EACH ROW
     EXECUTE FUNCTION update_support_ticket_timestamp();
 
@@ -6515,8 +6547,9 @@ $$ LANGUAGE plpgsql;
 
 -- Trigger for admin notifications
 DROP TRIGGER IF EXISTS notify_admins_on_new_ticket ON support_tickets;
+DROP TRIGGER IF EXISTS "notify_admins_on_new_ticket" ON support_tickets;
 CREATE TRIGGER notify_admins_on_new_ticket
-    AFTER INSERT ON support_tickets
+-- [HEADER]     AFTER INSERT ON support_tickets
     FOR EACH ROW
     EXECUTE FUNCTION notify_admins_new_ticket();
 -- Update Daily Notification Job to respect User Preferences
@@ -6566,26 +6599,26 @@ BEGIN
     -------------------------------------------------------
     FOR r IN
         SELECT c.id, c.user_id, c.end_date, p.city, p.address, up.notification_preferences
-        FROM public.contracts c
-        JOIN public.properties p ON p.id = c.property_id
-        JOIN public.user_profiles up ON up.id = c.user_id
-        WHERE c.status = 'active'
-        AND c.extension_option = TRUE
-        AND c.end_date = CURRENT_DATE + (COALESCE((up.notification_preferences->>'extension_option_end_days')::int, 60) || ' days')::INTERVAL
+-- [HEADER]         FROM public.contracts c
+-- [HEADER]         JOIN public.properties p ON p.id = c.property_id
+-- [HEADER]         JOIN public.user_profiles up ON up.id = c.user_id
+-- [HEADER]         WHERE c.status = 'active'
+-- [HEADER]         AND c.extension_option = TRUE
+-- [HEADER]         AND c.end_date = CURRENT_DATE + (COALESCE((up.notification_preferences->>'extension_option_end_days')::int, 60) || ' days')::INTERVAL
     LOOP
         IF NOT EXISTS (
             SELECT 1 FROM public.notifications 
-            WHERE user_id = r.user_id 
-            AND metadata->>'contract_id' = r.id::text 
-            AND metadata->>'event' = 'extension_deadline'
-            AND created_at > (CURRENT_DATE - INTERVAL '1 day')
+-- [HEADER]             WHERE user_id = r.user_id 
+-- [HEADER]             AND metadata->>'contract_id' = r.id::text 
+-- [HEADER]             AND metadata->>'event' = 'extension_deadline'
+-- [HEADER]             AND created_at > (CURRENT_DATE - INTERVAL '1 day')
         ) THEN
             INSERT INTO public.notifications (user_id, type, title, message, metadata)
             VALUES (
-                r.user_id,
+-- [HEADER]                 r.user_id,
                 'action',
                 'Extension Deadline Approaching',
-                format('Extension option for %s, %s ends in %s days.', r.city, r.address, COALESCE((r.notification_preferences->>'extension_option_end_days')::int, 60)),
+-- [HEADER]                 format('Extension option for %s, %s ends in %s days.', r.city, r.address, COALESCE((r.notification_preferences->>'extension_option_end_days')::int, 60)),
                 json_build_object('contract_id', r.id, 'event', 'extension_deadline')::jsonb
             );
         END IF;
@@ -6596,27 +6629,27 @@ BEGIN
     -------------------------------------------------------
     FOR r IN
         SELECT py.id, py.user_id, py.amount, py.date, p.city, p.address, up.notification_preferences
-        FROM public.payments py
-        JOIN public.contracts c ON c.id = py.contract_id
-        JOIN public.properties p ON p.id = c.property_id
-        JOIN public.user_profiles up ON up.id = py.user_id
-        WHERE py.status = 'pending'
-        AND py.date = CURRENT_DATE + (COALESCE((up.notification_preferences->>'rent_due_days')::int, 0) || ' days')::INTERVAL
-        AND (up.notification_preferences->>'rent_due_days')::int > 0
+-- [HEADER]         FROM public.payments py
+-- [HEADER]         JOIN public.contracts c ON c.id = py.contract_id
+-- [HEADER]         JOIN public.properties p ON p.id = c.property_id
+-- [HEADER]         JOIN public.user_profiles up ON up.id = py.user_id
+-- [HEADER]         WHERE py.status = 'pending'
+-- [HEADER]         AND py.date = CURRENT_DATE + (COALESCE((up.notification_preferences->>'rent_due_days')::int, 0) || ' days')::INTERVAL
+-- [HEADER]         AND (up.notification_preferences->>'rent_due_days')::int > 0
     LOOP
         IF NOT EXISTS (
             SELECT 1 FROM public.notifications 
-            WHERE user_id = r.user_id 
-            AND metadata->>'payment_id' = r.id::text 
-            AND metadata->>'event' = 'payment_warning'
-            AND created_at > (CURRENT_DATE - INTERVAL '1 day')
+-- [HEADER]             WHERE user_id = r.user_id 
+-- [HEADER]             AND metadata->>'payment_id' = r.id::text 
+-- [HEADER]             AND metadata->>'event' = 'payment_warning'
+-- [HEADER]             AND created_at > (CURRENT_DATE - INTERVAL '1 day')
         ) THEN
             INSERT INTO public.notifications (user_id, type, title, message, metadata)
             VALUES (
-                r.user_id,
+-- [HEADER]                 r.user_id,
                 'info',
                 'Payment Reminder',
-                format('Payment of ג‚×%s for %s, %s is due in %s days.', r.amount, r.city, r.address, (r.notification_preferences->>'rent_due_days')::int),
+-- [HEADER]                 format('Payment of ג‚×%s for %s, %s is due in %s days.', r.amount, r.city, r.address, (r.notification_preferences->>'rent_due_days')::int),
                 json_build_object('payment_id', r.id, 'event', 'payment_warning')::jsonb
             );
         END IF;
@@ -6627,27 +6660,27 @@ BEGIN
     -------------------------------------------------------
     FOR r IN
         SELECT py.id, py.user_id, py.amount, py.date, p.city, p.address, up.notification_preferences
-        FROM public.payments py
-        JOIN public.contracts c ON c.id = py.contract_id
-        JOIN public.properties p ON p.id = c.property_id
-        JOIN public.user_profiles up ON up.id = py.user_id
-        WHERE py.status = 'pending'
-        AND py.date = CURRENT_DATE
-        AND COALESCE((up.notification_preferences->>'rent_due_today')::boolean, true) = true
+-- [HEADER]         FROM public.payments py
+-- [HEADER]         JOIN public.contracts c ON c.id = py.contract_id
+-- [HEADER]         JOIN public.properties p ON p.id = c.property_id
+-- [HEADER]         JOIN public.user_profiles up ON up.id = py.user_id
+-- [HEADER]         WHERE py.status = 'pending'
+-- [HEADER]         AND py.date = CURRENT_DATE
+-- [HEADER]         AND COALESCE((up.notification_preferences->>'rent_due_today')::boolean, true) = true
     LOOP
         IF NOT EXISTS (
             SELECT 1 FROM public.notifications 
-            WHERE user_id = r.user_id 
-            AND metadata->>'payment_id' = r.id::text 
-            AND metadata->>'event' = 'payment_due'
-            AND created_at > (CURRENT_DATE - INTERVAL '1 day')
+-- [HEADER]             WHERE user_id = r.user_id 
+-- [HEADER]             AND metadata->>'payment_id' = r.id::text 
+-- [HEADER]             AND metadata->>'event' = 'payment_due'
+-- [HEADER]             AND created_at > (CURRENT_DATE - INTERVAL '1 day')
         ) THEN
             INSERT INTO public.notifications (user_id, type, title, message, metadata)
             VALUES (
-                r.user_id,
+-- [HEADER]                 r.user_id,
                 'warning',
                 'Payment Due Today',
-                format('Payment of ג‚×%s for %s, %s is due today.', r.amount, r.city, r.address),
+-- [HEADER]                 format('Payment of ג‚×%s for %s, %s is due today.', r.amount, r.city, r.address),
                 json_build_object('payment_id', r.id, 'event', 'payment_due')::jsonb
             );
         END IF;
@@ -6666,7 +6699,7 @@ BEGIN
         SELECT 1 FROM information_schema.columns 
         WHERE table_name = 'user_profiles' AND column_name = 'subscription_tier'
     ) THEN
-        ALTER TABLE user_profiles ADD COLUMN subscription_tier TEXT DEFAULT 'free';
+        ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS subscription_tier TEXT DEFAULT 'free';
     END IF;
 END $$;
 
@@ -6683,8 +6716,9 @@ END;
 $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS tr_sync_user_tier ON user_profiles;
+DROP TRIGGER IF EXISTS "tr_sync_user_tier" ON user_profiles;
 CREATE TRIGGER tr_sync_user_tier
-    BEFORE INSERT OR UPDATE OF plan_id ON user_profiles
+-- [HEADER]     BEFORE INSERT OR UPDATE OF plan_id ON user_profiles
     FOR EACH ROW
     EXECUTE FUNCTION sync_user_tier();
 
@@ -6697,19 +6731,19 @@ BEGIN
     -- Ensure link to user_profiles
     IF NOT EXISTS (
         SELECT 1 
-        FROM information_schema.table_constraints 
-        WHERE constraint_name = 'user_storage_usage_user_id_profiles_fkey'
+-- [HEADER]         FROM information_schema.table_constraints 
+-- [HEADER]         WHERE constraint_name = 'user_storage_usage_user_id_profiles_fkey'
     ) THEN
         ALTER TABLE public.user_storage_usage 
-        ADD CONSTRAINT user_storage_usage_user_id_profiles_fkey 
-        FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
+-- [HEADER]         ADD CONSTRAINT user_storage_usage_user_id_profiles_fkey 
+-- [HEADER]         FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
     END IF;
 END $$;
 
 -- 3. Fix the AI Chat Usage Function (Make it more robust)
 CREATE OR REPLACE FUNCTION check_ai_chat_usage(
-    p_user_id UUID,
-    p_tokens_used INTEGER DEFAULT 500
+-- [HEADER]     p_user_id UUID,
+-- [HEADER]     p_tokens_used INTEGER DEFAULT 500
 )
 RETURNS JSON AS $$
 DECLARE
@@ -6728,7 +6762,7 @@ BEGIN
     
     -- Get limits for this tier
     SELECT * INTO v_limit
-    FROM ai_usage_limits
+-- [HEADER]     FROM ai_usage_limits
     WHERE tier_name = v_user_tier;
     
     -- Fallback to free limits if tier limits not found
@@ -6739,19 +6773,19 @@ BEGIN
     -- Get or create usage record
     INSERT INTO ai_chat_usage (user_id, message_count, tokens_used)
     VALUES (p_user_id, 0, 0)
-    ON CONFLICT (user_id) DO NOTHING;
+-- [HEADER]     ON CONFLICT (user_id) DO NOTHING;
     
     SELECT * INTO v_usage
-    FROM ai_chat_usage
+-- [HEADER]     FROM ai_chat_usage
     WHERE user_id = p_user_id;
     
     -- Check if we need to reset (monthly)
     IF v_usage.last_reset_at < DATE_TRUNC('month', NOW()) THEN
         UPDATE ai_chat_usage
         SET message_count = 0,
-            tokens_used = 0,
-            last_reset_at = NOW(),
-            updated_at = NOW()
+-- [HEADER]             tokens_used = 0,
+-- [HEADER]             last_reset_at = NOW(),
+-- [HEADER]             updated_at = NOW()
         WHERE user_id = p_user_id;
         
         v_usage.message_count := 0;
@@ -6760,7 +6794,7 @@ BEGIN
     
     -- Check limits (skip if unlimited)
     IF v_limit.monthly_message_limit != -1 AND v_usage.message_count >= v_limit.monthly_message_limit THEN
-        v_result := json_build_object(
+-- [HEADER]         v_result := json_build_object(
             'allowed', false,
             'reason', 'message_limit_exceeded',
             'current_usage', v_usage.message_count,
@@ -6771,7 +6805,7 @@ BEGIN
     END IF;
     
     IF v_limit.monthly_token_limit != -1 AND v_usage.tokens_used >= v_limit.monthly_token_limit THEN
-        v_result := json_build_object(
+-- [HEADER]         v_result := json_build_object(
             'allowed', false,
             'reason', 'token_limit_exceeded',
             'current_usage', v_usage.tokens_used,
@@ -6784,12 +6818,12 @@ BEGIN
     -- Increment usage
     UPDATE ai_chat_usage
     SET message_count = message_count + 1,
-        tokens_used = tokens_used + p_tokens_used,
-        updated_at = NOW()
+-- [HEADER]         tokens_used = tokens_used + p_tokens_used,
+-- [HEADER]         updated_at = NOW()
     WHERE user_id = p_user_id;
     
     -- Return success
-    v_result := json_build_object(
+-- [HEADER]     v_result := json_build_object(
         'allowed', true,
         'current_messages', v_usage.message_count + 1,
         'message_limit', v_limit.monthly_message_limit,
@@ -6808,16 +6842,16 @@ DROP FUNCTION IF EXISTS get_users_with_stats();
 
 CREATE OR REPLACE FUNCTION get_users_with_stats()
 RETURNS TABLE (
-    id UUID,
-    email TEXT,
-    full_name TEXT,
-    role TEXT,
-    subscription_status TEXT,
-    plan_id TEXT,
-    created_at TIMESTAMPTZ,
-    properties_count BIGINT,
-    tenants_count BIGINT,
-    contracts_count BIGINT
+-- [HEADER]     id UUID,
+-- [HEADER]     email TEXT,
+-- [HEADER]     full_name TEXT,
+-- [HEADER]     role TEXT,
+-- [HEADER]     subscription_status TEXT,
+-- [HEADER]     plan_id TEXT,
+-- [HEADER]     created_at TIMESTAMPTZ,
+-- [HEADER]     properties_count BIGINT,
+-- [HEADER]     tenants_count BIGINT,
+-- [HEADER]     contracts_count BIGINT
 ) 
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -6859,8 +6893,8 @@ BEGIN
         ALTER TABLE public.properties DROP CONSTRAINT IF EXISTS properties_user_id_profiles_fkey;
         
         ALTER TABLE public.properties
-        ADD CONSTRAINT properties_user_id_profiles_fkey 
-        FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
+-- [HEADER]         ADD CONSTRAINT properties_user_id_profiles_fkey 
+-- [HEADER]         FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
     END IF;
 
     -- 2. TENANTS
@@ -6869,8 +6903,8 @@ BEGIN
         ALTER TABLE public.tenants DROP CONSTRAINT IF EXISTS tenants_user_id_profiles_fkey;
         
         ALTER TABLE public.tenants
-        ADD CONSTRAINT tenants_user_id_profiles_fkey 
-        FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
+-- [HEADER]         ADD CONSTRAINT tenants_user_id_profiles_fkey 
+-- [HEADER]         FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
     END IF;
 
     -- 3. CONTRACTS
@@ -6879,8 +6913,8 @@ BEGIN
         ALTER TABLE public.contracts DROP CONSTRAINT IF EXISTS contracts_user_id_profiles_fkey;
 
         ALTER TABLE public.contracts
-        ADD CONSTRAINT contracts_user_id_profiles_fkey 
-        FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
+-- [HEADER]         ADD CONSTRAINT contracts_user_id_profiles_fkey 
+-- [HEADER]         FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
     END IF;
 
     -- 4. ADMIN_NOTIFICATIONS (Fix relationship for PostgREST joins)
@@ -6889,8 +6923,8 @@ BEGIN
         ALTER TABLE public.admin_notifications DROP CONSTRAINT IF EXISTS admin_notifications_user_id_profiles_fkey;
         
         ALTER TABLE public.admin_notifications
-        ADD CONSTRAINT admin_notifications_user_id_profiles_fkey 
-        FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
+-- [HEADER]         ADD CONSTRAINT admin_notifications_user_id_profiles_fkey 
+-- [HEADER]         FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
     END IF;
 
     -- 5. SUPPORT_TICKETS
@@ -6899,8 +6933,8 @@ BEGIN
         ALTER TABLE public.support_tickets DROP CONSTRAINT IF EXISTS support_tickets_user_id_profiles_fkey;
         
         ALTER TABLE public.support_tickets
-        ADD CONSTRAINT support_tickets_user_id_profiles_fkey 
-        FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
+-- [HEADER]         ADD CONSTRAINT support_tickets_user_id_profiles_fkey 
+-- [HEADER]         FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
     END IF;
 
     -- 6. TICKET_COMMENTS
@@ -6909,8 +6943,8 @@ BEGIN
         ALTER TABLE public.ticket_comments DROP CONSTRAINT IF EXISTS ticket_comments_user_id_profiles_fkey;
         
         ALTER TABLE public.ticket_comments
-        ADD CONSTRAINT ticket_comments_user_id_profiles_fkey 
-        FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
+-- [HEADER]         ADD CONSTRAINT ticket_comments_user_id_profiles_fkey 
+-- [HEADER]         FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
     END IF;
 
     -- 7. PROPERTY_DOCUMENTS
@@ -6919,8 +6953,8 @@ BEGIN
         ALTER TABLE public.property_documents DROP CONSTRAINT IF EXISTS property_documents_user_id_profiles_fkey;
         
         ALTER TABLE public.property_documents
-        ADD CONSTRAINT property_documents_user_id_profiles_fkey 
-        FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
+-- [HEADER]         ADD CONSTRAINT property_documents_user_id_profiles_fkey 
+-- [HEADER]         FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
     END IF;
 
 END $$;
@@ -6929,14 +6963,14 @@ END $$;
 NOTIFY pgrst, 'reload schema';
 -- AI Detailed Usage Tracking for Cost Analysis
 CREATE TABLE IF NOT EXISTS public.ai_usage_logs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-    model TEXT NOT NULL,
-    feature TEXT NOT NULL, -- 'chat' or 'contract-extraction'
-    input_tokens INTEGER DEFAULT 0,
-    output_tokens INTEGER DEFAULT 0,
-    estimated_cost_usd NUMERIC(10, 6) DEFAULT 0,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- [HEADER]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [HEADER]     user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+-- [HEADER]     model TEXT NOT NULL,
+-- [HEADER]     feature TEXT NOT NULL, -- 'chat' or 'contract-extraction'
+-- [HEADER]     input_tokens INTEGER DEFAULT 0,
+-- [HEADER]     output_tokens INTEGER DEFAULT 0,
+-- [HEADER]     estimated_cost_usd NUMERIC(10, 6) DEFAULT 0,
+-- [HEADER]     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Enable RLS
@@ -6944,21 +6978,21 @@ ALTER TABLE public.ai_usage_logs ENABLE ROW LEVEL SECURITY;
 
 -- Admins can view all AI usage logs
 CREATE POLICY "Admins can view all AI usage logs"
-    ON public.ai_usage_logs FOR SELECT
+-- [HEADER]     ON public.ai_usage_logs FOR SELECT
     USING (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [HEADER]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
 -- Function to log AI usage with cost calculation
 CREATE OR REPLACE FUNCTION public.log_ai_usage(
-    p_user_id UUID,
-    p_model TEXT,
-    p_feature TEXT,
-    p_input_tokens INTEGER,
-    p_output_tokens INTEGER
+-- [HEADER]     p_user_id UUID,
+-- [HEADER]     p_model TEXT,
+-- [HEADER]     p_feature TEXT,
+-- [HEADER]     p_input_tokens INTEGER,
+-- [HEADER]     p_output_tokens INTEGER
 )
 RETURNS VOID
 LANGUAGE plpgsql
@@ -6984,31 +7018,31 @@ BEGIN
     END IF;
 
     -- Calculate total cost
-    v_total_cost := (p_input_tokens::NUMERIC / 1000000 * v_cost_input) + (p_output_tokens::NUMERIC / 1000000 * v_cost_output);
+-- [HEADER]     v_total_cost := (p_input_tokens::NUMERIC / 1000000 * v_cost_input) + (p_output_tokens::NUMERIC / 1000000 * v_cost_output);
 
     -- Insert log
     INSERT INTO public.ai_usage_logs (
-        user_id,
-        model,
-        feature,
-        input_tokens,
-        output_tokens,
-        estimated_cost_usd
+-- [HEADER]         user_id,
+-- [HEADER]         model,
+-- [HEADER]         feature,
+-- [HEADER]         input_tokens,
+-- [HEADER]         output_tokens,
+-- [HEADER]         estimated_cost_usd
     ) VALUES (
-        p_user_id,
-        p_model,
-        p_feature,
-        p_input_tokens,
-        p_output_tokens,
-        v_total_cost
+-- [HEADER]         p_user_id,
+-- [HEADER]         p_model,
+-- [HEADER]         p_feature,
+-- [HEADER]         p_input_tokens,
+-- [HEADER]         p_output_tokens,
+-- [HEADER]         v_total_cost
     );
 
     -- Update the old aggregator table if it exists
     INSERT INTO public.ai_chat_usage (user_id, message_count, tokens_used, updated_at)
     VALUES (p_user_id, 1, p_input_tokens + p_output_tokens, NOW())
-    ON CONFLICT (user_id) DO UPDATE
+-- [HEADER]     ON CONFLICT (user_id) DO UPDATE
     SET message_count = public.ai_chat_usage.message_count + 1,
-        tokens_used = public.ai_chat_usage.tokens_used + (p_input_tokens + p_output_tokens),
+-- [HEADER]         tokens_used = public.ai_chat_usage.tokens_used + (p_input_tokens + p_output_tokens),
         updated_at = NOW();
 END;
 $$;
@@ -7039,7 +7073,7 @@ BEGIN
 
     -- Get total users count
     SELECT COUNT(*) INTO total_users_count
-    FROM user_profiles
+-- [HEADER]     FROM user_profiles
     WHERE deleted_at IS NULL;
 
     -- Get total contracts count
@@ -7048,21 +7082,21 @@ BEGIN
 
     -- Get total revenue (sum of paid payments)
     SELECT COALESCE(SUM(paid_amount), 0) INTO total_revenue_amount
-    FROM payments
+-- [HEADER]     FROM payments
     WHERE status = 'paid';
 
     -- Get active users (users who logged in within last 30 days)
     SELECT COUNT(*) INTO active_users_count
-    FROM user_profiles
-    WHERE deleted_at IS NULL
-    AND updated_at > NOW() - INTERVAL '30 days';
+-- [HEADER]     FROM user_profiles
+-- [HEADER]     WHERE deleted_at IS NULL
+-- [HEADER]     AND updated_at > NOW() - INTERVAL '30 days';
 
     -- Get total AI cost
     SELECT COALESCE(SUM(estimated_cost_usd), 0) INTO total_ai_cost_usd
     FROM ai_usage_logs;
 
     -- Build JSON result
-    result := json_build_object(
+-- [HEADER]     result := json_build_object(
         'totalUsers', total_users_count,
         'totalContracts', total_contracts_count,
         'totalRevenue', total_revenue_amount,
@@ -7075,14 +7109,14 @@ END;
 $$;
 -- AI Conversations Table (Compact Mode)
 CREATE TABLE IF NOT EXISTS public.ai_conversations (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    title TEXT,
-    messages JSONB DEFAULT '[]'::jsonb,
-    total_cost_usd NUMERIC(10, 6) DEFAULT 0,
-    metadata JSONB DEFAULT '{}'::jsonb,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+-- [HEADER]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [HEADER]     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [HEADER]     title TEXT,
+-- [HEADER]     messages JSONB DEFAULT '[]'::jsonb,
+-- [HEADER]     total_cost_usd NUMERIC(10, 6) DEFAULT 0,
+-- [HEADER]     metadata JSONB DEFAULT '{}'::jsonb,
+-- [HEADER]     created_at TIMESTAMPTZ DEFAULT NOW(),
+-- [HEADER]     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Enable RLS
@@ -7091,32 +7125,32 @@ ALTER TABLE public.ai_conversations ENABLE ROW LEVEL SECURITY;
 -- Users can manage their own conversations
 DROP POLICY IF EXISTS "Users can view own AI conversations" ON public.ai_conversations;
 CREATE POLICY "Users can view own AI conversations"
-    ON public.ai_conversations FOR SELECT
+-- [HEADER]     ON public.ai_conversations FOR SELECT
     USING (auth.uid() = user_id);
 
 DROP POLICY IF EXISTS "Users can delete own AI conversations" ON public.ai_conversations;
 CREATE POLICY "Users can delete own AI conversations"
-    ON public.ai_conversations FOR DELETE
+-- [HEADER]     ON public.ai_conversations FOR DELETE
     USING (auth.uid() = user_id);
 
 -- Admins can view everything
 DROP POLICY IF EXISTS "Admins can view all AI conversations" ON public.ai_conversations;
 CREATE POLICY "Admins can view all AI conversations"
-    ON public.ai_conversations FOR SELECT
+-- [HEADER]     ON public.ai_conversations FOR SELECT
     USING (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [HEADER]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
 -- RPC to safely append messages and update cost
 -- This prevents race conditions and handles the JSONB manipulation on the server
 CREATE OR REPLACE FUNCTION public.append_ai_messages(
-    p_conversation_id UUID,
-    p_new_messages JSONB,
-    p_cost_usd NUMERIC DEFAULT 0,
-    p_user_id UUID DEFAULT NULL
+-- [HEADER]     p_conversation_id UUID,
+-- [HEADER]     p_new_messages JSONB,
+-- [HEADER]     p_cost_usd NUMERIC DEFAULT 0,
+-- [HEADER]     p_user_id UUID DEFAULT NULL
 )
 RETURNS UUID
 LANGUAGE plpgsql
@@ -7132,16 +7166,16 @@ BEGIN
     -- Update existing or insert new
     INSERT INTO public.ai_conversations (id, user_id, messages, total_cost_usd, updated_at)
     VALUES (
-        p_conversation_id,
-        v_final_user_id,
-        p_new_messages,
-        p_cost_usd,
-        NOW()
+-- [HEADER]         p_conversation_id,
+-- [HEADER]         v_final_user_id,
+-- [HEADER]         p_new_messages,
+-- [HEADER]         p_cost_usd,
+-- [HEADER]         NOW()
     )
-    ON CONFLICT (id) DO UPDATE
+-- [HEADER]     ON CONFLICT (id) DO UPDATE
     SET messages = public.ai_conversations.messages || EXCLUDED.messages,
-        total_cost_usd = public.ai_conversations.total_cost_usd + EXCLUDED.total_cost_usd,
-        updated_at = NOW()
+-- [HEADER]         total_cost_usd = public.ai_conversations.total_cost_usd + EXCLUDED.total_cost_usd,
+-- [HEADER]         updated_at = NOW()
     RETURNING id INTO v_conv_id;
 
     RETURN v_conv_id;
@@ -7155,7 +7189,7 @@ CREATE INDEX IF NOT EXISTS idx_ai_conversations_updated ON ai_conversations(upda
 -- Date: 2026-01-25
 
 ALTER TABLE property_documents 
-ADD COLUMN IF NOT EXISTS invoice_number TEXT;
+-- [HEADER] ADD COLUMN IF NOT EXISTS invoice_number TEXT;
 
 -- Create an index for faster duplicate checks
 CREATE INDEX IF NOT EXISTS idx_property_documents_duplicate_check 
@@ -7165,7 +7199,7 @@ ON property_documents(vendor_name, document_date, invoice_number);
 
 -- 1. Add metadata column to crm_interactions
 ALTER TABLE public.crm_interactions 
-ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;
+-- [HEADER] ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;
 
 -- 2. Add 'whatsapp' and 'text' to crm_interaction_type if needed
 -- Note: 'chat' is already used for Bot, we'll use 'human_chat' for manual entries or real-time human chat
@@ -7173,28 +7207,28 @@ DO $$
 BEGIN
     ALTER TYPE crm_interaction_type ADD VALUE IF NOT EXISTS 'human_chat';
     ALTER TYPE crm_interaction_type ADD VALUE IF NOT EXISTS 'whatsapp';
-EXCEPTION
+-- [HEADER] EXCEPTION
     WHEN others THEN NULL;
 END $$;
 
 -- 3. Create Human Chat Tables for real-time support (Phase 3 Prep)
 CREATE TABLE IF NOT EXISTS public.human_conversations (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    admin_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-    status TEXT DEFAULT 'active' CHECK (status IN ('active', 'closed')),
-    last_message_at TIMESTAMPTZ DEFAULT NOW(),
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+-- [HEADER]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [HEADER]     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [HEADER]     admin_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+-- [HEADER]     status TEXT DEFAULT 'active' CHECK (status IN ('active', 'closed')),
+-- [HEADER]     last_message_at TIMESTAMPTZ DEFAULT NOW(),
+-- [HEADER]     created_at TIMESTAMPTZ DEFAULT NOW(),
+-- [HEADER]     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS public.human_messages (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    conversation_id UUID REFERENCES public.human_conversations(id) ON DELETE CASCADE,
-    sender_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-    sender_role TEXT CHECK (sender_role IN ('user', 'admin')),
-    content TEXT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- [HEADER]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [HEADER]     conversation_id UUID REFERENCES public.human_conversations(id) ON DELETE CASCADE,
+-- [HEADER]     sender_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+-- [HEADER]     sender_role TEXT CHECK (sender_role IN ('user', 'admin')),
+-- [HEADER]     content TEXT NOT NULL,
+-- [HEADER]     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- RLS for Human Chats
@@ -7203,10 +7237,12 @@ ALTER TABLE public.human_messages ENABLE ROW LEVEL SECURITY;
 
 -- Admins can do everything
 DROP POLICY IF EXISTS "Admins manage human conversations" ON public.human_conversations;
+DROP POLICY IF EXISTS "Admins manage human conversations" ON public.human_conversations;
 CREATE POLICY "Admins manage human conversations" ON public.human_conversations
 AS PERMISSIVE FOR ALL TO authenticated
 USING (EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin'));
 
+DROP POLICY IF EXISTS "Admins manage human messages" ON public.human_messages;
 DROP POLICY IF EXISTS "Admins manage human messages" ON public.human_messages;
 CREATE POLICY "Admins manage human messages" ON public.human_messages
 AS PERMISSIVE FOR ALL TO authenticated
@@ -7214,37 +7250,39 @@ USING (EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'adm
 
 -- Users can see their own conversations
 DROP POLICY IF EXISTS "Users view own human conversations" ON public.human_conversations;
+DROP POLICY IF EXISTS "Users view own human conversations" ON public.human_conversations;
 CREATE POLICY "Users view own human conversations" ON public.human_conversations
 FOR SELECT TO authenticated
 USING (auth.uid() = user_id);
 
 DROP POLICY IF EXISTS "Users view/send own human messages" ON public.human_messages;
+DROP POLICY IF EXISTS "Users view/send own human messages" ON public.human_messages;
 CREATE POLICY "Users view/send own human messages" ON public.human_messages
 FOR ALL TO authenticated
 USING (
-    EXISTS (
+-- [HEADER]     EXISTS (
         SELECT 1 FROM public.human_conversations 
-        WHERE id = public.human_messages.conversation_id AND user_id = auth.uid()
+-- [HEADER]         WHERE id = public.human_messages.conversation_id AND user_id = auth.uid()
     )
 );
 -- Create human_conversations table
 CREATE TABLE IF NOT EXISTS public.human_conversations (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    admin_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-    status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'closed')),
-    last_message_at TIMESTAMPTZ DEFAULT NOW(),
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- [HEADER]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [HEADER]     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [HEADER]     admin_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+-- [HEADER]     status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'closed')),
+-- [HEADER]     last_message_at TIMESTAMPTZ DEFAULT NOW(),
+-- [HEADER]     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Create human_messages table
 CREATE TABLE IF NOT EXISTS public.human_messages (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    conversation_id UUID NOT NULL REFERENCES public.human_conversations(id) ON DELETE CASCADE,
-    sender_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    role TEXT NOT NULL CHECK (role IN ('user', 'admin')),
-    content TEXT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- [HEADER]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [HEADER]     conversation_id UUID NOT NULL REFERENCES public.human_conversations(id) ON DELETE CASCADE,
+-- [HEADER]     sender_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [HEADER]     role TEXT NOT NULL CHECK (role IN ('user', 'admin')),
+-- [HEADER]     content TEXT NOT NULL,
+-- [HEADER]     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Enable RLS
@@ -7254,87 +7292,87 @@ ALTER TABLE public.human_messages ENABLE ROW LEVEL SECURITY;
 -- Policies for humman_conversations
 DROP POLICY IF EXISTS "Admins can view all conversations" ON public.human_conversations;
 CREATE POLICY "Admins can view all conversations"
-    ON public.human_conversations
+-- [HEADER]     ON public.human_conversations
     FOR SELECT
     USING (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM public.user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [HEADER]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
 DROP POLICY IF EXISTS "Admins can insert conversations" ON public.human_conversations;
 CREATE POLICY "Admins can insert conversations"
-    ON public.human_conversations
+-- [HEADER]     ON public.human_conversations
     FOR INSERT
     WITH CHECK (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM public.user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [HEADER]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
 DROP POLICY IF EXISTS "Admins can update conversations" ON public.human_conversations;
 CREATE POLICY "Admins can update conversations"
-    ON public.human_conversations
+-- [HEADER]     ON public.human_conversations
     FOR UPDATE
     USING (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM public.user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [HEADER]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
 DROP POLICY IF EXISTS "Users can view their own conversations" ON public.human_conversations;
 CREATE POLICY "Users can view their own conversations"
-    ON public.human_conversations
+-- [HEADER]     ON public.human_conversations
     FOR SELECT
     USING (auth.uid() = user_id);
 
 -- Policies for human_messages
 DROP POLICY IF EXISTS "Admins can view all messages" ON public.human_messages;
 CREATE POLICY "Admins can view all messages"
-    ON public.human_messages
+-- [HEADER]     ON public.human_messages
     FOR SELECT
     USING (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM public.user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [HEADER]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
 DROP POLICY IF EXISTS "Admins can insert messages" ON public.human_messages;
 CREATE POLICY "Admins can insert messages"
-    ON public.human_messages
+-- [HEADER]     ON public.human_messages
     FOR INSERT
     WITH CHECK (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM public.user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [HEADER]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
 DROP POLICY IF EXISTS "Users can view messages in their conversations" ON public.human_messages;
 CREATE POLICY "Users can view messages in their conversations"
-    ON public.human_messages
+-- [HEADER]     ON public.human_messages
     FOR SELECT
     USING (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM public.human_conversations
-            WHERE id = human_messages.conversation_id AND user_id = auth.uid()
+-- [HEADER]             WHERE id = human_messages.conversation_id AND user_id = auth.uid()
         )
     );
 
 DROP POLICY IF EXISTS "Users can insert messages in their active conversations" ON public.human_messages;
 CREATE POLICY "Users can insert messages in their active conversations"
-    ON public.human_messages
+-- [HEADER]     ON public.human_messages
     FOR INSERT
     WITH CHECK (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM public.human_conversations
-            WHERE id = human_messages.conversation_id 
-            AND user_id = auth.uid()
-            AND status = 'active'
+-- [HEADER]             WHERE id = human_messages.conversation_id 
+-- [HEADER]             AND user_id = auth.uid()
+-- [HEADER]             AND status = 'active'
         )
     );
 
@@ -7355,9 +7393,9 @@ SELECT cron.schedule(
     '0 6 * * *',
     $$
     SELECT net.http_post(
-        url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/send-daily-admin-summary',
-        headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
-        body := '{}'::jsonb
+-- [HEADER]         url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/send-daily-admin-summary',
+-- [HEADER]         headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
+-- [HEADER]         body := '{}'::jsonb
     );
     $$
 );
@@ -7368,25 +7406,25 @@ DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_preferences' AND column_name = 'ai_data_consent') THEN
         ALTER TABLE user_preferences 
-        ADD COLUMN ai_data_consent BOOLEAN DEFAULT false;
+        ADD COLUMN IF NOT EXISTS ai_data_consent BOOLEAN DEFAULT false;
     END IF;
 END $$;
 -- Add 'live_chat_enabled' to system_settings
 INSERT INTO public.system_settings (key, value, description)
 VALUES 
   ('live_chat_enabled', 'true'::jsonb, 'Toggle the visibility of the Live Support button for all tenants.')
-ON CONFLICT (key) DO NOTHING;
+-- [HEADER] ON CONFLICT (key) DO NOTHING;
 -- Add 'hybrid_chat_mode' to system_settings
 INSERT INTO public.system_settings (key, value, description)
 VALUES 
   ('hybrid_chat_mode', 'true'::jsonb, 'Enable rule-based menu before AI chat to reduce costs.')
-ON CONFLICT (key) DO NOTHING;
+-- [HEADER] ON CONFLICT (key) DO NOTHING;
 -- Migration: Add Autonomous Notice Periods to Contracts
 -- Description: Adds columns to store legal notice periods extracted from the contract by AI.
 
 ALTER TABLE public.contracts 
-ADD COLUMN IF NOT EXISTS notice_period_days INTEGER,
-ADD COLUMN IF NOT EXISTS option_notice_days INTEGER;
+-- [HEADER] ADD COLUMN IF NOT EXISTS notice_period_days INTEGER,
+-- [HEADER] ADD COLUMN IF NOT EXISTS option_notice_days INTEGER;
 
 -- Migration: Add CRM Autopilot Toggle
 -- Description: Adds a global switch to enable/disable the automated CRM engine.
@@ -7394,7 +7432,7 @@ ADD COLUMN IF NOT EXISTS option_notice_days INTEGER;
 INSERT INTO public.system_settings (key, value, description)
 VALUES 
   ('crm_autopilot_enabled', 'true'::jsonb, 'Global toggle to enable or disable the automated CRM autopilot (rent reminders, lease expiry, ticket drafts).')
-ON CONFLICT (key) DO UPDATE 
+-- [HEADER] ON CONFLICT (key) DO UPDATE 
 SET description = EXCLUDED.description;
 -- Add granular autopilot and voice capture settings
 INSERT INTO system_settings (key, value, description)
@@ -7406,7 +7444,7 @@ VALUES
   ('auto_stagnant_ticket_drafting_enabled', 'true'::jsonb, 'Enable automatic drafting of follow-up messages for stagnant support tickets.'),
   ('voice_capture_enabled', 'false'::jsonb, 'Enable automated phone call capture and AI summarization (Twilio/Vapi).'),
   ('voice_api_key', '""'::jsonb, 'API Key for the voice capture service provider (Twilio/Vapi).')
-ON CONFLICT (key) DO UPDATE SET 
+-- [HEADER] ON CONFLICT (key) DO UPDATE SET 
   description = EXCLUDED.description;
 -- Migration: Embed Tenants in Contracts
 -- Description: Adds a 'tenants' jsonb column to the contracts table to support multiple tenants per contract and removes the need for a separate tenants table.
@@ -7424,9 +7462,9 @@ SET tenants = jsonb_build_array(
         'phone', t.phone
     )
 )
-FROM public.tenants t
-WHERE c.tenant_id = t.id
-AND (c.tenants IS NULL OR c.tenants = '[]'::jsonb);
+-- [HEADER] FROM public.tenants t
+-- [HEADER] WHERE c.tenant_id = t.id
+-- [HEADER] AND (c.tenants IS NULL OR c.tenants = '[]'::jsonb);
 
 -- 3. Update the view/trigger if necessary (none found in research)
 
@@ -7436,23 +7474,23 @@ DROP FUNCTION IF EXISTS get_users_with_stats();
 CREATE OR REPLACE FUNCTION get_users_with_stats()
 RETURNS TABLE (
     -- User Profile Columns
-    id UUID,
-    email TEXT,
-    full_name TEXT,
-    phone TEXT,
-    role user_role,
-    subscription_status subscription_status,
-    plan_id TEXT,
-    created_at TIMESTAMPTZ,
-    last_login TIMESTAMPTZ,
+-- [HEADER]     id UUID,
+-- [HEADER]     email TEXT,
+-- [HEADER]     full_name TEXT,
+-- [HEADER]     phone TEXT,
+-- [HEADER]     role user_role,
+-- [HEADER]     subscription_status subscription_status,
+-- [HEADER]     plan_id TEXT,
+-- [HEADER]     created_at TIMESTAMPTZ,
+-- [HEADER]     last_login TIMESTAMPTZ,
     
     -- Stats
-    properties_count BIGINT,
-    tenants_count BIGINT,
-    contracts_count BIGINT,
-    ai_sessions_count BIGINT,
-    open_tickets_count BIGINT,
-    storage_usage_mb NUMERIC
+-- [HEADER]     properties_count BIGINT,
+-- [HEADER]     tenants_count BIGINT,
+-- [HEADER]     contracts_count BIGINT,
+-- [HEADER]     ai_sessions_count BIGINT,
+-- [HEADER]     open_tickets_count BIGINT,
+-- [HEADER]     storage_usage_mb NUMERIC
 ) 
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -7471,32 +7509,32 @@ BEGIN
         up.last_login,
         
         -- Basic Counts
-        COALESCE(p.count, 0) as properties_count,
-        COALESCE(t.count, 0) as tenants_count,
-        COALESCE(c.count, 0) as contracts_count,
+-- [HEADER]         COALESCE(p.count, 0) as properties_count,
+-- [HEADER]         COALESCE(t.count, 0) as tenants_count,
+-- [HEADER]         COALESCE(c.count, 0) as contracts_count,
         
         -- AI Usage
-        COALESCE(ai.count, 0) as ai_sessions_count,
+-- [HEADER]         COALESCE(ai.count, 0) as ai_sessions_count,
         
         -- Support Status
-        COALESCE(st.count, 0) as open_tickets_count,
+-- [HEADER]         COALESCE(st.count, 0) as open_tickets_count,
         
         -- Storage Usage (Bytes to MB)
-        ROUND(COALESCE(usu.total_bytes, 0) / (1024.0 * 1024.0), 2) as storage_usage_mb
+-- [HEADER]         ROUND(COALESCE(usu.total_bytes, 0) / (1024.0 * 1024.0), 2) as storage_usage_mb
         
-    FROM user_profiles up
+-- [HEADER]     FROM user_profiles up
     -- Property Counts
-    LEFT JOIN (SELECT user_id, count(*) as count FROM properties GROUP BY user_id) p ON up.id = p.user_id
+-- [HEADER]     LEFT JOIN (SELECT user_id, count(*) as count FROM properties GROUP BY user_id) p ON up.id = p.user_id
     -- Tenant Counts
-    LEFT JOIN (SELECT user_id, count(*) as count FROM tenants GROUP BY user_id) t ON up.id = t.user_id
+-- [HEADER]     LEFT JOIN (SELECT user_id, count(*) as count FROM tenants GROUP BY user_id) t ON up.id = t.user_id
     -- Contract Counts
-    LEFT JOIN (SELECT user_id, count(*) as count FROM contracts GROUP BY user_id) c ON up.id = c.user_id
+-- [HEADER]     LEFT JOIN (SELECT user_id, count(*) as count FROM contracts GROUP BY user_id) c ON up.id = c.user_id
     -- AI Counts
-    LEFT JOIN (SELECT user_id, count(*) as count FROM ai_conversations GROUP BY user_id) ai ON up.id = ai.user_id
+-- [HEADER]     LEFT JOIN (SELECT user_id, count(*) as count FROM ai_conversations GROUP BY user_id) ai ON up.id = ai.user_id
     -- Open Support Tickets
-    LEFT JOIN (SELECT user_id, count(*) as count FROM support_tickets WHERE status != 'resolved' GROUP BY user_id) st ON up.id = st.user_id
+-- [HEADER]     LEFT JOIN (SELECT user_id, count(*) as count FROM support_tickets WHERE status != 'resolved' GROUP BY user_id) st ON up.id = st.user_id
     -- Storage Usage
-    LEFT JOIN user_storage_usage usu ON up.id = usu.user_id
+-- [HEADER]     LEFT JOIN user_storage_usage usu ON up.id = usu.user_id
     
     ORDER BY up.created_at DESC;
 END;
@@ -7579,7 +7617,7 @@ BEGIN
     SELECT COUNT(*) INTO total_automated_actions FROM automation_logs;
 
     -- Build JSON result
-    result := json_build_object(
+-- [HEADER]     result := json_build_object(
         'totalUsers', total_users_count,
         'totalContracts', total_contracts_count,
         'totalRevenue', total_revenue_amount,
@@ -7598,21 +7636,21 @@ DO $$
 BEGIN
     -- 1. Ensure 'first_name' and 'last_name' columns exist in user_profiles
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_profiles' AND column_name = 'first_name') THEN
-        ALTER TABLE public.user_profiles ADD COLUMN first_name TEXT;
+        ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS first_name TEXT;
     END IF;
 
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_profiles' AND column_name = 'last_name') THEN
-        ALTER TABLE public.user_profiles ADD COLUMN last_name TEXT;
+        ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS last_name TEXT;
     END IF;
 
     -- 2. Ensure 'subscription_plans' has the 'free' plan
     INSERT INTO public.subscription_plans (id, name, price_monthly, max_properties, features)
     VALUES ('free', 'Free Forever', 0, 1, '{"support_level": "basic"}'::jsonb)
-    ON CONFLICT (id) DO NOTHING;
+-- [HEADER]     ON CONFLICT (id) DO NOTHING;
 
     -- 3. Ensure 'plan_id' column exists in user_profiles
      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_profiles' AND column_name = 'plan_id') THEN
-        ALTER TABLE public.user_profiles ADD COLUMN plan_id TEXT REFERENCES public.subscription_plans(id) DEFAULT 'free';
+        ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS plan_id TEXT REFERENCES public.subscription_plans(id) DEFAULT 'free';
     END IF;
 
 END $$;
@@ -7632,28 +7670,28 @@ BEGIN
     END IF;
 
     INSERT INTO public.user_profiles (
-        id, 
-        email, 
-        full_name,
-        first_name,
-        last_name,
-        role, 
-        subscription_status, 
-        plan_id
+-- [HEADER]         id, 
+-- [HEADER]         email, 
+-- [HEADER]         full_name,
+-- [HEADER]         first_name,
+-- [HEADER]         last_name,
+-- [HEADER]         role, 
+-- [HEADER]         subscription_status, 
+-- [HEADER]         plan_id
     )
     VALUES (
-        NEW.id,
-        NEW.email,
-        COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
-        COALESCE(NEW.raw_user_meta_data->>'first_name', split_part(NEW.raw_user_meta_data->>'full_name', ' ', 1), 'User'),
-        COALESCE(NEW.raw_user_meta_data->>'last_name', 'User'),
+-- [HEADER]         NEW.id,
+-- [HEADER]         NEW.email,
+-- [HEADER]         COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
+-- [HEADER]         COALESCE(NEW.raw_user_meta_data->>'first_name', split_part(NEW.raw_user_meta_data->>'full_name', ' ', 1), 'User'),
+-- [HEADER]         COALESCE(NEW.raw_user_meta_data->>'last_name', 'User'),
         'user', -- Default role
         'active', -- Default status
-        default_plan_id
+-- [HEADER]         default_plan_id
     )
-    ON CONFLICT (id) DO UPDATE SET
-        email = EXCLUDED.email,
-        full_name = COALESCE(EXCLUDED.full_name, user_profiles.full_name),
+-- [HEADER]     ON CONFLICT (id) DO UPDATE SET
+-- [HEADER]         email = EXCLUDED.email,
+-- [HEADER]         full_name = COALESCE(EXCLUDED.full_name, user_profiles.full_name),
         updated_at = NOW();
 
     -- Link Past Invoices safely
@@ -7667,7 +7705,7 @@ BEGIN
     END;
 
     RETURN NEW;
-EXCEPTION WHEN OTHERS THEN
+-- [HEADER] EXCEPTION WHEN OTHERS THEN
     -- Log error but try to succeed if possible? 
     -- No, if profile fails, auth should fail. But give clear error.
     RAISE EXCEPTION 'Signup Failed: %', SQLERRM;
@@ -7676,60 +7714,61 @@ $$;
 
 -- 5. Ensure Trigger is Attached
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+DROP TRIGGER IF EXISTS "on_auth_user_created" ON auth.users;
 CREATE TRIGGER on_auth_user_created
-    AFTER INSERT ON auth.users
+-- [HEADER]     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 -- Create ticket_analysis table
 CREATE TABLE IF NOT EXISTS public.ticket_analysis (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    ticket_id UUID REFERENCES public.support_tickets(id) ON DELETE CASCADE,
-    sentiment_score FLOAT, -- -1.0 to 1.0
-    urgency_level TEXT CHECK (urgency_level IN ('low', 'medium', 'high', 'critical')),
-    category TEXT,
-    confidence_score FLOAT,
-    ai_summary TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- [HEADER]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [HEADER]     ticket_id UUID REFERENCES public.support_tickets(id) ON DELETE CASCADE,
+-- [HEADER]     sentiment_score FLOAT, -- -1.0 to 1.0
+-- [HEADER]     urgency_level TEXT CHECK (urgency_level IN ('low', 'medium', 'high', 'critical')),
+-- [HEADER]     category TEXT,
+-- [HEADER]     confidence_score FLOAT,
+-- [HEADER]     ai_summary TEXT,
+-- [HEADER]     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Create automation_rules table (System-wide or Admin managed rules)
 CREATE TABLE IF NOT EXISTS public.automation_rules (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name TEXT NOT NULL,
-    trigger_type TEXT NOT NULL, -- 'lease_expiry', 'rent_overdue', 'ticket_created'
-    condition JSONB, -- e.g. {"days_before": 60}
-    action_type TEXT NOT NULL, -- 'email', 'notification', 'auto_reply'
-    action_config JSONB, -- template_id, etc.
-    is_enabled BOOLEAN DEFAULT true,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+-- [HEADER]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [HEADER]     name TEXT NOT NULL,
+-- [HEADER]     trigger_type TEXT NOT NULL, -- 'lease_expiry', 'rent_overdue', 'ticket_created'
+-- [HEADER]     condition JSONB, -- e.g. {"days_before": 60}
+-- [HEADER]     action_type TEXT NOT NULL, -- 'email', 'notification', 'auto_reply'
+-- [HEADER]     action_config JSONB, -- template_id, etc.
+-- [HEADER]     is_enabled BOOLEAN DEFAULT true,
+-- [HEADER]     created_at TIMESTAMPTZ DEFAULT NOW(),
+-- [HEADER]     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Create automation_logs table
 CREATE TABLE IF NOT EXISTS public.automation_logs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    rule_id UUID REFERENCES public.automation_rules(id),
-    user_id UUID REFERENCES auth.users(id), -- Target user
-    entity_id UUID, -- contract_id, ticket_id, etc.
-    action_taken TEXT,
-    status TEXT, -- 'success', 'failed'
-    details JSONB,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- [HEADER]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [HEADER]     rule_id UUID REFERENCES public.automation_rules(id),
+-- [HEADER]     user_id UUID REFERENCES auth.users(id), -- Target user
+-- [HEADER]     entity_id UUID, -- contract_id, ticket_id, etc.
+-- [HEADER]     action_taken TEXT,
+-- [HEADER]     status TEXT, -- 'success', 'failed'
+-- [HEADER]     details JSONB,
+-- [HEADER]     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Create user_automation_settings table
 CREATE TABLE IF NOT EXISTS public.user_automation_settings (
-    user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    lease_expiry_days INTEGER DEFAULT 100,
-    extension_notice_days INTEGER DEFAULT 60,
-    rent_overdue_days INTEGER DEFAULT 5,
-    auto_reply_enabled BOOLEAN DEFAULT false,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+-- [HEADER]     user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [HEADER]     lease_expiry_days INTEGER DEFAULT 100,
+-- [HEADER]     extension_notice_days INTEGER DEFAULT 60,
+-- [HEADER]     rent_overdue_days INTEGER DEFAULT 5,
+-- [HEADER]     auto_reply_enabled BOOLEAN DEFAULT false,
+-- [HEADER]     created_at TIMESTAMPTZ DEFAULT NOW(),
+-- [HEADER]     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Add auto_reply_draft to support_tickets
 ALTER TABLE public.support_tickets 
-ADD COLUMN IF NOT EXISTS auto_reply_draft TEXT;
+-- [HEADER] ADD COLUMN IF NOT EXISTS auto_reply_draft TEXT;
 
 -- RLS Policies
 ALTER TABLE public.ticket_analysis ENABLE ROW LEVEL SECURITY;
@@ -7739,11 +7778,13 @@ ALTER TABLE public.user_automation_settings ENABLE ROW LEVEL SECURITY;
 
 -- Admins can view all ticket analysis
 DROP POLICY IF EXISTS "Admins can view all ticket analysis" ON public.ticket_analysis;
+DROP POLICY IF EXISTS "Admins can view all ticket analysis" ON public.ticket_analysis;
 CREATE POLICY "Admins can view all ticket analysis" ON public.ticket_analysis
     FOR SELECT TO authenticated
     USING (public.is_admin());
 
 -- Users can view their own automation settings
+DROP POLICY IF EXISTS "Users can view own automation settings" ON public.user_automation_settings;
 DROP POLICY IF EXISTS "Users can view own automation settings" ON public.user_automation_settings;
 CREATE POLICY "Users can view own automation settings" ON public.user_automation_settings
     FOR SELECT TO authenticated
@@ -7751,11 +7792,13 @@ CREATE POLICY "Users can view own automation settings" ON public.user_automation
 
 -- Users can update their own automation settings
 DROP POLICY IF EXISTS "Users can update own automation settings" ON public.user_automation_settings;
+DROP POLICY IF EXISTS "Users can update own automation settings" ON public.user_automation_settings;
 CREATE POLICY "Users can update own automation settings" ON public.user_automation_settings
     FOR UPDATE TO authenticated
     USING (auth.uid() = user_id);
 
 -- Insert policy for user automation settings (so they can create it initially)
+DROP POLICY IF EXISTS "Users can insert own automation settings" ON public.user_automation_settings;
 DROP POLICY IF EXISTS "Users can insert own automation settings" ON public.user_automation_settings;
 CREATE POLICY "Users can insert own automation settings" ON public.user_automation_settings
     FOR INSERT TO authenticated
@@ -7763,11 +7806,13 @@ CREATE POLICY "Users can insert own automation settings" ON public.user_automati
 
 -- Admins can manage automation rules
 DROP POLICY IF EXISTS "Admins can manage automation rules" ON public.automation_rules;
+DROP POLICY IF EXISTS "Admins can manage automation rules" ON public.automation_rules;
 CREATE POLICY "Admins can manage automation rules" ON public.automation_rules
     FOR ALL TO authenticated
     USING (public.is_admin());
 
 -- Admins can view logs
+DROP POLICY IF EXISTS "Admins can view automation logs" ON public.automation_logs;
 DROP POLICY IF EXISTS "Admins can view automation logs" ON public.automation_logs;
 CREATE POLICY "Admins can view automation logs" ON public.automation_logs
     FOR SELECT TO authenticated
@@ -7776,10 +7821,10 @@ CREATE POLICY "Admins can view automation logs" ON public.automation_logs
 -- These control the "Dispatcher" logic for outbound alerts
 
 ALTER TABLE IF EXISTS public.user_automation_settings 
-ADD COLUMN IF NOT EXISTS email_notifications_enabled BOOLEAN DEFAULT true,
-ADD COLUMN IF NOT EXISTS sms_notifications_enabled BOOLEAN DEFAULT false,
-ADD COLUMN IF NOT EXISTS whatsapp_notifications_enabled BOOLEAN DEFAULT false,
-ADD COLUMN IF NOT EXISTS push_notifications_enabled BOOLEAN DEFAULT true;
+-- [HEADER] ADD COLUMN IF NOT EXISTS email_notifications_enabled BOOLEAN DEFAULT true,
+-- [HEADER] ADD COLUMN IF NOT EXISTS sms_notifications_enabled BOOLEAN DEFAULT false,
+-- [HEADER] ADD COLUMN IF NOT EXISTS whatsapp_notifications_enabled BOOLEAN DEFAULT false,
+-- [HEADER] ADD COLUMN IF NOT EXISTS push_notifications_enabled BOOLEAN DEFAULT true;
 
 -- Comment on columns for clarity
 -- Create Webhooks for Reactive Customer Engagement
@@ -7797,7 +7842,7 @@ RETURNS TRIGGER AS $$
 DECLARE
   payload JSONB;
 BEGIN
-  payload := jsonb_build_object(
+-- [HEADER]   payload := jsonb_build_object(
     'type', TG_OP,
     'table', TG_TABLE_NAME,
     'record', row_to_json(NEW),
@@ -7808,13 +7853,13 @@ BEGIN
   -- In Supabase migrations, we often use the net.http_post helper
   -- For security, the Edge Function usually checks for the service role key anyway.
   PERFORM
-    net.http_post(
-      url := 'https://' || (SELECT value FROM system_settings WHERE key = 'supabase_project_ref') || '.supabase.co/functions/v1/on-event-trigger',
-      headers := jsonb_build_object(
+-- [HEADER]     net.http_post(
+-- [HEADER]       url := 'https://' || (SELECT value FROM system_settings WHERE key = 'supabase_project_ref') || '.supabase.co/functions/v1/on-event-trigger',
+-- [HEADER]       headers := jsonb_build_object(
         'Content-Type', 'application/json',
         'Authorization', 'Bearer ' || (SELECT value FROM system_settings WHERE key = 'supabase_service_role_key')
       ),
-      body := payload
+-- [HEADER]       body := payload
     );
 
   RETURN NEW;
@@ -7823,18 +7868,21 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 3. Attach Triggers
 DROP TRIGGER IF EXISTS tr_on_new_ticket ON public.support_tickets;
+DROP TRIGGER IF EXISTS "tr_on_new_ticket" ON public.support_tickets;
 CREATE TRIGGER tr_on_new_ticket
-AFTER INSERT ON public.support_tickets
+-- [HEADER] AFTER INSERT ON public.support_tickets
 FOR EACH ROW EXECUTE FUNCTION public.handle_automated_engagement_webhook();
 
 DROP TRIGGER IF EXISTS tr_on_payment_update ON public.payments;
+DROP TRIGGER IF EXISTS "tr_on_payment_update" ON public.payments;
 CREATE TRIGGER tr_on_payment_update
-AFTER UPDATE ON public.payments
+-- [HEADER] AFTER UPDATE ON public.payments
 FOR EACH ROW EXECUTE FUNCTION public.handle_automated_engagement_webhook();
 
 DROP TRIGGER IF EXISTS tr_on_new_contract ON public.contracts;
+DROP TRIGGER IF EXISTS "tr_on_new_contract" ON public.contracts;
 CREATE TRIGGER tr_on_new_contract
-AFTER INSERT ON public.contracts
+-- [HEADER] AFTER INSERT ON public.contracts
 FOR EACH ROW EXECUTE FUNCTION public.handle_automated_engagement_webhook();
 -- ============================================
 -- UPDATED ADMIN STATS FUNCTION (v2)
@@ -7882,7 +7930,7 @@ BEGIN
     SELECT MAX(created_at) INTO last_automation_run FROM automation_logs;
 
     -- 3. Build Result
-    result := json_build_object(
+-- [HEADER]     result := json_build_object(
         'totalUsers', total_users_count,
         'totalContracts', total_contracts_count,
         'totalRevenue', total_revenue_amount,
@@ -7902,12 +7950,12 @@ $$;
 
 -- 1. Create Cleanup Queue Table
 CREATE TABLE IF NOT EXISTS public.storage_cleanup_queue (
-    id BIGSERIAL PRIMARY KEY,
-    bucket_id TEXT NOT NULL,
-    storage_path TEXT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    processed_at TIMESTAMPTZ,
-    error_log TEXT
+-- [HEADER]     id BIGSERIAL PRIMARY KEY,
+-- [HEADER]     bucket_id TEXT NOT NULL,
+-- [HEADER]     storage_path TEXT NOT NULL,
+-- [HEADER]     created_at TIMESTAMPTZ DEFAULT NOW(),
+-- [HEADER]     processed_at TIMESTAMPTZ,
+-- [HEADER]     error_log TEXT
 );
 
 -- Enable RLS (Internal only, but good practice)
@@ -7928,8 +7976,9 @@ $$;
 
 -- 3. Attach Trigger to property_documents
 DROP TRIGGER IF EXISTS on_document_deleted_cleanup ON public.property_documents;
+DROP TRIGGER IF EXISTS "on_document_deleted_cleanup" ON public.property_documents;
 CREATE TRIGGER on_document_deleted_cleanup
-AFTER DELETE ON public.property_documents
+-- [HEADER] AFTER DELETE ON public.property_documents
 FOR EACH ROW
 EXECUTE FUNCTION public.queue_storage_cleanup();
 
@@ -7942,8 +7991,8 @@ INSERT INTO public.system_settings (key, value, description)
 VALUES 
     ('auto_autopilot_master_enabled', 'false'::jsonb, 'Master switch for all background automation logic (Lease expiry, overdue rent, etc).'),
     ('auto_monthly_reports_enabled', 'false'::jsonb, 'Whether to automatically generate monthly performance notifications for property owners.')
-ON CONFLICT (key) DO UPDATE SET 
-    value = EXCLUDED.value,
+-- [HEADER] ON CONFLICT (key) DO UPDATE SET 
+-- [HEADER]     value = EXCLUDED.value,
     description = EXCLUDED.description;
 
 -- Remove the old key if it exists
@@ -7954,10 +8003,10 @@ DELETE FROM public.system_settings WHERE key = 'crm_autopilot_enabled';
 -- 1. Create a helper function for Edge Functions to log audits
 -- This uses SECURITY DEFINER to bypass RLS since Edge Functions use Service Role
 CREATE OR REPLACE FUNCTION public.log_ai_contract_audit(
-    p_user_id UUID,
-    p_action TEXT,
-    p_contract_id UUID DEFAULT NULL,
-    p_details JSONB DEFAULT '{}'
+-- [HEADER]     p_user_id UUID,
+-- [HEADER]     p_action TEXT,
+-- [HEADER]     p_contract_id UUID DEFAULT NULL,
+-- [HEADER]     p_details JSONB DEFAULT '{}'
 )
 RETURNS VOID AS $$
 BEGIN
@@ -7985,7 +8034,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- 2. Ensure audit_logs is visible to admins
 DROP POLICY IF EXISTS "Admins can view all audit logs" ON public.audit_logs;
 CREATE POLICY "Admins can view all audit logs"
-    ON public.audit_logs FOR SELECT
+-- [HEADER]     ON public.audit_logs FOR SELECT
     USING (EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin'));
 
 -- 3. Grant execute to service_role
@@ -7997,59 +8046,34 @@ GRANT EXECUTE ON FUNCTION public.log_ai_contract_audit TO authenticated;
 
 -- 1. Create index_data table (if missing)
 CREATE TABLE IF NOT EXISTS index_data (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  index_type TEXT NOT NULL CHECK (index_type IN ('cpi', 'housing', 'construction', 'usd', 'eur')),
+-- [HEADER]   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [HEADER]   index_type TEXT NOT NULL CHECK (index_type IN ('cpi', 'housing', 'construction', 'usd', 'eur')),
   date TEXT NOT NULL, -- Format: 'YYYY-MM'
-  value DECIMAL(10, 4) NOT NULL,
-  source TEXT DEFAULT 'cbs' CHECK (source IN ('cbs', 'exchange-api', 'manual', 'boi')),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  UNIQUE(index_type, date)
+-- [HEADER]   value DECIMAL(10, 4) NOT NULL,
+-- [HEADER]   source TEXT DEFAULT 'cbs' CHECK (source IN ('cbs', 'exchange-api', 'manual', 'boi')),
+-- [HEADER]   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+-- [HEADER]   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+-- [HEADER]   UNIQUE(index_type, date)
 );
 
 -- 2. Create index_bases table (if missing)
 CREATE TABLE IF NOT EXISTS index_bases (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    index_type TEXT NOT NULL CHECK (index_type IN ('cpi', 'housing', 'construction', 'usd', 'eur')),
-    base_period_start DATE NOT NULL,
-    base_value NUMERIC NOT NULL DEFAULT 100.0,
-    previous_base_period_start DATE,
-    chain_factor NUMERIC,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    UNIQUE(index_type, base_period_start)
+-- [HEADER]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [HEADER]     index_type TEXT NOT NULL CHECK (index_type IN ('cpi', 'housing', 'construction', 'usd', 'eur')),
+-- [HEADER]     base_period_start DATE NOT NULL,
+-- [HEADER]     base_value NUMERIC NOT NULL DEFAULT 100.0,
+-- [HEADER]     previous_base_period_start DATE,
+-- [HEADER]     chain_factor NUMERIC,
+-- [HEADER]     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+-- [HEADER]     UNIQUE(index_type, base_period_start)
 );
 
 -- 3. Seed Construction Inputs Index (Series 200010, Base 2011=100)
-INSERT INTO index_data (index_type, date, value, source)
-VALUES 
-    ('construction', '2025-01', 123.4, 'manual'),
-    ('construction', '2024-12', 123.0, 'manual'),
-    ('construction', '2024-11', 121.8, 'manual'),
-    ('construction', '2024-10', 121.5, 'manual'),
-    ('construction', '2024-09', 121.2, 'manual'),
-    ('construction', '2024-08', 121.0, 'manual')
-ON CONFLICT (index_type, date) DO UPDATE SET value = EXCLUDED.value;
-
+-- [Index Data Stripped]
 -- 4. Seed Housing Price Index (Series 40010)
-INSERT INTO index_data (index_type, date, value, source)
-VALUES 
-    ('housing', '2025-01', 105.5, 'manual'),
-    ('housing', '2024-12', 105.1, 'manual'),
-    ('housing', '2024-11', 104.8, 'manual'),
-    ('housing', '2024-10', 104.5, 'manual'),
-    ('housing', '2024-09', 104.2, 'manual'),
-    ('housing', '2024-08', 104.0, 'manual')
-ON CONFLICT (index_type, date) DO UPDATE SET value = EXCLUDED.value;
-
+-- [Index Data Stripped]
 -- 5. Seed Exchange Rates (USD/EUR)
-INSERT INTO index_data (index_type, date, value, source)
-VALUES 
-    ('usd', '2025-01', 3.73, 'manual'),
-    ('eur', '2025-01', 4.05, 'manual'),
-    ('usd', '2024-12', 3.70, 'manual'),
-    ('eur', '2024-12', 4.02, 'manual')
-ON CONFLICT (index_type, date) DO UPDATE SET value = EXCLUDED.value;
-
+-- [Index Data Stripped]
 -- 6. Insert Base Periods & Chain Factors
 INSERT INTO index_bases (index_type, base_period_start, base_value, chain_factor)
 VALUES 
@@ -8059,7 +8083,7 @@ VALUES
     ('cpi', '2025-01-01', 100.0, 1.074),
     ('cpi', '2023-01-01', 100.0, 1.026),
     ('cpi', '2021-01-01', 100.0, 1.0)
-ON CONFLICT (index_type, base_period_start) DO UPDATE 
+-- [HEADER] ON CONFLICT (index_type, base_period_start) DO UPDATE 
 SET base_value = EXCLUDED.base_value, chain_factor = EXCLUDED.chain_factor;
 
 -- 7. RLS Policies (Safeguard)
@@ -8069,20 +8093,20 @@ ALTER TABLE index_bases ENABLE ROW LEVEL SECURITY;
 -- Allow all authenticated users to read
 DO $$ BEGIN
     CREATE POLICY "Allow authenticated read index_data" ON index_data FOR SELECT TO authenticated USING (true);
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+-- [HEADER] EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
     CREATE POLICY "Allow authenticated read index_bases" ON index_bases FOR SELECT TO authenticated USING (true);
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+-- [HEADER] EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Allow service_role to manage (for Edge Functions)
 DO $$ BEGIN
     CREATE POLICY "Allow full access for service_role index_data" ON index_data FOR ALL TO service_role USING (true) WITH CHECK (true);
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+-- [HEADER] EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
     CREATE POLICY "Allow full access for service_role index_bases" ON index_bases FOR ALL TO service_role USING (true) WITH CHECK (true);
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+-- [HEADER] EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 -- Migration: add_phone_to_profiles
 -- Description: Adds a phone column to user_profiles and updates handle_new_user trigger.
 
@@ -8093,7 +8117,7 @@ BEGIN
         SELECT 1 FROM information_schema.columns 
         WHERE table_name = 'user_profiles' AND column_name = 'phone'
     ) THEN
-        ALTER TABLE public.user_profiles ADD COLUMN phone TEXT;
+        ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS phone TEXT;
     END IF;
 END $$;
 
@@ -8107,7 +8131,7 @@ BEGIN
     WHERE up.id = au.id
     AND up.phone IS NULL
     AND au.phone IS NOT NULL;
-EXCEPTION WHEN OTHERS THEN
+-- [HEADER] EXCEPTION WHEN OTHERS THEN
     -- Fallback for environments where direct auth.users access isn't allowed without superuser
     RAISE NOTICE 'Backfill from auth.users failed: %', SQLERRM;
 END $$;
@@ -8127,35 +8151,35 @@ BEGIN
     END IF;
 
     INSERT INTO public.user_profiles (
-        id, 
-        email, 
-        full_name,
-        first_name,
-        last_name,
-        phone,
-        role, 
-        subscription_status, 
-        plan_id
+-- [HEADER]         id, 
+-- [HEADER]         email, 
+-- [HEADER]         full_name,
+-- [HEADER]         first_name,
+-- [HEADER]         last_name,
+-- [HEADER]         phone,
+-- [HEADER]         role, 
+-- [HEADER]         subscription_status, 
+-- [HEADER]         plan_id
     )
     VALUES (
-        NEW.id,
-        NEW.email,
-        COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
-        COALESCE(NEW.raw_user_meta_data->>'first_name', split_part(NEW.raw_user_meta_data->>'full_name', ' ', 1), 'User'),
-        COALESCE(NEW.raw_user_meta_data->>'last_name', 'User'),
-        NEW.phone,
+-- [HEADER]         NEW.id,
+-- [HEADER]         NEW.email,
+-- [HEADER]         COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
+-- [HEADER]         COALESCE(NEW.raw_user_meta_data->>'first_name', split_part(NEW.raw_user_meta_data->>'full_name', ' ', 1), 'User'),
+-- [HEADER]         COALESCE(NEW.raw_user_meta_data->>'last_name', 'User'),
+-- [HEADER]         NEW.phone,
         'user', 
         'active', 
-        default_plan_id
+-- [HEADER]         default_plan_id
     )
-    ON CONFLICT (id) DO UPDATE SET
-        email = EXCLUDED.email,
-        full_name = COALESCE(EXCLUDED.full_name, user_profiles.full_name),
-        phone = COALESCE(EXCLUDED.phone, user_profiles.phone),
+-- [HEADER]     ON CONFLICT (id) DO UPDATE SET
+-- [HEADER]         email = EXCLUDED.email,
+-- [HEADER]         full_name = COALESCE(EXCLUDED.full_name, user_profiles.full_name),
+-- [HEADER]         phone = COALESCE(EXCLUDED.phone, user_profiles.phone),
         updated_at = NOW();
 
     RETURN NEW;
-EXCEPTION WHEN OTHERS THEN
+-- [HEADER] EXCEPTION WHEN OTHERS THEN
     RAISE EXCEPTION 'Signup Failed: %', SQLERRM;
 END;
 $$;
@@ -8172,13 +8196,13 @@ SELECT cron.schedule(
     '0 15 * * *',  -- Every day at 15:00 UTC
     $$
     SELECT
-        net.http_post(
-            url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/fetch-index-data',
-            headers := jsonb_build_object(
+-- [HEADER]         net.http_post(
+-- [HEADER]             url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/fetch-index-data',
+-- [HEADER]             headers := jsonb_build_object(
                 'Content-Type', 'application/json',
                 'Authorization', 'Bearer ' || current_setting('request.header.apikey', true)
             ),
-            body := '{}'::jsonb
+-- [HEADER]             body := '{}'::jsonb
         ) AS request_id;
     $$
 );
@@ -8191,22 +8215,22 @@ DROP FUNCTION IF EXISTS get_users_with_stats();
 -- 2. Create refined version with explicit column matching
 CREATE OR REPLACE FUNCTION get_users_with_stats()
 RETURNS TABLE (
-    id UUID,
-    email TEXT,
-    full_name TEXT,
-    phone TEXT,
-    role TEXT,
-    subscription_status TEXT,
-    plan_id TEXT,
-    created_at TIMESTAMPTZ,
-    last_login TIMESTAMPTZ,
-    properties_count BIGINT,
-    tenants_count BIGINT,
-    contracts_count BIGINT,
-    ai_sessions_count BIGINT,
-    open_tickets_count BIGINT,
-    storage_usage_mb NUMERIC,
-    is_super_admin BOOLEAN
+-- [HEADER]     id UUID,
+-- [HEADER]     email TEXT,
+-- [HEADER]     full_name TEXT,
+-- [HEADER]     phone TEXT,
+-- [HEADER]     role TEXT,
+-- [HEADER]     subscription_status TEXT,
+-- [HEADER]     plan_id TEXT,
+-- [HEADER]     created_at TIMESTAMPTZ,
+-- [HEADER]     last_login TIMESTAMPTZ,
+-- [HEADER]     properties_count BIGINT,
+-- [HEADER]     tenants_count BIGINT,
+-- [HEADER]     contracts_count BIGINT,
+-- [HEADER]     ai_sessions_count BIGINT,
+-- [HEADER]     open_tickets_count BIGINT,
+-- [HEADER]     storage_usage_mb NUMERIC,
+-- [HEADER]     is_super_admin BOOLEAN
 ) 
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -8225,37 +8249,37 @@ BEGIN
         up.last_login,
         
         -- Asset Stats
-        COALESCE(p.count, 0)::BIGINT as properties_count,
-        COALESCE(t.count, 0)::BIGINT as tenants_count,
-        COALESCE(c.count, 0)::BIGINT as contracts_count,
+-- [HEADER]         COALESCE(p.count, 0)::BIGINT as properties_count,
+-- [HEADER]         COALESCE(t.count, 0)::BIGINT as tenants_count,
+-- [HEADER]         COALESCE(c.count, 0)::BIGINT as contracts_count,
         
         -- Usage Stats
-        COALESCE(ai.count, 0)::BIGINT as ai_sessions_count,
+-- [HEADER]         COALESCE(ai.count, 0)::BIGINT as ai_sessions_count,
         
         -- Support Stats
-        COALESCE(st.count, 0)::BIGINT as open_tickets_count,
+-- [HEADER]         COALESCE(st.count, 0)::BIGINT as open_tickets_count,
         
         -- Storage Usage (Bytes to MB)
-        ROUND(COALESCE(usu.total_bytes, 0) / (1024.0 * 1024.0), 2)::NUMERIC as storage_usage_mb,
+-- [HEADER]         ROUND(COALESCE(usu.total_bytes, 0) / (1024.0 * 1024.0), 2)::NUMERIC as storage_usage_mb,
         
         -- Permissions
-        COALESCE(up.is_super_admin, false) as is_super_admin
+-- [HEADER]         COALESCE(up.is_super_admin, false) as is_super_admin
         
-    FROM user_profiles up
+-- [HEADER]     FROM user_profiles up
     -- Property Counts
-    LEFT JOIN (SELECT user_id, count(*) as count FROM properties GROUP BY user_id) p ON up.id = p.user_id
+-- [HEADER]     LEFT JOIN (SELECT user_id, count(*) as count FROM properties GROUP BY user_id) p ON up.id = p.user_id
     -- Tenant Counts
-    LEFT JOIN (SELECT user_id, count(*) as count FROM tenants GROUP BY user_id) t ON up.id = t.user_id
+-- [HEADER]     LEFT JOIN (SELECT user_id, count(*) as count FROM tenants GROUP BY user_id) t ON up.id = t.user_id
     -- Contract Counts
-    LEFT JOIN (SELECT user_id, count(*) as count FROM contracts GROUP BY user_id) c ON up.id = c.user_id
+-- [HEADER]     LEFT JOIN (SELECT user_id, count(*) as count FROM contracts GROUP BY user_id) c ON up.id = c.user_id
     -- AI Counts
-    LEFT JOIN (SELECT user_id, count(*) as count FROM ai_conversations GROUP BY user_id) ai ON up.id = ai.user_id
+-- [HEADER]     LEFT JOIN (SELECT user_id, count(*) as count FROM ai_conversations GROUP BY user_id) ai ON up.id = ai.user_id
     -- Open Support Tickets
-    LEFT JOIN (SELECT user_id, count(*) as count FROM support_tickets WHERE status != 'resolved' GROUP BY user_id) st ON up.id = st.user_id
+-- [HEADER]     LEFT JOIN (SELECT user_id, count(*) as count FROM support_tickets WHERE status != 'resolved' GROUP BY user_id) st ON up.id = st.user_id
     -- Storage Usage
-    LEFT JOIN (SELECT user_id, total_bytes FROM user_storage_usage) usu ON up.id = usu.user_id
+-- [HEADER]     LEFT JOIN (SELECT user_id, total_bytes FROM user_storage_usage) usu ON up.id = usu.user_id
     
-    WHERE up.deleted_at IS NULL
+-- [HEADER]     WHERE up.deleted_at IS NULL
     ORDER BY up.created_at DESC;
 END;
 $$;
@@ -13265,7 +13289,7 @@ VALUES
 ('eur', '2006-07-12', 5.6447, 'exchange-api'),
 ('eur', '2006-07-13', 5.7079, 'exchange-api'),
 ('eur', '2006-07-14', 5.7306, 'exchange-api')
-ON CONFLICT (index_type, date) 
+-- [HEADER] ON CONFLICT (index_type, date) 
 DO UPDATE SET value = EXCLUDED.value;
 
 -- Backfill Bank of Israel Exchange Rates (20 Years)
@@ -18061,14 +18085,14 @@ VALUES
 ('eur', '2026-01-26', 3.7179, 'exchange-api'),
 ('eur', '2026-01-27', 3.6971, 'exchange-api'),
 ('eur', '2026-01-28', 3.7039, 'exchange-api')
-ON CONFLICT (index_type, date) 
+-- [HEADER] ON CONFLICT (index_type, date) 
 DO UPDATE SET value = EXCLUDED.value;
 
 -- Add Google Drive integration columns to user_profiles
 ALTER TABLE user_profiles 
-ADD COLUMN IF NOT EXISTS google_refresh_token TEXT,
-ADD COLUMN IF NOT EXISTS google_drive_folder_id TEXT,
-ADD COLUMN IF NOT EXISTS google_drive_enabled BOOLEAN DEFAULT FALSE;
+-- [HEADER] ADD COLUMN IF NOT EXISTS google_refresh_token TEXT,
+-- [HEADER] ADD COLUMN IF NOT EXISTS google_drive_folder_id TEXT,
+-- [HEADER] ADD COLUMN IF NOT EXISTS google_drive_enabled BOOLEAN DEFAULT FALSE;
 
 -- Add index for performance if needed
 CREATE INDEX IF NOT EXISTS idx_user_profiles_google_enabled ON user_profiles(google_drive_enabled);
@@ -18079,7 +18103,7 @@ CREATE INDEX IF NOT EXISTS idx_user_profiles_google_enabled ON user_profiles(goo
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contracts' AND column_name = 'rent_periods') THEN
-        ALTER TABLE public.contracts ADD COLUMN rent_periods JSONB DEFAULT '[]'::jsonb;
+        ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS rent_periods JSONB DEFAULT '[]'::jsonb;
     END IF;
 END $$;
 
@@ -18087,7 +18111,7 @@ END $$;
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contracts' AND column_name = 'option_periods') THEN
-        ALTER TABLE public.contracts ADD COLUMN option_periods JSONB DEFAULT '[]'::jsonb;
+        ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS option_periods JSONB DEFAULT '[]'::jsonb;
     END IF;
 END $$;
 
@@ -18095,7 +18119,7 @@ END $$;
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contracts' AND column_name = 'tenants') THEN
-        ALTER TABLE public.contracts ADD COLUMN tenants JSONB DEFAULT '[]'::jsonb;
+        ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS tenants JSONB DEFAULT '[]'::jsonb;
     END IF;
 END $$;
 
@@ -18110,14 +18134,14 @@ BEGIN
         WHERE id = NEW.property_id;
     
     -- If contract becomes archived (ended/terminated in old terms)
-    ELSIF NEW.status = 'archived' THEN
+-- [HEADER]     ELSIF NEW.status = 'archived' THEN
         -- Check if there are ANY other active contracts currently valid
         -- If NO other active contracts exist, set the property to Vacant.
         IF NOT EXISTS (
             SELECT 1 FROM public.contracts 
-            WHERE property_id = NEW.property_id 
-            AND status = 'active' 
-            AND id != NEW.id
+-- [HEADER]             WHERE property_id = NEW.property_id 
+-- [HEADER]             AND status = 'active' 
+-- [HEADER]             AND id != NEW.id
         ) THEN
             UPDATE public.properties
             SET status = 'Vacant'
@@ -18131,8 +18155,9 @@ $$ LANGUAGE plpgsql;
 
 -- Re-apply trigger to ensure it uses the updated function
 DROP TRIGGER IF EXISTS trigger_update_property_status ON public.contracts;
+DROP TRIGGER IF EXISTS "trigger_update_property_status" ON DROP;
 CREATE TRIGGER trigger_update_property_status
-AFTER INSERT OR UPDATE ON public.contracts
+-- [HEADER] AFTER INSERT OR UPDATE ON public.contracts
 FOR EACH ROW
 EXECUTE FUNCTION public.update_property_status_from_contract();
 -- Migration: Update Property Occupancy Trigger to handle DELETE and improved logic
@@ -18156,13 +18181,13 @@ BEGIN
     -- We check if ANY active contract exists for this property
     IF EXISTS (
         SELECT 1 FROM public.contracts 
-        WHERE property_id = target_property_id 
-        AND status = 'active'
+-- [HEADER]         WHERE property_id = target_property_id 
+-- [HEADER]         AND status = 'active'
     ) THEN
         UPDATE public.properties
         SET status = 'Occupied'
         WHERE id = target_property_id;
-    ELSE
+-- [HEADER]     ELSE
         -- No active contracts found, property is Vacant
         UPDATE public.properties
         SET status = 'Vacant'
@@ -18172,7 +18197,7 @@ BEGIN
     -- Handle TG_OP appropriately for return
     IF (TG_OP = 'DELETE') THEN
         RETURN OLD;
-    ELSE
+-- [HEADER]     ELSE
         RETURN NEW;
     END IF;
 END;
@@ -18180,9 +18205,9 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 2. Drop old triggers and apply new one
 DROP TRIGGER IF EXISTS trigger_update_property_status ON public.contracts;
-
+DROP TRIGGER IF EXISTS "trigger_update_property_status" ON public.contracts;
 CREATE TRIGGER trigger_update_property_status
-AFTER INSERT OR UPDATE OR DELETE ON public.contracts
+-- [HEADER] AFTER INSERT OR UPDATE OR DELETE ON public.contracts
 FOR EACH ROW
 EXECUTE FUNCTION public.update_property_status_from_contract_v2();
 
@@ -18249,15 +18274,15 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Create chaining_factors table
 CREATE TABLE IF NOT EXISTS chaining_factors (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    index_type TEXT NOT NULL CHECK (index_type IN ('cpi', 'housing', 'construction')),
-    from_base TEXT NOT NULL,
-    to_base TEXT NOT NULL,
-    factor DECIMAL(10, 6) NOT NULL,
-    effective_date DATE NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    UNIQUE(index_type, from_base, to_base)
+-- [HEADER]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [HEADER]     index_type TEXT NOT NULL CHECK (index_type IN ('cpi', 'housing', 'construction')),
+-- [HEADER]     from_base TEXT NOT NULL,
+-- [HEADER]     to_base TEXT NOT NULL,
+-- [HEADER]     factor DECIMAL(10, 6) NOT NULL,
+-- [HEADER]     effective_date DATE NOT NULL,
+-- [HEADER]     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+-- [HEADER]     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+-- [HEADER]     UNIQUE(index_type, from_base, to_base)
 );
 
 -- Add RLS policies
@@ -18265,16 +18290,16 @@ ALTER TABLE chaining_factors ENABLE ROW LEVEL SECURITY;
 
 -- Allow all authenticated users to read chaining factors
 CREATE POLICY "Allow authenticated users to read chaining factors"
-    ON chaining_factors
+-- [HEADER]     ON chaining_factors
     FOR SELECT
-    TO authenticated
+-- [HEADER]     TO authenticated
     USING (true);
 
 -- Allow service role to manage chaining factors
 CREATE POLICY "Allow service role to manage chaining factors"
-    ON chaining_factors
+-- [HEADER]     ON chaining_factors
     FOR ALL
-    TO service_role
+-- [HEADER]     TO service_role
     USING (true);
 
 -- Seed with known CBS base transitions
@@ -18294,7 +18319,7 @@ INSERT INTO chaining_factors (index_type, from_base, to_base, factor, effective_
     ('construction', '2020', '2024', 1.0267, '2024-01-01'),
     ('construction', '2018', '2020', 1.0189, '2020-01-01'),
     ('construction', '2012', '2018', 1.0112, '2018-01-01')
-ON CONFLICT (index_type, from_base, to_base) DO NOTHING;
+-- [HEADER] ON CONFLICT (index_type, from_base, to_base) DO NOTHING;
 
 -- Add index for faster lookups
 CREATE INDEX IF NOT EXISTS idx_chaining_factors_lookup 
@@ -18347,7 +18372,7 @@ BEGIN
   END IF;
 
   -- Build Payload safely using to_jsonb
-  v_payload := jsonb_build_object(
+-- [HEADER]   v_payload := jsonb_build_object(
     'type', TG_OP,
     'table', TG_TABLE_NAME,
     'record', to_jsonb(NEW),
@@ -18356,17 +18381,17 @@ BEGIN
 
   -- Perform HTTP Post with structured headers
   PERFORM
-    net.http_post(
-      url := 'https://' || v_project_ref || '.supabase.co/functions/v1/on-event-trigger',
-      headers := jsonb_build_object(
+-- [HEADER]     net.http_post(
+-- [HEADER]       url := 'https://' || v_project_ref || '.supabase.co/functions/v1/on-event-trigger',
+-- [HEADER]       headers := jsonb_build_object(
         'Content-Type', 'application/json',
         'Authorization', 'Bearer ' || v_service_key
       ),
-      body := v_payload
+-- [HEADER]       body := v_payload
     );
 
   RETURN NEW;
-EXCEPTION WHEN OTHERS THEN
+-- [HEADER] EXCEPTION WHEN OTHERS THEN
   -- Never crash the main insert because of a webhook failure
   RAISE WARNING 'Webhook failed: %', SQLERRM;
   RETURN NEW;
@@ -18391,11 +18416,11 @@ BEGIN
 
     -- Get user email and asset alerts preference
     SELECT 
-        u.email, 
-        COALESCE((up.notification_preferences->>'email_asset_alerts')::boolean, true)
-    INTO v_target_email, v_asset_alerts_enabled
-    FROM auth.users u
-    LEFT JOIN public.user_profiles up ON up.id = u.id
+-- [HEADER]         u.email, 
+-- [HEADER]         COALESCE((up.notification_preferences->>'email_asset_alerts')::boolean, true)
+-- [HEADER]     INTO v_target_email, v_asset_alerts_enabled
+-- [HEADER]     FROM auth.users u
+-- [HEADER]     LEFT JOIN public.user_profiles up ON up.id = u.id
     WHERE u.id = NEW.user_id;
 
     -- DECISION LOGIC:
@@ -18405,15 +18430,15 @@ BEGIN
     IF (v_project_ref IS NOT NULL AND v_service_key IS NOT NULL AND v_target_email IS NOT NULL) AND 
        ((NEW.type IN ('warning', 'error', 'urgent', 'action')) OR 
         (NEW.metadata->>'event' = 'maintenance_record' AND v_asset_alerts_enabled = true)) 
-    THEN
+-- [HEADER]     THEN
         PERFORM
-          net.http_post(
-            url := 'https://' || v_project_ref || '.supabase.co/functions/v1/send-notification-email',
-            headers := jsonb_build_object(
+-- [HEADER]           net.http_post(
+-- [HEADER]             url := 'https://' || v_project_ref || '.supabase.co/functions/v1/send-notification-email',
+-- [HEADER]             headers := jsonb_build_object(
                 'Content-Type', 'application/json',
                 'Authorization', 'Bearer ' || v_service_key
             ),
-            body := jsonb_build_object(
+-- [HEADER]             body := jsonb_build_object(
                 'email', v_target_email,
                 'notification', to_jsonb(NEW)
             )
@@ -18421,7 +18446,7 @@ BEGIN
     END IF;
     
     RETURN NEW;
-EXCEPTION WHEN OTHERS THEN
+-- [HEADER] EXCEPTION WHEN OTHERS THEN
     RAISE WARNING 'Failed to forward notification to email: %', SQLERRM;
     RETURN NEW;
 END;
@@ -18430,7 +18455,7 @@ $$;
 -- 4. Fix admin_notifications type constraint
 ALTER TABLE public.admin_notifications DROP CONSTRAINT IF EXISTS admin_notifications_type_check;
 ALTER TABLE public.admin_notifications ADD CONSTRAINT admin_notifications_type_check 
-CHECK (type IN ('upgrade_request', 'system_alert', 'support_ticket', 'user_signup', 'payment_success'));
+-- [HEADER] CHECK (type IN ('upgrade_request', 'system_alert', 'support_ticket', 'user_signup', 'payment_success'));
 
 -- 5. Force reload schema
 NOTIFY pgrst, 'reload schema';
@@ -18466,22 +18491,22 @@ DROP TABLE IF EXISTS public.tenants CASCADE;
 -- 5. Update get_users_with_stats RPC to count tenants from embedded data
 CREATE OR REPLACE FUNCTION get_users_with_stats()
 RETURNS TABLE (
-    id UUID,
-    email TEXT,
-    full_name TEXT,
-    phone TEXT,
-    role TEXT,
-    subscription_status TEXT,
-    plan_id TEXT,
-    created_at TIMESTAMPTZ,
-    last_login TIMESTAMPTZ,
-    properties_count BIGINT,
-    tenants_count BIGINT,
-    contracts_count BIGINT,
-    ai_sessions_count BIGINT,
-    open_tickets_count BIGINT,
-    storage_usage_mb NUMERIC,
-    is_super_admin BOOLEAN
+-- [HEADER]     id UUID,
+-- [HEADER]     email TEXT,
+-- [HEADER]     full_name TEXT,
+-- [HEADER]     phone TEXT,
+-- [HEADER]     role TEXT,
+-- [HEADER]     subscription_status TEXT,
+-- [HEADER]     plan_id TEXT,
+-- [HEADER]     created_at TIMESTAMPTZ,
+-- [HEADER]     last_login TIMESTAMPTZ,
+-- [HEADER]     properties_count BIGINT,
+-- [HEADER]     tenants_count BIGINT,
+-- [HEADER]     contracts_count BIGINT,
+-- [HEADER]     ai_sessions_count BIGINT,
+-- [HEADER]     open_tickets_count BIGINT,
+-- [HEADER]     storage_usage_mb NUMERIC,
+-- [HEADER]     is_super_admin BOOLEAN
 ) 
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -18500,41 +18525,41 @@ BEGIN
         up.last_login,
         
         -- Asset Stats
-        COALESCE(p.count, 0)::BIGINT as properties_count,
-        COALESCE(t.count, 0)::BIGINT as tenants_count,
-        COALESCE(c.count, 0)::BIGINT as contracts_count,
+-- [HEADER]         COALESCE(p.count, 0)::BIGINT as properties_count,
+-- [HEADER]         COALESCE(t.count, 0)::BIGINT as tenants_count,
+-- [HEADER]         COALESCE(c.count, 0)::BIGINT as contracts_count,
         
         -- Usage Stats
-        COALESCE(ai.count, 0)::BIGINT as ai_sessions_count,
+-- [HEADER]         COALESCE(ai.count, 0)::BIGINT as ai_sessions_count,
         
         -- Support Stats
-        COALESCE(st.count, 0)::BIGINT as open_tickets_count,
+-- [HEADER]         COALESCE(st.count, 0)::BIGINT as open_tickets_count,
         
         -- Storage Usage (Bytes to MB)
-        ROUND(COALESCE(usu.total_bytes, 0) / (1024.0 * 1024.0), 2)::NUMERIC as storage_usage_mb,
+-- [HEADER]         ROUND(COALESCE(usu.total_bytes, 0) / (1024.0 * 1024.0), 2)::NUMERIC as storage_usage_mb,
         
         -- Permissions
-        COALESCE(up.is_super_admin, false) as is_super_admin
+-- [HEADER]         COALESCE(up.is_super_admin, false) as is_super_admin
         
-    FROM user_profiles up
+-- [HEADER]     FROM user_profiles up
     -- Property Counts
-    LEFT JOIN (SELECT user_id, count(*) as count FROM properties GROUP BY user_id) p ON up.id = p.user_id
+-- [HEADER]     LEFT JOIN (SELECT user_id, count(*) as count FROM properties GROUP BY user_id) p ON up.id = p.user_id
     -- Tenant Counts (from embedded JSONB in contracts)
-    LEFT JOIN (
+-- [HEADER]     LEFT JOIN (
         SELECT user_id, sum(jsonb_array_length(COALESCE(tenants, '[]'::jsonb))) as count 
-        FROM contracts 
-        GROUP BY user_id
+-- [HEADER]         FROM contracts 
+-- [HEADER]         GROUP BY user_id
     ) t ON up.id = t.user_id
     -- Contract Counts
-    LEFT JOIN (SELECT user_id, count(*) as count FROM contracts GROUP BY user_id) c ON up.id = c.user_id
+-- [HEADER]     LEFT JOIN (SELECT user_id, count(*) as count FROM contracts GROUP BY user_id) c ON up.id = c.user_id
     -- AI Counts
-    LEFT JOIN (SELECT user_id, count(*) as count FROM ai_conversations GROUP BY user_id) ai ON up.id = ai.user_id
+-- [HEADER]     LEFT JOIN (SELECT user_id, count(*) as count FROM ai_conversations GROUP BY user_id) ai ON up.id = ai.user_id
     -- Open Support Tickets
-    LEFT JOIN (SELECT user_id, count(*) as count FROM support_tickets WHERE status != 'resolved' GROUP BY user_id) st ON up.id = st.user_id
+-- [HEADER]     LEFT JOIN (SELECT user_id, count(*) as count FROM support_tickets WHERE status != 'resolved' GROUP BY user_id) st ON up.id = st.user_id
     -- Storage Usage
-    LEFT JOIN (SELECT user_id, total_bytes FROM user_storage_usage) usu ON up.id = usu.user_id
+-- [HEADER]     LEFT JOIN (SELECT user_id, total_bytes FROM user_storage_usage) usu ON up.id = usu.user_id
     
-    WHERE up.deleted_at IS NULL
+-- [HEADER]     WHERE up.deleted_at IS NULL
     ORDER BY up.created_at DESC;
 END;
 $$;
@@ -18542,23 +18567,23 @@ $$;
 COMMIT;
 -- Add balcony and safe room (׳׳"׳“) columns to properties table
 ALTER TABLE public.properties 
-ADD COLUMN IF NOT EXISTS has_balcony BOOLEAN DEFAULT false,
-ADD COLUMN IF NOT EXISTS has_safe_room BOOLEAN DEFAULT false;
+-- [HEADER] ADD COLUMN IF NOT EXISTS has_balcony BOOLEAN DEFAULT false,
+-- [HEADER] ADD COLUMN IF NOT EXISTS has_safe_room BOOLEAN DEFAULT false;
 
 -- Add helpful comments
 -- Migration: Expand Contract Fields
 -- Description: Adds pets_allowed, special_clauses, guarantees, and guarantors_info to the contracts table.
 
 ALTER TABLE IF EXISTS public.contracts 
-ADD COLUMN IF NOT EXISTS pets_allowed BOOLEAN DEFAULT true,
-ADD COLUMN IF NOT EXISTS special_clauses TEXT,
-ADD COLUMN IF NOT EXISTS guarantees TEXT,
-ADD COLUMN IF NOT EXISTS guarantors_info TEXT;
+-- [HEADER] ADD COLUMN IF NOT EXISTS pets_allowed BOOLEAN DEFAULT true,
+-- [HEADER] ADD COLUMN IF NOT EXISTS special_clauses TEXT,
+-- [HEADER] ADD COLUMN IF NOT EXISTS guarantees TEXT,
+-- [HEADER] ADD COLUMN IF NOT EXISTS guarantors_info TEXT;
 
 -- Add elevator and accessibility columns to properties table
 ALTER TABLE public.properties 
-ADD COLUMN IF NOT EXISTS has_elevator BOOLEAN DEFAULT false,
-ADD COLUMN IF NOT EXISTS is_accessible BOOLEAN DEFAULT false;
+-- [HEADER] ADD COLUMN IF NOT EXISTS has_elevator BOOLEAN DEFAULT false,
+-- [HEADER] ADD COLUMN IF NOT EXISTS is_accessible BOOLEAN DEFAULT false;
 
 -- Add helpful comments
 -- Migration: Harden Property Occupancy Logic
@@ -18600,15 +18625,15 @@ BEGIN
     -- Check if any active contract is effective TODAY
     IF EXISTS (
         SELECT 1 FROM public.contracts 
-        WHERE property_id = target_property_id 
-        AND status = 'active'
-        AND start_date <= CURRENT_DATE
-        AND (end_date IS NULL OR end_date >= CURRENT_DATE)
+-- [HEADER]         WHERE property_id = target_property_id 
+-- [HEADER]         AND status = 'active'
+-- [HEADER]         AND start_date <= CURRENT_DATE
+-- [HEADER]         AND (end_date IS NULL OR end_date >= CURRENT_DATE)
     ) THEN
         UPDATE public.properties
         SET status = 'Occupied'
         WHERE id = target_property_id;
-    ELSE
+-- [HEADER]     ELSE
         UPDATE public.properties
         SET status = 'Vacant'
         WHERE id = target_property_id;
@@ -18616,7 +18641,7 @@ BEGIN
 
     IF (TG_OP = 'DELETE') THEN
         RETURN OLD;
-    ELSE
+-- [HEADER]     ELSE
         RETURN NEW;
     END IF;
 END;
@@ -18647,16 +18672,16 @@ BEGIN;
 
 -- 1. Restore 'status' column if it was dropped
 ALTER TABLE public.properties 
-ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'Vacant' CHECK (status IN ('Occupied', 'Vacant'));
+-- [HEADER] ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'Vacant' CHECK (status IN ('Occupied', 'Vacant'));
 
 -- 2. Add 'updated_at' column if missing
 ALTER TABLE public.properties 
-ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+-- [HEADER] ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
 
 -- 3. Ensure 'has_balcony' and 'has_safe_room' exist (User safety check)
 ALTER TABLE public.properties 
-ADD COLUMN IF NOT EXISTS has_balcony BOOLEAN DEFAULT false,
-ADD COLUMN IF NOT EXISTS has_safe_room BOOLEAN DEFAULT false;
+-- [HEADER] ADD COLUMN IF NOT EXISTS has_balcony BOOLEAN DEFAULT false,
+-- [HEADER] ADD COLUMN IF NOT EXISTS has_safe_room BOOLEAN DEFAULT false;
 
 -- 4. Repopulate 'status' using the hardened logic
 -- This depends on recalculate_all_property_statuses() being defined 
@@ -18681,9 +18706,14 @@ DROP POLICY IF EXISTS "Users can update own payments" ON public.payments;
 DROP POLICY IF EXISTS "Users can delete own payments" ON public.payments;
 
 -- 2. Create strict ownership policies based on user_id
+;
+DROP POLICY IF EXISTS "Users can view own payments" ON public.payments;
 CREATE POLICY "Users can view own payments"   ON public.payments FOR SELECT USING (user_id = auth.uid());
+DROP POLICY IF EXISTS "Users can insert own payments" ON public.payments;
 CREATE POLICY "Users can insert own payments" ON public.payments FOR INSERT WITH CHECK (user_id = auth.uid());
+DROP POLICY IF EXISTS "Users can update own payments" ON public.payments;
 CREATE POLICY "Users can update own payments" ON public.payments FOR UPDATE USING (user_id = auth.uid());
+DROP POLICY IF EXISTS "Users can delete own payments" ON public.payments;
 CREATE POLICY "Users can delete own payments" ON public.payments FOR DELETE USING (user_id = auth.uid());
 
 -- 3. Ensure Admin view is still preserved (if admin_god_mode_rls was applied)
@@ -18718,8 +18748,9 @@ END;
 $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS tr_contracts_updated_at ON public.contracts;
+DROP TRIGGER IF EXISTS "tr_contracts_updated_at" ON public.contracts;
 CREATE TRIGGER tr_contracts_updated_at
-    BEFORE UPDATE ON public.contracts
+-- [HEADER]     BEFORE UPDATE ON public.contracts
     FOR EACH ROW
     EXECUTE FUNCTION public.handle_updated_at();
 
@@ -18748,13 +18779,13 @@ BEGIN;
 
 -- 1. Ensure all expected columns exist on the contracts table
 ALTER TABLE public.contracts 
-ADD COLUMN IF NOT EXISTS pets_allowed BOOLEAN DEFAULT true,
-ADD COLUMN IF NOT EXISTS special_clauses TEXT,
-ADD COLUMN IF NOT EXISTS guarantees TEXT,
-ADD COLUMN IF NOT EXISTS guarantors_info TEXT,
-ADD COLUMN IF NOT EXISTS needs_painting BOOLEAN DEFAULT false,
-ADD COLUMN IF NOT EXISTS option_notice_days INTEGER,
-ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+-- [HEADER] ADD COLUMN IF NOT EXISTS pets_allowed BOOLEAN DEFAULT true,
+-- [HEADER] ADD COLUMN IF NOT EXISTS special_clauses TEXT,
+-- [HEADER] ADD COLUMN IF NOT EXISTS guarantees TEXT,
+-- [HEADER] ADD COLUMN IF NOT EXISTS guarantors_info TEXT,
+-- [HEADER] ADD COLUMN IF NOT EXISTS needs_painting BOOLEAN DEFAULT false,
+-- [HEADER] ADD COLUMN IF NOT EXISTS option_notice_days INTEGER,
+-- [HEADER] ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
 
 -- 2. Force PostgREST schema cache refresh
 -- Redefining a generic function is a reliable way to trigger a reload in Supabase
@@ -18779,30 +18810,30 @@ BEGIN;
 DO $$ 
 BEGIN
     ALTER TABLE public.user_profiles ALTER COLUMN role TYPE TEXT;
-EXCEPTION WHEN OTHERS THEN 
+-- [HEADER] EXCEPTION WHEN OTHERS THEN 
     NULL; 
 END $$;
 
 DO $$ 
 BEGIN
     ALTER TABLE public.user_profiles ALTER COLUMN subscription_status TYPE TEXT;
-EXCEPTION WHEN OTHERS THEN 
+-- [HEADER] EXCEPTION WHEN OTHERS THEN 
     NULL; 
 END $$;
 
 ALTER TABLE public.user_profiles 
-ADD COLUMN IF NOT EXISTS first_name TEXT,
-ADD COLUMN IF NOT EXISTS last_name TEXT,
-ADD COLUMN IF NOT EXISTS phone TEXT,
-ADD COLUMN IF NOT EXISTS plan_id TEXT,
-ADD COLUMN IF NOT EXISTS marketing_consent BOOLEAN DEFAULT FALSE,
-ADD COLUMN IF NOT EXISTS marketing_consent_at TIMESTAMPTZ,
-ADD COLUMN IF NOT EXISTS subscription_plan TEXT;
+-- [HEADER] ADD COLUMN IF NOT EXISTS first_name TEXT,
+-- [HEADER] ADD COLUMN IF NOT EXISTS last_name TEXT,
+-- [HEADER] ADD COLUMN IF NOT EXISTS phone TEXT,
+-- [HEADER] ADD COLUMN IF NOT EXISTS plan_id TEXT,
+-- [HEADER] ADD COLUMN IF NOT EXISTS marketing_consent BOOLEAN DEFAULT FALSE,
+-- [HEADER] ADD COLUMN IF NOT EXISTS marketing_consent_at TIMESTAMPTZ,
+-- [HEADER] ADD COLUMN IF NOT EXISTS subscription_plan TEXT;
 
 -- 2. Ensure 'free' plan exists in subscription_plans
 INSERT INTO public.subscription_plans (id, name, price_monthly, max_properties)
 VALUES ('free', 'Free Forever', 0, 1)
-ON CONFLICT (id) DO NOTHING;
+-- [HEADER] ON CONFLICT (id) DO NOTHING;
 
 -- 3. Consolidated Trigger Function
 -- This function handles profile creation, invoice relinking, and metadata parsing
@@ -18824,39 +18855,39 @@ BEGIN
 
     -- Insert or Update Profile
     INSERT INTO public.user_profiles (
-        id, 
-        email, 
-        full_name,
-        first_name,
-        last_name,
-        phone,
-        role, 
-        subscription_status, 
-        plan_id,
-        subscription_plan,
-        marketing_consent,
-        marketing_consent_at
+-- [HEADER]         id, 
+-- [HEADER]         email, 
+-- [HEADER]         full_name,
+-- [HEADER]         first_name,
+-- [HEADER]         last_name,
+-- [HEADER]         phone,
+-- [HEADER]         role, 
+-- [HEADER]         subscription_status, 
+-- [HEADER]         plan_id,
+-- [HEADER]         subscription_plan,
+-- [HEADER]         marketing_consent,
+-- [HEADER]         marketing_consent_at
     )
     VALUES (
-        NEW.id,
-        NEW.email,
-        v_full_name,
-        v_first_name,
-        v_last_name,
-        NEW.phone,
+-- [HEADER]         NEW.id,
+-- [HEADER]         NEW.email,
+-- [HEADER]         v_full_name,
+-- [HEADER]         v_first_name,
+-- [HEADER]         v_last_name,
+-- [HEADER]         NEW.phone,
         'user', 
         'active', 
-        v_plan_id,
+-- [HEADER]         v_plan_id,
         'free_forever', -- Legacy field support
-        COALESCE((NEW.raw_user_meta_data->>'marketing_consent')::boolean, FALSE),
-        CASE WHEN (NEW.raw_user_meta_data->>'marketing_consent')::boolean THEN NOW() ELSE NULL END
+-- [HEADER]         COALESCE((NEW.raw_user_meta_data->>'marketing_consent')::boolean, FALSE),
+-- [HEADER]         CASE WHEN (NEW.raw_user_meta_data->>'marketing_consent')::boolean THEN NOW() ELSE NULL END
     )
-    ON CONFLICT (id) DO UPDATE SET
-        email = EXCLUDED.email,
-        full_name = COALESCE(EXCLUDED.full_name, user_profiles.full_name),
-        first_name = COALESCE(EXCLUDED.first_name, user_profiles.first_name),
-        last_name = COALESCE(EXCLUDED.last_name, user_profiles.last_name),
-        phone = COALESCE(EXCLUDED.phone, user_profiles.phone),
+-- [HEADER]     ON CONFLICT (id) DO UPDATE SET
+-- [HEADER]         email = EXCLUDED.email,
+-- [HEADER]         full_name = COALESCE(EXCLUDED.full_name, user_profiles.full_name),
+-- [HEADER]         first_name = COALESCE(EXCLUDED.first_name, user_profiles.first_name),
+-- [HEADER]         last_name = COALESCE(EXCLUDED.last_name, user_profiles.last_name),
+-- [HEADER]         phone = COALESCE(EXCLUDED.phone, user_profiles.phone),
         updated_at = NOW();
 
     -- Relink Past Invoices (Safely)
@@ -18870,7 +18901,7 @@ BEGIN
     END;
 
     RETURN NEW;
-EXCEPTION WHEN OTHERS THEN
+-- [HEADER] EXCEPTION WHEN OTHERS THEN
     -- Capture any remaining unexpected errors
     RAISE EXCEPTION 'Signup Failed: %', SQLERRM;
 END;
@@ -18878,8 +18909,9 @@ $$;
 
 -- 4. Re-attach Main Trigger
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+DROP TRIGGER IF EXISTS "on_auth_user_created" ON auth.users;
 CREATE TRIGGER on_auth_user_created
-    AFTER INSERT ON auth.users
+-- [HEADER]     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- 5. Clean up redundant triggers to prevent double-execution or conflicts
@@ -18897,41 +18929,41 @@ DROP POLICY IF EXISTS "Admins can delete plans" ON subscription_plans;
 
 -- INSERT: Only admins
 CREATE POLICY "Admins can insert plans"
-    ON subscription_plans FOR INSERT
+-- [HEADER]     ON subscription_plans FOR INSERT
     WITH CHECK (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM user_profiles
-            WHERE id = auth.uid()
-            AND (role = 'admin' OR is_super_admin = true)
+-- [HEADER]             WHERE id = auth.uid()
+-- [HEADER]             AND (role = 'admin' OR is_super_admin = true)
         )
     );
 
 -- UPDATE: Only admins
 CREATE POLICY "Admins can update plans"
-    ON subscription_plans FOR UPDATE
+-- [HEADER]     ON subscription_plans FOR UPDATE
     USING (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM user_profiles
-            WHERE id = auth.uid()
-            AND (role = 'admin' OR is_super_admin = true)
+-- [HEADER]             WHERE id = auth.uid()
+-- [HEADER]             AND (role = 'admin' OR is_super_admin = true)
         )
     )
     WITH CHECK (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM user_profiles
-            WHERE id = auth.uid()
-            AND (role = 'admin' OR is_super_admin = true)
+-- [HEADER]             WHERE id = auth.uid()
+-- [HEADER]             AND (role = 'admin' OR is_super_admin = true)
         )
     );
 
 -- DELETE: Only admins
 CREATE POLICY "Admins can delete plans"
-    ON subscription_plans FOR DELETE
+-- [HEADER]     ON subscription_plans FOR DELETE
     USING (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM user_profiles
-            WHERE id = auth.uid()
-            AND (role = 'admin' OR is_super_admin = true)
+-- [HEADER]             WHERE id = auth.uid()
+-- [HEADER]             AND (role = 'admin' OR is_super_admin = true)
         )
     );
 -- Migration: fix_subscription_management_rls_and_cleanup
@@ -18961,16 +18993,16 @@ DROP POLICY IF EXISTS "Admins can delete plans" ON subscription_plans;
 
 -- 3. Create new policies using is_admin() helper
 CREATE POLICY "Admins can insert plans"
-    ON subscription_plans FOR INSERT
+-- [HEADER]     ON subscription_plans FOR INSERT
     WITH CHECK (public.is_admin());
 
 CREATE POLICY "Admins can update plans"
-    ON subscription_plans FOR UPDATE
+-- [HEADER]     ON subscription_plans FOR UPDATE
     USING (public.is_admin())
     WITH CHECK (public.is_admin());
 
 CREATE POLICY "Admins can delete plans"
-    ON subscription_plans FOR DELETE
+-- [HEADER]     ON subscription_plans FOR DELETE
     USING (public.is_admin());
 
 -- 4. Remove the max_tenants column as it is irrelevant (no dedicated tenants data)
@@ -18991,13 +19023,13 @@ NOTIFY pgrst, 'reload schema';
 
 UPDATE subscription_plans
 SET 
-    name = 'Beta Access (Unlimited)',
-    max_properties = -1,
-    max_contracts = -1,
-    max_sessions = -1,
+-- [HEADER]     name = 'Beta Access (Unlimited)',
+-- [HEADER]     max_properties = -1,
+-- [HEADER]     max_contracts = -1,
+-- [HEADER]     max_sessions = -1,
     -- max_storage_mb might not exist in all environments yet, but let's try to update it if it does
     -- Better to do a DO block for safety or just assume it's there based on migrations
-    features = jsonb_build_object(
+-- [HEADER]     features = jsonb_build_object(
         'support_level', 'priority',
         'export_data', true,
         'legal_library', true,
@@ -19027,7 +19059,7 @@ NOTIFY pgrst, 'reload schema';
 -- Description: Adds is_active column to subscription_plans to allow pausing plans.
 
 ALTER TABLE subscription_plans 
-ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
+-- [HEADER] ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
 
 -- Ensure all existing plans are active by default
 UPDATE subscription_plans SET is_active = true WHERE is_active IS NULL;
@@ -19050,31 +19082,31 @@ BEGIN
 
     -- Create User Profile with UPSERT to handle edge cases
     INSERT INTO public.user_profiles (
-        id, 
-        email, 
-        full_name,
-        first_name,
-        last_name,
-        role, 
-        subscription_status, 
-        plan_id
+-- [HEADER]         id, 
+-- [HEADER]         email, 
+-- [HEADER]         full_name,
+-- [HEADER]         first_name,
+-- [HEADER]         last_name,
+-- [HEADER]         role, 
+-- [HEADER]         subscription_status, 
+-- [HEADER]         plan_id
     )
     VALUES (
-        NEW.id,
-        NEW.email,
-        COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
-        split_part(COALESCE(NEW.raw_user_meta_data->>'full_name', ''), ' ', 1),
-        split_part(COALESCE(NEW.raw_user_meta_data->>'full_name', ''), ' ', 2),
+-- [HEADER]         NEW.id,
+-- [HEADER]         NEW.email,
+-- [HEADER]         COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
+-- [HEADER]         split_part(COALESCE(NEW.raw_user_meta_data->>'full_name', ''), ' ', 1),
+-- [HEADER]         split_part(COALESCE(NEW.raw_user_meta_data->>'full_name', ''), ' ', 2),
         'user',
         'active',
-        selected_plan
+-- [HEADER]         selected_plan
     )
-    ON CONFLICT (id) DO UPDATE SET
-        email = EXCLUDED.email,
-        full_name = COALESCE(EXCLUDED.full_name, user_profiles.full_name),
-        first_name = COALESCE(EXCLUDED.first_name, user_profiles.first_name),
-        last_name = COALESCE(EXCLUDED.last_name, user_profiles.last_name),
-        plan_id = COALESCE(selected_plan, user_profiles.plan_id),
+-- [HEADER]     ON CONFLICT (id) DO UPDATE SET
+-- [HEADER]         email = EXCLUDED.email,
+-- [HEADER]         full_name = COALESCE(EXCLUDED.full_name, user_profiles.full_name),
+-- [HEADER]         first_name = COALESCE(EXCLUDED.first_name, user_profiles.first_name),
+-- [HEADER]         last_name = COALESCE(EXCLUDED.last_name, user_profiles.last_name),
+-- [HEADER]         plan_id = COALESCE(selected_plan, user_profiles.plan_id),
         updated_at = NOW();
 
     -- Link Past Invoices (if any exist)
@@ -19088,23 +19120,23 @@ BEGIN
     END;
 
     RETURN NEW;
-EXCEPTION WHEN OTHERS THEN
+-- [HEADER] EXCEPTION WHEN OTHERS THEN
     RAISE EXCEPTION 'Failed to create user profile for %: %', NEW.email, SQLERRM;
 END;
 $$;
 -- Migration: Create rental market data table and update user preferences
--- Create table for rental market trends
+-- CREATE TABLE IF NOT EXISTS for rental market trends
 CREATE TABLE IF NOT EXISTS public.rental_market_data (
-    region_name TEXT PRIMARY KEY,
-    avg_rent NUMERIC NOT NULL,
-    growth_1y NUMERIC DEFAULT 0,
-    growth_2y NUMERIC DEFAULT 0,
-    growth_5y NUMERIC DEFAULT 0,
-    month_over_month NUMERIC DEFAULT 0,
-    room_adjustments JSONB NOT NULL DEFAULT '{"2": 0.8, "3": 1.0, "4": 1.25, "5": 1.5}'::jsonb,
-    type_adjustments JSONB NOT NULL DEFAULT '{"apartment": 1.0, "penthouse": 1.4, "house": 1.8}'::jsonb,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+-- [HEADER]     region_name TEXT PRIMARY KEY,
+-- [HEADER]     avg_rent NUMERIC NOT NULL,
+-- [HEADER]     growth_1y NUMERIC DEFAULT 0,
+-- [HEADER]     growth_2y NUMERIC DEFAULT 0,
+-- [HEADER]     growth_5y NUMERIC DEFAULT 0,
+-- [HEADER]     month_over_month NUMERIC DEFAULT 0,
+-- [HEADER]     room_adjustments JSONB NOT NULL DEFAULT '{"2": 0.8, "3": 1.0, "4": 1.25, "5": 1.5}'::jsonb,
+-- [HEADER]     type_adjustments JSONB NOT NULL DEFAULT '{"apartment": 1.0, "penthouse": 1.4, "house": 1.8}'::jsonb,
+-- [HEADER]     created_at TIMESTAMPTZ DEFAULT NOW(),
+-- [HEADER]     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Enable RLS on rental_market_data
@@ -19112,16 +19144,16 @@ ALTER TABLE public.rental_market_data ENABLE ROW LEVEL SECURITY;
 
 -- Allow public read access to market data
 CREATE POLICY "Allow public read access to rental market data"
-    ON public.rental_market_data
+-- [HEADER]     ON public.rental_market_data
     FOR SELECT
-    TO public
+-- [HEADER]     TO public
     USING (true);
 
 -- Add pinned_cities to user_preferences
 DO $$ 
 BEGIN 
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_preferences' AND column_name = 'pinned_cities') THEN
-        ALTER TABLE public.user_preferences ADD COLUMN pinned_cities JSONB DEFAULT '[]'::jsonb;
+        ALTER TABLE public.user_preferences ADD COLUMN IF NOT EXISTS pinned_cities JSONB DEFAULT '[]'::jsonb;
     END IF;
 END $$;
 
@@ -19159,43 +19191,43 @@ VALUES
     ('Central', 4900, -2.9, 8.4, 28.0, -0.1, '{"2": 0.75, "3": 1.0, "4": 1.2, "5": 1.45}', '{"apartment": 1.0, "penthouse": 1.35, "house": 1.7}'),
     ('North', 3500, 5.4, 10.5, 22.0, 0.4, '{"2": 0.8, "3": 1.0, "4": 1.2, "5": 1.4}', '{"apartment": 1.0, "penthouse": 1.2, "house": 1.5}'),
     ('South', 3600, 1.2, 4.5, 18.0, 0.2, '{"2": 0.8, "3": 1.0, "4": 1.2, "5": 1.4}', '{"apartment": 1.0, "penthouse": 1.2, "house": 1.5}')
-ON CONFLICT (region_name) DO UPDATE SET 
-    avg_rent = EXCLUDED.avg_rent,
-    growth_1y = EXCLUDED.growth_1y,
-    growth_2y = EXCLUDED.growth_2y,
-    growth_5y = EXCLUDED.growth_5y,
-    month_over_month = EXCLUDED.month_over_month,
-    room_adjustments = EXCLUDED.room_adjustments,
-    type_adjustments = EXCLUDED.type_adjustments,
+-- [HEADER] ON CONFLICT (region_name) DO UPDATE SET 
+-- [HEADER]     avg_rent = EXCLUDED.avg_rent,
+-- [HEADER]     growth_1y = EXCLUDED.growth_1y,
+-- [HEADER]     growth_2y = EXCLUDED.growth_2y,
+-- [HEADER]     growth_5y = EXCLUDED.growth_5y,
+-- [HEADER]     month_over_month = EXCLUDED.month_over_month,
+-- [HEADER]     room_adjustments = EXCLUDED.room_adjustments,
+-- [HEADER]     type_adjustments = EXCLUDED.type_adjustments,
     updated_at = NOW();
 -- Migration: enhance_subscription_marketing
 -- Description: Adds marketing-focused columns to subscription_plans table.
 
 ALTER TABLE subscription_plans
-ADD COLUMN IF NOT EXISTS description TEXT,
-ADD COLUMN IF NOT EXISTS subtitle TEXT,
-ADD COLUMN IF NOT EXISTS badge_text TEXT,
-ADD COLUMN IF NOT EXISTS cta_text TEXT,
-ADD COLUMN IF NOT EXISTS sort_order INTEGER DEFAULT 0;
+-- [HEADER] ADD COLUMN IF NOT EXISTS description TEXT,
+-- [HEADER] ADD COLUMN IF NOT EXISTS subtitle TEXT,
+-- [HEADER] ADD COLUMN IF NOT EXISTS badge_text TEXT,
+-- [HEADER] ADD COLUMN IF NOT EXISTS cta_text TEXT,
+-- [HEADER] ADD COLUMN IF NOT EXISTS sort_order INTEGER DEFAULT 0;
 
 -- Set some reasonable defaults for existing plans to avoid empty fields
 UPDATE subscription_plans 
 SET 
-    description = CASE 
-        WHEN id = 'free' THEN 'Essential tracking for individual property owners.'
-        WHEN id = 'solo' THEN 'Advanced optimization for serious landlords.'
-        WHEN id = 'pro' THEN 'The ultimate yield maximizer for portfolio managers.'
-        ELSE 'Manage your rental business professionally.'
+-- [HEADER]     description = CASE 
+-- [HEADER]         WHEN id = 'free' THEN 'Essential tracking for individual property owners.'
+-- [HEADER]         WHEN id = 'solo' THEN 'Advanced optimization for serious landlords.'
+-- [HEADER]         WHEN id = 'pro' THEN 'The ultimate yield maximizer for portfolio managers.'
+-- [HEADER]         ELSE 'Manage your rental business professionally.'
     END,
-    cta_text = CASE 
-        WHEN price_monthly = 0 THEN 'Get Started'
-        ELSE 'Start Free Trial'
+-- [HEADER]     cta_text = CASE 
+-- [HEADER]         WHEN price_monthly = 0 THEN 'Get Started'
+-- [HEADER]         ELSE 'Start Free Trial'
     END,
-    sort_order = CASE 
-        WHEN id = 'free' THEN 10
-        WHEN id = 'solo' THEN 20
-        WHEN id = 'pro' THEN 30
-        ELSE 100
+-- [HEADER]     sort_order = CASE 
+-- [HEADER]         WHEN id = 'free' THEN 10
+-- [HEADER]         WHEN id = 'solo' THEN 20
+-- [HEADER]         WHEN id = 'pro' THEN 30
+-- [HEADER]         ELSE 100
     END
 WHERE description IS NULL;
 
@@ -19215,13 +19247,13 @@ SELECT cron.schedule(
     '0 6 1 2,5,8,11 *',            -- Schedule (Quarterly)
     $$
     SELECT
-        net.http_post(
-            url:=(SELECT value FROM system_settings WHERE key = 'api_url' LIMIT 1) || '/functions/v1/sync-rental-trends',
-            headers:=jsonb_build_object(
+-- [HEADER]         net.http_post(
+-- [HEADER]             url:=(SELECT value FROM system_settings WHERE key = 'api_url' LIMIT 1) || '/functions/v1/sync-rental-trends',
+-- [HEADER]             headers:=jsonb_build_object(
                 'Content-Type', 'application/json',
                 'Authorization', 'Bearer ' || (SELECT value FROM system_settings WHERE key = 'service_role_key' LIMIT 1)
             ),
-            body:='{}'::jsonb
+-- [HEADER]             body:='{}'::jsonb
         ) as request_id;
     $$
 );
@@ -19232,7 +19264,7 @@ INSERT INTO public.system_settings (key, value, description)
 VALUES 
     ('admin_email_daily_summary_enabled', 'true'::jsonb, 'Master toggle for daily admin summary email'),
     ('admin_email_content_preferences', '{"new_users": true, "revenue": true, "support_tickets": true, "upgrades": true, "active_properties": true}'::jsonb, 'JSON object defining which sections to include in the daily summary')
-ON CONFLICT (key) DO NOTHING;
+-- [HEADER] ON CONFLICT (key) DO NOTHING;
 -- Update get_admin_stats to include top 10 cities by property count
 CREATE OR REPLACE FUNCTION public.get_admin_stats()
 RETURNS JSON
@@ -19277,18 +19309,18 @@ BEGIN
 
     -- 3. Top Cities Metrics (New)
     SELECT json_agg(city_stats) INTO top_cities
-    FROM (
+-- [HEADER]     FROM (
         SELECT 
-            COALESCE(city, 'Unknown') as name,
-            COUNT(*) as count
-        FROM properties
-        GROUP BY city
-        ORDER BY count DESC
-        LIMIT 10
+-- [HEADER]             COALESCE(city, 'Unknown') as name,
+-- [HEADER]             COUNT(*) as count
+-- [HEADER]         FROM properties
+-- [HEADER]         GROUP BY city
+-- [HEADER]         ORDER BY count DESC
+-- [HEADER]         LIMIT 10
     ) city_stats;
 
     -- 4. Build Result
-    result := json_build_object(
+-- [HEADER]     result := json_build_object(
         'totalUsers', total_users_count,
         'totalContracts', total_contracts_count,
         'totalRevenue', total_revenue_amount,
@@ -19319,26 +19351,26 @@ SELECT cron.schedule(
     -- Matches the 08:00 IL time requirement.
     $$
     SELECT
-      net.http_post(
-        url := 'https://' || public.get_supabase_config('supabase_project_ref') || '.supabase.co/functions/v1/send-daily-admin-summary',
-        headers := jsonb_build_object(
+-- [HEADER]       net.http_post(
+-- [HEADER]         url := 'https://' || public.get_supabase_config('supabase_project_ref') || '.supabase.co/functions/v1/send-daily-admin-summary',
+-- [HEADER]         headers := jsonb_build_object(
           'Content-Type', 'application/json',
           'Authorization', 'Bearer ' || public.get_supabase_config('supabase_service_role_key')
         ),
-        body := '{}'::jsonb
+-- [HEADER]         body := '{}'::jsonb
       )
     $$
 );
 
 -- 2. Ensure the keys exist as fallbacks in system_settings if they aren't there
 INSERT INTO public.system_settings (key, value, description)
-SELECT 'supabase_project_ref', '"qfvrekvugdjnwhnaucmz"'::jsonb, 'Supabase Project Reference'
-WHERE NOT EXISTS (SELECT 1 FROM public.system_settings WHERE key = 'supabase_project_ref');
+SELECT 'supabase_project_ref', '"tipnjnfbbnbskdlodrww"'::jsonb, 'Supabase Project Reference'
+-- [HEADER] WHERE NOT EXISTS (SELECT 1 FROM public.system_settings WHERE key = 'supabase_project_ref');
 
 INSERT INTO public.system_settings (key, value, description)
 SELECT 'supabase_service_role_key', ('"' || current_setting('app.settings.service_role_key', true) || '"')::jsonb, 'Supabase Service Role Key'
-WHERE NOT EXISTS (SELECT 1 FROM public.system_settings WHERE key = 'supabase_service_role_key')
-AND current_setting('app.settings.service_role_key', true) IS NOT NULL;
+-- [HEADER] WHERE NOT EXISTS (SELECT 1 FROM public.system_settings WHERE key = 'supabase_service_role_key')
+-- [HEADER] AND current_setting('app.settings.service_role_key', true) IS NOT NULL;
 -- Migration: final_reliable_cron_and_schema_fix
 -- Description: Repairs the properties table and hardens the daily admin summary cron job.
 
@@ -19373,7 +19405,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 DO $$
 BEGIN
     PERFORM cron.unschedule('daily-admin-summary');
-EXCEPTION WHEN OTHERS THEN
+-- [HEADER] EXCEPTION WHEN OTHERS THEN
     NULL; -- Skip if not scheduled
 END $$;
 
@@ -19382,13 +19414,13 @@ SELECT cron.schedule(
     '30 5 * * *', -- 05:30 UTC = 07:30/08:30 IL time (08:00 Target)
     $$
     SELECT
-      net.http_post(
-        url := 'https://' || public.get_supabase_config('supabase_project_ref') || '.supabase.co/functions/v1/send-daily-admin-summary',
-        headers := jsonb_build_object(
+-- [HEADER]       net.http_post(
+-- [HEADER]         url := 'https://' || public.get_supabase_config('supabase_project_ref') || '.supabase.co/functions/v1/send-daily-admin-summary',
+-- [HEADER]         headers := jsonb_build_object(
           'Content-Type', 'application/json',
           'Authorization', 'Bearer ' || public.get_supabase_config('supabase_service_role_key')
         ),
-        body := '{}'::jsonb
+-- [HEADER]         body := '{}'::jsonb
       )
     $$
 );
@@ -19396,9 +19428,9 @@ SELECT cron.schedule(
 -- 4. Sync configuration in system_settings
 INSERT INTO public.system_settings (key, value, description)
 VALUES 
-    ('supabase_project_ref', '"qfvrekvugdjnwhnaucmz"', 'Supabase Project Reference'),
+    ('supabase_project_ref', '"tipnjnfbbnbskdlodrww"', 'Supabase Project Reference'),
     ('admin_email_daily_summary_enabled', 'true'::jsonb, 'Master toggle for daily admin summary email')
-ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+-- [HEADER] ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
 
 -- 5. Trigger initial recalculation
 SELECT public.recalculate_all_property_statuses();
@@ -19441,31 +19473,31 @@ BEGIN
 
         -- Check if contract expires in this window
         IF expiring_contract.end_date <= (CURRENT_DATE + (pref_days || ' days')::interval)
-           AND expiring_contract.end_date >= CURRENT_DATE THEN
+-- [HEADER]            AND expiring_contract.end_date >= CURRENT_DATE THEN
            
             IF NOT EXISTS (
                 SELECT 1 
-                FROM public.notifications n 
-                WHERE n.user_id = expiring_contract.user_id
-                AND n.type = 'warning'
-                AND n.metadata->>'contract_id' = expiring_contract.id::text
-                AND n.title = 'Contract Expiring Soon' 
-                AND n.created_at > (CURRENT_DATE - INTERVAL '6 months')
+-- [HEADER]                 FROM public.notifications n 
+-- [HEADER]                 WHERE n.user_id = expiring_contract.user_id
+-- [HEADER]                 AND n.type = 'warning'
+-- [HEADER]                 AND n.metadata->>'contract_id' = expiring_contract.id::text
+-- [HEADER]                 AND n.title = 'Contract Expiring Soon' 
+-- [HEADER]                 AND n.created_at > (CURRENT_DATE - INTERVAL '6 months')
             ) THEN
                 INSERT INTO public.notifications (
-                    user_id,
-                    type,
-                    title,
-                    message,
-                    metadata
+-- [HEADER]                     user_id,
+-- [HEADER]                     type,
+-- [HEADER]                     title,
+-- [HEADER]                     message,
+-- [HEADER]                     metadata
                 ) VALUES (
-                    expiring_contract.user_id,
+-- [HEADER]                     expiring_contract.user_id,
                     'warning',
                     'Contract Expiring Soon',
                     'Contract for ' || expiring_contract.address || ' ends in ' || (expiring_contract.end_date - CURRENT_DATE)::text || ' days (' || to_char(expiring_contract.end_date, 'DD/MM/YYYY') || '). Review and renew today.',
                     jsonb_build_object('contract_id', expiring_contract.id)
                 );
-                count_new := count_new + 1;
+-- [HEADER]                 count_new := count_new + 1;
             END IF;
         END IF;
     END LOOP;
@@ -19504,29 +19536,29 @@ BEGIN
         IF pref_days < 1 THEN pref_days := 1; END IF;
 
         IF due_payment.due_date <= (CURRENT_DATE + (pref_days || ' days')::interval)
-           AND due_payment.due_date >= CURRENT_DATE THEN
+-- [HEADER]            AND due_payment.due_date >= CURRENT_DATE THEN
 
             IF NOT EXISTS (
                 SELECT 1 
-                FROM public.notifications n 
-                WHERE n.user_id = due_payment.user_id
-                AND n.type = 'info'
-                AND n.metadata->>'payment_id' = due_payment.id::text
+-- [HEADER]                 FROM public.notifications n 
+-- [HEADER]                 WHERE n.user_id = due_payment.user_id
+-- [HEADER]                 AND n.type = 'info'
+-- [HEADER]                 AND n.metadata->>'payment_id' = due_payment.id::text
             ) THEN
                 INSERT INTO public.notifications (
-                    user_id,
-                    type,
-                    title,
-                    message,
-                    metadata
+-- [HEADER]                     user_id,
+-- [HEADER]                     type,
+-- [HEADER]                     title,
+-- [HEADER]                     message,
+-- [HEADER]                     metadata
                 ) VALUES (
-                    due_payment.user_id,
+-- [HEADER]                     due_payment.user_id,
                     'info',
                     'Rent Due Soon',
                     'Rent of ' || due_payment.amount || ' ' || due_payment.currency || ' for ' || due_payment.address || ' is due on ' || to_char(due_payment.due_date, 'DD/MM/YYYY') || '.',
                     jsonb_build_object('payment_id', due_payment.id)
                 );
-                count_new := count_new + 1;
+-- [HEADER]                 count_new := count_new + 1;
             END IF;
         END IF;
     END LOOP;
@@ -19565,31 +19597,31 @@ BEGIN
 
         -- Check if extension option starts in this window
         IF extension_record.extension_option_start <= (CURRENT_DATE + (pref_days || ' days')::interval)
-           AND extension_record.extension_option_start >= CURRENT_DATE THEN
+-- [HEADER]            AND extension_record.extension_option_start >= CURRENT_DATE THEN
            
             IF NOT EXISTS (
                 SELECT 1 
-                FROM public.notifications n 
-                WHERE n.user_id = extension_record.user_id
-                AND n.type = 'info'
-                AND n.metadata->>'contract_id' = extension_record.id::text
-                AND n.title = 'Extension Option Available'
-                AND n.created_at > (CURRENT_DATE - INTERVAL '6 months')
+-- [HEADER]                 FROM public.notifications n 
+-- [HEADER]                 WHERE n.user_id = extension_record.user_id
+-- [HEADER]                 AND n.type = 'info'
+-- [HEADER]                 AND n.metadata->>'contract_id' = extension_record.id::text
+-- [HEADER]                 AND n.title = 'Extension Option Available'
+-- [HEADER]                 AND n.created_at > (CURRENT_DATE - INTERVAL '6 months')
             ) THEN
                 INSERT INTO public.notifications (
-                    user_id,
-                    type,
-                    title,
-                    message,
-                    metadata
+-- [HEADER]                     user_id,
+-- [HEADER]                     type,
+-- [HEADER]                     title,
+-- [HEADER]                     message,
+-- [HEADER]                     metadata
                 ) VALUES (
-                    extension_record.user_id,
+-- [HEADER]                     extension_record.user_id,
                     'info',
                     'Extension Option Available',
                     'Extension option period for ' || extension_record.address || ' starts in ' || (extension_record.extension_option_start - CURRENT_DATE)::text || ' days (' || to_char(extension_record.extension_option_start, 'DD/MM/YYYY') || '). Consider discussing with tenant.',
                     jsonb_build_object('contract_id', extension_record.id)
                 );
-                count_new := count_new + 1;
+-- [HEADER]                 count_new := count_new + 1;
             END IF;
         END IF;
     END LOOP;
@@ -19634,31 +19666,31 @@ BEGIN
 
         -- Check if deadline is approaching
         IF deadline_record.extension_option_end <= (CURRENT_DATE + (pref_days || ' days')::interval)
-           AND deadline_record.extension_option_end >= CURRENT_DATE THEN
+-- [HEADER]            AND deadline_record.extension_option_end >= CURRENT_DATE THEN
            
             IF NOT EXISTS (
                 SELECT 1 
-                FROM public.notifications n 
-                WHERE n.user_id = deadline_record.user_id
-                AND n.type = 'warning'
-                AND n.metadata->>'contract_id' = deadline_record.id::text
-                AND n.title = 'Extension Option Deadline Approaching'
-                AND n.created_at > (CURRENT_DATE - INTERVAL '6 months')
+-- [HEADER]                 FROM public.notifications n 
+-- [HEADER]                 WHERE n.user_id = deadline_record.user_id
+-- [HEADER]                 AND n.type = 'warning'
+-- [HEADER]                 AND n.metadata->>'contract_id' = deadline_record.id::text
+-- [HEADER]                 AND n.title = 'Extension Option Deadline Approaching'
+-- [HEADER]                 AND n.created_at > (CURRENT_DATE - INTERVAL '6 months')
             ) THEN
                 INSERT INTO public.notifications (
-                    user_id,
-                    type,
-                    title,
-                    message,
-                    metadata
+-- [HEADER]                     user_id,
+-- [HEADER]                     type,
+-- [HEADER]                     title,
+-- [HEADER]                     message,
+-- [HEADER]                     metadata
                 ) VALUES (
-                    deadline_record.user_id,
+-- [HEADER]                     deadline_record.user_id,
                     'warning',
                     'Extension Option Deadline Approaching',
                     'Deadline to announce extension option for ' || deadline_record.address || ' is in ' || (deadline_record.extension_option_end - CURRENT_DATE)::text || ' days (' || to_char(deadline_record.extension_option_end, 'DD/MM/YYYY') || '). Contact tenant soon.',
                     jsonb_build_object('contract_id', deadline_record.id)
                 );
-                count_new := count_new + 1;
+-- [HEADER]                 count_new := count_new + 1;
             END IF;
         END IF;
     END LOOP;
@@ -19666,12 +19698,12 @@ END;
 $$;
 -- Add onboarding tracking flag
 alter table public.user_preferences 
-add column if not exists has_seen_welcome_v1 boolean default false;
+-- [HEADER] add column if not exists has_seen_welcome_v1 boolean default false;
 
 -- Comment for documentation
 -- Add seen_features tracking array
 alter table public.user_preferences 
-add column if not exists seen_features text[] default '{}';
+-- [HEADER] add column if not exists seen_features text[] default '{}';
 
 -- Comment for documentation
 -- Migration: update_pricing_to_new_tiers
@@ -19680,32 +19712,32 @@ add column if not exists seen_features text[] default '{}';
 -- 1. Update SOLO (Free)
 UPDATE subscription_plans
 SET 
-    name = 'SOLO',
-    max_properties = 1,
-    price_monthly = 0,
-    price_yearly = 0,
-    features = '{"legal_library": true, "maintenance_tracker": true, "ai_assistant": false, "bill_analysis": false, "can_export": false, "cpi_autopilot": false}'::jsonb
-WHERE id = 'free' OR id = 'solo';
+-- [HEADER]     name = 'SOLO',
+-- [HEADER]     max_properties = 1,
+-- [HEADER]     price_monthly = 0,
+-- [HEADER]     price_yearly = 0,
+-- [HEADER]     features = '{"legal_library": true, "maintenance_tracker": true, "ai_assistant": false, "bill_analysis": false, "can_export": false, "cpi_autopilot": false}'::jsonb
+-- [HEADER] WHERE id = 'free' OR id = 'solo';
 
 -- 2. Update MATE (Pro)
 UPDATE subscription_plans
 SET 
-    name = 'MATE',
-    max_properties = 3,
-    price_monthly = 0, -- Testing Stage: Free
-    price_yearly = 0,
-    features = '{"legal_library": true, "maintenance_tracker": true, "ai_assistant": true, "bill_analysis": true, "can_export": false, "cpi_autopilot": true, "whatsapp_bot": true}'::jsonb
-WHERE id = 'pro' OR id = 'mate';
+-- [HEADER]     name = 'MATE',
+-- [HEADER]     max_properties = 3,
+-- [HEADER]     price_monthly = 0, -- Testing Stage: Free
+-- [HEADER]     price_yearly = 0,
+-- [HEADER]     features = '{"legal_library": true, "maintenance_tracker": true, "ai_assistant": true, "bill_analysis": true, "can_export": false, "cpi_autopilot": true, "whatsapp_bot": true}'::jsonb
+-- [HEADER] WHERE id = 'pro' OR id = 'mate';
 
 -- 3. Update MASTER (Enterprise)
 UPDATE subscription_plans
 SET 
-    name = 'MASTER',
-    max_properties = 10,
-    price_monthly = 0, -- Testing Stage: Free
-    price_yearly = 0,
-    features = '{"legal_library": true, "maintenance_tracker": true, "ai_assistant": true, "bill_analysis": true, "can_export": true, "cpi_autopilot": true, "whatsapp_bot": true, "portfolio_visualizer": true}'::jsonb
-WHERE id = 'enterprise' OR id = 'master';
+-- [HEADER]     name = 'MASTER',
+-- [HEADER]     max_properties = 10,
+-- [HEADER]     price_monthly = 0, -- Testing Stage: Free
+-- [HEADER]     price_yearly = 0,
+-- [HEADER]     features = '{"legal_library": true, "maintenance_tracker": true, "ai_assistant": true, "bill_analysis": true, "can_export": true, "cpi_autopilot": true, "whatsapp_bot": true, "portfolio_visualizer": true}'::jsonb
+-- [HEADER] WHERE id = 'enterprise' OR id = 'master';
 
 -- Notify PostgREST to reload schema
 NOTIFY pgrst, 'reload schema';
@@ -19715,6 +19747,7 @@ NOTIFY pgrst, 'reload schema';
 -- 1. HARDEN system_settings
 -- Only Super Admins can read the full settings. Regular users see nothing (unless we specificy public keys).
 DROP POLICY IF EXISTS "Everyone can read system settings" ON public.system_settings;
+DROP POLICY IF EXISTS "Admins can read system settings" ON public.system_settings;
 DROP POLICY IF EXISTS "Admins can read system settings" ON public.system_settings;
 CREATE POLICY "Admins can read system settings" ON public.system_settings
     FOR SELECT
@@ -19739,8 +19772,9 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS tr_on_role_change ON public.user_profiles;
+DROP TRIGGER IF EXISTS "tr_on_role_change" ON public.user_profiles;
 CREATE TRIGGER tr_on_role_change
-    BEFORE UPDATE ON public.user_profiles
+-- [HEADER]     BEFORE UPDATE ON public.user_profiles
     FOR EACH ROW
     EXECUTE FUNCTION public.check_role_change();
 
@@ -19770,47 +19804,47 @@ WHERE id = 'secure_documents';
 -- 4. Apply strict RLS for 'contracts' bucket matching 'secure_documents' pattern
 DROP POLICY IF EXISTS "Users view own contracts" ON storage.objects;
 CREATE POLICY "Users view own contracts"
-    ON storage.objects
+-- [HEADER]     ON storage.objects
     FOR SELECT
     USING (
-        bucket_id = 'contracts'
-        AND
+-- [HEADER]         bucket_id = 'contracts'
+-- [HEADER]         AND
         (storage.foldername(name))[1] = auth.uid()::text
     );
 
 DROP POLICY IF EXISTS "Users upload own contracts" ON storage.objects;
 CREATE POLICY "Users upload own contracts"
-    ON storage.objects
+-- [HEADER]     ON storage.objects
     FOR INSERT
     WITH CHECK (
-        bucket_id = 'contracts'
-        AND
+-- [HEADER]         bucket_id = 'contracts'
+-- [HEADER]         AND
         (storage.foldername(name))[1] = auth.uid()::text
-        AND
-        auth.role() = 'authenticated'
+-- [HEADER]         AND
+-- [HEADER]         auth.role() = 'authenticated'
     );
 
 -- 5. Repeat for 'property_images'
 DROP POLICY IF EXISTS "Users view own images" ON storage.objects;
 CREATE POLICY "Users view own images"
-    ON storage.objects
+-- [HEADER]     ON storage.objects
     FOR SELECT
     USING (
-        bucket_id = 'property_images'
-        AND
+-- [HEADER]         bucket_id = 'property_images'
+-- [HEADER]         AND
         (storage.foldername(name))[1] = auth.uid()::text
     );
 
 DROP POLICY IF EXISTS "Users upload own images" ON storage.objects;
 CREATE POLICY "Users upload own images"
-    ON storage.objects
+-- [HEADER]     ON storage.objects
     FOR INSERT
     WITH CHECK (
-        bucket_id = 'property_images'
-        AND
+-- [HEADER]         bucket_id = 'property_images'
+-- [HEADER]         AND
         (storage.foldername(name))[1] = auth.uid()::text
-        AND
-        auth.role() = 'authenticated'
+-- [HEADER]         AND
+-- [HEADER]         auth.role() = 'authenticated'
     );
 
 NOTIFY pgrst, 'reload schema';
@@ -19929,6 +19963,7 @@ DO $$ BEGIN
             FOR SELECT USING (auth.uid() = id OR public.is_admin());
             
         DROP POLICY IF EXISTS "Users can update own profile" ON public.user_profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON public.user_profiles;
         CREATE POLICY "Users can update own profile" ON public.user_profiles
             FOR UPDATE USING (auth.uid() = id)
             WITH CHECK (auth.uid() = id);
@@ -19957,18 +19992,18 @@ DROP POLICY IF EXISTS "Anyone can upload feedback screenshots" ON storage.object
 -- 3. APPLY OWNER-ONLY FEEDBACK POLICIES
 -- Path naming: feedback-screenshots/{user_id}/{filename}
 CREATE POLICY "Users can upload own feedback screenshots"
-    ON storage.objects FOR INSERT
+-- [HEADER]     ON storage.objects FOR INSERT
     WITH CHECK (
-        bucket_id = 'feedback-screenshots'
-        AND
+-- [HEADER]         bucket_id = 'feedback-screenshots'
+-- [HEADER]         AND
         (storage.foldername(name))[1] = auth.uid()::text
     );
 
 CREATE POLICY "Users can view own feedback screenshots"
-    ON storage.objects FOR SELECT
+-- [HEADER]     ON storage.objects FOR SELECT
     USING (
-        bucket_id = 'feedback-screenshots'
-        AND
+-- [HEADER]         bucket_id = 'feedback-screenshots'
+-- [HEADER]         AND
         (storage.foldername(name))[1] = auth.uid()::text
     );
 
@@ -19978,12 +20013,12 @@ UPDATE storage.buckets SET public = false WHERE id IN ('contracts', 'property_im
 -- 5. STANDARDIZE POLICY NAMES FOR AUDITABILITY
 DROP POLICY IF EXISTS "Users view own contracts" ON storage.objects;
 CREATE POLICY "Secure Access: Contracts"
-    ON storage.objects FOR SELECT
+-- [HEADER]     ON storage.objects FOR SELECT
     USING (bucket_id = 'contracts' AND (storage.foldername(name))[1] = auth.uid()::text);
 
 DROP POLICY IF EXISTS "Users view own images" ON storage.objects;
 CREATE POLICY "Secure Access: Property Images"
-    ON storage.objects FOR SELECT
+-- [HEADER]     ON storage.objects FOR SELECT
     USING (bucket_id = 'property_images' AND (storage.foldername(name))[1] = auth.uid()::text);
 
 COMMIT;
@@ -19995,7 +20030,7 @@ BEGIN;
 
 -- 1. Add max_whatsapp_messages to subscription_plans
 ALTER TABLE public.subscription_plans 
-ADD COLUMN IF NOT EXISTS max_whatsapp_messages INTEGER DEFAULT 50;
+-- [HEADER] ADD COLUMN IF NOT EXISTS max_whatsapp_messages INTEGER DEFAULT 50;
 
 -- 2. Update Seed Data for existing plans
 UPDATE public.subscription_plans SET max_whatsapp_messages = 50 WHERE id = 'free';
@@ -20005,11 +20040,11 @@ UPDATE public.subscription_plans SET max_whatsapp_messages = -1 WHERE id = 'mast
 
 -- 3. Add whatsapp_limit_override to user_profiles
 ALTER TABLE public.user_profiles 
-ADD COLUMN IF NOT EXISTS whatsapp_limit_override INTEGER DEFAULT NULL;
+-- [HEADER] ADD COLUMN IF NOT EXISTS whatsapp_limit_override INTEGER DEFAULT NULL;
 
 -- 3b. Also add to ai_usage_limits for UI consistency in Usage Dashboard
 ALTER TABLE public.ai_usage_limits
-ADD COLUMN IF NOT EXISTS monthly_whatsapp_limit INTEGER DEFAULT 50;
+-- [HEADER] ADD COLUMN IF NOT EXISTS monthly_whatsapp_limit INTEGER DEFAULT 50;
 
 UPDATE public.ai_usage_limits SET monthly_whatsapp_limit = 50 WHERE tier_name = 'free';
 UPDATE public.ai_usage_limits SET monthly_whatsapp_limit = 500 WHERE tier_name = 'pro';
@@ -20018,10 +20053,10 @@ UPDATE public.ai_usage_limits SET monthly_whatsapp_limit = -1 WHERE tier_name = 
 -- 4. Create WhatsApp Usage Logs Table
 -- This tracks OUTBOUND messages to count against the quota
 CREATE TABLE IF NOT EXISTS public.whatsapp_usage_logs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    conversation_id UUID REFERENCES public.whatsapp_conversations(id) ON DELETE SET NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- [HEADER]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [HEADER]     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [HEADER]     conversation_id UUID REFERENCES public.whatsapp_conversations(id) ON DELETE SET NULL,
+-- [HEADER]     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Enable RLS
@@ -20032,11 +20067,11 @@ CREATE INDEX IF NOT EXISTS idx_whatsapp_usage_user_date ON public.whatsapp_usage
 
 -- Policies
 CREATE POLICY "Users can view their own whatsapp usage logs"
-    ON public.whatsapp_usage_logs FOR SELECT
+-- [HEADER]     ON public.whatsapp_usage_logs FOR SELECT
     USING (auth.uid() = user_id OR public.is_admin());
 
 CREATE POLICY "Admins can manage all usage logs"
-    ON public.whatsapp_usage_logs FOR ALL
+-- [HEADER]     ON public.whatsapp_usage_logs FOR ALL
     USING (public.is_admin());
 
 -- 5. RPC to check and log usage
@@ -20062,9 +20097,9 @@ BEGIN
 
     -- 1. Get User's Limit and Override
     SELECT 
-        COALESCE(up.whatsapp_limit_override, p.max_whatsapp_messages, 50) INTO v_limit
-    FROM public.user_profiles up
-    JOIN public.subscription_plans p ON up.plan_id = p.id
+-- [HEADER]         COALESCE(up.whatsapp_limit_override, p.max_whatsapp_messages, 50) INTO v_limit
+-- [HEADER]     FROM public.user_profiles up
+-- [HEADER]     JOIN public.subscription_plans p ON up.plan_id = p.id
     WHERE up.id = p_user_id;
 
     -- Fallback if user or plan not found
@@ -20074,8 +20109,8 @@ BEGIN
 
     -- 2. Count total WhatsApp usage this month (Outbound messages)
     SELECT COUNT(*)::INTEGER INTO v_current_usage
-    FROM public.whatsapp_usage_logs
-    WHERE user_id = p_user_id
+-- [HEADER]     FROM public.whatsapp_usage_logs
+-- [HEADER]     WHERE user_id = p_user_id
       AND created_at >= v_month_start;
 
     -- 3. Check if allowed
@@ -20084,13 +20119,13 @@ BEGIN
         INSERT INTO public.whatsapp_usage_logs (user_id, conversation_id)
         VALUES (p_user_id, p_conversation_id);
         
-        RETURN jsonb_build_object(
+-- [HEADER]         RETURN jsonb_build_object(
             'allowed', true,
             'current_usage', v_current_usage + 1,
             'limit', v_limit
         );
-    ELSE
-        RETURN jsonb_build_object(
+-- [HEADER]     ELSE
+-- [HEADER]         RETURN jsonb_build_object(
             'allowed', false,
             'current_usage', v_current_usage,
             'limit', v_limit,
@@ -20114,7 +20149,7 @@ UPDATE public.user_profiles SET phone = NULL WHERE phone = '';
 -- Note: UNIQUE allows multiple NULLs in Postgres, which is perfect for legacy users 
 -- who haven't set a phone yet, but prevents 2 users from having the same number.
 ALTER TABLE public.user_profiles 
-ADD CONSTRAINT user_profiles_phone_key UNIQUE (phone);
+-- [HEADER] ADD CONSTRAINT user_profiles_phone_key UNIQUE (phone);
 
 -- 3. Update handle_new_user() to be stricter
 CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -20135,38 +20170,38 @@ BEGIN
     END IF;
 
     INSERT INTO public.user_profiles (
-        id, 
-        email, 
-        full_name,
-        first_name,
-        last_name,
-        phone,
-        role, 
-        subscription_status, 
-        plan_id
+-- [HEADER]         id, 
+-- [HEADER]         email, 
+-- [HEADER]         full_name,
+-- [HEADER]         first_name,
+-- [HEADER]         last_name,
+-- [HEADER]         phone,
+-- [HEADER]         role, 
+-- [HEADER]         subscription_status, 
+-- [HEADER]         plan_id
     )
     VALUES (
-        NEW.id,
-        NEW.email,
-        COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
-        COALESCE(NEW.raw_user_meta_data->>'first_name', split_part(NEW.raw_user_meta_data->>'full_name', ' ', 1), 'User'),
-        COALESCE(NEW.raw_user_meta_data->>'last_name', 'User'),
-        v_phone,
+-- [HEADER]         NEW.id,
+-- [HEADER]         NEW.email,
+-- [HEADER]         COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
+-- [HEADER]         COALESCE(NEW.raw_user_meta_data->>'first_name', split_part(NEW.raw_user_meta_data->>'full_name', ' ', 1), 'User'),
+-- [HEADER]         COALESCE(NEW.raw_user_meta_data->>'last_name', 'User'),
+-- [HEADER]         v_phone,
         'user', 
         'active', 
-        COALESCE(NEW.raw_user_meta_data->>'plan_id', default_plan_id)
+-- [HEADER]         COALESCE(NEW.raw_user_meta_data->>'plan_id', default_plan_id)
     )
-    ON CONFLICT (id) DO UPDATE SET
-        email = EXCLUDED.email,
-        full_name = COALESCE(EXCLUDED.full_name, user_profiles.full_name),
-        phone = COALESCE(EXCLUDED.phone, user_profiles.phone),
+-- [HEADER]     ON CONFLICT (id) DO UPDATE SET
+-- [HEADER]         email = EXCLUDED.email,
+-- [HEADER]         full_name = COALESCE(EXCLUDED.full_name, user_profiles.full_name),
+-- [HEADER]         phone = COALESCE(EXCLUDED.phone, user_profiles.phone),
         updated_at = NOW();
 
     RETURN NEW;
-EXCEPTION 
-    WHEN unique_violation THEN
+-- [HEADER] EXCEPTION 
+-- [HEADER]     WHEN unique_violation THEN
         RAISE EXCEPTION 'This phone number is already registered to another account.';
-    WHEN OTHERS THEN
+-- [HEADER]     WHEN OTHERS THEN
         RAISE EXCEPTION 'Signup Failed: %', SQLERRM;
 END;
 $$;
@@ -20174,14 +20209,14 @@ $$;
 -- This attaches the user_profiles table to the existing automated engagement webhook system
 
 DROP TRIGGER IF EXISTS tr_on_user_profile_update ON public.user_profiles;
-
+DROP TRIGGER IF EXISTS "tr_on_user_profile_update" ON public.user_profiles;
 CREATE TRIGGER tr_on_user_profile_update
-AFTER UPDATE ON public.user_profiles
+-- [HEADER] AFTER UPDATE ON public.user_profiles
 FOR EACH ROW
-WHEN (
-    OLD.plan_id IS DISTINCT FROM NEW.plan_id OR
-    OLD.email IS DISTINCT FROM NEW.email OR
-    OLD.phone IS DISTINCT FROM NEW.phone
+-- [HEADER] WHEN (
+-- [HEADER]     OLD.plan_id IS DISTINCT FROM NEW.plan_id OR
+-- [HEADER]     OLD.email IS DISTINCT FROM NEW.email OR
+-- [HEADER]     OLD.phone IS DISTINCT FROM NEW.phone
 )
 EXECUTE FUNCTION public.handle_automated_engagement_webhook();
 -- Migration: Unified Property Images Security (v2 - Consolidated)
@@ -20203,32 +20238,32 @@ WHERE id = 'property-images';
 -- 3. APPLY CONSOLIDATED RLS TO 'property-images'
 -- Handles both direct user uploads and Google Maps imports
 CREATE POLICY "Secure Access: Property Images"
-    ON storage.objects
+-- [HEADER]     ON storage.objects
     FOR ALL
     USING (
-        bucket_id = 'property-images'
-        AND (
+-- [HEADER]         bucket_id = 'property-images'
+-- [HEADER]         AND (
             -- Direct user-id folder: {userId}/filename
             (storage.foldername(name))[1] = auth.uid()::text
-            OR
+-- [HEADER]             OR
             -- Google imports folder: google-imports/{userId}/filename
             (
                 (storage.foldername(name))[1] = 'google-imports' 
-                AND 
+-- [HEADER]                 AND 
                 (storage.foldername(name))[2] = auth.uid()::text
             )
         )
     )
     WITH CHECK (
-        bucket_id = 'property-images'
-        AND (
+-- [HEADER]         bucket_id = 'property-images'
+-- [HEADER]         AND (
             -- Direct user-id folder
             (storage.foldername(name))[1] = auth.uid()::text
-            OR
+-- [HEADER]             OR
             -- Google imports folder
             (
                 (storage.foldername(name))[1] = 'google-imports' 
-                AND 
+-- [HEADER]                 AND 
                 (storage.foldername(name))[2] = auth.uid()::text
             )
         )
@@ -20253,28 +20288,28 @@ UPDATE storage.buckets SET public = false WHERE id = 'property-images';
 
 -- 3. Policy for manual uploads: {userId}/{fileName}
 CREATE POLICY "Manual uploads ownership"
-ON storage.objects FOR ALL
-TO authenticated
+-- [HEADER] ON storage.objects FOR ALL
+-- [HEADER] TO authenticated
 USING (
-    bucket_id = 'property-images' AND
+-- [HEADER]     bucket_id = 'property-images' AND
     (storage.foldername(name))[1] = (auth.uid())::text
 )
 WITH CHECK (
-    bucket_id = 'property-images' AND
+-- [HEADER]     bucket_id = 'property-images' AND
     (storage.foldername(name))[1] = (auth.uid())::text
 );
 
 -- 4. Policy for Google imports: google-imports/{userId}/{fileName}
 CREATE POLICY "Google imports ownership"
-ON storage.objects FOR ALL
-TO authenticated
+-- [HEADER] ON storage.objects FOR ALL
+-- [HEADER] TO authenticated
 USING (
-    bucket_id = 'property-images' AND
+-- [HEADER]     bucket_id = 'property-images' AND
     (storage.foldername(name))[1] = 'google-imports' AND
     (storage.foldername(name))[2] = (auth.uid())::text
 )
 WITH CHECK (
-    bucket_id = 'property-images' AND
+-- [HEADER]     bucket_id = 'property-images' AND
     (storage.foldername(name))[1] = 'google-imports' AND
     (storage.foldername(name))[2] = (auth.uid())::text
 );
@@ -20290,9 +20325,9 @@ NOTIFY pgrst, 'reload schema';
 DROP POLICY IF EXISTS "Allow public read access to index_data" ON index_data;
 
 CREATE POLICY "Allow public read access to index_data"
-ON index_data
+-- [HEADER] ON index_data
 FOR SELECT
-TO anon
+-- [HEADER] TO anon
 USING (true);
 
 -- 2. Index Bases (Ensure RLS is on and policy exists)
@@ -20301,31 +20336,31 @@ ALTER TABLE index_bases ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow public read access to index_bases" ON index_bases;
 
 CREATE POLICY "Allow public read access to index_bases"
-ON index_bases
+-- [HEADER] ON index_bases
 FOR SELECT
-TO anon
+-- [HEADER] TO anon
 USING (true);
 
 -- Ensure authenticated users can still read (in case previous logic relied on default open access for bases)
 DROP POLICY IF EXISTS "Allow authenticated users to read index_bases" ON index_bases;
 
 CREATE POLICY "Allow authenticated users to read index_bases"
-ON index_bases
+-- [HEADER] ON index_bases
 FOR SELECT
-TO authenticated
+-- [HEADER] TO authenticated
 USING (true);
 -- Create error_logs table
 CREATE TABLE IF NOT EXISTS public.error_logs (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-    user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-    message TEXT NOT NULL,
-    stack TEXT,
-    route TEXT,
-    component_stack TEXT,
-    metadata JSONB DEFAULT '{}'::jsonb,
-    is_resolved BOOLEAN DEFAULT false,
-    environment TEXT DEFAULT 'production'
+-- [HEADER]     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+-- [HEADER]     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+-- [HEADER]     user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+-- [HEADER]     message TEXT NOT NULL,
+-- [HEADER]     stack TEXT,
+-- [HEADER]     route TEXT,
+-- [HEADER]     component_stack TEXT,
+-- [HEADER]     metadata JSONB DEFAULT '{}'::jsonb,
+-- [HEADER]     is_resolved BOOLEAN DEFAULT false,
+-- [HEADER]     environment TEXT DEFAULT 'production'
 );
 
 -- Enable RLS
@@ -20334,30 +20369,33 @@ ALTER TABLE public.error_logs ENABLE ROW LEVEL SECURITY;
 -- Policies
 -- 1. Anyone (even unauthenticated) can insert logs (so we catch 404s/auth errors)
 DROP POLICY IF EXISTS "Allow anonymous inserts to error_logs" ON public.error_logs;
+DROP POLICY IF EXISTS "Allow anonymous inserts to error_logs" ON public.error_logs;
 CREATE POLICY "Allow anonymous inserts to error_logs" ON public.error_logs
     FOR INSERT WITH CHECK (true);
 
 -- 2. Only admins can view logs
 DROP POLICY IF EXISTS "Allow admins to view error_logs" ON public.error_logs;
+DROP POLICY IF EXISTS "Allow admins to view error_logs" ON public.error_logs;
 CREATE POLICY "Allow admins to view error_logs" ON public.error_logs
     FOR SELECT TO authenticated
     USING (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM public.user_profiles
-            WHERE user_profiles.id = auth.uid()
-            AND user_profiles.role IN ('admin', 'super_admin')
+-- [HEADER]             WHERE user_profiles.id = auth.uid()
+-- [HEADER]             AND user_profiles.role IN ('admin', 'super_admin')
         )
     );
 
 -- 3. Only admins can update logs (mark as resolved)
 DROP POLICY IF EXISTS "Allow admins to update error_logs" ON public.error_logs;
+DROP POLICY IF EXISTS "Allow admins to update error_logs" ON public.error_logs;
 CREATE POLICY "Allow admins to update error_logs" ON public.error_logs
     FOR UPDATE TO authenticated
     USING (
-        EXISTS (
+-- [HEADER]         EXISTS (
             SELECT 1 FROM public.user_profiles
-            WHERE user_profiles.id = auth.uid()
-            AND user_profiles.role IN ('admin', 'super_admin')
+-- [HEADER]             WHERE user_profiles.id = auth.uid()
+-- [HEADER]             AND user_profiles.role IN ('admin', 'super_admin')
         )
     );
 
@@ -20368,7 +20406,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-    project_url text := 'https://qfvrekvugdjnwhnaucmz.supabase.co';
+    project_url text := 'https://tipnjnfbbnbskdlodrww.supabase.co';
 BEGIN
     PERFORM
       net.http_post(
@@ -20381,15 +20419,16 @@ BEGIN
         )::jsonb
       );
     RETURN NEW;
-EXCEPTION WHEN OTHERS THEN
+-- [HEADER] EXCEPTION WHEN OTHERS THEN
     RAISE WARNING 'Failed to trigger error notification: %', SQLERRM;
     RETURN NEW;
 END;
 $$;
 
 DROP TRIGGER IF EXISTS on_error_log_inserted ON public.error_logs;
+DROP TRIGGER IF EXISTS "on_error_log_inserted" ON public.error_logs;
 CREATE TRIGGER on_error_log_inserted
-    AFTER INSERT ON public.error_logs
+-- [HEADER]     AFTER INSERT ON public.error_logs
     FOR EACH ROW
     EXECUTE FUNCTION public.notify_admin_on_error();
 
@@ -20427,7 +20466,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- 2. Clean up potentially broken settings (removing redundant quotes if they exist)
 UPDATE public.system_settings 
 SET value = to_jsonb(value #>> '{}')
-WHERE key IN ('supabase_project_ref', 'supabase_service_role_key')
+-- [HEADER] WHERE key IN ('supabase_project_ref', 'supabase_service_role_key')
 AND value::text LIKE '"%"%';
 
 -- 3. Reschedule the daily-admin-summary cron job
@@ -20435,7 +20474,7 @@ AND value::text LIKE '"%"%';
 DO $$
 BEGIN
     PERFORM cron.unschedule('daily-admin-summary');
-EXCEPTION WHEN OTHERS THEN
+-- [HEADER] EXCEPTION WHEN OTHERS THEN
     NULL;
 END $$;
 
@@ -20444,13 +20483,13 @@ SELECT cron.schedule(
     '30 5 * * *', -- 05:30 UTC = 07:30/08:30 IL time (08:00 Target)
     $$
     SELECT
-      net.http_post(
-        url := 'https://' || public.get_supabase_config('supabase_project_ref') || '.supabase.co/functions/v1/send-daily-admin-summary',
-        headers := jsonb_build_object(
+-- [HEADER]       net.http_post(
+-- [HEADER]         url := 'https://' || public.get_supabase_config('supabase_project_ref') || '.supabase.co/functions/v1/send-daily-admin-summary',
+-- [HEADER]         headers := jsonb_build_object(
           'Content-Type', 'application/json',
           'Authorization', 'Bearer ' || public.get_supabase_config('supabase_service_role_key')
         ),
-        body := '{}'::jsonb
+-- [HEADER]         body := '{}'::jsonb
       )
     $$
 );
@@ -20476,11 +20515,11 @@ SET max_archived_contracts = 1
 WHERE id = 'free';
 -- Create analytics_events table
 CREATE TABLE IF NOT EXISTS public.analytics_events (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE,
-    event_name TEXT NOT NULL,
-    metadata JSONB DEFAULT '{}'::jsonb,
-    created_at TIMESTAMPTZ DEFAULT now()
+-- [HEADER]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [HEADER]     user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE,
+-- [HEADER]     event_name TEXT NOT NULL,
+-- [HEADER]     metadata JSONB DEFAULT '{}'::jsonb,
+-- [HEADER]     created_at TIMESTAMPTZ DEFAULT now()
 );
 
 -- Index for performance
@@ -20513,11 +20552,13 @@ BEGIN
     -- Users can insert their own events (hidden from others)
     IF NOT EXISTS (
         SELECT 1 FROM pg_policies 
-        WHERE tablename = 'analytics_events' AND policyname = 'Users can log their own events'
+-- [HEADER]         WHERE tablename = 'analytics_events' AND policyname = 'Users can log their own events'
     ) THEN
+;
+DROP POLICY IF EXISTS "Users can log their own events" ON public.analytics_events;
         CREATE POLICY "Users can log their own events" ON public.analytics_events
             FOR INSERT
-            TO authenticated
+-- [HEADER]             TO authenticated
             WITH CHECK (auth.uid() = user_id);
     END IF;
 END $$;
@@ -20541,38 +20582,38 @@ BEGIN
         'top_users', (
             SELECT jsonb_agg(u) FROM (
                 SELECT 
-                    ae.user_id,
-                    up.full_name,
-                    up.email,
-                    count(*) as event_count
-                FROM analytics_events ae
-                JOIN user_profiles up ON ae.user_id = up.id
-                WHERE ae.created_at > now() - (days_limit || ' days')::interval
-                GROUP BY ae.user_id, up.full_name, up.email
-                ORDER BY event_count DESC
-                LIMIT 10
+-- [HEADER]                     ae.user_id,
+-- [HEADER]                     up.full_name,
+-- [HEADER]                     up.email,
+-- [HEADER]                     count(*) as event_count
+-- [HEADER]                 FROM analytics_events ae
+-- [HEADER]                 JOIN user_profiles up ON ae.user_id = up.id
+-- [HEADER]                 WHERE ae.created_at > now() - (days_limit || ' days')::interval
+-- [HEADER]                 GROUP BY ae.user_id, up.full_name, up.email
+-- [HEADER]                 ORDER BY event_count DESC
+-- [HEADER]                 LIMIT 10
             ) u
         ),
         'popular_features', (
             SELECT jsonb_agg(f) FROM (
                 SELECT 
-                    event_name,
-                    count(*) as usage_count
-                FROM analytics_events
-                WHERE created_at > now() - (days_limit || ' days')::interval
-                GROUP BY event_name
-                ORDER BY usage_count DESC
+-- [HEADER]                     event_name,
+-- [HEADER]                     count(*) as usage_count
+-- [HEADER]                 FROM analytics_events
+-- [HEADER]                 WHERE created_at > now() - (days_limit || ' days')::interval
+-- [HEADER]                 GROUP BY event_name
+-- [HEADER]                 ORDER BY usage_count DESC
             ) f
         ),
         'daily_trends', (
             SELECT jsonb_agg(t) FROM (
                 SELECT 
                     date_trunc('day', created_at)::date as day,
-                    count(*) as count
-                FROM analytics_events
-                WHERE created_at > now() - (days_limit || ' days')::interval
-                GROUP BY 1
-                ORDER BY 1 ASC
+-- [HEADER]                     count(*) as count
+-- [HEADER]                 FROM analytics_events
+-- [HEADER]                 WHERE created_at > now() - (days_limit || ' days')::interval
+-- [HEADER]                 GROUP BY 1
+-- [HEADER]                 ORDER BY 1 ASC
             ) t
         )
     ) INTO result;
@@ -20588,25 +20629,25 @@ BEGIN;
 -- 1. Create Enums for Account Security
 DO $$ BEGIN
     CREATE TYPE public.account_security_status AS ENUM ('active', 'flagged', 'suspended', 'banned');
-EXCEPTION WHEN duplicate_object THEN null; END $$;
+-- [HEADER] EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- 2. Update user_profiles with security fields
 ALTER TABLE public.user_profiles 
-ADD COLUMN IF NOT EXISTS security_status public.account_security_status DEFAULT 'active',
-ADD COLUMN IF NOT EXISTS security_notes TEXT[],
-ADD COLUMN IF NOT EXISTS flagged_at TIMESTAMPTZ,
-ADD COLUMN IF NOT EXISTS last_security_check TIMESTAMPTZ;
+-- [HEADER] ADD COLUMN IF NOT EXISTS security_status public.account_security_status DEFAULT 'active',
+-- [HEADER] ADD COLUMN IF NOT EXISTS security_notes TEXT[],
+-- [HEADER] ADD COLUMN IF NOT EXISTS flagged_at TIMESTAMPTZ,
+-- [HEADER] ADD COLUMN IF NOT EXISTS last_security_check TIMESTAMPTZ;
 
 -- 3. Create security_logs table
 CREATE TABLE IF NOT EXISTS public.security_logs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE,
-    event_code TEXT NOT NULL, -- e.g. 'AUTH_VELOCITY', 'WHATSAPP_SPIKE', 'RESOURCE_SPIKE'
-    severity TEXT CHECK (severity IN ('low', 'medium', 'high', 'critical')) DEFAULT 'low',
-    details JSONB DEFAULT '{}'::jsonb,
-    ip_address TEXT,
-    user_agent TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- [HEADER]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [HEADER]     user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE,
+-- [HEADER]     event_code TEXT NOT NULL, -- e.g. 'AUTH_VELOCITY', 'WHATSAPP_SPIKE', 'RESOURCE_SPIKE'
+-- [HEADER]     severity TEXT CHECK (severity IN ('low', 'medium', 'high', 'critical')) DEFAULT 'low',
+-- [HEADER]     details JSONB DEFAULT '{}'::jsonb,
+-- [HEADER]     ip_address TEXT,
+-- [HEADER]     user_agent TEXT,
+-- [HEADER]     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Enable RLS
@@ -20623,7 +20664,7 @@ BEGIN
     CREATE POLICY "Admins can view security logs"
         ON public.security_logs FOR SELECT
         USING (public.is_admin());
-EXCEPTION WHEN OTHERS THEN
+-- [HEADER] EXCEPTION WHEN OTHERS THEN
     CREATE POLICY "Admins can view security logs"
         ON public.security_logs FOR SELECT
         USING (EXISTS (SELECT 1 FROM public.user_profiles WHERE id = auth.uid() AND role = 'admin'));
@@ -20631,12 +20672,12 @@ END $$;
 
 -- 5. Helper Function: log_security_event
 CREATE OR REPLACE FUNCTION public.log_security_event(
-    p_user_id UUID,
-    p_event_code TEXT,
-    p_severity TEXT,
-    p_details JSONB DEFAULT '{}'::jsonb,
-    p_ip TEXT DEFAULT NULL,
-    p_ua TEXT DEFAULT NULL
+-- [HEADER]     p_user_id UUID,
+-- [HEADER]     p_event_code TEXT,
+-- [HEADER]     p_severity TEXT,
+-- [HEADER]     p_details JSONB DEFAULT '{}'::jsonb,
+-- [HEADER]     p_ip TEXT DEFAULT NULL,
+-- [HEADER]     p_ua TEXT DEFAULT NULL
 )
 RETURNS VOID
 LANGUAGE plpgsql
@@ -20650,8 +20691,8 @@ BEGIN
     IF p_severity = 'critical' THEN
         UPDATE public.user_profiles 
         SET security_status = 'flagged',
-            flagged_at = NOW()
-        WHERE id = p_user_id AND (security_status = 'active' OR security_status IS NULL);
+-- [HEADER]             flagged_at = NOW()
+-- [HEADER]         WHERE id = p_user_id AND (security_status = 'active' OR security_status IS NULL);
     END IF;
 END;
 $$;
@@ -20661,10 +20702,10 @@ COMMIT;
 NOTIFY pgrst, 'reload schema';
 CREATE OR REPLACE FUNCTION public.perform_abuse_scan()
 RETURNS TABLE (
-    user_id UUID,
-    event_code TEXT,
-    severity TEXT,
-    details JSONB
+-- [HEADER]     user_id UUID,
+-- [HEADER]     event_code TEXT,
+-- [HEADER]     severity TEXT,
+-- [HEADER]     details JSONB
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -20697,10 +20738,10 @@ BEGIN
     -- Users who created more than 5 properties in the last hour
     FOR v_user_id, v_details IN 
         SELECT p.user_id, jsonb_build_object('count', count(*), 'type', 'properties')
-        FROM public.properties p
-        WHERE p.created_at >= v_hour_ago
-        GROUP BY p.user_id
-        HAVING count(*) > 5
+-- [HEADER]         FROM public.properties p
+-- [HEADER]         WHERE p.created_at >= v_hour_ago
+-- [HEADER]         GROUP BY p.user_id
+-- [HEADER]         HAVING count(*) > 5
     LOOP
         PERFORM public.log_security_event(v_user_id, 'RESOURCE_SPIKE', 'high', v_details);
         user_id := v_user_id;
@@ -20714,11 +20755,11 @@ BEGIN
     -- Different users with the same IP in the last hour
     FOR v_user_id, v_details IN 
         SELECT s1.user_id, jsonb_build_object('ip', s1.ip_address, 'colliding_users', count(distinct s2.user_id))
-        FROM public.security_logs s1
-        JOIN public.security_logs s2 ON s1.ip_address = s2.ip_address AND s1.user_id != s2.user_id
-        WHERE s1.created_at >= v_hour_ago AND s2.created_at >= v_hour_ago
-        GROUP BY s1.user_id, s1.ip_address
-        HAVING count(distinct s2.user_id) > 2
+-- [HEADER]         FROM public.security_logs s1
+-- [HEADER]         JOIN public.security_logs s2 ON s1.ip_address = s2.ip_address AND s1.user_id != s2.user_id
+-- [HEADER]         WHERE s1.created_at >= v_hour_ago AND s2.created_at >= v_hour_ago
+-- [HEADER]         GROUP BY s1.user_id, s1.ip_address
+-- [HEADER]         HAVING count(distinct s2.user_id) > 2
     LOOP
         PERFORM public.log_security_event(v_user_id, 'IP_COLLISION', 'medium', v_details);
         user_id := v_user_id;
@@ -20734,25 +20775,25 @@ DROP FUNCTION IF EXISTS public.get_users_with_stats();
 
 CREATE OR REPLACE FUNCTION get_users_with_stats()
 RETURNS TABLE (
-    id UUID,
-    email TEXT,
-    full_name TEXT,
-    phone TEXT,
-    role TEXT,
-    subscription_status TEXT,
-    plan_id TEXT,
-    created_at TIMESTAMPTZ,
-    last_login TIMESTAMPTZ,
-    properties_count BIGINT,
-    tenants_count BIGINT,
-    contracts_count BIGINT,
-    ai_sessions_count BIGINT,
-    open_tickets_count BIGINT,
-    storage_usage_mb NUMERIC,
-    is_super_admin BOOLEAN,
+-- [HEADER]     id UUID,
+-- [HEADER]     email TEXT,
+-- [HEADER]     full_name TEXT,
+-- [HEADER]     phone TEXT,
+-- [HEADER]     role TEXT,
+-- [HEADER]     subscription_status TEXT,
+-- [HEADER]     plan_id TEXT,
+-- [HEADER]     created_at TIMESTAMPTZ,
+-- [HEADER]     last_login TIMESTAMPTZ,
+-- [HEADER]     properties_count BIGINT,
+-- [HEADER]     tenants_count BIGINT,
+-- [HEADER]     contracts_count BIGINT,
+-- [HEADER]     ai_sessions_count BIGINT,
+-- [HEADER]     open_tickets_count BIGINT,
+-- [HEADER]     storage_usage_mb NUMERIC,
+-- [HEADER]     is_super_admin BOOLEAN,
     security_status TEXT,
-    flagged_at TIMESTAMPTZ,
-    last_security_check TIMESTAMPTZ
+-- [HEADER]     flagged_at TIMESTAMPTZ,
+-- [HEADER]     last_security_check TIMESTAMPTZ
 ) 
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -20771,46 +20812,46 @@ BEGIN
         up.last_login,
         
         -- Asset Stats
-        COALESCE(p.count, 0)::BIGINT as properties_count,
-        COALESCE(t.count, 0)::BIGINT as tenants_count,
-        COALESCE(c.count, 0)::BIGINT as contracts_count,
+-- [HEADER]         COALESCE(p.count, 0)::BIGINT as properties_count,
+-- [HEADER]         COALESCE(t.count, 0)::BIGINT as tenants_count,
+-- [HEADER]         COALESCE(c.count, 0)::BIGINT as contracts_count,
         
         -- Usage Stats
-        COALESCE(ai.count, 0)::BIGINT as ai_sessions_count,
+-- [HEADER]         COALESCE(ai.count, 0)::BIGINT as ai_sessions_count,
         
         -- Support Stats
-        COALESCE(st.count, 0)::BIGINT as open_tickets_count,
+-- [HEADER]         COALESCE(st.count, 0)::BIGINT as open_tickets_count,
         
         -- Storage Usage (Bytes to MB)
-        ROUND(COALESCE(usu.total_bytes, 0) / (1024.0 * 1024.0), 2)::NUMERIC as storage_usage_mb,
+-- [HEADER]         ROUND(COALESCE(usu.total_bytes, 0) / (1024.0 * 1024.0), 2)::NUMERIC as storage_usage_mb,
         
         -- Permissions
-        COALESCE(up.is_super_admin, false) as is_super_admin,
+-- [HEADER]         COALESCE(up.is_super_admin, false) as is_super_admin,
 
         -- Security Fields
-        up.security_status::TEXT,
-        up.flagged_at,
-        up.last_security_check
+-- [HEADER]         up.security_status::TEXT,
+-- [HEADER]         up.flagged_at,
+-- [HEADER]         up.last_security_check
         
-    FROM user_profiles up
+-- [HEADER]     FROM user_profiles up
     -- Property Counts
-    LEFT JOIN (SELECT user_id, count(*) as count FROM properties GROUP BY user_id) p ON up.id = p.user_id
+-- [HEADER]     LEFT JOIN (SELECT user_id, count(*) as count FROM properties GROUP BY user_id) p ON up.id = p.user_id
     -- Tenant Counts (from embedded JSONB in contracts)
-    LEFT JOIN (
+-- [HEADER]     LEFT JOIN (
         SELECT user_id, sum(jsonb_array_length(COALESCE(tenants, '[]'::jsonb))) as count 
-        FROM contracts 
-        GROUP BY user_id
+-- [HEADER]         FROM contracts 
+-- [HEADER]         GROUP BY user_id
     ) t ON up.id = t.user_id
     -- Contract Counts
-    LEFT JOIN (SELECT user_id, count(*) as count FROM contracts GROUP BY user_id) c ON up.id = c.user_id
+-- [HEADER]     LEFT JOIN (SELECT user_id, count(*) as count FROM contracts GROUP BY user_id) c ON up.id = c.user_id
     -- AI Counts
-    LEFT JOIN (SELECT user_id, count(*) as count FROM ai_conversations GROUP BY user_id) ai ON up.id = ai.user_id
+-- [HEADER]     LEFT JOIN (SELECT user_id, count(*) as count FROM ai_conversations GROUP BY user_id) ai ON up.id = ai.user_id
     -- Open Support Tickets
-    LEFT JOIN (SELECT user_id, count(*) as count FROM support_tickets WHERE status != 'resolved' GROUP BY user_id) st ON up.id = st.user_id
+-- [HEADER]     LEFT JOIN (SELECT user_id, count(*) as count FROM support_tickets WHERE status != 'resolved' GROUP BY user_id) st ON up.id = st.user_id
     -- Storage Usage
-    LEFT JOIN (SELECT user_id, total_bytes FROM user_storage_usage) usu ON up.id = usu.user_id
+-- [HEADER]     LEFT JOIN (SELECT user_id, total_bytes FROM user_storage_usage) usu ON up.id = usu.user_id
     
-    WHERE up.deleted_at IS NULL
+-- [HEADER]     WHERE up.deleted_at IS NULL
     ORDER BY up.created_at DESC;
 END;
 $$;
@@ -20822,7 +20863,7 @@ VALUES
     ('security_alerts_enabled', 'true'::jsonb, 'Master switch for automated abuse detection alerts (Email/WhatsApp).'),
     ('admin_security_whatsapp', '"972500000000"'::jsonb, 'Admin phone number for WhatsApp security alerts. Format: CountryCode + Number (e.g., 972...)'),
     ('admin_security_email', '"rubi@rentmate.co.il"'::jsonb, 'Admin email for receiving security audit reports.')
-ON CONFLICT (key) DO UPDATE SET 
+-- [HEADER] ON CONFLICT (key) DO UPDATE SET 
     description = EXCLUDED.description;
 -- Add disclaimer_accepted to user_preferences
 -- Defaults to FALSE
@@ -20831,7 +20872,7 @@ DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_preferences' AND column_name = 'disclaimer_accepted') THEN
         ALTER TABLE user_preferences 
-        ADD COLUMN disclaimer_accepted BOOLEAN DEFAULT false;
+        ADD COLUMN IF NOT EXISTS disclaimer_accepted BOOLEAN DEFAULT false;
     END IF;
 END $$;
 -- ============================================
@@ -20892,20 +20933,20 @@ BEGIN
     END IF;
 
     -- Construct URL
-    v_url := 'https://' || v_ref || '.supabase.co/functions/v1/send-daily-admin-summary';
+-- [HEADER]     v_url := 'https://' || v_ref || '.supabase.co/functions/v1/send-daily-admin-summary';
     
     -- Perform the request
     -- net.http_post returns bigint, so we must discard it or catch it.
     -- PERFORM discards the result.
     PERFORM net.http_post(
-        url := v_url,
-        headers := jsonb_build_object(
+-- [HEADER]         url := v_url,
+-- [HEADER]         headers := jsonb_build_object(
           'Content-Type', 'application/json',
           'Authorization', 'Bearer ' || v_key
         ),
-        body := '{}'::jsonb
+-- [HEADER]         body := '{}'::jsonb
     );
-EXCEPTION WHEN OTHERS THEN
+-- [HEADER] EXCEPTION WHEN OTHERS THEN
     RAISE WARNING 'Daily Admin Summary Trigger Failed: %', SQLERRM;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -20931,13 +20972,13 @@ COMMIT;
 -- Created to allow db push to proceed.
 -- Add user_id to payments table
 ALTER TABLE public.payments 
-ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id);
+-- [HEADER] ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id);
 
 -- Backfill user_id from contracts
 UPDATE public.payments p
 SET user_id = c.user_id
-FROM public.contracts c
-WHERE p.contract_id = c.id
+-- [HEADER] FROM public.contracts c
+-- [HEADER] WHERE p.contract_id = c.id
 AND p.user_id IS NULL;
 
 -- Enforce NOT NULL after backfill (optional, but good practice if we want to guarantee it)
@@ -20951,33 +20992,33 @@ DROP POLICY IF EXISTS "Users can only see their own payments" ON public.payments
 
 -- Create RLS Policy
 CREATE POLICY "Users can only see their own payments" 
-ON public.payments 
+-- [HEADER] ON public.payments 
 FOR ALL 
 USING (auth.uid() = user_id)
 WITH CHECK (auth.uid() = user_id);
 -- Create a debug logs table to capture Edge Function execution
 CREATE TABLE IF NOT EXISTS public.debug_logs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-    function_name TEXT NOT NULL,
-    level TEXT DEFAULT 'info',
-    message TEXT NOT NULL,
-    details JSONB
+-- [HEADER]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [HEADER]     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+-- [HEADER]     function_name TEXT NOT NULL,
+-- [HEADER]     level TEXT DEFAULT 'info',
+-- [HEADER]     message TEXT NOT NULL,
+-- [HEADER]     details JSONB
 );
 
 -- Enable RLS but allow service role to insert
 ALTER TABLE public.debug_logs ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Allow service role to insert debug logs"
-    ON public.debug_logs
+-- [HEADER]     ON public.debug_logs
     FOR INSERT
-    TO service_role
+-- [HEADER]     TO service_role
     WITH CHECK (true);
 
 CREATE POLICY "Allow service role to select debug logs"
-    ON public.debug_logs
+-- [HEADER]     ON public.debug_logs
     FOR SELECT
-    TO service_role
+-- [HEADER]     TO service_role
     USING (true);
 
 -- Grant access to authenticated users (admin only ideally, but keeping simple for now)
@@ -20997,11 +21038,11 @@ BEGIN
     RAISE NOTICE '--- CRON RUNS (Today) ---';
     FOR r IN 
         SELECT d.* 
-        FROM cron.job_run_details d
-        JOIN cron.job j ON j.jobid = d.jobid
-        WHERE j.jobname = 'daily-admin-summary'
-        AND d.start_time > (now() - interval '24 hours')
-        ORDER BY d.start_time DESC 
+-- [HEADER]         FROM cron.job_run_details d
+-- [HEADER]         JOIN cron.job j ON j.jobid = d.jobid
+-- [HEADER]         WHERE j.jobname = 'daily-admin-summary'
+-- [HEADER]         AND d.start_time > (now() - interval '24 hours')
+-- [HEADER]         ORDER BY d.start_time DESC 
     LOOP
         RAISE NOTICE 'RUN: ID=%, Status=%, Msg="%", Time=%', 
             r.runid, r.status, r.return_message, r.start_time;
@@ -21010,10 +21051,10 @@ BEGIN
     RAISE NOTICE '--- DEBUG LOGS (Today) ---';
     FOR r IN 
         SELECT created_at, message, details 
-        FROM public.debug_logs 
-        WHERE created_at > (now() - interval '24 hours')
-        ORDER BY created_at DESC 
-        LIMIT 10
+-- [HEADER]         FROM public.debug_logs 
+-- [HEADER]         WHERE created_at > (now() - interval '24 hours')
+-- [HEADER]         ORDER BY created_at DESC 
+-- [HEADER]         LIMIT 10
     LOOP
         RAISE NOTICE '[%] % | %', r.created_at, r.message, r.details;
     END LOOP;
@@ -21047,19 +21088,19 @@ BEGIN
     END IF;
 
     -- Construct URL
-    v_url := 'https://' || v_ref || '.supabase.co/functions/v1/fetch-index-data';
+-- [HEADER]     v_url := 'https://' || v_ref || '.supabase.co/functions/v1/fetch-index-data';
     
     -- Perform the request
     PERFORM net.http_post(
-        url := v_url,
-        headers := jsonb_build_object(
+-- [HEADER]         url := v_url,
+-- [HEADER]         headers := jsonb_build_object(
           'Content-Type', 'application/json',
           'Authorization', 'Bearer ' || v_key
         ),
-        body := '{}'::jsonb
+-- [HEADER]         body := '{}'::jsonb
     );
     RAISE LOG 'Index Sync Triggered at %', now();
-EXCEPTION WHEN OTHERS THEN
+-- [HEADER] EXCEPTION WHEN OTHERS THEN
     RAISE WARNING 'Index Sync Trigger Failed: %', SQLERRM;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

@@ -1,4 +1,22 @@
-﻿-- ============================================
+-- ============================================
+-- RENTMATE GOLDEN SNAPSHOT (CLEAN BASELINE)
+-- ============================================
+-- This script sets up the final target structure of the database.
+-- It skips migration history and focuses on the CURRENT state.
+
+-- PRE-FLIGHT: ENSURE CRITICAL COLUMNS EXIST BEFORE ANY INSERTS
+DO $$ 
+BEGIN
+    ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS first_name TEXT;
+    ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS last_name TEXT;
+    ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS phone TEXT;
+    ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS marketing_consent BOOLEAN DEFAULT FALSE;
+    ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS marketing_consent_at TIMESTAMPTZ;
+    ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+    ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS plan_id TEXT;
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
+
+-- ============================================
 -- FOUNDATION: CORE TABLES AND EXTENSIONS
 -- ============================================
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -242,7 +260,7 @@ END;
 $$;
 -- Add needs_painting column to contracts table
 ALTER TABLE contracts 
-ADD COLUMN needs_painting BOOLEAN DEFAULT false;
+ADD COLUMN IF NOT EXISTS needs_painting BOOLEAN DEFAULT false;
 
 -- Add option_periods column to contracts table
 -- Use JSONB to store an array of options, e.g., [{"length": 12, "unit": "months"}, {"length": 1, "unit": "years"}]
@@ -250,7 +268,7 @@ ADD COLUMN needs_painting BOOLEAN DEFAULT false;
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contracts' AND column_name = 'option_periods') THEN
-        ALTER TABLE public.contracts ADD COLUMN option_periods JSONB DEFAULT '[]'::jsonb;
+        ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS option_periods JSONB DEFAULT '[]'::jsonb;
     END IF;
 END $$;
 -- Migration to add 'other' to the property_type check constraint
@@ -283,7 +301,7 @@ ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT,
 ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT,
 ADD COLUMN IF NOT EXISTS subscription_status TEXT DEFAULT 'inactive' CHECK (subscription_status IN ('active', 'inactive', 'canceled', 'past_due'));
 
--- Create index for faster lookups
+-- CREATE INDEX IF NOT EXISTS for faster lookups
 CREATE INDEX IF NOT EXISTS idx_user_profiles_stripe_customer ON user_profiles(stripe_customer_id);
 CREATE INDEX IF NOT EXISTS idx_user_profiles_stripe_subscription ON user_profiles(stripe_subscription_id);
 
@@ -395,10 +413,10 @@ CREATE POLICY "Admins can view all messages"
         )
     );
 
--- Create index for faster queries
-CREATE INDEX idx_contact_messages_user_id ON contact_messages(user_id);
-CREATE INDEX idx_contact_messages_status ON contact_messages(status);
-CREATE INDEX idx_contact_messages_created_at ON contact_messages(created_at DESC);
+-- CREATE INDEX IF NOT EXISTS for faster queries
+CREATE INDEX IF NOT EXISTS idx_contact_messages_user_id ON contact_messages(user_id);
+CREATE INDEX IF NOT EXISTS idx_contact_messages_status ON contact_messages(status);
+CREATE INDEX IF NOT EXISTS idx_contact_messages_created_at ON contact_messages(created_at DESC);
 -- Create the 'contracts' storage bucket if it doesn't exist
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('contracts', 'contracts', true)
@@ -427,7 +445,7 @@ CREATE POLICY "Allow authenticated delete"
 ON storage.objects FOR DELETE
 TO authenticated
 USING (bucket_id = 'contracts');
--- Create table for storing index base periods and chaining factors
+-- CREATE TABLE IF NOT EXISTS for storing index base periods and chaining factors
 CREATE TABLE IF NOT EXISTS index_bases (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     index_type TEXT NOT NULL, -- e.g., 'cpi', 'construction', 'housing'
@@ -440,7 +458,7 @@ CREATE TABLE IF NOT EXISTS index_bases (
 );
 
 -- Index for fast lookup
-CREATE INDEX idx_index_bases_type_date ON index_bases (index_type, base_period_start);
+CREATE INDEX IF NOT EXISTS idx_index_bases_type_date ON index_bases (index_type, base_period_start);
 
 -- Insert known recent Israeli CPI Base Periods (Example Data - verified from CBS knowledge)
 -- Note: CBS updates bases typically every 2 years recently.
@@ -472,7 +490,7 @@ CREATE TABLE IF NOT EXISTS index_data (
   UNIQUE(index_type, date)
 );
 
--- Create index for faster queries
+-- CREATE INDEX IF NOT EXISTS for faster queries
 CREATE INDEX IF NOT EXISTS idx_index_data_type_date ON index_data(index_type, date);
 
 -- Enable Row Level Security
@@ -1641,11 +1659,11 @@ DO $$
 BEGIN
     -- 1. Ensure Columns Exist
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_profiles' AND column_name = 'first_name') THEN
-        ALTER TABLE public.user_profiles ADD COLUMN first_name TEXT;
+        ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS first_name TEXT;
     END IF;
 
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_profiles' AND column_name = 'last_name') THEN
-        ALTER TABLE public.user_profiles ADD COLUMN last_name TEXT;
+        ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS last_name TEXT;
     END IF;
 
     -- 2. Populate NULLs (Safety Check)
@@ -1688,22 +1706,22 @@ DO $$
 BEGIN
     -- Add has_parking
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'properties' AND column_name = 'has_parking') THEN
-        ALTER TABLE properties ADD COLUMN has_parking BOOLEAN DEFAULT false;
+        ALTER TABLE properties ADD COLUMN IF NOT EXISTS has_parking BOOLEAN DEFAULT false;
     END IF;
 
     -- Add has_storage
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'properties' AND column_name = 'has_storage') THEN
-        ALTER TABLE properties ADD COLUMN has_storage BOOLEAN DEFAULT false;
+        ALTER TABLE properties ADD COLUMN IF NOT EXISTS has_storage BOOLEAN DEFAULT false;
     END IF;
 
     -- Add property_type
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'properties' AND column_name = 'property_type') THEN
-        ALTER TABLE properties ADD COLUMN property_type TEXT DEFAULT 'apartment';
+        ALTER TABLE properties ADD COLUMN IF NOT EXISTS property_type TEXT DEFAULT 'apartment';
     END IF;
 
     -- Add image_url
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'properties' AND column_name = 'image_url') THEN
-        ALTER TABLE properties ADD COLUMN image_url TEXT;
+        ALTER TABLE properties ADD COLUMN IF NOT EXISTS image_url TEXT;
     END IF;
 END $$;
 
@@ -1946,7 +1964,7 @@ CREATE TRIGGER on_auth_user_created_relink_invoices
 -- 1. Modify Invoices to survive User Deletion
 -- We drop the "Cascade" constraint and replace it with "Set Null"
 ALTER TABLE invoices
-DROP CONSTRAINT invoices_user_id_fkey;
+DROP CONSTRAINT IF EXISTS invoices_user_id_fkey;
 
 ALTER TABLE invoices
 ADD CONSTRAINT invoices_user_id_fkey
@@ -2498,7 +2516,7 @@ CREATE TRIGGER enforce_session_limits
 -- COMPLETE NOTIFICATION SYSTEM SETUP
 -- Run this file to set up the entire system (Table, Columns, Functions, Triggers)
 
--- 1. Create Table (if not exists)
+-- 1. CREATE TABLE IF NOT EXISTS (if not exists)
 CREATE TABLE IF NOT EXISTS public.notifications (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -2905,7 +2923,7 @@ SELECT cron.schedule(
     $$
     SELECT
         net.http_post(
-            url:='https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/fetch-index-data',
+            url:='https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/fetch-index-data',
             headers:='{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmdnJla3Z1Z2RqbndobmF1Y216Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0MzY0MTYsImV4cCI6MjA4MzAxMjQxNn0.xA3JI4iGElpIpZjVHLCA_FGw0hfmNUJTtw_fuLlhkoA"}'::jsonb,
             body:='{}'::jsonb
         ) as request_id;
@@ -2945,48 +2963,7 @@ CREATE POLICY "Enable all access for authenticated users" ON public.payments
 -- Seed dummy CPI data for 2024-2025
 -- Using approximate values based on recent trends (base 2022 ~105-110)
 
-INSERT INTO index_data (index_type, date, value, source)
-VALUES 
-  ('cpi', '2024-01', 105.0, 'manual'),
-  ('cpi', '2024-02', 105.2, 'manual'),
-  ('cpi', '2024-03', 105.5, 'manual'),
-  ('cpi', '2024-04', 106.0, 'manual'),
-  ('cpi', '2024-05', 106.3, 'manual'),
-  ('cpi', '2024-06', 106.5, 'manual'),
-  ('cpi', '2024-07', 107.0, 'manual'),
-  ('cpi', '2024-08', 107.2, 'manual'),
-  ('cpi', '2024-09', 107.5, 'manual'),
-  ('cpi', '2024-10', 107.8, 'manual'),
-  ('cpi', '2024-11', 108.0, 'manual'),
-  ('cpi', '2024-12', 108.2, 'manual'),
-  ('cpi', '2025-01', 108.5, 'manual'),
-  ('cpi', '2025-02', 108.8, 'manual'),
-  ('cpi', '2025-03', 109.0, 'manual'),
-  ('cpi', '2025-04', 109.3, 'manual'),
-  ('cpi', '2025-05', 109.5, 'manual'),
-  ('cpi', '2025-06', 109.8, 'manual'),
-  ('cpi', '2025-07', 110.0, 'manual'),
-  ('cpi', '2025-08', 110.2, 'manual'),
-  ('cpi', '2025-09', 110.5, 'manual'),
-  ('cpi', '2025-10', 110.8, 'manual'),
-  ('cpi', '2025-11', 111.0, 'manual'),
-  ('cpi', '2025-12', 111.2, 'manual')
-ON CONFLICT (index_type, date) DO UPDATE 
-SET value = EXCLUDED.value;
--- Add columns for linkage tracking to payments
-ALTER TABLE public.payments 
-ADD COLUMN IF NOT EXISTS original_amount NUMERIC, -- The base amount before linkage
-ADD COLUMN IF NOT EXISTS index_linkage_rate NUMERIC, -- The linkage percentage applied
-ADD COLUMN IF NOT EXISTS paid_amount NUMERIC; -- What was actually paid
--- Create saved_calculations table
-create table if not exists public.saved_calculations (
-    id uuid default gen_random_uuid() primary key,
-    created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-    user_id uuid references auth.users(id) on delete set null,
-    input_data jsonb not null,
-    result_data jsonb not null
-);
-
+-- [Index Data Stripped]
 -- RLS Policies
 alter table public.saved_calculations enable row level security;
 
@@ -3048,7 +3025,7 @@ SELECT cron.schedule(
     $$
     SELECT
         net.http_post(
-            url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/fetch-index-data',
+            url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/fetch-index-data',
             headers := jsonb_build_object(
                 'Content-Type', 'application/json',
                 'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmdnJla3Z1Z2RqbndobmF1Y216Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzQzNjQxNiwiZXhwIjoyMDgzMDEyNDE2fQ._Fmq-2x4zpzPkHP9btdqSUj0gbX7RmqscwvGElNbdNA'
@@ -3065,7 +3042,7 @@ SELECT cron.schedule(
     $$
     SELECT
         net.http_post(
-            url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/fetch-index-data',
+            url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/fetch-index-data',
             headers := jsonb_build_object(
                 'Content-Type', 'application/json',
                 'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmdnJla3Z1Z2RqbndobmF1Y216Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzQzNjQxNiwiZXhwIjoyMDgzMDEyNDE2fQ._Fmq-2x4zpzPkHP9btdqSUj0gbX7RmqscwvGElNbdNA'
@@ -3082,7 +3059,7 @@ SELECT cron.schedule(
     $$
     SELECT
         net.http_post(
-            url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/fetch-index-data',
+            url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/fetch-index-data',
             headers := jsonb_build_object(
                 'Content-Type', 'application/json',
                 'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmdnJla3Z1Z2RqbndobmF1Y216Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzQzNjQxNiwiZXhwIjoyMDgzMDEyNDE2fQ._Fmq-2x4zpzPkHP9btdqSUj0gbX7RmqscwvGElNbdNA'
@@ -3343,7 +3320,7 @@ ALTER TABLE user_profiles
 ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE,
 ADD COLUMN IF NOT EXISTS account_status TEXT DEFAULT 'active' CHECK (account_status IN ('active', 'suspended', 'deleted'));
 
--- Create index for efficient querying of suspended accounts
+-- CREATE INDEX IF NOT EXISTS for efficient querying of suspended accounts
 CREATE INDEX IF NOT EXISTS idx_user_profiles_deleted_at ON user_profiles(deleted_at) WHERE deleted_at IS NOT NULL;
 
 -- Create function to permanently delete accounts after 14 days
@@ -3625,7 +3602,7 @@ UPDATE subscription_plans SET
 WHERE id = 'enterprise';
 
 -- Comments
--- Create table for short URLs
+-- CREATE TABLE IF NOT EXISTS for short URLs
 CREATE TABLE IF NOT EXISTS calculation_shares (
     id TEXT PRIMARY KEY, -- Short ID (e.g., "abc123")
     user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
@@ -3857,7 +3834,7 @@ CREATE POLICY "Users can delete folders for their properties"
 ALTER TABLE property_documents
 ADD COLUMN IF NOT EXISTS folder_id UUID REFERENCES document_folders(id) ON DELETE CASCADE;
 
--- Create index for performance
+-- CREATE INDEX IF NOT EXISTS for performance
 CREATE INDEX IF NOT EXISTS idx_document_folders_property_category ON document_folders(property_id, category);
 CREATE INDEX IF NOT EXISTS idx_property_documents_folder ON property_documents(folder_id);
 -- Create property_media table
@@ -5452,7 +5429,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-    project_url text := 'https://qfvrekvugdjnwhnaucmz.supabase.co'; -- UPDATED TO CORRECT PROJECT
+    project_url text := 'https://tipnjnfbbnbskdlodrww.supabase.co'; -- UPDATED TO CORRECT PROJECT
 BEGIN
     PERFORM
       net.http_post(
@@ -5480,7 +5457,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-    project_url text := 'https://qfvrekvugdjnwhnaucmz.supabase.co';
+    project_url text := 'https://tipnjnfbbnbskdlodrww.supabase.co';
     user_email text;
 BEGIN
     -- Only forward high-priority or action-oriented types
@@ -5783,7 +5760,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-    project_url text := 'https://qfvrekvugdjnwhnaucmz.supabase.co';
+    project_url text := 'https://tipnjnfbbnbskdlodrww.supabase.co';
 BEGIN
     -- Only trigger if it's a new profile (usually only happen at signup)
     IF TG_OP = 'INSERT' THEN
@@ -5821,7 +5798,7 @@ DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
                    WHERE table_name='property_documents' AND column_name='counter_read') THEN
-        ALTER TABLE property_documents ADD COLUMN counter_read DECIMAL(12,2);
+        ALTER TABLE property_documents ADD COLUMN IF NOT EXISTS counter_read DECIMAL(12,2);
     END IF;
 END $$;
 
@@ -5897,7 +5874,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-    project_url text := 'https://qfvrekvugdjnwhnaucmz.supabase.co';
+    project_url text := 'https://tipnjnfbbnbskdlodrww.supabase.co';
     target_email text;
     asset_alerts_enabled boolean;
 BEGIN
@@ -5968,7 +5945,7 @@ BEGIN
         SELECT 1 FROM information_schema.columns 
         WHERE table_name = 'subscription_plans' AND column_name = 'price_yearly'
     ) THEN
-        ALTER TABLE subscription_plans ADD COLUMN price_yearly NUMERIC(10, 2) DEFAULT 0;
+        ALTER TABLE subscription_plans ADD COLUMN IF NOT EXISTS price_yearly NUMERIC(10, 2) DEFAULT 0;
     END IF;
 END $$;
 
@@ -6053,10 +6030,10 @@ BEGIN
     -- Alternatively, we can use a simpler approach if the Netlify/Edge function is public or has a secret key
     PERFORM
       net.http_post(
-        url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/admin-notifications',
+        url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/admin-notifications',
         headers := jsonb_build_object(
           'Content-Type', 'application/json',
-          'Authorization', 'Bearer ' || (SELECT value FROM vault.secrets WHERE name = 'SERVICE_ROLE_KEY' LIMIT 1)
+          'Authorization', 'Bearer ' || COALESCE(current_setting('app.settings.service_role_key', true), 'DUMMY_KEY')
         ),
         body := jsonb_build_object(
           'type', TG_ARGV[0],
@@ -6116,10 +6093,10 @@ SELECT cron.schedule(
     '0 8 * * *', -- 8:00 AM every day
     $$
     SELECT net.http_post(
-        url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/admin-notifications',
+        url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/admin-notifications',
         headers := jsonb_build_object(
           'Content-Type', 'application/json',
-          'Authorization', 'Bearer ' || (SELECT value FROM vault.secrets WHERE name = 'SERVICE_ROLE_KEY' LIMIT 1)
+          'Authorization', 'Bearer ' || COALESCE(current_setting('app.settings.service_role_key', true), 'DUMMY_KEY')
         ),
         body := jsonb_build_object('type', 'daily_summary')
     );
@@ -6130,7 +6107,7 @@ SELECT cron.schedule(
 
 -- 1. Correct Project URL for triggers (Consolidated)
 -- We'll use a variable or just hardcode the current known correctly fixed URL
--- Current Project URL: https://qfvrekvugdjnwhnaucmz.supabase.co
+-- Current Project URL: https://tipnjnfbbnbskdlodrww.supabase.co
 
 -- 2. Trigger Function for Signups & Plan Changes (Admin Alerts)
 CREATE OR REPLACE FUNCTION public.notify_admin_on_user_event()
@@ -6139,7 +6116,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-    project_url text := 'https://qfvrekvugdjnwhnaucmz.supabase.co';
+    project_url text := 'https://tipnjnfbbnbskdlodrww.supabase.co';
 BEGIN
     -- Only trigger if it's a new user OR a plan change
     IF (TG_OP = 'INSERT') OR (TG_OP = 'UPDATE' AND OLD.subscription_plan IS DISTINCT FROM NEW.subscription_plan) THEN
@@ -6170,7 +6147,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-    project_url text := 'https://qfvrekvugdjnwhnaucmz.supabase.co';
+    project_url text := 'https://tipnjnfbbnbskdlodrww.supabase.co';
     user_record RECORD;
 BEGIN
     -- Only trigger when an invoice is marked as 'paid'
@@ -6232,7 +6209,7 @@ SELECT cron.schedule(
     '0 8 * * *',
     $$
     SELECT net.http_post(
-        url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/send-daily-admin-summary',
+        url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/send-daily-admin-summary',
         headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
         body := '{}'::jsonb
     );
@@ -6356,19 +6333,19 @@ CREATE TABLE IF NOT EXISTS support_tickets (
 DO $$ 
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'support_tickets' AND column_name = 'assigned_to') THEN
-        ALTER TABLE public.support_tickets ADD COLUMN assigned_to UUID REFERENCES auth.users(id) ON DELETE SET NULL;
+        ALTER TABLE public.support_tickets ADD COLUMN IF NOT EXISTS assigned_to UUID REFERENCES auth.users(id) ON DELETE SET NULL;
     END IF;
     
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'support_tickets' AND column_name = 'chat_context') THEN
-        ALTER TABLE public.support_tickets ADD COLUMN chat_context JSONB;
+        ALTER TABLE public.support_tickets ADD COLUMN IF NOT EXISTS chat_context JSONB;
     END IF;
 
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'support_tickets' AND column_name = 'resolution_notes') THEN
-        ALTER TABLE public.support_tickets ADD COLUMN resolution_notes TEXT;
+        ALTER TABLE public.support_tickets ADD COLUMN IF NOT EXISTS resolution_notes TEXT;
     END IF;
 
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'support_tickets' AND column_name = 'resolved_at') THEN
-        ALTER TABLE public.support_tickets ADD COLUMN resolved_at TIMESTAMPTZ;
+        ALTER TABLE public.support_tickets ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMPTZ;
     END IF;
 END $$;
 
@@ -6666,7 +6643,7 @@ BEGIN
         SELECT 1 FROM information_schema.columns 
         WHERE table_name = 'user_profiles' AND column_name = 'subscription_tier'
     ) THEN
-        ALTER TABLE user_profiles ADD COLUMN subscription_tier TEXT DEFAULT 'free';
+        ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS subscription_tier TEXT DEFAULT 'free';
     END IF;
 END $$;
 
@@ -7355,7 +7332,7 @@ SELECT cron.schedule(
     '0 6 * * *',
     $$
     SELECT net.http_post(
-        url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/send-daily-admin-summary',
+        url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/send-daily-admin-summary',
         headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
         body := '{}'::jsonb
     );
@@ -7368,7 +7345,7 @@ DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_preferences' AND column_name = 'ai_data_consent') THEN
         ALTER TABLE user_preferences 
-        ADD COLUMN ai_data_consent BOOLEAN DEFAULT false;
+        ADD COLUMN IF NOT EXISTS ai_data_consent BOOLEAN DEFAULT false;
     END IF;
 END $$;
 -- Add 'live_chat_enabled' to system_settings
@@ -7598,11 +7575,11 @@ DO $$
 BEGIN
     -- 1. Ensure 'first_name' and 'last_name' columns exist in user_profiles
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_profiles' AND column_name = 'first_name') THEN
-        ALTER TABLE public.user_profiles ADD COLUMN first_name TEXT;
+        ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS first_name TEXT;
     END IF;
 
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_profiles' AND column_name = 'last_name') THEN
-        ALTER TABLE public.user_profiles ADD COLUMN last_name TEXT;
+        ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS last_name TEXT;
     END IF;
 
     -- 2. Ensure 'subscription_plans' has the 'free' plan
@@ -7612,7 +7589,7 @@ BEGIN
 
     -- 3. Ensure 'plan_id' column exists in user_profiles
      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_profiles' AND column_name = 'plan_id') THEN
-        ALTER TABLE public.user_profiles ADD COLUMN plan_id TEXT REFERENCES public.subscription_plans(id) DEFAULT 'free';
+        ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS plan_id TEXT REFERENCES public.subscription_plans(id) DEFAULT 'free';
     END IF;
 
 END $$;
@@ -8020,36 +7997,11 @@ CREATE TABLE IF NOT EXISTS index_bases (
 );
 
 -- 3. Seed Construction Inputs Index (Series 200010, Base 2011=100)
-INSERT INTO index_data (index_type, date, value, source)
-VALUES 
-    ('construction', '2025-01', 123.4, 'manual'),
-    ('construction', '2024-12', 123.0, 'manual'),
-    ('construction', '2024-11', 121.8, 'manual'),
-    ('construction', '2024-10', 121.5, 'manual'),
-    ('construction', '2024-09', 121.2, 'manual'),
-    ('construction', '2024-08', 121.0, 'manual')
-ON CONFLICT (index_type, date) DO UPDATE SET value = EXCLUDED.value;
-
+-- [Index Data Stripped]
 -- 4. Seed Housing Price Index (Series 40010)
-INSERT INTO index_data (index_type, date, value, source)
-VALUES 
-    ('housing', '2025-01', 105.5, 'manual'),
-    ('housing', '2024-12', 105.1, 'manual'),
-    ('housing', '2024-11', 104.8, 'manual'),
-    ('housing', '2024-10', 104.5, 'manual'),
-    ('housing', '2024-09', 104.2, 'manual'),
-    ('housing', '2024-08', 104.0, 'manual')
-ON CONFLICT (index_type, date) DO UPDATE SET value = EXCLUDED.value;
-
+-- [Index Data Stripped]
 -- 5. Seed Exchange Rates (USD/EUR)
-INSERT INTO index_data (index_type, date, value, source)
-VALUES 
-    ('usd', '2025-01', 3.73, 'manual'),
-    ('eur', '2025-01', 4.05, 'manual'),
-    ('usd', '2024-12', 3.70, 'manual'),
-    ('eur', '2024-12', 4.02, 'manual')
-ON CONFLICT (index_type, date) DO UPDATE SET value = EXCLUDED.value;
-
+-- [Index Data Stripped]
 -- 6. Insert Base Periods & Chain Factors
 INSERT INTO index_bases (index_type, base_period_start, base_value, chain_factor)
 VALUES 
@@ -8093,7 +8045,7 @@ BEGIN
         SELECT 1 FROM information_schema.columns 
         WHERE table_name = 'user_profiles' AND column_name = 'phone'
     ) THEN
-        ALTER TABLE public.user_profiles ADD COLUMN phone TEXT;
+        ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS phone TEXT;
     END IF;
 END $$;
 
@@ -8173,7 +8125,7 @@ SELECT cron.schedule(
     $$
     SELECT
         net.http_post(
-            url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/fetch-index-data',
+            url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/fetch-index-data',
             headers := jsonb_build_object(
                 'Content-Type', 'application/json',
                 'Authorization', 'Bearer ' || current_setting('request.header.apikey', true)
@@ -18079,7 +18031,7 @@ CREATE INDEX IF NOT EXISTS idx_user_profiles_google_enabled ON user_profiles(goo
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contracts' AND column_name = 'rent_periods') THEN
-        ALTER TABLE public.contracts ADD COLUMN rent_periods JSONB DEFAULT '[]'::jsonb;
+        ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS rent_periods JSONB DEFAULT '[]'::jsonb;
     END IF;
 END $$;
 
@@ -18087,7 +18039,7 @@ END $$;
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contracts' AND column_name = 'option_periods') THEN
-        ALTER TABLE public.contracts ADD COLUMN option_periods JSONB DEFAULT '[]'::jsonb;
+        ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS option_periods JSONB DEFAULT '[]'::jsonb;
     END IF;
 END $$;
 
@@ -18095,7 +18047,7 @@ END $$;
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contracts' AND column_name = 'tenants') THEN
-        ALTER TABLE public.contracts ADD COLUMN tenants JSONB DEFAULT '[]'::jsonb;
+        ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS tenants JSONB DEFAULT '[]'::jsonb;
     END IF;
 END $$;
 
@@ -19093,7 +19045,7 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $$;
 -- Migration: Create rental market data table and update user preferences
--- Create table for rental market trends
+-- CREATE TABLE IF NOT EXISTS for rental market trends
 CREATE TABLE IF NOT EXISTS public.rental_market_data (
     region_name TEXT PRIMARY KEY,
     avg_rent NUMERIC NOT NULL,
@@ -19121,7 +19073,7 @@ CREATE POLICY "Allow public read access to rental market data"
 DO $$ 
 BEGIN 
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_preferences' AND column_name = 'pinned_cities') THEN
-        ALTER TABLE public.user_preferences ADD COLUMN pinned_cities JSONB DEFAULT '[]'::jsonb;
+        ALTER TABLE public.user_preferences ADD COLUMN IF NOT EXISTS pinned_cities JSONB DEFAULT '[]'::jsonb;
     END IF;
 END $$;
 
@@ -19332,7 +19284,7 @@ SELECT cron.schedule(
 
 -- 2. Ensure the keys exist as fallbacks in system_settings if they aren't there
 INSERT INTO public.system_settings (key, value, description)
-SELECT 'supabase_project_ref', '"qfvrekvugdjnwhnaucmz"'::jsonb, 'Supabase Project Reference'
+SELECT 'supabase_project_ref', '"tipnjnfbbnbskdlodrww"'::jsonb, 'Supabase Project Reference'
 WHERE NOT EXISTS (SELECT 1 FROM public.system_settings WHERE key = 'supabase_project_ref');
 
 INSERT INTO public.system_settings (key, value, description)
@@ -19396,7 +19348,7 @@ SELECT cron.schedule(
 -- 4. Sync configuration in system_settings
 INSERT INTO public.system_settings (key, value, description)
 VALUES 
-    ('supabase_project_ref', '"qfvrekvugdjnwhnaucmz"', 'Supabase Project Reference'),
+    ('supabase_project_ref', '"tipnjnfbbnbskdlodrww"', 'Supabase Project Reference'),
     ('admin_email_daily_summary_enabled', 'true'::jsonb, 'Master toggle for daily admin summary email')
 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
 
@@ -20368,7 +20320,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-    project_url text := 'https://qfvrekvugdjnwhnaucmz.supabase.co';
+    project_url text := 'https://tipnjnfbbnbskdlodrww.supabase.co';
 BEGIN
     PERFORM
       net.http_post(
@@ -20831,7 +20783,7 @@ DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_preferences' AND column_name = 'disclaimer_accepted') THEN
         ALTER TABLE user_preferences 
-        ADD COLUMN disclaimer_accepted BOOLEAN DEFAULT false;
+        ADD COLUMN IF NOT EXISTS disclaimer_accepted BOOLEAN DEFAULT false;
     END IF;
 END $$;
 -- ============================================

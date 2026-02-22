@@ -1,0 +1,420 @@
+﻿
+LineNumber Line                                                                                                                                       
+---------- ----                                                                                                                                       
+        33     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,                                                                              
+        38     UNIQUE(user_id)                                                                                                                        
+        41 -- Index for faster lookups by user_id                                                                                                     
+        42 CREATE INDEX IF NOT EXISTS idx_user_preferences_user_id ON user_preferences(user_id);                                                      
+        52     USING (auth.uid() = user_id)                                                                                                           
+        53     WITH CHECK (auth.uid() = user_id);                                                                                                     
+       112 -- Policies (assuming contracts have user_id, or widely permissive for now to avoid breakage if user_id is missing)                        
+       115 -- USING (contract_id IN (SELECT id FROM public.contracts WHERE user_id = auth.uid()));                                                    
+       117 -- Fallback permissive policy for development if user_id logic is flaky                                                                    
+       166     user_id uuid references auth.users(id) on delete set null,                                                                             
+       182     with check (auth.uid() = user_id);                                                                                                     
+       194 -- 1. The user is authenticated and the user_id matches their UID                                                                          
+       195 -- 2. The user is anonymous (or authenticated) and provides no user_id (NULL)                                                              
+       199         (auth.uid() = user_id) OR (user_id is null)                                                                                        
+       389     WHERE up.id = NEW.user_id;                                                                                                             
+       408     WHERE user_id = NEW.user_id;                                                                                                           
+       419         WHERE user_id = NEW.user_id                                                                                                        
+       473         SELECT user_id, count(*) as count                                                                                                  
+       475         GROUP BY user_id                                                                                                                   
+       476     ) p ON up.id = p.user_id                                                                                                               
+       479         SELECT user_id, count(*) as count                                                                                                  
+       481         GROUP BY user_id                                                                                                                   
+       482     ) t ON up.id = t.user_id                                                                                                               
+       485         SELECT user_id, count(*) as count                                                                                                  
+       487         GROUP BY user_id                                                                                                                   
+       488     ) c ON up.id = c.user_id                                                                                                               
+       500 -- Usage: supabase.rpc('delete_user_account', { target_user_id: '...' })                                                                   
+       502 CREATE OR REPLACE FUNCTION delete_user_account(target_user_id UUID)                                                                        
+       519     IF target_user_id = auth.uid() THEN                                                                                                    
+       525     DELETE FROM auth.users WHERE id = target_user_id;                                                                                      
+       577 CREATE OR REPLACE FUNCTION delete_user_account(target_user_id UUID)                                                                        
+       596     IF target_user_id = auth.uid() THEN                                                                                                    
+       601     SELECT email INTO target_email FROM auth.users WHERE id = target_user_id;                                                              
+       604     INSERT INTO public.audit_logs (user_id, action, details)                                                                               
+       608         jsonb_build_object('target_user_id', target_user_id, 'target_email', target_email)                                                 
+       612     DELETE FROM auth.users WHERE id = target_user_id;                                                                                      
+       629         INSERT INTO public.audit_logs (user_id, action, details)                                                                           
+       634                 'target_user_id', NEW.id,                                                                                                  
+       660     user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL, -- Nullable for anonymous feedback                                          
+       741     p_user_id UUID,                                                                                                                        
+       775     LEFT JOIN user_storage_usage u ON u.user_id = up.id                                                                                    
+       776     WHERE up.id = p_user_id;                                                                                                               
+       827     user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,                                                                             
+       884             INSERT INTO calculation_shares (id, user_id, calculation_data)                                                                 
+       919     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,                                                                     
+       975 CREATE INDEX IF NOT EXISTS idx_property_documents_user ON property_documents(user_id);                                                     
+       982     USING (auth.uid() = user_id);                                                                                                          
+       986     WITH CHECK (auth.uid() = user_id);                                                                                                     
+       990     USING (auth.uid() = user_id);                                                                                                          
+       994     USING (auth.uid() = user_id);                                                                                                          
+      1020             AND p.user_id = auth.uid()                                                                                                     
+      1030             AND p.user_id = auth.uid()                                                                                                     
+      1040             AND p.user_id = auth.uid()                                                                                                     
+      1050             AND p.user_id = auth.uid()                                                                                                     
+      1065     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,                                                                     
+      1082     USING (auth.uid() = user_id);                                                                                                          
+      1086     WITH CHECK (auth.uid() = user_id);                                                                                                     
+      1090     USING (auth.uid() = user_id);                                                                                                          
+      1094 CREATE INDEX IF NOT EXISTS idx_property_media_user_id ON public.property_media(user_id);                                                   
+      1104     user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL -- Optional: track who created it                                            
+      1142     user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,                                                                  
+      1161     USING (auth.uid() = user_id);                                                                                                          
+      1168         INSERT INTO user_storage_usage (user_id, total_bytes, file_count)                                                                  
+      1169         VALUES (NEW.user_id, NEW.file_size, 1)                                                                                             
+      1170         ON CONFLICT (user_id) DO UPDATE SET                                                                                                
+      1181         WHERE user_id = OLD.user_id;                                                                                                       
+      1195     p_user_id UUID,                                                                                                                        
+      1207     WHERE user_id = p_user_id;                                                                                                             
+      1214     WHERE up.id = p_user_id;                                                                                                               
+      1248             AND p.user_id = auth.uid()                                                                                                     
+      1259             AND p.user_id = auth.uid()                                                                                                     
+      1270             AND p.user_id = auth.uid()                                                                                                     
+      1281             AND p.user_id = auth.uid()                                                                                                     
+      1299     v_user_id UUID;                                                                                                                        
+      1304         v_user_id := NEW.user_id;                                                                                                          
+      1308         v_user_id := OLD.user_id;                                                                                                          
+      1325             INSERT INTO user_storage_usage (user_id, total_bytes, file_count, %I)                                                          
+      1327             ON CONFLICT (user_id) DO UPDATE SET                                                                                            
+      1332         ', v_col, v_col, v_col) USING v_user_id, v_size;                                                                                   
+      1342             WHERE user_id = $2                                                                                                             
+      1343         ', v_col, v_col) USING v_size, v_user_id;                                                                                          
+      1358     v_user_id UUID;                                                                                                                        
+      1363         v_user_id := NEW.user_id;                                                                                                          
+      1367         v_user_id := OLD.user_id;                                                                                                          
+      1384             INSERT INTO user_storage_usage (user_id, total_bytes, file_count, %I)                                                          
+      1386             ON CONFLICT (user_id) DO UPDATE SET                                                                                            
+      1391         ', v_col, v_col, v_col) USING v_user_id, v_size;                                                                                   
+      1401             WHERE user_id = $2                                                                                                             
+      1402         ', v_col, v_col) USING v_size, v_user_id;                                                                                          
+      1419     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,                                                                     
+      1425     UNIQUE(user_id)                                                                                                                        
+      1448     p_user_id UUID,                                                                                                                        
+      1461     WHERE id = p_user_id;                                                                                                                  
+      1472     INSERT INTO ai_chat_usage (user_id, message_count, tokens_used)                                                                        
+      1473     VALUES (p_user_id, 0, 0)                                                                                                               
+      1474     ON CONFLICT (user_id) DO NOTHING;                                                                                                      
+      1478     WHERE user_id = p_user_id;                                                                                                             
+      1487         WHERE user_id = p_user_id;                                                                                                         
+      1521     WHERE user_id = p_user_id;                                                                                                             
+      1544     USING (auth.uid() = user_id);                                                                                                          
+      1573 CREATE INDEX IF NOT EXISTS idx_ai_chat_usage_user_id ON ai_chat_usage(user_id);                                                            
+      1596             p.user_id,                                                                                                                     
+      1602         JOIN public.user_profiles up ON p.user_id = up.id                                                                                  
+      1617                 WHERE n.user_id = expiring_contract.user_id                                                                                
+      1625                     user_id,                                                                                                               
+      1631                     expiring_contract.user_id,                                                                                             
+      1661             p.user_id,                                                                                                                     
+      1667         JOIN public.user_profiles up ON p.user_id = up.id                                                                                  
+      1680                 WHERE n.user_id = due_payment.user_id                                                                                      
+      1685                     user_id,                                                                                                               
+      1691                     due_payment.user_id,                                                                                                   
+      1711 -- Contracts: user_id, property_id, tenant_id                                                                                              
+      1712 CREATE INDEX IF NOT EXISTS idx_contracts_user_id ON public.contracts(user_id);                                                             
+      1716 -- Payments: user_id, contract_id, status                                                                                                  
+      1717 CREATE INDEX IF NOT EXISTS idx_payments_user_id ON public.payments(user_id);                                                               
+      1721 -- Property Documents: user_id, property_id, folder_id, category                                                                           
+      1722 CREATE INDEX IF NOT EXISTS idx_property_docs_user_id ON public.property_documents(user_id);                                                
+      1730 -- Short Links: user_id, created_at                                                                                                        
+      1731 CREATE INDEX IF NOT EXISTS idx_short_links_user_id ON public.short_links(user_id);                                                         
+      1742 CREATE OR REPLACE FUNCTION public.get_property_document_counts(p_user_id UUID)                                                             
+      1757     WHERE user_id = p_user_id;                                                                                                             
+      1767 CREATE OR REPLACE FUNCTION public.get_dashboard_summary(p_user_id UUID)                                                                    
+      1783     WHERE user_id = p_user_id                                                                                                              
+      1788     doc_counts := public.get_property_document_counts(p_user_id);                                                                          
+      1819             p.user_id,                                                                                                                     
+      1832             WHERE n.user_id = expiring_contract.user_id                                                                                    
+      1838                 user_id,                                                                                                                   
+      1844                 expiring_contract.user_id,                                                                                                 
+      1876             p.user_id,                                                                                                                     
+      1889             WHERE n.user_id = due_payment.user_id                                                                                          
+      1894                 user_id,                                                                                                                   
+      1900                 due_payment.user_id,                                                                                                       
+      1957             p.user_id,                                                                                                                     
+      1962         JOIN public.user_profiles up ON p.user_id = up.id                                                                                  
+      1984                 WHERE n.user_id = deadline_record.user_id                                                                                  
+      1991                     user_id,                                                                                                               
+      1997                     deadline_record.user_id,                                                                                               
+      2053             p.user_id,                                                                                                                     
+      2058         JOIN public.user_profiles up ON p.user_id = up.id                                                                                  
+      2074                 WHERE n.user_id = extension_record.user_id                                                                                 
+      2081                     user_id,                                                                                                               
+      2087                     extension_record.user_id,                                                                                              
+      2147             p.user_id,                                                                                                                     
+      2153         JOIN public.user_profiles up ON p.user_id = up.id                                                                                  
+      2174                 WHERE n.user_id = expiring_contract.user_id                                                                                
+      2180                     user_id,                                                                                                               
+      2186                     expiring_contract.user_id,                                                                                             
+      2216             p.user_id,                                                                                                                     
+      2222         JOIN public.user_profiles up ON p.user_id = up.id                                                                                  
+      2241                 WHERE n.user_id = due_payment.user_id                                                                                      
+      2246                     user_id,                                                                                                               
+      2252                     due_payment.user_id,                                                                                                   
+      2281             p.user_id,                                                                                                                     
+      2286         JOIN public.user_profiles up ON p.user_id = up.id                                                                                  
+      2308                 WHERE n.user_id = extension_record.user_id                                                                                 
+      2315                     user_id,                                                                                                               
+      2321                     extension_record.user_id,                                                                                              
+      2350             p.user_id,                                                                                                                     
+      2364             WHERE n.user_id = expiring_contract.user_id                                                                                    
+      2370                 user_id,                                                                                                                   
+      2376                 expiring_contract.user_id,                                                                                                 
+      2408     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,                                                                              
+      2417 CREATE INDEX IF NOT EXISTS idx_ai_usage_user_date ON ai_usage_logs (user_id, created_at);                                                  
+      2422     USING (auth.uid() = user_id);                                                                                                          
+      2426 CREATE OR REPLACE FUNCTION check_and_log_ai_usage(p_user_id UUID, p_feature TEXT DEFAULT 'bill_scan', p_count INTEGER DEFAULT 1)           
+      2442     IF p_user_id != auth.uid() AND COALESCE(v_requester_role, 'user') != 'admin' THEN                                                      
+      2453     WHERE up.id = p_user_id;                                                                                                               
+      2463     WHERE user_id = p_user_id                                                                                                              
+      2470             INSERT INTO ai_usage_logs (user_id, feature_name)                                                                              
+      2471             VALUES (p_user_id, p_feature);                                                                                                 
+      2708         SELECT email INTO user_email FROM auth.users WHERE id = NEW.user_id;                                                               
+      2789         SET user_id = NEW.id                                                                                                               
+      2790         WHERE user_id IS NULL                                                                                                              
+      3083     WHERE id = NEW.user_id;                                                                                                                
+      3095     INSERT INTO public.notifications (user_id, type, title, message, metadata)                                                             
+      3097         NEW.user_id,                                                                                                                       
+      3137     WHERE u.id = NEW.user_id;                                                                                                              
+      3184         WHERE constraint_name = 'user_storage_usage_user_id_profiles_fkey'                                                                 
+      3187         ADD CONSTRAINT user_storage_usage_user_id_profiles_fkey                                                                            
+      3188         FOREIGN KEY (user_id) REFERENCES user_profiles(id) ON DELETE CASCADE;                                                              
+      3209         WHERE constraint_name = 'ai_chat_usage_user_id_profiles_fkey'                                                                      
+      3212         ADD CONSTRAINT ai_chat_usage_user_id_profiles_fkey                                                                                 
+      3213         FOREIGN KEY (user_id) REFERENCES user_profiles(id) ON DELETE CASCADE;                                                              
+      3293                     WHEN TG_ARGV[0] = 'first_payment' THEN jsonb_build_object('email', (SELECT email FROM user_profiles WHERE id = NEW.u...
+      3320     WHERE user_id = NEW.user_id                                                                                                            
+      3408         SELECT * INTO user_record FROM public.user_profiles WHERE id = NEW.user_id;                                                        
+      3578     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,                                                                     
+      3612     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,                                                                     
+      3619 CREATE INDEX IF NOT EXISTS idx_support_tickets_user_id ON support_tickets(user_id);                                                        
+      3632     USING (auth.uid() = user_id);                                                                                                          
+      3638     WITH CHECK (auth.uid() = user_id);                                                                                                     
+      3644     USING (auth.uid() = user_id AND status = 'open');                                                                                      
+      3675             WHERE id = ticket_comments.ticket_id AND user_id = auth.uid()                                                                  
+      3686             WHERE id = ticket_comments.ticket_id AND user_id = auth.uid()                                                                  
+      3733     INSERT INTO admin_notifications (type, user_id, content, status)                                                                       
+      3736         NEW.user_id,                                                                                                                       
+      3773         SELECT c.id, c.user_id, c.end_date, p.city, p.address, up.notification_preferences                                                 
+      3776         JOIN public.user_profiles up ON up.id = c.user_id                                                                                  
+      3782             WHERE user_id = r.user_id                                                                                                      
+      3787             INSERT INTO public.notifications (user_id, type, title, message, metadata)                                                     
+      3789                 r.user_id,                                                                                                                 
+      3802         SELECT c.id, c.user_id, c.end_date, p.city, p.address, up.notification_preferences                                                 
+      3805         JOIN public.user_profiles up ON up.id = c.user_id                                                                                  
+      3812             WHERE user_id = r.user_id                                                                                                      
+      3817             INSERT INTO public.notifications (user_id, type, title, message, metadata)                                                     
+      3819                 r.user_id,                                                                                                                 
+      3832         SELECT py.id, py.user_id, py.amount, py.date, p.city, p.address, up.notification_preferences                                       
+      3836         JOIN public.user_profiles up ON up.id = py.user_id                                                                                 
+      3843             WHERE user_id = r.user_id                                                                                                      
+      3848             INSERT INTO public.notifications (user_id, type, title, message, metadata)                                                     
+      3850                 r.user_id,                                                                                                                 
+      3863         SELECT py.id, py.user_id, py.amount, py.date, p.city, p.address, up.notification_preferences                                       
+      3867         JOIN public.user_profiles up ON up.id = py.user_id                                                                                 
+      3874             WHERE user_id = r.user_id                                                                                                      
+      3879             INSERT INTO public.notifications (user_id, type, title, message, metadata)                                                     
+      3881                 r.user_id,                                                                                                                 
+      3930     -- ALTER TABLE user_storage_usage DROP CONSTRAINT IF EXISTS user_storage_usage_user_id_fkey;                                           
+      3936         WHERE constraint_name = 'user_storage_usage_user_id_profiles_fkey'                                                                 
+      3939         ADD CONSTRAINT user_storage_usage_user_id_profiles_fkey                                                                            
+      3940         FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;                                                       
+      3946     p_user_id UUID,                                                                                                                        
+      3959     WHERE id = p_user_id;                                                                                                                  
+      3975     INSERT INTO ai_chat_usage (user_id, message_count, tokens_used)                                                                        
+      3976     VALUES (p_user_id, 0, 0)                                                                                                               
+      3977     ON CONFLICT (user_id) DO NOTHING;                                                                                                      
+      3981     WHERE user_id = p_user_id;                                                                                                             
+      3990         WHERE user_id = p_user_id;                                                                                                         
+      4024     WHERE user_id = p_user_id;                                                                                                             
+      4074     LEFT JOIN (SELECT user_id, count(*) as count FROM properties GROUP BY user_id) p ON up.id = p.user_id                                  
+      4075     LEFT JOIN (SELECT user_id, count(*) as count FROM tenants GROUP BY user_id) t ON up.id = t.user_id                                     
+      4076     LEFT JOIN (SELECT user_id, count(*) as count FROM contracts GROUP BY user_id) c ON up.id = c.user_id                                   
+      4094         ALTER TABLE public.properties DROP CONSTRAINT IF EXISTS properties_user_id_fkey;                                                   
+      4095         ALTER TABLE public.properties DROP CONSTRAINT IF EXISTS properties_user_id_profiles_fkey;                                          
+      4098         ADD CONSTRAINT properties_user_id_profiles_fkey                                                                                    
+      4099         FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;                                                       
+      4104         ALTER TABLE public.tenants DROP CONSTRAINT IF EXISTS tenants_user_id_fkey;                                                         
+      4105         ALTER TABLE public.tenants DROP CONSTRAINT IF EXISTS tenants_user_id_profiles_fkey;                                                
+      4108         ADD CONSTRAINT tenants_user_id_profiles_fkey                                                                                       
+      4109         FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;                                                       
+      4114         ALTER TABLE public.contracts DROP CONSTRAINT IF EXISTS contracts_user_id_fkey;                                                     
+      4115         ALTER TABLE public.contracts DROP CONSTRAINT IF EXISTS contracts_user_id_profiles_fkey;                                            
+      4118         ADD CONSTRAINT contracts_user_id_profiles_fkey                                                                                     
+      4119         FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;                                                       
+      4124         ALTER TABLE public.admin_notifications DROP CONSTRAINT IF EXISTS admin_notifications_user_id_fkey;                                 
+      4125         ALTER TABLE public.admin_notifications DROP CONSTRAINT IF EXISTS admin_notifications_user_id_profiles_fkey;                        
+      4128         ADD CONSTRAINT admin_notifications_user_id_profiles_fkey                                                                           
+      4129         FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;                                                       
+      4134         ALTER TABLE public.support_tickets DROP CONSTRAINT IF EXISTS support_tickets_user_id_fkey;                                         
+      4135         ALTER TABLE public.support_tickets DROP CONSTRAINT IF EXISTS support_tickets_user_id_profiles_fkey;                                
+      4138         ADD CONSTRAINT support_tickets_user_id_profiles_fkey                                                                               
+      4139         FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;                                                       
+      4144         ALTER TABLE public.ticket_comments DROP CONSTRAINT IF EXISTS ticket_comments_user_id_fkey;                                         
+      4145         ALTER TABLE public.ticket_comments DROP CONSTRAINT IF EXISTS ticket_comments_user_id_profiles_fkey;                                
+      4148         ADD CONSTRAINT ticket_comments_user_id_profiles_fkey                                                                               
+      4149         FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;                                                       
+      4154         ALTER TABLE public.property_documents DROP CONSTRAINT IF EXISTS property_documents_user_id_fkey;                                   
+      4155         ALTER TABLE public.property_documents DROP CONSTRAINT IF EXISTS property_documents_user_id_profiles_fkey;                          
+      4158         ADD CONSTRAINT property_documents_user_id_profiles_fkey                                                                            
+      4159         FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;                                                       
+      4170     user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,                                                                             
+      4194     p_user_id UUID,                                                                                                                        
+      4228         user_id,                                                                                                                           
+      4235         p_user_id,                                                                                                                         
+      4244     INSERT INTO public.ai_chat_usage (user_id, message_count, tokens_used, updated_at)                                                     
+      4245     VALUES (p_user_id, 1, p_input_tokens + p_output_tokens, NOW())                                                                         
+      4246     ON CONFLICT (user_id) DO UPDATE                                                                                                        
+      4317     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,                                                                              
+      4333     USING (auth.uid() = user_id);                                                                                                          
+      4338     USING (auth.uid() = user_id);                                                                                                          
+      4357     p_user_id UUID DEFAULT NULL                                                                                                            
+      4365     v_final_user_id UUID;                                                                                                                  
+      4368     v_final_user_id := COALESCE(p_user_id, auth.uid());                                                                                    
+      4371     INSERT INTO public.ai_conversations (id, user_id, messages, total_cost_usd, updated_at)                                                
+      4374         v_final_user_id,                                                                                                                   
+      4390 CREATE INDEX IF NOT EXISTS idx_ai_conversations_user_id ON ai_conversations(user_id);                                                      
+      4423     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,                                                                              
+      4459 USING (auth.uid() = user_id);                                                                                                              
+      4467         WHERE id = public.human_messages.conversation_id AND user_id = auth.uid()                                                          
+      4474     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,                                                                     
+      4533     USING (auth.uid() = user_id);                                                                                                          
+      4565             WHERE id = human_messages.conversation_id AND user_id = auth.uid()                                                             
+      4577             AND user_id = auth.uid()                                                                                                       
+      4583 CREATE INDEX IF NOT EXISTS idx_human_conversations_user_id ON public.human_conversations(user_id);                                         
+      4739     LEFT JOIN (SELECT user_id, count(*) as count FROM properties GROUP BY user_id) p ON up.id = p.user_id                                  
+      4741     LEFT JOIN (SELECT user_id, count(*) as count FROM tenants GROUP BY user_id) t ON up.id = t.user_id                                     
+      4743     LEFT JOIN (SELECT user_id, count(*) as count FROM contracts GROUP BY user_id) c ON up.id = c.user_id                                   
+      4745     LEFT JOIN (SELECT user_id, count(*) as count FROM ai_conversations GROUP BY user_id) ai ON up.id = ai.user_id                          
+      4747     LEFT JOIN (SELECT user_id, count(*) as count FROM support_tickets WHERE status != 'resolved' GROUP BY user_id) st ON up.id = st.user_id
+      4749     LEFT JOIN user_storage_usage usu ON up.id = usu.user_id                                                                                
+      4914         SET user_id = NEW.id                                                                                                               
+      4915         WHERE user_id IS NULL                                                                                                              
+      4964     user_id UUID REFERENCES auth.users(id), -- Target user                                                                                 
+      4974     user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,                                                                  
+      5003     USING (auth.uid() = user_id);                                                                                                          
+      5009     USING (auth.uid() = user_id);                                                                                                          
+      5015     WITH CHECK (auth.uid() = user_id);                                                                                                     
+      5216     p_user_id UUID,                                                                                                                        
+      5224         user_id,                                                                                                                           
+      5225         target_user_id,                                                                                                                    
+      5231         p_user_id,                                                                                                                         
+      5232         p_user_id, -- In this context, target is usually the same user                                                                     
+      5509     LEFT JOIN (SELECT user_id, count(*) as count FROM properties GROUP BY user_id) p ON up.id = p.user_id                                  
+      5511     LEFT JOIN (SELECT user_id, count(*) as count FROM tenants GROUP BY user_id) t ON up.id = t.user_id                                     
+      5513     LEFT JOIN (SELECT user_id, count(*) as count FROM contracts GROUP BY user_id) c ON up.id = c.user_id                                   
+      5515     LEFT JOIN (SELECT user_id, count(*) as count FROM ai_conversations GROUP BY user_id) ai ON up.id = ai.user_id                          
+      5517     LEFT JOIN (SELECT user_id, count(*) as count FROM support_tickets WHERE status != 'resolved' GROUP BY user_id) st ON up.id = st.user_id
+      5519     LEFT JOIN (SELECT user_id, total_bytes FROM user_storage_usage) usu ON up.id = usu.user_id                                             
+     15671     WHERE u.id = NEW.user_id;                                                                                                              
+     15794     LEFT JOIN (SELECT user_id, count(*) as count FROM properties GROUP BY user_id) p ON up.id = p.user_id                                  
+     15797         SELECT user_id, sum(jsonb_array_length(COALESCE(tenants, '[]'::jsonb))) as count                                                   
+     15799         GROUP BY user_id                                                                                                                   
+     15800     ) t ON up.id = t.user_id                                                                                                               
+     15802     LEFT JOIN (SELECT user_id, count(*) as count FROM contracts GROUP BY user_id) c ON up.id = c.user_id                                   
+     15804     LEFT JOIN (SELECT user_id, count(*) as count FROM ai_conversations GROUP BY user_id) ai ON up.id = ai.user_id                          
+     15806     LEFT JOIN (SELECT user_id, count(*) as count FROM support_tickets WHERE status != 'resolved' GROUP BY user_id) st ON up.id = st.user_id
+     15808     LEFT JOIN (SELECT user_id, total_bytes FROM user_storage_usage) usu ON up.id = usu.user_id                                             
+     15952 -- Description: Ensures payments are strictly isolated by user_id, dropping any previous permissive policies.                              
+     15962 -- 2. Create strict ownership policies based on user_id                                                                                    
+     15963 CREATE POLICY "Users can view own payments"   ON public.payments FOR SELECT USING (user_id = auth.uid());                                  
+     15964 CREATE POLICY "Users can insert own payments" ON public.payments FOR INSERT WITH CHECK (user_id = auth.uid());                             
+     15965 CREATE POLICY "Users can update own payments" ON public.payments FOR UPDATE USING (user_id = auth.uid());                                  
+     15966 CREATE POLICY "Users can delete own payments" ON public.payments FOR DELETE USING (user_id = auth.uid());                                  
+     16149         SET user_id = NEW.id                                                                                                               
+     16150         WHERE user_id IS NULL AND billing_email = NEW.email;                                                                               
+     16371         SET user_id = NEW.id                                                                                                               
+     16372         WHERE user_id IS NULL                                                                                                              
+     16725             p.user_id,                                                                                                                     
+     16731         JOIN public.user_profiles up ON p.user_id = up.id                                                                                  
+     16746                 WHERE n.user_id = expiring_contract.user_id                                                                                
+     16753                     user_id,                                                                                                               
+     16759                     expiring_contract.user_id,                                                                                             
+     16789             p.user_id,                                                                                                                     
+     16795         JOIN public.user_profiles up ON p.user_id = up.id                                                                                  
+     16809                 WHERE n.user_id = due_payment.user_id                                                                                      
+     16814                     user_id,                                                                                                               
+     16820                     due_payment.user_id,                                                                                                   
+     16849             p.user_id,                                                                                                                     
+     16854         JOIN public.user_profiles up ON p.user_id = up.id                                                                                  
+     16870                 WHERE n.user_id = extension_record.user_id                                                                                 
+     16877                     user_id,                                                                                                               
+     16883                     extension_record.user_id,                                                                                              
+     16912             p.user_id,                                                                                                                     
+     16917         JOIN public.user_profiles up ON p.user_id = up.id                                                                                  
+     16939                 WHERE n.user_id = deadline_record.user_id                                                                                  
+     16946                     user_id,                                                                                                               
+     16952                     deadline_record.user_id,                                                                                               
+     17131             FOR SELECT USING (auth.uid() = user_id OR public.is_admin());                                                                  
+     17132         -- Anyone can still insert (even guests) per current business logic if user_id is null                                             
+     17133         -- but if user_id is set, it becomes owned.                                                                                        
+     17144             FOR ALL USING (auth.uid() = user_id OR public.is_admin());                                                                     
+     17154             FOR SELECT USING (auth.uid() = user_id OR public.is_admin());                                                                  
+     17164             FOR ALL USING (auth.uid() = user_id OR public.is_admin());                                                                     
+     17185             FOR ALL USING (auth.uid() = user_id OR public.is_admin());                                                                     
+     17195             FOR SELECT USING (auth.uid() = user_id OR public.is_admin());                                                                  
+     17205             FOR SELECT USING (auth.uid() = user_id OR public.is_admin());                                                                  
+     17219                     AND (c.user_id = auth.uid() OR public.is_admin())                                                                      
+     17262 -- Path naming: feedback-screenshots/{user_id}/{filename}                                                                                  
+     17327     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,                                                                     
+     17336 CREATE INDEX IF NOT EXISTS idx_whatsapp_usage_user_date ON public.whatsapp_usage_logs (user_id, created_at);                               
+     17341     USING (auth.uid() = user_id OR public.is_admin());                                                                                     
+     17349 CREATE OR REPLACE FUNCTION public.check_and_log_whatsapp_usage(p_user_id UUID, p_conversation_id UUID DEFAULT NULL)                        
+     17361     IF auth.uid() != p_user_id AND NOT public.is_admin() THEN                                                                              
+     17373     WHERE up.id = p_user_id;                                                                                                               
+     17383     WHERE user_id = p_user_id                                                                                                              
+     17389         INSERT INTO public.whatsapp_usage_logs (user_id, conversation_id)                                                                  
+     17390         VALUES (p_user_id, p_conversation_id);                                                                                             
+     17632     user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,                                                                             
+     17709 CREATE INDEX IF NOT EXISTS idx_error_logs_user_id ON public.error_logs (user_id);                                                          
+     17794     user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE,                                                                    
+     17801 CREATE INDEX IF NOT EXISTS idx_analytics_events_user_id ON public.analytics_events(user_id);                                               
+     17835             WITH CHECK (auth.uid() = user_id);                                                                                             
+     17858                     ae.user_id,                                                                                                            
+     17863                 JOIN user_profiles up ON ae.user_id = up.id                                                                                
+     17865                 GROUP BY ae.user_id, up.full_name, up.email                                                                                
+     17918     user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE,                                                                    
+     17931 CREATE INDEX IF NOT EXISTS idx_security_logs_user_id ON public.security_logs(user_id);                                                     
+     17949     p_user_id UUID,                                                                                                                        
+     17961     INSERT INTO public.security_logs (user_id, event_code, severity, details, ip_address, user_agent)                                      
+     17962     VALUES (p_user_id, p_event_code, p_severity, p_details, p_ip, p_ua);                                                                   
+     17969         WHERE id = p_user_id AND (security_status = 'active' OR security_status IS NULL);                                                  
+     17980     user_id UUID,                                                                                                                          
+     17989     v_user_id UUID;                                                                                                                        
+     17997     FOR v_user_id, v_details IN                                                                                                            
+     17998         SELECT w.user_id, jsonb_build_object('count', count(*), 'period', '1h')                                                            
+     18001         GROUP BY w.user_id                                                                                                                 
+     18004         PERFORM public.log_security_event(v_user_id, 'WHATSAPP_SPIKE', 'medium', v_details);                                               
+     18005         user_id := v_user_id;                                                                                                              
+     18014     FOR v_user_id, v_details IN                                                                                                            
+     18015         SELECT p.user_id, jsonb_build_object('count', count(*), 'type', 'properties')                                                      
+     18018         GROUP BY p.user_id                                                                                                                 
+     18021         PERFORM public.log_security_event(v_user_id, 'RESOURCE_SPIKE', 'high', v_details);                                                 
+     18022         user_id := v_user_id;                                                                                                              
+     18031     FOR v_user_id, v_details IN                                                                                                            
+     18032         SELECT s1.user_id, jsonb_build_object('ip', s1.ip_address, 'colliding_users', count(distinct s2.user_id))                          
+     18034         JOIN public.security_logs s2 ON s1.ip_address = s2.ip_address AND s1.user_id != s2.user_id                                         
+     18036         GROUP BY s1.user_id, s1.ip_address                                                                                                 
+     18037         HAVING count(distinct s2.user_id) > 2                                                                                              
+     18039         PERFORM public.log_security_event(v_user_id, 'IP_COLLISION', 'medium', v_details);                                                 
+     18040         user_id := v_user_id;                                                                                                              
+     18114     LEFT JOIN (SELECT user_id, count(*) as count FROM properties GROUP BY user_id) p ON up.id = p.user_id                                  
+     18117         SELECT user_id, sum(jsonb_array_length(COALESCE(tenants, '[]'::jsonb))) as count                                                   
+     18119         GROUP BY user_id                                                                                                                   
+     18120     ) t ON up.id = t.user_id                                                                                                               
+     18122     LEFT JOIN (SELECT user_id, count(*) as count FROM contracts GROUP BY user_id) c ON up.id = c.user_id                                   
+     18124     LEFT JOIN (SELECT user_id, count(*) as count FROM ai_conversations GROUP BY user_id) ai ON up.id = ai.user_id                          
+     18126     LEFT JOIN (SELECT user_id, count(*) as count FROM support_tickets WHERE status != 'resolved' GROUP BY user_id) st ON up.id = st.user_id
+     18128     LEFT JOIN (SELECT user_id, total_bytes FROM user_storage_usage) usu ON up.id = usu.user_id                                             
+     18256 -- Add user_id to payments table                                                                                                           
+     18258 ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id);                                                                           
+     18260 -- Backfill user_id from contracts                                                                                                         
+     18262 SET user_id = c.user_id                                                                                                                    
+     18265 AND p.user_id IS NULL;                                                                                                                     
+     18268 -- ALTER TABLE public.payments ALTER COLUMN user_id SET NOT NULL;                                                                          
+     18280 USING (auth.uid() = user_id)                                                                                                               
+     18281 WITH CHECK (auth.uid() = user_id);                                                                                                         
+
+

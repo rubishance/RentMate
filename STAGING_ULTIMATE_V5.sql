@@ -1,4 +1,22 @@
-﻿-- ============================================
+-- ============================================
+-- RENTMATE GOLDEN SNAPSHOT (CLEAN BASELINE)
+-- ============================================
+-- This script sets up the final target structure of the database.
+-- It skips migration history and focuses on the CURRENT state.
+
+-- PRE-FLIGHT: ENSURE CRITICAL COLUMNS EXIST BEFORE ANY INSERTS
+DO $$ 
+BEGIN
+    ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS first_name TEXT;
+    ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS last_name TEXT;
+    ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS phone TEXT;
+    ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS marketing_consent BOOLEAN DEFAULT FALSE;
+    ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS marketing_consent_at TIMESTAMPTZ;
+    ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+    ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS plan_id TEXT;
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
+
+-- ============================================
 -- FOUNDATION: CORE TABLES AND EXTENSIONS
 -- ============================================
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -101,6 +119,8 @@ $$;
 
 DROP TRIGGER IF EXISTS on_contract_status_change ON public.contracts;
 
+;
+DROP TRIGGER IF EXISTS "on_contract_status_change" ON public.contracts;
 CREATE TRIGGER on_contract_status_change
     AFTER UPDATE ON public.contracts
     FOR EACH ROW
@@ -242,7 +262,7 @@ END;
 $$;
 -- Add needs_painting column to contracts table
 ALTER TABLE contracts 
-ADD COLUMN needs_painting BOOLEAN DEFAULT false;
+ADD COLUMN IF NOT EXISTS needs_painting BOOLEAN DEFAULT false;
 
 -- Add option_periods column to contracts table
 -- Use JSONB to store an array of options, e.g., [{"length": 12, "unit": "months"}, {"length": 1, "unit": "years"}]
@@ -250,7 +270,7 @@ ADD COLUMN needs_painting BOOLEAN DEFAULT false;
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contracts' AND column_name = 'option_periods') THEN
-        ALTER TABLE public.contracts ADD COLUMN option_periods JSONB DEFAULT '[]'::jsonb;
+        ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS option_periods JSONB DEFAULT '[]'::jsonb;
     END IF;
 END $$;
 -- Migration to add 'other' to the property_type check constraint
@@ -283,7 +303,7 @@ ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT,
 ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT,
 ADD COLUMN IF NOT EXISTS subscription_status TEXT DEFAULT 'inactive' CHECK (subscription_status IN ('active', 'inactive', 'canceled', 'past_due'));
 
--- Create index for faster lookups
+-- CREATE INDEX IF NOT EXISTS for faster lookups
 CREATE INDEX IF NOT EXISTS idx_user_profiles_stripe_customer ON user_profiles(stripe_customer_id);
 CREATE INDEX IF NOT EXISTS idx_user_profiles_stripe_subscription ON user_profiles(stripe_subscription_id);
 
@@ -329,6 +349,8 @@ create table if not exists admin_notifications (
 alter table admin_notifications enable row level security;
 
 -- Policy: Admins can view all notifications
+;
+DROP POLICY IF EXISTS "Admins can view all notifications" ON admin_notifications;
 create policy "Admins can view all notifications"
   on admin_notifications for select
   to authenticated
@@ -340,6 +362,8 @@ create policy "Admins can view all notifications"
   );
 
 -- Policy: Admins can update notifications
+;
+DROP POLICY IF EXISTS "Admins can update notifications" ON admin_notifications;
 create policy "Admins can update notifications"
   on admin_notifications for update
   to authenticated
@@ -351,6 +375,8 @@ create policy "Admins can update notifications"
   );
 
 -- Policy: Users can insert their own upgrade requests
+;
+DROP POLICY IF EXISTS "Users can insert upgrade requests" ON admin_notifications;
 create policy "Users can insert upgrade requests"
   on admin_notifications for insert
   to authenticated
@@ -377,15 +403,21 @@ CREATE TABLE IF NOT EXISTS public.contact_messages (
 ALTER TABLE public.contact_messages ENABLE ROW LEVEL SECURITY;
 
 -- Policies
+;
+DROP POLICY IF EXISTS "Users can view own messages" ON contact_messages;
 CREATE POLICY "Users can view own messages"
     ON contact_messages FOR SELECT
     USING (user_id = auth.uid());
 
+;
+DROP POLICY IF EXISTS "Users can insert own messages" ON contact_messages;
 CREATE POLICY "Users can insert own messages"
     ON contact_messages FOR INSERT
     WITH CHECK (user_id = auth.uid());
 
 -- Admin policy (if you want admins to see all messages)
+;
+DROP POLICY IF EXISTS "Admins can view all messages" ON contact_messages;
 CREATE POLICY "Admins can view all messages"
     ON contact_messages FOR SELECT
     USING (
@@ -395,39 +427,47 @@ CREATE POLICY "Admins can view all messages"
         )
     );
 
--- Create index for faster queries
-CREATE INDEX idx_contact_messages_user_id ON contact_messages(user_id);
-CREATE INDEX idx_contact_messages_status ON contact_messages(status);
-CREATE INDEX idx_contact_messages_created_at ON contact_messages(created_at DESC);
+-- CREATE INDEX IF NOT EXISTS for faster queries
+CREATE INDEX IF NOT EXISTS idx_contact_messages_user_id ON contact_messages(user_id);
+CREATE INDEX IF NOT EXISTS idx_contact_messages_status ON contact_messages(status);
+CREATE INDEX IF NOT EXISTS idx_contact_messages_created_at ON contact_messages(created_at DESC);
 -- Create the 'contracts' storage bucket if it doesn't exist
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('contracts', 'contracts', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Policy: Allow authenticated users to upload files to 'contracts' bucket
+;
+DROP POLICY IF EXISTS "Allow authenticated uploads" ON storage.objects;
 CREATE POLICY "Allow authenticated uploads"
 ON storage.objects FOR INSERT
 TO authenticated
 WITH CHECK (bucket_id = 'contracts');
 
 -- Policy: Allow authenticated users to view files in 'contracts' bucket
+;
+DROP POLICY IF EXISTS "Allow authenticated view" ON storage.objects;
 CREATE POLICY "Allow authenticated view"
 ON storage.objects FOR SELECT
 TO authenticated
 USING (bucket_id = 'contracts');
 
 -- Policy: Allow users to update their own files (optional, but good for redaction flow)
+;
+DROP POLICY IF EXISTS "Allow authenticated update" ON storage.objects;
 CREATE POLICY "Allow authenticated update"
 ON storage.objects FOR UPDATE
 TO authenticated
 USING (bucket_id = 'contracts');
 
 -- Policy: Allow users to delete their own files
+;
+DROP POLICY IF EXISTS "Allow authenticated delete" ON storage.objects;
 CREATE POLICY "Allow authenticated delete"
 ON storage.objects FOR DELETE
 TO authenticated
 USING (bucket_id = 'contracts');
--- Create table for storing index base periods and chaining factors
+-- CREATE TABLE IF NOT EXISTS for storing index base periods and chaining factors
 CREATE TABLE IF NOT EXISTS index_bases (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     index_type TEXT NOT NULL, -- e.g., 'cpi', 'construction', 'housing'
@@ -440,7 +480,7 @@ CREATE TABLE IF NOT EXISTS index_bases (
 );
 
 -- Index for fast lookup
-CREATE INDEX idx_index_bases_type_date ON index_bases (index_type, base_period_start);
+CREATE INDEX IF NOT EXISTS idx_index_bases_type_date ON index_bases (index_type, base_period_start);
 
 -- Insert known recent Israeli CPI Base Periods (Example Data - verified from CBS knowledge)
 -- Note: CBS updates bases typically every 2 years recently.
@@ -472,13 +512,15 @@ CREATE TABLE IF NOT EXISTS index_data (
   UNIQUE(index_type, date)
 );
 
--- Create index for faster queries
+-- CREATE INDEX IF NOT EXISTS for faster queries
 CREATE INDEX IF NOT EXISTS idx_index_data_type_date ON index_data(index_type, date);
 
 -- Enable Row Level Security
 ALTER TABLE index_data ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Allow all authenticated users to read index data
+;
+DROP POLICY IF EXISTS "Allow authenticated users to read index data" ON index_data;
 CREATE POLICY "Allow authenticated users to read index data"
   ON index_data
   FOR SELECT
@@ -487,6 +529,8 @@ CREATE POLICY "Allow authenticated users to read index data"
 
 -- Policy: Only admins can insert/update index data (will be done via Edge Function)
 -- Policy: Allow authenticated users to manage index data (needed for manual refresh button)
+;
+DROP POLICY IF EXISTS "Allow authenticated users to manage index data" ON index_data;
 CREATE POLICY "Allow authenticated users to manage index data"
   ON index_data
   FOR ALL
@@ -509,10 +553,14 @@ CREATE TABLE IF NOT EXISTS public.notifications (
 -- RLS Policies
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
+;
+DROP POLICY IF EXISTS "Users can view their own notifications" ON public.notifications;
 CREATE POLICY "Users can view their own notifications"
     ON public.notifications FOR SELECT
     USING (auth.uid() = user_id);
 
+;
+DROP POLICY IF EXISTS "Users can update their own notifications (mark as read)" ON public.notifications;
 CREATE POLICY "Users can update their own notifications (mark as read)"
     ON public.notifications FOR UPDATE
     USING (auth.uid() = user_id);
@@ -534,12 +582,16 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Policy: Public can VIEW files (It's a public bucket, but good to be explicit for SELECT)
 DROP POLICY IF EXISTS "Public can view property images" ON storage.objects;
+;
+DROP POLICY IF EXISTS "Public can view property images" ON storage.objects;
 CREATE POLICY "Public can view property images"
     ON storage.objects
     FOR SELECT
     USING ( bucket_id = 'property-images' );
 
 -- Policy: Authenticated users can UPLOAD files
+DROP POLICY IF EXISTS "Authenticated users can upload property images" ON storage.objects;
+;
 DROP POLICY IF EXISTS "Authenticated users can upload property images" ON storage.objects;
 CREATE POLICY "Authenticated users can upload property images"
     ON storage.objects
@@ -553,11 +605,15 @@ CREATE POLICY "Authenticated users can upload property images"
 -- Policy: Users can UPDATE their own files (or all authenticated for now for simplicity in this context, but better to restrict)
 -- For now, allowing authenticated users to update/delete for simplicity as ownership tracking on files might be complex without folder structure
 DROP POLICY IF EXISTS "Authenticated users can update property images" ON storage.objects;
+;
+DROP POLICY IF EXISTS "Authenticated users can update property images" ON storage.objects;
 CREATE POLICY "Authenticated users can update property images"
     ON storage.objects
     FOR UPDATE
     USING ( bucket_id = 'property-images' AND auth.role() = 'authenticated' );
 
+DROP POLICY IF EXISTS "Authenticated users can delete property images" ON storage.objects;
+;
 DROP POLICY IF EXISTS "Authenticated users can delete property images" ON storage.objects;
 CREATE POLICY "Authenticated users can delete property images"
     ON storage.objects
@@ -589,6 +645,8 @@ $$ LANGUAGE plpgsql;
 ALTER TABLE public.rate_limits ENABLE ROW LEVEL SECURITY;
 
 -- Deny public access by default (only service role should write)
+;
+DROP POLICY IF EXISTS "No public access" ON public.rate_limits;
 CREATE POLICY "No public access" ON public.rate_limits
     FOR ALL
     USING (false);
@@ -607,6 +665,8 @@ CREATE TABLE IF NOT EXISTS public.system_settings (
 ALTER TABLE public.system_settings ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Authenticated users can read (for app config), only Admins can write
+;
+DROP POLICY IF EXISTS "Admins can manage system settings" ON public.system_settings;
 CREATE POLICY "Admins can manage system settings" ON public.system_settings
     USING (
         EXISTS (
@@ -621,6 +681,8 @@ CREATE POLICY "Admins can manage system settings" ON public.system_settings
         )
     );
     
+;
+DROP POLICY IF EXISTS "Everyone can read system settings" ON public.system_settings;
 CREATE POLICY "Everyone can read system settings" ON public.system_settings
     FOR SELECT
     USING (true); -- Public read for generic configs like 'maintenance_mode'
@@ -642,6 +704,8 @@ CREATE TABLE IF NOT EXISTS public.notification_rules (
 ALTER TABLE public.notification_rules ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Only Admins can manage rules
+;
+DROP POLICY IF EXISTS "Admins can manage notification rules" ON public.notification_rules;
 CREATE POLICY "Admins can manage notification rules" ON public.notification_rules
     USING (
         EXISTS (
@@ -908,73 +972,105 @@ DROP POLICY IF EXISTS "Users can update own contracts" ON contracts;
 DROP POLICY IF EXISTS "Users can delete own contracts" ON contracts;
 
 -- 4. CREATE SECURE POLICIES FOR PROPERTIES
+;
+DROP POLICY IF EXISTS "Users can view own properties" ON properties;
 CREATE POLICY "Users can view own properties"
     ON properties FOR SELECT
     USING (user_id = auth.uid());
 
+;
+DROP POLICY IF EXISTS "Users can insert own properties" ON properties;
 CREATE POLICY "Users can insert own properties"
     ON properties FOR INSERT
     WITH CHECK (user_id = auth.uid());
 
+;
+DROP POLICY IF EXISTS "Users can update own properties" ON properties;
 CREATE POLICY "Users can update own properties"
     ON properties FOR UPDATE
     USING (user_id = auth.uid())
     WITH CHECK (user_id = auth.uid());
 
+;
+DROP POLICY IF EXISTS "Users can delete own properties" ON properties;
 CREATE POLICY "Users can delete own properties"
     ON properties FOR DELETE
     USING (user_id = auth.uid());
 
 -- 5. CREATE SECURE POLICIES FOR TENANTS
+;
+DROP POLICY IF EXISTS "Users can view own tenants" ON tenants;
 CREATE POLICY "Users can view own tenants"
     ON tenants FOR SELECT
     USING (user_id = auth.uid());
 
+;
+DROP POLICY IF EXISTS "Users can insert own tenants" ON tenants;
 CREATE POLICY "Users can insert own tenants"
     ON tenants FOR INSERT
     WITH CHECK (user_id = auth.uid());
 
+;
+DROP POLICY IF EXISTS "Users can update own tenants" ON tenants;
 CREATE POLICY "Users can update own tenants"
     ON tenants FOR UPDATE
     USING (user_id = auth.uid())
     WITH CHECK (user_id = auth.uid());
 
+;
+DROP POLICY IF EXISTS "Users can delete own tenants" ON tenants;
 CREATE POLICY "Users can delete own tenants"
     ON tenants FOR DELETE
     USING (user_id = auth.uid());
 
 -- 6. CREATE SECURE POLICIES FOR CONTRACTS
+;
+DROP POLICY IF EXISTS "Users can view own contracts" ON contracts;
 CREATE POLICY "Users can view own contracts"
     ON contracts FOR SELECT
     USING (user_id = auth.uid());
 
+;
+DROP POLICY IF EXISTS "Users can insert own contracts" ON contracts;
 CREATE POLICY "Users can insert own contracts"
     ON contracts FOR INSERT
     WITH CHECK (user_id = auth.uid());
 
+;
+DROP POLICY IF EXISTS "Users can update own contracts" ON contracts;
 CREATE POLICY "Users can update own contracts"
     ON contracts FOR UPDATE
     USING (user_id = auth.uid())
     WITH CHECK (user_id = auth.uid());
 
+;
+DROP POLICY IF EXISTS "Users can delete own contracts" ON contracts;
 CREATE POLICY "Users can delete own contracts"
     ON contracts FOR DELETE
     USING (user_id = auth.uid());
 
 -- 7. CREATE SECURE POLICIES FOR PAYMENTS
+;
+DROP POLICY IF EXISTS "Users can view own payments" ON payments;
 CREATE POLICY "Users can view own payments"
     ON payments FOR SELECT
     USING (user_id = auth.uid());
 
+;
+DROP POLICY IF EXISTS "Users can insert own payments" ON payments;
 CREATE POLICY "Users can insert own payments"
     ON payments FOR INSERT
     WITH CHECK (user_id = auth.uid());
 
+;
+DROP POLICY IF EXISTS "Users can update own payments" ON payments;
 CREATE POLICY "Users can update own payments"
     ON payments FOR UPDATE
     USING (user_id = auth.uid())
     WITH CHECK (user_id = auth.uid());
 
+;
+DROP POLICY IF EXISTS "Users can delete own payments" ON payments;
 CREATE POLICY "Users can delete own payments"
     ON payments FOR DELETE
     USING (user_id = auth.uid());
@@ -1040,73 +1136,105 @@ ALTER TABLE contracts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
 
 -- 4. CREATE SECURE POLICIES FOR PROPERTIES
+;
+DROP POLICY IF EXISTS "Users can view own properties" ON properties;
 CREATE POLICY "Users can view own properties"
     ON properties FOR SELECT
     USING (user_id = auth.uid());
 
+;
+DROP POLICY IF EXISTS "Users can insert own properties" ON properties;
 CREATE POLICY "Users can insert own properties"
     ON properties FOR INSERT
     WITH CHECK (user_id = auth.uid());
 
+;
+DROP POLICY IF EXISTS "Users can update own properties" ON properties;
 CREATE POLICY "Users can update own properties"
     ON properties FOR UPDATE
     USING (user_id = auth.uid())
     WITH CHECK (user_id = auth.uid());
 
+;
+DROP POLICY IF EXISTS "Users can delete own properties" ON properties;
 CREATE POLICY "Users can delete own properties"
     ON properties FOR DELETE
     USING (user_id = auth.uid());
 
 -- 5. CREATE SECURE POLICIES FOR TENANTS
+;
+DROP POLICY IF EXISTS "Users can view own tenants" ON tenants;
 CREATE POLICY "Users can view own tenants"
     ON tenants FOR SELECT
     USING (user_id = auth.uid());
 
+;
+DROP POLICY IF EXISTS "Users can insert own tenants" ON tenants;
 CREATE POLICY "Users can insert own tenants"
     ON tenants FOR INSERT
     WITH CHECK (user_id = auth.uid());
 
+;
+DROP POLICY IF EXISTS "Users can update own tenants" ON tenants;
 CREATE POLICY "Users can update own tenants"
     ON tenants FOR UPDATE
     USING (user_id = auth.uid())
     WITH CHECK (user_id = auth.uid());
 
+;
+DROP POLICY IF EXISTS "Users can delete own tenants" ON tenants;
 CREATE POLICY "Users can delete own tenants"
     ON tenants FOR DELETE
     USING (user_id = auth.uid());
 
 -- 6. CREATE SECURE POLICIES FOR CONTRACTS
+;
+DROP POLICY IF EXISTS "Users can view own contracts" ON contracts;
 CREATE POLICY "Users can view own contracts"
     ON contracts FOR SELECT
     USING (user_id = auth.uid());
 
+;
+DROP POLICY IF EXISTS "Users can insert own contracts" ON contracts;
 CREATE POLICY "Users can insert own contracts"
     ON contracts FOR INSERT
     WITH CHECK (user_id = auth.uid());
 
+;
+DROP POLICY IF EXISTS "Users can update own contracts" ON contracts;
 CREATE POLICY "Users can update own contracts"
     ON contracts FOR UPDATE
     USING (user_id = auth.uid())
     WITH CHECK (user_id = auth.uid());
 
+;
+DROP POLICY IF EXISTS "Users can delete own contracts" ON contracts;
 CREATE POLICY "Users can delete own contracts"
     ON contracts FOR DELETE
     USING (user_id = auth.uid());
 
 -- 7. CREATE SECURE POLICIES FOR PAYMENTS
+;
+DROP POLICY IF EXISTS "Users can view own payments" ON payments;
 CREATE POLICY "Users can view own payments"
     ON payments FOR SELECT
     USING (user_id = auth.uid());
 
+;
+DROP POLICY IF EXISTS "Users can insert own payments" ON payments;
 CREATE POLICY "Users can insert own payments"
     ON payments FOR INSERT
     WITH CHECK (user_id = auth.uid());
 
+;
+DROP POLICY IF EXISTS "Users can update own payments" ON payments;
 CREATE POLICY "Users can update own payments"
     ON payments FOR UPDATE
     USING (user_id = auth.uid())
     WITH CHECK (user_id = auth.uid());
 
+;
+DROP POLICY IF EXISTS "Users can delete own payments" ON payments;
 CREATE POLICY "Users can delete own payments"
     ON payments FOR DELETE
     USING (user_id = auth.uid());
@@ -1202,6 +1330,8 @@ END;
 $$;
 
 -- 3. RE-ATTACH SINGLE TRIGGER
+;
+DROP TRIGGER IF EXISTS "on_auth_user_created" ON auth.users;
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
@@ -1209,6 +1339,8 @@ CREATE TRIGGER on_auth_user_created
 ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
 
 -- Allow Admins to UPDATE any profile
+;
+DROP POLICY IF EXISTS "Admins can update all profiles" ON public.user_profiles;
 CREATE POLICY "Admins can update all profiles" 
 ON public.user_profiles 
 FOR UPDATE 
@@ -1242,6 +1374,8 @@ $$ LANGUAGE plpgsql;
 
 -- Trigger: Check before insert or update on contracts
 DROP TRIGGER IF EXISTS trigger_check_active_contract ON public.contracts;
+;
+DROP TRIGGER IF EXISTS "trigger_check_active_contract" ON public.contracts;
 CREATE TRIGGER trigger_check_active_contract
 BEFORE INSERT OR UPDATE ON public.contracts
 FOR EACH ROW
@@ -1281,6 +1415,8 @@ $$ LANGUAGE plpgsql;
 
 -- Trigger: Sync Tenant Status
 DROP TRIGGER IF EXISTS trigger_sync_tenant_status ON public.contracts;
+;
+DROP TRIGGER IF EXISTS "trigger_sync_tenant_status" ON public.contracts;
 CREATE TRIGGER trigger_sync_tenant_status
 AFTER INSERT OR UPDATE ON public.contracts
 FOR EACH ROW
@@ -1320,6 +1456,8 @@ $$ LANGUAGE plpgsql;
 
 -- Trigger: Update Property Status after contract changes
 DROP TRIGGER IF EXISTS trigger_update_property_status ON public.contracts;
+;
+DROP TRIGGER IF EXISTS "trigger_update_property_status" ON public.contracts;
 CREATE TRIGGER trigger_update_property_status
 AFTER INSERT OR UPDATE ON public.contracts
 FOR EACH ROW
@@ -1389,6 +1527,8 @@ END;
 $$;
 
 -- 4. ATTACH TRIGGER
+;
+DROP TRIGGER IF EXISTS "on_auth_user_created" ON auth.users;
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
@@ -1464,28 +1604,40 @@ DROP POLICY IF EXISTS "Users can update own profile" ON user_profiles;
 -- 3. Recreate Policies using the Safe Function
 
 -- A. User Profiles
+;
+DROP POLICY IF EXISTS "Users can view own profile" ON user_profiles;
 CREATE POLICY "Users can view own profile" 
     ON user_profiles FOR SELECT 
     USING (auth.uid() = id);
 
+;
+DROP POLICY IF EXISTS "Users can update own profile" ON user_profiles;
 CREATE POLICY "Users can update own profile" 
     ON user_profiles FOR UPDATE 
     USING (auth.uid() = id);
 
+;
+DROP POLICY IF EXISTS "Admins can view all profiles" ON user_profiles;
 CREATE POLICY "Admins can view all profiles" 
     ON user_profiles FOR SELECT 
     USING (is_admin());
 
+;
+DROP POLICY IF EXISTS "Admins can update all profiles" ON user_profiles;
 CREATE POLICY "Admins can update all profiles" 
     ON user_profiles FOR UPDATE 
     USING (is_admin());
 
 -- B. CRM Interactions (Admin Only)
+;
+DROP POLICY IF EXISTS "Admins manage CRM" ON crm_interactions;
 CREATE POLICY "Admins manage CRM"
     ON crm_interactions FOR ALL
     USING (is_admin());
 
 -- C. Audit Logs (Admin Only)
+;
+DROP POLICY IF EXISTS "Admins view audit logs" ON audit_logs;
 CREATE POLICY "Admins view audit logs"
     ON audit_logs FOR SELECT
     USING (is_admin());
@@ -1494,10 +1646,14 @@ CREATE POLICY "Admins view audit logs"
 DROP POLICY IF EXISTS "Users view own invoices" ON invoices;
 DROP POLICY IF EXISTS "Admins view all invoices" ON invoices;
 
+;
+DROP POLICY IF EXISTS "Users view own invoices" ON invoices;
 CREATE POLICY "Users view own invoices"
     ON invoices FOR SELECT
     USING (auth.uid() = user_id);
 
+;
+DROP POLICY IF EXISTS "Admins view all invoices" ON invoices;
 CREATE POLICY "Admins view all invoices"
     ON invoices FOR SELECT
     USING (is_admin());
@@ -1631,6 +1787,8 @@ $$;
 
 -- 3. Ensure the Trigger is attached
 DROP TRIGGER IF EXISTS on_auth_user_created_relink_invoices ON auth.users;
+;
+DROP TRIGGER IF EXISTS "on_auth_user_created_relink_invoices" ON auth.users;
 CREATE TRIGGER on_auth_user_created_relink_invoices
     AFTER INSERT ON auth.users
     FOR EACH ROW
@@ -1641,11 +1799,11 @@ DO $$
 BEGIN
     -- 1. Ensure Columns Exist
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_profiles' AND column_name = 'first_name') THEN
-        ALTER TABLE public.user_profiles ADD COLUMN first_name TEXT;
+        ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS first_name TEXT;
     END IF;
 
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_profiles' AND column_name = 'last_name') THEN
-        ALTER TABLE public.user_profiles ADD COLUMN last_name TEXT;
+        ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS last_name TEXT;
     END IF;
 
     -- 2. Populate NULLs (Safety Check)
@@ -1668,17 +1826,23 @@ BEGIN
     -- Re-create Standard Policies
     
     -- SELECT
-    CREATE POLICY "Users view own"
+    ;
+DROP POLICY IF EXISTS "Users view own" ON public.user_profiles;
+CREATE POLICY "Users view own"
     ON public.user_profiles FOR SELECT
     USING (auth.uid() = id);
 
     -- UPDATE (Explicitly Allow)
-    CREATE POLICY "Users update own"
+    ;
+DROP POLICY IF EXISTS "Users update own" ON public.user_profiles;
+CREATE POLICY "Users update own"
     ON public.user_profiles FOR UPDATE
     USING (auth.uid() = id);
 
     -- INSERT (Crucial for 'upsert' if row is missing/ghosted)
-    CREATE POLICY "Users insert own"
+    ;
+DROP POLICY IF EXISTS "Users insert own" ON public.user_profiles;
+CREATE POLICY "Users insert own"
     ON public.user_profiles FOR INSERT
     WITH CHECK (auth.uid() = id);
 
@@ -1688,22 +1852,22 @@ DO $$
 BEGIN
     -- Add has_parking
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'properties' AND column_name = 'has_parking') THEN
-        ALTER TABLE properties ADD COLUMN has_parking BOOLEAN DEFAULT false;
+        ALTER TABLE properties ADD COLUMN IF NOT EXISTS has_parking BOOLEAN DEFAULT false;
     END IF;
 
     -- Add has_storage
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'properties' AND column_name = 'has_storage') THEN
-        ALTER TABLE properties ADD COLUMN has_storage BOOLEAN DEFAULT false;
+        ALTER TABLE properties ADD COLUMN IF NOT EXISTS has_storage BOOLEAN DEFAULT false;
     END IF;
 
     -- Add property_type
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'properties' AND column_name = 'property_type') THEN
-        ALTER TABLE properties ADD COLUMN property_type TEXT DEFAULT 'apartment';
+        ALTER TABLE properties ADD COLUMN IF NOT EXISTS property_type TEXT DEFAULT 'apartment';
     END IF;
 
     -- Add image_url
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'properties' AND column_name = 'image_url') THEN
-        ALTER TABLE properties ADD COLUMN image_url TEXT;
+        ALTER TABLE properties ADD COLUMN IF NOT EXISTS image_url TEXT;
     END IF;
 END $$;
 
@@ -1759,6 +1923,8 @@ END;
 $$;
 
 -- 4. Re-attach the trigger
+;
+DROP TRIGGER IF EXISTS "on_auth_user_created" ON auth.users;
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
@@ -1935,6 +2101,8 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS on_auth_user_created_relink_invoices ON auth.users;
 
+;
+DROP TRIGGER IF EXISTS "on_auth_user_created_relink_invoices" ON auth.users;
 CREATE TRIGGER on_auth_user_created_relink_invoices
     AFTER INSERT ON auth.users
     FOR EACH ROW
@@ -1946,7 +2114,7 @@ CREATE TRIGGER on_auth_user_created_relink_invoices
 -- 1. Modify Invoices to survive User Deletion
 -- We drop the "Cascade" constraint and replace it with "Set Null"
 ALTER TABLE invoices
-DROP CONSTRAINT invoices_user_id_fkey;
+DROP CONSTRAINT IF EXISTS invoices_user_id_fkey;
 
 ALTER TABLE invoices
 ADD CONSTRAINT invoices_user_id_fkey
@@ -1988,6 +2156,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS on_invoice_created ON invoices;
+;
+DROP TRIGGER IF EXISTS "on_invoice_created" ON invoices;
 CREATE TRIGGER on_invoice_created
     BEFORE INSERT ON invoices
     FOR EACH ROW
@@ -2198,6 +2368,8 @@ END;
 $$;
 
 -- 7. RE-ATTACH TRIGGER
+;
+DROP TRIGGER IF EXISTS "on_auth_user_created" ON auth.users;
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW
@@ -2207,21 +2379,29 @@ CREATE TRIGGER on_auth_user_created
 ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Users see themselves
+;
+DROP POLICY IF EXISTS "Users view own" ON public.user_profiles;
 CREATE POLICY "Users view own" 
     ON public.user_profiles FOR SELECT 
     USING (auth.uid() = id);
 
 -- Policy: Users update themselves
+;
+DROP POLICY IF EXISTS "Users update own" ON public.user_profiles;
 CREATE POLICY "Users update own" 
     ON public.user_profiles FOR UPDATE 
     USING (auth.uid() = id);
 
 -- Policy: Admins see all (Using Safe Function)
+;
+DROP POLICY IF EXISTS "Admins view all" ON public.user_profiles;
 CREATE POLICY "Admins view all" 
     ON public.user_profiles FOR SELECT 
     USING (public.is_admin());
 
 -- Policy: Admins update all
+;
+DROP POLICY IF EXISTS "Admins update all" ON public.user_profiles;
 CREATE POLICY "Admins update all" 
     ON public.user_profiles FOR UPDATE 
     USING (public.is_admin());
@@ -2302,6 +2482,8 @@ END;
 $$;
 
 -- 3. Re-Attach
+;
+DROP TRIGGER IF EXISTS "on_auth_user_created" ON auth.users;
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
@@ -2345,9 +2527,17 @@ DROP POLICY IF EXISTS "Users can delete own properties" ON public.properties;
 -- Also drop any permissive policies from previous migrations
 DROP POLICY IF EXISTS "Enable all access for authenticated users" ON public.properties;
 
+;
+DROP POLICY IF EXISTS "Users can view own properties" ON public.properties;
 CREATE POLICY "Users can view own properties"   ON public.properties FOR SELECT USING (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can insert own properties" ON public.properties;
 CREATE POLICY "Users can insert own properties" ON public.properties FOR INSERT WITH CHECK (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can update own properties" ON public.properties;
 CREATE POLICY "Users can update own properties" ON public.properties FOR UPDATE USING (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can delete own properties" ON public.properties;
 CREATE POLICY "Users can delete own properties" ON public.properties FOR DELETE USING (user_id = auth.uid());
 
 ---------------------------------------------------------------------------------
@@ -2359,9 +2549,17 @@ DROP POLICY IF EXISTS "Users can update own contracts" ON public.contracts;
 DROP POLICY IF EXISTS "Users can delete own contracts" ON public.contracts;
 DROP POLICY IF EXISTS "Enable all access for authenticated users" ON public.contracts;
 
+;
+DROP POLICY IF EXISTS "Users can view own contracts" ON public.contracts;
 CREATE POLICY "Users can view own contracts"   ON public.contracts FOR SELECT USING (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can insert own contracts" ON public.contracts;
 CREATE POLICY "Users can insert own contracts" ON public.contracts FOR INSERT WITH CHECK (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can update own contracts" ON public.contracts;
 CREATE POLICY "Users can update own contracts" ON public.contracts FOR UPDATE USING (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can delete own contracts" ON public.contracts;
 CREATE POLICY "Users can delete own contracts" ON public.contracts FOR DELETE USING (user_id = auth.uid());
 
 ---------------------------------------------------------------------------------
@@ -2373,9 +2571,17 @@ DROP POLICY IF EXISTS "Users can update own tenants" ON public.tenants;
 DROP POLICY IF EXISTS "Users can delete own tenants" ON public.tenants;
 DROP POLICY IF EXISTS "Enable all access for authenticated users" ON public.tenants;
 
+;
+DROP POLICY IF EXISTS "Users can view own tenants" ON public.tenants;
 CREATE POLICY "Users can view own tenants"   ON public.tenants FOR SELECT USING (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can insert own tenants" ON public.tenants;
 CREATE POLICY "Users can insert own tenants" ON public.tenants FOR INSERT WITH CHECK (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can update own tenants" ON public.tenants;
 CREATE POLICY "Users can update own tenants" ON public.tenants FOR UPDATE USING (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can delete own tenants" ON public.tenants;
 CREATE POLICY "Users can delete own tenants" ON public.tenants FOR DELETE USING (user_id = auth.uid());
 
 ---------------------------------------------------------------------------------
@@ -2388,9 +2594,17 @@ DROP POLICY IF EXISTS "Users can insert own payments" ON public.payments;
 DROP POLICY IF EXISTS "Users can update own payments" ON public.payments;
 DROP POLICY IF EXISTS "Users can delete own payments" ON public.payments;
 
+;
+DROP POLICY IF EXISTS "Users can view own payments" ON public.payments;
 CREATE POLICY "Users can view own payments"   ON public.payments FOR SELECT USING (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can insert own payments" ON public.payments;
 CREATE POLICY "Users can insert own payments" ON public.payments FOR INSERT WITH CHECK (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can update own payments" ON public.payments;
 CREATE POLICY "Users can update own payments" ON public.payments FOR UPDATE USING (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can delete own payments" ON public.payments;
 CREATE POLICY "Users can delete own payments" ON public.payments FOR DELETE USING (user_id = auth.uid());
 
 -- Seed Index Bases for CPI (Consumer Price Index)
@@ -2491,6 +2705,8 @@ $$;
 -- We use BEFORE INSERT so we can clean up *before* the new session lands.
 DROP TRIGGER IF EXISTS enforce_session_limits ON auth.sessions;
 
+;
+DROP TRIGGER IF EXISTS "enforce_session_limits" ON auth.sessions;
 CREATE TRIGGER enforce_session_limits
     BEFORE INSERT ON auth.sessions
     FOR EACH ROW
@@ -2498,7 +2714,7 @@ CREATE TRIGGER enforce_session_limits
 -- COMPLETE NOTIFICATION SYSTEM SETUP
 -- Run this file to set up the entire system (Table, Columns, Functions, Triggers)
 
--- 1. Create Table (if not exists)
+-- 1. CREATE TABLE IF NOT EXISTS (if not exists)
 CREATE TABLE IF NOT EXISTS public.notifications (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -2515,10 +2731,14 @@ ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
 -- 3. RLS Policies
 DROP POLICY IF EXISTS "Users can view their own notifications" ON public.notifications;
+;
+DROP POLICY IF EXISTS "Users can view their own notifications" ON public.notifications;
 CREATE POLICY "Users can view their own notifications"
     ON public.notifications FOR SELECT
     USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update their own notifications" ON public.notifications;
+;
 DROP POLICY IF EXISTS "Users can update their own notifications" ON public.notifications;
 CREATE POLICY "Users can update their own notifications"
     ON public.notifications FOR UPDATE
@@ -2565,6 +2785,8 @@ END;
 $$;
 
 DROP TRIGGER IF EXISTS on_contract_status_change ON public.contracts;
+;
+DROP TRIGGER IF EXISTS "on_contract_status_change" ON public.contracts;
 CREATE TRIGGER on_contract_status_change
     AFTER UPDATE ON public.contracts
     FOR EACH ROW
@@ -2708,6 +2930,8 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Policy: Admin can do ANYTHING in 'secure_documents'
 DROP POLICY IF EXISTS "Admins full access to secure_documents" ON storage.objects;
+;
+DROP POLICY IF EXISTS "Admins full access to secure_documents" ON storage.objects;
 CREATE POLICY "Admins full access to secure_documents"
     ON storage.objects
     FOR ALL
@@ -2724,6 +2948,8 @@ CREATE POLICY "Admins full access to secure_documents"
 
 -- Policy: Users can VIEW their OWN files
 DROP POLICY IF EXISTS "Users view own secure documents" ON storage.objects;
+;
+DROP POLICY IF EXISTS "Users view own secure documents" ON storage.objects;
 CREATE POLICY "Users view own secure documents"
     ON storage.objects
     FOR SELECT
@@ -2734,6 +2960,8 @@ CREATE POLICY "Users view own secure documents"
     );
 
 -- Policy: Users can UPLOAD to their OWN folder (Optional)
+DROP POLICY IF EXISTS "Users upload own documents" ON storage.objects;
+;
 DROP POLICY IF EXISTS "Users upload own documents" ON storage.objects;
 CREATE POLICY "Users upload own documents"
     ON storage.objects
@@ -2781,6 +3009,8 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- 3. Attach Trigger (BEFORE DELETE) to user_profiles
 DROP TRIGGER IF EXISTS on_user_profile_deleted ON user_profiles;
 
+;
+DROP TRIGGER IF EXISTS "on_user_profile_deleted" ON user_profiles;
 CREATE TRIGGER on_user_profile_deleted
     BEFORE DELETE ON user_profiles
     FOR EACH ROW
@@ -2834,6 +3064,8 @@ $$;
 -- 2. Create the Trigger
 DROP TRIGGER IF EXISTS on_user_signup_notify_admin ON public.user_profiles;
 
+;
+DROP TRIGGER IF EXISTS "on_user_signup_notify_admin" ON public.user_profiles;
 CREATE TRIGGER on_user_signup_notify_admin
     AFTER INSERT ON public.user_profiles
     FOR EACH ROW
@@ -2870,6 +3102,8 @@ ALTER TABLE user_preferences ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policy: Users can only read/write their own preferences
 DROP POLICY IF EXISTS "Users can manage their own preferences" ON user_preferences;
+;
+DROP POLICY IF EXISTS "Users can manage their own preferences" ON user_preferences;
 CREATE POLICY "Users can manage their own preferences"
     ON user_preferences
     FOR ALL
@@ -2886,6 +3120,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger to call the function
+;
+DROP TRIGGER IF EXISTS "user_preferences_updated_at" ON user_preferences;
 CREATE TRIGGER user_preferences_updated_at
     BEFORE UPDATE ON user_preferences
     FOR EACH ROW
@@ -2905,7 +3141,7 @@ SELECT cron.schedule(
     $$
     SELECT
         net.http_post(
-            url:='https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/fetch-index-data',
+            url:='https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/fetch-index-data',
             headers:='{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmdnJla3Z1Z2RqbndobmF1Y216Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0MzY0MTYsImV4cCI6MjA4MzAxMjQxNn0.xA3JI4iGElpIpZjVHLCA_FGw0hfmNUJTtw_fuLlhkoA"}'::jsonb,
             body:='{}'::jsonb
         ) as request_id;
@@ -2933,10 +3169,14 @@ ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
 
 -- Policies (assuming contracts have user_id, or widely permissive for now to avoid breakage if user_id is missing)
 -- Ideally:
--- CREATE POLICY "Users can manage their own payments" ON public.payments
--- USING (contract_id IN (SELECT id FROM public.contracts WHERE user_id = auth.uid()));
+-- -- [DISABLED BROKEN POLICY]
+-- ;
+DROP POLICY IF EXISTS "Users can manage their own payments" ON public.payments;
+CREATE POLICY "Users can manage their own payments" ON public.payments -- USING (contract_id IN (SELECT id FROM public.contracts WHERE user_id = auth.uid()));
 
 -- Fallback permissive policy for development if user_id logic is flaky
+;
+DROP POLICY IF EXISTS "Enable all access for authenticated users" ON public.payments;
 CREATE POLICY "Enable all access for authenticated users" ON public.payments
     FOR ALL
     TO authenticated
@@ -2945,57 +3185,20 @@ CREATE POLICY "Enable all access for authenticated users" ON public.payments
 -- Seed dummy CPI data for 2024-2025
 -- Using approximate values based on recent trends (base 2022 ~105-110)
 
-INSERT INTO index_data (index_type, date, value, source)
-VALUES 
-  ('cpi', '2024-01', 105.0, 'manual'),
-  ('cpi', '2024-02', 105.2, 'manual'),
-  ('cpi', '2024-03', 105.5, 'manual'),
-  ('cpi', '2024-04', 106.0, 'manual'),
-  ('cpi', '2024-05', 106.3, 'manual'),
-  ('cpi', '2024-06', 106.5, 'manual'),
-  ('cpi', '2024-07', 107.0, 'manual'),
-  ('cpi', '2024-08', 107.2, 'manual'),
-  ('cpi', '2024-09', 107.5, 'manual'),
-  ('cpi', '2024-10', 107.8, 'manual'),
-  ('cpi', '2024-11', 108.0, 'manual'),
-  ('cpi', '2024-12', 108.2, 'manual'),
-  ('cpi', '2025-01', 108.5, 'manual'),
-  ('cpi', '2025-02', 108.8, 'manual'),
-  ('cpi', '2025-03', 109.0, 'manual'),
-  ('cpi', '2025-04', 109.3, 'manual'),
-  ('cpi', '2025-05', 109.5, 'manual'),
-  ('cpi', '2025-06', 109.8, 'manual'),
-  ('cpi', '2025-07', 110.0, 'manual'),
-  ('cpi', '2025-08', 110.2, 'manual'),
-  ('cpi', '2025-09', 110.5, 'manual'),
-  ('cpi', '2025-10', 110.8, 'manual'),
-  ('cpi', '2025-11', 111.0, 'manual'),
-  ('cpi', '2025-12', 111.2, 'manual')
-ON CONFLICT (index_type, date) DO UPDATE 
-SET value = EXCLUDED.value;
--- Add columns for linkage tracking to payments
-ALTER TABLE public.payments 
-ADD COLUMN IF NOT EXISTS original_amount NUMERIC, -- The base amount before linkage
-ADD COLUMN IF NOT EXISTS index_linkage_rate NUMERIC, -- The linkage percentage applied
-ADD COLUMN IF NOT EXISTS paid_amount NUMERIC; -- What was actually paid
--- Create saved_calculations table
-create table if not exists public.saved_calculations (
-    id uuid default gen_random_uuid() primary key,
-    created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-    user_id uuid references auth.users(id) on delete set null,
-    input_data jsonb not null,
-    result_data jsonb not null
-);
-
+-- [Index Data Stripped]
 -- RLS Policies
 alter table public.saved_calculations enable row level security;
 
 -- Allow public read access (so anyone with the link can view)
+;
+DROP POLICY IF EXISTS "Allow public read access" ON public.saved_calculations;
 create policy "Allow public read access"
     on public.saved_calculations for select
     using (true);
 
 -- Allow authenticated users to insert their own calculations
+;
+DROP POLICY IF EXISTS "Allow authenticated insert" ON public.saved_calculations;
 create policy "Allow authenticated insert"
     on public.saved_calculations for insert
     with check (auth.uid() = user_id);
@@ -3011,6 +3214,8 @@ drop policy if exists "Allow authenticated insert" on public.saved_calculations;
 -- Allows insertion if:
 -- 1. The user is authenticated and the user_id matches their UID
 -- 2. The user is anonymous (or authenticated) and provides no user_id (NULL)
+;
+DROP POLICY IF EXISTS "Allow public insert" ON public.saved_calculations;
 create policy "Allow public insert"
     on public.saved_calculations for insert
     with check (
@@ -3024,7 +3229,9 @@ BEGIN
         WHERE tablename = 'index_data' 
         AND policyname = 'Allow public read access to index data'
     ) THEN
-        CREATE POLICY "Allow public read access to index data"
+        ;
+DROP POLICY IF EXISTS "Allow public read access to index data" ON index_data;
+CREATE POLICY "Allow public read access to index data"
           ON index_data
           FOR SELECT
           TO anon
@@ -3048,7 +3255,7 @@ SELECT cron.schedule(
     $$
     SELECT
         net.http_post(
-            url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/fetch-index-data',
+            url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/fetch-index-data',
             headers := jsonb_build_object(
                 'Content-Type', 'application/json',
                 'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmdnJla3Z1Z2RqbndobmF1Y216Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzQzNjQxNiwiZXhwIjoyMDgzMDEyNDE2fQ._Fmq-2x4zpzPkHP9btdqSUj0gbX7RmqscwvGElNbdNA'
@@ -3065,7 +3272,7 @@ SELECT cron.schedule(
     $$
     SELECT
         net.http_post(
-            url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/fetch-index-data',
+            url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/fetch-index-data',
             headers := jsonb_build_object(
                 'Content-Type', 'application/json',
                 'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmdnJla3Z1Z2RqbndobmF1Y216Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzQzNjQxNiwiZXhwIjoyMDgzMDEyNDE2fQ._Fmq-2x4zpzPkHP9btdqSUj0gbX7RmqscwvGElNbdNA'
@@ -3082,7 +3289,7 @@ SELECT cron.schedule(
     $$
     SELECT
         net.http_post(
-            url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/fetch-index-data',
+            url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/fetch-index-data',
             headers := jsonb_build_object(
                 'Content-Type', 'application/json',
                 'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmdnJla3Z1Z2RqbndobmF1Y216Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzQzNjQxNiwiZXhwIjoyMDgzMDEyNDE2fQ._Fmq-2x4zpzPkHP9btdqSUj0gbX7RmqscwvGElNbdNA'
@@ -3124,6 +3331,8 @@ CREATE TABLE IF NOT EXISTS subscription_plans (
 ALTER TABLE subscription_plans ENABLE ROW LEVEL SECURITY;
 
 -- Policies: Everyone can read plans, only admins can modify (if we build UI for it)
+;
+DROP POLICY IF EXISTS "Public Read Plans" ON subscription_plans;
 CREATE POLICY "Public Read Plans" 
     ON subscription_plans FOR SELECT 
     USING (true);
@@ -3343,7 +3552,7 @@ ALTER TABLE user_profiles
 ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE,
 ADD COLUMN IF NOT EXISTS account_status TEXT DEFAULT 'active' CHECK (account_status IN ('active', 'suspended', 'deleted'));
 
--- Create index for efficient querying of suspended accounts
+-- CREATE INDEX IF NOT EXISTS for efficient querying of suspended accounts
 CREATE INDEX IF NOT EXISTS idx_user_profiles_deleted_at ON user_profiles(deleted_at) WHERE deleted_at IS NOT NULL;
 
 -- Create function to permanently delete accounts after 14 days
@@ -3422,7 +3631,9 @@ END;
 $$;
 
 
--- Create Trigger Function for Profile Changes
+-- ;
+DROP TRIGGER IF EXISTS "Function" ON audit_profile_changes;
+Create Trigger Function for Profile Changes
 CREATE OR REPLACE FUNCTION audit_profile_changes()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -3455,7 +3666,9 @@ $$;
 -- Drop trigger if exists to allow idempotent re-run
 DROP TRIGGER IF EXISTS on_profile_change_audit ON public.user_profiles;
 
--- Create Trigger
+-- ;
+DROP TRIGGER IF EXISTS "CREATE" ON public.user_profiles;
+Create Trigger
 CREATE TRIGGER on_profile_change_audit
 AFTER UPDATE ON public.user_profiles
 FOR EACH ROW
@@ -3477,12 +3690,16 @@ ALTER TABLE public.feedback ENABLE ROW LEVEL SECURITY;
 
 -- Allow anyone to insert (Anon or Authenticated)
 DROP POLICY IF EXISTS "Enable insert for everyone" ON public.feedback;
+;
+DROP POLICY IF EXISTS "Enable insert for everyone" ON public.feedback;
 CREATE POLICY "Enable insert for everyone"
 ON public.feedback FOR INSERT
 TO public, anon, authenticated
 WITH CHECK (true);
 
 -- Allow Admins to see all
+DROP POLICY IF EXISTS "Admins can view all feedback" ON public.feedback;
+;
 DROP POLICY IF EXISTS "Admins can view all feedback" ON public.feedback;
 CREATE POLICY "Admins can view all feedback"
 ON public.feedback FOR SELECT
@@ -3495,6 +3712,8 @@ USING (
 );
 
 -- Support updating status by Admins
+DROP POLICY IF EXISTS "Admins can update feedback" ON public.feedback;
+;
 DROP POLICY IF EXISTS "Admins can update feedback" ON public.feedback;
 CREATE POLICY "Admins can update feedback"
 ON public.feedback FOR UPDATE
@@ -3513,11 +3732,15 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Storage Policies
 DROP POLICY IF EXISTS "Anyone can upload feedback screenshots" ON storage.objects;
+;
+DROP POLICY IF EXISTS "Anyone can upload feedback screenshots" ON storage.objects;
 CREATE POLICY "Anyone can upload feedback screenshots"
 ON storage.objects FOR INSERT
 TO public, anon, authenticated
 WITH CHECK ( bucket_id = 'feedback-screenshots' );
 
+DROP POLICY IF EXISTS "Anyone can view feedback screenshots" ON storage.objects;
+;
 DROP POLICY IF EXISTS "Anyone can view feedback screenshots" ON storage.objects;
 CREATE POLICY "Anyone can view feedback screenshots"
 ON storage.objects FOR SELECT
@@ -3625,7 +3848,7 @@ UPDATE subscription_plans SET
 WHERE id = 'enterprise';
 
 -- Comments
--- Create table for short URLs
+-- CREATE TABLE IF NOT EXISTS for short URLs
 CREATE TABLE IF NOT EXISTS calculation_shares (
     id TEXT PRIMARY KEY, -- Short ID (e.g., "abc123")
     user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
@@ -3642,16 +3865,22 @@ CREATE INDEX IF NOT EXISTS idx_calculation_shares_expires ON calculation_shares(
 ALTER TABLE calculation_shares ENABLE ROW LEVEL SECURITY;
 
 -- Anyone can read (public shares)
+;
+DROP POLICY IF EXISTS "Public can view calculation shares" ON calculation_shares;
 CREATE POLICY "Public can view calculation shares"
     ON calculation_shares FOR SELECT
     USING (true);
 
 -- Authenticated users can create
+;
+DROP POLICY IF EXISTS "Authenticated users can create shares" ON calculation_shares;
 CREATE POLICY "Authenticated users can create shares"
     ON calculation_shares FOR INSERT
     WITH CHECK (auth.uid() IS NOT NULL);
 
 -- Users can update their own shares (for view count)
+;
+DROP POLICY IF EXISTS "Anyone can update view count" ON calculation_shares;
 CREATE POLICY "Anyone can update view count"
     ON calculation_shares FOR UPDATE
     USING (true)
@@ -3780,18 +4009,26 @@ CREATE INDEX IF NOT EXISTS idx_property_documents_user ON property_documents(use
 -- RLS Policies
 ALTER TABLE property_documents ENABLE ROW LEVEL SECURITY;
 
+;
+DROP POLICY IF EXISTS "Users can view their property documents" ON property_documents;
 CREATE POLICY "Users can view their property documents"
     ON property_documents FOR SELECT
     USING (auth.uid() = user_id);
 
+;
+DROP POLICY IF EXISTS "Users can insert their property documents" ON property_documents;
 CREATE POLICY "Users can insert their property documents"
     ON property_documents FOR INSERT
     WITH CHECK (auth.uid() = user_id);
 
+;
+DROP POLICY IF EXISTS "Users can update their property documents" ON property_documents;
 CREATE POLICY "Users can update their property documents"
     ON property_documents FOR UPDATE
     USING (auth.uid() = user_id);
 
+;
+DROP POLICY IF EXISTS "Users can delete their property documents" ON property_documents;
 CREATE POLICY "Users can delete their property documents"
     ON property_documents FOR DELETE
     USING (auth.uid() = user_id);
@@ -3813,6 +4050,8 @@ CREATE TABLE IF NOT EXISTS document_folders (
 ALTER TABLE document_folders ENABLE ROW LEVEL SECURITY;
 
 -- Policies for document_folders
+;
+DROP POLICY IF EXISTS "Users can view folders for their properties" ON document_folders;
 CREATE POLICY "Users can view folders for their properties"
     ON document_folders FOR SELECT
     USING (
@@ -3823,6 +4062,8 @@ CREATE POLICY "Users can view folders for their properties"
         )
     );
 
+;
+DROP POLICY IF EXISTS "Users can insert folders for their properties" ON document_folders;
 CREATE POLICY "Users can insert folders for their properties"
     ON document_folders FOR INSERT
     WITH CHECK (
@@ -3833,6 +4074,8 @@ CREATE POLICY "Users can insert folders for their properties"
         )
     );
 
+;
+DROP POLICY IF EXISTS "Users can update folders for their properties" ON document_folders;
 CREATE POLICY "Users can update folders for their properties"
     ON document_folders FOR UPDATE
     USING (
@@ -3843,6 +4086,8 @@ CREATE POLICY "Users can update folders for their properties"
         )
     );
 
+;
+DROP POLICY IF EXISTS "Users can delete folders for their properties" ON document_folders;
 CREATE POLICY "Users can delete folders for their properties"
     ON document_folders FOR DELETE
     USING (
@@ -3857,7 +4102,7 @@ CREATE POLICY "Users can delete folders for their properties"
 ALTER TABLE property_documents
 ADD COLUMN IF NOT EXISTS folder_id UUID REFERENCES document_folders(id) ON DELETE CASCADE;
 
--- Create index for performance
+-- CREATE INDEX IF NOT EXISTS for performance
 CREATE INDEX IF NOT EXISTS idx_document_folders_property_category ON document_folders(property_id, category);
 CREATE INDEX IF NOT EXISTS idx_property_documents_folder ON property_documents(folder_id);
 -- Create property_media table
@@ -3878,14 +4123,20 @@ CREATE TABLE IF NOT EXISTS public.property_media (
 ALTER TABLE public.property_media ENABLE ROW LEVEL SECURITY;
 
 -- Policies
+;
+DROP POLICY IF EXISTS "Users can view their own property media" ON public.property_media;
 CREATE POLICY "Users can view their own property media"
     ON public.property_media FOR SELECT
     USING (auth.uid() = user_id);
 
+;
+DROP POLICY IF EXISTS "Users can insert their own property media" ON public.property_media;
 CREATE POLICY "Users can insert their own property media"
     ON public.property_media FOR INSERT
     WITH CHECK (auth.uid() = user_id);
 
+;
+DROP POLICY IF EXISTS "Users can delete their own property media" ON public.property_media;
 CREATE POLICY "Users can delete their own property media"
     ON public.property_media FOR DELETE
     USING (auth.uid() = user_id);
@@ -3908,6 +4159,8 @@ CREATE TABLE IF NOT EXISTS public.short_links (
 ALTER TABLE public.short_links ENABLE ROW LEVEL SECURITY;
 
 -- Allow public read access (anyone with the link can use it)
+;
+DROP POLICY IF EXISTS "Public can read short links" ON public.short_links;
 CREATE POLICY "Public can read short links"
 ON public.short_links FOR SELECT
 USING (true);
@@ -3922,12 +4175,16 @@ USING (true);
 -- Let's stick to authenticated for creation to prevent spam, assuming users log in to use the app effectively.
 -- If user is guest, we might need a stored procedure or standard anon policy.
 -- Adding "Public can insert" with limits would be safer, but for MVP:
+;
+DROP POLICY IF EXISTS "Authenticated users can create short links" ON public.short_links;
 CREATE POLICY "Authenticated users can create short links"
 ON public.short_links FOR INSERT
 WITH CHECK (auth.role() = 'authenticated');
 
 -- Also allow anonymous creation if needed? The user removed server-side calc storage.
 -- Let's add anonymous policy for now to be safe with "demo" mode or guest usage.
+;
+DROP POLICY IF EXISTS "Public can create short links" ON public.short_links;
 CREATE POLICY "Public can create short links"
 ON public.short_links FOR INSERT
 WITH CHECK (true);
@@ -3955,6 +4212,8 @@ CREATE TABLE IF NOT EXISTS user_storage_usage (
 -- RLS
 ALTER TABLE user_storage_usage ENABLE ROW LEVEL SECURITY;
 
+;
+DROP POLICY IF EXISTS "Users can view their own storage usage" ON user_storage_usage;
 CREATE POLICY "Users can view their own storage usage"
     ON user_storage_usage FOR SELECT
     USING (auth.uid() = user_id);
@@ -3985,6 +4244,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger on property_documents
+;
+DROP TRIGGER IF EXISTS "update_storage_on_document_change" ON property_documents;
 CREATE TRIGGER update_storage_on_document_change
 AFTER INSERT OR DELETE ON property_documents
 FOR EACH ROW EXECUTE FUNCTION update_user_storage();
@@ -4037,6 +4298,8 @@ DROP POLICY IF EXISTS "Users can delete folders for their properties" ON documen
 -- Re-create Policies
 
 -- 1. SELECT
+;
+DROP POLICY IF EXISTS "Users can view folders for their properties" ON document_folders;
 CREATE POLICY "Users can view folders for their properties"
     ON document_folders FOR SELECT
     USING (
@@ -4048,6 +4311,8 @@ CREATE POLICY "Users can view folders for their properties"
     );
 
 -- 2. INSERT
+;
+DROP POLICY IF EXISTS "Users can insert folders for their properties" ON document_folders;
 CREATE POLICY "Users can insert folders for their properties"
     ON document_folders FOR INSERT
     WITH CHECK (
@@ -4059,6 +4324,8 @@ CREATE POLICY "Users can insert folders for their properties"
     );
 
 -- 3. UPDATE
+;
+DROP POLICY IF EXISTS "Users can update folders for their properties" ON document_folders;
 CREATE POLICY "Users can update folders for their properties"
     ON document_folders FOR UPDATE
     USING (
@@ -4070,6 +4337,8 @@ CREATE POLICY "Users can update folders for their properties"
     );
 
 -- 4. DELETE
+;
+DROP POLICY IF EXISTS "Users can delete folders for their properties" ON document_folders;
 CREATE POLICY "Users can delete folders for their properties"
     ON document_folders FOR DELETE
     USING (
@@ -4333,11 +4602,15 @@ ALTER TABLE ai_chat_usage ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ai_usage_limits ENABLE ROW LEVEL SECURITY;
 
 -- Users can view their own usage
+;
+DROP POLICY IF EXISTS "Users can view own AI usage" ON ai_chat_usage;
 CREATE POLICY "Users can view own AI usage"
     ON ai_chat_usage FOR SELECT
     USING (auth.uid() = user_id);
 
 -- Admins can view all usage
+;
+DROP POLICY IF EXISTS "Admins can view all AI usage" ON ai_chat_usage;
 CREATE POLICY "Admins can view all AI usage"
     ON ai_chat_usage FOR ALL
     USING (
@@ -4348,12 +4621,16 @@ CREATE POLICY "Admins can view all AI usage"
     );
 
 -- Everyone can view limits (for UI display)
+;
+DROP POLICY IF EXISTS "Anyone can view AI limits" ON ai_usage_limits;
 CREATE POLICY "Anyone can view AI limits"
     ON ai_usage_limits FOR SELECT
     TO authenticated
     USING (true);
 
 -- Only admins can modify limits
+;
+DROP POLICY IF EXISTS "Admins can modify AI limits" ON ai_usage_limits;
 CREATE POLICY "Admins can modify AI limits"
     ON ai_usage_limits FOR ALL
     USING (
@@ -5202,6 +5479,8 @@ ALTER TABLE ai_usage_logs ENABLE ROW LEVEL SECURITY;
 CREATE INDEX IF NOT EXISTS idx_ai_usage_user_date ON ai_usage_logs (user_id, created_at);
 
 -- Policies
+;
+DROP POLICY IF EXISTS "Users can view their own usage logs" ON ai_usage_logs;
 CREATE POLICY "Users can view their own usage logs"
     ON ai_usage_logs FOR SELECT
     USING (auth.uid() = user_id);
@@ -5412,12 +5691,16 @@ GRANT EXECUTE ON FUNCTION public.delete_user_account(UUID) TO service_role;
 -- 2. Ensure Admin Policies for Management Tables
 -- user_storage_usage
 DROP POLICY IF EXISTS "Admins can view all storage usage" ON public.user_storage_usage;
+;
+DROP POLICY IF EXISTS "Admins can view all storage usage" ON public.user_storage_usage;
 CREATE POLICY "Admins can view all storage usage"
     ON public.user_storage_usage FOR SELECT
     USING (public.is_admin());
 
 -- audit_logs
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Admins can view all audit logs" ON public.audit_logs;
+;
 DROP POLICY IF EXISTS "Admins can view all audit logs" ON public.audit_logs;
 CREATE POLICY "Admins can view all audit logs"
     ON public.audit_logs FOR SELECT
@@ -5432,12 +5715,16 @@ BEGIN
     IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'user_profiles') THEN
         -- Re-run the policies to be absolutely sure
         DROP POLICY IF EXISTS "Admins view all" ON public.user_profiles;
-        CREATE POLICY "Admins view all" 
+        ;
+DROP POLICY IF EXISTS "Admins view all" ON public.user_profiles;
+CREATE POLICY "Admins view all" 
             ON public.user_profiles FOR SELECT 
             USING (public.is_admin());
             
         DROP POLICY IF EXISTS "Admins update all" ON public.user_profiles;
-        CREATE POLICY "Admins update all" 
+        ;
+DROP POLICY IF EXISTS "Admins update all" ON public.user_profiles;
+CREATE POLICY "Admins update all" 
             ON public.user_profiles FOR UPDATE 
             USING (public.is_admin());
     END IF;
@@ -5452,7 +5739,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-    project_url text := 'https://qfvrekvugdjnwhnaucmz.supabase.co'; -- UPDATED TO CORRECT PROJECT
+    project_url text := 'https://tipnjnfbbnbskdlodrww.supabase.co'; -- UPDATED TO CORRECT PROJECT
 BEGIN
     PERFORM
       net.http_post(
@@ -5480,7 +5767,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-    project_url text := 'https://qfvrekvugdjnwhnaucmz.supabase.co';
+    project_url text := 'https://tipnjnfbbnbskdlodrww.supabase.co';
     user_email text;
 BEGIN
     -- Only forward high-priority or action-oriented types
@@ -5510,12 +5797,16 @@ $$;
 
 -- Attach trigger to notifications table
 DROP TRIGGER IF EXISTS on_notification_created_forward_email ON public.notifications;
+;
+DROP TRIGGER IF EXISTS "on_notification_created_forward_email" ON public.notifications;
 CREATE TRIGGER on_notification_created_forward_email
     AFTER INSERT ON public.notifications
     FOR EACH ROW
     EXECUTE FUNCTION public.forward_notification_to_email();
 
 -- 3. Fix Storage RLS for Admins
+DROP POLICY IF EXISTS "Admins can view all storage usage" ON public.user_storage_usage;
+;
 DROP POLICY IF EXISTS "Admins can view all storage usage" ON public.user_storage_usage;
 CREATE POLICY "Admins can view all storage usage"
     ON public.user_storage_usage FOR SELECT
@@ -5582,6 +5873,8 @@ END;
 $$;
 
 -- Attach trigger
+;
+DROP TRIGGER IF EXISTS "on_auth_user_created" ON auth.users;
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
@@ -5695,11 +5988,15 @@ ALTER TABLE public.system_broadcasts ENABLE ROW LEVEL SECURITY;
 
 -- 1. Viewable by ALL users (even unauthenticated potentially, though usually app users)
 DROP POLICY IF EXISTS "Broadcasts are viewable by everyone" ON public.system_broadcasts;
+;
+DROP POLICY IF EXISTS "Broadcasts are viewable by everyone" ON public.system_broadcasts;
 CREATE POLICY "Broadcasts are viewable by everyone"
     ON public.system_broadcasts FOR SELECT
     USING (is_active = true AND (expires_at IS NULL OR expires_at > now()));
 
 -- 2. CRUD only for Super Admins
+DROP POLICY IF EXISTS "Super Admins have full access to broadcasts" ON public.system_broadcasts;
+;
 DROP POLICY IF EXISTS "Super Admins have full access to broadcasts" ON public.system_broadcasts;
 CREATE POLICY "Super Admins have full access to broadcasts"
     ON public.system_broadcasts FOR ALL
@@ -5722,6 +6019,8 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+;
+DROP TRIGGER IF EXISTS "update_system_broadcasts_updated_at" ON public.system_broadcasts;
 CREATE TRIGGER update_system_broadcasts_updated_at
     BEFORE UPDATE ON public.system_broadcasts
     FOR EACH ROW
@@ -5783,7 +6082,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-    project_url text := 'https://qfvrekvugdjnwhnaucmz.supabase.co';
+    project_url text := 'https://tipnjnfbbnbskdlodrww.supabase.co';
 BEGIN
     -- Only trigger if it's a new profile (usually only happen at signup)
     IF TG_OP = 'INSERT' THEN
@@ -5809,6 +6108,8 @@ $$;
 -- Attach trigger to user_profiles
 DROP TRIGGER IF EXISTS on_profile_created_send_welcome_email ON public.user_profiles;
 
+;
+DROP TRIGGER IF EXISTS "on_profile_created_send_welcome_email" ON public.user_profiles;
 CREATE TRIGGER on_profile_created_send_welcome_email
     AFTER INSERT ON public.user_profiles
     FOR EACH ROW
@@ -5821,7 +6122,7 @@ DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
                    WHERE table_name='property_documents' AND column_name='counter_read') THEN
-        ALTER TABLE property_documents ADD COLUMN counter_read DECIMAL(12,2);
+        ALTER TABLE property_documents ADD COLUMN IF NOT EXISTS counter_read DECIMAL(12,2);
     END IF;
 END $$;
 
@@ -5885,6 +6186,8 @@ $$;
 
 -- Attach trigger to property_documents
 DROP TRIGGER IF EXISTS on_maintenance_record_created ON public.property_documents;
+;
+DROP TRIGGER IF EXISTS "on_maintenance_record_created" ON public.property_documents;
 CREATE TRIGGER on_maintenance_record_created
     AFTER INSERT ON public.property_documents
     FOR EACH ROW
@@ -5897,7 +6200,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-    project_url text := 'https://qfvrekvugdjnwhnaucmz.supabase.co';
+    project_url text := 'https://tipnjnfbbnbskdlodrww.supabase.co';
     target_email text;
     asset_alerts_enabled boolean;
 BEGIN
@@ -5968,7 +6271,7 @@ BEGIN
         SELECT 1 FROM information_schema.columns 
         WHERE table_name = 'subscription_plans' AND column_name = 'price_yearly'
     ) THEN
-        ALTER TABLE subscription_plans ADD COLUMN price_yearly NUMERIC(10, 2) DEFAULT 0;
+        ALTER TABLE subscription_plans ADD COLUMN IF NOT EXISTS price_yearly NUMERIC(10, 2) DEFAULT 0;
     END IF;
 END $$;
 
@@ -6053,10 +6356,10 @@ BEGIN
     -- Alternatively, we can use a simpler approach if the Netlify/Edge function is public or has a secret key
     PERFORM
       net.http_post(
-        url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/admin-notifications',
+        url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/admin-notifications',
         headers := jsonb_build_object(
           'Content-Type', 'application/json',
-          'Authorization', 'Bearer ' || (SELECT value FROM vault.secrets WHERE name = 'SERVICE_ROLE_KEY' LIMIT 1)
+          'Authorization', 'Bearer ' || COALESCE(current_setting('app.settings.service_role_key', true), 'DUMMY_KEY')
         ),
         body := jsonb_build_object(
           'type', TG_ARGV[0],
@@ -6074,6 +6377,8 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- Trigger for New User
 -- This needs to happen after the profile is created
 DROP TRIGGER IF EXISTS on_user_profile_created_notify_admin ON user_profiles;
+;
+DROP TRIGGER IF EXISTS "on_user_profile_created_notify_admin" ON user_profiles;
 CREATE TRIGGER on_user_profile_created_notify_admin
     AFTER INSERT ON user_profiles
     FOR EACH ROW
@@ -6101,6 +6406,8 @@ $$ LANGUAGE plpgsql;
 
 -- Actually, let's keep it simple. The trigger itself will check
 DROP TRIGGER IF EXISTS on_first_payment_notify_admin ON payments;
+;
+DROP TRIGGER IF EXISTS "on_first_payment_notify_admin" ON payments;
 CREATE TRIGGER on_first_payment_notify_admin
     AFTER UPDATE ON payments
     FOR EACH ROW
@@ -6116,10 +6423,10 @@ SELECT cron.schedule(
     '0 8 * * *', -- 8:00 AM every day
     $$
     SELECT net.http_post(
-        url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/admin-notifications',
+        url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/admin-notifications',
         headers := jsonb_build_object(
           'Content-Type', 'application/json',
-          'Authorization', 'Bearer ' || (SELECT value FROM vault.secrets WHERE name = 'SERVICE_ROLE_KEY' LIMIT 1)
+          'Authorization', 'Bearer ' || COALESCE(current_setting('app.settings.service_role_key', true), 'DUMMY_KEY')
         ),
         body := jsonb_build_object('type', 'daily_summary')
     );
@@ -6130,7 +6437,7 @@ SELECT cron.schedule(
 
 -- 1. Correct Project URL for triggers (Consolidated)
 -- We'll use a variable or just hardcode the current known correctly fixed URL
--- Current Project URL: https://qfvrekvugdjnwhnaucmz.supabase.co
+-- Current Project URL: https://tipnjnfbbnbskdlodrww.supabase.co
 
 -- 2. Trigger Function for Signups & Plan Changes (Admin Alerts)
 CREATE OR REPLACE FUNCTION public.notify_admin_on_user_event()
@@ -6139,7 +6446,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-    project_url text := 'https://qfvrekvugdjnwhnaucmz.supabase.co';
+    project_url text := 'https://tipnjnfbbnbskdlodrww.supabase.co';
 BEGIN
     -- Only trigger if it's a new user OR a plan change
     IF (TG_OP = 'INSERT') OR (TG_OP = 'UPDATE' AND OLD.subscription_plan IS DISTINCT FROM NEW.subscription_plan) THEN
@@ -6170,7 +6477,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-    project_url text := 'https://qfvrekvugdjnwhnaucmz.supabase.co';
+    project_url text := 'https://tipnjnfbbnbskdlodrww.supabase.co';
     user_record RECORD;
 BEGIN
     -- Only trigger when an invoice is marked as 'paid'
@@ -6201,6 +6508,8 @@ $$;
 -- 4. Apply Triggers
 -- a. User Profiles (Signup & Plan Changes)
 DROP TRIGGER IF EXISTS on_user_event_notify_admin ON public.user_profiles;
+;
+DROP TRIGGER IF EXISTS "on_user_event_notify_admin" ON public.user_profiles;
 CREATE TRIGGER on_user_event_notify_admin
     AFTER INSERT OR UPDATE ON public.user_profiles
     FOR EACH ROW
@@ -6208,6 +6517,8 @@ CREATE TRIGGER on_user_event_notify_admin
 
 -- b. Invoices (Subscription Starts)
 DROP TRIGGER IF EXISTS on_invoice_paid_notify_admin ON public.invoices;
+;
+DROP TRIGGER IF EXISTS "on_invoice_paid_notify_admin" ON public.invoices;
 CREATE TRIGGER on_invoice_paid_notify_admin
     AFTER UPDATE ON public.invoices
     FOR EACH ROW
@@ -6232,7 +6543,7 @@ SELECT cron.schedule(
     '0 8 * * *',
     $$
     SELECT net.http_post(
-        url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/send-daily-admin-summary',
+        url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/send-daily-admin-summary',
         headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
         body := '{}'::jsonb
     );
@@ -6265,11 +6576,15 @@ $$;
 
 -- PROPERTIES
 DROP POLICY IF EXISTS "Admins view all properties" ON public.properties;
+;
+DROP POLICY IF EXISTS "Admins view all properties" ON public.properties;
 CREATE POLICY "Admins view all properties" 
     ON public.properties FOR SELECT 
     USING (public.is_admin());
 
 -- CONTRACTS
+DROP POLICY IF EXISTS "Admins view all contracts" ON public.contracts;
+;
 DROP POLICY IF EXISTS "Admins view all contracts" ON public.contracts;
 CREATE POLICY "Admins view all contracts" 
     ON public.contracts FOR SELECT 
@@ -6277,11 +6592,15 @@ CREATE POLICY "Admins view all contracts"
 
 -- TENANTS
 DROP POLICY IF EXISTS "Admins view all tenants" ON public.tenants;
+;
+DROP POLICY IF EXISTS "Admins view all tenants" ON public.tenants;
 CREATE POLICY "Admins view all tenants" 
     ON public.tenants FOR SELECT 
     USING (public.is_admin());
 
 -- PAYMENTS
+DROP POLICY IF EXISTS "Admins view all payments" ON public.payments;
+;
 DROP POLICY IF EXISTS "Admins view all payments" ON public.payments;
 CREATE POLICY "Admins view all payments" 
     ON public.payments FOR SELECT 
@@ -6289,11 +6608,15 @@ CREATE POLICY "Admins view all payments"
 
 -- PROPERTY DOCUMENTS
 DROP POLICY IF EXISTS "Admins view all property documents" ON public.property_documents;
+;
+DROP POLICY IF EXISTS "Admins view all property documents" ON public.property_documents;
 CREATE POLICY "Admins view all property documents" 
     ON public.property_documents FOR SELECT 
     USING (public.is_admin());
 
 -- DOCUMENT FOLDERS
+DROP POLICY IF EXISTS "Admins view all document folders" ON public.document_folders;
+;
 DROP POLICY IF EXISTS "Admins view all document folders" ON public.document_folders;
 CREATE POLICY "Admins view all document folders" 
     ON public.document_folders FOR SELECT 
@@ -6301,11 +6624,15 @@ CREATE POLICY "Admins view all document folders"
 
 -- SHORT LINKS
 DROP POLICY IF EXISTS "Admins view all short links" ON public.short_links;
+;
+DROP POLICY IF EXISTS "Admins view all short links" ON public.short_links;
 CREATE POLICY "Admins view all short links" 
     ON public.short_links FOR SELECT 
     USING (public.is_admin());
 
 -- STORAGE OBJECTS (God Mode for Admins)
+DROP POLICY IF EXISTS "Admins full access to secure_documents" ON storage.objects;
+;
 DROP POLICY IF EXISTS "Admins full access to secure_documents" ON storage.objects;
 CREATE POLICY "Admins full access to secure_documents"
     ON storage.objects FOR ALL
@@ -6356,19 +6683,19 @@ CREATE TABLE IF NOT EXISTS support_tickets (
 DO $$ 
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'support_tickets' AND column_name = 'assigned_to') THEN
-        ALTER TABLE public.support_tickets ADD COLUMN assigned_to UUID REFERENCES auth.users(id) ON DELETE SET NULL;
+        ALTER TABLE public.support_tickets ADD COLUMN IF NOT EXISTS assigned_to UUID REFERENCES auth.users(id) ON DELETE SET NULL;
     END IF;
     
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'support_tickets' AND column_name = 'chat_context') THEN
-        ALTER TABLE public.support_tickets ADD COLUMN chat_context JSONB;
+        ALTER TABLE public.support_tickets ADD COLUMN IF NOT EXISTS chat_context JSONB;
     END IF;
 
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'support_tickets' AND column_name = 'resolution_notes') THEN
-        ALTER TABLE public.support_tickets ADD COLUMN resolution_notes TEXT;
+        ALTER TABLE public.support_tickets ADD COLUMN IF NOT EXISTS resolution_notes TEXT;
     END IF;
 
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'support_tickets' AND column_name = 'resolved_at') THEN
-        ALTER TABLE public.support_tickets ADD COLUMN resolved_at TIMESTAMPTZ;
+        ALTER TABLE public.support_tickets ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMPTZ;
     END IF;
 END $$;
 
@@ -6394,11 +6721,15 @@ ALTER TABLE ticket_comments ENABLE ROW LEVEL SECURITY;
 
 -- Users can view their own tickets
 DROP POLICY IF EXISTS "Users can view own tickets" ON support_tickets;
+;
+DROP POLICY IF EXISTS "Users can view own tickets" ON support_tickets;
 CREATE POLICY "Users can view own tickets"
     ON support_tickets FOR SELECT
     USING (auth.uid() = user_id);
 
 -- Users can create tickets
+DROP POLICY IF EXISTS "Users can create tickets" ON support_tickets;
+;
 DROP POLICY IF EXISTS "Users can create tickets" ON support_tickets;
 CREATE POLICY "Users can create tickets"
     ON support_tickets FOR INSERT
@@ -6406,11 +6737,15 @@ CREATE POLICY "Users can create tickets"
 
 -- Users can update their own open tickets
 DROP POLICY IF EXISTS "Users can update own open tickets" ON support_tickets;
+;
+DROP POLICY IF EXISTS "Users can update own open tickets" ON support_tickets;
 CREATE POLICY "Users can update own open tickets"
     ON support_tickets FOR UPDATE
     USING (auth.uid() = user_id AND status = 'open');
 
 -- Admins can view all tickets
+DROP POLICY IF EXISTS "Admins can view all tickets" ON support_tickets;
+;
 DROP POLICY IF EXISTS "Admins can view all tickets" ON support_tickets;
 CREATE POLICY "Admins can view all tickets"
     ON support_tickets FOR SELECT
@@ -6423,6 +6758,8 @@ CREATE POLICY "Admins can view all tickets"
 
 -- Admins can update all tickets
 DROP POLICY IF EXISTS "Admins can update all tickets" ON support_tickets;
+;
+DROP POLICY IF EXISTS "Admins can update all tickets" ON support_tickets;
 CREATE POLICY "Admins can update all tickets"
     ON support_tickets FOR UPDATE
     USING (
@@ -6433,6 +6770,8 @@ CREATE POLICY "Admins can update all tickets"
     );
 
 -- Users can view comments on their tickets
+DROP POLICY IF EXISTS "Users can view own ticket comments" ON ticket_comments;
+;
 DROP POLICY IF EXISTS "Users can view own ticket comments" ON ticket_comments;
 CREATE POLICY "Users can view own ticket comments"
     ON ticket_comments FOR SELECT
@@ -6445,6 +6784,8 @@ CREATE POLICY "Users can view own ticket comments"
 
 -- Users can add comments to their tickets
 DROP POLICY IF EXISTS "Users can comment on own tickets" ON ticket_comments;
+;
+DROP POLICY IF EXISTS "Users can comment on own tickets" ON ticket_comments;
 CREATE POLICY "Users can comment on own tickets"
     ON ticket_comments FOR INSERT
     WITH CHECK (
@@ -6456,6 +6797,8 @@ CREATE POLICY "Users can comment on own tickets"
 
 -- Admins can view all comments
 DROP POLICY IF EXISTS "Admins can view all comments" ON ticket_comments;
+;
+DROP POLICY IF EXISTS "Admins can view all comments" ON ticket_comments;
 CREATE POLICY "Admins can view all comments"
     ON ticket_comments FOR SELECT
     USING (
@@ -6466,6 +6809,8 @@ CREATE POLICY "Admins can view all comments"
     );
 
 -- Admins can add comments to any ticket
+DROP POLICY IF EXISTS "Admins can comment on all tickets" ON ticket_comments;
+;
 DROP POLICY IF EXISTS "Admins can comment on all tickets" ON ticket_comments;
 CREATE POLICY "Admins can comment on all tickets"
     ON ticket_comments FOR INSERT
@@ -6487,6 +6832,8 @@ $$ LANGUAGE plpgsql;
 
 -- Trigger for updated_at
 DROP TRIGGER IF EXISTS update_support_tickets_timestamp ON support_tickets;
+;
+DROP TRIGGER IF EXISTS "update_support_tickets_timestamp" ON support_tickets;
 CREATE TRIGGER update_support_tickets_timestamp
     BEFORE UPDATE ON support_tickets
     FOR EACH ROW
@@ -6515,6 +6862,8 @@ $$ LANGUAGE plpgsql;
 
 -- Trigger for admin notifications
 DROP TRIGGER IF EXISTS notify_admins_on_new_ticket ON support_tickets;
+;
+DROP TRIGGER IF EXISTS "notify_admins_on_new_ticket" ON support_tickets;
 CREATE TRIGGER notify_admins_on_new_ticket
     AFTER INSERT ON support_tickets
     FOR EACH ROW
@@ -6666,7 +7015,7 @@ BEGIN
         SELECT 1 FROM information_schema.columns 
         WHERE table_name = 'user_profiles' AND column_name = 'subscription_tier'
     ) THEN
-        ALTER TABLE user_profiles ADD COLUMN subscription_tier TEXT DEFAULT 'free';
+        ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS subscription_tier TEXT DEFAULT 'free';
     END IF;
 END $$;
 
@@ -6683,6 +7032,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS tr_sync_user_tier ON user_profiles;
+;
+DROP TRIGGER IF EXISTS "tr_sync_user_tier" ON user_profiles;
 CREATE TRIGGER tr_sync_user_tier
     BEFORE INSERT OR UPDATE OF plan_id ON user_profiles
     FOR EACH ROW
@@ -6943,6 +7294,8 @@ CREATE TABLE IF NOT EXISTS public.ai_usage_logs (
 ALTER TABLE public.ai_usage_logs ENABLE ROW LEVEL SECURITY;
 
 -- Admins can view all AI usage logs
+;
+DROP POLICY IF EXISTS "Admins can view all AI usage logs" ON public.ai_usage_logs;
 CREATE POLICY "Admins can view all AI usage logs"
     ON public.ai_usage_logs FOR SELECT
     USING (
@@ -7090,16 +7443,22 @@ ALTER TABLE public.ai_conversations ENABLE ROW LEVEL SECURITY;
 
 -- Users can manage their own conversations
 DROP POLICY IF EXISTS "Users can view own AI conversations" ON public.ai_conversations;
+;
+DROP POLICY IF EXISTS "Users can view own AI conversations" ON public.ai_conversations;
 CREATE POLICY "Users can view own AI conversations"
     ON public.ai_conversations FOR SELECT
     USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete own AI conversations" ON public.ai_conversations;
+;
 DROP POLICY IF EXISTS "Users can delete own AI conversations" ON public.ai_conversations;
 CREATE POLICY "Users can delete own AI conversations"
     ON public.ai_conversations FOR DELETE
     USING (auth.uid() = user_id);
 
 -- Admins can view everything
+DROP POLICY IF EXISTS "Admins can view all AI conversations" ON public.ai_conversations;
+;
 DROP POLICY IF EXISTS "Admins can view all AI conversations" ON public.ai_conversations;
 CREATE POLICY "Admins can view all AI conversations"
     ON public.ai_conversations FOR SELECT
@@ -7203,10 +7562,14 @@ ALTER TABLE public.human_messages ENABLE ROW LEVEL SECURITY;
 
 -- Admins can do everything
 DROP POLICY IF EXISTS "Admins manage human conversations" ON public.human_conversations;
+;
+DROP POLICY IF EXISTS "Admins manage human conversations" ON public.human_conversations;
 CREATE POLICY "Admins manage human conversations" ON public.human_conversations
 AS PERMISSIVE FOR ALL TO authenticated
 USING (EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin'));
 
+DROP POLICY IF EXISTS "Admins manage human messages" ON public.human_messages;
+;
 DROP POLICY IF EXISTS "Admins manage human messages" ON public.human_messages;
 CREATE POLICY "Admins manage human messages" ON public.human_messages
 AS PERMISSIVE FOR ALL TO authenticated
@@ -7214,10 +7577,14 @@ USING (EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'adm
 
 -- Users can see their own conversations
 DROP POLICY IF EXISTS "Users view own human conversations" ON public.human_conversations;
+;
+DROP POLICY IF EXISTS "Users view own human conversations" ON public.human_conversations;
 CREATE POLICY "Users view own human conversations" ON public.human_conversations
 FOR SELECT TO authenticated
 USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users view/send own human messages" ON public.human_messages;
+;
 DROP POLICY IF EXISTS "Users view/send own human messages" ON public.human_messages;
 CREATE POLICY "Users view/send own human messages" ON public.human_messages
 FOR ALL TO authenticated
@@ -7253,6 +7620,8 @@ ALTER TABLE public.human_messages ENABLE ROW LEVEL SECURITY;
 
 -- Policies for humman_conversations
 DROP POLICY IF EXISTS "Admins can view all conversations" ON public.human_conversations;
+;
+DROP POLICY IF EXISTS "Admins can view all conversations" ON public.human_conversations;
 CREATE POLICY "Admins can view all conversations"
     ON public.human_conversations
     FOR SELECT
@@ -7263,6 +7632,8 @@ CREATE POLICY "Admins can view all conversations"
         )
     );
 
+DROP POLICY IF EXISTS "Admins can insert conversations" ON public.human_conversations;
+;
 DROP POLICY IF EXISTS "Admins can insert conversations" ON public.human_conversations;
 CREATE POLICY "Admins can insert conversations"
     ON public.human_conversations
@@ -7275,6 +7646,8 @@ CREATE POLICY "Admins can insert conversations"
     );
 
 DROP POLICY IF EXISTS "Admins can update conversations" ON public.human_conversations;
+;
+DROP POLICY IF EXISTS "Admins can update conversations" ON public.human_conversations;
 CREATE POLICY "Admins can update conversations"
     ON public.human_conversations
     FOR UPDATE
@@ -7286,12 +7659,16 @@ CREATE POLICY "Admins can update conversations"
     );
 
 DROP POLICY IF EXISTS "Users can view their own conversations" ON public.human_conversations;
+;
+DROP POLICY IF EXISTS "Users can view their own conversations" ON public.human_conversations;
 CREATE POLICY "Users can view their own conversations"
     ON public.human_conversations
     FOR SELECT
     USING (auth.uid() = user_id);
 
 -- Policies for human_messages
+DROP POLICY IF EXISTS "Admins can view all messages" ON public.human_messages;
+;
 DROP POLICY IF EXISTS "Admins can view all messages" ON public.human_messages;
 CREATE POLICY "Admins can view all messages"
     ON public.human_messages
@@ -7304,6 +7681,8 @@ CREATE POLICY "Admins can view all messages"
     );
 
 DROP POLICY IF EXISTS "Admins can insert messages" ON public.human_messages;
+;
+DROP POLICY IF EXISTS "Admins can insert messages" ON public.human_messages;
 CREATE POLICY "Admins can insert messages"
     ON public.human_messages
     FOR INSERT
@@ -7315,6 +7694,8 @@ CREATE POLICY "Admins can insert messages"
     );
 
 DROP POLICY IF EXISTS "Users can view messages in their conversations" ON public.human_messages;
+;
+DROP POLICY IF EXISTS "Users can view messages in their conversations" ON public.human_messages;
 CREATE POLICY "Users can view messages in their conversations"
     ON public.human_messages
     FOR SELECT
@@ -7325,6 +7706,8 @@ CREATE POLICY "Users can view messages in their conversations"
         )
     );
 
+DROP POLICY IF EXISTS "Users can insert messages in their active conversations" ON public.human_messages;
+;
 DROP POLICY IF EXISTS "Users can insert messages in their active conversations" ON public.human_messages;
 CREATE POLICY "Users can insert messages in their active conversations"
     ON public.human_messages
@@ -7355,7 +7738,7 @@ SELECT cron.schedule(
     '0 6 * * *',
     $$
     SELECT net.http_post(
-        url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/send-daily-admin-summary',
+        url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/send-daily-admin-summary',
         headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
         body := '{}'::jsonb
     );
@@ -7368,7 +7751,7 @@ DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_preferences' AND column_name = 'ai_data_consent') THEN
         ALTER TABLE user_preferences 
-        ADD COLUMN ai_data_consent BOOLEAN DEFAULT false;
+        ADD COLUMN IF NOT EXISTS ai_data_consent BOOLEAN DEFAULT false;
     END IF;
 END $$;
 -- Add 'live_chat_enabled' to system_settings
@@ -7598,11 +7981,11 @@ DO $$
 BEGIN
     -- 1. Ensure 'first_name' and 'last_name' columns exist in user_profiles
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_profiles' AND column_name = 'first_name') THEN
-        ALTER TABLE public.user_profiles ADD COLUMN first_name TEXT;
+        ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS first_name TEXT;
     END IF;
 
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_profiles' AND column_name = 'last_name') THEN
-        ALTER TABLE public.user_profiles ADD COLUMN last_name TEXT;
+        ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS last_name TEXT;
     END IF;
 
     -- 2. Ensure 'subscription_plans' has the 'free' plan
@@ -7612,7 +7995,7 @@ BEGIN
 
     -- 3. Ensure 'plan_id' column exists in user_profiles
      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_profiles' AND column_name = 'plan_id') THEN
-        ALTER TABLE public.user_profiles ADD COLUMN plan_id TEXT REFERENCES public.subscription_plans(id) DEFAULT 'free';
+        ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS plan_id TEXT REFERENCES public.subscription_plans(id) DEFAULT 'free';
     END IF;
 
 END $$;
@@ -7676,6 +8059,8 @@ $$;
 
 -- 5. Ensure Trigger is Attached
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+;
+DROP TRIGGER IF EXISTS "on_auth_user_created" ON auth.users;
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
@@ -7739,11 +8124,15 @@ ALTER TABLE public.user_automation_settings ENABLE ROW LEVEL SECURITY;
 
 -- Admins can view all ticket analysis
 DROP POLICY IF EXISTS "Admins can view all ticket analysis" ON public.ticket_analysis;
+;
+DROP POLICY IF EXISTS "Admins can view all ticket analysis" ON public.ticket_analysis;
 CREATE POLICY "Admins can view all ticket analysis" ON public.ticket_analysis
     FOR SELECT TO authenticated
     USING (public.is_admin());
 
 -- Users can view their own automation settings
+DROP POLICY IF EXISTS "Users can view own automation settings" ON public.user_automation_settings;
+;
 DROP POLICY IF EXISTS "Users can view own automation settings" ON public.user_automation_settings;
 CREATE POLICY "Users can view own automation settings" ON public.user_automation_settings
     FOR SELECT TO authenticated
@@ -7751,11 +8140,15 @@ CREATE POLICY "Users can view own automation settings" ON public.user_automation
 
 -- Users can update their own automation settings
 DROP POLICY IF EXISTS "Users can update own automation settings" ON public.user_automation_settings;
+;
+DROP POLICY IF EXISTS "Users can update own automation settings" ON public.user_automation_settings;
 CREATE POLICY "Users can update own automation settings" ON public.user_automation_settings
     FOR UPDATE TO authenticated
     USING (auth.uid() = user_id);
 
 -- Insert policy for user automation settings (so they can create it initially)
+DROP POLICY IF EXISTS "Users can insert own automation settings" ON public.user_automation_settings;
+;
 DROP POLICY IF EXISTS "Users can insert own automation settings" ON public.user_automation_settings;
 CREATE POLICY "Users can insert own automation settings" ON public.user_automation_settings
     FOR INSERT TO authenticated
@@ -7763,11 +8156,15 @@ CREATE POLICY "Users can insert own automation settings" ON public.user_automati
 
 -- Admins can manage automation rules
 DROP POLICY IF EXISTS "Admins can manage automation rules" ON public.automation_rules;
+;
+DROP POLICY IF EXISTS "Admins can manage automation rules" ON public.automation_rules;
 CREATE POLICY "Admins can manage automation rules" ON public.automation_rules
     FOR ALL TO authenticated
     USING (public.is_admin());
 
 -- Admins can view logs
+DROP POLICY IF EXISTS "Admins can view automation logs" ON public.automation_logs;
+;
 DROP POLICY IF EXISTS "Admins can view automation logs" ON public.automation_logs;
 CREATE POLICY "Admins can view automation logs" ON public.automation_logs
     FOR SELECT TO authenticated
@@ -7823,16 +8220,22 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 3. Attach Triggers
 DROP TRIGGER IF EXISTS tr_on_new_ticket ON public.support_tickets;
+;
+DROP TRIGGER IF EXISTS "tr_on_new_ticket" ON public.support_tickets;
 CREATE TRIGGER tr_on_new_ticket
 AFTER INSERT ON public.support_tickets
 FOR EACH ROW EXECUTE FUNCTION public.handle_automated_engagement_webhook();
 
 DROP TRIGGER IF EXISTS tr_on_payment_update ON public.payments;
+;
+DROP TRIGGER IF EXISTS "tr_on_payment_update" ON public.payments;
 CREATE TRIGGER tr_on_payment_update
 AFTER UPDATE ON public.payments
 FOR EACH ROW EXECUTE FUNCTION public.handle_automated_engagement_webhook();
 
 DROP TRIGGER IF EXISTS tr_on_new_contract ON public.contracts;
+;
+DROP TRIGGER IF EXISTS "tr_on_new_contract" ON public.contracts;
 CREATE TRIGGER tr_on_new_contract
 AFTER INSERT ON public.contracts
 FOR EACH ROW EXECUTE FUNCTION public.handle_automated_engagement_webhook();
@@ -7913,7 +8316,9 @@ CREATE TABLE IF NOT EXISTS public.storage_cleanup_queue (
 -- Enable RLS (Internal only, but good practice)
 ALTER TABLE public.storage_cleanup_queue ENABLE ROW LEVEL SECURITY;
 
--- 2. Create Trigger Function
+-- 2. ;
+DROP TRIGGER IF EXISTS "Function" ON public.queue_storage_cleanup;
+Create Trigger Function
 CREATE OR REPLACE FUNCTION public.queue_storage_cleanup()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -7928,6 +8333,8 @@ $$;
 
 -- 3. Attach Trigger to property_documents
 DROP TRIGGER IF EXISTS on_document_deleted_cleanup ON public.property_documents;
+;
+DROP TRIGGER IF EXISTS "on_document_deleted_cleanup" ON public.property_documents;
 CREATE TRIGGER on_document_deleted_cleanup
 AFTER DELETE ON public.property_documents
 FOR EACH ROW
@@ -7984,6 +8391,8 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 2. Ensure audit_logs is visible to admins
 DROP POLICY IF EXISTS "Admins can view all audit logs" ON public.audit_logs;
+;
+DROP POLICY IF EXISTS "Admins can view all audit logs" ON public.audit_logs;
 CREATE POLICY "Admins can view all audit logs"
     ON public.audit_logs FOR SELECT
     USING (EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin'));
@@ -8020,36 +8429,11 @@ CREATE TABLE IF NOT EXISTS index_bases (
 );
 
 -- 3. Seed Construction Inputs Index (Series 200010, Base 2011=100)
-INSERT INTO index_data (index_type, date, value, source)
-VALUES 
-    ('construction', '2025-01', 123.4, 'manual'),
-    ('construction', '2024-12', 123.0, 'manual'),
-    ('construction', '2024-11', 121.8, 'manual'),
-    ('construction', '2024-10', 121.5, 'manual'),
-    ('construction', '2024-09', 121.2, 'manual'),
-    ('construction', '2024-08', 121.0, 'manual')
-ON CONFLICT (index_type, date) DO UPDATE SET value = EXCLUDED.value;
-
+-- [Index Data Stripped]
 -- 4. Seed Housing Price Index (Series 40010)
-INSERT INTO index_data (index_type, date, value, source)
-VALUES 
-    ('housing', '2025-01', 105.5, 'manual'),
-    ('housing', '2024-12', 105.1, 'manual'),
-    ('housing', '2024-11', 104.8, 'manual'),
-    ('housing', '2024-10', 104.5, 'manual'),
-    ('housing', '2024-09', 104.2, 'manual'),
-    ('housing', '2024-08', 104.0, 'manual')
-ON CONFLICT (index_type, date) DO UPDATE SET value = EXCLUDED.value;
-
+-- [Index Data Stripped]
 -- 5. Seed Exchange Rates (USD/EUR)
-INSERT INTO index_data (index_type, date, value, source)
-VALUES 
-    ('usd', '2025-01', 3.73, 'manual'),
-    ('eur', '2025-01', 4.05, 'manual'),
-    ('usd', '2024-12', 3.70, 'manual'),
-    ('eur', '2024-12', 4.02, 'manual')
-ON CONFLICT (index_type, date) DO UPDATE SET value = EXCLUDED.value;
-
+-- [Index Data Stripped]
 -- 6. Insert Base Periods & Chain Factors
 INSERT INTO index_bases (index_type, base_period_start, base_value, chain_factor)
 VALUES 
@@ -8068,20 +8452,28 @@ ALTER TABLE index_bases ENABLE ROW LEVEL SECURITY;
 
 -- Allow all authenticated users to read
 DO $$ BEGIN
-    CREATE POLICY "Allow authenticated read index_data" ON index_data FOR SELECT TO authenticated USING (true);
+    ;
+DROP POLICY IF EXISTS "Allow authenticated read index_data" ON index_data;
+CREATE POLICY "Allow authenticated read index_data" ON index_data FOR SELECT TO authenticated USING (true);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-    CREATE POLICY "Allow authenticated read index_bases" ON index_bases FOR SELECT TO authenticated USING (true);
+    ;
+DROP POLICY IF EXISTS "Allow authenticated read index_bases" ON index_bases;
+CREATE POLICY "Allow authenticated read index_bases" ON index_bases FOR SELECT TO authenticated USING (true);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Allow service_role to manage (for Edge Functions)
 DO $$ BEGIN
-    CREATE POLICY "Allow full access for service_role index_data" ON index_data FOR ALL TO service_role USING (true) WITH CHECK (true);
+    ;
+DROP POLICY IF EXISTS "Allow full access for service_role index_data" ON index_data;
+CREATE POLICY "Allow full access for service_role index_data" ON index_data FOR ALL TO service_role USING (true) WITH CHECK (true);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-    CREATE POLICY "Allow full access for service_role index_bases" ON index_bases FOR ALL TO service_role USING (true) WITH CHECK (true);
+    ;
+DROP POLICY IF EXISTS "Allow full access for service_role index_bases" ON index_bases;
+CREATE POLICY "Allow full access for service_role index_bases" ON index_bases FOR ALL TO service_role USING (true) WITH CHECK (true);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 -- Migration: add_phone_to_profiles
 -- Description: Adds a phone column to user_profiles and updates handle_new_user trigger.
@@ -8093,7 +8485,7 @@ BEGIN
         SELECT 1 FROM information_schema.columns 
         WHERE table_name = 'user_profiles' AND column_name = 'phone'
     ) THEN
-        ALTER TABLE public.user_profiles ADD COLUMN phone TEXT;
+        ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS phone TEXT;
     END IF;
 END $$;
 
@@ -8173,7 +8565,7 @@ SELECT cron.schedule(
     $$
     SELECT
         net.http_post(
-            url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/fetch-index-data',
+            url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/fetch-index-data',
             headers := jsonb_build_object(
                 'Content-Type', 'application/json',
                 'Authorization', 'Bearer ' || current_setting('request.header.apikey', true)
@@ -18079,7 +18471,7 @@ CREATE INDEX IF NOT EXISTS idx_user_profiles_google_enabled ON user_profiles(goo
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contracts' AND column_name = 'rent_periods') THEN
-        ALTER TABLE public.contracts ADD COLUMN rent_periods JSONB DEFAULT '[]'::jsonb;
+        ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS rent_periods JSONB DEFAULT '[]'::jsonb;
     END IF;
 END $$;
 
@@ -18087,7 +18479,7 @@ END $$;
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contracts' AND column_name = 'option_periods') THEN
-        ALTER TABLE public.contracts ADD COLUMN option_periods JSONB DEFAULT '[]'::jsonb;
+        ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS option_periods JSONB DEFAULT '[]'::jsonb;
     END IF;
 END $$;
 
@@ -18095,7 +18487,7 @@ END $$;
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contracts' AND column_name = 'tenants') THEN
-        ALTER TABLE public.contracts ADD COLUMN tenants JSONB DEFAULT '[]'::jsonb;
+        ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS tenants JSONB DEFAULT '[]'::jsonb;
     END IF;
 END $$;
 
@@ -18131,6 +18523,8 @@ $$ LANGUAGE plpgsql;
 
 -- Re-apply trigger to ensure it uses the updated function
 DROP TRIGGER IF EXISTS trigger_update_property_status ON public.contracts;
+;
+DROP TRIGGER IF EXISTS "trigger_update_property_status" ON public.contracts;
 CREATE TRIGGER trigger_update_property_status
 AFTER INSERT OR UPDATE ON public.contracts
 FOR EACH ROW
@@ -18181,6 +18575,8 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- 2. Drop old triggers and apply new one
 DROP TRIGGER IF EXISTS trigger_update_property_status ON public.contracts;
 
+;
+DROP TRIGGER IF EXISTS "trigger_update_property_status" ON public.contracts;
 CREATE TRIGGER trigger_update_property_status
 AFTER INSERT OR UPDATE OR DELETE ON public.contracts
 FOR EACH ROW
@@ -18264,6 +18660,8 @@ CREATE TABLE IF NOT EXISTS chaining_factors (
 ALTER TABLE chaining_factors ENABLE ROW LEVEL SECURITY;
 
 -- Allow all authenticated users to read chaining factors
+;
+DROP POLICY IF EXISTS "Allow authenticated users to read chaining factors" ON chaining_factors;
 CREATE POLICY "Allow authenticated users to read chaining factors"
     ON chaining_factors
     FOR SELECT
@@ -18271,6 +18669,8 @@ CREATE POLICY "Allow authenticated users to read chaining factors"
     USING (true);
 
 -- Allow service role to manage chaining factors
+;
+DROP POLICY IF EXISTS "Allow service role to manage chaining factors" ON chaining_factors;
 CREATE POLICY "Allow service role to manage chaining factors"
     ON chaining_factors
     FOR ALL
@@ -18681,9 +19081,17 @@ DROP POLICY IF EXISTS "Users can update own payments" ON public.payments;
 DROP POLICY IF EXISTS "Users can delete own payments" ON public.payments;
 
 -- 2. Create strict ownership policies based on user_id
+;
+DROP POLICY IF EXISTS "Users can view own payments" ON public.payments;
 CREATE POLICY "Users can view own payments"   ON public.payments FOR SELECT USING (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can insert own payments" ON public.payments;
 CREATE POLICY "Users can insert own payments" ON public.payments FOR INSERT WITH CHECK (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can update own payments" ON public.payments;
 CREATE POLICY "Users can update own payments" ON public.payments FOR UPDATE USING (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can delete own payments" ON public.payments;
 CREATE POLICY "Users can delete own payments" ON public.payments FOR DELETE USING (user_id = auth.uid());
 
 -- 3. Ensure Admin view is still preserved (if admin_god_mode_rls was applied)
@@ -18691,7 +19099,9 @@ DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'is_admin') THEN
         DROP POLICY IF EXISTS "Admins view all payments" ON public.payments;
-        CREATE POLICY "Admins view all payments" 
+        ;
+DROP POLICY IF EXISTS "Admins view all payments" ON public.payments;
+CREATE POLICY "Admins view all payments" 
             ON public.payments FOR SELECT 
             USING (public.is_admin());
     END IF;
@@ -18718,6 +19128,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS tr_contracts_updated_at ON public.contracts;
+;
+DROP TRIGGER IF EXISTS "tr_contracts_updated_at" ON public.contracts;
 CREATE TRIGGER tr_contracts_updated_at
     BEFORE UPDATE ON public.contracts
     FOR EACH ROW
@@ -18878,6 +19290,8 @@ $$;
 
 -- 4. Re-attach Main Trigger
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+;
+DROP TRIGGER IF EXISTS "on_auth_user_created" ON auth.users;
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
@@ -18896,6 +19310,8 @@ DROP POLICY IF EXISTS "Admins can update plans" ON subscription_plans;
 DROP POLICY IF EXISTS "Admins can delete plans" ON subscription_plans;
 
 -- INSERT: Only admins
+;
+DROP POLICY IF EXISTS "Admins can insert plans" ON subscription_plans;
 CREATE POLICY "Admins can insert plans"
     ON subscription_plans FOR INSERT
     WITH CHECK (
@@ -18907,6 +19323,8 @@ CREATE POLICY "Admins can insert plans"
     );
 
 -- UPDATE: Only admins
+;
+DROP POLICY IF EXISTS "Admins can update plans" ON subscription_plans;
 CREATE POLICY "Admins can update plans"
     ON subscription_plans FOR UPDATE
     USING (
@@ -18925,6 +19343,8 @@ CREATE POLICY "Admins can update plans"
     );
 
 -- DELETE: Only admins
+;
+DROP POLICY IF EXISTS "Admins can delete plans" ON subscription_plans;
 CREATE POLICY "Admins can delete plans"
     ON subscription_plans FOR DELETE
     USING (
@@ -18960,15 +19380,21 @@ DROP POLICY IF EXISTS "Admins can update plans" ON subscription_plans;
 DROP POLICY IF EXISTS "Admins can delete plans" ON subscription_plans;
 
 -- 3. Create new policies using is_admin() helper
+;
+DROP POLICY IF EXISTS "Admins can insert plans" ON subscription_plans;
 CREATE POLICY "Admins can insert plans"
     ON subscription_plans FOR INSERT
     WITH CHECK (public.is_admin());
 
+;
+DROP POLICY IF EXISTS "Admins can update plans" ON subscription_plans;
 CREATE POLICY "Admins can update plans"
     ON subscription_plans FOR UPDATE
     USING (public.is_admin())
     WITH CHECK (public.is_admin());
 
+;
+DROP POLICY IF EXISTS "Admins can delete plans" ON subscription_plans;
 CREATE POLICY "Admins can delete plans"
     ON subscription_plans FOR DELETE
     USING (public.is_admin());
@@ -19093,7 +19519,7 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $$;
 -- Migration: Create rental market data table and update user preferences
--- Create table for rental market trends
+-- CREATE TABLE IF NOT EXISTS for rental market trends
 CREATE TABLE IF NOT EXISTS public.rental_market_data (
     region_name TEXT PRIMARY KEY,
     avg_rent NUMERIC NOT NULL,
@@ -19111,6 +19537,8 @@ CREATE TABLE IF NOT EXISTS public.rental_market_data (
 ALTER TABLE public.rental_market_data ENABLE ROW LEVEL SECURITY;
 
 -- Allow public read access to market data
+;
+DROP POLICY IF EXISTS "Allow public read access to rental market data" ON public.rental_market_data;
 CREATE POLICY "Allow public read access to rental market data"
     ON public.rental_market_data
     FOR SELECT
@@ -19121,7 +19549,7 @@ CREATE POLICY "Allow public read access to rental market data"
 DO $$ 
 BEGIN 
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_preferences' AND column_name = 'pinned_cities') THEN
-        ALTER TABLE public.user_preferences ADD COLUMN pinned_cities JSONB DEFAULT '[]'::jsonb;
+        ALTER TABLE public.user_preferences ADD COLUMN IF NOT EXISTS pinned_cities JSONB DEFAULT '[]'::jsonb;
     END IF;
 END $$;
 
@@ -19332,7 +19760,7 @@ SELECT cron.schedule(
 
 -- 2. Ensure the keys exist as fallbacks in system_settings if they aren't there
 INSERT INTO public.system_settings (key, value, description)
-SELECT 'supabase_project_ref', '"qfvrekvugdjnwhnaucmz"'::jsonb, 'Supabase Project Reference'
+SELECT 'supabase_project_ref', '"tipnjnfbbnbskdlodrww"'::jsonb, 'Supabase Project Reference'
 WHERE NOT EXISTS (SELECT 1 FROM public.system_settings WHERE key = 'supabase_project_ref');
 
 INSERT INTO public.system_settings (key, value, description)
@@ -19396,7 +19824,7 @@ SELECT cron.schedule(
 -- 4. Sync configuration in system_settings
 INSERT INTO public.system_settings (key, value, description)
 VALUES 
-    ('supabase_project_ref', '"qfvrekvugdjnwhnaucmz"', 'Supabase Project Reference'),
+    ('supabase_project_ref', '"tipnjnfbbnbskdlodrww"', 'Supabase Project Reference'),
     ('admin_email_daily_summary_enabled', 'true'::jsonb, 'Master toggle for daily admin summary email')
 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
 
@@ -19716,6 +20144,8 @@ NOTIFY pgrst, 'reload schema';
 -- Only Super Admins can read the full settings. Regular users see nothing (unless we specificy public keys).
 DROP POLICY IF EXISTS "Everyone can read system settings" ON public.system_settings;
 DROP POLICY IF EXISTS "Admins can read system settings" ON public.system_settings;
+;
+DROP POLICY IF EXISTS "Admins can read system settings" ON public.system_settings;
 CREATE POLICY "Admins can read system settings" ON public.system_settings
     FOR SELECT
     USING (public.is_admin());
@@ -19739,6 +20169,8 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS tr_on_role_change ON public.user_profiles;
+;
+DROP TRIGGER IF EXISTS "tr_on_role_change" ON public.user_profiles;
 CREATE TRIGGER tr_on_role_change
     BEFORE UPDATE ON public.user_profiles
     FOR EACH ROW
@@ -19769,6 +20201,8 @@ WHERE id = 'secure_documents';
 
 -- 4. Apply strict RLS for 'contracts' bucket matching 'secure_documents' pattern
 DROP POLICY IF EXISTS "Users view own contracts" ON storage.objects;
+;
+DROP POLICY IF EXISTS "Users view own contracts" ON storage.objects;
 CREATE POLICY "Users view own contracts"
     ON storage.objects
     FOR SELECT
@@ -19778,6 +20212,8 @@ CREATE POLICY "Users view own contracts"
         (storage.foldername(name))[1] = auth.uid()::text
     );
 
+DROP POLICY IF EXISTS "Users upload own contracts" ON storage.objects;
+;
 DROP POLICY IF EXISTS "Users upload own contracts" ON storage.objects;
 CREATE POLICY "Users upload own contracts"
     ON storage.objects
@@ -19792,6 +20228,8 @@ CREATE POLICY "Users upload own contracts"
 
 -- 5. Repeat for 'property_images'
 DROP POLICY IF EXISTS "Users view own images" ON storage.objects;
+;
+DROP POLICY IF EXISTS "Users view own images" ON storage.objects;
 CREATE POLICY "Users view own images"
     ON storage.objects
     FOR SELECT
@@ -19801,6 +20239,8 @@ CREATE POLICY "Users view own images"
         (storage.foldername(name))[1] = auth.uid()::text
     );
 
+DROP POLICY IF EXISTS "Users upload own images" ON storage.objects;
+;
 DROP POLICY IF EXISTS "Users upload own images" ON storage.objects;
 CREATE POLICY "Users upload own images"
     ON storage.objects
@@ -19824,7 +20264,9 @@ DO $$ BEGIN
     IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'feedback') THEN
         ALTER TABLE public.feedback ENABLE ROW LEVEL SECURITY;
         DROP POLICY IF EXISTS "Users can view own feedback" ON public.feedback;
-        CREATE POLICY "Users can view own feedback" ON public.feedback
+        ;
+DROP POLICY IF EXISTS "Users can view own feedback" ON public.feedback;
+CREATE POLICY "Users can view own feedback" ON public.feedback
             FOR SELECT USING (auth.uid() = user_id OR public.is_admin());
         -- Anyone can still insert (even guests) per current business logic if user_id is null
         -- but if user_id is set, it becomes owned.
@@ -19837,7 +20279,9 @@ DO $$ BEGIN
         ALTER TABLE public.ai_conversations ENABLE ROW LEVEL SECURITY;
         DROP POLICY IF EXISTS "Users can manage their own conversations" ON public.ai_conversations;
         DROP POLICY IF EXISTS "Users can view own AI conversations" ON public.ai_conversations;
-        CREATE POLICY "Users can view own AI conversations" ON public.ai_conversations
+        ;
+DROP POLICY IF EXISTS "Users can view own AI conversations" ON public.ai_conversations;
+CREATE POLICY "Users can view own AI conversations" ON public.ai_conversations
             FOR ALL USING (auth.uid() = user_id OR public.is_admin());
     END IF;
 END $$;
@@ -19847,7 +20291,9 @@ DO $$ BEGIN
     IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'invoices') THEN
         ALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;
         DROP POLICY IF EXISTS "Users can view own invoices" ON public.invoices;
-        CREATE POLICY "Users can view own invoices" ON public.invoices
+        ;
+DROP POLICY IF EXISTS "Users can view own invoices" ON public.invoices;
+CREATE POLICY "Users can view own invoices" ON public.invoices
             FOR SELECT USING (auth.uid() = user_id OR public.is_admin());
     END IF;
 END $$;
@@ -19857,7 +20303,9 @@ DO $$ BEGIN
     IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'user_preferences') THEN
         ALTER TABLE public.user_preferences ENABLE ROW LEVEL SECURITY;
         DROP POLICY IF EXISTS "Users can manage own preferences" ON public.user_preferences;
-        CREATE POLICY "Users can manage own preferences" ON public.user_preferences
+        ;
+DROP POLICY IF EXISTS "Users can manage own preferences" ON public.user_preferences;
+CREATE POLICY "Users can manage own preferences" ON public.user_preferences
             FOR ALL USING (auth.uid() = user_id OR public.is_admin());
     END IF;
 END $$;
@@ -19867,7 +20315,9 @@ DO $$ BEGIN
     IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'audit_logs') THEN
         ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
         DROP POLICY IF EXISTS "Admins can view all audit logs" ON public.audit_logs;
-        CREATE POLICY "Admins can view all audit logs" ON public.audit_logs
+        ;
+DROP POLICY IF EXISTS "Admins can view all audit logs" ON public.audit_logs;
+CREATE POLICY "Admins can view all audit logs" ON public.audit_logs
             FOR SELECT USING (public.is_admin());
     END IF;
 END $$;
@@ -19878,7 +20328,9 @@ DO $$ BEGIN
         ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
         DROP POLICY IF EXISTS "Users can view their own notifications" ON public.notifications;
         DROP POLICY IF EXISTS "Users can manage own notifications" ON public.notifications;
-        CREATE POLICY "Users can manage own notifications" ON public.notifications
+        ;
+DROP POLICY IF EXISTS "Users can manage own notifications" ON public.notifications;
+CREATE POLICY "Users can manage own notifications" ON public.notifications
             FOR ALL USING (auth.uid() = user_id OR public.is_admin());
     END IF;
 END $$;
@@ -19888,7 +20340,9 @@ DO $$ BEGIN
     IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'user_storage_usage') THEN
         ALTER TABLE public.user_storage_usage ENABLE ROW LEVEL SECURITY;
         DROP POLICY IF EXISTS "Users can view own storage usage" ON public.user_storage_usage;
-        CREATE POLICY "Users can view own storage usage" ON public.user_storage_usage
+        ;
+DROP POLICY IF EXISTS "Users can view own storage usage" ON public.user_storage_usage;
+CREATE POLICY "Users can view own storage usage" ON public.user_storage_usage
             FOR SELECT USING (auth.uid() = user_id OR public.is_admin());
     END IF;
 END $$;
@@ -19898,7 +20352,9 @@ DO $$ BEGIN
     IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'whatsapp_conversations') THEN
         ALTER TABLE public.whatsapp_conversations ENABLE ROW LEVEL SECURITY;
         DROP POLICY IF EXISTS "Users can view own whatsapp" ON public.whatsapp_conversations;
-        CREATE POLICY "Users can view own whatsapp" ON public.whatsapp_conversations
+        ;
+DROP POLICY IF EXISTS "Users can view own whatsapp" ON public.whatsapp_conversations;
+CREATE POLICY "Users can view own whatsapp" ON public.whatsapp_conversations
             FOR SELECT USING (auth.uid() = user_id OR public.is_admin());
     END IF;
 END $$;
@@ -19908,7 +20364,9 @@ DO $$ BEGIN
     IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'whatsapp_messages') THEN
         ALTER TABLE public.whatsapp_messages ENABLE ROW LEVEL SECURITY;
         DROP POLICY IF EXISTS "Users can view own whatsapp messages" ON public.whatsapp_messages;
-        CREATE POLICY "Users can view own whatsapp messages" ON public.whatsapp_messages
+        ;
+DROP POLICY IF EXISTS "Users can view own whatsapp messages" ON public.whatsapp_messages;
+CREATE POLICY "Users can view own whatsapp messages" ON public.whatsapp_messages
             FOR SELECT USING (
                 EXISTS (
                     SELECT 1 FROM public.whatsapp_conversations c
@@ -19925,11 +20383,15 @@ DO $$ BEGIN
     IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'user_profiles') THEN
         ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
         DROP POLICY IF EXISTS "Users can view own profile" ON public.user_profiles;
-        CREATE POLICY "Users can view own profile" ON public.user_profiles
+        ;
+DROP POLICY IF EXISTS "Users can view own profile" ON public.user_profiles;
+CREATE POLICY "Users can view own profile" ON public.user_profiles
             FOR SELECT USING (auth.uid() = id OR public.is_admin());
             
         DROP POLICY IF EXISTS "Users can update own profile" ON public.user_profiles;
-        CREATE POLICY "Users can update own profile" ON public.user_profiles
+        ;
+DROP POLICY IF EXISTS "Users can update own profile" ON public.user_profiles;
+CREATE POLICY "Users can update own profile" ON public.user_profiles
             FOR UPDATE USING (auth.uid() = id)
             WITH CHECK (auth.uid() = id);
     END IF;
@@ -19956,6 +20418,8 @@ DROP POLICY IF EXISTS "Anyone can upload feedback screenshots" ON storage.object
 
 -- 3. APPLY OWNER-ONLY FEEDBACK POLICIES
 -- Path naming: feedback-screenshots/{user_id}/{filename}
+;
+DROP POLICY IF EXISTS "Users can upload own feedback screenshots" ON storage.objects;
 CREATE POLICY "Users can upload own feedback screenshots"
     ON storage.objects FOR INSERT
     WITH CHECK (
@@ -19964,6 +20428,8 @@ CREATE POLICY "Users can upload own feedback screenshots"
         (storage.foldername(name))[1] = auth.uid()::text
     );
 
+;
+DROP POLICY IF EXISTS "Users can view own feedback screenshots" ON storage.objects;
 CREATE POLICY "Users can view own feedback screenshots"
     ON storage.objects FOR SELECT
     USING (
@@ -19977,11 +20443,15 @@ UPDATE storage.buckets SET public = false WHERE id IN ('contracts', 'property_im
 
 -- 5. STANDARDIZE POLICY NAMES FOR AUDITABILITY
 DROP POLICY IF EXISTS "Users view own contracts" ON storage.objects;
+;
+DROP POLICY IF EXISTS "Secure Access: Contracts" ON storage.objects;
 CREATE POLICY "Secure Access: Contracts"
     ON storage.objects FOR SELECT
     USING (bucket_id = 'contracts' AND (storage.foldername(name))[1] = auth.uid()::text);
 
 DROP POLICY IF EXISTS "Users view own images" ON storage.objects;
+;
+DROP POLICY IF EXISTS "Secure Access: Property Images" ON storage.objects;
 CREATE POLICY "Secure Access: Property Images"
     ON storage.objects FOR SELECT
     USING (bucket_id = 'property_images' AND (storage.foldername(name))[1] = auth.uid()::text);
@@ -20031,10 +20501,14 @@ ALTER TABLE public.whatsapp_usage_logs ENABLE ROW LEVEL SECURITY;
 CREATE INDEX IF NOT EXISTS idx_whatsapp_usage_user_date ON public.whatsapp_usage_logs (user_id, created_at);
 
 -- Policies
+;
+DROP POLICY IF EXISTS "Users can view their own whatsapp usage logs" ON public.whatsapp_usage_logs;
 CREATE POLICY "Users can view their own whatsapp usage logs"
     ON public.whatsapp_usage_logs FOR SELECT
     USING (auth.uid() = user_id OR public.is_admin());
 
+;
+DROP POLICY IF EXISTS "Admins can manage all usage logs" ON public.whatsapp_usage_logs;
 CREATE POLICY "Admins can manage all usage logs"
     ON public.whatsapp_usage_logs FOR ALL
     USING (public.is_admin());
@@ -20170,11 +20644,15 @@ EXCEPTION
         RAISE EXCEPTION 'Signup Failed: %', SQLERRM;
 END;
 $$;
--- Create Trigger for User Profile Updates
+-- ;
+DROP TRIGGER IF EXISTS "for" ON public.user_profiles;
+Create Trigger for User Profile Updates
 -- This attaches the user_profiles table to the existing automated engagement webhook system
 
 DROP TRIGGER IF EXISTS tr_on_user_profile_update ON public.user_profiles;
 
+;
+DROP TRIGGER IF EXISTS "tr_on_user_profile_update" ON public.user_profiles;
 CREATE TRIGGER tr_on_user_profile_update
 AFTER UPDATE ON public.user_profiles
 FOR EACH ROW
@@ -20202,6 +20680,8 @@ WHERE id = 'property-images';
 
 -- 3. APPLY CONSOLIDATED RLS TO 'property-images'
 -- Handles both direct user uploads and Google Maps imports
+;
+DROP POLICY IF EXISTS "Secure Access: Property Images" ON storage.objects;
 CREATE POLICY "Secure Access: Property Images"
     ON storage.objects
     FOR ALL
@@ -20252,6 +20732,8 @@ DROP POLICY IF EXISTS "Google imports ownership" ON storage.objects;
 UPDATE storage.buckets SET public = false WHERE id = 'property-images';
 
 -- 3. Policy for manual uploads: {userId}/{fileName}
+;
+DROP POLICY IF EXISTS "Manual uploads ownership" ON storage.objects;
 CREATE POLICY "Manual uploads ownership"
 ON storage.objects FOR ALL
 TO authenticated
@@ -20265,6 +20747,8 @@ WITH CHECK (
 );
 
 -- 4. Policy for Google imports: google-imports/{userId}/{fileName}
+;
+DROP POLICY IF EXISTS "Google imports ownership" ON storage.objects;
 CREATE POLICY "Google imports ownership"
 ON storage.objects FOR ALL
 TO authenticated
@@ -20289,6 +20773,8 @@ NOTIFY pgrst, 'reload schema';
 -- Drop existing policy if it exists (to avoid conflicts)
 DROP POLICY IF EXISTS "Allow public read access to index_data" ON index_data;
 
+;
+DROP POLICY IF EXISTS "Allow public read access to index_data" ON index_data;
 CREATE POLICY "Allow public read access to index_data"
 ON index_data
 FOR SELECT
@@ -20300,6 +20786,8 @@ ALTER TABLE index_bases ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Allow public read access to index_bases" ON index_bases;
 
+;
+DROP POLICY IF EXISTS "Allow public read access to index_bases" ON index_bases;
 CREATE POLICY "Allow public read access to index_bases"
 ON index_bases
 FOR SELECT
@@ -20309,6 +20797,8 @@ USING (true);
 -- Ensure authenticated users can still read (in case previous logic relied on default open access for bases)
 DROP POLICY IF EXISTS "Allow authenticated users to read index_bases" ON index_bases;
 
+;
+DROP POLICY IF EXISTS "Allow authenticated users to read index_bases" ON index_bases;
 CREATE POLICY "Allow authenticated users to read index_bases"
 ON index_bases
 FOR SELECT
@@ -20334,10 +20824,14 @@ ALTER TABLE public.error_logs ENABLE ROW LEVEL SECURITY;
 -- Policies
 -- 1. Anyone (even unauthenticated) can insert logs (so we catch 404s/auth errors)
 DROP POLICY IF EXISTS "Allow anonymous inserts to error_logs" ON public.error_logs;
+;
+DROP POLICY IF EXISTS "Allow anonymous inserts to error_logs" ON public.error_logs;
 CREATE POLICY "Allow anonymous inserts to error_logs" ON public.error_logs
     FOR INSERT WITH CHECK (true);
 
 -- 2. Only admins can view logs
+DROP POLICY IF EXISTS "Allow admins to view error_logs" ON public.error_logs;
+;
 DROP POLICY IF EXISTS "Allow admins to view error_logs" ON public.error_logs;
 CREATE POLICY "Allow admins to view error_logs" ON public.error_logs
     FOR SELECT TO authenticated
@@ -20350,6 +20844,8 @@ CREATE POLICY "Allow admins to view error_logs" ON public.error_logs
     );
 
 -- 3. Only admins can update logs (mark as resolved)
+DROP POLICY IF EXISTS "Allow admins to update error_logs" ON public.error_logs;
+;
 DROP POLICY IF EXISTS "Allow admins to update error_logs" ON public.error_logs;
 CREATE POLICY "Allow admins to update error_logs" ON public.error_logs
     FOR UPDATE TO authenticated
@@ -20368,7 +20864,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-    project_url text := 'https://qfvrekvugdjnwhnaucmz.supabase.co';
+    project_url text := 'https://tipnjnfbbnbskdlodrww.supabase.co';
 BEGIN
     PERFORM
       net.http_post(
@@ -20388,6 +20884,8 @@ END;
 $$;
 
 DROP TRIGGER IF EXISTS on_error_log_inserted ON public.error_logs;
+;
+DROP TRIGGER IF EXISTS "on_error_log_inserted" ON public.error_logs;
 CREATE TRIGGER on_error_log_inserted
     AFTER INSERT ON public.error_logs
     FOR EACH ROW
@@ -20499,7 +20997,9 @@ BEGIN
         SELECT 1 FROM pg_policies 
         WHERE tablename = 'analytics_events' AND policyname = 'Admins can read all analytics'
     ) THEN
-        CREATE POLICY "Admins can read all analytics" ON public.analytics_events
+        ;
+DROP POLICY IF EXISTS "Admins can read all analytics" ON public.analytics_events;
+CREATE POLICY "Admins can read all analytics" ON public.analytics_events
             FOR SELECT
             TO authenticated
             USING (
@@ -20515,7 +21015,9 @@ BEGIN
         SELECT 1 FROM pg_policies 
         WHERE tablename = 'analytics_events' AND policyname = 'Users can log their own events'
     ) THEN
-        CREATE POLICY "Users can log their own events" ON public.analytics_events
+        ;
+DROP POLICY IF EXISTS "Users can log their own events" ON public.analytics_events;
+CREATE POLICY "Users can log their own events" ON public.analytics_events
             FOR INSERT
             TO authenticated
             WITH CHECK (auth.uid() = user_id);
@@ -20620,11 +21122,15 @@ CREATE INDEX IF NOT EXISTS idx_security_logs_created_at ON public.security_logs(
 DO $$ 
 BEGIN
     DROP POLICY IF EXISTS "Admins can view security logs" ON public.security_logs;
-    CREATE POLICY "Admins can view security logs"
+    ;
+DROP POLICY IF EXISTS "Admins can view security logs" ON public.security_logs;
+CREATE POLICY "Admins can view security logs"
         ON public.security_logs FOR SELECT
         USING (public.is_admin());
 EXCEPTION WHEN OTHERS THEN
-    CREATE POLICY "Admins can view security logs"
+    ;
+DROP POLICY IF EXISTS "Admins can view security logs" ON public.security_logs;
+CREATE POLICY "Admins can view security logs"
         ON public.security_logs FOR SELECT
         USING (EXISTS (SELECT 1 FROM public.user_profiles WHERE id = auth.uid() AND role = 'admin'));
 END $$;
@@ -20831,7 +21337,7 @@ DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_preferences' AND column_name = 'disclaimer_accepted') THEN
         ALTER TABLE user_preferences 
-        ADD COLUMN disclaimer_accepted BOOLEAN DEFAULT false;
+        ADD COLUMN IF NOT EXISTS disclaimer_accepted BOOLEAN DEFAULT false;
     END IF;
 END $$;
 -- ============================================
@@ -20950,6 +21456,8 @@ ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users can only see their own payments" ON public.payments;
 
 -- Create RLS Policy
+;
+DROP POLICY IF EXISTS "Users can only see their own payments" ON public.payments;
 CREATE POLICY "Users can only see their own payments" 
 ON public.payments 
 FOR ALL 
@@ -20968,12 +21476,16 @@ CREATE TABLE IF NOT EXISTS public.debug_logs (
 -- Enable RLS but allow service role to insert
 ALTER TABLE public.debug_logs ENABLE ROW LEVEL SECURITY;
 
+;
+DROP POLICY IF EXISTS "Allow service role to insert debug logs" ON public.debug_logs;
 CREATE POLICY "Allow service role to insert debug logs"
     ON public.debug_logs
     FOR INSERT
     TO service_role
     WITH CHECK (true);
 
+;
+DROP POLICY IF EXISTS "Allow service role to select debug logs" ON public.debug_logs;
 CREATE POLICY "Allow service role to select debug logs"
     ON public.debug_logs
     FOR SELECT

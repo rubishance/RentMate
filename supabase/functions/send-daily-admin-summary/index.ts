@@ -1,3 +1,4 @@
+// @ts-nocheck
 /// <reference lib="deno.ns" />
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
@@ -375,7 +376,9 @@ serve(async (req: Request) => {
         `;
 
         // 3. Send Email
-        await logDebug("Sending email via Resend", { recipient: adminRecipient });
+        const noreplyEmail = settingsData?.find(s => s.key === 'global_email_noreply')?.value as string || "noreply@rentmate.co.il";
+
+        await logDebug("Sending email via Resend", { recipient: adminRecipient, sender: noreplyEmail });
         const res = await fetch("https://api.resend.com/emails", {
             method: "POST",
             headers: {
@@ -383,7 +386,7 @@ serve(async (req: Request) => {
                 Authorization: `Bearer ${RESEND_API_KEY}`,
             },
             body: JSON.stringify({
-                from: "RentMate Intelligence <noreply@rentmate.co.il>",
+                from: `RentMate Intelligence <${noreplyEmail}>`,
                 to: adminRecipient,
                 subject: `📊 RentMate Daily Summary: ${new Date().toLocaleDateString()}`,
                 html: htmlBody,

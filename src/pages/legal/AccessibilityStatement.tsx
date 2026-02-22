@@ -2,8 +2,34 @@ import React from 'react';
 import { PageHeader } from '../../components/common/PageHeader';
 import { GlassCard } from '../../components/common/GlassCard';
 import { Badge } from '../../components/ui/Badge';
+import { supabase } from '../../lib/supabase';
 
 export default function AccessibilityStatement() {
+    const [contactInfo, setContactInfo] = React.useState({
+        email: 'support@rentmate.co.il',
+        phone: '+972-50-3602000'
+    });
+
+    React.useEffect(() => {
+        async function fetchContactInfo() {
+            const { data } = await supabase
+                .from('system_settings')
+                .select('key, value')
+                .in('key', ['global_email_support', 'global_phone_support']);
+
+            if (data) {
+                const email = data.find(s => s.key === 'global_email_support')?.value as string;
+                const phone = data.find(s => s.key === 'global_phone_support')?.value as string;
+
+                setContactInfo({
+                    email: email || 'support@rentmate.co.il',
+                    phone: phone || '+972-50-3602000'
+                });
+            }
+        }
+        fetchContactInfo();
+    }, []);
+
     return (
         <div className="pb-20">
             <PageHeader
@@ -48,8 +74,8 @@ export default function AccessibilityStatement() {
                             <p className="font-semibold">פרטי רכז הנגישות:</p>
                             <ul className="list-none space-y-1 mt-2">
                                 <li>שם: צוות התמיכה</li>
-                                <li>אימייל: <a href="mailto:support@rentmate.co.il" className="text-brand-primary hover:underline">support@rentmate.co.il</a></li>
-                                <li>טלפון: <a href="tel:+972503602000" className="text-brand-primary hover:underline">+972-50-3602000</a></li>
+                                <li>אימייל: <a href={`mailto:${contactInfo.email}`} className="text-brand-primary hover:underline">{contactInfo.email}</a></li>
+                                <li>טלפון: <a href={`tel:${contactInfo.phone.replace(/[^0-9+]/g, '')}`} className="text-brand-primary hover:underline">{contactInfo.phone}</a></li>
                             </ul>
                         </div>
 

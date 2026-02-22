@@ -1,8 +1,38 @@
 # RentMate Deployment & Verification Protocol
 
-> 🚨 **CRITICAL RULE**: Every deployment (whether code push or manual deploy) **MUST** be followed by immediate verification and a status update to the user.
+> 🚨 **CRITICAL RULE**: Every significant change **MUST** be verified in the **Staging Environment** before being promoted to Production.
 
-## 1. Frontend / General Deployment (Netlify)
+## 0. Development & Staging Flow (The "Staging-First" Protocol)
+
+All changes follow this pipeline:
+1.  **Draft**: Propose via `implementation_plan.md`.
+2.  **Dev**: Implement and test locally.
+3.  **Stage**: Push to a feature branch to trigger a **Netlify Deploy Preview** or use the `staging` branch.
+4.  **Verify**: Test against the **RentMate TESTS** Supabase project.
+5.  **Ship**: Merge verified code to `main` for production.
+
+---
+
+## 1. Staging Environment (RentMate TESTS)
+
+Use this environment for all testing. It is isolated from production data.
+
+### Configuration (Netlify/Local)
+*   **VITE_SUPABASE_URL**: `https://tipnjnfbbnbskdlodrww.supabase.co`
+*   **VITE_SUPABASE_ANON_KEY**: `sb_publishable_u9pM6kMV9vqsEVgW4B617A_DAkpiEmT`
+*   **VITE_ENVIRONMENT**: `staging`
+
+### Deployment to Staging
+*   **Frontend**: Pushing to any non-`main` branch triggers a Deploy Preview. Merging to `staging` branch (if exists) is also an option.
+*   **Backend**: Use the `RentMate TESTS` project ID (`tipnjnfbbnbskdlodrww`) for CLI commands:
+    ```bash
+    supabase link --project-ref tipnjnfbbnbskdlodrww
+    supabase functions deploy <function-name>
+    ```
+
+---
+
+## 2. Frontend / General Deployment (Netlify Production)
 
 The frontend deploys automatically via Git Push to `main`.
 
@@ -26,7 +56,7 @@ The frontend deploys automatically via Git Push to `main`.
 
 ---
 
-## 2. Backend: Edge Functions & Cron Jobs (Index Updates)
+## 3. Backend: Edge Functions & Cron Jobs (Production)
 
 ### Prerequisites
 - [ ] Supabase CLI installed (`npm install -g supabase`)

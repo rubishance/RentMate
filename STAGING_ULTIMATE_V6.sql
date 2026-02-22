@@ -1,4 +1,22 @@
-﻿-- ============================================
+-- ============================================
+-- RENTMATE GOLDEN SNAPSHOT (CLEAN BASELINE)
+-- ============================================
+-- This script sets up the final target structure of the database.
+-- It skips migration history and focuses on the CURRENT state.
+
+-- PRE-FLIGHT: ENSURE CRITICAL COLUMNS EXIST BEFORE ANY INSERTS
+DO $$ 
+BEGIN
+    ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS first_name TEXT;
+    ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS last_name TEXT;
+    ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS phone TEXT;
+    ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS marketing_consent BOOLEAN DEFAULT FALSE;
+    ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS marketing_consent_at TIMESTAMPTZ;
+    ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+    ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS plan_id TEXT;
+EXCEPTION WHEN OTHERS THEN NULL; END $$;
+
+-- ============================================
 -- FOUNDATION: CORE TABLES AND EXTENSIONS
 -- ============================================
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -6,65 +24,65 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- USER PROFILES (The Pivot)
 CREATE TABLE IF NOT EXISTS public.user_profiles (
-    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    email TEXT,
-    full_name TEXT,
-    role TEXT DEFAULT 'user',
-    subscription_status TEXT DEFAULT 'active',
-    subscription_plan TEXT DEFAULT 'free_forever',
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     email TEXT,
+-- [SCRUBBED GARBAGE]     full_name TEXT,
+-- [SCRUBBED GARBAGE]     role TEXT DEFAULT 'user',
+-- [SCRUBBED GARBAGE]     subscription_status TEXT DEFAULT 'active',
+-- [SCRUBBED GARBAGE]     subscription_plan TEXT DEFAULT 'free_forever',
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- PROPERTIES
 CREATE TABLE IF NOT EXISTS public.properties (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE,
-    title TEXT,
-    address TEXT,
-    city TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+-- [SCRUBBED GARBAGE]     user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     title TEXT,
+-- [SCRUBBED GARBAGE]     address TEXT,
+-- [SCRUBBED GARBAGE]     city TEXT,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- TENANTS
 CREATE TABLE IF NOT EXISTS public.tenants (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE,
-    name TEXT,
-    email TEXT,
-    phone TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+-- [SCRUBBED GARBAGE]     user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     name TEXT,
+-- [SCRUBBED GARBAGE]     email TEXT,
+-- [SCRUBBED GARBAGE]     phone TEXT,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- CONTRACTS
 CREATE TABLE IF NOT EXISTS public.contracts (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE,
-    property_id UUID REFERENCES public.properties(id) ON DELETE CASCADE,
-    tenant_id UUID REFERENCES public.tenants(id) ON DELETE CASCADE,
-    start_date DATE,
-    end_date DATE,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+-- [SCRUBBED GARBAGE]     user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     property_id UUID REFERENCES public.properties(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     tenant_id UUID REFERENCES public.tenants(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     start_date DATE,
+-- [SCRUBBED GARBAGE]     end_date DATE,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Add extraction fields to contracts table
 ALTER TABLE contracts 
-ADD COLUMN IF NOT EXISTS guarantors_info TEXT, -- Summarized text of all guarantors
-ADD COLUMN IF NOT EXISTS special_clauses TEXT; -- Summarized text of special clauses
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS guarantors_info TEXT, -- Summarized text of all guarantors
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS special_clauses TEXT; -- Summarized text of special clauses
 
 -- Update RLS if needed (usually unrelated to column addition, but good practice to verify)
 -- Existing policies should cover these new columns automatically if they are SELECT * / INSERT / UPDATE
 -- Trigger: Notify on Contract Status Change
 
 CREATE OR REPLACE FUNCTION public.notify_contract_status_change()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    property_address text;
-    notification_title text;
-    notification_body text;
+-- [SCRUBBED GARBAGE]     property_address text;
+-- [SCRUBBED GARBAGE]     notification_title text;
+-- [SCRUBBED GARBAGE]     notification_body text;
 BEGIN
     -- Only proceed if status changed
     IF OLD.status IS NOT DISTINCT FROM NEW.status THEN
@@ -73,21 +91,21 @@ BEGIN
 
     -- Fetch property address
     SELECT city || ', ' || address INTO property_address
-    FROM public.properties
-    WHERE id = NEW.property_id;
+-- [SCRUBBED GARBAGE]     FROM public.properties
+-- [SCRUBBED GARBAGE]     WHERE id = NEW.property_id;
 
     -- Determine message
-    notification_title := 'Contract Status Updated';
-    notification_body := format('Contract for %s is now %s.', property_address, NEW.status);
+-- [SCRUBBED GARBAGE]     notification_title := 'Contract Status Updated';
+-- [SCRUBBED GARBAGE]     notification_body := format('Contract for %s is now %s.', property_address, NEW.status);
 
     -- Insert Notification
     INSERT INTO public.notifications (user_id, type, title, message, metadata)
     VALUES (
-        NEW.user_id,
+-- [SCRUBBED GARBAGE]         NEW.user_id,
         'info', -- Status change is informational/important but not necessarily a warning
-        notification_title,
-        notification_body,
-        json_build_object(
+-- [SCRUBBED GARBAGE]         notification_title,
+-- [SCRUBBED GARBAGE]         notification_body,
+-- [SCRUBBED GARBAGE]         json_build_object(
             'contract_id', NEW.id,
             'event', 'status_change',
             'old_status', OLD.status,
@@ -101,46 +119,48 @@ $$;
 
 DROP TRIGGER IF EXISTS on_contract_status_change ON public.contracts;
 
+;
+DROP TRIGGER IF EXISTS "on_contract_status_change" ON public.contracts;
 CREATE TRIGGER on_contract_status_change
-    AFTER UPDATE ON public.contracts
+-- [SCRUBBED GARBAGE]     AFTER UPDATE ON public.contracts
     FOR EACH ROW
     EXECUTE FUNCTION public.notify_contract_status_change();
 -- Function: Process Daily Notifications
 -- This function is intended to be run once a day (e.g., via pg_cron or Edge Function).
 
 CREATE OR REPLACE FUNCTION public.process_daily_notifications()
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS void
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    r RECORD;
-    extension_days int := 60; -- Default extension notice period
+-- [SCRUBBED GARBAGE]     r RECORD;
+-- [SCRUBBED GARBAGE]     extension_days int := 60; -- Default extension notice period
 BEGIN
     -------------------------------------------------------
     -- 1. CONTRACT ENDING SOON (30 Days)
     -------------------------------------------------------
     FOR r IN
         SELECT c.id, c.user_id, c.end_date, p.city, p.address
-        FROM public.contracts c
-        JOIN public.properties p ON p.id = c.property_id
-        WHERE c.status = 'active'
-        AND c.end_date = CURRENT_DATE + INTERVAL '30 days'
+-- [SCRUBBED GARBAGE]         FROM public.contracts c
+-- [SCRUBBED GARBAGE]         JOIN public.properties p ON p.id = c.property_id
+-- [SCRUBBED GARBAGE]         WHERE c.status = 'active'
+-- [SCRUBBED GARBAGE]         AND c.end_date = CURRENT_DATE + INTERVAL '30 days'
     LOOP
         -- Check if we already sent this notification (idempotency)
         IF NOT EXISTS (
             SELECT 1 FROM public.notifications 
-            WHERE user_id = r.user_id 
-            AND metadata->>'contract_id' = r.id::text 
-            AND metadata->>'event' = 'ending_soon'
+-- [SCRUBBED GARBAGE]             WHERE user_id = r.user_id 
+-- [SCRUBBED GARBAGE]             AND metadata->>'contract_id' = r.id::text 
+-- [SCRUBBED GARBAGE]             AND metadata->>'event' = 'ending_soon'
         ) THEN
             INSERT INTO public.notifications (user_id, type, title, message, metadata)
             VALUES (
-                r.user_id,
+-- [SCRUBBED GARBAGE]                 r.user_id,
                 'warning',
                 'Contract Ending Soon',
-                format('Contract for %s, %s ends in 30 days (%s).', r.city, r.address, r.end_date),
-                json_build_object('contract_id', r.id, 'event', 'ending_soon')::jsonb
+-- [SCRUBBED GARBAGE]                 format('Contract for %s, %s ends in 30 days (%s).', r.city, r.address, r.end_date),
+-- [SCRUBBED GARBAGE]                 json_build_object('contract_id', r.id, 'event', 'ending_soon')::jsonb
             );
         END IF;
     END LOOP;
@@ -153,26 +173,26 @@ BEGIN
     
     FOR r IN
         SELECT c.id, c.user_id, c.end_date, p.city, p.address
-        FROM public.contracts c
-        JOIN public.properties p ON p.id = c.property_id
-        WHERE c.status = 'active'
-        AND c.extension_option = TRUE
+-- [SCRUBBED GARBAGE]         FROM public.contracts c
+-- [SCRUBBED GARBAGE]         JOIN public.properties p ON p.id = c.property_id
+-- [SCRUBBED GARBAGE]         WHERE c.status = 'active'
+-- [SCRUBBED GARBAGE]         AND c.extension_option = TRUE
         -- Assuming deadline IS the end_date if not specified otherwise, or checking user preference
-        AND c.end_date = CURRENT_DATE + (extension_days || ' days')::INTERVAL
+-- [SCRUBBED GARBAGE]         AND c.end_date = CURRENT_DATE + (extension_days || ' days')::INTERVAL
     LOOP
         IF NOT EXISTS (
             SELECT 1 FROM public.notifications 
-            WHERE user_id = r.user_id 
-            AND metadata->>'contract_id' = r.id::text 
-            AND metadata->>'event' = 'extension_deadline'
+-- [SCRUBBED GARBAGE]             WHERE user_id = r.user_id 
+-- [SCRUBBED GARBAGE]             AND metadata->>'contract_id' = r.id::text 
+-- [SCRUBBED GARBAGE]             AND metadata->>'event' = 'extension_deadline'
         ) THEN
             INSERT INTO public.notifications (user_id, type, title, message, metadata)
             VALUES (
-                r.user_id,
+-- [SCRUBBED GARBAGE]                 r.user_id,
                 'action', -- Custom type 'action' or 'info'
                 'Extension Deadline Approaching',
-                format('Extension option for %s, %s ends in %s days.', r.city, r.address, extension_days),
-                json_build_object('contract_id', r.id, 'event', 'extension_deadline')::jsonb
+-- [SCRUBBED GARBAGE]                 format('Extension option for %s, %s ends in %s days.', r.city, r.address, extension_days),
+-- [SCRUBBED GARBAGE]                 json_build_object('contract_id', r.id, 'event', 'extension_deadline')::jsonb
             );
         END IF;
     END LOOP;
@@ -182,30 +202,30 @@ BEGIN
     -------------------------------------------------------
     FOR r IN
         SELECT c.id, c.user_id, c.start_date, p.city, p.address
-        FROM public.contracts c
-        JOIN public.properties p ON p.id = c.property_id
-        WHERE c.status = 'active'
-        AND c.linkage_type != 'none' -- Only if linked
-        AND (
-            c.start_date + INTERVAL '1 year' = CURRENT_DATE OR
-            c.start_date + INTERVAL '2 years' = CURRENT_DATE OR
-            c.start_date + INTERVAL '3 years' = CURRENT_DATE
+-- [SCRUBBED GARBAGE]         FROM public.contracts c
+-- [SCRUBBED GARBAGE]         JOIN public.properties p ON p.id = c.property_id
+-- [SCRUBBED GARBAGE]         WHERE c.status = 'active'
+-- [SCRUBBED GARBAGE]         AND c.linkage_type != 'none' -- Only if linked
+-- [SCRUBBED GARBAGE]         AND (
+-- [SCRUBBED GARBAGE]             c.start_date + INTERVAL '1 year' = CURRENT_DATE OR
+-- [SCRUBBED GARBAGE]             c.start_date + INTERVAL '2 years' = CURRENT_DATE OR
+-- [SCRUBBED GARBAGE]             c.start_date + INTERVAL '3 years' = CURRENT_DATE
         )
     LOOP
         IF NOT EXISTS (
             SELECT 1 FROM public.notifications 
-            WHERE user_id = r.user_id 
-            AND metadata->>'contract_id' = r.id::text 
-            AND metadata->>'event' = 'index_update'
-            AND metadata->>'date' = CURRENT_DATE::text
+-- [SCRUBBED GARBAGE]             WHERE user_id = r.user_id 
+-- [SCRUBBED GARBAGE]             AND metadata->>'contract_id' = r.id::text 
+-- [SCRUBBED GARBAGE]             AND metadata->>'event' = 'index_update'
+-- [SCRUBBED GARBAGE]             AND metadata->>'date' = CURRENT_DATE::text
         ) THEN
             INSERT INTO public.notifications (user_id, type, title, message, metadata)
             VALUES (
-                r.user_id,
+-- [SCRUBBED GARBAGE]                 r.user_id,
                 'urgent',
                 'Annual Index Update',
-                format('Annual index update required for %s, %s.', r.city, r.address),
-                json_build_object('contract_id', r.id, 'event', 'index_update', 'date', CURRENT_DATE)::jsonb
+-- [SCRUBBED GARBAGE]                 format('Annual index update required for %s, %s.', r.city, r.address),
+-- [SCRUBBED GARBAGE]                 json_build_object('contract_id', r.id, 'event', 'index_update', 'date', CURRENT_DATE)::jsonb
             );
         END IF;
     END LOOP;
@@ -215,25 +235,25 @@ BEGIN
     -------------------------------------------------------
     FOR r IN
         SELECT py.id, py.user_id, py.amount, py.date, p.city, p.address
-        FROM public.payments py
-        JOIN public.contracts c ON c.id = py.contract_id
-        JOIN public.properties p ON p.id = c.property_id
-        WHERE py.status = 'pending'
-        AND py.date = CURRENT_DATE
+-- [SCRUBBED GARBAGE]         FROM public.payments py
+-- [SCRUBBED GARBAGE]         JOIN public.contracts c ON c.id = py.contract_id
+-- [SCRUBBED GARBAGE]         JOIN public.properties p ON p.id = c.property_id
+-- [SCRUBBED GARBAGE]         WHERE py.status = 'pending'
+-- [SCRUBBED GARBAGE]         AND py.date = CURRENT_DATE
     LOOP
         IF NOT EXISTS (
             SELECT 1 FROM public.notifications 
-            WHERE user_id = r.user_id 
-            AND metadata->>'payment_id' = r.id::text 
-            AND metadata->>'event' = 'payment_due'
+-- [SCRUBBED GARBAGE]             WHERE user_id = r.user_id 
+-- [SCRUBBED GARBAGE]             AND metadata->>'payment_id' = r.id::text 
+-- [SCRUBBED GARBAGE]             AND metadata->>'event' = 'payment_due'
         ) THEN
             INSERT INTO public.notifications (user_id, type, title, message, metadata)
             VALUES (
-                r.user_id,
+-- [SCRUBBED GARBAGE]                 r.user_id,
                 'warning',
                 'Payment Due Today',
-                format('Payment of ג‚×%s for %s, %s is due today.', r.amount, r.city, r.address),
-                json_build_object('payment_id', r.id, 'event', 'payment_due')::jsonb
+-- [SCRUBBED GARBAGE]                 format('Payment of ג‚×%s for %s, %s is due today.', r.amount, r.city, r.address),
+-- [SCRUBBED GARBAGE]                 json_build_object('payment_id', r.id, 'event', 'payment_due')::jsonb
             );
         END IF;
     END LOOP;
@@ -242,7 +262,7 @@ END;
 $$;
 -- Add needs_painting column to contracts table
 ALTER TABLE contracts 
-ADD COLUMN needs_painting BOOLEAN DEFAULT false;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS needs_painting BOOLEAN DEFAULT false;
 
 -- Add option_periods column to contracts table
 -- Use JSONB to store an array of options, e.g., [{"length": 12, "unit": "months"}, {"length": 1, "unit": "years"}]
@@ -250,7 +270,7 @@ ADD COLUMN needs_painting BOOLEAN DEFAULT false;
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contracts' AND column_name = 'option_periods') THEN
-        ALTER TABLE public.contracts ADD COLUMN option_periods JSONB DEFAULT '[]'::jsonb;
+        ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS option_periods JSONB DEFAULT '[]'::jsonb;
     END IF;
 END $$;
 -- Migration to add 'other' to the property_type check constraint
@@ -260,30 +280,30 @@ ALTER TABLE properties DROP CONSTRAINT IF EXISTS properties_property_type_check;
 
 -- Re-add the check constraint with 'other' included
 ALTER TABLE properties 
-ADD CONSTRAINT properties_property_type_check 
-CHECK (property_type IN ('apartment', 'penthouse', 'garden', 'house', 'other'));
+-- [SCRUBBED GARBAGE] ADD CONSTRAINT properties_property_type_check 
+-- [SCRUBBED GARBAGE] CHECK (property_type IN ('apartment', 'penthouse', 'garden', 'house', 'other'));
 -- Add parking and storage columns to properties
 ALTER TABLE properties
-ADD COLUMN IF NOT EXISTS has_parking BOOLEAN DEFAULT false,
-ADD COLUMN IF NOT EXISTS has_storage BOOLEAN DEFAULT false;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS has_parking BOOLEAN DEFAULT false,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS has_storage BOOLEAN DEFAULT false;
 -- Add property_type column
 ALTER TABLE properties
-ADD COLUMN IF NOT EXISTS property_type TEXT DEFAULT 'apartment';
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS property_type TEXT DEFAULT 'apartment';
 -- Migration to add missing rent_price column to properties table
 -- Fixes error: Could not find the 'rent_price' column of 'properties' in the schema cache
 
 ALTER TABLE public.properties 
-ADD COLUMN IF NOT EXISTS rent_price NUMERIC(10, 2);
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS rent_price NUMERIC(10, 2);
 
 -- Also ensure RLS is enabled as a best practice, though likely already on
 ALTER TABLE public.properties ENABLE ROW LEVEL SECURITY;
 -- Add Stripe-related fields to user_profiles table
 ALTER TABLE user_profiles
-ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT,
-ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT,
-ADD COLUMN IF NOT EXISTS subscription_status TEXT DEFAULT 'inactive' CHECK (subscription_status IN ('active', 'inactive', 'canceled', 'past_due'));
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS subscription_status TEXT DEFAULT 'inactive' CHECK (subscription_status IN ('active', 'inactive', 'canceled', 'past_due'));
 
--- Create index for faster lookups
+-- CREATE INDEX IF NOT EXISTS for faster lookups
 CREATE INDEX IF NOT EXISTS idx_user_profiles_stripe_customer ON user_profiles(stripe_customer_id);
 CREATE INDEX IF NOT EXISTS idx_user_profiles_stripe_subscription ON user_profiles(stripe_subscription_id);
 
@@ -317,12 +337,12 @@ BEGIN
 END $$;
 -- Create admin_notifications table
 create table if not exists admin_notifications (
-  id uuid default gen_random_uuid() primary key,
-  user_id uuid references auth.users(id) not null,
-  type text not null check (type in ('upgrade_request', 'system_alert')),
-  content jsonb not null default '{}'::jsonb,
-  status text not null default 'pending' check (status in ('pending', 'processing', 'resolved', 'dismissed')),
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+-- [SCRUBBED GARBAGE]   id uuid default gen_random_uuid() primary key,
+-- [SCRUBBED GARBAGE]   user_id uuid references auth.users(id) not null,
+-- [SCRUBBED GARBAGE]   type text not null check (type in ('upgrade_request', 'system_alert')),
+-- [SCRUBBED GARBAGE]   content jsonb not null default '{}'::jsonb,
+-- [SCRUBBED GARBAGE]   status text not null default 'pending' check (status in ('pending', 'processing', 'resolved', 'dismissed')),
+-- [SCRUBBED GARBAGE]   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
 -- Enable RLS
@@ -330,47 +350,47 @@ alter table admin_notifications enable row level security;
 
 -- Policy: Admins can view all notifications
 create policy "Admins can view all notifications"
-  on admin_notifications for select
-  to authenticated
-  using (
-    exists (
+-- [SCRUBBED GARBAGE]   on admin_notifications for select
+-- [SCRUBBED GARBAGE]   to authenticated
+-- [SCRUBBED GARBAGE]   using (
+-- [SCRUBBED GARBAGE]     exists (
       select 1 from user_profiles
-      where id = auth.uid() and role = 'admin'
+-- [SCRUBBED GARBAGE]       where id = auth.uid() and role = 'admin'
     )
   );
 
 -- Policy: Admins can update notifications
 create policy "Admins can update notifications"
-  on admin_notifications for update
-  to authenticated
-  using (
-    exists (
+-- [SCRUBBED GARBAGE]   on admin_notifications for update
+-- [SCRUBBED GARBAGE]   to authenticated
+-- [SCRUBBED GARBAGE]   using (
+-- [SCRUBBED GARBAGE]     exists (
       select 1 from user_profiles
-      where id = auth.uid() and role = 'admin'
+-- [SCRUBBED GARBAGE]       where id = auth.uid() and role = 'admin'
     )
   );
 
 -- Policy: Users can insert their own upgrade requests
 create policy "Users can insert upgrade requests"
-  on admin_notifications for insert
-  to authenticated
+-- [SCRUBBED GARBAGE]   on admin_notifications for insert
+-- [SCRUBBED GARBAGE]   to authenticated
   with check (
-    user_id = auth.uid() 
-    and type = 'upgrade_request'
+-- [SCRUBBED GARBAGE]     user_id = auth.uid() 
+-- [SCRUBBED GARBAGE]     and type = 'upgrade_request'
   );
 
 -- Optional: Index for filtering by status
 create index if not exists idx_admin_notifications_status on admin_notifications(status);
 -- Create contact_messages table
 CREATE TABLE IF NOT EXISTS public.contact_messages (
-    id UUID NOT NULL DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    user_name TEXT NOT NULL,
-    user_email TEXT NOT NULL,
-    message TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'read', 'replied', 'archived')),
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-    CONSTRAINT contact_messages_pkey PRIMARY KEY (id)
+-- [SCRUBBED GARBAGE]     id UUID NOT NULL DEFAULT gen_random_uuid(),
+-- [SCRUBBED GARBAGE]     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     user_name TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     user_email TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     message TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'read', 'replied', 'archived')),
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+-- [SCRUBBED GARBAGE]     CONSTRAINT contact_messages_pkey PRIMARY KEY (id)
 );
 
 -- Enable RLS
@@ -378,69 +398,69 @@ ALTER TABLE public.contact_messages ENABLE ROW LEVEL SECURITY;
 
 -- Policies
 CREATE POLICY "Users can view own messages"
-    ON contact_messages FOR SELECT
-    USING (user_id = auth.uid());
+-- [SCRUBBED GARBAGE]     ON contact_messages FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (user_id = auth.uid());
 
 CREATE POLICY "Users can insert own messages"
-    ON contact_messages FOR INSERT
+-- [SCRUBBED GARBAGE]     ON contact_messages FOR INSERT
     WITH CHECK (user_id = auth.uid());
 
 -- Admin policy (if you want admins to see all messages)
 CREATE POLICY "Admins can view all messages"
-    ON contact_messages FOR SELECT
-    USING (
-        EXISTS (
+-- [SCRUBBED GARBAGE]     ON contact_messages FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [SCRUBBED GARBAGE]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
--- Create index for faster queries
-CREATE INDEX idx_contact_messages_user_id ON contact_messages(user_id);
-CREATE INDEX idx_contact_messages_status ON contact_messages(status);
-CREATE INDEX idx_contact_messages_created_at ON contact_messages(created_at DESC);
+-- CREATE INDEX IF NOT EXISTS for faster queries
+CREATE INDEX IF NOT EXISTS idx_contact_messages_user_id ON contact_messages(user_id);
+CREATE INDEX IF NOT EXISTS idx_contact_messages_status ON contact_messages(status);
+CREATE INDEX IF NOT EXISTS idx_contact_messages_created_at ON contact_messages(created_at DESC);
 -- Create the 'contracts' storage bucket if it doesn't exist
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('contracts', 'contracts', true)
-ON CONFLICT (id) DO NOTHING;
+-- [SCRUBBED GARBAGE] ON CONFLICT (id) DO NOTHING;
 
 -- Policy: Allow authenticated users to upload files to 'contracts' bucket
 CREATE POLICY "Allow authenticated uploads"
-ON storage.objects FOR INSERT
-TO authenticated
+-- [SCRUBBED GARBAGE] ON storage.objects FOR INSERT
+-- [SCRUBBED GARBAGE] TO authenticated
 WITH CHECK (bucket_id = 'contracts');
 
 -- Policy: Allow authenticated users to view files in 'contracts' bucket
 CREATE POLICY "Allow authenticated view"
-ON storage.objects FOR SELECT
-TO authenticated
-USING (bucket_id = 'contracts');
+-- [SCRUBBED GARBAGE] ON storage.objects FOR SELECT
+-- [SCRUBBED GARBAGE] TO authenticated
+-- [SCRUBBED GARBAGE] USING (bucket_id = 'contracts');
 
 -- Policy: Allow users to update their own files (optional, but good for redaction flow)
 CREATE POLICY "Allow authenticated update"
-ON storage.objects FOR UPDATE
-TO authenticated
-USING (bucket_id = 'contracts');
+-- [SCRUBBED GARBAGE] ON storage.objects FOR UPDATE
+-- [SCRUBBED GARBAGE] TO authenticated
+-- [SCRUBBED GARBAGE] USING (bucket_id = 'contracts');
 
 -- Policy: Allow users to delete their own files
 CREATE POLICY "Allow authenticated delete"
-ON storage.objects FOR DELETE
-TO authenticated
-USING (bucket_id = 'contracts');
--- Create table for storing index base periods and chaining factors
+-- [SCRUBBED GARBAGE] ON storage.objects FOR DELETE
+-- [SCRUBBED GARBAGE] TO authenticated
+-- [SCRUBBED GARBAGE] USING (bucket_id = 'contracts');
+-- CREATE TABLE IF NOT EXISTS for storing index base periods and chaining factors
 CREATE TABLE IF NOT EXISTS index_bases (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    index_type TEXT NOT NULL, -- e.g., 'cpi', 'construction', 'housing'
-    base_period_start DATE NOT NULL, -- The start date of this base period (e.g., '2023-01-01')
-    base_value NUMERIC NOT NULL DEFAULT 100.0, -- The value of the base index (usually 100.0)
-    previous_base_period_start DATE, -- The start date of the *previous* base period
-    chain_factor NUMERIC, -- The factor to multiply when moving FROM this base TO the previous base (or vice versa depending on logic)
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+-- [SCRUBBED GARBAGE]     index_type TEXT NOT NULL, -- e.g., 'cpi', 'construction', 'housing'
+-- [SCRUBBED GARBAGE]     base_period_start DATE NOT NULL, -- The start date of this base period (e.g., '2023-01-01')
+-- [SCRUBBED GARBAGE]     base_value NUMERIC NOT NULL DEFAULT 100.0, -- The value of the base index (usually 100.0)
+-- [SCRUBBED GARBAGE]     previous_base_period_start DATE, -- The start date of the *previous* base period
+-- [SCRUBBED GARBAGE]     chain_factor NUMERIC, -- The factor to multiply when moving FROM this base TO the previous base (or vice versa depending on logic)
                           -- CBS usually publishes "Linkage Coefficient" (׳׳§׳“׳ ׳§׳©׳¨) to the previous base.
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Index for fast lookup
-CREATE INDEX idx_index_bases_type_date ON index_bases (index_type, base_period_start);
+CREATE INDEX IF NOT EXISTS idx_index_bases_type_date ON index_bases (index_type, base_period_start);
 
 -- Insert known recent Israeli CPI Base Periods (Example Data - verified from CBS knowledge)
 -- Note: CBS updates bases typically every 2 years recently.
@@ -462,17 +482,17 @@ CREATE INDEX idx_index_bases_type_date ON index_bases (index_type, base_period_s
 
 -- Create index_data table for storing economic indices
 CREATE TABLE IF NOT EXISTS index_data (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  index_type TEXT NOT NULL CHECK (index_type IN ('cpi', 'housing', 'construction', 'usd', 'eur')),
-  date TEXT NOT NULL, -- Format: 'YYYY-MM'
-  value DECIMAL(10, 4) NOT NULL,
-  source TEXT DEFAULT 'cbs' CHECK (source IN ('cbs', 'exchange-api', 'manual')),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  UNIQUE(index_type, date)
+-- [SCRUBBED GARBAGE]   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+-- [SCRUBBED GARBAGE]   index_type TEXT NOT NULL CHECK (index_type IN ('cpi', 'housing', 'construction', 'usd', 'eur')),
+-- [SCRUBBED GARBAGE]   date TEXT NOT NULL, -- Format: 'YYYY-MM'
+-- [SCRUBBED GARBAGE]   value DECIMAL(10, 4) NOT NULL,
+-- [SCRUBBED GARBAGE]   source TEXT DEFAULT 'cbs' CHECK (source IN ('cbs', 'exchange-api', 'manual')),
+-- [SCRUBBED GARBAGE]   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]   UNIQUE(index_type, date)
 );
 
--- Create index for faster queries
+-- CREATE INDEX IF NOT EXISTS for faster queries
 CREATE INDEX IF NOT EXISTS idx_index_data_type_date ON index_data(index_type, date);
 
 -- Enable Row Level Security
@@ -480,42 +500,42 @@ ALTER TABLE index_data ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Allow all authenticated users to read index data
 CREATE POLICY "Allow authenticated users to read index data"
-  ON index_data
+-- [SCRUBBED GARBAGE]   ON index_data
   FOR SELECT
-  TO authenticated
-  USING (true);
+-- [SCRUBBED GARBAGE]   TO authenticated
+-- [SCRUBBED GARBAGE]   USING (true);
 
 -- Policy: Only admins can insert/update index data (will be done via Edge Function)
 -- Policy: Allow authenticated users to manage index data (needed for manual refresh button)
 CREATE POLICY "Allow authenticated users to manage index data"
-  ON index_data
+-- [SCRUBBED GARBAGE]   ON index_data
   FOR ALL
-  TO authenticated
-  USING (true)
+-- [SCRUBBED GARBAGE]   TO authenticated
+-- [SCRUBBED GARBAGE]   USING (true)
   WITH CHECK (true);
 
 -- Add comment
 -- Create notifications table
 CREATE TABLE IF NOT EXISTS public.notifications (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    type TEXT NOT NULL CHECK (type IN ('info', 'success', 'warning', 'error')),
-    title TEXT NOT NULL,
-    message TEXT NOT NULL,
-    read_at TIMESTAMP WITH TIME ZONE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+-- [SCRUBBED GARBAGE]     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+-- [SCRUBBED GARBAGE]     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     type TEXT NOT NULL CHECK (type IN ('info', 'success', 'warning', 'error')),
+-- [SCRUBBED GARBAGE]     title TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     message TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     read_at TIMESTAMP WITH TIME ZONE,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- RLS Policies
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Users can view their own notifications"
-    ON public.notifications FOR SELECT
-    USING (auth.uid() = user_id);
+-- [SCRUBBED GARBAGE]     ON public.notifications FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (auth.uid() = user_id);
 
 CREATE POLICY "Users can update their own notifications (mark as read)"
-    ON public.notifications FOR UPDATE
-    USING (auth.uid() = user_id);
+-- [SCRUBBED GARBAGE]     ON public.notifications FOR UPDATE
+-- [SCRUBBED GARBAGE]     USING (auth.uid() = user_id);
 
 -- Check if trigger exists before creating
 DO $$
@@ -530,47 +550,47 @@ $$;
 -- Create a public bucket for property images
 INSERT INTO storage.buckets (id, name, public, avif_autodetection, file_size_limit, allowed_mime_types)
 VALUES ('property-images', 'property-images', true, false, 5242880, ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
-ON CONFLICT (id) DO NOTHING;
+-- [SCRUBBED GARBAGE] ON CONFLICT (id) DO NOTHING;
 
 -- Policy: Public can VIEW files (It's a public bucket, but good to be explicit for SELECT)
 DROP POLICY IF EXISTS "Public can view property images" ON storage.objects;
 CREATE POLICY "Public can view property images"
-    ON storage.objects
+-- [SCRUBBED GARBAGE]     ON storage.objects
     FOR SELECT
-    USING ( bucket_id = 'property-images' );
+-- [SCRUBBED GARBAGE]     USING ( bucket_id = 'property-images' );
 
 -- Policy: Authenticated users can UPLOAD files
 DROP POLICY IF EXISTS "Authenticated users can upload property images" ON storage.objects;
 CREATE POLICY "Authenticated users can upload property images"
-    ON storage.objects
+-- [SCRUBBED GARBAGE]     ON storage.objects
     FOR INSERT
     WITH CHECK (
-        bucket_id = 'property-images'
-        AND
-        auth.role() = 'authenticated'
+-- [SCRUBBED GARBAGE]         bucket_id = 'property-images'
+-- [SCRUBBED GARBAGE]         AND
+-- [SCRUBBED GARBAGE]         auth.role() = 'authenticated'
     );
 
 -- Policy: Users can UPDATE their own files (or all authenticated for now for simplicity in this context, but better to restrict)
 -- For now, allowing authenticated users to update/delete for simplicity as ownership tracking on files might be complex without folder structure
 DROP POLICY IF EXISTS "Authenticated users can update property images" ON storage.objects;
 CREATE POLICY "Authenticated users can update property images"
-    ON storage.objects
+-- [SCRUBBED GARBAGE]     ON storage.objects
     FOR UPDATE
-    USING ( bucket_id = 'property-images' AND auth.role() = 'authenticated' );
+-- [SCRUBBED GARBAGE]     USING ( bucket_id = 'property-images' AND auth.role() = 'authenticated' );
 
 DROP POLICY IF EXISTS "Authenticated users can delete property images" ON storage.objects;
 CREATE POLICY "Authenticated users can delete property images"
-    ON storage.objects
+-- [SCRUBBED GARBAGE]     ON storage.objects
     FOR DELETE
-    USING ( bucket_id = 'property-images' AND auth.role() = 'authenticated' );
+-- [SCRUBBED GARBAGE]     USING ( bucket_id = 'property-images' AND auth.role() = 'authenticated' );
 -- Create a table to track rate limits
 CREATE TABLE IF NOT EXISTS public.rate_limits (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    ip_address TEXT,
-    endpoint TEXT NOT NULL,
-    request_count INTEGER DEFAULT 1,
-    last_request_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [SCRUBBED GARBAGE]     ip_address TEXT,
+-- [SCRUBBED GARBAGE]     endpoint TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     request_count INTEGER DEFAULT 1,
+-- [SCRUBBED GARBAGE]     last_request_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now()),
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
 );
 
 -- Index for fast lookups
@@ -581,7 +601,7 @@ CREATE OR REPLACE FUNCTION clean_old_rate_limits()
 RETURNS void AS $$
 BEGIN
     DELETE FROM public.rate_limits
-    WHERE last_request_at < (now() - INTERVAL '1 hour');
+-- [SCRUBBED GARBAGE]     WHERE last_request_at < (now() - INTERVAL '1 hour');
 END;
 $$ LANGUAGE plpgsql;
 
@@ -589,70 +609,78 @@ $$ LANGUAGE plpgsql;
 ALTER TABLE public.rate_limits ENABLE ROW LEVEL SECURITY;
 
 -- Deny public access by default (only service role should write)
+;
+DROP POLICY IF EXISTS "No public access" ON public.rate_limits;
 CREATE POLICY "No public access" ON public.rate_limits
     FOR ALL
-    USING (false);
+-- [SCRUBBED GARBAGE]     USING (false);
 -- Migration: Create System Settings & Notification Rules Tables
 
 -- 1. Create system_settings table
 CREATE TABLE IF NOT EXISTS public.system_settings (
-    key TEXT PRIMARY KEY,
-    value JSONB NOT NULL,
-    description TEXT,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_by UUID REFERENCES auth.users(id)
+-- [SCRUBBED GARBAGE]     key TEXT PRIMARY KEY,
+-- [SCRUBBED GARBAGE]     value JSONB NOT NULL,
+-- [SCRUBBED GARBAGE]     description TEXT,
+-- [SCRUBBED GARBAGE]     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]     updated_by UUID REFERENCES auth.users(id)
 );
 
 -- Enable RLS
 ALTER TABLE public.system_settings ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Authenticated users can read (for app config), only Admins can write
+;
+DROP POLICY IF EXISTS "Admins can manage system settings" ON public.system_settings;
 CREATE POLICY "Admins can manage system settings" ON public.system_settings
-    USING (
-        EXISTS (
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM public.user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [SCRUBBED GARBAGE]             WHERE id = auth.uid() AND role = 'admin'
         )
     )
     WITH CHECK (
-        EXISTS (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM public.user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [SCRUBBED GARBAGE]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
     
+;
+DROP POLICY IF EXISTS "Everyone can read system settings" ON public.system_settings;
 CREATE POLICY "Everyone can read system settings" ON public.system_settings
     FOR SELECT
-    USING (true); -- Public read for generic configs like 'maintenance_mode'
+-- [SCRUBBED GARBAGE]     USING (true); -- Public read for generic configs like 'maintenance_mode'
 
 -- 2. Create notification_rules table
 CREATE TABLE IF NOT EXISTS public.notification_rules (
-    id TEXT PRIMARY KEY, -- e.g. 'contract_ending', 'payment_due'
-    name TEXT NOT NULL,
-    description TEXT,
-    is_enabled BOOLEAN DEFAULT true,
-    days_offset INT DEFAULT 0, -- e.g. 30 (days before)
-    channels JSONB DEFAULT '["in_app"]'::jsonb, -- e.g. ["in_app", "email", "push"]
-    target_audience TEXT DEFAULT 'user' CHECK (target_audience IN ('user', 'admin', 'both')),
-    message_template TEXT NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+-- [SCRUBBED GARBAGE]     id TEXT PRIMARY KEY, -- e.g. 'contract_ending', 'payment_due'
+-- [SCRUBBED GARBAGE]     name TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     description TEXT,
+-- [SCRUBBED GARBAGE]     is_enabled BOOLEAN DEFAULT true,
+-- [SCRUBBED GARBAGE]     days_offset INT DEFAULT 0, -- e.g. 30 (days before)
+-- [SCRUBBED GARBAGE]     channels JSONB DEFAULT '["in_app"]'::jsonb, -- e.g. ["in_app", "email", "push"]
+-- [SCRUBBED GARBAGE]     target_audience TEXT DEFAULT 'user' CHECK (target_audience IN ('user', 'admin', 'both')),
+-- [SCRUBBED GARBAGE]     message_template TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Enable RLS
 ALTER TABLE public.notification_rules ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Only Admins can manage rules
+;
+DROP POLICY IF EXISTS "Admins can manage notification rules" ON public.notification_rules;
 CREATE POLICY "Admins can manage notification rules" ON public.notification_rules
-    USING (
-        EXISTS (
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM public.user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [SCRUBBED GARBAGE]             WHERE id = auth.uid() AND role = 'admin'
         )
     )
     WITH CHECK (
-        EXISTS (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM public.user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [SCRUBBED GARBAGE]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
@@ -662,7 +690,7 @@ VALUES
     ('trial_duration_days', '14'::jsonb, 'Duration of the free trial in days'),
     ('maintenance_mode', 'false'::jsonb, 'If true, shows maintenance screen to non-admins'),
     ('enable_signups', 'true'::jsonb, 'Master switch to allow new user registrations')
-ON CONFLICT (key) DO NOTHING;
+-- [SCRUBBED GARBAGE] ON CONFLICT (key) DO NOTHING;
 
 INSERT INTO public.notification_rules (id, name, description, is_enabled, days_offset, channels, target_audience, message_template)
 VALUES
@@ -670,23 +698,23 @@ VALUES
     ('extension_deadline', 'Extension Deadline', 'Warns before extension option expires', true, 60, '["in_app", "push"]'::jsonb, 'user', 'Extension option for %s, %s ends in %s days.'),
     ('index_update', 'Annual Index Update', 'Reminder to update rent based on index', true, 0, '["in_app", "push"]'::jsonb, 'user', 'Annual index update required for %s, %s.'),
     ('payment_due', 'Payment Due Today', 'Alerts when a pending payment date is reached', true, 0, '["in_app", "push"]'::jsonb, 'user', 'Payment of ג‚×%s for %s, %s is due today.')
-ON CONFLICT (id) DO NOTHING;
+-- [SCRUBBED GARBAGE] ON CONFLICT (id) DO NOTHING;
 
 -- 4. Update process_daily_notifications to use these rules
 CREATE OR REPLACE FUNCTION public.process_daily_notifications()
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS void
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    r RECORD;
-    rule RECORD;
+-- [SCRUBBED GARBAGE]     r RECORD;
+-- [SCRUBBED GARBAGE]     rule RECORD;
     
     -- Variables to hold rule configs
-    rule_ending_soon JSONB;
-    rule_extension JSONB;
-    rule_index JSONB;
-    rule_payment JSONB;
+-- [SCRUBBED GARBAGE]     rule_ending_soon JSONB;
+-- [SCRUBBED GARBAGE]     rule_extension JSONB;
+-- [SCRUBBED GARBAGE]     rule_index JSONB;
+-- [SCRUBBED GARBAGE]     rule_payment JSONB;
 BEGIN
     -- Fetch Rules
     SELECT to_jsonb(nr.*) INTO rule_ending_soon FROM public.notification_rules nr WHERE id = 'ending_soon';
@@ -700,19 +728,19 @@ BEGIN
     IF (rule_ending_soon->>'is_enabled')::boolean IS TRUE THEN
         FOR r IN
             SELECT c.id, c.user_id, c.end_date, p.city, p.address
-            FROM public.contracts c
-            JOIN public.properties p ON p.id = c.property_id
-            WHERE c.status = 'active'
-            AND c.end_date = CURRENT_DATE + ((rule_ending_soon->>'days_offset')::int || ' days')::INTERVAL
+-- [SCRUBBED GARBAGE]             FROM public.contracts c
+-- [SCRUBBED GARBAGE]             JOIN public.properties p ON p.id = c.property_id
+-- [SCRUBBED GARBAGE]             WHERE c.status = 'active'
+-- [SCRUBBED GARBAGE]             AND c.end_date = CURRENT_DATE + ((rule_ending_soon->>'days_offset')::int || ' days')::INTERVAL
         LOOP
             IF NOT EXISTS (SELECT 1 FROM public.notifications WHERE user_id = r.user_id AND metadata->>'contract_id' = r.id::text AND metadata->>'event' = 'ending_soon') THEN
                 INSERT INTO public.notifications (user_id, type, title, message, metadata)
                 VALUES (
-                    r.user_id, 
+-- [SCRUBBED GARBAGE]                     r.user_id, 
                     'warning', 
                     (rule_ending_soon->>'name')::text, 
-                    format((rule_ending_soon->>'message_template')::text, r.city, r.address, (rule_ending_soon->>'days_offset')::text), 
-                    json_build_object('contract_id', r.id, 'event', 'ending_soon')::jsonb
+-- [SCRUBBED GARBAGE]                     format((rule_ending_soon->>'message_template')::text, r.city, r.address, (rule_ending_soon->>'days_offset')::text), 
+-- [SCRUBBED GARBAGE]                     json_build_object('contract_id', r.id, 'event', 'ending_soon')::jsonb
                 );
             END IF;
         END LOOP;
@@ -724,20 +752,20 @@ BEGIN
     IF (rule_extension->>'is_enabled')::boolean IS TRUE THEN
         FOR r IN
             SELECT c.id, c.user_id, c.end_date, p.city, p.address
-            FROM public.contracts c
-            JOIN public.properties p ON p.id = c.property_id
-            WHERE c.status = 'active'
-            AND c.extension_option = TRUE
-            AND c.end_date = CURRENT_DATE + ((rule_extension->>'days_offset')::int || ' days')::INTERVAL
+-- [SCRUBBED GARBAGE]             FROM public.contracts c
+-- [SCRUBBED GARBAGE]             JOIN public.properties p ON p.id = c.property_id
+-- [SCRUBBED GARBAGE]             WHERE c.status = 'active'
+-- [SCRUBBED GARBAGE]             AND c.extension_option = TRUE
+-- [SCRUBBED GARBAGE]             AND c.end_date = CURRENT_DATE + ((rule_extension->>'days_offset')::int || ' days')::INTERVAL
         LOOP
             IF NOT EXISTS (SELECT 1 FROM public.notifications WHERE user_id = r.user_id AND metadata->>'contract_id' = r.id::text AND metadata->>'event' = 'extension_deadline') THEN
                 INSERT INTO public.notifications (user_id, type, title, message, metadata)
                 VALUES (
-                    r.user_id, 
+-- [SCRUBBED GARBAGE]                     r.user_id, 
                     'action', 
                     (rule_extension->>'name')::text, 
-                    format((rule_extension->>'message_template')::text, r.city, r.address, (rule_extension->>'days_offset')::text), 
-                    json_build_object('contract_id', r.id, 'event', 'extension_deadline')::jsonb
+-- [SCRUBBED GARBAGE]                     format((rule_extension->>'message_template')::text, r.city, r.address, (rule_extension->>'days_offset')::text), 
+-- [SCRUBBED GARBAGE]                     json_build_object('contract_id', r.id, 'event', 'extension_deadline')::jsonb
                 );
             END IF;
         END LOOP;
@@ -749,24 +777,24 @@ BEGIN
     IF (rule_index->>'is_enabled')::boolean IS TRUE THEN
         FOR r IN
             SELECT c.id, c.user_id, c.start_date, p.city, p.address
-            FROM public.contracts c
-            JOIN public.properties p ON p.id = c.property_id
-            WHERE c.status = 'active'
-            AND c.linkage_type != 'none'
-            AND (
-                c.start_date + INTERVAL '1 year' = CURRENT_DATE OR
-                c.start_date + INTERVAL '2 years' = CURRENT_DATE OR
-                c.start_date + INTERVAL '3 years' = CURRENT_DATE
+-- [SCRUBBED GARBAGE]             FROM public.contracts c
+-- [SCRUBBED GARBAGE]             JOIN public.properties p ON p.id = c.property_id
+-- [SCRUBBED GARBAGE]             WHERE c.status = 'active'
+-- [SCRUBBED GARBAGE]             AND c.linkage_type != 'none'
+-- [SCRUBBED GARBAGE]             AND (
+-- [SCRUBBED GARBAGE]                 c.start_date + INTERVAL '1 year' = CURRENT_DATE OR
+-- [SCRUBBED GARBAGE]                 c.start_date + INTERVAL '2 years' = CURRENT_DATE OR
+-- [SCRUBBED GARBAGE]                 c.start_date + INTERVAL '3 years' = CURRENT_DATE
             )
         LOOP
             IF NOT EXISTS (SELECT 1 FROM public.notifications WHERE user_id = r.user_id AND metadata->>'contract_id' = r.id::text AND metadata->>'event' = 'index_update' AND metadata->>'date' = CURRENT_DATE::text) THEN
                 INSERT INTO public.notifications (user_id, type, title, message, metadata)
                 VALUES (
-                    r.user_id, 
+-- [SCRUBBED GARBAGE]                     r.user_id, 
                     'urgent', 
                     (rule_index->>'name')::text, 
-                    format((rule_index->>'message_template')::text, r.city, r.address), 
-                    json_build_object('contract_id', r.id, 'event', 'index_update', 'date', CURRENT_DATE)::jsonb
+-- [SCRUBBED GARBAGE]                     format((rule_index->>'message_template')::text, r.city, r.address), 
+-- [SCRUBBED GARBAGE]                     json_build_object('contract_id', r.id, 'event', 'index_update', 'date', CURRENT_DATE)::jsonb
                 );
             END IF;
         END LOOP;
@@ -778,20 +806,20 @@ BEGIN
     IF (rule_payment->>'is_enabled')::boolean IS TRUE THEN
         FOR r IN
             SELECT py.id, py.user_id, py.amount, py.date, p.city, p.address
-            FROM public.payments py
-            JOIN public.contracts c ON c.id = py.contract_id
-            JOIN public.properties p ON p.id = c.property_id
-            WHERE py.status = 'pending'
-            AND py.date = CURRENT_DATE
+-- [SCRUBBED GARBAGE]             FROM public.payments py
+-- [SCRUBBED GARBAGE]             JOIN public.contracts c ON c.id = py.contract_id
+-- [SCRUBBED GARBAGE]             JOIN public.properties p ON p.id = c.property_id
+-- [SCRUBBED GARBAGE]             WHERE py.status = 'pending'
+-- [SCRUBBED GARBAGE]             AND py.date = CURRENT_DATE
         LOOP
             IF NOT EXISTS (SELECT 1 FROM public.notifications WHERE user_id = r.user_id AND metadata->>'payment_id' = r.id::text AND metadata->>'event' = 'payment_due') THEN
                 INSERT INTO public.notifications (user_id, type, title, message, metadata)
                 VALUES (
-                    r.user_id, 
+-- [SCRUBBED GARBAGE]                     r.user_id, 
                     'warning', 
                     (rule_payment->>'name')::text, 
-                    format((rule_payment->>'message_template')::text, r.amount, r.city, r.address), 
-                    json_build_object('payment_id', r.id, 'event', 'payment_due')::jsonb
+-- [SCRUBBED GARBAGE]                     format((rule_payment->>'message_template')::text, r.amount, r.city, r.address), 
+-- [SCRUBBED GARBAGE]                     json_build_object('payment_id', r.id, 'event', 'payment_due')::jsonb
                 );
             END IF;
         END LOOP;
@@ -803,67 +831,67 @@ $$;
 -- Using array_agg with ORDER BY created_at to keep the oldest record
 WITH duplicates AS (
   SELECT
-    address,
-    city,
-    user_id,
+-- [SCRUBBED GARBAGE]     address,
+-- [SCRUBBED GARBAGE]     city,
+-- [SCRUBBED GARBAGE]     user_id,
     (array_agg(id ORDER BY created_at ASC))[1] as keep_id,
-    array_agg(id) as all_ids
-  FROM properties
-  GROUP BY address, city, user_id
-  HAVING COUNT(*) > 1
+-- [SCRUBBED GARBAGE]     array_agg(id) as all_ids
+-- [SCRUBBED GARBAGE]   FROM properties
+-- [SCRUBBED GARBAGE]   GROUP BY address, city, user_id
+-- [SCRUBBED GARBAGE]   HAVING COUNT(*) > 1
 ),
-busted_duplicates AS (
+-- [SCRUBBED GARBAGE] busted_duplicates AS (
   SELECT
-    keep_id,
-    unnest(all_ids) as duplicate_id
-  FROM duplicates
+-- [SCRUBBED GARBAGE]     keep_id,
+-- [SCRUBBED GARBAGE]     unnest(all_ids) as duplicate_id
+-- [SCRUBBED GARBAGE]   FROM duplicates
 )
 -- 1. Update Tenants to point to the kept property
 UPDATE tenants
 SET property_id = bd.keep_id
-FROM busted_duplicates bd
-WHERE tenants.property_id = bd.duplicate_id
-AND tenants.property_id != bd.keep_id;
+-- [SCRUBBED GARBAGE] FROM busted_duplicates bd
+-- [SCRUBBED GARBAGE] WHERE tenants.property_id = bd.duplicate_id
+-- [SCRUBBED GARBAGE] AND tenants.property_id != bd.keep_id;
 
 -- 2. Update Contracts to point to the kept property
 -- Re-calculate duplicates for safety in this transaction block step
 WITH duplicates AS (
   SELECT
-    address,
-    city,
-    user_id,
+-- [SCRUBBED GARBAGE]     address,
+-- [SCRUBBED GARBAGE]     city,
+-- [SCRUBBED GARBAGE]     user_id,
     (array_agg(id ORDER BY created_at ASC))[1] as keep_id,
-    array_agg(id) as all_ids
-  FROM properties
-  GROUP BY address, city, user_id
-  HAVING COUNT(*) > 1
+-- [SCRUBBED GARBAGE]     array_agg(id) as all_ids
+-- [SCRUBBED GARBAGE]   FROM properties
+-- [SCRUBBED GARBAGE]   GROUP BY address, city, user_id
+-- [SCRUBBED GARBAGE]   HAVING COUNT(*) > 1
 ),
-busted_duplicates AS (
+-- [SCRUBBED GARBAGE] busted_duplicates AS (
   SELECT
-    keep_id,
-    unnest(all_ids) as duplicate_id
-  FROM duplicates
+-- [SCRUBBED GARBAGE]     keep_id,
+-- [SCRUBBED GARBAGE]     unnest(all_ids) as duplicate_id
+-- [SCRUBBED GARBAGE]   FROM duplicates
 )
 UPDATE contracts
 SET property_id = bd.keep_id
-FROM busted_duplicates bd
-WHERE contracts.property_id = bd.duplicate_id
-AND contracts.property_id != bd.keep_id;
+-- [SCRUBBED GARBAGE] FROM busted_duplicates bd
+-- [SCRUBBED GARBAGE] WHERE contracts.property_id = bd.duplicate_id
+-- [SCRUBBED GARBAGE] AND contracts.property_id != bd.keep_id;
 
 -- 3. Delete the duplicate properties
 WITH duplicates AS (
   SELECT
-    address,
-    city,
-    user_id,
+-- [SCRUBBED GARBAGE]     address,
+-- [SCRUBBED GARBAGE]     city,
+-- [SCRUBBED GARBAGE]     user_id,
     (array_agg(id ORDER BY created_at ASC))[1] as keep_id,
-    array_agg(id) as all_ids
-  FROM properties
-  GROUP BY address, city, user_id
-  HAVING COUNT(*) > 1
+-- [SCRUBBED GARBAGE]     array_agg(id) as all_ids
+-- [SCRUBBED GARBAGE]   FROM properties
+-- [SCRUBBED GARBAGE]   GROUP BY address, city, user_id
+-- [SCRUBBED GARBAGE]   HAVING COUNT(*) > 1
 )
 DELETE FROM properties
-WHERE id IN (
+-- [SCRUBBED GARBAGE] WHERE id IN (
     SELECT unnest(all_ids) FROM duplicates
 ) AND id NOT IN (
     SELECT keep_id FROM duplicates
@@ -875,16 +903,16 @@ WHERE id IN (
 
 -- 1. ENSURE USER_ID COLUMNS EXIST
 ALTER TABLE properties 
-ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
 
 ALTER TABLE tenants
-ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
 
 ALTER TABLE contracts
-ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
 
 ALTER TABLE payments
-ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
 
 -- 2. ENABLE RLS ON ALL TABLES
 ALTER TABLE properties ENABLE ROW LEVEL SECURITY;
@@ -909,75 +937,75 @@ DROP POLICY IF EXISTS "Users can delete own contracts" ON contracts;
 
 -- 4. CREATE SECURE POLICIES FOR PROPERTIES
 CREATE POLICY "Users can view own properties"
-    ON properties FOR SELECT
-    USING (user_id = auth.uid());
+-- [SCRUBBED GARBAGE]     ON properties FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (user_id = auth.uid());
 
 CREATE POLICY "Users can insert own properties"
-    ON properties FOR INSERT
+-- [SCRUBBED GARBAGE]     ON properties FOR INSERT
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can update own properties"
-    ON properties FOR UPDATE
-    USING (user_id = auth.uid())
+-- [SCRUBBED GARBAGE]     ON properties FOR UPDATE
+-- [SCRUBBED GARBAGE]     USING (user_id = auth.uid())
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can delete own properties"
-    ON properties FOR DELETE
-    USING (user_id = auth.uid());
+-- [SCRUBBED GARBAGE]     ON properties FOR DELETE
+-- [SCRUBBED GARBAGE]     USING (user_id = auth.uid());
 
 -- 5. CREATE SECURE POLICIES FOR TENANTS
 CREATE POLICY "Users can view own tenants"
-    ON tenants FOR SELECT
-    USING (user_id = auth.uid());
+-- [SCRUBBED GARBAGE]     ON tenants FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (user_id = auth.uid());
 
 CREATE POLICY "Users can insert own tenants"
-    ON tenants FOR INSERT
+-- [SCRUBBED GARBAGE]     ON tenants FOR INSERT
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can update own tenants"
-    ON tenants FOR UPDATE
-    USING (user_id = auth.uid())
+-- [SCRUBBED GARBAGE]     ON tenants FOR UPDATE
+-- [SCRUBBED GARBAGE]     USING (user_id = auth.uid())
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can delete own tenants"
-    ON tenants FOR DELETE
-    USING (user_id = auth.uid());
+-- [SCRUBBED GARBAGE]     ON tenants FOR DELETE
+-- [SCRUBBED GARBAGE]     USING (user_id = auth.uid());
 
 -- 6. CREATE SECURE POLICIES FOR CONTRACTS
 CREATE POLICY "Users can view own contracts"
-    ON contracts FOR SELECT
-    USING (user_id = auth.uid());
+-- [SCRUBBED GARBAGE]     ON contracts FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (user_id = auth.uid());
 
 CREATE POLICY "Users can insert own contracts"
-    ON contracts FOR INSERT
+-- [SCRUBBED GARBAGE]     ON contracts FOR INSERT
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can update own contracts"
-    ON contracts FOR UPDATE
-    USING (user_id = auth.uid())
+-- [SCRUBBED GARBAGE]     ON contracts FOR UPDATE
+-- [SCRUBBED GARBAGE]     USING (user_id = auth.uid())
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can delete own contracts"
-    ON contracts FOR DELETE
-    USING (user_id = auth.uid());
+-- [SCRUBBED GARBAGE]     ON contracts FOR DELETE
+-- [SCRUBBED GARBAGE]     USING (user_id = auth.uid());
 
 -- 7. CREATE SECURE POLICIES FOR PAYMENTS
 CREATE POLICY "Users can view own payments"
-    ON payments FOR SELECT
-    USING (user_id = auth.uid());
+-- [SCRUBBED GARBAGE]     ON payments FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (user_id = auth.uid());
 
 CREATE POLICY "Users can insert own payments"
-    ON payments FOR INSERT
+-- [SCRUBBED GARBAGE]     ON payments FOR INSERT
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can update own payments"
-    ON payments FOR UPDATE
-    USING (user_id = auth.uid())
+-- [SCRUBBED GARBAGE]     ON payments FOR UPDATE
+-- [SCRUBBED GARBAGE]     USING (user_id = auth.uid())
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can delete own payments"
-    ON payments FOR DELETE
-    USING (user_id = auth.uid());
+-- [SCRUBBED GARBAGE]     ON payments FOR DELETE
+-- [SCRUBBED GARBAGE]     USING (user_id = auth.uid());
 
 -- 8. BACKFILL EXISTING DATA (CRITICAL!)
 -- Update all existing records to have the correct user_id
@@ -986,7 +1014,7 @@ CREATE POLICY "Users can delete own payments"
 
 DO $$
 DECLARE
-    first_user_id UUID;
+-- [SCRUBBED GARBAGE]     first_user_id UUID;
 BEGIN
     -- Get the first user's ID (you may want to specify a specific user)
     SELECT id INTO first_user_id FROM auth.users ORDER BY created_at LIMIT 1;
@@ -1009,12 +1037,12 @@ END $$;
 -- 1. DROP ALL EXISTING POLICIES (to avoid conflicts)
 DO $$ 
 DECLARE
-    r RECORD;
+-- [SCRUBBED GARBAGE]     r RECORD;
 BEGIN
     FOR r IN (SELECT schemaname, tablename, policyname 
-              FROM pg_policies 
-              WHERE schemaname = 'public' 
-              AND tablename IN ('properties', 'tenants', 'contracts', 'payments'))
+-- [SCRUBBED GARBAGE]               FROM pg_policies 
+-- [SCRUBBED GARBAGE]               WHERE schemaname = 'public' 
+-- [SCRUBBED GARBAGE]               AND tablename IN ('properties', 'tenants', 'contracts', 'payments'))
     LOOP
         EXECUTE format('DROP POLICY IF EXISTS %I ON %I.%I', r.policyname, r.schemaname, r.tablename);
     END LOOP;
@@ -1022,16 +1050,16 @@ END $$;
 
 -- 2. ENSURE USER_ID COLUMNS EXIST
 ALTER TABLE properties 
-ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
 
 ALTER TABLE tenants
-ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
 
 ALTER TABLE contracts
-ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
 
 ALTER TABLE payments
-ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
 
 -- 3. ENABLE RLS ON ALL TABLES
 ALTER TABLE properties ENABLE ROW LEVEL SECURITY;
@@ -1041,80 +1069,80 @@ ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
 
 -- 4. CREATE SECURE POLICIES FOR PROPERTIES
 CREATE POLICY "Users can view own properties"
-    ON properties FOR SELECT
-    USING (user_id = auth.uid());
+-- [SCRUBBED GARBAGE]     ON properties FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (user_id = auth.uid());
 
 CREATE POLICY "Users can insert own properties"
-    ON properties FOR INSERT
+-- [SCRUBBED GARBAGE]     ON properties FOR INSERT
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can update own properties"
-    ON properties FOR UPDATE
-    USING (user_id = auth.uid())
+-- [SCRUBBED GARBAGE]     ON properties FOR UPDATE
+-- [SCRUBBED GARBAGE]     USING (user_id = auth.uid())
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can delete own properties"
-    ON properties FOR DELETE
-    USING (user_id = auth.uid());
+-- [SCRUBBED GARBAGE]     ON properties FOR DELETE
+-- [SCRUBBED GARBAGE]     USING (user_id = auth.uid());
 
 -- 5. CREATE SECURE POLICIES FOR TENANTS
 CREATE POLICY "Users can view own tenants"
-    ON tenants FOR SELECT
-    USING (user_id = auth.uid());
+-- [SCRUBBED GARBAGE]     ON tenants FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (user_id = auth.uid());
 
 CREATE POLICY "Users can insert own tenants"
-    ON tenants FOR INSERT
+-- [SCRUBBED GARBAGE]     ON tenants FOR INSERT
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can update own tenants"
-    ON tenants FOR UPDATE
-    USING (user_id = auth.uid())
+-- [SCRUBBED GARBAGE]     ON tenants FOR UPDATE
+-- [SCRUBBED GARBAGE]     USING (user_id = auth.uid())
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can delete own tenants"
-    ON tenants FOR DELETE
-    USING (user_id = auth.uid());
+-- [SCRUBBED GARBAGE]     ON tenants FOR DELETE
+-- [SCRUBBED GARBAGE]     USING (user_id = auth.uid());
 
 -- 6. CREATE SECURE POLICIES FOR CONTRACTS
 CREATE POLICY "Users can view own contracts"
-    ON contracts FOR SELECT
-    USING (user_id = auth.uid());
+-- [SCRUBBED GARBAGE]     ON contracts FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (user_id = auth.uid());
 
 CREATE POLICY "Users can insert own contracts"
-    ON contracts FOR INSERT
+-- [SCRUBBED GARBAGE]     ON contracts FOR INSERT
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can update own contracts"
-    ON contracts FOR UPDATE
-    USING (user_id = auth.uid())
+-- [SCRUBBED GARBAGE]     ON contracts FOR UPDATE
+-- [SCRUBBED GARBAGE]     USING (user_id = auth.uid())
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can delete own contracts"
-    ON contracts FOR DELETE
-    USING (user_id = auth.uid());
+-- [SCRUBBED GARBAGE]     ON contracts FOR DELETE
+-- [SCRUBBED GARBAGE]     USING (user_id = auth.uid());
 
 -- 7. CREATE SECURE POLICIES FOR PAYMENTS
 CREATE POLICY "Users can view own payments"
-    ON payments FOR SELECT
-    USING (user_id = auth.uid());
+-- [SCRUBBED GARBAGE]     ON payments FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (user_id = auth.uid());
 
 CREATE POLICY "Users can insert own payments"
-    ON payments FOR INSERT
+-- [SCRUBBED GARBAGE]     ON payments FOR INSERT
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can update own payments"
-    ON payments FOR UPDATE
-    USING (user_id = auth.uid())
+-- [SCRUBBED GARBAGE]     ON payments FOR UPDATE
+-- [SCRUBBED GARBAGE]     USING (user_id = auth.uid())
     WITH CHECK (user_id = auth.uid());
 
 CREATE POLICY "Users can delete own payments"
-    ON payments FOR DELETE
-    USING (user_id = auth.uid());
+-- [SCRUBBED GARBAGE]     ON payments FOR DELETE
+-- [SCRUBBED GARBAGE]     USING (user_id = auth.uid());
 
 -- 8. BACKFILL EXISTING DATA
 DO $$
 DECLARE
-    first_user_id UUID;
+-- [SCRUBBED GARBAGE]     first_user_id UUID;
 BEGIN
     -- Get the first user's ID
     SELECT id INTO first_user_id FROM auth.users ORDER BY created_at LIMIT 1;
@@ -1133,16 +1161,16 @@ END $$;
 -- 9. VERIFY RLS IS ENABLED
 DO $$
 DECLARE
-    r RECORD;
+-- [SCRUBBED GARBAGE]     r RECORD;
 BEGIN
     FOR r IN (SELECT tablename, rowsecurity 
-              FROM pg_tables 
-              WHERE schemaname = 'public' 
-              AND tablename IN ('properties', 'tenants', 'contracts', 'payments'))
+-- [SCRUBBED GARBAGE]               FROM pg_tables 
+-- [SCRUBBED GARBAGE]               WHERE schemaname = 'public' 
+-- [SCRUBBED GARBAGE]               AND tablename IN ('properties', 'tenants', 'contracts', 'payments'))
     LOOP
         IF NOT r.rowsecurity THEN
             RAISE EXCEPTION 'RLS is NOT enabled on table: %', r.tablename;
-        ELSE
+-- [SCRUBBED GARBAGE]         ELSE
             RAISE NOTICE 'RLS is enabled on table: %', r.tablename;
         END IF;
     END LOOP;
@@ -1158,38 +1186,38 @@ DROP TRIGGER IF EXISTS on_auth_user_created_relink_invoices ON auth.users;
 -- 2. CONSOLIDATED TRIGGER FUNCTION
 -- Handles both Profile Creation and Invoice Recovery in one safe transaction.
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER 
-LANGUAGE plpgsql 
-SECURITY DEFINER SET search_path = public -- Force Public Schema
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER 
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql 
+-- [SCRUBBED GARBAGE] SECURITY DEFINER SET search_path = public -- Force Public Schema
 AS $$
 BEGIN
     -- A. Create User Profile
     -- We use a simpler INSERT to minimize potential type errors
     INSERT INTO public.user_profiles (
-        id, 
-        email, 
-        full_name, 
-        role, 
-        subscription_status, 
-        subscription_plan
+-- [SCRUBBED GARBAGE]         id, 
+-- [SCRUBBED GARBAGE]         email, 
+-- [SCRUBBED GARBAGE]         full_name, 
+-- [SCRUBBED GARBAGE]         role, 
+-- [SCRUBBED GARBAGE]         subscription_status, 
+-- [SCRUBBED GARBAGE]         subscription_plan
     )
     VALUES (
-        NEW.id,
-        NEW.email,
-        COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
+-- [SCRUBBED GARBAGE]         NEW.id,
+-- [SCRUBBED GARBAGE]         NEW.email,
+-- [SCRUBBED GARBAGE]         COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
         'user'::user_role,
         'active'::subscription_status,
         'free_forever'::subscription_plan_type
     )
-    ON CONFLICT (id) DO NOTHING; -- Idempotency: If it exists, skip.
+-- [SCRUBBED GARBAGE]     ON CONFLICT (id) DO NOTHING; -- Idempotency: If it exists, skip.
 
     -- B. Link Past Invoices (Safely)
     -- We wrap this in a block so if it fails, the user is still created.
     BEGIN
         UPDATE public.invoices
         SET user_id = NEW.id
-        WHERE user_id IS NULL 
-        AND billing_email = NEW.email;
+-- [SCRUBBED GARBAGE]         WHERE user_id IS NULL 
+-- [SCRUBBED GARBAGE]         AND billing_email = NEW.email;
     EXCEPTION WHEN OTHERS THEN
         RAISE WARNING 'Invoice linking failed for users %: %', NEW.email, SQLERRM;
     END;
@@ -1202,17 +1230,19 @@ END;
 $$;
 
 -- 3. RE-ATTACH SINGLE TRIGGER
+;
+DROP TRIGGER IF EXISTS "on_auth_user_created" ON auth.users;
 CREATE TRIGGER on_auth_user_created
-    AFTER INSERT ON auth.users
+-- [SCRUBBED GARBAGE]     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 -- Enable RLS just in case
 ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
 
 -- Allow Admins to UPDATE any profile
 CREATE POLICY "Admins can update all profiles" 
-ON public.user_profiles 
+-- [SCRUBBED GARBAGE] ON public.user_profiles 
 FOR UPDATE 
-USING (
+-- [SCRUBBED GARBAGE] USING (
   (SELECT role FROM public.user_profiles WHERE id = auth.uid()) = 'admin'
 )
 WITH CHECK (
@@ -1226,10 +1256,10 @@ BEGIN
     IF NEW.status = 'active' THEN
         IF EXISTS (
             SELECT 1 FROM public.contracts
-            WHERE property_id = NEW.property_id
-            AND status = 'active'
-            AND id != NEW.id -- Exclude self during updates
-            AND (
+-- [SCRUBBED GARBAGE]             WHERE property_id = NEW.property_id
+-- [SCRUBBED GARBAGE]             AND status = 'active'
+-- [SCRUBBED GARBAGE]             AND id != NEW.id -- Exclude self during updates
+-- [SCRUBBED GARBAGE]             AND (
                 (start_date <= NEW.end_date) AND (end_date >= NEW.start_date)
             )
         ) THEN
@@ -1242,8 +1272,10 @@ $$ LANGUAGE plpgsql;
 
 -- Trigger: Check before insert or update on contracts
 DROP TRIGGER IF EXISTS trigger_check_active_contract ON public.contracts;
+;
+DROP TRIGGER IF EXISTS "trigger_check_active_contract" ON public.contracts;
 CREATE TRIGGER trigger_check_active_contract
-BEFORE INSERT OR UPDATE ON public.contracts
+-- [SCRUBBED GARBAGE] BEFORE INSERT OR UPDATE ON public.contracts
 FOR EACH ROW
 EXECUTE FUNCTION public.check_active_contract();
 
@@ -1257,8 +1289,8 @@ BEGIN
         -- Link tenant to property and set active
         UPDATE public.tenants
         SET property_id = NEW.property_id,
-            status = 'active'
-        WHERE id = NEW.tenant_id;
+-- [SCRUBBED GARBAGE]             status = 'active'
+-- [SCRUBBED GARBAGE]         WHERE id = NEW.tenant_id;
         
         -- Optional: Should we unlink other tenants from this property?
         -- For now, we assume the strict contract logic handles the "one active" rule, 
@@ -1270,9 +1302,9 @@ BEGIN
         -- Unlink tenant (set to past)
         UPDATE public.tenants
         SET property_id = NULL,
-            status = 'past'
-        WHERE id = NEW.tenant_id 
-        AND property_id = NEW.property_id; -- Only if they are still linked to this property
+-- [SCRUBBED GARBAGE]             status = 'past'
+-- [SCRUBBED GARBAGE]         WHERE id = NEW.tenant_id 
+-- [SCRUBBED GARBAGE]         AND property_id = NEW.property_id; -- Only if they are still linked to this property
     END IF;
     
     RETURN NEW;
@@ -1281,8 +1313,10 @@ $$ LANGUAGE plpgsql;
 
 -- Trigger: Sync Tenant Status
 DROP TRIGGER IF EXISTS trigger_sync_tenant_status ON public.contracts;
+;
+DROP TRIGGER IF EXISTS "trigger_sync_tenant_status" ON public.contracts;
 CREATE TRIGGER trigger_sync_tenant_status
-AFTER INSERT OR UPDATE ON public.contracts
+-- [SCRUBBED GARBAGE] AFTER INSERT OR UPDATE ON public.contracts
 FOR EACH ROW
 EXECUTE FUNCTION public.sync_tenant_status_from_contract();
 
@@ -1295,22 +1329,22 @@ BEGIN
     IF NEW.status = 'active' THEN
         UPDATE public.properties
         SET status = 'Occupied'
-        WHERE id = NEW.property_id;
+-- [SCRUBBED GARBAGE]         WHERE id = NEW.property_id;
     
     -- If contract ends (ended/terminated) and was previously active
-    ELSIF (NEW.status IN ('ended', 'terminated')) THEN
+-- [SCRUBBED GARBAGE]     ELSIF (NEW.status IN ('ended', 'terminated')) THEN
         -- Check if there are ANY other active contracts currently valid (by date)
         -- Actually, simplistically, if we just ended the active one, we might differ to Vacant unless another covers TODAY.
         -- For simplicity, if NO active contracts exist at all, set Vacant.
         IF NOT EXISTS (
             SELECT 1 FROM public.contracts 
-            WHERE property_id = NEW.property_id 
-            AND status = 'active' 
-            AND id != NEW.id
+-- [SCRUBBED GARBAGE]             WHERE property_id = NEW.property_id 
+-- [SCRUBBED GARBAGE]             AND status = 'active' 
+-- [SCRUBBED GARBAGE]             AND id != NEW.id
         ) THEN
             UPDATE public.properties
             SET status = 'Vacant'
-            WHERE id = NEW.property_id;
+-- [SCRUBBED GARBAGE]             WHERE id = NEW.property_id;
         END IF;
     END IF;
     
@@ -1320,13 +1354,15 @@ $$ LANGUAGE plpgsql;
 
 -- Trigger: Update Property Status after contract changes
 DROP TRIGGER IF EXISTS trigger_update_property_status ON public.contracts;
+;
+DROP TRIGGER IF EXISTS "trigger_update_property_status" ON public.contracts;
 CREATE TRIGGER trigger_update_property_status
-AFTER INSERT OR UPDATE ON public.contracts
+-- [SCRUBBED GARBAGE] AFTER INSERT OR UPDATE ON public.contracts
 FOR EACH ROW
 EXECUTE FUNCTION public.update_property_status_from_contract();
 -- Add metadata column to notifications for storing context (e.g., contract_id)
 ALTER TABLE public.notifications 
-ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;
 
 -- Update RLS policies to allow new column usage if necessary (usually robust enough)
 -- ============================================
@@ -1336,9 +1372,9 @@ ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;
 -- 1. ENSURE SCHEMA IS CORRECT (Idempotent)
 -- We make sure the columns exist. If they were missing, this fixes the "Database Error".
 ALTER TABLE public.invoices 
-ADD COLUMN IF NOT EXISTS billing_name TEXT,
-ADD COLUMN IF NOT EXISTS billing_email TEXT,
-ADD COLUMN IF NOT EXISTS billing_address TEXT;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS billing_name TEXT,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS billing_email TEXT,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS billing_address TEXT;
 
 -- 2. RESET TRIGGERS (Clean Slate)
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
@@ -1348,24 +1384,24 @@ DROP FUNCTION IF EXISTS public.relink_past_invoices();
 
 -- 3. MASTER SIGNUP FUNCTION
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER 
-LANGUAGE plpgsql 
-SECURITY DEFINER SET search_path = public
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER 
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql 
+-- [SCRUBBED GARBAGE] SECURITY DEFINER SET search_path = public
 AS $$
 BEGIN
     -- A. Create User Profile
     INSERT INTO public.user_profiles (
-        id, email, full_name, role, subscription_status, subscription_plan
+-- [SCRUBBED GARBAGE]         id, email, full_name, role, subscription_status, subscription_plan
     )
     VALUES (
-        NEW.id,
-        NEW.email,
-        COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
+-- [SCRUBBED GARBAGE]         NEW.id,
+-- [SCRUBBED GARBAGE]         NEW.email,
+-- [SCRUBBED GARBAGE]         COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
         'user',
         'active',
         'free_forever'
     )
-    ON CONFLICT (id) DO NOTHING;
+-- [SCRUBBED GARBAGE]     ON CONFLICT (id) DO NOTHING;
 
     -- B. Link Past Invoices
     -- We explicitly check if any matching invoices exist before trying to update.
@@ -1373,8 +1409,8 @@ BEGIN
     BEGIN
         UPDATE public.invoices
         SET user_id = NEW.id
-        WHERE user_id IS NULL 
-        AND billing_email = NEW.email;
+-- [SCRUBBED GARBAGE]         WHERE user_id IS NULL 
+-- [SCRUBBED GARBAGE]         AND billing_email = NEW.email;
     EXCEPTION WHEN OTHERS THEN
         RAISE WARNING 'Invoice linking error: %', SQLERRM;
     END;
@@ -1389,8 +1425,10 @@ END;
 $$;
 
 -- 4. ATTACH TRIGGER
+;
+DROP TRIGGER IF EXISTS "on_auth_user_created" ON auth.users;
 CREATE TRIGGER on_auth_user_created
-    AFTER INSERT ON auth.users
+-- [SCRUBBED GARBAGE]     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- 5. VERIFY PERMISSIONS
@@ -1401,29 +1439,29 @@ GRANT ALL ON TABLE public.user_profiles TO postgres, service_role;
 
 -- 1. Foreign Keys (Crucial for the error you saw)
 ALTER TABLE public.contracts 
-ADD COLUMN IF NOT EXISTS property_id uuid REFERENCES public.properties(id),
-ADD COLUMN IF NOT EXISTS tenant_id uuid REFERENCES public.tenants(id);
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS property_id uuid REFERENCES public.properties(id),
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS tenant_id uuid REFERENCES public.tenants(id);
 
 -- 2. Other Missing Columns (preventing future errors)
 ALTER TABLE public.contracts
-ADD COLUMN IF NOT EXISTS signing_date date,
-ADD COLUMN IF NOT EXISTS start_date date,
-ADD COLUMN IF NOT EXISTS end_date date,
-ADD COLUMN IF NOT EXISTS base_rent numeric(10, 2),
-ADD COLUMN IF NOT EXISTS currency text DEFAULT 'ILS',
-ADD COLUMN IF NOT EXISTS payment_frequency text,
-ADD COLUMN IF NOT EXISTS payment_day integer,
-ADD COLUMN IF NOT EXISTS linkage_type text DEFAULT 'none',
-ADD COLUMN IF NOT EXISTS security_deposit_amount numeric(10, 2),
-ADD COLUMN IF NOT EXISTS status text DEFAULT 'active';
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS signing_date date,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS start_date date,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS end_date date,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS base_rent numeric(10, 2),
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS currency text DEFAULT 'ILS',
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS payment_frequency text,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS payment_day integer,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS linkage_type text DEFAULT 'none',
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS security_deposit_amount numeric(10, 2),
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS status text DEFAULT 'active';
 
 -- 3. Linkage Details
 ALTER TABLE public.contracts
-ADD COLUMN IF NOT EXISTS base_index_date date,
-ADD COLUMN IF NOT EXISTS base_index_value numeric(10, 4),
-ADD COLUMN IF NOT EXISTS linkage_sub_type text,
-ADD COLUMN IF NOT EXISTS linkage_ceiling numeric(5, 2),
-ADD COLUMN IF NOT EXISTS linkage_floor numeric(5, 2);
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS base_index_date date,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS base_index_value numeric(10, 4),
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS linkage_sub_type text,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS linkage_ceiling numeric(5, 2),
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS linkage_floor numeric(5, 2);
 
 -- 4. Permissions
 GRANT ALL ON public.contracts TO postgres, service_role, authenticated;
@@ -1435,17 +1473,17 @@ GRANT ALL ON public.contracts TO postgres, service_role, authenticated;
 -- This function runs with the privileges of the creator (superuser), bypassing RLS.
 -- This breaks the infinite loop where checking RLS required querying the table protected by RLS.
 CREATE OR REPLACE FUNCTION public.is_admin()
-RETURNS BOOLEAN 
-LANGUAGE plpgsql 
-SECURITY DEFINER 
+-- [SCRUBBED GARBAGE] RETURNS BOOLEAN 
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql 
+-- [SCRUBBED GARBAGE] SECURITY DEFINER 
 SET search_path = public -- Secure the search path
 AS $$
 BEGIN
     RETURN EXISTS (
         SELECT 1 
-        FROM public.user_profiles 
-        WHERE id = auth.uid() 
-        AND role = 'admin'
+-- [SCRUBBED GARBAGE]         FROM public.user_profiles 
+-- [SCRUBBED GARBAGE]         WHERE id = auth.uid() 
+-- [SCRUBBED GARBAGE]         AND role = 'admin'
     );
 END;
 $$;
@@ -1465,45 +1503,45 @@ DROP POLICY IF EXISTS "Users can update own profile" ON user_profiles;
 
 -- A. User Profiles
 CREATE POLICY "Users can view own profile" 
-    ON user_profiles FOR SELECT 
-    USING (auth.uid() = id);
+-- [SCRUBBED GARBAGE]     ON user_profiles FOR SELECT 
+-- [SCRUBBED GARBAGE]     USING (auth.uid() = id);
 
 CREATE POLICY "Users can update own profile" 
-    ON user_profiles FOR UPDATE 
-    USING (auth.uid() = id);
+-- [SCRUBBED GARBAGE]     ON user_profiles FOR UPDATE 
+-- [SCRUBBED GARBAGE]     USING (auth.uid() = id);
 
 CREATE POLICY "Admins can view all profiles" 
-    ON user_profiles FOR SELECT 
-    USING (is_admin());
+-- [SCRUBBED GARBAGE]     ON user_profiles FOR SELECT 
+-- [SCRUBBED GARBAGE]     USING (is_admin());
 
 CREATE POLICY "Admins can update all profiles" 
-    ON user_profiles FOR UPDATE 
-    USING (is_admin());
+-- [SCRUBBED GARBAGE]     ON user_profiles FOR UPDATE 
+-- [SCRUBBED GARBAGE]     USING (is_admin());
 
 -- B. CRM Interactions (Admin Only)
 CREATE POLICY "Admins manage CRM"
-    ON crm_interactions FOR ALL
-    USING (is_admin());
+-- [SCRUBBED GARBAGE]     ON crm_interactions FOR ALL
+-- [SCRUBBED GARBAGE]     USING (is_admin());
 
 -- C. Audit Logs (Admin Only)
 CREATE POLICY "Admins view audit logs"
-    ON audit_logs FOR SELECT
-    USING (is_admin());
+-- [SCRUBBED GARBAGE]     ON audit_logs FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (is_admin());
 
 -- D. Invoices (Users own, Admins all)
 DROP POLICY IF EXISTS "Users view own invoices" ON invoices;
 DROP POLICY IF EXISTS "Admins view all invoices" ON invoices;
 
 CREATE POLICY "Users view own invoices"
-    ON invoices FOR SELECT
-    USING (auth.uid() = user_id);
+-- [SCRUBBED GARBAGE]     ON invoices FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (auth.uid() = user_id);
 
 CREATE POLICY "Admins view all invoices"
-    ON invoices FOR SELECT
-    USING (is_admin());
+-- [SCRUBBED GARBAGE]     ON invoices FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (is_admin());
 -- Ensure contract_file_url exists on contracts table
 ALTER TABLE contracts
-ADD COLUMN IF NOT EXISTS contract_file_url TEXT;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS contract_file_url TEXT;
 
 -- ============================================
 -- RESCUE SCRIPT: Fix Missing Profile
@@ -1514,8 +1552,8 @@ ADD COLUMN IF NOT EXISTS contract_file_url TEXT;
 
 DO $$
 DECLARE
-    target_email TEXT := 'rentmate.rubi@gmail.com'; -- <--- YOUR EMAIL HERE
-    v_user_id UUID;
+-- [SCRUBBED GARBAGE]     target_email TEXT := 'rentmate.rubi@gmail.com'; -- <--- YOUR EMAIL HERE
+-- [SCRUBBED GARBAGE]     v_user_id UUID;
 BEGIN
     -- 1. Find the User ID from the Auth table
     SELECT id INTO v_user_id FROM auth.users WHERE email = target_email;
@@ -1526,22 +1564,22 @@ BEGIN
 
     -- 2. Create the Profile manually if it's missing
     INSERT INTO public.user_profiles (
-        id, 
-        email, 
-        full_name, 
-        role, 
-        subscription_status, 
-        subscription_plan
+-- [SCRUBBED GARBAGE]         id, 
+-- [SCRUBBED GARBAGE]         email, 
+-- [SCRUBBED GARBAGE]         full_name, 
+-- [SCRUBBED GARBAGE]         role, 
+-- [SCRUBBED GARBAGE]         subscription_status, 
+-- [SCRUBBED GARBAGE]         subscription_plan
     )
     VALUES (
-        v_user_id,
-        target_email,
+-- [SCRUBBED GARBAGE]         v_user_id,
+-- [SCRUBBED GARBAGE]         target_email,
         'Admin User', -- Default name
         'admin',      -- Give yourself Admin access
         'active',
         'free_forever'
     )
-    ON CONFLICT (id) DO UPDATE 
+-- [SCRUBBED GARBAGE]     ON CONFLICT (id) DO UPDATE 
     SET role = 'admin', subscription_status = 'active';
 
     RAISE NOTICE 'Fixed profile for %', target_email;
@@ -1555,43 +1593,43 @@ $$;
 
 -- 1. Create missing profiles for orphaned auth users
 INSERT INTO public.user_profiles (
-    id, 
-    email, 
-    full_name,
-    first_name,
-    last_name,
-    role, 
-    subscription_status, 
-    plan_id
+-- [SCRUBBED GARBAGE]     id, 
+-- [SCRUBBED GARBAGE]     email, 
+-- [SCRUBBED GARBAGE]     full_name,
+-- [SCRUBBED GARBAGE]     first_name,
+-- [SCRUBBED GARBAGE]     last_name,
+-- [SCRUBBED GARBAGE]     role, 
+-- [SCRUBBED GARBAGE]     subscription_status, 
+-- [SCRUBBED GARBAGE]     plan_id
 )
 SELECT 
-    au.id,
-    au.email,
-    COALESCE(au.raw_user_meta_data->>'full_name', split_part(au.email, '@', 1)),
-    COALESCE(au.raw_user_meta_data->>'full_name', split_part(au.email, '@', 1)),
+-- [SCRUBBED GARBAGE]     au.id,
+-- [SCRUBBED GARBAGE]     au.email,
+-- [SCRUBBED GARBAGE]     COALESCE(au.raw_user_meta_data->>'full_name', split_part(au.email, '@', 1)),
+-- [SCRUBBED GARBAGE]     COALESCE(au.raw_user_meta_data->>'full_name', split_part(au.email, '@', 1)),
     'User',
     'user',
     'active',
     'free'
-FROM auth.users au
-LEFT JOIN public.user_profiles up ON au.id = up.id
-WHERE up.id IS NULL
-ON CONFLICT (id) DO UPDATE SET
-    email = EXCLUDED.email,
-    full_name = COALESCE(EXCLUDED.full_name, user_profiles.full_name),
-    first_name = COALESCE(EXCLUDED.first_name, user_profiles.first_name),
-    last_name = COALESCE(EXCLUDED.last_name, user_profiles.last_name),
-    updated_at = NOW();
+-- [SCRUBBED GARBAGE] FROM auth.users au
+-- [SCRUBBED GARBAGE] LEFT JOIN public.user_profiles up ON au.id = up.id
+-- [SCRUBBED GARBAGE] WHERE up.id IS NULL
+-- [SCRUBBED GARBAGE] ON CONFLICT (id) DO UPDATE SET
+-- [SCRUBBED GARBAGE]     email = EXCLUDED.email,
+-- [SCRUBBED GARBAGE]     full_name = COALESCE(EXCLUDED.full_name, user_profiles.full_name),
+-- [SCRUBBED GARBAGE]     first_name = COALESCE(EXCLUDED.first_name, user_profiles.first_name),
+-- [SCRUBBED GARBAGE]     last_name = COALESCE(EXCLUDED.last_name, user_profiles.last_name),
+-- [SCRUBBED GARBAGE]     updated_at = NOW();
 
 -- 2. Log the fix
 DO $$
 DECLARE
-    orphaned_count INTEGER;
+-- [SCRUBBED GARBAGE]     orphaned_count INTEGER;
 BEGIN
     SELECT COUNT(*) INTO orphaned_count
-    FROM auth.users au
-    LEFT JOIN public.user_profiles up ON au.id = up.id
-    WHERE up.id IS NULL;
+-- [SCRUBBED GARBAGE]     FROM auth.users au
+-- [SCRUBBED GARBAGE]     LEFT JOIN public.user_profiles up ON au.id = up.id
+-- [SCRUBBED GARBAGE]     WHERE up.id IS NULL;
     
     RAISE NOTICE 'Fixed % orphaned user profiles', orphaned_count;
 END $$;
@@ -1608,17 +1646,17 @@ GRANT ALL ON TABLE public.user_profiles TO postgres, service_role;
 -- We add a Try/Catch block to prevent blocking signup if this fails.
 
 CREATE OR REPLACE FUNCTION relink_past_invoices()
-RETURNS TRIGGER 
-LANGUAGE plpgsql 
-SECURITY DEFINER SET search_path = public
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER 
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql 
+-- [SCRUBBED GARBAGE] SECURITY DEFINER SET search_path = public
 AS $$
 BEGIN
     -- Update invoices that have NO owner (user_id is NULL) 
     -- but match the new user's email string.
     UPDATE public.invoices
     SET user_id = NEW.id
-    WHERE user_id IS NULL 
-    AND billing_email = NEW.email;
+-- [SCRUBBED GARBAGE]     WHERE user_id IS NULL 
+-- [SCRUBBED GARBAGE]     AND billing_email = NEW.email;
 
     RETURN NEW;
 EXCEPTION WHEN OTHERS THEN
@@ -1631,8 +1669,10 @@ $$;
 
 -- 3. Ensure the Trigger is attached
 DROP TRIGGER IF EXISTS on_auth_user_created_relink_invoices ON auth.users;
+;
+DROP TRIGGER IF EXISTS "on_auth_user_created_relink_invoices" ON auth.users;
 CREATE TRIGGER on_auth_user_created_relink_invoices
-    AFTER INSERT ON auth.users
+-- [SCRUBBED GARBAGE]     AFTER INSERT ON auth.users
     FOR EACH ROW
     EXECUTE FUNCTION relink_past_invoices();
 -- Comprehensive Fix for "Failed to Update Profile"
@@ -1641,19 +1681,19 @@ DO $$
 BEGIN
     -- 1. Ensure Columns Exist
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_profiles' AND column_name = 'first_name') THEN
-        ALTER TABLE public.user_profiles ADD COLUMN first_name TEXT;
+        ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS first_name TEXT;
     END IF;
 
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_profiles' AND column_name = 'last_name') THEN
-        ALTER TABLE public.user_profiles ADD COLUMN last_name TEXT;
+        ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS last_name TEXT;
     END IF;
 
     -- 2. Populate NULLs (Safety Check)
     UPDATE public.user_profiles
     SET 
-        first_name = COALESCE(full_name, 'User'),
-        last_name = 'aaa'
-    WHERE first_name IS NULL OR last_name IS NULL;
+-- [SCRUBBED GARBAGE]         first_name = COALESCE(full_name, 'User'),
+-- [SCRUBBED GARBAGE]         last_name = 'aaa'
+-- [SCRUBBED GARBAGE]     WHERE first_name IS NULL OR last_name IS NULL;
 
     -- 3. Reset RLS Policies for user_profiles (The Nuclear Option for Permissions)
     -- First, ensure RLS is on
@@ -1669,17 +1709,17 @@ BEGIN
     
     -- SELECT
     CREATE POLICY "Users view own"
-    ON public.user_profiles FOR SELECT
-    USING (auth.uid() = id);
+-- [SCRUBBED GARBAGE]     ON public.user_profiles FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (auth.uid() = id);
 
     -- UPDATE (Explicitly Allow)
     CREATE POLICY "Users update own"
-    ON public.user_profiles FOR UPDATE
-    USING (auth.uid() = id);
+-- [SCRUBBED GARBAGE]     ON public.user_profiles FOR UPDATE
+-- [SCRUBBED GARBAGE]     USING (auth.uid() = id);
 
     -- INSERT (Crucial for 'upsert' if row is missing/ghosted)
     CREATE POLICY "Users insert own"
-    ON public.user_profiles FOR INSERT
+-- [SCRUBBED GARBAGE]     ON public.user_profiles FOR INSERT
     WITH CHECK (auth.uid() = id);
 
 END $$;
@@ -1688,22 +1728,22 @@ DO $$
 BEGIN
     -- Add has_parking
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'properties' AND column_name = 'has_parking') THEN
-        ALTER TABLE properties ADD COLUMN has_parking BOOLEAN DEFAULT false;
+        ALTER TABLE properties ADD COLUMN IF NOT EXISTS has_parking BOOLEAN DEFAULT false;
     END IF;
 
     -- Add has_storage
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'properties' AND column_name = 'has_storage') THEN
-        ALTER TABLE properties ADD COLUMN has_storage BOOLEAN DEFAULT false;
+        ALTER TABLE properties ADD COLUMN IF NOT EXISTS has_storage BOOLEAN DEFAULT false;
     END IF;
 
     -- Add property_type
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'properties' AND column_name = 'property_type') THEN
-        ALTER TABLE properties ADD COLUMN property_type TEXT DEFAULT 'apartment';
+        ALTER TABLE properties ADD COLUMN IF NOT EXISTS property_type TEXT DEFAULT 'apartment';
     END IF;
 
     -- Add image_url
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'properties' AND column_name = 'image_url') THEN
-        ALTER TABLE properties ADD COLUMN image_url TEXT;
+        ALTER TABLE properties ADD COLUMN IF NOT EXISTS image_url TEXT;
     END IF;
 END $$;
 
@@ -1712,9 +1752,9 @@ DO $$
 BEGIN
     ALTER TABLE properties DROP CONSTRAINT IF EXISTS properties_property_type_check;
     ALTER TABLE properties ADD CONSTRAINT properties_property_type_check 
-    CHECK (property_type IN ('apartment', 'penthouse', 'garden', 'house', 'other'));
+-- [SCRUBBED GARBAGE]     CHECK (property_type IN ('apartment', 'penthouse', 'garden', 'house', 'other'));
 EXCEPTION
-    WHEN OTHERS THEN NULL;
+-- [SCRUBBED GARBAGE]     WHEN OTHERS THEN NULL;
 END $$;
 -- FIX: Re-create the handle_new_user function with explicit search_path and permissions
 
@@ -1728,23 +1768,23 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 -- 3. Re-define the function with `SET search_path = public`
 -- This fixes issues where the function can't find 'user_profiles' or the enums.
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER 
-LANGUAGE plpgsql 
-SECURITY DEFINER SET search_path = public
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER 
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql 
+-- [SCRUBBED GARBAGE] SECURITY DEFINER SET search_path = public
 AS $$
 BEGIN
     INSERT INTO public.user_profiles (
-        id, 
-        email, 
-        full_name, 
-        role, 
-        subscription_status, 
-        subscription_plan
+-- [SCRUBBED GARBAGE]         id, 
+-- [SCRUBBED GARBAGE]         email, 
+-- [SCRUBBED GARBAGE]         full_name, 
+-- [SCRUBBED GARBAGE]         role, 
+-- [SCRUBBED GARBAGE]         subscription_status, 
+-- [SCRUBBED GARBAGE]         subscription_plan
     )
     VALUES (
-        NEW.id,
-        NEW.email,
-        COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
+-- [SCRUBBED GARBAGE]         NEW.id,
+-- [SCRUBBED GARBAGE]         NEW.email,
+-- [SCRUBBED GARBAGE]         COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
         'user'::user_role,
         'active'::subscription_status,
         'free_forever'::subscription_plan_type
@@ -1759,8 +1799,10 @@ END;
 $$;
 
 -- 4. Re-attach the trigger
+;
+DROP TRIGGER IF EXISTS "on_auth_user_created" ON auth.users;
 CREATE TRIGGER on_auth_user_created
-    AFTER INSERT ON auth.users
+-- [SCRUBBED GARBAGE]     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 -- ============================================
 -- FIX SIGNUP TRIGGER (Proper Plan Linking)
@@ -1769,28 +1811,28 @@ CREATE TRIGGER on_auth_user_created
 -- 1. Ensure the 'free' plan exists to avoid foreign key errors
 INSERT INTO public.subscription_plans (id, name, price_monthly, max_properties, max_tenants)
 VALUES ('free', 'Free Forever', 0, 1, 2)
-ON CONFLICT (id) DO NOTHING;
+-- [SCRUBBED GARBAGE] ON CONFLICT (id) DO NOTHING;
 
 -- 2. Re-define the handler to set plan_id
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER 
-LANGUAGE plpgsql 
-SECURITY DEFINER SET search_path = public
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER 
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql 
+-- [SCRUBBED GARBAGE] SECURITY DEFINER SET search_path = public
 AS $$
 BEGIN
     INSERT INTO public.user_profiles (
-        id, 
-        email, 
-        full_name, 
-        role, 
-        subscription_status, 
-        plan_id, -- New relation
-        subscription_plan -- Legacy enum fallback
+-- [SCRUBBED GARBAGE]         id, 
+-- [SCRUBBED GARBAGE]         email, 
+-- [SCRUBBED GARBAGE]         full_name, 
+-- [SCRUBBED GARBAGE]         role, 
+-- [SCRUBBED GARBAGE]         subscription_status, 
+-- [SCRUBBED GARBAGE]         plan_id, -- New relation
+-- [SCRUBBED GARBAGE]         subscription_plan -- Legacy enum fallback
     )
     VALUES (
-        NEW.id,
-        NEW.email,
-        COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
+-- [SCRUBBED GARBAGE]         NEW.id,
+-- [SCRUBBED GARBAGE]         NEW.email,
+-- [SCRUBBED GARBAGE]         COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
         'user'::user_role,
         'active'::subscription_status,
         'free', -- Default to 'free' plan ID
@@ -1805,30 +1847,30 @@ $$;
 
 -- 1. Fix Tenants Table
 ALTER TABLE public.tenants 
-ADD COLUMN IF NOT EXISTS id_number TEXT,
-ADD COLUMN IF NOT EXISTS email TEXT,
-ADD COLUMN IF NOT EXISTS phone TEXT;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS id_number TEXT,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS email TEXT,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS phone TEXT;
 
 -- 2. Fix Contracts Table (Financials & Linkage)
 ALTER TABLE public.contracts
-ADD COLUMN IF NOT EXISTS base_rent NUMERIC(10, 2),
-ADD COLUMN IF NOT EXISTS currency TEXT DEFAULT 'ILS',
-ADD COLUMN IF NOT EXISTS payment_frequency TEXT,
-ADD COLUMN IF NOT EXISTS payment_day INTEGER,
-ADD COLUMN IF NOT EXISTS linkage_type TEXT DEFAULT 'none',
-ADD COLUMN IF NOT EXISTS base_index_date DATE,
-ADD COLUMN IF NOT EXISTS base_index_value NUMERIC(10, 4), -- More precision for index
-ADD COLUMN IF NOT EXISTS security_deposit_amount NUMERIC(10, 2),
-ADD COLUMN IF NOT EXISTS signing_date DATE,
-ADD COLUMN IF NOT EXISTS start_date DATE,
-ADD COLUMN IF NOT EXISTS end_date DATE,
-ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'active';
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS base_rent NUMERIC(10, 2),
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS currency TEXT DEFAULT 'ILS',
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS payment_frequency TEXT,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS payment_day INTEGER,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS linkage_type TEXT DEFAULT 'none',
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS base_index_date DATE,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS base_index_value NUMERIC(10, 4), -- More precision for index
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS security_deposit_amount NUMERIC(10, 2),
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS signing_date DATE,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS start_date DATE,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS end_date DATE,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'active';
 
 -- 3. Add New Linkage Features (Sub-Type and Caps)
 ALTER TABLE public.contracts
-ADD COLUMN IF NOT EXISTS linkage_sub_type TEXT, -- 'known', 'respect_of', 'base'
-ADD COLUMN IF NOT EXISTS linkage_ceiling NUMERIC(5, 2), -- Percentage
-ADD COLUMN IF NOT EXISTS linkage_floor NUMERIC(5, 2); -- Percentage
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS linkage_sub_type TEXT, -- 'known', 'respect_of', 'base'
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS linkage_ceiling NUMERIC(5, 2), -- Percentage
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS linkage_floor NUMERIC(5, 2); -- Percentage
 
 -- 4. Enable RLS
 ALTER TABLE public.tenants ENABLE ROW LEVEL SECURITY;
@@ -1840,36 +1882,36 @@ ALTER TABLE public.contracts ENABLE ROW LEVEL SECURITY;
 -- 1. CONFIRM EMAIL MANUALLY (So you don't need to wait for it)
 UPDATE auth.users
 SET email_confirmed_at = now()
-WHERE email = 'rentmate.rubi@gmail.com';  -- Your Email
+-- [SCRUBBED GARBAGE] WHERE email = 'rentmate.rubi@gmail.com';  -- Your Email
 
 -- 2. FIX DATABASE SCHEMA (Add missing columns)
 ALTER TABLE public.user_profiles 
-ADD COLUMN IF NOT EXISTS subscription_status TEXT DEFAULT 'active',
-ADD COLUMN IF NOT EXISTS subscription_plan TEXT DEFAULT 'free_forever';
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS subscription_status TEXT DEFAULT 'active',
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS subscription_plan TEXT DEFAULT 'free_forever';
 
 -- 3. FORCE CREATE ADMIN PROFILE
 DO $$
 DECLARE
-    v_user_id UUID;
-    target_email TEXT := 'rentmate.rubi@gmail.com';
+-- [SCRUBBED GARBAGE]     v_user_id UUID;
+-- [SCRUBBED GARBAGE]     target_email TEXT := 'rentmate.rubi@gmail.com';
 BEGIN
     SELECT id INTO v_user_id FROM auth.users WHERE email = target_email;
 
     IF v_user_id IS NOT NULL THEN
         -- Insert or Update the profile to be an Admin
         INSERT INTO public.user_profiles (
-            id, email, full_name, role, subscription_status, subscription_plan
+-- [SCRUBBED GARBAGE]             id, email, full_name, role, subscription_status, subscription_plan
         )
         VALUES (
-            v_user_id, target_email, 'Admin User', 'admin', 'active', 'free_forever'
+-- [SCRUBBED GARBAGE]             v_user_id, target_email, 'Admin User', 'admin', 'active', 'free_forever'
         )
-        ON CONFLICT (id) DO UPDATE 
+-- [SCRUBBED GARBAGE]         ON CONFLICT (id) DO UPDATE 
         SET role = 'admin', 
-            subscription_status = 'active', 
-            subscription_plan = 'free_forever';
+-- [SCRUBBED GARBAGE]             subscription_status = 'active', 
+-- [SCRUBBED GARBAGE]             subscription_plan = 'free_forever';
             
         RAISE NOTICE 'User % has been fully activated and promoted to Admin.', target_email;
-    ELSE
+-- [SCRUBBED GARBAGE]     ELSE
         RAISE WARNING 'User % not found in Auth system. Did you sign up?', target_email;
     END IF;
 END;
@@ -1877,24 +1919,24 @@ $$;
 
 -- 4. REPAIR SIGNUP TRIGGER (For future users)
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER 
-LANGUAGE plpgsql 
-SECURITY DEFINER SET search_path = public
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER 
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql 
+-- [SCRUBBED GARBAGE] SECURITY DEFINER SET search_path = public
 AS $$
 BEGIN
     INSERT INTO public.user_profiles (
-        id, email, full_name, role, subscription_status, subscription_plan
+-- [SCRUBBED GARBAGE]         id, email, full_name, role, subscription_status, subscription_plan
     )
     VALUES (
-        NEW.id, NEW.email, COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email), 
+-- [SCRUBBED GARBAGE]         NEW.id, NEW.email, COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email), 
         'user', 'active', 'free_forever'
     )
-    ON CONFLICT (id) DO NOTHING;
+-- [SCRUBBED GARBAGE]     ON CONFLICT (id) DO NOTHING;
 
     -- Try to recover invoices (but don't fail if it breaks)
     BEGIN
         UPDATE public.invoices SET user_id = NEW.id 
-        WHERE user_id IS NULL AND billing_email = NEW.email;
+-- [SCRUBBED GARBAGE]         WHERE user_id IS NULL AND billing_email = NEW.email;
     EXCEPTION WHEN OTHERS THEN NULL;
     END;
 
@@ -1911,16 +1953,16 @@ $$;
 CREATE OR REPLACE FUNCTION relink_past_invoices()
 RETURNS TRIGGER AS $$
 DECLARE
-    recovered_count INT;
+-- [SCRUBBED GARBAGE]     recovered_count INT;
 BEGIN
     -- Update invoices that have NO owner (user_id is NULL) 
     -- but match the new user's email string.
     UPDATE public.invoices
     SET user_id = NEW.id
-    WHERE user_id IS NULL 
-    AND billing_email = NEW.email;
+-- [SCRUBBED GARBAGE]     WHERE user_id IS NULL 
+-- [SCRUBBED GARBAGE]     AND billing_email = NEW.email;
 
-    GET DIAGNOSTICS recovered_count = ROW_COUNT;
+-- [SCRUBBED GARBAGE]     GET DIAGNOSTICS recovered_count = ROW_COUNT;
 
     -- Optional: Log this event if you want audit trails
     -- RAISE NOTICE 'Recovered % invoices for user % based on email match.', recovered_count, NEW.email;
@@ -1935,8 +1977,10 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS on_auth_user_created_relink_invoices ON auth.users;
 
+;
+DROP TRIGGER IF EXISTS "on_auth_user_created_relink_invoices" ON auth.users;
 CREATE TRIGGER on_auth_user_created_relink_invoices
-    AFTER INSERT ON auth.users
+-- [SCRUBBED GARBAGE]     AFTER INSERT ON auth.users
     FOR EACH ROW
     EXECUTE FUNCTION relink_past_invoices();
 -- ============================================
@@ -1946,30 +1990,30 @@ CREATE TRIGGER on_auth_user_created_relink_invoices
 -- 1. Modify Invoices to survive User Deletion
 -- We drop the "Cascade" constraint and replace it with "Set Null"
 ALTER TABLE invoices
-DROP CONSTRAINT invoices_user_id_fkey;
+DROP CONSTRAINT IF EXISTS invoices_user_id_fkey;
 
 ALTER TABLE invoices
-ADD CONSTRAINT invoices_user_id_fkey
-FOREIGN KEY (user_id)
-REFERENCES user_profiles(id)
-ON DELETE SET NULL;
+-- [SCRUBBED GARBAGE] ADD CONSTRAINT invoices_user_id_fkey
+-- [SCRUBBED GARBAGE] FOREIGN KEY (user_id)
+-- [SCRUBBED GARBAGE] REFERENCES user_profiles(id)
+-- [SCRUBBED GARBAGE] ON DELETE SET NULL;
 
 -- 2. Add "Snapshot" fields
 -- If the user is deleted, "user_id" becomes NULL.
 -- We need these text fields to know who the invoice was for (Tax Law Requirement).
 ALTER TABLE invoices
-ADD COLUMN IF NOT EXISTS billing_name TEXT,
-ADD COLUMN IF NOT EXISTS billing_email TEXT,
-ADD COLUMN IF NOT EXISTS billing_address TEXT;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS billing_name TEXT,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS billing_email TEXT,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS billing_address TEXT;
 
 -- 3. Update existing invoices (Backfill)
 -- Copy current profile data into the snapshot fields so we don't lose it.
 UPDATE invoices i
 SET 
-  billing_name = p.full_name,
-  billing_email = p.email
-FROM user_profiles p
-WHERE i.user_id = p.id;
+-- [SCRUBBED GARBAGE]   billing_name = p.full_name,
+-- [SCRUBBED GARBAGE]   billing_email = p.email
+-- [SCRUBBED GARBAGE] FROM user_profiles p
+-- [SCRUBBED GARBAGE] WHERE i.user_id = p.id;
 
 -- 4. Automatic Snapshot Trigger
 -- Whenever a new invoice is created, automatically copy the user's details 
@@ -1980,16 +2024,18 @@ BEGIN
     -- Only update if not provided manually
     IF NEW.billing_name IS NULL OR NEW.billing_email IS NULL THEN
         SELECT full_name, email INTO NEW.billing_name, NEW.billing_email
-        FROM user_profiles
-        WHERE id = NEW.user_id;
+-- [SCRUBBED GARBAGE]         FROM user_profiles
+-- [SCRUBBED GARBAGE]         WHERE id = NEW.user_id;
     END IF;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS on_invoice_created ON invoices;
+;
+DROP TRIGGER IF EXISTS "on_invoice_created" ON invoices;
 CREATE TRIGGER on_invoice_created
-    BEFORE INSERT ON invoices
+-- [SCRUBBED GARBAGE]     BEFORE INSERT ON invoices
     FOR EACH ROW
     EXECUTE FUNCTION snapshot_invoice_details();
 -- ============================================
@@ -1998,39 +2044,39 @@ CREATE TRIGGER on_invoice_created
 
 -- Update the manage_session_limits function to be more lenient
 CREATE OR REPLACE FUNCTION public.manage_session_limits()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 SET search_path = public, auth
 AS $$
 DECLARE
-    new_device_type TEXT;
-    session_count INT;
-    oldest_session_id UUID;
+-- [SCRUBBED GARBAGE]     new_device_type TEXT;
+-- [SCRUBBED GARBAGE]     session_count INT;
+-- [SCRUBBED GARBAGE]     oldest_session_id UUID;
     -- FIX: Increased from 1 to 5 to prevent aggressive logouts
-    max_sessions_per_type INT := 5; 
+-- [SCRUBBED GARBAGE]     max_sessions_per_type INT := 5; 
 BEGIN
     -- Identify what kind of device is trying to log in
-    new_device_type := public.get_device_type(NEW.user_agent);
+-- [SCRUBBED GARBAGE]     new_device_type := public.get_device_type(NEW.user_agent);
 
     -- Count EXISTING sessions for this user of the SAME type
     SELECT COUNT(*)
-    INTO session_count
-    FROM auth.sessions
-    WHERE user_id = NEW.user_id
-    AND public.get_device_type(user_agent) = new_device_type;
+-- [SCRUBBED GARBAGE]     INTO session_count
+-- [SCRUBBED GARBAGE]     FROM auth.sessions
+-- [SCRUBBED GARBAGE]     WHERE user_id = NEW.user_id
+-- [SCRUBBED GARBAGE]     AND public.get_device_type(user_agent) = new_device_type;
 
     -- If we are at (or above) the limit, we need to make room.
     IF session_count >= max_sessions_per_type THEN
         
         -- Identify the Oldest Session to remove
         SELECT id
-        INTO oldest_session_id
-        FROM auth.sessions
-        WHERE user_id = NEW.user_id
-        AND public.get_device_type(user_agent) = new_device_type
-        ORDER BY created_at ASC
-        LIMIT 1;
+-- [SCRUBBED GARBAGE]         INTO oldest_session_id
+-- [SCRUBBED GARBAGE]         FROM auth.sessions
+-- [SCRUBBED GARBAGE]         WHERE user_id = NEW.user_id
+-- [SCRUBBED GARBAGE]         AND public.get_device_type(user_agent) = new_device_type
+-- [SCRUBBED GARBAGE]         ORDER BY created_at ASC
+-- [SCRUBBED GARBAGE]         LIMIT 1;
 
         -- Delete it
         IF oldest_session_id IS NOT NULL THEN
@@ -2060,40 +2106,40 @@ ALTER TABLE public.properties ALTER COLUMN rent_price DROP NOT NULL;
 -- 1. FIX TABLE SCHEMA (Add missing columns)
 -- We use TEXT to avoid Enum complexities. It works perfectly with TS enums.
 ALTER TABLE public.user_profiles 
-ADD COLUMN IF NOT EXISTS subscription_status TEXT DEFAULT 'active',
-ADD COLUMN IF NOT EXISTS subscription_plan TEXT DEFAULT 'free_forever';
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS subscription_status TEXT DEFAULT 'active',
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS subscription_plan TEXT DEFAULT 'free_forever';
 
 -- Ensure role exists too
 ALTER TABLE public.user_profiles 
-ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'user';
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'user';
 
 -- 2. RESCUE THE ADMIN USER (rentmate.rubi@gmail.com)
 DO $$
 DECLARE
-    target_email TEXT := 'rentmate.rubi@gmail.com'; 
-    v_user_id UUID;
+-- [SCRUBBED GARBAGE]     target_email TEXT := 'rentmate.rubi@gmail.com'; 
+-- [SCRUBBED GARBAGE]     v_user_id UUID;
 BEGIN
     SELECT id INTO v_user_id FROM auth.users WHERE email = target_email;
 
     IF v_user_id IS NOT NULL THEN
         INSERT INTO public.user_profiles (
-            id, email, full_name, role, subscription_status, subscription_plan
+-- [SCRUBBED GARBAGE]             id, email, full_name, role, subscription_status, subscription_plan
         )
         VALUES (
-            v_user_id, 
-            target_email, 
+-- [SCRUBBED GARBAGE]             v_user_id, 
+-- [SCRUBBED GARBAGE]             target_email, 
             'Admin User', 
             'admin', 
             'active', 
             'free_forever'
         )
-        ON CONFLICT (id) DO UPDATE 
+-- [SCRUBBED GARBAGE]         ON CONFLICT (id) DO UPDATE 
         SET role = 'admin', 
-            subscription_status = 'active',
-            subscription_plan = 'free_forever';
+-- [SCRUBBED GARBAGE]             subscription_status = 'active',
+-- [SCRUBBED GARBAGE]             subscription_plan = 'free_forever';
             
         RAISE NOTICE 'Admin profile repaired for %', target_email;
-    ELSE
+-- [SCRUBBED GARBAGE]     ELSE
         RAISE NOTICE 'User % not found in Auth, skipping rescue.', target_email;
     END IF;
 END;
@@ -2101,29 +2147,29 @@ $$;
 
 -- 3. UPDATE SIGNUP TRIGGER (To match the fixed schema)
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER 
-LANGUAGE plpgsql 
-SECURITY DEFINER SET search_path = public
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER 
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql 
+-- [SCRUBBED GARBAGE] SECURITY DEFINER SET search_path = public
 AS $$
 BEGIN
     -- Create Profile
     INSERT INTO public.user_profiles (
-        id, email, full_name, role, subscription_status, subscription_plan
+-- [SCRUBBED GARBAGE]         id, email, full_name, role, subscription_status, subscription_plan
     )
     VALUES (
-        NEW.id,
-        NEW.email,
-        COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
+-- [SCRUBBED GARBAGE]         NEW.id,
+-- [SCRUBBED GARBAGE]         NEW.email,
+-- [SCRUBBED GARBAGE]         COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
         'user',
         'active',
         'free_forever'
     )
-    ON CONFLICT (id) DO NOTHING;
+-- [SCRUBBED GARBAGE]     ON CONFLICT (id) DO NOTHING;
 
     -- Link Invoices (Safely)
     BEGIN
         UPDATE public.invoices SET user_id = NEW.id 
-        WHERE user_id IS NULL AND billing_email = NEW.email;
+-- [SCRUBBED GARBAGE]         WHERE user_id IS NULL AND billing_email = NEW.email;
     EXCEPTION WHEN OTHERS THEN 
         RAISE WARNING 'Link failed: %', SQLERRM; 
     END;
@@ -2161,45 +2207,47 @@ EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- 5. RE-CREATE SAFE ADMIN CHECK (SECURITY DEFINER is Key)
 CREATE OR REPLACE FUNCTION public.is_admin()
-RETURNS BOOLEAN 
-LANGUAGE plpgsql 
-SECURITY DEFINER -- Bypasses RLS
+-- [SCRUBBED GARBAGE] RETURNS BOOLEAN 
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql 
+-- [SCRUBBED GARBAGE] SECURITY DEFINER -- Bypasses RLS
 SET search_path = public
 AS $$
 BEGIN
     -- Check if the user has 'admin' role in user_profiles
     RETURN EXISTS (
         SELECT 1 
-        FROM public.user_profiles 
-        WHERE id = auth.uid() 
-        AND role = 'admin'
+-- [SCRUBBED GARBAGE]         FROM public.user_profiles 
+-- [SCRUBBED GARBAGE]         WHERE id = auth.uid() 
+-- [SCRUBBED GARBAGE]         AND role = 'admin'
     );
 END;
 $$;
 
 -- 6. RE-CREATE HANDLE NEW USER (Simple & Safe)
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER 
-LANGUAGE plpgsql 
-SECURITY DEFINER -- Bypasses RLS
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER 
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql 
+-- [SCRUBBED GARBAGE] SECURITY DEFINER -- Bypasses RLS
 SET search_path = public
 AS $$
 BEGIN
     INSERT INTO public.user_profiles (id, email, full_name, role)
     VALUES (
-        NEW.id,
-        NEW.email,
-        NEW.raw_user_meta_data->>'full_name',
+-- [SCRUBBED GARBAGE]         NEW.id,
+-- [SCRUBBED GARBAGE]         NEW.email,
+-- [SCRUBBED GARBAGE]         NEW.raw_user_meta_data->>'full_name',
         'user' -- Default role
     )
-    ON CONFLICT (id) DO NOTHING; -- Prevent errors if retry
+-- [SCRUBBED GARBAGE]     ON CONFLICT (id) DO NOTHING; -- Prevent errors if retry
     RETURN NEW;
 END;
 $$;
 
 -- 7. RE-ATTACH TRIGGER
+;
+DROP TRIGGER IF EXISTS "on_auth_user_created" ON auth.users;
 CREATE TRIGGER on_auth_user_created
-    AFTER INSERT ON auth.users
+-- [SCRUBBED GARBAGE]     AFTER INSERT ON auth.users
     FOR EACH ROW
     EXECUTE FUNCTION public.handle_new_user();
 
@@ -2208,23 +2256,23 @@ ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Users see themselves
 CREATE POLICY "Users view own" 
-    ON public.user_profiles FOR SELECT 
-    USING (auth.uid() = id);
+-- [SCRUBBED GARBAGE]     ON public.user_profiles FOR SELECT 
+-- [SCRUBBED GARBAGE]     USING (auth.uid() = id);
 
 -- Policy: Users update themselves
 CREATE POLICY "Users update own" 
-    ON public.user_profiles FOR UPDATE 
-    USING (auth.uid() = id);
+-- [SCRUBBED GARBAGE]     ON public.user_profiles FOR UPDATE 
+-- [SCRUBBED GARBAGE]     USING (auth.uid() = id);
 
 -- Policy: Admins see all (Using Safe Function)
 CREATE POLICY "Admins view all" 
-    ON public.user_profiles FOR SELECT 
-    USING (public.is_admin());
+-- [SCRUBBED GARBAGE]     ON public.user_profiles FOR SELECT 
+-- [SCRUBBED GARBAGE]     USING (public.is_admin());
 
 -- Policy: Admins update all
 CREATE POLICY "Admins update all" 
-    ON public.user_profiles FOR UPDATE 
-    USING (public.is_admin());
+-- [SCRUBBED GARBAGE]     ON public.user_profiles FOR UPDATE 
+-- [SCRUBBED GARBAGE]     USING (public.is_admin());
 -- Migration: Safe Tenant Deletion (Set NULL on Property Delete)
 
 DO $$ 
@@ -2237,7 +2285,7 @@ BEGIN
     
     -- Attempt to identify and drop the constraint on column 'property_id'
     IF EXISTS (SELECT 1 FROM information_schema.table_constraints 
-               WHERE table_name = 'tenants' AND constraint_type = 'FOREIGN KEY') THEN
+-- [SCRUBBED GARBAGE]                WHERE table_name = 'tenants' AND constraint_type = 'FOREIGN KEY') THEN
                
         -- Drop the constraint causing "ON DELETE CASCADE" or "RESTRICT" behavior
         -- Note: We might not know the exact name, so in production we'd look it up.
@@ -2251,10 +2299,10 @@ BEGIN
 
     -- 2. Add the new Safe Constraint
     ALTER TABLE public.tenants
-    ADD CONSTRAINT tenants_property_id_fkey
-    FOREIGN KEY (property_id)
-    REFERENCES public.properties(id)
-    ON DELETE SET NULL;
+-- [SCRUBBED GARBAGE]     ADD CONSTRAINT tenants_property_id_fkey
+-- [SCRUBBED GARBAGE]     FOREIGN KEY (property_id)
+-- [SCRUBBED GARBAGE]     REFERENCES public.properties(id)
+-- [SCRUBBED GARBAGE]     ON DELETE SET NULL;
 
 END $$;
 -- ============================================
@@ -2268,9 +2316,9 @@ DROP FUNCTION IF EXISTS public.handle_new_user();
 
 -- 2. Create a Minimal, Safe Function
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER 
-LANGUAGE plpgsql 
-SECURITY DEFINER SET search_path = public
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER 
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql 
+-- [SCRUBBED GARBAGE] SECURITY DEFINER SET search_path = public
 AS $$
 BEGIN
     -- Just insert the profile. 
@@ -2278,17 +2326,17 @@ BEGIN
     -- If "free_forever" doesn't match the enum label, it will fail, 
     -- so we are careful to match the exact string from the CREATE TYPE.
     INSERT INTO public.user_profiles (
-        id, 
-        email, 
-        full_name, 
-        role, 
-        subscription_status, 
-        subscription_plan
+-- [SCRUBBED GARBAGE]         id, 
+-- [SCRUBBED GARBAGE]         email, 
+-- [SCRUBBED GARBAGE]         full_name, 
+-- [SCRUBBED GARBAGE]         role, 
+-- [SCRUBBED GARBAGE]         subscription_status, 
+-- [SCRUBBED GARBAGE]         subscription_plan
     )
     VALUES (
-        NEW.id,
-        NEW.email,
-        COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
+-- [SCRUBBED GARBAGE]         NEW.id,
+-- [SCRUBBED GARBAGE]         NEW.email,
+-- [SCRUBBED GARBAGE]         COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
         'user',           -- Text, let Postgres cast to user_role
         'active',         -- Text, let Postgres cast to subscription_status
         'free_forever'    -- Text, let Postgres cast to subscription_plan_type
@@ -2302,8 +2350,10 @@ END;
 $$;
 
 -- 3. Re-Attach
+;
+DROP TRIGGER IF EXISTS "on_auth_user_created" ON auth.users;
 CREATE TRIGGER on_auth_user_created
-    AFTER INSERT ON auth.users
+-- [SCRUBBED GARBAGE]     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 -- Migration: secure_tables_rls
 -- Description: Enforces strict RLS on properties (assets), contracts, tenants, and payments.
@@ -2312,14 +2362,14 @@ CREATE TRIGGER on_auth_user_created
 -- 1. ENSURE PAYMENTS HAS USER_ID (Denormalization for Performance & Strict RLS)
 -- ==============================================================================
 ALTER TABLE public.payments 
-ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE;
 
 -- Backfill user_id for payments from contracts
 UPDATE public.payments p
 SET user_id = c.user_id
-FROM public.contracts c
-WHERE p.contract_id = c.id
-AND p.user_id IS NULL;
+-- [SCRUBBED GARBAGE] FROM public.contracts c
+-- [SCRUBBED GARBAGE] WHERE p.contract_id = c.id
+-- [SCRUBBED GARBAGE] AND p.user_id IS NULL;
 
 -- ==============================================================================
 -- 2. ENABLE RLS
@@ -2345,9 +2395,17 @@ DROP POLICY IF EXISTS "Users can delete own properties" ON public.properties;
 -- Also drop any permissive policies from previous migrations
 DROP POLICY IF EXISTS "Enable all access for authenticated users" ON public.properties;
 
+;
+DROP POLICY IF EXISTS "Users can view own properties" ON public.properties;
 CREATE POLICY "Users can view own properties"   ON public.properties FOR SELECT USING (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can insert own properties" ON public.properties;
 CREATE POLICY "Users can insert own properties" ON public.properties FOR INSERT WITH CHECK (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can update own properties" ON public.properties;
 CREATE POLICY "Users can update own properties" ON public.properties FOR UPDATE USING (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can delete own properties" ON public.properties;
 CREATE POLICY "Users can delete own properties" ON public.properties FOR DELETE USING (user_id = auth.uid());
 
 ---------------------------------------------------------------------------------
@@ -2359,9 +2417,17 @@ DROP POLICY IF EXISTS "Users can update own contracts" ON public.contracts;
 DROP POLICY IF EXISTS "Users can delete own contracts" ON public.contracts;
 DROP POLICY IF EXISTS "Enable all access for authenticated users" ON public.contracts;
 
+;
+DROP POLICY IF EXISTS "Users can view own contracts" ON public.contracts;
 CREATE POLICY "Users can view own contracts"   ON public.contracts FOR SELECT USING (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can insert own contracts" ON public.contracts;
 CREATE POLICY "Users can insert own contracts" ON public.contracts FOR INSERT WITH CHECK (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can update own contracts" ON public.contracts;
 CREATE POLICY "Users can update own contracts" ON public.contracts FOR UPDATE USING (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can delete own contracts" ON public.contracts;
 CREATE POLICY "Users can delete own contracts" ON public.contracts FOR DELETE USING (user_id = auth.uid());
 
 ---------------------------------------------------------------------------------
@@ -2373,9 +2439,17 @@ DROP POLICY IF EXISTS "Users can update own tenants" ON public.tenants;
 DROP POLICY IF EXISTS "Users can delete own tenants" ON public.tenants;
 DROP POLICY IF EXISTS "Enable all access for authenticated users" ON public.tenants;
 
+;
+DROP POLICY IF EXISTS "Users can view own tenants" ON public.tenants;
 CREATE POLICY "Users can view own tenants"   ON public.tenants FOR SELECT USING (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can insert own tenants" ON public.tenants;
 CREATE POLICY "Users can insert own tenants" ON public.tenants FOR INSERT WITH CHECK (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can update own tenants" ON public.tenants;
 CREATE POLICY "Users can update own tenants" ON public.tenants FOR UPDATE USING (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can delete own tenants" ON public.tenants;
 CREATE POLICY "Users can delete own tenants" ON public.tenants FOR DELETE USING (user_id = auth.uid());
 
 ---------------------------------------------------------------------------------
@@ -2388,9 +2462,17 @@ DROP POLICY IF EXISTS "Users can insert own payments" ON public.payments;
 DROP POLICY IF EXISTS "Users can update own payments" ON public.payments;
 DROP POLICY IF EXISTS "Users can delete own payments" ON public.payments;
 
+;
+DROP POLICY IF EXISTS "Users can view own payments" ON public.payments;
 CREATE POLICY "Users can view own payments"   ON public.payments FOR SELECT USING (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can insert own payments" ON public.payments;
 CREATE POLICY "Users can insert own payments" ON public.payments FOR INSERT WITH CHECK (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can update own payments" ON public.payments;
 CREATE POLICY "Users can update own payments" ON public.payments FOR UPDATE USING (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can delete own payments" ON public.payments;
 CREATE POLICY "Users can delete own payments" ON public.payments FOR DELETE USING (user_id = auth.uid());
 
 -- Seed Index Bases for CPI (Consumer Price Index)
@@ -2418,9 +2500,9 @@ VALUES
 -- 1. Helper Function: Detect Device Type from User Agent
 -- Returns 'mobile' for phones/tablets, 'desktop' for everything else
 CREATE OR REPLACE FUNCTION public.get_device_type(user_agent TEXT)
-RETURNS TEXT
-LANGUAGE plpgsql
-IMMUTABLE -- Optimization: Always returns same result for same input
+-- [SCRUBBED GARBAGE] RETURNS TEXT
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] IMMUTABLE -- Optimization: Always returns same result for same input
 AS $$
 BEGIN
     IF user_agent IS NULL THEN
@@ -2431,7 +2513,7 @@ BEGIN
     -- "Mobi" catches many browsers, "Android", "iPhone", "iPad" are specific
     IF user_agent ~* '(Mobi|Android|iPhone|iPad|iPod)' THEN
         RETURN 'mobile';
-    ELSE
+-- [SCRUBBED GARBAGE]     ELSE
         RETURN 'desktop';
     END IF;
 END;
@@ -2439,27 +2521,27 @@ $$;
 
 -- 2. Trigger Function: Enforce Limits
 CREATE OR REPLACE FUNCTION public.manage_session_limits()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER -- Runs with admin privileges to delete other sessions
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER -- Runs with admin privileges to delete other sessions
 SET search_path = public, auth -- Access to auth schema
 AS $$
 DECLARE
-    new_device_type TEXT;
-    session_count INT;
-    oldest_session_id UUID;
-    max_sessions_per_type INT := 1; -- Hardcoded limit: 1 per group
+-- [SCRUBBED GARBAGE]     new_device_type TEXT;
+-- [SCRUBBED GARBAGE]     session_count INT;
+-- [SCRUBBED GARBAGE]     oldest_session_id UUID;
+-- [SCRUBBED GARBAGE]     max_sessions_per_type INT := 1; -- Hardcoded limit: 1 per group
 BEGIN
     -- Identify what kind of device is trying to log in
-    new_device_type := public.get_device_type(NEW.user_agent);
+-- [SCRUBBED GARBAGE]     new_device_type := public.get_device_type(NEW.user_agent);
 
     -- Count EXISTING sessions for this user of the SAME type
     -- We filter by the computed device type
     SELECT COUNT(*)
-    INTO session_count
-    FROM auth.sessions
-    WHERE user_id = NEW.user_id
-    AND public.get_device_type(user_agent) = new_device_type;
+-- [SCRUBBED GARBAGE]     INTO session_count
+-- [SCRUBBED GARBAGE]     FROM auth.sessions
+-- [SCRUBBED GARBAGE]     WHERE user_id = NEW.user_id
+-- [SCRUBBED GARBAGE]     AND public.get_device_type(user_agent) = new_device_type;
 
     -- If we are at (or above) the limit, we need to make room.
     -- (Note: 'session_count' is the count BEFORE this new row is inserted)
@@ -2467,12 +2549,12 @@ BEGIN
         
         -- Identify the Oldest Session to remove
         SELECT id
-        INTO oldest_session_id
-        FROM auth.sessions
-        WHERE user_id = NEW.user_id
-        AND public.get_device_type(user_agent) = new_device_type
-        ORDER BY created_at ASC
-        LIMIT 1;
+-- [SCRUBBED GARBAGE]         INTO oldest_session_id
+-- [SCRUBBED GARBAGE]         FROM auth.sessions
+-- [SCRUBBED GARBAGE]         WHERE user_id = NEW.user_id
+-- [SCRUBBED GARBAGE]         AND public.get_device_type(user_agent) = new_device_type
+-- [SCRUBBED GARBAGE]         ORDER BY created_at ASC
+-- [SCRUBBED GARBAGE]         LIMIT 1;
 
         -- Delete it
         IF oldest_session_id IS NOT NULL THEN
@@ -2491,23 +2573,25 @@ $$;
 -- We use BEFORE INSERT so we can clean up *before* the new session lands.
 DROP TRIGGER IF EXISTS enforce_session_limits ON auth.sessions;
 
+;
+DROP TRIGGER IF EXISTS "enforce_session_limits" ON auth.sessions;
 CREATE TRIGGER enforce_session_limits
-    BEFORE INSERT ON auth.sessions
+-- [SCRUBBED GARBAGE]     BEFORE INSERT ON auth.sessions
     FOR EACH ROW
     EXECUTE FUNCTION public.manage_session_limits();
 -- COMPLETE NOTIFICATION SYSTEM SETUP
 -- Run this file to set up the entire system (Table, Columns, Functions, Triggers)
 
--- 1. Create Table (if not exists)
+-- 1. CREATE TABLE IF NOT EXISTS (if not exists)
 CREATE TABLE IF NOT EXISTS public.notifications (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    type TEXT NOT NULL CHECK (type IN ('info', 'success', 'warning', 'error', 'action', 'urgent')),
-    title TEXT NOT NULL,
-    message TEXT NOT NULL,
-    read_at TIMESTAMP WITH TIME ZONE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    metadata JSONB DEFAULT '{}'::jsonb
+-- [SCRUBBED GARBAGE]     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+-- [SCRUBBED GARBAGE]     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     type TEXT NOT NULL CHECK (type IN ('info', 'success', 'warning', 'error', 'action', 'urgent')),
+-- [SCRUBBED GARBAGE]     title TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     message TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     read_at TIMESTAMP WITH TIME ZONE,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]     metadata JSONB DEFAULT '{}'::jsonb
 );
 
 -- 2. Enable RLS
@@ -2516,43 +2600,43 @@ ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 -- 3. RLS Policies
 DROP POLICY IF EXISTS "Users can view their own notifications" ON public.notifications;
 CREATE POLICY "Users can view their own notifications"
-    ON public.notifications FOR SELECT
-    USING (auth.uid() = user_id);
+-- [SCRUBBED GARBAGE]     ON public.notifications FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (auth.uid() = user_id);
 
 DROP POLICY IF EXISTS "Users can update their own notifications" ON public.notifications;
 CREATE POLICY "Users can update their own notifications"
-    ON public.notifications FOR UPDATE
-    USING (auth.uid() = user_id);
+-- [SCRUBBED GARBAGE]     ON public.notifications FOR UPDATE
+-- [SCRUBBED GARBAGE]     USING (auth.uid() = user_id);
 
 -- 4. Contract Status Change Trigger
 CREATE OR REPLACE FUNCTION public.notify_contract_status_change()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    property_address text;
-    notification_title text;
-    notification_body text;
+-- [SCRUBBED GARBAGE]     property_address text;
+-- [SCRUBBED GARBAGE]     notification_title text;
+-- [SCRUBBED GARBAGE]     notification_body text;
 BEGIN
     IF OLD.status IS NOT DISTINCT FROM NEW.status THEN
         RETURN NEW;
     END IF;
 
     SELECT city || ', ' || address INTO property_address
-    FROM public.properties
-    WHERE id = NEW.property_id;
+-- [SCRUBBED GARBAGE]     FROM public.properties
+-- [SCRUBBED GARBAGE]     WHERE id = NEW.property_id;
 
-    notification_title := 'Contract Status Updated';
-    notification_body := format('Contract for %s is now %s.', property_address, NEW.status);
+-- [SCRUBBED GARBAGE]     notification_title := 'Contract Status Updated';
+-- [SCRUBBED GARBAGE]     notification_body := format('Contract for %s is now %s.', property_address, NEW.status);
 
     INSERT INTO public.notifications (user_id, type, title, message, metadata)
     VALUES (
-        NEW.user_id,
+-- [SCRUBBED GARBAGE]         NEW.user_id,
         'info',
-        notification_title,
-        notification_body,
-        json_build_object(
+-- [SCRUBBED GARBAGE]         notification_title,
+-- [SCRUBBED GARBAGE]         notification_body,
+-- [SCRUBBED GARBAGE]         json_build_object(
             'contract_id', NEW.id,
             'event', 'status_change',
             'old_status', OLD.status,
@@ -2565,29 +2649,31 @@ END;
 $$;
 
 DROP TRIGGER IF EXISTS on_contract_status_change ON public.contracts;
+;
+DROP TRIGGER IF EXISTS "on_contract_status_change" ON public.contracts;
 CREATE TRIGGER on_contract_status_change
-    AFTER UPDATE ON public.contracts
+-- [SCRUBBED GARBAGE]     AFTER UPDATE ON public.contracts
     FOR EACH ROW
     EXECUTE FUNCTION public.notify_contract_status_change();
 
 
 -- 5. Daily Notification Job Function
 CREATE OR REPLACE FUNCTION public.process_daily_notifications()
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS void
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    r RECORD;
-    extension_days int := 60;
+-- [SCRUBBED GARBAGE]     r RECORD;
+-- [SCRUBBED GARBAGE]     extension_days int := 60;
 BEGIN
     -- Contract Ending Soon (30 Days)
     FOR r IN
         SELECT c.id, c.user_id, c.end_date, p.city, p.address
-        FROM public.contracts c
-        JOIN public.properties p ON p.id = c.property_id
-        WHERE c.status = 'active'
-        AND c.end_date = CURRENT_DATE + INTERVAL '30 days'
+-- [SCRUBBED GARBAGE]         FROM public.contracts c
+-- [SCRUBBED GARBAGE]         JOIN public.properties p ON p.id = c.property_id
+-- [SCRUBBED GARBAGE]         WHERE c.status = 'active'
+-- [SCRUBBED GARBAGE]         AND c.end_date = CURRENT_DATE + INTERVAL '30 days'
     LOOP
         IF NOT EXISTS (SELECT 1 FROM public.notifications WHERE user_id = r.user_id AND metadata->>'contract_id' = r.id::text AND metadata->>'event' = 'ending_soon') THEN
             INSERT INTO public.notifications (user_id, type, title, message, metadata)
@@ -2598,11 +2684,11 @@ BEGIN
     -- Extension Deadline
     FOR r IN
         SELECT c.id, c.user_id, c.end_date, p.city, p.address
-        FROM public.contracts c
-        JOIN public.properties p ON p.id = c.property_id
-        WHERE c.status = 'active'
-        AND c.extension_option = TRUE
-        AND c.end_date = CURRENT_DATE + (extension_days || ' days')::INTERVAL
+-- [SCRUBBED GARBAGE]         FROM public.contracts c
+-- [SCRUBBED GARBAGE]         JOIN public.properties p ON p.id = c.property_id
+-- [SCRUBBED GARBAGE]         WHERE c.status = 'active'
+-- [SCRUBBED GARBAGE]         AND c.extension_option = TRUE
+-- [SCRUBBED GARBAGE]         AND c.end_date = CURRENT_DATE + (extension_days || ' days')::INTERVAL
     LOOP
         IF NOT EXISTS (SELECT 1 FROM public.notifications WHERE user_id = r.user_id AND metadata->>'contract_id' = r.id::text AND metadata->>'event' = 'extension_deadline') THEN
             INSERT INTO public.notifications (user_id, type, title, message, metadata)
@@ -2613,11 +2699,11 @@ BEGIN
     -- Annual Index Update
     FOR r IN
         SELECT c.id, c.user_id, c.start_date, p.city, p.address
-        FROM public.contracts c
-        JOIN public.properties p ON p.id = c.property_id
-        WHERE c.status = 'active'
-        AND c.linkage_type != 'none'
-        AND (c.start_date + INTERVAL '1 year' = CURRENT_DATE OR c.start_date + INTERVAL '2 years' = CURRENT_DATE OR c.start_date + INTERVAL '3 years' = CURRENT_DATE)
+-- [SCRUBBED GARBAGE]         FROM public.contracts c
+-- [SCRUBBED GARBAGE]         JOIN public.properties p ON p.id = c.property_id
+-- [SCRUBBED GARBAGE]         WHERE c.status = 'active'
+-- [SCRUBBED GARBAGE]         AND c.linkage_type != 'none'
+-- [SCRUBBED GARBAGE]         AND (c.start_date + INTERVAL '1 year' = CURRENT_DATE OR c.start_date + INTERVAL '2 years' = CURRENT_DATE OR c.start_date + INTERVAL '3 years' = CURRENT_DATE)
     LOOP
         IF NOT EXISTS (SELECT 1 FROM public.notifications WHERE user_id = r.user_id AND metadata->>'contract_id' = r.id::text AND metadata->>'event' = 'index_update' AND metadata->>'date' = CURRENT_DATE::text) THEN
             INSERT INTO public.notifications (user_id, type, title, message, metadata)
@@ -2628,11 +2714,11 @@ BEGIN
     -- Payment Due Today
     FOR r IN
         SELECT py.id, py.user_id, py.amount, py.date, p.city, p.address
-        FROM public.payments py
-        JOIN public.contracts c ON c.id = py.contract_id
-        JOIN public.properties p ON p.id = c.property_id
-        WHERE py.status = 'pending'
-        AND py.date = CURRENT_DATE
+-- [SCRUBBED GARBAGE]         FROM public.payments py
+-- [SCRUBBED GARBAGE]         JOIN public.contracts c ON c.id = py.contract_id
+-- [SCRUBBED GARBAGE]         JOIN public.properties p ON p.id = c.property_id
+-- [SCRUBBED GARBAGE]         WHERE py.status = 'pending'
+-- [SCRUBBED GARBAGE]         AND py.date = CURRENT_DATE
     LOOP
         IF NOT EXISTS (SELECT 1 FROM public.notifications WHERE user_id = r.user_id AND metadata->>'payment_id' = r.id::text AND metadata->>'event' = 'payment_due') THEN
             INSERT INTO public.notifications (user_id, type, title, message, metadata)
@@ -2645,11 +2731,11 @@ $$;
 -- 1. Update existing data to match new statuses
 UPDATE public.contracts 
 SET status = 'active' 
-WHERE status = 'pending';
+-- [SCRUBBED GARBAGE] WHERE status = 'pending';
 
 UPDATE public.contracts 
 SET status = 'archived' 
-WHERE status IN ('ended', 'terminated');
+-- [SCRUBBED GARBAGE] WHERE status IN ('ended', 'terminated');
 
 -- 2. Drop existing check constraint if it exists (it might be implicit or named)
 -- We'll try to drop any existing constraint on status just in case, but usually it's just a text column.
@@ -2658,8 +2744,8 @@ WHERE status IN ('ended', 'terminated');
 
 -- 3. Add new check constraint
 ALTER TABLE public.contracts 
-ADD CONSTRAINT contracts_status_check 
-CHECK (status IN ('active', 'archived'));
+-- [SCRUBBED GARBAGE] ADD CONSTRAINT contracts_status_check 
+-- [SCRUBBED GARBAGE] CHECK (status IN ('active', 'archived'));
 
 -- 4. Set default value to 'active'
 ALTER TABLE public.contracts 
@@ -2671,8 +2757,8 @@ BEGIN
 
     -- 1. Add Columns (Allow NULL initially to populate)
     ALTER TABLE public.user_profiles
-    ADD COLUMN IF NOT EXISTS first_name TEXT,
-    ADD COLUMN IF NOT EXISTS last_name TEXT;
+-- [SCRUBBED GARBAGE]     ADD COLUMN IF NOT EXISTS first_name TEXT,
+-- [SCRUBBED GARBAGE]     ADD COLUMN IF NOT EXISTS last_name TEXT;
 
     -- 2. Migrate Data
     -- Strategy:
@@ -2680,9 +2766,9 @@ BEGIN
     -- Last Name = 'aaa' (Mandatory default for existing)
     UPDATE public.user_profiles
     SET 
-        first_name = COALESCE(full_name, 'User'),
-        last_name = 'aaa'
-    WHERE first_name IS NULL OR last_name IS NULL;
+-- [SCRUBBED GARBAGE]         first_name = COALESCE(full_name, 'User'),
+-- [SCRUBBED GARBAGE]         last_name = 'aaa'
+-- [SCRUBBED GARBAGE]     WHERE first_name IS NULL OR last_name IS NULL;
 
     -- 3. Enforce Not Null
     ALTER TABLE public.user_profiles
@@ -2697,7 +2783,7 @@ END $$;
 -- 1. Create Bucket (if it doesn't exist)
 INSERT INTO storage.buckets (id, name, public, avif_autodetection, file_size_limit, allowed_mime_types)
 VALUES ('secure_documents', 'secure_documents', false, false, 5242880, ARRAY['application/pdf', 'image/jpeg', 'image/png'])
-ON CONFLICT (id) DO NOTHING;
+-- [SCRUBBED GARBAGE] ON CONFLICT (id) DO NOTHING;
 
 -- 2. ENABLE RLS - SKIPPED
 -- This command often fails due to permissions on the system 'storage' schema. 
@@ -2709,41 +2795,41 @@ ON CONFLICT (id) DO NOTHING;
 -- Policy: Admin can do ANYTHING in 'secure_documents'
 DROP POLICY IF EXISTS "Admins full access to secure_documents" ON storage.objects;
 CREATE POLICY "Admins full access to secure_documents"
-    ON storage.objects
+-- [SCRUBBED GARBAGE]     ON storage.objects
     FOR ALL
-    USING (
-        bucket_id = 'secure_documents' 
-        AND 
-        EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin')
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         bucket_id = 'secure_documents' 
+-- [SCRUBBED GARBAGE]         AND 
+-- [SCRUBBED GARBAGE]         EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin')
     )
     WITH CHECK (
-        bucket_id = 'secure_documents' 
-        AND 
-        EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin')
+-- [SCRUBBED GARBAGE]         bucket_id = 'secure_documents' 
+-- [SCRUBBED GARBAGE]         AND 
+-- [SCRUBBED GARBAGE]         EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin')
     );
 
 -- Policy: Users can VIEW their OWN files
 DROP POLICY IF EXISTS "Users view own secure documents" ON storage.objects;
 CREATE POLICY "Users view own secure documents"
-    ON storage.objects
+-- [SCRUBBED GARBAGE]     ON storage.objects
     FOR SELECT
-    USING (
-        bucket_id = 'secure_documents'
-        AND
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         bucket_id = 'secure_documents'
+-- [SCRUBBED GARBAGE]         AND
         (storage.foldername(name))[1] = auth.uid()::text
     );
 
 -- Policy: Users can UPLOAD to their OWN folder (Optional)
 DROP POLICY IF EXISTS "Users upload own documents" ON storage.objects;
 CREATE POLICY "Users upload own documents"
-    ON storage.objects
+-- [SCRUBBED GARBAGE]     ON storage.objects
     FOR INSERT
     WITH CHECK (
-        bucket_id = 'secure_documents'
-        AND
+-- [SCRUBBED GARBAGE]         bucket_id = 'secure_documents'
+-- [SCRUBBED GARBAGE]         AND
         (storage.foldername(name))[1] = auth.uid()::text
-        AND
-        auth.role() = 'authenticated'
+-- [SCRUBBED GARBAGE]         AND
+-- [SCRUBBED GARBAGE]         auth.role() = 'authenticated'
     );
 -- ============================================
 -- TRACK DELETED USERS (Audit & Abuse Prevention)
@@ -2752,12 +2838,12 @@ CREATE POLICY "Users upload own documents"
 -- 1. Create a log table that is NOT connected to the user_id via foreign key
 -- (So it survives the deletion)
 CREATE TABLE IF NOT EXISTS deleted_users_log (
-    id BIGSERIAL PRIMARY KEY,
-    original_user_id UUID,
-    email TEXT,
-    phone TEXT,
-    subscription_status_at_deletion TEXT,
-    deleted_at TIMESTAMPTZ DEFAULT NOW()
+-- [SCRUBBED GARBAGE]     id BIGSERIAL PRIMARY KEY,
+-- [SCRUBBED GARBAGE]     original_user_id UUID,
+-- [SCRUBBED GARBAGE]     email TEXT,
+-- [SCRUBBED GARBAGE]     phone TEXT,
+-- [SCRUBBED GARBAGE]     subscription_status_at_deletion TEXT,
+-- [SCRUBBED GARBAGE]     deleted_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 2. Create the Trigger Function
@@ -2765,14 +2851,14 @@ CREATE OR REPLACE FUNCTION log_user_deletion()
 RETURNS TRIGGER AS $$
 BEGIN
     INSERT INTO deleted_users_log (
-        original_user_id,
-        email,
-        subcription_status_at_deletion
+-- [SCRUBBED GARBAGE]         original_user_id,
+-- [SCRUBBED GARBAGE]         email,
+-- [SCRUBBED GARBAGE]         subcription_status_at_deletion
     )
     VALUES (
-        OLD.id,
-        OLD.email,
-        OLD.subscription_status::text
+-- [SCRUBBED GARBAGE]         OLD.id,
+-- [SCRUBBED GARBAGE]         OLD.email,
+-- [SCRUBBED GARBAGE]         OLD.subscription_status::text
     );
     RETURN OLD;
 END;
@@ -2781,8 +2867,10 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- 3. Attach Trigger (BEFORE DELETE) to user_profiles
 DROP TRIGGER IF EXISTS on_user_profile_deleted ON user_profiles;
 
+;
+DROP TRIGGER IF EXISTS "on_user_profile_deleted" ON user_profiles;
 CREATE TRIGGER on_user_profile_deleted
-    BEFORE DELETE ON user_profiles
+-- [SCRUBBED GARBAGE]     BEFORE DELETE ON user_profiles
     FOR EACH ROW
     EXECUTE FUNCTION log_user_deletion();
 -- Migration: trigger_signup_notification
@@ -2790,13 +2878,13 @@ CREATE TRIGGER on_user_profile_deleted
 
 -- 1. Create the Trigger Function
 CREATE OR REPLACE FUNCTION public.notify_admin_on_signup()
-RETURNS TRIGGER 
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER 
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    project_url text := 'https://mtxwavmmywiewjrsxchi.supabase.co'; -- Replace with your actual project URL or use a config table
-    function_secret text := 'YOUR_FUNCTION_SECRET'; -- Ideally this is handled via vault or not needed if using net extension with service role
+-- [SCRUBBED GARBAGE]     project_url text := 'https://mtxwavmmywiewjrsxchi.supabase.co'; -- Replace with your actual project URL or use a config table
+-- [SCRUBBED GARBAGE]     function_secret text := 'YOUR_FUNCTION_SECRET'; -- Ideally this is handled via vault or not needed if using net extension with service role
 BEGIN
     -- We assume the 'net' extension is enabled and configured.
     -- If using pg_net or standard http extension, syntax may vary.
@@ -2813,10 +2901,10 @@ BEGIN
     -- Assuming pg_net is installed.
     
     PERFORM
-      net.http_post(
-        url := project_url || '/functions/v1/send-admin-alert',
-        headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
-        body := json_build_object(
+-- [SCRUBBED GARBAGE]       net.http_post(
+-- [SCRUBBED GARBAGE]         url := project_url || '/functions/v1/send-admin-alert',
+-- [SCRUBBED GARBAGE]         headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
+-- [SCRUBBED GARBAGE]         body := json_build_object(
             'type', 'INSERT',
             'table', 'user_profiles',
             'record', row_to_json(NEW)
@@ -2834,17 +2922,19 @@ $$;
 -- 2. Create the Trigger
 DROP TRIGGER IF EXISTS on_user_signup_notify_admin ON public.user_profiles;
 
+;
+DROP TRIGGER IF EXISTS "on_user_signup_notify_admin" ON public.user_profiles;
 CREATE TRIGGER on_user_signup_notify_admin
-    AFTER INSERT ON public.user_profiles
+-- [SCRUBBED GARBAGE]     AFTER INSERT ON public.user_profiles
     FOR EACH ROW
     EXECUTE FUNCTION public.notify_admin_on_signup();
 -- VERIFICATION SCRIPT
 -- Run this to confirm RLS is active and correct
 
 SELECT tablename, policyname, cmd, qual, with_check 
-FROM pg_policies 
-WHERE tablename IN ('properties', 'contracts', 'tenants', 'payments')
-ORDER BY tablename, cmd;
+-- [SCRUBBED GARBAGE] FROM pg_policies 
+-- [SCRUBBED GARBAGE] WHERE tablename IN ('properties', 'contracts', 'tenants', 'payments')
+-- [SCRUBBED GARBAGE] ORDER BY tablename, cmd;
 
 -- EXPECTED OUTPUT:
 -- For each table, you should see 4 rows: DELETE, INSERT, SELECT, UPDATE.
@@ -2853,13 +2943,13 @@ ORDER BY tablename, cmd;
 -- This migration is NOT deployed yet - it's ready for when auth is implemented
 
 CREATE TABLE IF NOT EXISTS user_preferences (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    language TEXT NOT NULL DEFAULT 'he' CHECK (language IN ('he', 'en')),
-    gender TEXT CHECK (gender IN ('male', 'female', 'unspecified')),
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE(user_id)
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [SCRUBBED GARBAGE]     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     language TEXT NOT NULL DEFAULT 'he' CHECK (language IN ('he', 'en')),
+-- [SCRUBBED GARBAGE]     gender TEXT CHECK (gender IN ('male', 'female', 'unspecified')),
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]     updated_at TIMESTAMPTZ DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]     UNIQUE(user_id)
 );
 
 -- Index for faster lookups by user_id
@@ -2871,23 +2961,25 @@ ALTER TABLE user_preferences ENABLE ROW LEVEL SECURITY;
 -- RLS Policy: Users can only read/write their own preferences
 DROP POLICY IF EXISTS "Users can manage their own preferences" ON user_preferences;
 CREATE POLICY "Users can manage their own preferences"
-    ON user_preferences
+-- [SCRUBBED GARBAGE]     ON user_preferences
     FOR ALL
-    USING (auth.uid() = user_id)
+-- [SCRUBBED GARBAGE]     USING (auth.uid() = user_id)
     WITH CHECK (auth.uid() = user_id);
 
 -- Function to automatically update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_user_preferences_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW.updated_at = NOW();
+-- [SCRUBBED GARBAGE]     NEW.updated_at = NOW();
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger to call the function
+;
+DROP TRIGGER IF EXISTS "user_preferences_updated_at" ON user_preferences;
 CREATE TRIGGER user_preferences_updated_at
-    BEFORE UPDATE ON user_preferences
+-- [SCRUBBED GARBAGE]     BEFORE UPDATE ON user_preferences
     FOR EACH ROW
     EXECUTE FUNCTION update_user_preferences_updated_at();
 -- Enable required extensions
@@ -2904,10 +2996,10 @@ SELECT cron.schedule(
     '0 6 * * *',              -- Schedule (6:00 AM daily)
     $$
     SELECT
-        net.http_post(
-            url:='https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/fetch-index-data',
-            headers:='{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmdnJla3Z1Z2RqbndobmF1Y216Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0MzY0MTYsImV4cCI6MjA4MzAxMjQxNn0.xA3JI4iGElpIpZjVHLCA_FGw0hfmNUJTtw_fuLlhkoA"}'::jsonb,
-            body:='{}'::jsonb
+-- [SCRUBBED GARBAGE]         net.http_post(
+-- [SCRUBBED GARBAGE]             url:='https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/fetch-index-data',
+-- [SCRUBBED GARBAGE]             headers:='{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmdnJla3Z1Z2RqbndobmF1Y216Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0MzY0MTYsImV4cCI6MjA4MzAxMjQxNn0.xA3JI4iGElpIpZjVHLCA_FGw0hfmNUJTtw_fuLlhkoA"}'::jsonb,
+-- [SCRUBBED GARBAGE]             body:='{}'::jsonb
         ) as request_id;
     $$
 );
@@ -2915,17 +3007,17 @@ SELECT cron.schedule(
 -- Comment to explain
 -- Create payments table
 CREATE TABLE IF NOT EXISTS public.payments (
-    id UUID NOT NULL DEFAULT gen_random_uuid(),
-    contract_id UUID NOT NULL REFERENCES public.contracts(id) ON DELETE CASCADE,
-    amount NUMERIC NOT NULL,
-    currency TEXT NOT NULL CHECK (currency IN ('ILS', 'USD', 'EUR')),
-    due_date DATE NOT NULL,
-    status TEXT NOT NULL CHECK (status IN ('pending', 'paid', 'overdue', 'cancelled')),
-    paid_date DATE DEFAULT NULL,
-    payment_method TEXT DEFAULT NULL,
-    reference TEXT DEFAULT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-    CONSTRAINT payments_pkey PRIMARY KEY (id)
+-- [SCRUBBED GARBAGE]     id UUID NOT NULL DEFAULT gen_random_uuid(),
+-- [SCRUBBED GARBAGE]     contract_id UUID NOT NULL REFERENCES public.contracts(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     amount NUMERIC NOT NULL,
+-- [SCRUBBED GARBAGE]     currency TEXT NOT NULL CHECK (currency IN ('ILS', 'USD', 'EUR')),
+-- [SCRUBBED GARBAGE]     due_date DATE NOT NULL,
+-- [SCRUBBED GARBAGE]     status TEXT NOT NULL CHECK (status IN ('pending', 'paid', 'overdue', 'cancelled')),
+-- [SCRUBBED GARBAGE]     paid_date DATE DEFAULT NULL,
+-- [SCRUBBED GARBAGE]     payment_method TEXT DEFAULT NULL,
+-- [SCRUBBED GARBAGE]     reference TEXT DEFAULT NULL,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+-- [SCRUBBED GARBAGE]     CONSTRAINT payments_pkey PRIMARY KEY (id)
 );
 
 -- Enable RLS
@@ -2933,71 +3025,34 @@ ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
 
 -- Policies (assuming contracts have user_id, or widely permissive for now to avoid breakage if user_id is missing)
 -- Ideally:
--- CREATE POLICY "Users can manage their own payments" ON public.payments
+-- ;
+DROP POLICY IF EXISTS "Users can manage their own payments" ON public.payments;
+CREATE POLICY "Users can manage their own payments" ON public.payments
 -- USING (contract_id IN (SELECT id FROM public.contracts WHERE user_id = auth.uid()));
 
 -- Fallback permissive policy for development if user_id logic is flaky
+;
+DROP POLICY IF EXISTS "Enable all access for authenticated users" ON public.payments;
 CREATE POLICY "Enable all access for authenticated users" ON public.payments
     FOR ALL
-    TO authenticated
-    USING (true)
+-- [SCRUBBED GARBAGE]     TO authenticated
+-- [SCRUBBED GARBAGE]     USING (true)
     WITH CHECK (true);
 -- Seed dummy CPI data for 2024-2025
 -- Using approximate values based on recent trends (base 2022 ~105-110)
 
-INSERT INTO index_data (index_type, date, value, source)
-VALUES 
-  ('cpi', '2024-01', 105.0, 'manual'),
-  ('cpi', '2024-02', 105.2, 'manual'),
-  ('cpi', '2024-03', 105.5, 'manual'),
-  ('cpi', '2024-04', 106.0, 'manual'),
-  ('cpi', '2024-05', 106.3, 'manual'),
-  ('cpi', '2024-06', 106.5, 'manual'),
-  ('cpi', '2024-07', 107.0, 'manual'),
-  ('cpi', '2024-08', 107.2, 'manual'),
-  ('cpi', '2024-09', 107.5, 'manual'),
-  ('cpi', '2024-10', 107.8, 'manual'),
-  ('cpi', '2024-11', 108.0, 'manual'),
-  ('cpi', '2024-12', 108.2, 'manual'),
-  ('cpi', '2025-01', 108.5, 'manual'),
-  ('cpi', '2025-02', 108.8, 'manual'),
-  ('cpi', '2025-03', 109.0, 'manual'),
-  ('cpi', '2025-04', 109.3, 'manual'),
-  ('cpi', '2025-05', 109.5, 'manual'),
-  ('cpi', '2025-06', 109.8, 'manual'),
-  ('cpi', '2025-07', 110.0, 'manual'),
-  ('cpi', '2025-08', 110.2, 'manual'),
-  ('cpi', '2025-09', 110.5, 'manual'),
-  ('cpi', '2025-10', 110.8, 'manual'),
-  ('cpi', '2025-11', 111.0, 'manual'),
-  ('cpi', '2025-12', 111.2, 'manual')
-ON CONFLICT (index_type, date) DO UPDATE 
-SET value = EXCLUDED.value;
--- Add columns for linkage tracking to payments
-ALTER TABLE public.payments 
-ADD COLUMN IF NOT EXISTS original_amount NUMERIC, -- The base amount before linkage
-ADD COLUMN IF NOT EXISTS index_linkage_rate NUMERIC, -- The linkage percentage applied
-ADD COLUMN IF NOT EXISTS paid_amount NUMERIC; -- What was actually paid
--- Create saved_calculations table
-create table if not exists public.saved_calculations (
-    id uuid default gen_random_uuid() primary key,
-    created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-    user_id uuid references auth.users(id) on delete set null,
-    input_data jsonb not null,
-    result_data jsonb not null
-);
-
+-- [Index Data Stripped]
 -- RLS Policies
 alter table public.saved_calculations enable row level security;
 
 -- Allow public read access (so anyone with the link can view)
 create policy "Allow public read access"
-    on public.saved_calculations for select
-    using (true);
+-- [SCRUBBED GARBAGE]     on public.saved_calculations for select
+-- [SCRUBBED GARBAGE]     using (true);
 
 -- Allow authenticated users to insert their own calculations
 create policy "Allow authenticated insert"
-    on public.saved_calculations for insert
+-- [SCRUBBED GARBAGE]     on public.saved_calculations for insert
     with check (auth.uid() = user_id);
 
 -- Add indexes for faster lookups if needed (though UUID lookup is fast)
@@ -3012,7 +3067,7 @@ drop policy if exists "Allow authenticated insert" on public.saved_calculations;
 -- 1. The user is authenticated and the user_id matches their UID
 -- 2. The user is anonymous (or authenticated) and provides no user_id (NULL)
 create policy "Allow public insert"
-    on public.saved_calculations for insert
+-- [SCRUBBED GARBAGE]     on public.saved_calculations for insert
     with check (
         (auth.uid() = user_id) OR (user_id is null)
     );
@@ -3021,14 +3076,14 @@ DO $$
 BEGIN
     IF NOT EXISTS (
         SELECT 1 FROM pg_policies 
-        WHERE tablename = 'index_data' 
-        AND policyname = 'Allow public read access to index data'
+-- [SCRUBBED GARBAGE]         WHERE tablename = 'index_data' 
+-- [SCRUBBED GARBAGE]         AND policyname = 'Allow public read access to index data'
     ) THEN
         CREATE POLICY "Allow public read access to index data"
-          ON index_data
+-- [SCRUBBED GARBAGE]           ON index_data
           FOR SELECT
-          TO anon
-          USING (true);
+-- [SCRUBBED GARBAGE]           TO anon
+-- [SCRUBBED GARBAGE]           USING (true);
     END IF;
 END $$;
 -- Enable pg_cron extension for scheduled tasks
@@ -3047,13 +3102,13 @@ SELECT cron.schedule(
     '0 */2 15 * *',  -- Every 2 hours on day 15
     $$
     SELECT
-        net.http_post(
-            url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/fetch-index-data',
-            headers := jsonb_build_object(
+-- [SCRUBBED GARBAGE]         net.http_post(
+-- [SCRUBBED GARBAGE]             url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/fetch-index-data',
+-- [SCRUBBED GARBAGE]             headers := jsonb_build_object(
                 'Content-Type', 'application/json',
                 'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmdnJla3Z1Z2RqbndobmF1Y216Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzQzNjQxNiwiZXhwIjoyMDgzMDEyNDE2fQ._Fmq-2x4zpzPkHP9btdqSUj0gbX7RmqscwvGElNbdNA'
             ),
-            body := '{}'::jsonb
+-- [SCRUBBED GARBAGE]             body := '{}'::jsonb
         ) AS request_id;
     $$
 );
@@ -3064,13 +3119,13 @@ SELECT cron.schedule(
     '0 */2 16 * *',  -- Every 2 hours on day 16
     $$
     SELECT
-        net.http_post(
-            url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/fetch-index-data',
-            headers := jsonb_build_object(
+-- [SCRUBBED GARBAGE]         net.http_post(
+-- [SCRUBBED GARBAGE]             url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/fetch-index-data',
+-- [SCRUBBED GARBAGE]             headers := jsonb_build_object(
                 'Content-Type', 'application/json',
                 'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmdnJla3Z1Z2RqbndobmF1Y216Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzQzNjQxNiwiZXhwIjoyMDgzMDEyNDE2fQ._Fmq-2x4zpzPkHP9btdqSUj0gbX7RmqscwvGElNbdNA'
             ),
-            body := '{}'::jsonb
+-- [SCRUBBED GARBAGE]             body := '{}'::jsonb
         ) AS request_id;
     $$
 );
@@ -3081,13 +3136,13 @@ SELECT cron.schedule(
     '0 */2 17 * *',  -- Every 2 hours on day 17
     $$
     SELECT
-        net.http_post(
-            url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/fetch-index-data',
-            headers := jsonb_build_object(
+-- [SCRUBBED GARBAGE]         net.http_post(
+-- [SCRUBBED GARBAGE]             url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/fetch-index-data',
+-- [SCRUBBED GARBAGE]             headers := jsonb_build_object(
                 'Content-Type', 'application/json',
                 'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmdnJla3Z1Z2RqbndobmF1Y216Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzQzNjQxNiwiZXhwIjoyMDgzMDEyNDE2fQ._Fmq-2x4zpzPkHP9btdqSUj0gbX7RmqscwvGElNbdNA'
             ),
-            body := '{}'::jsonb
+-- [SCRUBBED GARBAGE]             body := '{}'::jsonb
         ) AS request_id;
     $$
 );
@@ -3103,21 +3158,21 @@ DROP TABLE IF EXISTS saved_calculations;
 -- ============================================
 
 CREATE TABLE IF NOT EXISTS subscription_plans (
-    id TEXT PRIMARY KEY, -- 'free', 'pro', 'enterprise'
-    name TEXT NOT NULL,
-    price_monthly NUMERIC(10, 2) DEFAULT 0,
+-- [SCRUBBED GARBAGE]     id TEXT PRIMARY KEY, -- 'free', 'pro', 'enterprise'
+-- [SCRUBBED GARBAGE]     name TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     price_monthly NUMERIC(10, 2) DEFAULT 0,
     
     -- Resource Limits (-1 for unlimited)
-    max_properties INTEGER DEFAULT 1,
-    max_tenants INTEGER DEFAULT 1,
-    max_contracts INTEGER DEFAULT 1,
-    max_sessions INTEGER DEFAULT 1,
+-- [SCRUBBED GARBAGE]     max_properties INTEGER DEFAULT 1,
+-- [SCRUBBED GARBAGE]     max_tenants INTEGER DEFAULT 1,
+-- [SCRUBBED GARBAGE]     max_contracts INTEGER DEFAULT 1,
+-- [SCRUBBED GARBAGE]     max_sessions INTEGER DEFAULT 1,
     
     -- Modular Features
-    features JSONB DEFAULT '{}'::jsonb, -- e.g. {"can_export": true, "ai_assistant": false}
+-- [SCRUBBED GARBAGE]     features JSONB DEFAULT '{}'::jsonb, -- e.g. {"can_export": true, "ai_assistant": false}
     
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Enable RLS
@@ -3125,8 +3180,8 @@ ALTER TABLE subscription_plans ENABLE ROW LEVEL SECURITY;
 
 -- Policies: Everyone can read plans, only admins can modify (if we build UI for it)
 CREATE POLICY "Public Read Plans" 
-    ON subscription_plans FOR SELECT 
-    USING (true);
+-- [SCRUBBED GARBAGE]     ON subscription_plans FOR SELECT 
+-- [SCRUBBED GARBAGE]     USING (true);
 
 -- Seed Data
 INSERT INTO subscription_plans (id, name, price_monthly, max_properties, max_tenants, max_contracts, max_sessions, features)
@@ -3134,21 +3189,21 @@ VALUES
     ('free', 'Free Forever', 0, 1, 2, 1, 1, '{"support_level": "basic"}'::jsonb),
     ('pro', 'Pro', 29.99, 10, 20, -1, 3, '{"support_level": "priority", "export_data": true}'::jsonb),
     ('enterprise', 'Enterprise', 99.99, -1, -1, -1, -1, '{"support_level": "dedicated", "export_data": true, "api_access": true}'::jsonb)
-ON CONFLICT (id) DO UPDATE SET
-    name = EXCLUDED.name,
-    price_monthly = EXCLUDED.price_monthly,
-    max_properties = EXCLUDED.max_properties,
-    max_tenants = EXCLUDED.max_tenants,
-    max_contracts = EXCLUDED.max_contracts,
-    max_sessions = EXCLUDED.max_sessions,
-    features = EXCLUDED.features;
+-- [SCRUBBED GARBAGE] ON CONFLICT (id) DO UPDATE SET
+-- [SCRUBBED GARBAGE]     name = EXCLUDED.name,
+-- [SCRUBBED GARBAGE]     price_monthly = EXCLUDED.price_monthly,
+-- [SCRUBBED GARBAGE]     max_properties = EXCLUDED.max_properties,
+-- [SCRUBBED GARBAGE]     max_tenants = EXCLUDED.max_tenants,
+-- [SCRUBBED GARBAGE]     max_contracts = EXCLUDED.max_contracts,
+-- [SCRUBBED GARBAGE]     max_sessions = EXCLUDED.max_sessions,
+-- [SCRUBBED GARBAGE]     features = EXCLUDED.features;
 -- ============================================
 -- 2. Link User Profiles to Subscription Plans
 -- ============================================
 
 -- 1. Add plan_id column
 ALTER TABLE user_profiles 
-ADD COLUMN IF NOT EXISTS plan_id TEXT REFERENCES subscription_plans(id) DEFAULT 'free';
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS plan_id TEXT REFERENCES subscription_plans(id) DEFAULT 'free';
 
 -- 2. Migrate existing users based on old enum (if needed)
 -- Assuming 'free_forever' -> 'free', anything else -> 'free' or 'enterprise'
@@ -3164,12 +3219,12 @@ CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
     INSERT INTO user_profiles (
-        id, email, full_name, role, subscription_status, plan_id
+-- [SCRUBBED GARBAGE]         id, email, full_name, role, subscription_status, plan_id
     )
     VALUES (
-        NEW.id,
-        NEW.email,
-        NEW.raw_user_meta_data->>'full_name',
+-- [SCRUBBED GARBAGE]         NEW.id,
+-- [SCRUBBED GARBAGE]         NEW.email,
+-- [SCRUBBED GARBAGE]         NEW.raw_user_meta_data->>'full_name',
         'user',
         'active',
         'free' -- Default to free plan
@@ -3182,27 +3237,27 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- ============================================
 
 CREATE OR REPLACE FUNCTION public.manage_session_limits()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 SET search_path = public, auth
 AS $$
 DECLARE
-    new_device_type TEXT;
-    session_count INT;
-    oldest_session_id UUID;
-    user_plan_limit INT;
+-- [SCRUBBED GARBAGE]     new_device_type TEXT;
+-- [SCRUBBED GARBAGE]     session_count INT;
+-- [SCRUBBED GARBAGE]     oldest_session_id UUID;
+-- [SCRUBBED GARBAGE]     user_plan_limit INT;
 BEGIN
     -- 1. Get User's Plan Limit
     SELECT sp.max_sessions
-    INTO user_plan_limit
-    FROM public.user_profiles up
-    JOIN public.subscription_plans sp ON up.plan_id = sp.id
-    WHERE up.id = NEW.user_id;
+-- [SCRUBBED GARBAGE]     INTO user_plan_limit
+-- [SCRUBBED GARBAGE]     FROM public.user_profiles up
+-- [SCRUBBED GARBAGE]     JOIN public.subscription_plans sp ON up.plan_id = sp.id
+-- [SCRUBBED GARBAGE]     WHERE up.id = NEW.user_id;
 
     -- Fallback if no plan found (shouldn't happen)
     IF user_plan_limit IS NULL THEN
-        user_plan_limit := 1;
+-- [SCRUBBED GARBAGE]         user_plan_limit := 1;
     END IF;
 
     -- If unlimited (-1), skip check
@@ -3211,13 +3266,13 @@ BEGIN
     END IF;
 
     -- 2. Identify Device Type
-    new_device_type := public.get_device_type(NEW.user_agent);
+-- [SCRUBBED GARBAGE]     new_device_type := public.get_device_type(NEW.user_agent);
 
     -- 3. Count EXISTING sessions
     SELECT COUNT(*)
-    INTO session_count
-    FROM auth.sessions
-    WHERE user_id = NEW.user_id;
+-- [SCRUBBED GARBAGE]     INTO session_count
+-- [SCRUBBED GARBAGE]     FROM auth.sessions
+-- [SCRUBBED GARBAGE]     WHERE user_id = NEW.user_id;
     -- Note: We removed the "per device type" logic to enforce a GLOBAL session limit per plan.
     -- If you want per-device, uncomment the AND clause below, but usually plans limit total active sessions.
     -- AND public.get_device_type(user_agent) = new_device_type;
@@ -3226,11 +3281,11 @@ BEGIN
     IF session_count >= user_plan_limit THEN
         -- Delete Oldest Session
         SELECT id
-        INTO oldest_session_id
-        FROM auth.sessions
-        WHERE user_id = NEW.user_id
-        ORDER BY created_at ASC
-        LIMIT 1;
+-- [SCRUBBED GARBAGE]         INTO oldest_session_id
+-- [SCRUBBED GARBAGE]         FROM auth.sessions
+-- [SCRUBBED GARBAGE]         WHERE user_id = NEW.user_id
+-- [SCRUBBED GARBAGE]         ORDER BY created_at ASC
+-- [SCRUBBED GARBAGE]         LIMIT 1;
 
         IF oldest_session_id IS NOT NULL THEN
             DELETE FROM auth.sessions WHERE id = oldest_session_id;
@@ -3245,60 +3300,60 @@ $$;
 -- ============================================
 
 CREATE OR REPLACE FUNCTION get_users_with_stats()
-RETURNS TABLE (
+-- [SCRUBBED GARBAGE] RETURNS TABLE (
     -- User Profile Columns
-    id UUID,
-    email TEXT,
-    full_name TEXT,
-    role user_role,
-    subscription_status subscription_status,
-    plan_id TEXT,
-    created_at TIMESTAMPTZ,
+-- [SCRUBBED GARBAGE]     id UUID,
+-- [SCRUBBED GARBAGE]     email TEXT,
+-- [SCRUBBED GARBAGE]     full_name TEXT,
+-- [SCRUBBED GARBAGE]     role user_role,
+-- [SCRUBBED GARBAGE]     subscription_status subscription_status,
+-- [SCRUBBED GARBAGE]     plan_id TEXT,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ,
     
     -- Stats
-    properties_count BIGINT,
-    tenants_count BIGINT,
-    contracts_count BIGINT
+-- [SCRUBBED GARBAGE]     properties_count BIGINT,
+-- [SCRUBBED GARBAGE]     tenants_count BIGINT,
+-- [SCRUBBED GARBAGE]     contracts_count BIGINT
 ) 
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 BEGIN
     RETURN QUERY
     SELECT 
-        up.id,
-        up.email,
-        up.full_name,
-        up.role,
-        up.subscription_status,
-        up.plan_id,
-        up.created_at,
+-- [SCRUBBED GARBAGE]         up.id,
+-- [SCRUBBED GARBAGE]         up.email,
+-- [SCRUBBED GARBAGE]         up.full_name,
+-- [SCRUBBED GARBAGE]         up.role,
+-- [SCRUBBED GARBAGE]         up.subscription_status,
+-- [SCRUBBED GARBAGE]         up.plan_id,
+-- [SCRUBBED GARBAGE]         up.created_at,
         
         -- Counts (Coalesce to 0)
-        COALESCE(p.count, 0) as properties_count,
-        COALESCE(t.count, 0) as tenants_count,
-        COALESCE(c.count, 0) as contracts_count
-    FROM user_profiles up
+-- [SCRUBBED GARBAGE]         COALESCE(p.count, 0) as properties_count,
+-- [SCRUBBED GARBAGE]         COALESCE(t.count, 0) as tenants_count,
+-- [SCRUBBED GARBAGE]         COALESCE(c.count, 0) as contracts_count
+-- [SCRUBBED GARBAGE]     FROM user_profiles up
     -- Join Property Counts
-    LEFT JOIN (
+-- [SCRUBBED GARBAGE]     LEFT JOIN (
         SELECT user_id, count(*) as count 
-        FROM properties 
-        GROUP BY user_id
+-- [SCRUBBED GARBAGE]         FROM properties 
+-- [SCRUBBED GARBAGE]         GROUP BY user_id
     ) p ON up.id = p.user_id
     -- Join Tenant Counts
-    LEFT JOIN (
+-- [SCRUBBED GARBAGE]     LEFT JOIN (
         SELECT user_id, count(*) as count 
-        FROM tenants 
-        GROUP BY user_id
+-- [SCRUBBED GARBAGE]         FROM tenants 
+-- [SCRUBBED GARBAGE]         GROUP BY user_id
     ) t ON up.id = t.user_id
     -- Join Contract Counts
-    LEFT JOIN (
+-- [SCRUBBED GARBAGE]     LEFT JOIN (
         SELECT user_id, count(*) as count 
-        FROM contracts 
-        GROUP BY user_id
+-- [SCRUBBED GARBAGE]         FROM contracts 
+-- [SCRUBBED GARBAGE]         GROUP BY user_id
     ) c ON up.id = c.user_id
     
-    ORDER BY up.created_at DESC;
+-- [SCRUBBED GARBAGE]     ORDER BY up.created_at DESC;
 END;
 $$;
 -- ============================================
@@ -3310,17 +3365,17 @@ $$;
 -- Usage: supabase.rpc('delete_user_account', { target_user_id: '...' })
 
 CREATE OR REPLACE FUNCTION delete_user_account(target_user_id UUID)
-RETURNS VOID
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS VOID
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 SET search_path = public, auth -- vital for accessing auth schema
 AS $$
 BEGIN
     -- 1. Check if requester is admin
     IF NOT EXISTS (
         SELECT 1 FROM public.user_profiles 
-        WHERE id = auth.uid() 
-        AND role = 'admin'
+-- [SCRUBBED GARBAGE]         WHERE id = auth.uid() 
+-- [SCRUBBED GARBAGE]         AND role = 'admin'
     ) THEN
         RAISE EXCEPTION 'Access Denied: Only Admins can delete users.';
     END IF;
@@ -3340,32 +3395,32 @@ $$;
 GRANT EXECUTE ON FUNCTION delete_user_account(UUID) TO authenticated;
 -- Add fields for account deletion tracking
 ALTER TABLE user_profiles
-ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE,
-ADD COLUMN IF NOT EXISTS account_status TEXT DEFAULT 'active' CHECK (account_status IN ('active', 'suspended', 'deleted'));
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS account_status TEXT DEFAULT 'active' CHECK (account_status IN ('active', 'suspended', 'deleted'));
 
--- Create index for efficient querying of suspended accounts
+-- CREATE INDEX IF NOT EXISTS for efficient querying of suspended accounts
 CREATE INDEX IF NOT EXISTS idx_user_profiles_deleted_at ON user_profiles(deleted_at) WHERE deleted_at IS NOT NULL;
 
 -- Create function to permanently delete accounts after 14 days
 CREATE OR REPLACE FUNCTION cleanup_suspended_accounts()
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS void
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    cutoff_date TIMESTAMP WITH TIME ZONE;
-    user_record RECORD;
+-- [SCRUBBED GARBAGE]     cutoff_date TIMESTAMP WITH TIME ZONE;
+-- [SCRUBBED GARBAGE]     user_record RECORD;
 BEGIN
     -- Calculate cutoff date (14 days ago)
-    cutoff_date := NOW() - INTERVAL '14 days';
+-- [SCRUBBED GARBAGE]     cutoff_date := NOW() - INTERVAL '14 days';
     
     -- Find all users marked for deletion more than 14 days ago
     FOR user_record IN 
         SELECT id 
-        FROM user_profiles 
-        WHERE deleted_at IS NOT NULL 
-        AND deleted_at < cutoff_date
-        AND account_status = 'suspended'
+-- [SCRUBBED GARBAGE]         FROM user_profiles 
+-- [SCRUBBED GARBAGE]         WHERE deleted_at IS NOT NULL 
+-- [SCRUBBED GARBAGE]         AND deleted_at < cutoff_date
+-- [SCRUBBED GARBAGE]         AND account_status = 'suspended'
     LOOP
         -- Delete user data (cascades will handle related records)
         DELETE FROM user_profiles WHERE id = user_record.id;
@@ -3383,19 +3438,19 @@ GRANT EXECUTE ON FUNCTION cleanup_suspended_accounts() TO service_role;
 
 -- Update delete_user_account to log action
 CREATE OR REPLACE FUNCTION delete_user_account(target_user_id UUID)
-RETURNS VOID
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS VOID
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 SET search_path = public, auth
 AS $$
 DECLARE
-    target_email TEXT;
+-- [SCRUBBED GARBAGE]     target_email TEXT;
 BEGIN
     -- 1. Check if requester is admin
     IF NOT EXISTS (
         SELECT 1 FROM public.user_profiles 
-        WHERE id = auth.uid() 
-        AND role = 'admin'
+-- [SCRUBBED GARBAGE]         WHERE id = auth.uid() 
+-- [SCRUBBED GARBAGE]         AND role = 'admin'
     ) THEN
         RAISE EXCEPTION 'Access Denied: Only Admins can delete users.';
     END IF;
@@ -3411,9 +3466,9 @@ BEGIN
     -- 3. Log the action
     INSERT INTO public.audit_logs (user_id, action, details)
     VALUES (
-        auth.uid(), 
+-- [SCRUBBED GARBAGE]         auth.uid(), 
         'delete_user', 
-        jsonb_build_object('target_user_id', target_user_id, 'target_email', target_email)
+-- [SCRUBBED GARBAGE]         jsonb_build_object('target_user_id', target_user_id, 'target_email', target_email)
     );
 
     -- 4. Delete from auth.users (cascades)
@@ -3422,11 +3477,13 @@ END;
 $$;
 
 
--- Create Trigger Function for Profile Changes
+-- ;
+DROP TRIGGER IF EXISTS "Function" ON audit_profile_changes;
+Create Trigger Function for Profile Changes
 CREATE OR REPLACE FUNCTION audit_profile_changes()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
@@ -3436,9 +3493,9 @@ BEGIN
        
         INSERT INTO public.audit_logs (user_id, action, details)
         VALUES (
-            auth.uid(), -- The admin performing the update
+-- [SCRUBBED GARBAGE]             auth.uid(), -- The admin performing the update
             'update_user_profile',
-            jsonb_build_object(
+-- [SCRUBBED GARBAGE]             jsonb_build_object(
                 'target_user_id', NEW.id,
                 'changes', jsonb_build_object(
                     'role', CASE WHEN OLD.role IS DISTINCT FROM NEW.role THEN jsonb_build_array(OLD.role, NEW.role) ELSE NULL END,
@@ -3455,21 +3512,23 @@ $$;
 -- Drop trigger if exists to allow idempotent re-run
 DROP TRIGGER IF EXISTS on_profile_change_audit ON public.user_profiles;
 
--- Create Trigger
+-- ;
+DROP TRIGGER IF EXISTS "CREATE" ON public.user_profiles;
+Create Trigger
 CREATE TRIGGER on_profile_change_audit
-AFTER UPDATE ON public.user_profiles
+-- [SCRUBBED GARBAGE] AFTER UPDATE ON public.user_profiles
 FOR EACH ROW
 EXECUTE FUNCTION audit_profile_changes();
 -- Create Feedback Table
 CREATE TABLE IF NOT EXISTS public.feedback (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-    user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL, -- Nullable for anonymous feedback
-    message TEXT NOT NULL,
-    type TEXT DEFAULT 'bug', -- 'bug', 'feature', 'other'
-    status TEXT DEFAULT 'new', -- 'new', 'in_progress', 'resolved'
-    screenshot_url TEXT,
-    device_info JSONB
+-- [SCRUBBED GARBAGE]     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+-- [SCRUBBED GARBAGE]     user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL, -- Nullable for anonymous feedback
+-- [SCRUBBED GARBAGE]     message TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     type TEXT DEFAULT 'bug', -- 'bug', 'feature', 'other'
+-- [SCRUBBED GARBAGE]     status TEXT DEFAULT 'new', -- 'new', 'in_progress', 'resolved'
+-- [SCRUBBED GARBAGE]     screenshot_url TEXT,
+-- [SCRUBBED GARBAGE]     device_info JSONB
 );
 
 -- RLS
@@ -3478,112 +3537,112 @@ ALTER TABLE public.feedback ENABLE ROW LEVEL SECURITY;
 -- Allow anyone to insert (Anon or Authenticated)
 DROP POLICY IF EXISTS "Enable insert for everyone" ON public.feedback;
 CREATE POLICY "Enable insert for everyone"
-ON public.feedback FOR INSERT
-TO public, anon, authenticated
+-- [SCRUBBED GARBAGE] ON public.feedback FOR INSERT
+-- [SCRUBBED GARBAGE] TO public, anon, authenticated
 WITH CHECK (true);
 
 -- Allow Admins to see all
 DROP POLICY IF EXISTS "Admins can view all feedback" ON public.feedback;
 CREATE POLICY "Admins can view all feedback"
-ON public.feedback FOR SELECT
-TO authenticated
-USING (
-    EXISTS (
+-- [SCRUBBED GARBAGE] ON public.feedback FOR SELECT
+-- [SCRUBBED GARBAGE] TO authenticated
+-- [SCRUBBED GARBAGE] USING (
+-- [SCRUBBED GARBAGE]     EXISTS (
         SELECT 1 FROM public.user_profiles
-        WHERE id = auth.uid() AND role = 'admin'
+-- [SCRUBBED GARBAGE]         WHERE id = auth.uid() AND role = 'admin'
     )
 );
 
 -- Support updating status by Admins
 DROP POLICY IF EXISTS "Admins can update feedback" ON public.feedback;
 CREATE POLICY "Admins can update feedback"
-ON public.feedback FOR UPDATE
-TO authenticated
-USING (
-    EXISTS (
+-- [SCRUBBED GARBAGE] ON public.feedback FOR UPDATE
+-- [SCRUBBED GARBAGE] TO authenticated
+-- [SCRUBBED GARBAGE] USING (
+-- [SCRUBBED GARBAGE]     EXISTS (
         SELECT 1 FROM public.user_profiles
-        WHERE id = auth.uid() AND role = 'admin'
+-- [SCRUBBED GARBAGE]         WHERE id = auth.uid() AND role = 'admin'
     )
 );
 
 -- Storage Bucket for Screenshots
 INSERT INTO storage.buckets (id, name, public) 
 VALUES ('feedback-screenshots', 'feedback-screenshots', true)
-ON CONFLICT (id) DO NOTHING;
+-- [SCRUBBED GARBAGE] ON CONFLICT (id) DO NOTHING;
 
 -- Storage Policies
 DROP POLICY IF EXISTS "Anyone can upload feedback screenshots" ON storage.objects;
 CREATE POLICY "Anyone can upload feedback screenshots"
-ON storage.objects FOR INSERT
-TO public, anon, authenticated
+-- [SCRUBBED GARBAGE] ON storage.objects FOR INSERT
+-- [SCRUBBED GARBAGE] TO public, anon, authenticated
 WITH CHECK ( bucket_id = 'feedback-screenshots' );
 
 DROP POLICY IF EXISTS "Anyone can view feedback screenshots" ON storage.objects;
 CREATE POLICY "Anyone can view feedback screenshots"
-ON storage.objects FOR SELECT
-TO public, anon, authenticated
-USING ( bucket_id = 'feedback-screenshots' );
+-- [SCRUBBED GARBAGE] ON storage.objects FOR SELECT
+-- [SCRUBBED GARBAGE] TO public, anon, authenticated
+-- [SCRUBBED GARBAGE] USING ( bucket_id = 'feedback-screenshots' );
 -- Add Granular Storage Quota Fields to Subscription Plans
 -- Migration: 20260119_add_granular_storage_quotas.sql
 
 -- Add category-specific storage columns
 ALTER TABLE subscription_plans
-ADD COLUMN IF NOT EXISTS max_media_mb INTEGER DEFAULT -1,      -- -1 for unlimited within global cap
-ADD COLUMN IF NOT EXISTS max_utilities_mb INTEGER DEFAULT -1,
-ADD COLUMN IF NOT EXISTS max_maintenance_mb INTEGER DEFAULT -1,
-ADD COLUMN IF NOT EXISTS max_documents_mb INTEGER DEFAULT -1;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS max_media_mb INTEGER DEFAULT -1,      -- -1 for unlimited within global cap
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS max_utilities_mb INTEGER DEFAULT -1,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS max_maintenance_mb INTEGER DEFAULT -1,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS max_documents_mb INTEGER DEFAULT -1;
 
 -- Update existing plans with sensible defaults
 -- (Assuming Free gets restricted media but more room for documents)
 UPDATE subscription_plans SET 
-    max_media_mb = 50,         -- 50MB for photos/video max on free
-    max_utilities_mb = 20,     -- 20MB for bills
-    max_maintenance_mb = 20,   -- 20MB for repairs
-    max_documents_mb = 10      -- 10MB for contracts
-WHERE id = 'free';
+-- [SCRUBBED GARBAGE]     max_media_mb = 50,         -- 50MB for photos/video max on free
+-- [SCRUBBED GARBAGE]     max_utilities_mb = 20,     -- 20MB for bills
+-- [SCRUBBED GARBAGE]     max_maintenance_mb = 20,   -- 20MB for repairs
+-- [SCRUBBED GARBAGE]     max_documents_mb = 10      -- 10MB for contracts
+-- [SCRUBBED GARBAGE] WHERE id = 'free';
 
 -- Update the quota check function to support categories
 CREATE OR REPLACE FUNCTION check_storage_quota(
-    p_user_id UUID,
-    p_file_size BIGINT,
-    p_category TEXT DEFAULT NULL
+-- [SCRUBBED GARBAGE]     p_user_id UUID,
+-- [SCRUBBED GARBAGE]     p_file_size BIGINT,
+-- [SCRUBBED GARBAGE]     p_category TEXT DEFAULT NULL
 ) RETURNS BOOLEAN AS $$
 DECLARE
-    v_total_usage BIGINT;
-    v_cat_usage BIGINT;
-    v_max_total_mb INTEGER;
-    v_max_cat_mb INTEGER;
-    v_col_name TEXT;
+-- [SCRUBBED GARBAGE]     v_total_usage BIGINT;
+-- [SCRUBBED GARBAGE]     v_cat_usage BIGINT;
+-- [SCRUBBED GARBAGE]     v_max_total_mb INTEGER;
+-- [SCRUBBED GARBAGE]     v_max_cat_mb INTEGER;
+-- [SCRUBBED GARBAGE]     v_col_name TEXT;
 BEGIN
     -- 1. Get current usage and plan limits
     SELECT 
-        u.total_bytes,
-        CASE 
-            WHEN p_category IN ('photo', 'video') THEN u.media_bytes
-            WHEN p_category LIKE 'utility_%' THEN u.utilities_bytes
-            WHEN p_category = 'maintenance' THEN u.maintenance_bytes
-            ELSE u.documents_bytes
+-- [SCRUBBED GARBAGE]         u.total_bytes,
+-- [SCRUBBED GARBAGE]         CASE 
+-- [SCRUBBED GARBAGE]             WHEN p_category IN ('photo', 'video') THEN u.media_bytes
+-- [SCRUBBED GARBAGE]             WHEN p_category LIKE 'utility_%' THEN u.utilities_bytes
+-- [SCRUBBED GARBAGE]             WHEN p_category = 'maintenance' THEN u.maintenance_bytes
+-- [SCRUBBED GARBAGE]             ELSE u.documents_bytes
         END,
-        s.max_storage_mb,
-        CASE 
-            WHEN p_category IN ('photo', 'video') THEN s.max_media_mb
-            WHEN p_category LIKE 'utility_%' THEN s.max_utilities_mb
-            WHEN p_category = 'maintenance' THEN s.max_maintenance_mb
-            ELSE s.max_documents_mb
+-- [SCRUBBED GARBAGE]         s.max_storage_mb,
+-- [SCRUBBED GARBAGE]         CASE 
+-- [SCRUBBED GARBAGE]             WHEN p_category IN ('photo', 'video') THEN s.max_media_mb
+-- [SCRUBBED GARBAGE]             WHEN p_category LIKE 'utility_%' THEN s.max_utilities_mb
+-- [SCRUBBED GARBAGE]             WHEN p_category = 'maintenance' THEN s.max_maintenance_mb
+-- [SCRUBBED GARBAGE]             ELSE s.max_documents_mb
         END
-    INTO 
-        v_total_usage,
-        v_cat_usage,
-        v_max_total_mb,
-        v_max_cat_mb
-    FROM user_profiles up
-    JOIN subscription_plans s ON up.plan_id = s.id
-    LEFT JOIN user_storage_usage u ON u.user_id = up.id
-    WHERE up.id = p_user_id;
+-- [SCRUBBED GARBAGE]     INTO 
+-- [SCRUBBED GARBAGE]         v_total_usage,
+-- [SCRUBBED GARBAGE]         v_cat_usage,
+-- [SCRUBBED GARBAGE]         v_max_total_mb,
+-- [SCRUBBED GARBAGE]         v_max_cat_mb
+-- [SCRUBBED GARBAGE]     FROM user_profiles up
+-- [SCRUBBED GARBAGE]     JOIN subscription_plans s ON up.plan_id = s.id
+-- [SCRUBBED GARBAGE]     LEFT JOIN user_storage_usage u ON u.user_id = up.id
+-- [SCRUBBED GARBAGE]     WHERE up.id = p_user_id;
 
     -- Initialize usage if user has no records yet
-    v_total_usage := COALESCE(v_total_usage, 0);
-    v_cat_usage := COALESCE(v_cat_usage, 0);
+-- [SCRUBBED GARBAGE]     v_total_usage := COALESCE(v_total_usage, 0);
+-- [SCRUBBED GARBAGE]     v_cat_usage := COALESCE(v_cat_usage, 0);
 
     -- 2. Check Global Limit
     IF v_max_total_mb != -1 AND (v_total_usage + p_file_size) > (v_max_total_mb * 1024 * 1024) THEN
@@ -3605,34 +3664,34 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Add storage quota columns
 ALTER TABLE subscription_plans
-ADD COLUMN IF NOT EXISTS max_storage_mb INTEGER DEFAULT 100,  -- MB per user
-ADD COLUMN IF NOT EXISTS max_file_size_mb INTEGER DEFAULT 10; -- MB per file
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS max_storage_mb INTEGER DEFAULT 100,  -- MB per user
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS max_file_size_mb INTEGER DEFAULT 10; -- MB per file
 
 -- Update existing plans with storage limits
 UPDATE subscription_plans SET 
-    max_storage_mb = 100,    -- 100MB total
-    max_file_size_mb = 5     -- 5MB per file
-WHERE id = 'free';
+-- [SCRUBBED GARBAGE]     max_storage_mb = 100,    -- 100MB total
+-- [SCRUBBED GARBAGE]     max_file_size_mb = 5     -- 5MB per file
+-- [SCRUBBED GARBAGE] WHERE id = 'free';
 
 UPDATE subscription_plans SET 
-    max_storage_mb = 5120,   -- 5GB total
-    max_file_size_mb = 50    -- 50MB per file
-WHERE id = 'pro';
+-- [SCRUBBED GARBAGE]     max_storage_mb = 5120,   -- 5GB total
+-- [SCRUBBED GARBAGE]     max_file_size_mb = 50    -- 50MB per file
+-- [SCRUBBED GARBAGE] WHERE id = 'pro';
 
 UPDATE subscription_plans SET 
-    max_storage_mb = -1,     -- Unlimited
-    max_file_size_mb = 500   -- 500MB per file
-WHERE id = 'enterprise';
+-- [SCRUBBED GARBAGE]     max_storage_mb = -1,     -- Unlimited
+-- [SCRUBBED GARBAGE]     max_file_size_mb = 500   -- 500MB per file
+-- [SCRUBBED GARBAGE] WHERE id = 'enterprise';
 
 -- Comments
--- Create table for short URLs
+-- CREATE TABLE IF NOT EXISTS for short URLs
 CREATE TABLE IF NOT EXISTS calculation_shares (
-    id TEXT PRIMARY KEY, -- Short ID (e.g., "abc123")
-    user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-    calculation_data JSONB NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    expires_at TIMESTAMPTZ DEFAULT (NOW() + INTERVAL '30 days'),
-    view_count INTEGER DEFAULT 0
+-- [SCRUBBED GARBAGE]     id TEXT PRIMARY KEY, -- Short ID (e.g., "abc123")
+-- [SCRUBBED GARBAGE]     user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+-- [SCRUBBED GARBAGE]     calculation_data JSONB NOT NULL,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]     expires_at TIMESTAMPTZ DEFAULT (NOW() + INTERVAL '30 days'),
+-- [SCRUBBED GARBAGE]     view_count INTEGER DEFAULT 0
 );
 
 -- Index for cleanup
@@ -3643,30 +3702,30 @@ ALTER TABLE calculation_shares ENABLE ROW LEVEL SECURITY;
 
 -- Anyone can read (public shares)
 CREATE POLICY "Public can view calculation shares"
-    ON calculation_shares FOR SELECT
-    USING (true);
+-- [SCRUBBED GARBAGE]     ON calculation_shares FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (true);
 
 -- Authenticated users can create
 CREATE POLICY "Authenticated users can create shares"
-    ON calculation_shares FOR INSERT
+-- [SCRUBBED GARBAGE]     ON calculation_shares FOR INSERT
     WITH CHECK (auth.uid() IS NOT NULL);
 
 -- Users can update their own shares (for view count)
 CREATE POLICY "Anyone can update view count"
-    ON calculation_shares FOR UPDATE
-    USING (true)
+-- [SCRUBBED GARBAGE]     ON calculation_shares FOR UPDATE
+-- [SCRUBBED GARBAGE]     USING (true)
     WITH CHECK (true);
 
 -- Function to generate short ID
 CREATE OR REPLACE FUNCTION generate_short_id(length INTEGER DEFAULT 6)
 RETURNS TEXT AS $$
 DECLARE
-    chars TEXT := 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    result TEXT := '';
-    i INTEGER;
+-- [SCRUBBED GARBAGE]     chars TEXT := 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+-- [SCRUBBED GARBAGE]     result TEXT := '';
+-- [SCRUBBED GARBAGE]     i INTEGER;
 BEGIN
     FOR i IN 1..length LOOP
-        result := result || substr(chars, floor(random() * length(chars) + 1)::int, 1);
+-- [SCRUBBED GARBAGE]         result := result || substr(chars, floor(random() * length(chars) + 1)::int, 1);
     END LOOP;
     RETURN result;
 END;
@@ -3676,12 +3735,12 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION create_calculation_share(p_calculation_data JSONB)
 RETURNS TEXT AS $$
 DECLARE
-    v_short_id TEXT;
-    v_max_attempts INTEGER := 10;
-    v_attempt INTEGER := 0;
+-- [SCRUBBED GARBAGE]     v_short_id TEXT;
+-- [SCRUBBED GARBAGE]     v_max_attempts INTEGER := 10;
+-- [SCRUBBED GARBAGE]     v_attempt INTEGER := 0;
 BEGIN
     LOOP
-        v_short_id := generate_short_id(6);
+-- [SCRUBBED GARBAGE]         v_short_id := generate_short_id(6);
         
         -- Try to insert
         BEGIN
@@ -3690,7 +3749,7 @@ BEGIN
             
             RETURN v_short_id;
         EXCEPTION WHEN unique_violation THEN
-            v_attempt := v_attempt + 1;
+-- [SCRUBBED GARBAGE]             v_attempt := v_attempt + 1;
             IF v_attempt >= v_max_attempts THEN
                 RAISE EXCEPTION 'Failed to generate unique short ID after % attempts', v_max_attempts;
             END IF;
@@ -3703,12 +3762,12 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE FUNCTION cleanup_expired_shares()
 RETURNS INTEGER AS $$
 DECLARE
-    v_deleted_count INTEGER;
+-- [SCRUBBED GARBAGE]     v_deleted_count INTEGER;
 BEGIN
     DELETE FROM calculation_shares
-    WHERE expires_at < NOW();
+-- [SCRUBBED GARBAGE]     WHERE expires_at < NOW();
     
-    GET DIAGNOSTICS v_deleted_count = ROW_COUNT;
+-- [SCRUBBED GARBAGE]     GET DIAGNOSTICS v_deleted_count = ROW_COUNT;
     RETURN v_deleted_count;
 END;
 $$ LANGUAGE plpgsql;
@@ -3718,12 +3777,12 @@ $$ LANGUAGE plpgsql;
 -- Migration: 20260119_create_property_documents.sql
 
 CREATE TABLE IF NOT EXISTS property_documents (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    property_id UUID NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [SCRUBBED GARBAGE]     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     property_id UUID NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
     
     -- Document Classification
-    category TEXT NOT NULL CHECK (category IN (
+-- [SCRUBBED GARBAGE]     category TEXT NOT NULL CHECK (category IN (
         'photo',           -- Property photos
         'video',           -- Property videos
         'utility_water',   -- Water bills
@@ -3741,34 +3800,34 @@ CREATE TABLE IF NOT EXISTS property_documents (
     )),
     
     -- Storage Info
-    storage_bucket TEXT NOT NULL,
-    storage_path TEXT NOT NULL,
-    file_name TEXT NOT NULL,
-    file_size BIGINT,
-    mime_type TEXT,
+-- [SCRUBBED GARBAGE]     storage_bucket TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     storage_path TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     file_name TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     file_size BIGINT,
+-- [SCRUBBED GARBAGE]     mime_type TEXT,
     
     -- Metadata
-    title TEXT,
-    description TEXT,
-    tags TEXT[],
+-- [SCRUBBED GARBAGE]     title TEXT,
+-- [SCRUBBED GARBAGE]     description TEXT,
+-- [SCRUBBED GARBAGE]     tags TEXT[],
     
     -- Date Info
-    document_date DATE,  -- When the bill/invoice was issued
-    period_start DATE,   -- For recurring bills (e.g., monthly utility)
-    period_end DATE,
+-- [SCRUBBED GARBAGE]     document_date DATE,  -- When the bill/invoice was issued
+-- [SCRUBBED GARBAGE]     period_start DATE,   -- For recurring bills (e.g., monthly utility)
+-- [SCRUBBED GARBAGE]     period_end DATE,
     
     -- Financial Data (for bills/invoices)
-    amount DECIMAL(10,2),
-    currency TEXT DEFAULT 'ILS',
-    paid BOOLEAN DEFAULT false,
-    payment_date DATE,
+-- [SCRUBBED GARBAGE]     amount DECIMAL(10,2),
+-- [SCRUBBED GARBAGE]     currency TEXT DEFAULT 'ILS',
+-- [SCRUBBED GARBAGE]     paid BOOLEAN DEFAULT false,
+-- [SCRUBBED GARBAGE]     payment_date DATE,
     
     -- Maintenance Specific
-    vendor_name TEXT,
-    issue_type TEXT,     -- e.g., "plumbing", "electrical", "painting"
+-- [SCRUBBED GARBAGE]     vendor_name TEXT,
+-- [SCRUBBED GARBAGE]     issue_type TEXT,     -- e.g., "plumbing", "electrical", "painting"
     
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Indexes
@@ -3781,32 +3840,32 @@ CREATE INDEX IF NOT EXISTS idx_property_documents_user ON property_documents(use
 ALTER TABLE property_documents ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Users can view their property documents"
-    ON property_documents FOR SELECT
-    USING (auth.uid() = user_id);
+-- [SCRUBBED GARBAGE]     ON property_documents FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (auth.uid() = user_id);
 
 CREATE POLICY "Users can insert their property documents"
-    ON property_documents FOR INSERT
+-- [SCRUBBED GARBAGE]     ON property_documents FOR INSERT
     WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Users can update their property documents"
-    ON property_documents FOR UPDATE
-    USING (auth.uid() = user_id);
+-- [SCRUBBED GARBAGE]     ON property_documents FOR UPDATE
+-- [SCRUBBED GARBAGE]     USING (auth.uid() = user_id);
 
 CREATE POLICY "Users can delete their property documents"
-    ON property_documents FOR DELETE
-    USING (auth.uid() = user_id);
+-- [SCRUBBED GARBAGE]     ON property_documents FOR DELETE
+-- [SCRUBBED GARBAGE]     USING (auth.uid() = user_id);
 
 -- Comments
 -- Create document_folders table
 CREATE TABLE IF NOT EXISTS document_folders (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    property_id UUID NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
-    category TEXT NOT NULL, -- e.g., 'utility_electric', 'maintenance', 'media', 'other'
-    name TEXT NOT NULL, -- The user-friendly subject/title
-    folder_date DATE NOT NULL DEFAULT CURRENT_DATE,
-    description TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [SCRUBBED GARBAGE]     property_id UUID NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     category TEXT NOT NULL, -- e.g., 'utility_electric', 'maintenance', 'media', 'other'
+-- [SCRUBBED GARBAGE]     name TEXT NOT NULL, -- The user-friendly subject/title
+-- [SCRUBBED GARBAGE]     folder_date DATE NOT NULL DEFAULT CURRENT_DATE,
+-- [SCRUBBED GARBAGE]     description TEXT,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Enable RLS
@@ -3814,64 +3873,64 @@ ALTER TABLE document_folders ENABLE ROW LEVEL SECURITY;
 
 -- Policies for document_folders
 CREATE POLICY "Users can view folders for their properties"
-    ON document_folders FOR SELECT
-    USING (
-        EXISTS (
+-- [SCRUBBED GARBAGE]     ON document_folders FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM properties p
-            WHERE p.id = document_folders.property_id
-            AND p.user_id = auth.uid()
+-- [SCRUBBED GARBAGE]             WHERE p.id = document_folders.property_id
+-- [SCRUBBED GARBAGE]             AND p.user_id = auth.uid()
         )
     );
 
 CREATE POLICY "Users can insert folders for their properties"
-    ON document_folders FOR INSERT
+-- [SCRUBBED GARBAGE]     ON document_folders FOR INSERT
     WITH CHECK (
-        EXISTS (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM properties p
-            WHERE p.id = document_folders.property_id
-            AND p.user_id = auth.uid()
+-- [SCRUBBED GARBAGE]             WHERE p.id = document_folders.property_id
+-- [SCRUBBED GARBAGE]             AND p.user_id = auth.uid()
         )
     );
 
 CREATE POLICY "Users can update folders for their properties"
-    ON document_folders FOR UPDATE
-    USING (
-        EXISTS (
+-- [SCRUBBED GARBAGE]     ON document_folders FOR UPDATE
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM properties p
-            WHERE p.id = document_folders.property_id
-            AND p.user_id = auth.uid()
+-- [SCRUBBED GARBAGE]             WHERE p.id = document_folders.property_id
+-- [SCRUBBED GARBAGE]             AND p.user_id = auth.uid()
         )
     );
 
 CREATE POLICY "Users can delete folders for their properties"
-    ON document_folders FOR DELETE
-    USING (
-        EXISTS (
+-- [SCRUBBED GARBAGE]     ON document_folders FOR DELETE
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM properties p
-            WHERE p.id = document_folders.property_id
-            AND p.user_id = auth.uid()
+-- [SCRUBBED GARBAGE]             WHERE p.id = document_folders.property_id
+-- [SCRUBBED GARBAGE]             AND p.user_id = auth.uid()
         )
     );
 
 -- Add folder_id to property_documents
 ALTER TABLE property_documents
-ADD COLUMN IF NOT EXISTS folder_id UUID REFERENCES document_folders(id) ON DELETE CASCADE;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS folder_id UUID REFERENCES document_folders(id) ON DELETE CASCADE;
 
--- Create index for performance
+-- CREATE INDEX IF NOT EXISTS for performance
 CREATE INDEX IF NOT EXISTS idx_document_folders_property_category ON document_folders(property_id, category);
 CREATE INDEX IF NOT EXISTS idx_property_documents_folder ON property_documents(folder_id);
 -- Create property_media table
 CREATE TABLE IF NOT EXISTS public.property_media (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    property_id UUID NOT NULL REFERENCES public.properties(id) ON DELETE CASCADE,
-    drive_file_id TEXT NOT NULL,
-    drive_web_view_link TEXT NOT NULL,
-    drive_thumbnail_link TEXT,
-    name TEXT NOT NULL,
-    mime_type TEXT,
-    size BIGINT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+-- [SCRUBBED GARBAGE]     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+-- [SCRUBBED GARBAGE]     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     property_id UUID NOT NULL REFERENCES public.properties(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     drive_file_id TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     drive_web_view_link TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     drive_thumbnail_link TEXT,
+-- [SCRUBBED GARBAGE]     name TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     mime_type TEXT,
+-- [SCRUBBED GARBAGE]     size BIGINT,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
 -- Enable RLS
@@ -3879,16 +3938,16 @@ ALTER TABLE public.property_media ENABLE ROW LEVEL SECURITY;
 
 -- Policies
 CREATE POLICY "Users can view their own property media"
-    ON public.property_media FOR SELECT
-    USING (auth.uid() = user_id);
+-- [SCRUBBED GARBAGE]     ON public.property_media FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (auth.uid() = user_id);
 
 CREATE POLICY "Users can insert their own property media"
-    ON public.property_media FOR INSERT
+-- [SCRUBBED GARBAGE]     ON public.property_media FOR INSERT
     WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Users can delete their own property media"
-    ON public.property_media FOR DELETE
-    USING (auth.uid() = user_id);
+-- [SCRUBBED GARBAGE]     ON public.property_media FOR DELETE
+-- [SCRUBBED GARBAGE]     USING (auth.uid() = user_id);
 
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_property_media_property_id ON public.property_media(property_id);
@@ -3897,11 +3956,11 @@ CREATE INDEX IF NOT EXISTS idx_property_media_user_id ON public.property_media(u
 -- Migration: 20260119_create_short_links.sql
 
 CREATE TABLE IF NOT EXISTS public.short_links (
-    slug TEXT PRIMARY KEY,
-    original_url TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-    expires_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now() + interval '90 days') NOT NULL,
-    user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL -- Optional: track who created it
+-- [SCRUBBED GARBAGE]     slug TEXT PRIMARY KEY,
+-- [SCRUBBED GARBAGE]     original_url TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+-- [SCRUBBED GARBAGE]     expires_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now() + interval '90 days') NOT NULL,
+-- [SCRUBBED GARBAGE]     user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL -- Optional: track who created it
 );
 
 -- Enable RLS
@@ -3909,8 +3968,8 @@ ALTER TABLE public.short_links ENABLE ROW LEVEL SECURITY;
 
 -- Allow public read access (anyone with the link can use it)
 CREATE POLICY "Public can read short links"
-ON public.short_links FOR SELECT
-USING (true);
+-- [SCRUBBED GARBAGE] ON public.short_links FOR SELECT
+-- [SCRUBBED GARBAGE] USING (true);
 
 -- Allow public insert access (since the calculator allows sharing without login, technically)
 -- Alternatively, if we want to restrict generation to logged-in users, change this.
@@ -3923,13 +3982,13 @@ USING (true);
 -- If user is guest, we might need a stored procedure or standard anon policy.
 -- Adding "Public can insert" with limits would be safer, but for MVP:
 CREATE POLICY "Authenticated users can create short links"
-ON public.short_links FOR INSERT
+-- [SCRUBBED GARBAGE] ON public.short_links FOR INSERT
 WITH CHECK (auth.role() = 'authenticated');
 
 -- Also allow anonymous creation if needed? The user removed server-side calc storage.
 -- Let's add anonymous policy for now to be safe with "demo" mode or guest usage.
 CREATE POLICY "Public can create short links"
-ON public.short_links FOR INSERT
+-- [SCRUBBED GARBAGE] ON public.short_links FOR INSERT
 WITH CHECK (true);
 
 -- Auto-cleanup function (optional usually, but good for hygiene)
@@ -3938,26 +3997,26 @@ WITH CHECK (true);
 -- Migration: 20260119_create_user_storage_usage.sql
 
 CREATE TABLE IF NOT EXISTS user_storage_usage (
-    user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    total_bytes BIGINT DEFAULT 0,
-    file_count INTEGER DEFAULT 0,
-    last_calculated_at TIMESTAMPTZ DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]     user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     total_bytes BIGINT DEFAULT 0,
+-- [SCRUBBED GARBAGE]     file_count INTEGER DEFAULT 0,
+-- [SCRUBBED GARBAGE]     last_calculated_at TIMESTAMPTZ DEFAULT NOW(),
     
     -- Breakdown by category
-    media_bytes BIGINT DEFAULT 0,
-    utilities_bytes BIGINT DEFAULT 0,
-    maintenance_bytes BIGINT DEFAULT 0,
-    documents_bytes BIGINT DEFAULT 0,
+-- [SCRUBBED GARBAGE]     media_bytes BIGINT DEFAULT 0,
+-- [SCRUBBED GARBAGE]     utilities_bytes BIGINT DEFAULT 0,
+-- [SCRUBBED GARBAGE]     maintenance_bytes BIGINT DEFAULT 0,
+-- [SCRUBBED GARBAGE]     documents_bytes BIGINT DEFAULT 0,
     
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+-- [SCRUBBED GARBAGE]     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- RLS
 ALTER TABLE user_storage_usage ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Users can view their own storage usage"
-    ON user_storage_usage FOR SELECT
-    USING (auth.uid() = user_id);
+-- [SCRUBBED GARBAGE]     ON user_storage_usage FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (auth.uid() = user_id);
 
 -- Function to update storage usage
 CREATE OR REPLACE FUNCTION update_user_storage()
@@ -3966,18 +4025,18 @@ BEGIN
     IF TG_OP = 'INSERT' THEN
         INSERT INTO user_storage_usage (user_id, total_bytes, file_count)
         VALUES (NEW.user_id, NEW.file_size, 1)
-        ON CONFLICT (user_id) DO UPDATE SET
-            total_bytes = user_storage_usage.total_bytes + NEW.file_size,
-            file_count = user_storage_usage.file_count + 1,
-            updated_at = NOW();
+-- [SCRUBBED GARBAGE]         ON CONFLICT (user_id) DO UPDATE SET
+-- [SCRUBBED GARBAGE]             total_bytes = user_storage_usage.total_bytes + NEW.file_size,
+-- [SCRUBBED GARBAGE]             file_count = user_storage_usage.file_count + 1,
+-- [SCRUBBED GARBAGE]             updated_at = NOW();
             
-    ELSIF TG_OP = 'DELETE' THEN
+-- [SCRUBBED GARBAGE]     ELSIF TG_OP = 'DELETE' THEN
         UPDATE user_storage_usage
         SET 
-            total_bytes = GREATEST(0, total_bytes - OLD.file_size),
-            file_count = GREATEST(0, file_count - 1),
-            updated_at = NOW()
-        WHERE user_id = OLD.user_id;
+-- [SCRUBBED GARBAGE]             total_bytes = GREATEST(0, total_bytes - OLD.file_size),
+-- [SCRUBBED GARBAGE]             file_count = GREATEST(0, file_count - 1),
+-- [SCRUBBED GARBAGE]             updated_at = NOW()
+-- [SCRUBBED GARBAGE]         WHERE user_id = OLD.user_id;
     END IF;
     
     RETURN NEW;
@@ -3985,39 +4044,41 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger on property_documents
+;
+DROP TRIGGER IF EXISTS "update_storage_on_document_change" ON property_documents;
 CREATE TRIGGER update_storage_on_document_change
-AFTER INSERT OR DELETE ON property_documents
+-- [SCRUBBED GARBAGE] AFTER INSERT OR DELETE ON property_documents
 FOR EACH ROW EXECUTE FUNCTION update_user_storage();
 
 -- Storage Quota Check Function
 CREATE OR REPLACE FUNCTION check_storage_quota(
-    p_user_id UUID,
-    p_file_size BIGINT
+-- [SCRUBBED GARBAGE]     p_user_id UUID,
+-- [SCRUBBED GARBAGE]     p_file_size BIGINT
 ) RETURNS BOOLEAN AS $$
 DECLARE
-    v_current_usage BIGINT;
-    v_max_storage_mb INTEGER;
-    v_max_storage_bytes BIGINT;
+-- [SCRUBBED GARBAGE]     v_current_usage BIGINT;
+-- [SCRUBBED GARBAGE]     v_max_storage_mb INTEGER;
+-- [SCRUBBED GARBAGE]     v_max_storage_bytes BIGINT;
 BEGIN
     -- Get current usage
     SELECT COALESCE(total_bytes, 0)
-    INTO v_current_usage
-    FROM user_storage_usage
-    WHERE user_id = p_user_id;
+-- [SCRUBBED GARBAGE]     INTO v_current_usage
+-- [SCRUBBED GARBAGE]     FROM user_storage_usage
+-- [SCRUBBED GARBAGE]     WHERE user_id = p_user_id;
     
     -- Get plan limit
     SELECT sp.max_storage_mb
-    INTO v_max_storage_mb
-    FROM user_profiles up
-    JOIN subscription_plans sp ON up.plan_id = sp.id
-    WHERE up.id = p_user_id;
+-- [SCRUBBED GARBAGE]     INTO v_max_storage_mb
+-- [SCRUBBED GARBAGE]     FROM user_profiles up
+-- [SCRUBBED GARBAGE]     JOIN subscription_plans sp ON up.plan_id = sp.id
+-- [SCRUBBED GARBAGE]     WHERE up.id = p_user_id;
     
     -- -1 means unlimited
     IF v_max_storage_mb = -1 THEN
         RETURN TRUE;
     END IF;
     
-    v_max_storage_bytes := v_max_storage_mb * 1024 * 1024;
+-- [SCRUBBED GARBAGE]     v_max_storage_bytes := v_max_storage_mb * 1024 * 1024;
     
     -- Check if adding this file would exceed quota
     RETURN (v_current_usage + p_file_size) <= v_max_storage_bytes;
@@ -4038,50 +4099,50 @@ DROP POLICY IF EXISTS "Users can delete folders for their properties" ON documen
 
 -- 1. SELECT
 CREATE POLICY "Users can view folders for their properties"
-    ON document_folders FOR SELECT
-    USING (
-        EXISTS (
+-- [SCRUBBED GARBAGE]     ON document_folders FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM properties p
-            WHERE p.id = document_folders.property_id
-            AND p.user_id = auth.uid()
+-- [SCRUBBED GARBAGE]             WHERE p.id = document_folders.property_id
+-- [SCRUBBED GARBAGE]             AND p.user_id = auth.uid()
         )
     );
 
 -- 2. INSERT
 CREATE POLICY "Users can insert folders for their properties"
-    ON document_folders FOR INSERT
+-- [SCRUBBED GARBAGE]     ON document_folders FOR INSERT
     WITH CHECK (
-        EXISTS (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM properties p
-            WHERE p.id = document_folders.property_id
-            AND p.user_id = auth.uid()
+-- [SCRUBBED GARBAGE]             WHERE p.id = document_folders.property_id
+-- [SCRUBBED GARBAGE]             AND p.user_id = auth.uid()
         )
     );
 
 -- 3. UPDATE
 CREATE POLICY "Users can update folders for their properties"
-    ON document_folders FOR UPDATE
-    USING (
-        EXISTS (
+-- [SCRUBBED GARBAGE]     ON document_folders FOR UPDATE
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM properties p
-            WHERE p.id = document_folders.property_id
-            AND p.user_id = auth.uid()
+-- [SCRUBBED GARBAGE]             WHERE p.id = document_folders.property_id
+-- [SCRUBBED GARBAGE]             AND p.user_id = auth.uid()
         )
     );
 
 -- 4. DELETE
 CREATE POLICY "Users can delete folders for their properties"
-    ON document_folders FOR DELETE
-    USING (
-        EXISTS (
+-- [SCRUBBED GARBAGE]     ON document_folders FOR DELETE
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM properties p
-            WHERE p.id = document_folders.property_id
-            AND p.user_id = auth.uid()
+-- [SCRUBBED GARBAGE]             WHERE p.id = document_folders.property_id
+-- [SCRUBBED GARBAGE]             AND p.user_id = auth.uid()
         )
     );
 
 -- Force schema cache reload again just in case
-NOTIFY pgrst, 'reload schema';
+-- [SCRUBBED GARBAGE] NOTIFY pgrst, 'reload schema';
 -- Fix RLS Violation in Storage Trigger (with Category Support)
 -- Migration: 20260119_fix_trigger_security.sql
 
@@ -4091,52 +4152,52 @@ NOTIFY pgrst, 'reload schema';
 CREATE OR REPLACE FUNCTION update_user_storage()
 RETURNS TRIGGER AS $$
 DECLARE
-    v_col TEXT;
-    v_size BIGINT;
-    v_user_id UUID;
-    v_cat TEXT;
+-- [SCRUBBED GARBAGE]     v_col TEXT;
+-- [SCRUBBED GARBAGE]     v_size BIGINT;
+-- [SCRUBBED GARBAGE]     v_user_id UUID;
+-- [SCRUBBED GARBAGE]     v_cat TEXT;
 BEGIN
     IF TG_OP = 'INSERT' THEN
-        v_size := NEW.file_size;
-        v_user_id := NEW.user_id;
-        v_cat := NEW.category;
-    ELSE
-        v_size := OLD.file_size;
-        v_user_id := OLD.user_id;
-        v_cat := OLD.category;
+-- [SCRUBBED GARBAGE]         v_size := NEW.file_size;
+-- [SCRUBBED GARBAGE]         v_user_id := NEW.user_id;
+-- [SCRUBBED GARBAGE]         v_cat := NEW.category;
+-- [SCRUBBED GARBAGE]     ELSE
+-- [SCRUBBED GARBAGE]         v_size := OLD.file_size;
+-- [SCRUBBED GARBAGE]         v_user_id := OLD.user_id;
+-- [SCRUBBED GARBAGE]         v_cat := OLD.category;
     END IF;
 
     -- Determine which column to update based on category
     IF v_cat IN ('photo', 'video') THEN
-        v_col := 'media_bytes';
-    ELSIF v_cat LIKE 'utility_%' THEN
-        v_col := 'utilities_bytes';
-    ELSIF v_cat = 'maintenance' THEN
-        v_col := 'maintenance_bytes';
-    ELSE
-        v_col := 'documents_bytes';
+-- [SCRUBBED GARBAGE]         v_col := 'media_bytes';
+-- [SCRUBBED GARBAGE]     ELSIF v_cat LIKE 'utility_%' THEN
+-- [SCRUBBED GARBAGE]         v_col := 'utilities_bytes';
+-- [SCRUBBED GARBAGE]     ELSIF v_cat = 'maintenance' THEN
+-- [SCRUBBED GARBAGE]         v_col := 'maintenance_bytes';
+-- [SCRUBBED GARBAGE]     ELSE
+-- [SCRUBBED GARBAGE]         v_col := 'documents_bytes';
     END IF;
 
     IF TG_OP = 'INSERT' THEN
         EXECUTE format('
             INSERT INTO user_storage_usage (user_id, total_bytes, file_count, %I)
             VALUES ($1, $2, 1, $2)
-            ON CONFLICT (user_id) DO UPDATE SET
-                total_bytes = user_storage_usage.total_bytes + $2,
-                file_count = user_storage_usage.file_count + 1,
-                %I = user_storage_usage.%I + $2,
-                updated_at = NOW()
+-- [SCRUBBED GARBAGE]             ON CONFLICT (user_id) DO UPDATE SET
+-- [SCRUBBED GARBAGE]                 total_bytes = user_storage_usage.total_bytes + $2,
+-- [SCRUBBED GARBAGE]                 file_count = user_storage_usage.file_count + 1,
+-- [SCRUBBED GARBAGE]                 %I = user_storage_usage.%I + $2,
+-- [SCRUBBED GARBAGE]                 updated_at = NOW()
         ', v_col, v_col, v_col) USING v_user_id, v_size;
             
-    ELSIF TG_OP = 'DELETE' THEN
+-- [SCRUBBED GARBAGE]     ELSIF TG_OP = 'DELETE' THEN
         EXECUTE format('
             UPDATE user_storage_usage
             SET 
-                total_bytes = GREATEST(0, total_bytes - $1),
-                file_count = GREATEST(0, file_count - 1),
-                %I = GREATEST(0, %I - $1),
-                updated_at = NOW()
-            WHERE user_id = $2
+-- [SCRUBBED GARBAGE]                 total_bytes = GREATEST(0, total_bytes - $1),
+-- [SCRUBBED GARBAGE]                 file_count = GREATEST(0, file_count - 1),
+-- [SCRUBBED GARBAGE]                 %I = GREATEST(0, %I - $1),
+-- [SCRUBBED GARBAGE]                 updated_at = NOW()
+-- [SCRUBBED GARBAGE]             WHERE user_id = $2
         ', v_col, v_col) USING v_size, v_user_id;
     END IF;
     
@@ -4149,52 +4210,52 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE FUNCTION update_user_storage()
 RETURNS TRIGGER AS $$
 DECLARE
-    v_col TEXT;
-    v_size BIGINT;
-    v_user_id UUID;
-    v_cat TEXT;
+-- [SCRUBBED GARBAGE]     v_col TEXT;
+-- [SCRUBBED GARBAGE]     v_size BIGINT;
+-- [SCRUBBED GARBAGE]     v_user_id UUID;
+-- [SCRUBBED GARBAGE]     v_cat TEXT;
 BEGIN
     IF TG_OP = 'INSERT' THEN
-        v_size := NEW.file_size;
-        v_user_id := NEW.user_id;
-        v_cat := NEW.category;
-    ELSE
-        v_size := OLD.file_size;
-        v_user_id := OLD.user_id;
-        v_cat := OLD.category;
+-- [SCRUBBED GARBAGE]         v_size := NEW.file_size;
+-- [SCRUBBED GARBAGE]         v_user_id := NEW.user_id;
+-- [SCRUBBED GARBAGE]         v_cat := NEW.category;
+-- [SCRUBBED GARBAGE]     ELSE
+-- [SCRUBBED GARBAGE]         v_size := OLD.file_size;
+-- [SCRUBBED GARBAGE]         v_user_id := OLD.user_id;
+-- [SCRUBBED GARBAGE]         v_cat := OLD.category;
     END IF;
 
     -- Determine which column to update based on category
     IF v_cat IN ('photo', 'video') THEN
-        v_col := 'media_bytes';
-    ELSIF v_cat LIKE 'utility_%' THEN
-        v_col := 'utilities_bytes';
-    ELSIF v_cat = 'maintenance' THEN
-        v_col := 'maintenance_bytes';
-    ELSE
-        v_col := 'documents_bytes';
+-- [SCRUBBED GARBAGE]         v_col := 'media_bytes';
+-- [SCRUBBED GARBAGE]     ELSIF v_cat LIKE 'utility_%' THEN
+-- [SCRUBBED GARBAGE]         v_col := 'utilities_bytes';
+-- [SCRUBBED GARBAGE]     ELSIF v_cat = 'maintenance' THEN
+-- [SCRUBBED GARBAGE]         v_col := 'maintenance_bytes';
+-- [SCRUBBED GARBAGE]     ELSE
+-- [SCRUBBED GARBAGE]         v_col := 'documents_bytes';
     END IF;
 
     IF TG_OP = 'INSERT' THEN
         EXECUTE format('
             INSERT INTO user_storage_usage (user_id, total_bytes, file_count, %I)
             VALUES ($1, $2, 1, $2)
-            ON CONFLICT (user_id) DO UPDATE SET
-                total_bytes = user_storage_usage.total_bytes + $2,
-                file_count = user_storage_usage.file_count + 1,
-                %I = user_storage_usage.%I + $2,
-                updated_at = NOW()
+-- [SCRUBBED GARBAGE]             ON CONFLICT (user_id) DO UPDATE SET
+-- [SCRUBBED GARBAGE]                 total_bytes = user_storage_usage.total_bytes + $2,
+-- [SCRUBBED GARBAGE]                 file_count = user_storage_usage.file_count + 1,
+-- [SCRUBBED GARBAGE]                 %I = user_storage_usage.%I + $2,
+-- [SCRUBBED GARBAGE]                 updated_at = NOW()
         ', v_col, v_col, v_col) USING v_user_id, v_size;
             
-    ELSIF TG_OP = 'DELETE' THEN
+-- [SCRUBBED GARBAGE]     ELSIF TG_OP = 'DELETE' THEN
         EXECUTE format('
             UPDATE user_storage_usage
             SET 
-                total_bytes = GREATEST(0, total_bytes - $1),
-                file_count = GREATEST(0, file_count - 1),
-                %I = GREATEST(0, %I - $1),
-                updated_at = NOW()
-            WHERE user_id = $2
+-- [SCRUBBED GARBAGE]                 total_bytes = GREATEST(0, total_bytes - $1),
+-- [SCRUBBED GARBAGE]                 file_count = GREATEST(0, file_count - 1),
+-- [SCRUBBED GARBAGE]                 %I = GREATEST(0, %I - $1),
+-- [SCRUBBED GARBAGE]                 updated_at = NOW()
+-- [SCRUBBED GARBAGE]             WHERE user_id = $2
         ', v_col, v_col) USING v_size, v_user_id;
     END IF;
     
@@ -4205,28 +4266,28 @@ $$ LANGUAGE plpgsql;
 -- This column stores when the tenant's extension option period begins
 
 ALTER TABLE public.contracts
-ADD COLUMN IF NOT EXISTS extension_option_start DATE;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS extension_option_start DATE;
 
 -- AI Chat Usage Tracking
 CREATE TABLE IF NOT EXISTS ai_chat_usage (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    message_count INTEGER DEFAULT 0,
-    tokens_used INTEGER DEFAULT 0,
-    last_reset_at TIMESTAMPTZ DEFAULT NOW(),
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE(user_id)
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [SCRUBBED GARBAGE]     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     message_count INTEGER DEFAULT 0,
+-- [SCRUBBED GARBAGE]     tokens_used INTEGER DEFAULT 0,
+-- [SCRUBBED GARBAGE]     last_reset_at TIMESTAMPTZ DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]     updated_at TIMESTAMPTZ DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]     UNIQUE(user_id)
 );
 
 -- AI Usage Limits per Subscription Tier
 CREATE TABLE IF NOT EXISTS ai_usage_limits (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    tier_name TEXT NOT NULL UNIQUE,
-    monthly_message_limit INTEGER NOT NULL,
-    monthly_token_limit INTEGER NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [SCRUBBED GARBAGE]     tier_name TEXT NOT NULL UNIQUE,
+-- [SCRUBBED GARBAGE]     monthly_message_limit INTEGER NOT NULL,
+-- [SCRUBBED GARBAGE]     monthly_token_limit INTEGER NOT NULL,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Insert default limits
@@ -4235,58 +4296,58 @@ INSERT INTO ai_usage_limits (tier_name, monthly_message_limit, monthly_token_lim
     ('basic', 200, 200000),         -- 200 messages, ~200k tokens
     ('pro', 1000, 1000000),         -- 1000 messages, ~1M tokens
     ('business', -1, -1)            -- Unlimited (-1)
-ON CONFLICT (tier_name) DO NOTHING;
+-- [SCRUBBED GARBAGE] ON CONFLICT (tier_name) DO NOTHING;
 
 -- Function to check and log AI usage
 CREATE OR REPLACE FUNCTION check_ai_chat_usage(
-    p_user_id UUID,
-    p_tokens_used INTEGER DEFAULT 500
+-- [SCRUBBED GARBAGE]     p_user_id UUID,
+-- [SCRUBBED GARBAGE]     p_tokens_used INTEGER DEFAULT 500
 )
 RETURNS JSON AS $$
 DECLARE
-    v_usage RECORD;
-    v_limit RECORD;
-    v_user_tier TEXT;
-    v_result JSON;
+-- [SCRUBBED GARBAGE]     v_usage RECORD;
+-- [SCRUBBED GARBAGE]     v_limit RECORD;
+-- [SCRUBBED GARBAGE]     v_user_tier TEXT;
+-- [SCRUBBED GARBAGE]     v_result JSON;
 BEGIN
     -- Get user's subscription tier
     SELECT subscription_tier INTO v_user_tier
-    FROM user_profiles
-    WHERE id = p_user_id;
+-- [SCRUBBED GARBAGE]     FROM user_profiles
+-- [SCRUBBED GARBAGE]     WHERE id = p_user_id;
     
     -- Default to free if no tier found
-    v_user_tier := COALESCE(v_user_tier, 'free');
+-- [SCRUBBED GARBAGE]     v_user_tier := COALESCE(v_user_tier, 'free');
     
     -- Get limits for this tier
     SELECT * INTO v_limit
-    FROM ai_usage_limits
-    WHERE tier_name = v_user_tier;
+-- [SCRUBBED GARBAGE]     FROM ai_usage_limits
+-- [SCRUBBED GARBAGE]     WHERE tier_name = v_user_tier;
     
     -- Get or create usage record
     INSERT INTO ai_chat_usage (user_id, message_count, tokens_used)
     VALUES (p_user_id, 0, 0)
-    ON CONFLICT (user_id) DO NOTHING;
+-- [SCRUBBED GARBAGE]     ON CONFLICT (user_id) DO NOTHING;
     
     SELECT * INTO v_usage
-    FROM ai_chat_usage
-    WHERE user_id = p_user_id;
+-- [SCRUBBED GARBAGE]     FROM ai_chat_usage
+-- [SCRUBBED GARBAGE]     WHERE user_id = p_user_id;
     
     -- Check if we need to reset (monthly)
     IF v_usage.last_reset_at < DATE_TRUNC('month', NOW()) THEN
         UPDATE ai_chat_usage
         SET message_count = 0,
-            tokens_used = 0,
-            last_reset_at = NOW(),
-            updated_at = NOW()
-        WHERE user_id = p_user_id;
+-- [SCRUBBED GARBAGE]             tokens_used = 0,
+-- [SCRUBBED GARBAGE]             last_reset_at = NOW(),
+-- [SCRUBBED GARBAGE]             updated_at = NOW()
+-- [SCRUBBED GARBAGE]         WHERE user_id = p_user_id;
         
-        v_usage.message_count := 0;
-        v_usage.tokens_used := 0;
+-- [SCRUBBED GARBAGE]         v_usage.message_count := 0;
+-- [SCRUBBED GARBAGE]         v_usage.tokens_used := 0;
     END IF;
     
     -- Check limits (skip if unlimited)
     IF v_limit.monthly_message_limit != -1 AND v_usage.message_count >= v_limit.monthly_message_limit THEN
-        v_result := json_build_object(
+-- [SCRUBBED GARBAGE]         v_result := json_build_object(
             'allowed', false,
             'reason', 'message_limit_exceeded',
             'current_usage', v_usage.message_count,
@@ -4297,7 +4358,7 @@ BEGIN
     END IF;
     
     IF v_limit.monthly_token_limit != -1 AND v_usage.tokens_used >= v_limit.monthly_token_limit THEN
-        v_result := json_build_object(
+-- [SCRUBBED GARBAGE]         v_result := json_build_object(
             'allowed', false,
             'reason', 'token_limit_exceeded',
             'current_usage', v_usage.tokens_used,
@@ -4310,12 +4371,12 @@ BEGIN
     -- Increment usage
     UPDATE ai_chat_usage
     SET message_count = message_count + 1,
-        tokens_used = tokens_used + p_tokens_used,
-        updated_at = NOW()
-    WHERE user_id = p_user_id;
+-- [SCRUBBED GARBAGE]         tokens_used = tokens_used + p_tokens_used,
+-- [SCRUBBED GARBAGE]         updated_at = NOW()
+-- [SCRUBBED GARBAGE]     WHERE user_id = p_user_id;
     
     -- Return success
-    v_result := json_build_object(
+-- [SCRUBBED GARBAGE]     v_result := json_build_object(
         'allowed', true,
         'current_messages', v_usage.message_count + 1,
         'message_limit', v_limit.monthly_message_limit,
@@ -4334,32 +4395,32 @@ ALTER TABLE ai_usage_limits ENABLE ROW LEVEL SECURITY;
 
 -- Users can view their own usage
 CREATE POLICY "Users can view own AI usage"
-    ON ai_chat_usage FOR SELECT
-    USING (auth.uid() = user_id);
+-- [SCRUBBED GARBAGE]     ON ai_chat_usage FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (auth.uid() = user_id);
 
 -- Admins can view all usage
 CREATE POLICY "Admins can view all AI usage"
-    ON ai_chat_usage FOR ALL
-    USING (
-        EXISTS (
+-- [SCRUBBED GARBAGE]     ON ai_chat_usage FOR ALL
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [SCRUBBED GARBAGE]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
 -- Everyone can view limits (for UI display)
 CREATE POLICY "Anyone can view AI limits"
-    ON ai_usage_limits FOR SELECT
-    TO authenticated
-    USING (true);
+-- [SCRUBBED GARBAGE]     ON ai_usage_limits FOR SELECT
+-- [SCRUBBED GARBAGE]     TO authenticated
+-- [SCRUBBED GARBAGE]     USING (true);
 
 -- Only admins can modify limits
 CREATE POLICY "Admins can modify AI limits"
-    ON ai_usage_limits FOR ALL
-    USING (
-        EXISTS (
+-- [SCRUBBED GARBAGE]     ON ai_usage_limits FOR ALL
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [SCRUBBED GARBAGE]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
@@ -4368,66 +4429,66 @@ CREATE INDEX IF NOT EXISTS idx_ai_chat_usage_user_id ON ai_chat_usage(user_id);
 CREATE INDEX IF NOT EXISTS idx_ai_chat_usage_last_reset ON ai_chat_usage(last_reset_at);
 -- 1. Add notification_preferences column to user_profiles
 ALTER TABLE public.user_profiles
-ADD COLUMN IF NOT EXISTS notification_preferences JSONB DEFAULT '{"contract_expiry_days": 60, "rent_due_days": 3}';
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS notification_preferences JSONB DEFAULT '{"contract_expiry_days": 60, "rent_due_days": 3}';
 
 -- 2. Update Contract Expiration Check to use preferences
 CREATE OR REPLACE FUNCTION public.check_contract_expirations()
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS void
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    expiring_contract RECORD;
-    count_new integer := 0;
-    pref_days integer;
+-- [SCRUBBED GARBAGE]     expiring_contract RECORD;
+-- [SCRUBBED GARBAGE]     count_new integer := 0;
+-- [SCRUBBED GARBAGE]     pref_days integer;
 BEGIN
     FOR expiring_contract IN
         SELECT 
-            c.id, 
-            c.end_date, 
-            c.property_id, 
-            p.user_id, 
-            p.address, 
-            p.city,
-            up.notification_preferences
-        FROM public.contracts c
-        JOIN public.properties p ON c.property_id = p.id
-        JOIN public.user_profiles up ON p.user_id = up.id
-        WHERE c.status = 'active'
+-- [SCRUBBED GARBAGE]             c.id, 
+-- [SCRUBBED GARBAGE]             c.end_date, 
+-- [SCRUBBED GARBAGE]             c.property_id, 
+-- [SCRUBBED GARBAGE]             p.user_id, 
+-- [SCRUBBED GARBAGE]             p.address, 
+-- [SCRUBBED GARBAGE]             p.city,
+-- [SCRUBBED GARBAGE]             up.notification_preferences
+-- [SCRUBBED GARBAGE]         FROM public.contracts c
+-- [SCRUBBED GARBAGE]         JOIN public.properties p ON c.property_id = p.id
+-- [SCRUBBED GARBAGE]         JOIN public.user_profiles up ON p.user_id = up.id
+-- [SCRUBBED GARBAGE]         WHERE c.status = 'active'
     LOOP
         -- Extract preference, default to 60, cap at 180
-        pref_days := COALESCE((expiring_contract.notification_preferences->>'contract_expiry_days')::int, 60);
+-- [SCRUBBED GARBAGE]         pref_days := COALESCE((expiring_contract.notification_preferences->>'contract_expiry_days')::int, 60);
         IF pref_days > 180 THEN pref_days := 180; END IF;
         IF pref_days < 1 THEN pref_days := 1; END IF;
 
         -- Check if contract expires in this window
         IF expiring_contract.end_date <= (CURRENT_DATE + (pref_days || ' days')::interval)
-           AND expiring_contract.end_date >= CURRENT_DATE THEN
+-- [SCRUBBED GARBAGE]            AND expiring_contract.end_date >= CURRENT_DATE THEN
            
             IF NOT EXISTS (
                 SELECT 1 
-                FROM public.notifications n 
-                WHERE n.user_id = expiring_contract.user_id
-                AND n.type = 'warning'
-                AND n.metadata->>'contract_id' = expiring_contract.id::text
+-- [SCRUBBED GARBAGE]                 FROM public.notifications n 
+-- [SCRUBBED GARBAGE]                 WHERE n.user_id = expiring_contract.user_id
+-- [SCRUBBED GARBAGE]                 AND n.type = 'warning'
+-- [SCRUBBED GARBAGE]                 AND n.metadata->>'contract_id' = expiring_contract.id::text
                 -- We allow re-notifying if the title implies a different "tier" of warning, but for now we keep it simple
                 -- Just alert once per contract expiry cycle is usually enough, or enable duplicates if significant time passed
-                 AND n.created_at > (CURRENT_DATE - INTERVAL '6 months') -- Simple debounce for same contract
+-- [SCRUBBED GARBAGE]                  AND n.created_at > (CURRENT_DATE - INTERVAL '6 months') -- Simple debounce for same contract
             ) THEN
                 INSERT INTO public.notifications (
-                    user_id,
-                    type,
-                    title,
-                    message,
-                    metadata
+-- [SCRUBBED GARBAGE]                     user_id,
+-- [SCRUBBED GARBAGE]                     type,
+-- [SCRUBBED GARBAGE]                     title,
+-- [SCRUBBED GARBAGE]                     message,
+-- [SCRUBBED GARBAGE]                     metadata
                 ) VALUES (
-                    expiring_contract.user_id,
+-- [SCRUBBED GARBAGE]                     expiring_contract.user_id,
                     'warning',
                     'Contract Expiring Soon',
                     'Contract for ' || expiring_contract.address || ' ends in ' || (expiring_contract.end_date - CURRENT_DATE)::text || ' days (' || to_char(expiring_contract.end_date, 'DD/MM/YYYY') || '). Review and renew today.',
-                    jsonb_build_object('contract_id', expiring_contract.id)
+-- [SCRUBBED GARBAGE]                     jsonb_build_object('contract_id', expiring_contract.id)
                 );
-                count_new := count_new + 1;
+-- [SCRUBBED GARBAGE]                 count_new := count_new + 1;
             END IF;
         END IF;
     END LOOP;
@@ -4436,58 +4497,58 @@ $$;
 
 -- 3. Update Rent Due Check to use preferences
 CREATE OR REPLACE FUNCTION public.check_rent_due()
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS void
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    due_payment RECORD;
-    count_new integer := 0;
-    pref_days integer;
+-- [SCRUBBED GARBAGE]     due_payment RECORD;
+-- [SCRUBBED GARBAGE]     count_new integer := 0;
+-- [SCRUBBED GARBAGE]     pref_days integer;
 BEGIN
     FOR due_payment IN
         SELECT 
-            pay.id,
-            pay.due_date,
-            pay.amount,
-            pay.currency,
-            p.user_id,
-            p.address,
-            up.notification_preferences
-        FROM public.payments pay
-        JOIN public.contracts c ON pay.contract_id = c.id
-        JOIN public.properties p ON c.property_id = p.id
-        JOIN public.user_profiles up ON p.user_id = up.id
-        WHERE pay.status = 'pending'
+-- [SCRUBBED GARBAGE]             pay.id,
+-- [SCRUBBED GARBAGE]             pay.due_date,
+-- [SCRUBBED GARBAGE]             pay.amount,
+-- [SCRUBBED GARBAGE]             pay.currency,
+-- [SCRUBBED GARBAGE]             p.user_id,
+-- [SCRUBBED GARBAGE]             p.address,
+-- [SCRUBBED GARBAGE]             up.notification_preferences
+-- [SCRUBBED GARBAGE]         FROM public.payments pay
+-- [SCRUBBED GARBAGE]         JOIN public.contracts c ON pay.contract_id = c.id
+-- [SCRUBBED GARBAGE]         JOIN public.properties p ON c.property_id = p.id
+-- [SCRUBBED GARBAGE]         JOIN public.user_profiles up ON p.user_id = up.id
+-- [SCRUBBED GARBAGE]         WHERE pay.status = 'pending'
     LOOP
         -- Extract preference, default to 3, cap at 180 (though less makes sense for rent)
-        pref_days := COALESCE((due_payment.notification_preferences->>'rent_due_days')::int, 3);
+-- [SCRUBBED GARBAGE]         pref_days := COALESCE((due_payment.notification_preferences->>'rent_due_days')::int, 3);
         IF pref_days > 180 THEN pref_days := 180; END IF;
 
         IF due_payment.due_date <= (CURRENT_DATE + (pref_days || ' days')::interval)
-           AND due_payment.due_date >= CURRENT_DATE THEN
+-- [SCRUBBED GARBAGE]            AND due_payment.due_date >= CURRENT_DATE THEN
 
             IF NOT EXISTS (
                 SELECT 1 
-                FROM public.notifications n 
-                WHERE n.user_id = due_payment.user_id
-                AND n.type = 'info'
-                AND n.metadata->>'payment_id' = due_payment.id::text
+-- [SCRUBBED GARBAGE]                 FROM public.notifications n 
+-- [SCRUBBED GARBAGE]                 WHERE n.user_id = due_payment.user_id
+-- [SCRUBBED GARBAGE]                 AND n.type = 'info'
+-- [SCRUBBED GARBAGE]                 AND n.metadata->>'payment_id' = due_payment.id::text
             ) THEN
                 INSERT INTO public.notifications (
-                    user_id,
-                    type,
-                    title,
-                    message,
-                    metadata
+-- [SCRUBBED GARBAGE]                     user_id,
+-- [SCRUBBED GARBAGE]                     type,
+-- [SCRUBBED GARBAGE]                     title,
+-- [SCRUBBED GARBAGE]                     message,
+-- [SCRUBBED GARBAGE]                     metadata
                 ) VALUES (
-                    due_payment.user_id,
+-- [SCRUBBED GARBAGE]                     due_payment.user_id,
                     'info',
                     'Rent Due Soon',
                     'Rent of ' || due_payment.amount || ' ' || due_payment.currency || ' for ' || due_payment.address || ' is due on ' || to_char(due_payment.due_date, 'DD/MM/YYYY') || '.',
-                    jsonb_build_object('payment_id', due_payment.id)
+-- [SCRUBBED GARBAGE]                     jsonb_build_object('payment_id', due_payment.id)
                 );
-                count_new := count_new + 1;
+-- [SCRUBBED GARBAGE]                 count_new := count_new + 1;
             END IF;
         END IF;
     END LOOP;
@@ -4532,12 +4593,12 @@ CREATE INDEX IF NOT EXISTS idx_short_links_created_at ON public.short_links(crea
  * Replaces client-side aggregation in Dashboard.
  */
 CREATE OR REPLACE FUNCTION public.get_property_document_counts(p_user_id UUID)
-RETURNS JSONB
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS JSONB
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    result JSONB;
+-- [SCRUBBED GARBAGE]     result JSONB;
 BEGIN
     SELECT jsonb_build_object(
         'media', COUNT(*) FILTER (WHERE category IN ('photo', 'video')),
@@ -4545,8 +4606,8 @@ BEGIN
         'maintenance', COUNT(*) FILTER (WHERE category = 'maintenance'),
         'documents', COUNT(*) FILTER (WHERE category NOT IN ('photo', 'video', 'maintenance') AND category NOT LIKE 'utility_%')
     ) INTO result
-    FROM public.property_documents
-    WHERE user_id = p_user_id;
+-- [SCRUBBED GARBAGE]     FROM public.property_documents
+-- [SCRUBBED GARBAGE]     WHERE user_id = p_user_id;
 
     RETURN result;
 END;
@@ -4557,27 +4618,27 @@ $$;
  * Including income, pending payments, and document counts.
  */
 CREATE OR REPLACE FUNCTION public.get_dashboard_summary(p_user_id UUID)
-RETURNS JSONB
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS JSONB
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    income_stats RECORD;
-    doc_counts JSONB;
+-- [SCRUBBED GARBAGE]     income_stats RECORD;
+-- [SCRUBBED GARBAGE]     doc_counts JSONB;
 BEGIN
     -- 1. Get Income Stats
     SELECT 
-        COALESCE(SUM(amount) FILTER (WHERE status = 'paid'), 0) as collected,
-        COALESCE(SUM(amount) FILTER (WHERE status = 'pending'), 0) as pending,
-        COALESCE(SUM(amount) FILTER (WHERE status IN ('paid', 'pending')), 0) as total
-    INTO income_stats
-    FROM public.payments
-    WHERE user_id = p_user_id
-    AND due_date >= date_trunc('month', now())
-    AND due_date < date_trunc('month', now() + interval '1 month');
+-- [SCRUBBED GARBAGE]         COALESCE(SUM(amount) FILTER (WHERE status = 'paid'), 0) as collected,
+-- [SCRUBBED GARBAGE]         COALESCE(SUM(amount) FILTER (WHERE status = 'pending'), 0) as pending,
+-- [SCRUBBED GARBAGE]         COALESCE(SUM(amount) FILTER (WHERE status IN ('paid', 'pending')), 0) as total
+-- [SCRUBBED GARBAGE]     INTO income_stats
+-- [SCRUBBED GARBAGE]     FROM public.payments
+-- [SCRUBBED GARBAGE]     WHERE user_id = p_user_id
+-- [SCRUBBED GARBAGE]     AND due_date >= date_trunc('month', now())
+-- [SCRUBBED GARBAGE]     AND due_date < date_trunc('month', now() + interval '1 month');
 
     -- 2. Get Document Counts (reuse RPC logic)
-    doc_counts := public.get_property_document_counts(p_user_id);
+-- [SCRUBBED GARBAGE]     doc_counts := public.get_property_document_counts(p_user_id);
 
     RETURN jsonb_build_object(
         'income', jsonb_build_object(
@@ -4594,51 +4655,51 @@ $$;
 
 -- 1. Updated Contract Expiration Check (60 days)
 CREATE OR REPLACE FUNCTION public.check_contract_expirations()
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS void
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    expiring_contract RECORD;
-    count_new integer := 0;
+-- [SCRUBBED GARBAGE]     expiring_contract RECORD;
+-- [SCRUBBED GARBAGE]     count_new integer := 0;
 BEGIN
     FOR expiring_contract IN
         SELECT 
-            c.id, 
-            c.end_date, 
-            c.property_id, 
-            p.user_id, 
-            p.address, 
-            p.city
-        FROM public.contracts c
-        JOIN public.properties p ON c.property_id = p.id
-        WHERE c.status = 'active'
+-- [SCRUBBED GARBAGE]             c.id, 
+-- [SCRUBBED GARBAGE]             c.end_date, 
+-- [SCRUBBED GARBAGE]             c.property_id, 
+-- [SCRUBBED GARBAGE]             p.user_id, 
+-- [SCRUBBED GARBAGE]             p.address, 
+-- [SCRUBBED GARBAGE]             p.city
+-- [SCRUBBED GARBAGE]         FROM public.contracts c
+-- [SCRUBBED GARBAGE]         JOIN public.properties p ON c.property_id = p.id
+-- [SCRUBBED GARBAGE]         WHERE c.status = 'active'
         -- Changed to 60 days
-        AND c.end_date <= (CURRENT_DATE + INTERVAL '60 days')
-        AND c.end_date >= CURRENT_DATE
+-- [SCRUBBED GARBAGE]         AND c.end_date <= (CURRENT_DATE + INTERVAL '60 days')
+-- [SCRUBBED GARBAGE]         AND c.end_date >= CURRENT_DATE
     LOOP
         IF NOT EXISTS (
             SELECT 1 
-            FROM public.notifications n 
-            WHERE n.user_id = expiring_contract.user_id
-            AND n.type = 'warning'
-            AND n.metadata->>'contract_id' = expiring_contract.id::text
-            AND n.title = 'Contract Expiring Soon' 
+-- [SCRUBBED GARBAGE]             FROM public.notifications n 
+-- [SCRUBBED GARBAGE]             WHERE n.user_id = expiring_contract.user_id
+-- [SCRUBBED GARBAGE]             AND n.type = 'warning'
+-- [SCRUBBED GARBAGE]             AND n.metadata->>'contract_id' = expiring_contract.id::text
+-- [SCRUBBED GARBAGE]             AND n.title = 'Contract Expiring Soon' 
         ) THEN
             INSERT INTO public.notifications (
-                user_id,
-                type,
-                title,
-                message,
-                metadata
+-- [SCRUBBED GARBAGE]                 user_id,
+-- [SCRUBBED GARBAGE]                 type,
+-- [SCRUBBED GARBAGE]                 title,
+-- [SCRUBBED GARBAGE]                 message,
+-- [SCRUBBED GARBAGE]                 metadata
             ) VALUES (
-                expiring_contract.user_id,
+-- [SCRUBBED GARBAGE]                 expiring_contract.user_id,
                 'warning',
                 'Contract Expiring Soon',
                 'Contract for ' || expiring_contract.address || ' ends in ' || (expiring_contract.end_date - CURRENT_DATE)::text || ' days (' || to_char(expiring_contract.end_date, 'DD/MM/YYYY') || '). Review and renew today.',
-                jsonb_build_object('contract_id', expiring_contract.id)
+-- [SCRUBBED GARBAGE]                 jsonb_build_object('contract_id', expiring_contract.id)
             );
-            count_new := count_new + 1;
+-- [SCRUBBED GARBAGE]             count_new := count_new + 1;
         END IF;
     END LOOP;
 END;
@@ -4646,13 +4707,13 @@ $$;
 
 -- 2. New Rent Due Check (3 days before)
 CREATE OR REPLACE FUNCTION public.check_rent_due()
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS void
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    due_payment RECORD;
-    count_new integer := 0;
+-- [SCRUBBED GARBAGE]     due_payment RECORD;
+-- [SCRUBBED GARBAGE]     count_new integer := 0;
 BEGIN
     -- This logic assumes we have 'payments' records generated. 
     -- Alternatively, it could calculate "next payment date" dynamically from contracts if payments aren't pre-generated.
@@ -4660,41 +4721,41 @@ BEGIN
 
     FOR due_payment IN
         SELECT 
-            pay.id,
-            pay.due_date,
-            pay.amount,
-            pay.currency,
-            p.user_id,
-            p.address
-        FROM public.payments pay
-        JOIN public.contracts c ON pay.contract_id = c.id
-        JOIN public.properties p ON c.property_id = p.id
-        WHERE pay.status = 'pending'
-        AND pay.due_date <= (CURRENT_DATE + INTERVAL '3 days')
-        AND pay.due_date >= CURRENT_DATE
+-- [SCRUBBED GARBAGE]             pay.id,
+-- [SCRUBBED GARBAGE]             pay.due_date,
+-- [SCRUBBED GARBAGE]             pay.amount,
+-- [SCRUBBED GARBAGE]             pay.currency,
+-- [SCRUBBED GARBAGE]             p.user_id,
+-- [SCRUBBED GARBAGE]             p.address
+-- [SCRUBBED GARBAGE]         FROM public.payments pay
+-- [SCRUBBED GARBAGE]         JOIN public.contracts c ON pay.contract_id = c.id
+-- [SCRUBBED GARBAGE]         JOIN public.properties p ON c.property_id = p.id
+-- [SCRUBBED GARBAGE]         WHERE pay.status = 'pending'
+-- [SCRUBBED GARBAGE]         AND pay.due_date <= (CURRENT_DATE + INTERVAL '3 days')
+-- [SCRUBBED GARBAGE]         AND pay.due_date >= CURRENT_DATE
     LOOP
         -- Avoid dupes for this specific payment ID
         IF NOT EXISTS (
             SELECT 1 
-            FROM public.notifications n 
-            WHERE n.user_id = due_payment.user_id
-            AND n.type = 'info'
-            AND n.metadata->>'payment_id' = due_payment.id::text
+-- [SCRUBBED GARBAGE]             FROM public.notifications n 
+-- [SCRUBBED GARBAGE]             WHERE n.user_id = due_payment.user_id
+-- [SCRUBBED GARBAGE]             AND n.type = 'info'
+-- [SCRUBBED GARBAGE]             AND n.metadata->>'payment_id' = due_payment.id::text
         ) THEN
             INSERT INTO public.notifications (
-                user_id,
-                type,
-                title,
-                message,
-                metadata
+-- [SCRUBBED GARBAGE]                 user_id,
+-- [SCRUBBED GARBAGE]                 type,
+-- [SCRUBBED GARBAGE]                 title,
+-- [SCRUBBED GARBAGE]                 message,
+-- [SCRUBBED GARBAGE]                 metadata
             ) VALUES (
-                due_payment.user_id,
+-- [SCRUBBED GARBAGE]                 due_payment.user_id,
                 'info',
                 'Rent Due Soon',
                 'Rent of ' || due_payment.amount || ' ' || due_payment.currency || ' for ' || due_payment.address || ' is due on ' || to_char(due_payment.due_date, 'DD/MM/YYYY') || '.',
-                jsonb_build_object('payment_id', due_payment.id)
+-- [SCRUBBED GARBAGE]                 jsonb_build_object('payment_id', due_payment.id)
             );
-            count_new := count_new + 1;
+-- [SCRUBBED GARBAGE]             count_new := count_new + 1;
         END IF;
     END LOOP;
 END;
@@ -4702,9 +4763,9 @@ $$;
 
 -- 3. Master Orchestrator
 CREATE OR REPLACE FUNCTION public.check_daily_notifications()
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS void
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 BEGIN
     PERFORM public.check_contract_expirations();
@@ -4715,50 +4776,50 @@ $$;
 
 -- 1. Add extension_option_end column to contracts table
 ALTER TABLE public.contracts
-ADD COLUMN IF NOT EXISTS extension_option_end DATE;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS extension_option_end DATE;
 
 
 -- 2. Add extension_option_end_days to notification preferences
 UPDATE public.user_profiles
 SET notification_preferences = jsonb_set(
-    COALESCE(notification_preferences, '{}'::jsonb),
+-- [SCRUBBED GARBAGE]     COALESCE(notification_preferences, '{}'::jsonb),
     '{extension_option_end_days}',
     '7'
 )
-WHERE notification_preferences IS NULL 
-   OR NOT notification_preferences ? 'extension_option_end_days';
+-- [SCRUBBED GARBAGE] WHERE notification_preferences IS NULL 
+-- [SCRUBBED GARBAGE]    OR NOT notification_preferences ? 'extension_option_end_days';
 
 -- 3. Create function to check for upcoming extension option deadlines
 CREATE OR REPLACE FUNCTION public.check_extension_deadlines()
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS void
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    deadline_record RECORD;
-    count_new integer := 0;
-    pref_days integer;
+-- [SCRUBBED GARBAGE]     deadline_record RECORD;
+-- [SCRUBBED GARBAGE]     count_new integer := 0;
+-- [SCRUBBED GARBAGE]     pref_days integer;
 BEGIN
     FOR deadline_record IN
         SELECT 
-            c.id, 
-            c.extension_option_end,
-            c.property_id, 
-            p.user_id, 
-            p.address,
-            up.notification_preferences
-        FROM public.contracts c
-        JOIN public.properties p ON c.property_id = p.id
-        JOIN public.user_profiles up ON p.user_id = up.id
-        WHERE c.status = 'active'
-        AND c.extension_option_end IS NOT NULL
+-- [SCRUBBED GARBAGE]             c.id, 
+-- [SCRUBBED GARBAGE]             c.extension_option_end,
+-- [SCRUBBED GARBAGE]             c.property_id, 
+-- [SCRUBBED GARBAGE]             p.user_id, 
+-- [SCRUBBED GARBAGE]             p.address,
+-- [SCRUBBED GARBAGE]             up.notification_preferences
+-- [SCRUBBED GARBAGE]         FROM public.contracts c
+-- [SCRUBBED GARBAGE]         JOIN public.properties p ON c.property_id = p.id
+-- [SCRUBBED GARBAGE]         JOIN public.user_profiles up ON p.user_id = up.id
+-- [SCRUBBED GARBAGE]         WHERE c.status = 'active'
+-- [SCRUBBED GARBAGE]         AND c.extension_option_end IS NOT NULL
     LOOP
         -- Extract preference, default to 7, cap at 180
-        pref_days := COALESCE((deadline_record.notification_preferences->>'extension_option_end_days')::int, 7);
+-- [SCRUBBED GARBAGE]         pref_days := COALESCE((deadline_record.notification_preferences->>'extension_option_end_days')::int, 7);
         
         -- Skip if disabled (0)
         IF pref_days = 0 THEN
-            CONTINUE;
+-- [SCRUBBED GARBAGE]             CONTINUE;
         END IF;
         
         IF pref_days > 180 THEN pref_days := 180; END IF;
@@ -4766,31 +4827,31 @@ BEGIN
 
         -- Check if deadline is approaching
         IF deadline_record.extension_option_end <= (CURRENT_DATE + (pref_days || ' days')::interval)
-           AND deadline_record.extension_option_end >= CURRENT_DATE THEN
+-- [SCRUBBED GARBAGE]            AND deadline_record.extension_option_end >= CURRENT_DATE THEN
            
             IF NOT EXISTS (
                 SELECT 1 
-                FROM public.notifications n 
-                WHERE n.user_id = deadline_record.user_id
-                AND n.type = 'warning'
-                AND n.metadata->>'contract_id' = deadline_record.id::text
-                AND n.title = 'Extension Option Deadline Approaching'
-                AND n.created_at > (CURRENT_DATE - INTERVAL '6 months')
+-- [SCRUBBED GARBAGE]                 FROM public.notifications n 
+-- [SCRUBBED GARBAGE]                 WHERE n.user_id = deadline_record.user_id
+-- [SCRUBBED GARBAGE]                 AND n.type = 'warning'
+-- [SCRUBBED GARBAGE]                 AND n.metadata->>'contract_id' = deadline_record.id::text
+-- [SCRUBBED GARBAGE]                 AND n.title = 'Extension Option Deadline Approaching'
+-- [SCRUBBED GARBAGE]                 AND n.created_at > (CURRENT_DATE - INTERVAL '6 months')
             ) THEN
                 INSERT INTO public.notifications (
-                    user_id,
-                    type,
-                    title,
-                    message,
-                    metadata
+-- [SCRUBBED GARBAGE]                     user_id,
+-- [SCRUBBED GARBAGE]                     type,
+-- [SCRUBBED GARBAGE]                     title,
+-- [SCRUBBED GARBAGE]                     message,
+-- [SCRUBBED GARBAGE]                     metadata
                 ) VALUES (
-                    deadline_record.user_id,
+-- [SCRUBBED GARBAGE]                     deadline_record.user_id,
                     'warning',
                     'Extension Option Deadline Approaching',
                     'Deadline to announce extension option for ' || deadline_record.address || ' is in ' || (deadline_record.extension_option_end - CURRENT_DATE)::text || ' days (' || to_char(deadline_record.extension_option_end, 'DD/MM/YYYY') || '). Contact tenant soon.',
-                    jsonb_build_object('contract_id', deadline_record.id)
+-- [SCRUBBED GARBAGE]                     jsonb_build_object('contract_id', deadline_record.id)
                 );
-                count_new := count_new + 1;
+-- [SCRUBBED GARBAGE]                 count_new := count_new + 1;
             END IF;
         END IF;
     END LOOP;
@@ -4799,9 +4860,9 @@ $$;
 
 -- 4. Update master daily notifications function
 CREATE OR REPLACE FUNCTION public.check_daily_notifications()
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS void
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 BEGIN
     PERFORM public.check_contract_expirations();
@@ -4816,70 +4877,70 @@ $$;
 -- 1. Update existing records to include extension_option_days
 UPDATE public.user_profiles
 SET notification_preferences = jsonb_set(
-    COALESCE(notification_preferences, '{}'::jsonb),
+-- [SCRUBBED GARBAGE]     COALESCE(notification_preferences, '{}'::jsonb),
     '{extension_option_days}',
     '30'
 )
-WHERE notification_preferences IS NULL 
-   OR NOT notification_preferences ? 'extension_option_days';
+-- [SCRUBBED GARBAGE] WHERE notification_preferences IS NULL 
+-- [SCRUBBED GARBAGE]    OR NOT notification_preferences ? 'extension_option_days';
 
 -- 2. Create function to check for upcoming extension option periods
 CREATE OR REPLACE FUNCTION public.check_extension_options()
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS void
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    extension_record RECORD;
-    count_new integer := 0;
-    pref_days integer;
+-- [SCRUBBED GARBAGE]     extension_record RECORD;
+-- [SCRUBBED GARBAGE]     count_new integer := 0;
+-- [SCRUBBED GARBAGE]     pref_days integer;
 BEGIN
     FOR extension_record IN
         SELECT 
-            c.id, 
-            c.extension_option_start,
-            c.property_id, 
-            p.user_id, 
-            p.address,
-            up.notification_preferences
-        FROM public.contracts c
-        JOIN public.properties p ON c.property_id = p.id
-        JOIN public.user_profiles up ON p.user_id = up.id
-        WHERE c.status = 'active'
-        AND c.extension_option_start IS NOT NULL
+-- [SCRUBBED GARBAGE]             c.id, 
+-- [SCRUBBED GARBAGE]             c.extension_option_start,
+-- [SCRUBBED GARBAGE]             c.property_id, 
+-- [SCRUBBED GARBAGE]             p.user_id, 
+-- [SCRUBBED GARBAGE]             p.address,
+-- [SCRUBBED GARBAGE]             up.notification_preferences
+-- [SCRUBBED GARBAGE]         FROM public.contracts c
+-- [SCRUBBED GARBAGE]         JOIN public.properties p ON c.property_id = p.id
+-- [SCRUBBED GARBAGE]         JOIN public.user_profiles up ON p.user_id = up.id
+-- [SCRUBBED GARBAGE]         WHERE c.status = 'active'
+-- [SCRUBBED GARBAGE]         AND c.extension_option_start IS NOT NULL
     LOOP
         -- Extract preference, default to 30, cap at 180
-        pref_days := COALESCE((extension_record.notification_preferences->>'extension_option_days')::int, 30);
+-- [SCRUBBED GARBAGE]         pref_days := COALESCE((extension_record.notification_preferences->>'extension_option_days')::int, 30);
         IF pref_days > 180 THEN pref_days := 180; END IF;
         IF pref_days < 1 THEN pref_days := 1; END IF;
 
         -- Check if extension option starts in this window
         IF extension_record.extension_option_start <= (CURRENT_DATE + (pref_days || ' days')::interval)
-           AND extension_record.extension_option_start >= CURRENT_DATE THEN
+-- [SCRUBBED GARBAGE]            AND extension_record.extension_option_start >= CURRENT_DATE THEN
            
             IF NOT EXISTS (
                 SELECT 1 
-                FROM public.notifications n 
-                WHERE n.user_id = extension_record.user_id
-                AND n.type = 'info'
-                AND n.metadata->>'contract_id' = extension_record.id::text
-                AND n.title = 'Extension Option Available'
-                AND n.created_at > (CURRENT_DATE - INTERVAL '6 months')
+-- [SCRUBBED GARBAGE]                 FROM public.notifications n 
+-- [SCRUBBED GARBAGE]                 WHERE n.user_id = extension_record.user_id
+-- [SCRUBBED GARBAGE]                 AND n.type = 'info'
+-- [SCRUBBED GARBAGE]                 AND n.metadata->>'contract_id' = extension_record.id::text
+-- [SCRUBBED GARBAGE]                 AND n.title = 'Extension Option Available'
+-- [SCRUBBED GARBAGE]                 AND n.created_at > (CURRENT_DATE - INTERVAL '6 months')
             ) THEN
                 INSERT INTO public.notifications (
-                    user_id,
-                    type,
-                    title,
-                    message,
-                    metadata
+-- [SCRUBBED GARBAGE]                     user_id,
+-- [SCRUBBED GARBAGE]                     type,
+-- [SCRUBBED GARBAGE]                     title,
+-- [SCRUBBED GARBAGE]                     message,
+-- [SCRUBBED GARBAGE]                     metadata
                 ) VALUES (
-                    extension_record.user_id,
+-- [SCRUBBED GARBAGE]                     extension_record.user_id,
                     'info',
                     'Extension Option Available',
                     'Extension option period for ' || extension_record.address || ' starts in ' || (extension_record.extension_option_start - CURRENT_DATE)::text || ' days (' || to_char(extension_record.extension_option_start, 'DD/MM/YYYY') || '). Consider discussing with tenant.',
-                    jsonb_build_object('contract_id', extension_record.id)
+-- [SCRUBBED GARBAGE]                     jsonb_build_object('contract_id', extension_record.id)
                 );
-                count_new := count_new + 1;
+-- [SCRUBBED GARBAGE]                 count_new := count_new + 1;
             END IF;
         END IF;
     END LOOP;
@@ -4888,9 +4949,9 @@ $$;
 
 -- 3. Update the master daily notifications function to include extension checks
 CREATE OR REPLACE FUNCTION public.check_daily_notifications()
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS void
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 BEGIN
     PERFORM public.check_contract_expirations();
@@ -4917,35 +4978,35 @@ ALTER FUNCTION public.process_daily_notifications() SET search_path = public;
 
 -- 1. Update Contract Expiration Check to skip if disabled (0 days)
 CREATE OR REPLACE FUNCTION public.check_contract_expirations()
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS void
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    expiring_contract RECORD;
-    count_new integer := 0;
-    pref_days integer;
+-- [SCRUBBED GARBAGE]     expiring_contract RECORD;
+-- [SCRUBBED GARBAGE]     count_new integer := 0;
+-- [SCRUBBED GARBAGE]     pref_days integer;
 BEGIN
     FOR expiring_contract IN
         SELECT 
-            c.id, 
-            c.end_date, 
-            c.property_id, 
-            p.user_id, 
-            p.address, 
-            p.city,
-            up.notification_preferences
-        FROM public.contracts c
-        JOIN public.properties p ON c.property_id = p.id
-        JOIN public.user_profiles up ON p.user_id = up.id
-        WHERE c.status = 'active'
+-- [SCRUBBED GARBAGE]             c.id, 
+-- [SCRUBBED GARBAGE]             c.end_date, 
+-- [SCRUBBED GARBAGE]             c.property_id, 
+-- [SCRUBBED GARBAGE]             p.user_id, 
+-- [SCRUBBED GARBAGE]             p.address, 
+-- [SCRUBBED GARBAGE]             p.city,
+-- [SCRUBBED GARBAGE]             up.notification_preferences
+-- [SCRUBBED GARBAGE]         FROM public.contracts c
+-- [SCRUBBED GARBAGE]         JOIN public.properties p ON c.property_id = p.id
+-- [SCRUBBED GARBAGE]         JOIN public.user_profiles up ON p.user_id = up.id
+-- [SCRUBBED GARBAGE]         WHERE c.status = 'active'
     LOOP
         -- Extract preference, default to 60, cap at 180
-        pref_days := COALESCE((expiring_contract.notification_preferences->>'contract_expiry_days')::int, 60);
+-- [SCRUBBED GARBAGE]         pref_days := COALESCE((expiring_contract.notification_preferences->>'contract_expiry_days')::int, 60);
         
         -- Skip if disabled (0)
         IF pref_days = 0 THEN
-            CONTINUE;
+-- [SCRUBBED GARBAGE]             CONTINUE;
         END IF;
         
         IF pref_days > 180 THEN pref_days := 180; END IF;
@@ -4953,30 +5014,30 @@ BEGIN
 
         -- Check if contract expires in this window
         IF expiring_contract.end_date <= (CURRENT_DATE + (pref_days || ' days')::interval)
-           AND expiring_contract.end_date >= CURRENT_DATE THEN
+-- [SCRUBBED GARBAGE]            AND expiring_contract.end_date >= CURRENT_DATE THEN
            
             IF NOT EXISTS (
                 SELECT 1 
-                FROM public.notifications n 
-                WHERE n.user_id = expiring_contract.user_id
-                AND n.type = 'warning'
-                AND n.metadata->>'contract_id' = expiring_contract.id::text
-                AND n.created_at > (CURRENT_DATE - INTERVAL '6 months')
+-- [SCRUBBED GARBAGE]                 FROM public.notifications n 
+-- [SCRUBBED GARBAGE]                 WHERE n.user_id = expiring_contract.user_id
+-- [SCRUBBED GARBAGE]                 AND n.type = 'warning'
+-- [SCRUBBED GARBAGE]                 AND n.metadata->>'contract_id' = expiring_contract.id::text
+-- [SCRUBBED GARBAGE]                 AND n.created_at > (CURRENT_DATE - INTERVAL '6 months')
             ) THEN
                 INSERT INTO public.notifications (
-                    user_id,
-                    type,
-                    title,
-                    message,
-                    metadata
+-- [SCRUBBED GARBAGE]                     user_id,
+-- [SCRUBBED GARBAGE]                     type,
+-- [SCRUBBED GARBAGE]                     title,
+-- [SCRUBBED GARBAGE]                     message,
+-- [SCRUBBED GARBAGE]                     metadata
                 ) VALUES (
-                    expiring_contract.user_id,
+-- [SCRUBBED GARBAGE]                     expiring_contract.user_id,
                     'warning',
                     'Contract Expiring Soon',
                     'Contract for ' || expiring_contract.address || ' ends in ' || (expiring_contract.end_date - CURRENT_DATE)::text || ' days (' || to_char(expiring_contract.end_date, 'DD/MM/YYYY') || '). Review and renew today.',
-                    jsonb_build_object('contract_id', expiring_contract.id)
+-- [SCRUBBED GARBAGE]                     jsonb_build_object('contract_id', expiring_contract.id)
                 );
-                count_new := count_new + 1;
+-- [SCRUBBED GARBAGE]                 count_new := count_new + 1;
             END IF;
         END IF;
     END LOOP;
@@ -4985,64 +5046,64 @@ $$;
 
 -- 2. Update Rent Due Check to skip if disabled (0 days)
 CREATE OR REPLACE FUNCTION public.check_rent_due()
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS void
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    due_payment RECORD;
-    count_new integer := 0;
-    pref_days integer;
+-- [SCRUBBED GARBAGE]     due_payment RECORD;
+-- [SCRUBBED GARBAGE]     count_new integer := 0;
+-- [SCRUBBED GARBAGE]     pref_days integer;
 BEGIN
     FOR due_payment IN
         SELECT 
-            pay.id,
-            pay.due_date,
-            pay.amount,
-            pay.currency,
-            p.user_id,
-            p.address,
-            up.notification_preferences
-        FROM public.payments pay
-        JOIN public.contracts c ON pay.contract_id = c.id
-        JOIN public.properties p ON c.property_id = p.id
-        JOIN public.user_profiles up ON p.user_id = up.id
-        WHERE pay.status = 'pending'
+-- [SCRUBBED GARBAGE]             pay.id,
+-- [SCRUBBED GARBAGE]             pay.due_date,
+-- [SCRUBBED GARBAGE]             pay.amount,
+-- [SCRUBBED GARBAGE]             pay.currency,
+-- [SCRUBBED GARBAGE]             p.user_id,
+-- [SCRUBBED GARBAGE]             p.address,
+-- [SCRUBBED GARBAGE]             up.notification_preferences
+-- [SCRUBBED GARBAGE]         FROM public.payments pay
+-- [SCRUBBED GARBAGE]         JOIN public.contracts c ON pay.contract_id = c.id
+-- [SCRUBBED GARBAGE]         JOIN public.properties p ON c.property_id = p.id
+-- [SCRUBBED GARBAGE]         JOIN public.user_profiles up ON p.user_id = up.id
+-- [SCRUBBED GARBAGE]         WHERE pay.status = 'pending'
     LOOP
         -- Extract preference, default to 3, cap at 180
-        pref_days := COALESCE((due_payment.notification_preferences->>'rent_due_days')::int, 3);
+-- [SCRUBBED GARBAGE]         pref_days := COALESCE((due_payment.notification_preferences->>'rent_due_days')::int, 3);
         
         -- Skip if disabled (0)
         IF pref_days = 0 THEN
-            CONTINUE;
+-- [SCRUBBED GARBAGE]             CONTINUE;
         END IF;
         
         IF pref_days > 180 THEN pref_days := 180; END IF;
 
         IF due_payment.due_date <= (CURRENT_DATE + (pref_days || ' days')::interval)
-           AND due_payment.due_date >= CURRENT_DATE THEN
+-- [SCRUBBED GARBAGE]            AND due_payment.due_date >= CURRENT_DATE THEN
 
             IF NOT EXISTS (
                 SELECT 1 
-                FROM public.notifications n 
-                WHERE n.user_id = due_payment.user_id
-                AND n.type = 'info'
-                AND n.metadata->>'payment_id' = due_payment.id::text
+-- [SCRUBBED GARBAGE]                 FROM public.notifications n 
+-- [SCRUBBED GARBAGE]                 WHERE n.user_id = due_payment.user_id
+-- [SCRUBBED GARBAGE]                 AND n.type = 'info'
+-- [SCRUBBED GARBAGE]                 AND n.metadata->>'payment_id' = due_payment.id::text
             ) THEN
                 INSERT INTO public.notifications (
-                    user_id,
-                    type,
-                    title,
-                    message,
-                    metadata
+-- [SCRUBBED GARBAGE]                     user_id,
+-- [SCRUBBED GARBAGE]                     type,
+-- [SCRUBBED GARBAGE]                     title,
+-- [SCRUBBED GARBAGE]                     message,
+-- [SCRUBBED GARBAGE]                     metadata
                 ) VALUES (
-                    due_payment.user_id,
+-- [SCRUBBED GARBAGE]                     due_payment.user_id,
                     'info',
                     'Rent Due Soon',
                     'Rent of ' || due_payment.amount || ' ' || due_payment.currency || ' for ' || due_payment.address || ' is due on ' || to_char(due_payment.due_date, 'DD/MM/YYYY') || '.',
-                    jsonb_build_object('payment_id', due_payment.id)
+-- [SCRUBBED GARBAGE]                     jsonb_build_object('payment_id', due_payment.id)
                 );
-                count_new := count_new + 1;
+-- [SCRUBBED GARBAGE]                 count_new := count_new + 1;
             END IF;
         END IF;
     END LOOP;
@@ -5051,35 +5112,35 @@ $$;
 
 -- 3. Update Extension Option Check to skip if disabled (0 days)
 CREATE OR REPLACE FUNCTION public.check_extension_options()
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS void
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    extension_record RECORD;
-    count_new integer := 0;
-    pref_days integer;
+-- [SCRUBBED GARBAGE]     extension_record RECORD;
+-- [SCRUBBED GARBAGE]     count_new integer := 0;
+-- [SCRUBBED GARBAGE]     pref_days integer;
 BEGIN
     FOR extension_record IN
         SELECT 
-            c.id, 
-            c.extension_option_start,
-            c.property_id, 
-            p.user_id, 
-            p.address,
-            up.notification_preferences
-        FROM public.contracts c
-        JOIN public.properties p ON c.property_id = p.id
-        JOIN public.user_profiles up ON p.user_id = up.id
-        WHERE c.status = 'active'
-        AND c.extension_option_start IS NOT NULL
+-- [SCRUBBED GARBAGE]             c.id, 
+-- [SCRUBBED GARBAGE]             c.extension_option_start,
+-- [SCRUBBED GARBAGE]             c.property_id, 
+-- [SCRUBBED GARBAGE]             p.user_id, 
+-- [SCRUBBED GARBAGE]             p.address,
+-- [SCRUBBED GARBAGE]             up.notification_preferences
+-- [SCRUBBED GARBAGE]         FROM public.contracts c
+-- [SCRUBBED GARBAGE]         JOIN public.properties p ON c.property_id = p.id
+-- [SCRUBBED GARBAGE]         JOIN public.user_profiles up ON p.user_id = up.id
+-- [SCRUBBED GARBAGE]         WHERE c.status = 'active'
+-- [SCRUBBED GARBAGE]         AND c.extension_option_start IS NOT NULL
     LOOP
         -- Extract preference, default to 30, cap at 180
-        pref_days := COALESCE((extension_record.notification_preferences->>'extension_option_days')::int, 30);
+-- [SCRUBBED GARBAGE]         pref_days := COALESCE((extension_record.notification_preferences->>'extension_option_days')::int, 30);
         
         -- Skip if disabled (0)
         IF pref_days = 0 THEN
-            CONTINUE;
+-- [SCRUBBED GARBAGE]             CONTINUE;
         END IF;
         
         IF pref_days > 180 THEN pref_days := 180; END IF;
@@ -5087,31 +5148,31 @@ BEGIN
 
         -- Check if extension option starts in this window
         IF extension_record.extension_option_start <= (CURRENT_DATE + (pref_days || ' days')::interval)
-           AND extension_record.extension_option_start >= CURRENT_DATE THEN
+-- [SCRUBBED GARBAGE]            AND extension_record.extension_option_start >= CURRENT_DATE THEN
            
             IF NOT EXISTS (
                 SELECT 1 
-                FROM public.notifications n 
-                WHERE n.user_id = extension_record.user_id
-                AND n.type = 'info'
-                AND n.metadata->>'contract_id' = extension_record.id::text
-                AND n.title = 'Extension Option Available'
-                AND n.created_at > (CURRENT_DATE - INTERVAL '6 months')
+-- [SCRUBBED GARBAGE]                 FROM public.notifications n 
+-- [SCRUBBED GARBAGE]                 WHERE n.user_id = extension_record.user_id
+-- [SCRUBBED GARBAGE]                 AND n.type = 'info'
+-- [SCRUBBED GARBAGE]                 AND n.metadata->>'contract_id' = extension_record.id::text
+-- [SCRUBBED GARBAGE]                 AND n.title = 'Extension Option Available'
+-- [SCRUBBED GARBAGE]                 AND n.created_at > (CURRENT_DATE - INTERVAL '6 months')
             ) THEN
                 INSERT INTO public.notifications (
-                    user_id,
-                    type,
-                    title,
-                    message,
-                    metadata
+-- [SCRUBBED GARBAGE]                     user_id,
+-- [SCRUBBED GARBAGE]                     type,
+-- [SCRUBBED GARBAGE]                     title,
+-- [SCRUBBED GARBAGE]                     message,
+-- [SCRUBBED GARBAGE]                     metadata
                 ) VALUES (
-                    extension_record.user_id,
+-- [SCRUBBED GARBAGE]                     extension_record.user_id,
                     'info',
                     'Extension Option Available',
                     'Extension option period for ' || extension_record.address || ' starts in ' || (extension_record.extension_option_start - CURRENT_DATE)::text || ' days (' || to_char(extension_record.extension_option_start, 'DD/MM/YYYY') || '). Consider discussing with tenant.',
-                    jsonb_build_object('contract_id', extension_record.id)
+-- [SCRUBBED GARBAGE]                     jsonb_build_object('contract_id', extension_record.id)
                 );
-                count_new := count_new + 1;
+-- [SCRUBBED GARBAGE]                 count_new := count_new + 1;
             END IF;
         END IF;
     END LOOP;
@@ -5119,54 +5180,54 @@ END;
 $$;
 -- Function to check for expiring contracts and generate notifications
 CREATE OR REPLACE FUNCTION public.check_contract_expirations()
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS void
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    expiring_contract RECORD;
-    count_new integer := 0;
+-- [SCRUBBED GARBAGE]     expiring_contract RECORD;
+-- [SCRUBBED GARBAGE]     count_new integer := 0;
 BEGIN
     -- Loop through active contracts expiring in the next 30 days
     FOR expiring_contract IN
         SELECT 
-            c.id, 
-            c.end_date, 
-            c.property_id, 
-            p.user_id, 
-            p.address, 
-            p.city
-        FROM public.contracts c
-        JOIN public.properties p ON c.property_id = p.id
-        WHERE c.status = 'active'
-        AND c.end_date <= (CURRENT_DATE + INTERVAL '30 days')
-        AND c.end_date >= CURRENT_DATE
+-- [SCRUBBED GARBAGE]             c.id, 
+-- [SCRUBBED GARBAGE]             c.end_date, 
+-- [SCRUBBED GARBAGE]             c.property_id, 
+-- [SCRUBBED GARBAGE]             p.user_id, 
+-- [SCRUBBED GARBAGE]             p.address, 
+-- [SCRUBBED GARBAGE]             p.city
+-- [SCRUBBED GARBAGE]         FROM public.contracts c
+-- [SCRUBBED GARBAGE]         JOIN public.properties p ON c.property_id = p.id
+-- [SCRUBBED GARBAGE]         WHERE c.status = 'active'
+-- [SCRUBBED GARBAGE]         AND c.end_date <= (CURRENT_DATE + INTERVAL '30 days')
+-- [SCRUBBED GARBAGE]         AND c.end_date >= CURRENT_DATE
     LOOP
         -- Check if a 'warning' notification already exists for this contract to avoid duplicates
         -- We check metadata->>'contract_id'
         IF NOT EXISTS (
             SELECT 1 
-            FROM public.notifications n 
-            WHERE n.user_id = expiring_contract.user_id
-            AND n.type = 'warning'
-            AND n.metadata->>'contract_id' = expiring_contract.id::text
+-- [SCRUBBED GARBAGE]             FROM public.notifications n 
+-- [SCRUBBED GARBAGE]             WHERE n.user_id = expiring_contract.user_id
+-- [SCRUBBED GARBAGE]             AND n.type = 'warning'
+-- [SCRUBBED GARBAGE]             AND n.metadata->>'contract_id' = expiring_contract.id::text
         ) THEN
             -- Insert Notification
             INSERT INTO public.notifications (
-                user_id,
-                type,
-                title,
-                message,
-                metadata
+-- [SCRUBBED GARBAGE]                 user_id,
+-- [SCRUBBED GARBAGE]                 type,
+-- [SCRUBBED GARBAGE]                 title,
+-- [SCRUBBED GARBAGE]                 message,
+-- [SCRUBBED GARBAGE]                 metadata
             ) VALUES (
-                expiring_contract.user_id,
+-- [SCRUBBED GARBAGE]                 expiring_contract.user_id,
                 'warning',
                 'Contract Expiring Soon',
                 'The contract for ' || expiring_contract.address || ', ' || expiring_contract.city || ' ends on ' || to_char(expiring_contract.end_date, 'YYYY-MM-DD') || '.',
-                jsonb_build_object('contract_id', expiring_contract.id)
+-- [SCRUBBED GARBAGE]                 jsonb_build_object('contract_id', expiring_contract.id)
             );
             
-            count_new := count_new + 1;
+-- [SCRUBBED GARBAGE]             count_new := count_new + 1;
         END IF;
     END LOOP;
 
@@ -5180,7 +5241,7 @@ $$;
 
 -- 1. Add max_ai_scans to subscription_plans
 ALTER TABLE subscription_plans 
-ADD COLUMN IF NOT EXISTS max_ai_scans INTEGER DEFAULT 5;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS max_ai_scans INTEGER DEFAULT 5;
 
 -- 2. Update Seed Data for existing plans
 UPDATE subscription_plans SET max_ai_scans = 5 WHERE id = 'free';
@@ -5189,10 +5250,10 @@ UPDATE subscription_plans SET max_ai_scans = -1 WHERE id = 'enterprise';
 
 -- 3. Create AI Usage Logs Table
 CREATE TABLE IF NOT EXISTS ai_usage_logs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    feature_name TEXT NOT NULL, -- 'bill_scan', 'contract_analysis', etc.
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [SCRUBBED GARBAGE]     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     feature_name TEXT NOT NULL, -- 'bill_scan', 'contract_analysis', etc.
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Enable RLS
@@ -5203,21 +5264,21 @@ CREATE INDEX IF NOT EXISTS idx_ai_usage_user_date ON ai_usage_logs (user_id, cre
 
 -- Policies
 CREATE POLICY "Users can view their own usage logs"
-    ON ai_usage_logs FOR SELECT
-    USING (auth.uid() = user_id);
+-- [SCRUBBED GARBAGE]     ON ai_usage_logs FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (auth.uid() = user_id);
 
 -- 4. RPC to check and log usage
 -- Returns { allowed: boolean, current_usage: int, limit: int }
 CREATE OR REPLACE FUNCTION check_and_log_ai_usage(p_user_id UUID, p_feature TEXT DEFAULT 'bill_scan', p_count INTEGER DEFAULT 1)
-RETURNS JSONB
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS JSONB
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    v_limit INTEGER;
-    v_current_usage INTEGER;
-    v_month_start TIMESTAMPTZ;
-    v_requester_role TEXT;
+-- [SCRUBBED GARBAGE]     v_limit INTEGER;
+-- [SCRUBBED GARBAGE]     v_current_usage INTEGER;
+-- [SCRUBBED GARBAGE]     v_month_start TIMESTAMPTZ;
+-- [SCRUBBED GARBAGE]     v_requester_role TEXT;
 BEGIN
     -- SECURITY CHECK: 
     -- 1. Must be authenticated
@@ -5229,24 +5290,24 @@ BEGIN
     END IF;
 
     -- Get current month start
-    v_month_start := date_trunc('month', now());
+-- [SCRUBBED GARBAGE]     v_month_start := date_trunc('month', now());
 
     -- 1. Get User's Limit from their plan
     SELECT p.max_ai_scans INTO v_limit
-    FROM user_profiles up
-    JOIN subscription_plans p ON up.plan_id = p.id
-    WHERE up.id = p_user_id;
+-- [SCRUBBED GARBAGE]     FROM user_profiles up
+-- [SCRUBBED GARBAGE]     JOIN subscription_plans p ON up.plan_id = p.id
+-- [SCRUBBED GARBAGE]     WHERE up.id = p_user_id;
 
     -- Fallback to default free limit if not found
     IF v_limit IS NULL THEN
-        v_limit := 5;
+-- [SCRUBBED GARBAGE]         v_limit := 5;
     END IF;
 
     -- 2. Count total AI usage this month
     SELECT COUNT(*)::INTEGER INTO v_current_usage
-    FROM ai_usage_logs
-    WHERE user_id = p_user_id
-      AND created_at >= v_month_start;
+-- [SCRUBBED GARBAGE]     FROM ai_usage_logs
+-- [SCRUBBED GARBAGE]     WHERE user_id = p_user_id
+-- [SCRUBBED GARBAGE]       AND created_at >= v_month_start;
 
     -- 3. Check if allowed
     IF v_limit = -1 OR (v_current_usage + p_count) <= v_limit THEN
@@ -5261,7 +5322,7 @@ BEGIN
             'current_usage', v_current_usage + p_count,
             'limit', v_limit
         );
-    ELSE
+-- [SCRUBBED GARBAGE]     ELSE
         RETURN jsonb_build_object(
             'allowed', false,
             'current_usage', v_current_usage,
@@ -5272,26 +5333,26 @@ END;
 $$;
 -- Add is_super_admin column
 ALTER TABLE public.user_profiles 
-ADD COLUMN IF NOT EXISTS is_super_admin BOOLEAN DEFAULT false;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS is_super_admin BOOLEAN DEFAULT false;
 
 -- Create RPC for financial metrics (Super Admin Only)
 CREATE OR REPLACE FUNCTION get_financial_metrics()
-RETURNS json
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS json
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    total_mrr decimal := 0;
-    total_users int := 0;
-    active_subs int := 0;
-    new_users_30d int := 0;
-    churn_rate decimal := 0; -- Placeholder for now
-    is_super boolean;
+-- [SCRUBBED GARBAGE]     total_mrr decimal := 0;
+-- [SCRUBBED GARBAGE]     total_users int := 0;
+-- [SCRUBBED GARBAGE]     active_subs int := 0;
+-- [SCRUBBED GARBAGE]     new_users_30d int := 0;
+-- [SCRUBBED GARBAGE]     churn_rate decimal := 0; -- Placeholder for now
+-- [SCRUBBED GARBAGE]     is_super boolean;
 BEGIN
     -- Check if requesting user is super admin
     SELECT is_super_admin INTO is_super
-    FROM user_profiles 
-    WHERE id = auth.uid();
+-- [SCRUBBED GARBAGE]     FROM user_profiles 
+-- [SCRUBBED GARBAGE]     WHERE id = auth.uid();
 
     IF is_super IS NOT TRUE THEN
         RAISE EXCEPTION 'Access Denied: Super Admin Only';
@@ -5304,23 +5365,23 @@ BEGIN
     -- Note: This depends on how you categorize 'active' payment plans. 
     -- We assume existence of plan_id implies a subscription if it's not the default free one.
     SELECT COUNT(*) INTO active_subs 
-    FROM user_profiles 
-    WHERE plan_id IS NOT NULL 
-    AND plan_id NOT IN ('free', 'free_forever')
-    AND subscription_status = 'active';
+-- [SCRUBBED GARBAGE]     FROM user_profiles 
+-- [SCRUBBED GARBAGE]     WHERE plan_id IS NOT NULL 
+-- [SCRUBBED GARBAGE]     AND plan_id NOT IN ('free', 'free_forever')
+-- [SCRUBBED GARBAGE]     AND subscription_status = 'active';
     
     -- 3. MRR Calculation
     -- Sum of price_monthly for all active users based on their plan_id
     SELECT COALESCE(SUM(sp.price_monthly), 0)
-    INTO total_mrr
-    FROM user_profiles up
-    JOIN subscription_plans sp ON up.plan_id = sp.id
-    WHERE up.subscription_status = 'active';
+-- [SCRUBBED GARBAGE]     INTO total_mrr
+-- [SCRUBBED GARBAGE]     FROM user_profiles up
+-- [SCRUBBED GARBAGE]     JOIN subscription_plans sp ON up.plan_id = sp.id
+-- [SCRUBBED GARBAGE]     WHERE up.subscription_status = 'active';
     
     -- 4. Growth (New users in last 30 days)
     SELECT COUNT(*) INTO new_users_30d
-    FROM user_profiles
-    WHERE created_at > (NOW() - INTERVAL '30 days');
+-- [SCRUBBED GARBAGE]     FROM user_profiles
+-- [SCRUBBED GARBAGE]     WHERE created_at > (NOW() - INTERVAL '30 days');
 
     RETURN json_build_object(
         'mrr', total_mrr,
@@ -5342,49 +5403,49 @@ DROP FUNCTION IF EXISTS public.get_admin_stats();
 
 -- Create admin stats function
 CREATE OR REPLACE FUNCTION public.get_admin_stats()
-RETURNS JSON
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS JSON
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-    result JSON;
-    total_users_count INTEGER;
-    total_contracts_count INTEGER;
-    total_revenue_amount NUMERIC;
-    active_users_count INTEGER;
+-- [SCRUBBED GARBAGE]     result JSON;
+-- [SCRUBBED GARBAGE]     total_users_count INTEGER;
+-- [SCRUBBED GARBAGE]     total_contracts_count INTEGER;
+-- [SCRUBBED GARBAGE]     total_revenue_amount NUMERIC;
+-- [SCRUBBED GARBAGE]     active_users_count INTEGER;
 BEGIN
     -- Check if the current user is an admin
     IF NOT EXISTS (
         SELECT 1 FROM user_profiles
-        WHERE id = auth.uid()
-        AND role = 'admin'
+-- [SCRUBBED GARBAGE]         WHERE id = auth.uid()
+-- [SCRUBBED GARBAGE]         AND role = 'admin'
     ) THEN
         RAISE EXCEPTION 'Access denied: Admin role required';
     END IF;
 
     -- Get total users count
     SELECT COUNT(*) INTO total_users_count
-    FROM user_profiles
-    WHERE deleted_at IS NULL;
+-- [SCRUBBED GARBAGE]     FROM user_profiles
+-- [SCRUBBED GARBAGE]     WHERE deleted_at IS NULL;
 
     -- Get total contracts count
     SELECT COUNT(*) INTO total_contracts_count
-    FROM contracts;
+-- [SCRUBBED GARBAGE]     FROM contracts;
 
     -- Get total revenue (sum of paid payments)
     SELECT COALESCE(SUM(paid_amount), 0) INTO total_revenue_amount
-    FROM payments
-    WHERE status = 'paid';
+-- [SCRUBBED GARBAGE]     FROM payments
+-- [SCRUBBED GARBAGE]     WHERE status = 'paid';
 
     -- Get active users (users who logged in within last 30 days)
     SELECT COUNT(*) INTO active_users_count
-    FROM user_profiles
-    WHERE deleted_at IS NULL
-    AND updated_at > NOW() - INTERVAL '30 days';
+-- [SCRUBBED GARBAGE]     FROM user_profiles
+-- [SCRUBBED GARBAGE]     WHERE deleted_at IS NULL
+-- [SCRUBBED GARBAGE]     AND updated_at > NOW() - INTERVAL '30 days';
 
     -- Build JSON result
-    result := json_build_object(
+-- [SCRUBBED GARBAGE]     result := json_build_object(
         'totalUsers', total_users_count,
         'totalContracts', total_contracts_count,
         'totalRevenue', total_revenue_amount,
@@ -5413,15 +5474,15 @@ GRANT EXECUTE ON FUNCTION public.delete_user_account(UUID) TO service_role;
 -- user_storage_usage
 DROP POLICY IF EXISTS "Admins can view all storage usage" ON public.user_storage_usage;
 CREATE POLICY "Admins can view all storage usage"
-    ON public.user_storage_usage FOR SELECT
-    USING (public.is_admin());
+-- [SCRUBBED GARBAGE]     ON public.user_storage_usage FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (public.is_admin());
 
 -- audit_logs
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Admins can view all audit logs" ON public.audit_logs;
 CREATE POLICY "Admins can view all audit logs"
-    ON public.audit_logs FOR SELECT
-    USING (public.is_admin());
+-- [SCRUBBED GARBAGE]     ON public.audit_logs FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (public.is_admin());
 
 -- property_documents (Admin should be able to see metadata at least? usually handled by service role or specific rpc)
 -- For now, let's just make sure the storage usage tracking is solid.
@@ -5433,13 +5494,13 @@ BEGIN
         -- Re-run the policies to be absolutely sure
         DROP POLICY IF EXISTS "Admins view all" ON public.user_profiles;
         CREATE POLICY "Admins view all" 
-            ON public.user_profiles FOR SELECT 
-            USING (public.is_admin());
+-- [SCRUBBED GARBAGE]             ON public.user_profiles FOR SELECT 
+-- [SCRUBBED GARBAGE]             USING (public.is_admin());
             
         DROP POLICY IF EXISTS "Admins update all" ON public.user_profiles;
         CREATE POLICY "Admins update all" 
-            ON public.user_profiles FOR UPDATE 
-            USING (public.is_admin());
+-- [SCRUBBED GARBAGE]             ON public.user_profiles FOR UPDATE 
+-- [SCRUBBED GARBAGE]             USING (public.is_admin());
     END IF;
 END $$;
 -- Migration: fix_email_systems_20260121
@@ -5447,18 +5508,18 @@ END $$;
 
 -- 1. Fix Admin Signup Notification URL 
 CREATE OR REPLACE FUNCTION public.notify_admin_on_signup()
-RETURNS TRIGGER 
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER 
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    project_url text := 'https://qfvrekvugdjnwhnaucmz.supabase.co'; -- UPDATED TO CORRECT PROJECT
+-- [SCRUBBED GARBAGE]     project_url text := 'https://tipnjnfbbnbskdlodrww.supabase.co'; -- UPDATED TO CORRECT PROJECT
 BEGIN
     PERFORM
-      net.http_post(
-        url := project_url || '/functions/v1/send-admin-alert',
-        headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
-        body := json_build_object(
+-- [SCRUBBED GARBAGE]       net.http_post(
+-- [SCRUBBED GARBAGE]         url := project_url || '/functions/v1/send-admin-alert',
+-- [SCRUBBED GARBAGE]         headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
+-- [SCRUBBED GARBAGE]         body := json_build_object(
             'type', 'INSERT',
             'table', 'user_profiles',
             'record', row_to_json(NEW)
@@ -5475,13 +5536,13 @@ $$;
 -- 2. Create Notification Email Forwarder Trigger
 -- This function calls an Edge Function whenever a high-priority notification is created
 CREATE OR REPLACE FUNCTION public.forward_notification_to_email()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    project_url text := 'https://qfvrekvugdjnwhnaucmz.supabase.co';
-    user_email text;
+-- [SCRUBBED GARBAGE]     project_url text := 'https://tipnjnfbbnbskdlodrww.supabase.co';
+-- [SCRUBBED GARBAGE]     user_email text;
 BEGIN
     -- Only forward high-priority or action-oriented types
     IF NEW.type IN ('warning', 'error', 'urgent', 'action') THEN
@@ -5490,10 +5551,10 @@ BEGIN
         
         IF user_email IS NOT NULL THEN
             PERFORM
-              net.http_post(
-                url := project_url || '/functions/v1/send-notification-email',
-                headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
-                body := json_build_object(
+-- [SCRUBBED GARBAGE]               net.http_post(
+-- [SCRUBBED GARBAGE]                 url := project_url || '/functions/v1/send-notification-email',
+-- [SCRUBBED GARBAGE]                 headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
+-- [SCRUBBED GARBAGE]                 body := json_build_object(
                     'email', user_email,
                     'notification', row_to_json(NEW)
                 )::jsonb
@@ -5510,16 +5571,18 @@ $$;
 
 -- Attach trigger to notifications table
 DROP TRIGGER IF EXISTS on_notification_created_forward_email ON public.notifications;
+;
+DROP TRIGGER IF EXISTS "on_notification_created_forward_email" ON public.notifications;
 CREATE TRIGGER on_notification_created_forward_email
-    AFTER INSERT ON public.notifications
+-- [SCRUBBED GARBAGE]     AFTER INSERT ON public.notifications
     FOR EACH ROW
     EXECUTE FUNCTION public.forward_notification_to_email();
 
 -- 3. Fix Storage RLS for Admins
 DROP POLICY IF EXISTS "Admins can view all storage usage" ON public.user_storage_usage;
 CREATE POLICY "Admins can view all storage usage"
-    ON public.user_storage_usage FOR SELECT
-    USING (public.is_admin());
+-- [SCRUBBED GARBAGE]     ON public.user_storage_usage FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (public.is_admin());
 -- ============================================
 -- IMPROVED SIGNUP TRIGGER (Prevents Orphaned Users)
 -- ============================================
@@ -5530,45 +5593,45 @@ DROP FUNCTION IF EXISTS public.handle_new_user();
 
 -- Create improved signup function with better error handling
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER 
-LANGUAGE plpgsql 
-SECURITY DEFINER SET search_path = public
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER 
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql 
+-- [SCRUBBED GARBAGE] SECURITY DEFINER SET search_path = public
 AS $$
 BEGIN
     -- Create User Profile with UPSERT to handle edge cases
     INSERT INTO public.user_profiles (
-        id, 
-        email, 
-        full_name,
-        first_name,
-        last_name,
-        role, 
-        subscription_status, 
-        plan_id
+-- [SCRUBBED GARBAGE]         id, 
+-- [SCRUBBED GARBAGE]         email, 
+-- [SCRUBBED GARBAGE]         full_name,
+-- [SCRUBBED GARBAGE]         first_name,
+-- [SCRUBBED GARBAGE]         last_name,
+-- [SCRUBBED GARBAGE]         role, 
+-- [SCRUBBED GARBAGE]         subscription_status, 
+-- [SCRUBBED GARBAGE]         plan_id
     )
     VALUES (
-        NEW.id,
-        NEW.email,
-        COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
-        COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
+-- [SCRUBBED GARBAGE]         NEW.id,
+-- [SCRUBBED GARBAGE]         NEW.email,
+-- [SCRUBBED GARBAGE]         COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
+-- [SCRUBBED GARBAGE]         COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
         'User',
         'user',
         'active',
         'free'
     )
-    ON CONFLICT (id) DO UPDATE SET
-        email = EXCLUDED.email,
-        full_name = COALESCE(EXCLUDED.full_name, user_profiles.full_name),
-        first_name = COALESCE(EXCLUDED.first_name, user_profiles.first_name),
-        last_name = COALESCE(EXCLUDED.last_name, user_profiles.last_name),
-        updated_at = NOW();
+-- [SCRUBBED GARBAGE]     ON CONFLICT (id) DO UPDATE SET
+-- [SCRUBBED GARBAGE]         email = EXCLUDED.email,
+-- [SCRUBBED GARBAGE]         full_name = COALESCE(EXCLUDED.full_name, user_profiles.full_name),
+-- [SCRUBBED GARBAGE]         first_name = COALESCE(EXCLUDED.first_name, user_profiles.first_name),
+-- [SCRUBBED GARBAGE]         last_name = COALESCE(EXCLUDED.last_name, user_profiles.last_name),
+-- [SCRUBBED GARBAGE]         updated_at = NOW();
 
     -- Link Past Invoices (if any exist)
     BEGIN
         UPDATE public.invoices
         SET user_id = NEW.id
-        WHERE user_id IS NULL 
-        AND billing_email = NEW.email;
+-- [SCRUBBED GARBAGE]         WHERE user_id IS NULL 
+-- [SCRUBBED GARBAGE]         AND billing_email = NEW.email;
     EXCEPTION WHEN OTHERS THEN
         -- Log but don't fail signup
         RAISE WARNING 'Invoice linking failed for user %: %', NEW.email, SQLERRM;
@@ -5582,8 +5645,10 @@ END;
 $$;
 
 -- Attach trigger
+;
+DROP TRIGGER IF EXISTS "on_auth_user_created" ON auth.users;
 CREATE TRIGGER on_auth_user_created
-    AFTER INSERT ON auth.users
+-- [SCRUBBED GARBAGE]     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- Grant necessary permissions
@@ -5595,10 +5660,10 @@ DO $$
 BEGIN
     IF EXISTS (
         SELECT 1 FROM pg_trigger 
-        WHERE tgname = 'on_auth_user_created'
+-- [SCRUBBED GARBAGE]         WHERE tgname = 'on_auth_user_created'
     ) THEN
         RAISE NOTICE 'Signup trigger successfully installed';
-    ELSE
+-- [SCRUBBED GARBAGE]     ELSE
         RAISE WARNING 'Signup trigger installation failed!';
     END IF;
 END $$;
@@ -5607,31 +5672,31 @@ VALUES
 ('maintenance_mode', 'false'::jsonb, 'When enabled, only Super Admins can access the application. Regular users see a maintenance screen.'),
 ('maintenance_message', '"RentMate is currently undergoing scheduled maintenance. We will be back shortly."'::jsonb, 'The message displayed to users during maintenance mode.'),
 ('disable_ai_processing', 'false'::jsonb, 'Emergency toggle to disable all AI-powered features (Contract Analysis, Chat, etc.) to save costs or during API outages.')
-ON CONFLICT (key) DO UPDATE 
+-- [SCRUBBED GARBAGE] ON CONFLICT (key) DO UPDATE 
 SET description = EXCLUDED.description;
 
 -- Update get_financial_metrics to include storage distribution and system stats
 CREATE OR REPLACE FUNCTION get_financial_metrics()
-RETURNS json
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS json
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    total_mrr decimal := 0;
-    total_users int := 0;
-    active_subs int := 0;
-    new_users_30d int := 0;
+-- [SCRUBBED GARBAGE]     total_mrr decimal := 0;
+-- [SCRUBBED GARBAGE]     total_users int := 0;
+-- [SCRUBBED GARBAGE]     active_subs int := 0;
+-- [SCRUBBED GARBAGE]     new_users_30d int := 0;
     
     -- Storage stats
-    total_storage_mb decimal := 0;
-    media_storage_mb decimal := 0;
-    docs_storage_mb decimal := 0;
+-- [SCRUBBED GARBAGE]     total_storage_mb decimal := 0;
+-- [SCRUBBED GARBAGE]     media_storage_mb decimal := 0;
+-- [SCRUBBED GARBAGE]     docs_storage_mb decimal := 0;
     
     -- System flags
-    is_maint_active boolean;
-    is_ai_disabled boolean;
+-- [SCRUBBED GARBAGE]     is_maint_active boolean;
+-- [SCRUBBED GARBAGE]     is_ai_disabled boolean;
     
-    is_super boolean;
+-- [SCRUBBED GARBAGE]     is_super boolean;
 BEGIN
     -- Security Check
     SELECT is_super_admin INTO is_super FROM user_profiles WHERE id = auth.uid();
@@ -5642,20 +5707,20 @@ BEGIN
     SELECT COUNT(*) INTO active_subs FROM user_profiles WHERE plan_id IS NOT NULL AND plan_id NOT IN ('free', 'free_forever') AND subscription_status = 'active';
     
     SELECT COALESCE(SUM(sp.price_monthly), 0) INTO total_mrr 
-    FROM user_profiles up 
-    JOIN subscription_plans sp ON up.plan_id = sp.id 
-    WHERE up.subscription_status = 'active';
+-- [SCRUBBED GARBAGE]     FROM user_profiles up 
+-- [SCRUBBED GARBAGE]     JOIN subscription_plans sp ON up.plan_id = sp.id 
+-- [SCRUBBED GARBAGE]     WHERE up.subscription_status = 'active';
     
     SELECT COUNT(*) INTO new_users_30d FROM user_profiles WHERE created_at > (NOW() - INTERVAL '30 days');
 
     -- 2. Storage Aggregation (Aggregating from user_storage_usage if it exists, or files)
     -- Assuming a table user_storage_usage exists based on types/database.ts line 79
     SELECT 
-        COALESCE(SUM(total_bytes) / (1024 * 1024), 0),
-        COALESCE(SUM(media_bytes) / (1024 * 1024), 0),
-        COALESCE(SUM(documents_bytes + utilities_bytes + maintenance_bytes) / (1024 * 1024), 0)
-    INTO total_storage_mb, media_storage_mb, docs_storage_mb
-    FROM public.user_storage_usage;
+-- [SCRUBBED GARBAGE]         COALESCE(SUM(total_bytes) / (1024 * 1024), 0),
+-- [SCRUBBED GARBAGE]         COALESCE(SUM(media_bytes) / (1024 * 1024), 0),
+-- [SCRUBBED GARBAGE]         COALESCE(SUM(documents_bytes + utilities_bytes + maintenance_bytes) / (1024 * 1024), 0)
+-- [SCRUBBED GARBAGE]     INTO total_storage_mb, media_storage_mb, docs_storage_mb
+-- [SCRUBBED GARBAGE]     FROM public.user_storage_usage;
 
     -- 3. System Flags (Casting jsonb safely)
     SELECT (value::text::boolean) INTO is_maint_active FROM system_settings WHERE key = 'maintenance_mode';
@@ -5680,14 +5745,14 @@ END;
 $$;
 -- Create system_broadcasts table
 CREATE TABLE IF NOT EXISTS public.system_broadcasts (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    message TEXT NOT NULL,
-    type TEXT NOT NULL CHECK (type IN ('info', 'warning', 'error', 'success')),
-    is_active BOOLEAN DEFAULT true,
-    expires_at TIMESTAMPTZ,
-    target_link TEXT,
-    created_at TIMESTAMPTZ DEFAULT now(),
-    updated_at TIMESTAMPTZ DEFAULT now()
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [SCRUBBED GARBAGE]     message TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     type TEXT NOT NULL CHECK (type IN ('info', 'warning', 'error', 'success')),
+-- [SCRUBBED GARBAGE]     is_active BOOLEAN DEFAULT true,
+-- [SCRUBBED GARBAGE]     expires_at TIMESTAMPTZ,
+-- [SCRUBBED GARBAGE]     target_link TEXT,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ DEFAULT now(),
+-- [SCRUBBED GARBAGE]     updated_at TIMESTAMPTZ DEFAULT now()
 );
 
 -- RLS Policies
@@ -5696,80 +5761,82 @@ ALTER TABLE public.system_broadcasts ENABLE ROW LEVEL SECURITY;
 -- 1. Viewable by ALL users (even unauthenticated potentially, though usually app users)
 DROP POLICY IF EXISTS "Broadcasts are viewable by everyone" ON public.system_broadcasts;
 CREATE POLICY "Broadcasts are viewable by everyone"
-    ON public.system_broadcasts FOR SELECT
-    USING (is_active = true AND (expires_at IS NULL OR expires_at > now()));
+-- [SCRUBBED GARBAGE]     ON public.system_broadcasts FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (is_active = true AND (expires_at IS NULL OR expires_at > now()));
 
 -- 2. CRUD only for Super Admins
 DROP POLICY IF EXISTS "Super Admins have full access to broadcasts" ON public.system_broadcasts;
 CREATE POLICY "Super Admins have full access to broadcasts"
-    ON public.system_broadcasts FOR ALL
-    TO authenticated
-    USING (EXISTS (
+-- [SCRUBBED GARBAGE]     ON public.system_broadcasts FOR ALL
+-- [SCRUBBED GARBAGE]     TO authenticated
+-- [SCRUBBED GARBAGE]     USING (EXISTS (
         SELECT 1 FROM user_profiles 
-        WHERE id = auth.uid() AND is_super_admin = true
+-- [SCRUBBED GARBAGE]         WHERE id = auth.uid() AND is_super_admin = true
     ))
     WITH CHECK (EXISTS (
         SELECT 1 FROM user_profiles 
-        WHERE id = auth.uid() AND is_super_admin = true
+-- [SCRUBBED GARBAGE]         WHERE id = auth.uid() AND is_super_admin = true
     ));
 
 -- Trigger for updated_at
 CREATE OR REPLACE FUNCTION update_broadcast_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW.updated_at = now();
+-- [SCRUBBED GARBAGE]     NEW.updated_at = now();
     RETURN NEW;
 END;
 $$ language 'plpgsql';
 
+;
+DROP TRIGGER IF EXISTS "update_system_broadcasts_updated_at" ON public.system_broadcasts;
 CREATE TRIGGER update_system_broadcasts_updated_at
-    BEFORE UPDATE ON public.system_broadcasts
+-- [SCRUBBED GARBAGE]     BEFORE UPDATE ON public.system_broadcasts
     FOR EACH ROW
     EXECUTE PROCEDURE update_broadcast_updated_at();
 -- Add marketing consent fields to user_profiles
 ALTER TABLE public.user_profiles 
-ADD COLUMN IF NOT EXISTS marketing_consent BOOLEAN DEFAULT FALSE,
-ADD COLUMN IF NOT EXISTS marketing_consent_at TIMESTAMPTZ;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS marketing_consent BOOLEAN DEFAULT FALSE,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS marketing_consent_at TIMESTAMPTZ;
 
 -- Update the handle_new_user function to capture marketing_consent
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER 
-LANGUAGE plpgsql 
-SECURITY DEFINER SET search_path = public
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER 
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql 
+-- [SCRUBBED GARBAGE] SECURITY DEFINER SET search_path = public
 AS $$
 BEGIN
     INSERT INTO public.user_profiles (
-        id, 
-        email, 
-        full_name,
-        first_name,
-        last_name,
-        role, 
-        subscription_status, 
-        plan_id,
-        marketing_consent,
-        marketing_consent_at
+-- [SCRUBBED GARBAGE]         id, 
+-- [SCRUBBED GARBAGE]         email, 
+-- [SCRUBBED GARBAGE]         full_name,
+-- [SCRUBBED GARBAGE]         first_name,
+-- [SCRUBBED GARBAGE]         last_name,
+-- [SCRUBBED GARBAGE]         role, 
+-- [SCRUBBED GARBAGE]         subscription_status, 
+-- [SCRUBBED GARBAGE]         plan_id,
+-- [SCRUBBED GARBAGE]         marketing_consent,
+-- [SCRUBBED GARBAGE]         marketing_consent_at
     )
     VALUES (
-        NEW.id,
-        NEW.email,
-        COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
-        COALESCE(NEW.raw_user_meta_data->>'first_name', split_part(NEW.email, '@', 1)),
-        COALESCE(NEW.raw_user_meta_data->>'last_name', ''),
+-- [SCRUBBED GARBAGE]         NEW.id,
+-- [SCRUBBED GARBAGE]         NEW.email,
+-- [SCRUBBED GARBAGE]         COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
+-- [SCRUBBED GARBAGE]         COALESCE(NEW.raw_user_meta_data->>'first_name', split_part(NEW.email, '@', 1)),
+-- [SCRUBBED GARBAGE]         COALESCE(NEW.raw_user_meta_data->>'last_name', ''),
         'User',
         'active',
         'free',
-        COALESCE((NEW.raw_user_meta_data->>'marketing_consent')::boolean, FALSE),
-        CASE WHEN (NEW.raw_user_meta_data->>'marketing_consent')::boolean THEN NOW() ELSE NULL END
+-- [SCRUBBED GARBAGE]         COALESCE((NEW.raw_user_meta_data->>'marketing_consent')::boolean, FALSE),
+-- [SCRUBBED GARBAGE]         CASE WHEN (NEW.raw_user_meta_data->>'marketing_consent')::boolean THEN NOW() ELSE NULL END
     )
-    ON CONFLICT (id) DO UPDATE SET
-        email = EXCLUDED.email,
-        full_name = COALESCE(EXCLUDED.full_name, user_profiles.full_name),
-        first_name = COALESCE(EXCLUDED.first_name, user_profiles.first_name),
-        last_name = COALESCE(EXCLUDED.last_name, user_profiles.last_name),
-        marketing_consent = COALESCE(EXCLUDED.marketing_consent, user_profiles.marketing_consent),
-        marketing_consent_at = COALESCE(EXCLUDED.marketing_consent_at, user_profiles.marketing_consent_at),
-        updated_at = NOW();
+-- [SCRUBBED GARBAGE]     ON CONFLICT (id) DO UPDATE SET
+-- [SCRUBBED GARBAGE]         email = EXCLUDED.email,
+-- [SCRUBBED GARBAGE]         full_name = COALESCE(EXCLUDED.full_name, user_profiles.full_name),
+-- [SCRUBBED GARBAGE]         first_name = COALESCE(EXCLUDED.first_name, user_profiles.first_name),
+-- [SCRUBBED GARBAGE]         last_name = COALESCE(EXCLUDED.last_name, user_profiles.last_name),
+-- [SCRUBBED GARBAGE]         marketing_consent = COALESCE(EXCLUDED.marketing_consent, user_profiles.marketing_consent),
+-- [SCRUBBED GARBAGE]         marketing_consent_at = COALESCE(EXCLUDED.marketing_consent_at, user_profiles.marketing_consent_at),
+-- [SCRUBBED GARBAGE]         updated_at = NOW();
 
     RETURN NEW;
 END;
@@ -5778,20 +5845,20 @@ $$;
 -- Description: Sends a welcome email to new users when their profile is created
 
 CREATE OR REPLACE FUNCTION public.send_welcome_email_on_signup()
-RETURNS TRIGGER 
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER 
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    project_url text := 'https://qfvrekvugdjnwhnaucmz.supabase.co';
+-- [SCRUBBED GARBAGE]     project_url text := 'https://tipnjnfbbnbskdlodrww.supabase.co';
 BEGIN
     -- Only trigger if it's a new profile (usually only happen at signup)
     IF TG_OP = 'INSERT' THEN
         PERFORM
-          net.http_post(
-            url := project_url || '/functions/v1/send-welcome-email',
-            headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
-            body := json_build_object(
+-- [SCRUBBED GARBAGE]           net.http_post(
+-- [SCRUBBED GARBAGE]             url := project_url || '/functions/v1/send-welcome-email',
+-- [SCRUBBED GARBAGE]             headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
+-- [SCRUBBED GARBAGE]             body := json_build_object(
                 'email', NEW.email,
                 'full_name', NEW.full_name
             )::jsonb
@@ -5809,8 +5876,10 @@ $$;
 -- Attach trigger to user_profiles
 DROP TRIGGER IF EXISTS on_profile_created_send_welcome_email ON public.user_profiles;
 
+;
+DROP TRIGGER IF EXISTS "on_profile_created_send_welcome_email" ON public.user_profiles;
 CREATE TRIGGER on_profile_created_send_welcome_email
-    AFTER INSERT ON public.user_profiles
+-- [SCRUBBED GARBAGE]     AFTER INSERT ON public.user_profiles
     FOR EACH ROW
     EXECUTE FUNCTION public.send_welcome_email_on_signup();
 -- Migration to add counter_read to property_documents
@@ -5820,8 +5889,8 @@ CREATE TRIGGER on_profile_created_send_welcome_email
 DO $$ 
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
-                   WHERE table_name='property_documents' AND column_name='counter_read') THEN
-        ALTER TABLE property_documents ADD COLUMN counter_read DECIMAL(12,2);
+-- [SCRUBBED GARBAGE]                    WHERE table_name='property_documents' AND column_name='counter_read') THEN
+        ALTER TABLE property_documents ADD COLUMN IF NOT EXISTS counter_read DECIMAL(12,2);
     END IF;
 END $$;
 
@@ -5831,15 +5900,15 @@ END $$;
 
 -- 1. Create function to generate notification on maintenance record insertion
 CREATE OR REPLACE FUNCTION public.notify_on_maintenance_record()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    property_address text;
-    user_lang text;
-    notif_title text;
-    notif_message text;
+-- [SCRUBBED GARBAGE]     property_address text;
+-- [SCRUBBED GARBAGE]     user_lang text;
+-- [SCRUBBED GARBAGE]     notif_title text;
+-- [SCRUBBED GARBAGE]     notif_message text;
 BEGIN
     -- Only trigger for maintenance category
     IF NEW.category != 'maintenance' THEN
@@ -5848,31 +5917,31 @@ BEGIN
 
     -- Get property address
     SELECT COALESCE(city, '') || ', ' || COALESCE(address, '') INTO property_address
-    FROM public.properties
-    WHERE id = NEW.property_id;
+-- [SCRUBBED GARBAGE]     FROM public.properties
+-- [SCRUBBED GARBAGE]     WHERE id = NEW.property_id;
 
     -- Get user language preference (defaults to 'he')
     SELECT COALESCE(language, 'he') INTO user_lang
-    FROM public.user_profiles
-    WHERE id = NEW.user_id;
+-- [SCRUBBED GARBAGE]     FROM public.user_profiles
+-- [SCRUBBED GARBAGE]     WHERE id = NEW.user_id;
 
     -- Set localized content
     IF user_lang = 'he' THEN
-        notif_title := '׳ ׳•׳¡׳£ ׳×׳™׳¢׳•׳“ ׳×׳—׳–׳•׳§׳”';
-        notif_message := format('׳ ׳•׳¡׳£ ׳×׳™׳¢׳•׳“ ׳×׳—׳–׳•׳§׳” ׳—׳“׳© ("%s") ׳¢׳‘׳•׳¨ ׳”׳ ׳›׳¡ %s.', COALESCE(NEW.title, '׳׳׳ ׳›׳•׳×׳¨׳×'), property_address);
-    ELSE
-        notif_title := 'Maintenance Record Added';
-        notif_message := format('A new maintenance record ("%s") was added for %s.', COALESCE(NEW.title, 'Untitled'), property_address);
+-- [SCRUBBED GARBAGE]         notif_title := '׳ ׳•׳¡׳£ ׳×׳™׳¢׳•׳“ ׳×׳—׳–׳•׳§׳”';
+-- [SCRUBBED GARBAGE]         notif_message := format('׳ ׳•׳¡׳£ ׳×׳™׳¢׳•׳“ ׳×׳—׳–׳•׳§׳” ׳—׳“׳© ("%s") ׳¢׳‘׳•׳¨ ׳”׳ ׳›׳¡ %s.', COALESCE(NEW.title, '׳׳׳ ׳›׳•׳×׳¨׳×'), property_address);
+-- [SCRUBBED GARBAGE]     ELSE
+-- [SCRUBBED GARBAGE]         notif_title := 'Maintenance Record Added';
+-- [SCRUBBED GARBAGE]         notif_message := format('A new maintenance record ("%s") was added for %s.', COALESCE(NEW.title, 'Untitled'), property_address);
     END IF;
 
     -- Insert into notifications table
     INSERT INTO public.notifications (user_id, type, title, message, metadata)
     VALUES (
-        NEW.user_id,
+-- [SCRUBBED GARBAGE]         NEW.user_id,
         'info',
-        notif_title,
-        notif_message,
-        json_build_object(
+-- [SCRUBBED GARBAGE]         notif_title,
+-- [SCRUBBED GARBAGE]         notif_message,
+-- [SCRUBBED GARBAGE]         json_build_object(
             'document_id', NEW.id,
             'property_id', NEW.property_id,
             'event', 'maintenance_record'
@@ -5885,30 +5954,32 @@ $$;
 
 -- Attach trigger to property_documents
 DROP TRIGGER IF EXISTS on_maintenance_record_created ON public.property_documents;
+;
+DROP TRIGGER IF EXISTS "on_maintenance_record_created" ON public.property_documents;
 CREATE TRIGGER on_maintenance_record_created
-    AFTER INSERT ON public.property_documents
+-- [SCRUBBED GARBAGE]     AFTER INSERT ON public.property_documents
     FOR EACH ROW
     EXECUTE FUNCTION public.notify_on_maintenance_record();
 
 -- 2. Update forward_notification_to_email to respect email_asset_alerts preference
 CREATE OR REPLACE FUNCTION public.forward_notification_to_email()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    project_url text := 'https://qfvrekvugdjnwhnaucmz.supabase.co';
-    target_email text;
-    asset_alerts_enabled boolean;
+-- [SCRUBBED GARBAGE]     project_url text := 'https://tipnjnfbbnbskdlodrww.supabase.co';
+-- [SCRUBBED GARBAGE]     target_email text;
+-- [SCRUBBED GARBAGE]     asset_alerts_enabled boolean;
 BEGIN
     -- Get user email and asset alerts preference
     SELECT 
-        u.email, 
-        COALESCE((up.notification_preferences->>'email_asset_alerts')::boolean, true)
-    INTO target_email, asset_alerts_enabled
-    FROM auth.users u
-    LEFT JOIN public.user_profiles up ON up.id = u.id
-    WHERE u.id = NEW.user_id;
+-- [SCRUBBED GARBAGE]         u.email, 
+-- [SCRUBBED GARBAGE]         COALESCE((up.notification_preferences->>'email_asset_alerts')::boolean, true)
+-- [SCRUBBED GARBAGE]     INTO target_email, asset_alerts_enabled
+-- [SCRUBBED GARBAGE]     FROM auth.users u
+-- [SCRUBBED GARBAGE]     LEFT JOIN public.user_profiles up ON up.id = u.id
+-- [SCRUBBED GARBAGE]     WHERE u.id = NEW.user_id;
 
     -- DECISION LOGIC:
     -- Forward IF:
@@ -5916,13 +5987,13 @@ BEGIN
     -- 2. OR is a maintenance event AND the user hasn't explicitly disabled asset alerts
     IF (NEW.type IN ('warning', 'error', 'urgent', 'action')) OR 
        (NEW.metadata->>'event' = 'maintenance_record' AND asset_alerts_enabled = true) 
-    THEN
+-- [SCRUBBED GARBAGE]     THEN
         IF target_email IS NOT NULL THEN
             PERFORM
-              net.http_post(
-                url := project_url || '/functions/v1/send-notification-email',
-                headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
-                body := json_build_object(
+-- [SCRUBBED GARBAGE]               net.http_post(
+-- [SCRUBBED GARBAGE]                 url := project_url || '/functions/v1/send-notification-email',
+-- [SCRUBBED GARBAGE]                 headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
+-- [SCRUBBED GARBAGE]                 body := json_build_object(
                     'email', target_email,
                     'notification', row_to_json(NEW)
                 )::jsonb
@@ -5941,7 +6012,7 @@ DO $$
 BEGIN
     ALTER TYPE crm_interaction_type ADD VALUE IF NOT EXISTS 'chat';
 EXCEPTION
-    WHEN others THEN
+-- [SCRUBBED GARBAGE]     WHEN others THEN
         -- If the type doesn't exist yet (though it should), this will fail silently
         RAISE NOTICE 'Skipping type update: crm_interaction_type might not exist or already has chat value.';
 END $$;
@@ -5952,12 +6023,12 @@ BEGIN
     -- Ensure relationship to user_profiles for PostgREST joins
     IF NOT EXISTS (
         SELECT 1 
-        FROM information_schema.table_constraints 
-        WHERE constraint_name = 'user_storage_usage_user_id_profiles_fkey'
+-- [SCRUBBED GARBAGE]         FROM information_schema.table_constraints 
+-- [SCRUBBED GARBAGE]         WHERE constraint_name = 'user_storage_usage_user_id_profiles_fkey'
     ) THEN
         ALTER TABLE user_storage_usage 
-        ADD CONSTRAINT user_storage_usage_user_id_profiles_fkey 
-        FOREIGN KEY (user_id) REFERENCES user_profiles(id) ON DELETE CASCADE;
+-- [SCRUBBED GARBAGE]         ADD CONSTRAINT user_storage_usage_user_id_profiles_fkey 
+-- [SCRUBBED GARBAGE]         FOREIGN KEY (user_id) REFERENCES user_profiles(id) ON DELETE CASCADE;
     END IF;
 END $$;
 
@@ -5966,9 +6037,9 @@ DO $$
 BEGIN
     IF NOT EXISTS (
         SELECT 1 FROM information_schema.columns 
-        WHERE table_name = 'subscription_plans' AND column_name = 'price_yearly'
+-- [SCRUBBED GARBAGE]         WHERE table_name = 'subscription_plans' AND column_name = 'price_yearly'
     ) THEN
-        ALTER TABLE subscription_plans ADD COLUMN price_yearly NUMERIC(10, 2) DEFAULT 0;
+        ALTER TABLE subscription_plans ADD COLUMN IF NOT EXISTS price_yearly NUMERIC(10, 2) DEFAULT 0;
     END IF;
 END $$;
 
@@ -5977,12 +6048,12 @@ DO $$
 BEGIN
     IF NOT EXISTS (
         SELECT 1 
-        FROM information_schema.table_constraints 
-        WHERE constraint_name = 'ai_chat_usage_user_id_profiles_fkey'
+-- [SCRUBBED GARBAGE]         FROM information_schema.table_constraints 
+-- [SCRUBBED GARBAGE]         WHERE constraint_name = 'ai_chat_usage_user_id_profiles_fkey'
     ) THEN
         ALTER TABLE ai_chat_usage 
-        ADD CONSTRAINT ai_chat_usage_user_id_profiles_fkey 
-        FOREIGN KEY (user_id) REFERENCES user_profiles(id) ON DELETE CASCADE;
+-- [SCRUBBED GARBAGE]         ADD CONSTRAINT ai_chat_usage_user_id_profiles_fkey 
+-- [SCRUBBED GARBAGE]         FOREIGN KEY (user_id) REFERENCES user_profiles(id) ON DELETE CASCADE;
     END IF;
 END $$;
 
@@ -5991,49 +6062,49 @@ END $$;
 DROP FUNCTION IF EXISTS public.get_admin_stats();
 
 CREATE OR REPLACE FUNCTION public.get_admin_stats()
-RETURNS JSONB
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS JSONB
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-    result JSONB;
-    total_users_count INTEGER;
-    total_contracts_count INTEGER;
-    total_revenue_amount NUMERIC;
-    active_users_count INTEGER;
+-- [SCRUBBED GARBAGE]     result JSONB;
+-- [SCRUBBED GARBAGE]     total_users_count INTEGER;
+-- [SCRUBBED GARBAGE]     total_contracts_count INTEGER;
+-- [SCRUBBED GARBAGE]     total_revenue_amount NUMERIC;
+-- [SCRUBBED GARBAGE]     active_users_count INTEGER;
 BEGIN
     -- Check if the current user is an admin
     IF NOT EXISTS (
         SELECT 1 FROM user_profiles
-        WHERE id = auth.uid()
-        AND role = 'admin'
+-- [SCRUBBED GARBAGE]         WHERE id = auth.uid()
+-- [SCRUBBED GARBAGE]         AND role = 'admin'
     ) THEN
         RAISE EXCEPTION 'Access denied: Admin role required';
     END IF;
 
     -- Get total users count
     SELECT COUNT(*) INTO total_users_count
-    FROM user_profiles
-    WHERE deleted_at IS NULL;
+-- [SCRUBBED GARBAGE]     FROM user_profiles
+-- [SCRUBBED GARBAGE]     WHERE deleted_at IS NULL;
 
     -- Get total contracts count
     SELECT COUNT(*) INTO total_contracts_count
-    FROM contracts;
+-- [SCRUBBED GARBAGE]     FROM contracts;
 
     -- Get total revenue (sum of paid payments)
     SELECT COALESCE(SUM(paid_amount), 0) INTO total_revenue_amount
-    FROM payments
-    WHERE status = 'paid';
+-- [SCRUBBED GARBAGE]     FROM payments
+-- [SCRUBBED GARBAGE]     WHERE status = 'paid';
 
     -- Get active users (users who logged in within last 30 days)
     SELECT COUNT(*) INTO active_users_count
-    FROM user_profiles
-    WHERE deleted_at IS NULL
-    AND updated_at > NOW() - INTERVAL '30 days';
+-- [SCRUBBED GARBAGE]     FROM user_profiles
+-- [SCRUBBED GARBAGE]     WHERE deleted_at IS NULL
+-- [SCRUBBED GARBAGE]     AND updated_at > NOW() - INTERVAL '30 days';
 
     -- Build JSONB result
-    result := jsonb_build_object(
+-- [SCRUBBED GARBAGE]     result := jsonb_build_object(
         'totalUsers', total_users_count,
         'totalContracts', total_contracts_count,
         'totalRevenue', total_revenue_amount,
@@ -6052,18 +6123,18 @@ BEGIN
     -- Use Supabase Vault or Secrets for the API URL if needed, but here we hardcode the known URL pattern
     -- Alternatively, we can use a simpler approach if the Netlify/Edge function is public or has a secret key
     PERFORM
-      net.http_post(
-        url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/admin-notifications',
-        headers := jsonb_build_object(
+-- [SCRUBBED GARBAGE]       net.http_post(
+-- [SCRUBBED GARBAGE]         url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/admin-notifications',
+-- [SCRUBBED GARBAGE]         headers := jsonb_build_object(
           'Content-Type', 'application/json',
-          'Authorization', 'Bearer ' || (SELECT value FROM vault.secrets WHERE name = 'SERVICE_ROLE_KEY' LIMIT 1)
+          'Authorization', 'Bearer ' || COALESCE(current_setting('app.settings.service_role_key', true), 'DUMMY_KEY')
         ),
-        body := jsonb_build_object(
+-- [SCRUBBED GARBAGE]         body := jsonb_build_object(
           'type', TG_ARGV[0],
           'data', CASE 
-                    WHEN TG_ARGV[0] = 'new_user' THEN jsonb_build_object('email', NEW.email, 'full_name', NEW.full_name)
-                    WHEN TG_ARGV[0] = 'first_payment' THEN jsonb_build_object('email', (SELECT email FROM user_profiles WHERE id = NEW.user_id), 'amount', NEW.paid_amount, 'plan', NEW.plan_id)
-                    ELSE '{}'::jsonb
+-- [SCRUBBED GARBAGE]                     WHEN TG_ARGV[0] = 'new_user' THEN jsonb_build_object('email', NEW.email, 'full_name', NEW.full_name)
+-- [SCRUBBED GARBAGE]                     WHEN TG_ARGV[0] = 'first_payment' THEN jsonb_build_object('email', (SELECT email FROM user_profiles WHERE id = NEW.user_id), 'amount', NEW.paid_amount, 'plan', NEW.plan_id)
+-- [SCRUBBED GARBAGE]                     ELSE '{}'::jsonb
                   END
         )
       );
@@ -6074,8 +6145,10 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- Trigger for New User
 -- This needs to happen after the profile is created
 DROP TRIGGER IF EXISTS on_user_profile_created_notify_admin ON user_profiles;
+;
+DROP TRIGGER IF EXISTS "on_user_profile_created_notify_admin" ON user_profiles;
 CREATE TRIGGER on_user_profile_created_notify_admin
-    AFTER INSERT ON user_profiles
+-- [SCRUBBED GARBAGE]     AFTER INSERT ON user_profiles
     FOR EACH ROW
     EXECUTE FUNCTION notify_admin_of_event('new_user');
 
@@ -6084,13 +6157,13 @@ CREATE TRIGGER on_user_profile_created_notify_admin
 CREATE OR REPLACE FUNCTION notify_admin_of_first_payment()
 RETURNS TRIGGER AS $$
 DECLARE
-  payment_count INTEGER;
+-- [SCRUBBED GARBAGE]   payment_count INTEGER;
 BEGIN
     -- Check if this is the user's first successful payment
     SELECT COUNT(*) INTO payment_count
-    FROM payments
-    WHERE user_id = NEW.user_id
-    AND status = 'paid';
+-- [SCRUBBED GARBAGE]     FROM payments
+-- [SCRUBBED GARBAGE]     WHERE user_id = NEW.user_id
+-- [SCRUBBED GARBAGE]     AND status = 'paid';
 
     IF payment_count = 1 THEN
         PERFORM notify_admin_of_event(); -- This needs to be called with arguments, so let's adjust
@@ -6101,10 +6174,12 @@ $$ LANGUAGE plpgsql;
 
 -- Actually, let's keep it simple. The trigger itself will check
 DROP TRIGGER IF EXISTS on_first_payment_notify_admin ON payments;
+;
+DROP TRIGGER IF EXISTS "on_first_payment_notify_admin" ON payments;
 CREATE TRIGGER on_first_payment_notify_admin
-    AFTER UPDATE ON payments
+-- [SCRUBBED GARBAGE]     AFTER UPDATE ON payments
     FOR EACH ROW
-    WHEN (OLD.status != 'paid' AND NEW.status = 'paid')
+-- [SCRUBBED GARBAGE]     WHEN (OLD.status != 'paid' AND NEW.status = 'paid')
     EXECUTE FUNCTION notify_admin_of_event('first_payment');
 
 -- 6. Cron Job for Daily Summary
@@ -6116,12 +6191,12 @@ SELECT cron.schedule(
     '0 8 * * *', -- 8:00 AM every day
     $$
     SELECT net.http_post(
-        url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/admin-notifications',
-        headers := jsonb_build_object(
+-- [SCRUBBED GARBAGE]         url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/admin-notifications',
+-- [SCRUBBED GARBAGE]         headers := jsonb_build_object(
           'Content-Type', 'application/json',
-          'Authorization', 'Bearer ' || (SELECT value FROM vault.secrets WHERE name = 'SERVICE_ROLE_KEY' LIMIT 1)
+          'Authorization', 'Bearer ' || COALESCE(current_setting('app.settings.service_role_key', true), 'DUMMY_KEY')
         ),
-        body := jsonb_build_object('type', 'daily_summary')
+-- [SCRUBBED GARBAGE]         body := jsonb_build_object('type', 'daily_summary')
     );
     $$
 );
@@ -6130,24 +6205,24 @@ SELECT cron.schedule(
 
 -- 1. Correct Project URL for triggers (Consolidated)
 -- We'll use a variable or just hardcode the current known correctly fixed URL
--- Current Project URL: https://qfvrekvugdjnwhnaucmz.supabase.co
+-- Current Project URL: https://tipnjnfbbnbskdlodrww.supabase.co
 
 -- 2. Trigger Function for Signups & Plan Changes (Admin Alerts)
 CREATE OR REPLACE FUNCTION public.notify_admin_on_user_event()
-RETURNS TRIGGER 
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER 
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    project_url text := 'https://qfvrekvugdjnwhnaucmz.supabase.co';
+-- [SCRUBBED GARBAGE]     project_url text := 'https://tipnjnfbbnbskdlodrww.supabase.co';
 BEGIN
     -- Only trigger if it's a new user OR a plan change
     IF (TG_OP = 'INSERT') OR (TG_OP = 'UPDATE' AND OLD.subscription_plan IS DISTINCT FROM NEW.subscription_plan) THEN
         PERFORM
-          net.http_post(
-            url := project_url || '/functions/v1/send-admin-alert',
-            headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
-            body := json_build_object(
+-- [SCRUBBED GARBAGE]           net.http_post(
+-- [SCRUBBED GARBAGE]             url := project_url || '/functions/v1/send-admin-alert',
+-- [SCRUBBED GARBAGE]             headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
+-- [SCRUBBED GARBAGE]             body := json_build_object(
                 'type', TG_OP,
                 'table', 'user_profiles',
                 'record', row_to_json(NEW),
@@ -6165,13 +6240,13 @@ $$;
 
 -- 3. Trigger Function for Paid Invoices (Subscription Start Alert)
 CREATE OR REPLACE FUNCTION public.notify_admin_on_payment()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    project_url text := 'https://qfvrekvugdjnwhnaucmz.supabase.co';
-    user_record RECORD;
+-- [SCRUBBED GARBAGE]     project_url text := 'https://tipnjnfbbnbskdlodrww.supabase.co';
+-- [SCRUBBED GARBAGE]     user_record RECORD;
 BEGIN
     -- Only trigger when an invoice is marked as 'paid'
     IF NEW.status = 'paid' AND (OLD.status IS NULL OR OLD.status != 'paid') THEN
@@ -6179,10 +6254,10 @@ BEGIN
         SELECT * INTO user_record FROM public.user_profiles WHERE id = NEW.user_id;
 
         PERFORM
-          net.http_post(
-            url := project_url || '/functions/v1/send-admin-alert',
-            headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
-            body := json_build_object(
+-- [SCRUBBED GARBAGE]           net.http_post(
+-- [SCRUBBED GARBAGE]             url := project_url || '/functions/v1/send-admin-alert',
+-- [SCRUBBED GARBAGE]             headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
+-- [SCRUBBED GARBAGE]             body := json_build_object(
                 'type', 'UPDATE',
                 'table', 'invoices',
                 'record', row_to_json(NEW),
@@ -6201,15 +6276,19 @@ $$;
 -- 4. Apply Triggers
 -- a. User Profiles (Signup & Plan Changes)
 DROP TRIGGER IF EXISTS on_user_event_notify_admin ON public.user_profiles;
+;
+DROP TRIGGER IF EXISTS "on_user_event_notify_admin" ON public.user_profiles;
 CREATE TRIGGER on_user_event_notify_admin
-    AFTER INSERT OR UPDATE ON public.user_profiles
+-- [SCRUBBED GARBAGE]     AFTER INSERT OR UPDATE ON public.user_profiles
     FOR EACH ROW
     EXECUTE FUNCTION public.notify_admin_on_user_event();
 
 -- b. Invoices (Subscription Starts)
 DROP TRIGGER IF EXISTS on_invoice_paid_notify_admin ON public.invoices;
+;
+DROP TRIGGER IF EXISTS "on_invoice_paid_notify_admin" ON public.invoices;
 CREATE TRIGGER on_invoice_paid_notify_admin
-    AFTER UPDATE ON public.invoices
+-- [SCRUBBED GARBAGE]     AFTER UPDATE ON public.invoices
     FOR EACH ROW
     EXECUTE FUNCTION public.notify_admin_on_payment();
 
@@ -6232,9 +6311,9 @@ SELECT cron.schedule(
     '0 8 * * *',
     $$
     SELECT net.http_post(
-        url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/send-daily-admin-summary',
-        headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
-        body := '{}'::jsonb
+-- [SCRUBBED GARBAGE]         url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/send-daily-admin-summary',
+-- [SCRUBBED GARBAGE]         headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
+-- [SCRUBBED GARBAGE]         body := '{}'::jsonb
     );
     $$
 );
@@ -6246,17 +6325,17 @@ SELECT cron.schedule(
 
 -- 1. Ensure public.is_admin() accounts for is_super_admin if role is not set
 CREATE OR REPLACE FUNCTION public.is_admin()
-RETURNS BOOLEAN 
-LANGUAGE plpgsql 
-SECURITY DEFINER 
+-- [SCRUBBED GARBAGE] RETURNS BOOLEAN 
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql 
+-- [SCRUBBED GARBAGE] SECURITY DEFINER 
 SET search_path = public
 AS $$
 BEGIN
     RETURN EXISTS (
         SELECT 1 
-        FROM public.user_profiles 
-        WHERE id = auth.uid() 
-        AND (role = 'admin' OR is_super_admin = true)
+-- [SCRUBBED GARBAGE]         FROM public.user_profiles 
+-- [SCRUBBED GARBAGE]         WHERE id = auth.uid() 
+-- [SCRUBBED GARBAGE]         AND (role = 'admin' OR is_super_admin = true)
     );
 END;
 $$;
@@ -6266,120 +6345,120 @@ $$;
 -- PROPERTIES
 DROP POLICY IF EXISTS "Admins view all properties" ON public.properties;
 CREATE POLICY "Admins view all properties" 
-    ON public.properties FOR SELECT 
-    USING (public.is_admin());
+-- [SCRUBBED GARBAGE]     ON public.properties FOR SELECT 
+-- [SCRUBBED GARBAGE]     USING (public.is_admin());
 
 -- CONTRACTS
 DROP POLICY IF EXISTS "Admins view all contracts" ON public.contracts;
 CREATE POLICY "Admins view all contracts" 
-    ON public.contracts FOR SELECT 
-    USING (public.is_admin());
+-- [SCRUBBED GARBAGE]     ON public.contracts FOR SELECT 
+-- [SCRUBBED GARBAGE]     USING (public.is_admin());
 
 -- TENANTS
 DROP POLICY IF EXISTS "Admins view all tenants" ON public.tenants;
 CREATE POLICY "Admins view all tenants" 
-    ON public.tenants FOR SELECT 
-    USING (public.is_admin());
+-- [SCRUBBED GARBAGE]     ON public.tenants FOR SELECT 
+-- [SCRUBBED GARBAGE]     USING (public.is_admin());
 
 -- PAYMENTS
 DROP POLICY IF EXISTS "Admins view all payments" ON public.payments;
 CREATE POLICY "Admins view all payments" 
-    ON public.payments FOR SELECT 
-    USING (public.is_admin());
+-- [SCRUBBED GARBAGE]     ON public.payments FOR SELECT 
+-- [SCRUBBED GARBAGE]     USING (public.is_admin());
 
 -- PROPERTY DOCUMENTS
 DROP POLICY IF EXISTS "Admins view all property documents" ON public.property_documents;
 CREATE POLICY "Admins view all property documents" 
-    ON public.property_documents FOR SELECT 
-    USING (public.is_admin());
+-- [SCRUBBED GARBAGE]     ON public.property_documents FOR SELECT 
+-- [SCRUBBED GARBAGE]     USING (public.is_admin());
 
 -- DOCUMENT FOLDERS
 DROP POLICY IF EXISTS "Admins view all document folders" ON public.document_folders;
 CREATE POLICY "Admins view all document folders" 
-    ON public.document_folders FOR SELECT 
-    USING (public.is_admin());
+-- [SCRUBBED GARBAGE]     ON public.document_folders FOR SELECT 
+-- [SCRUBBED GARBAGE]     USING (public.is_admin());
 
 -- SHORT LINKS
 DROP POLICY IF EXISTS "Admins view all short links" ON public.short_links;
 CREATE POLICY "Admins view all short links" 
-    ON public.short_links FOR SELECT 
-    USING (public.is_admin());
+-- [SCRUBBED GARBAGE]     ON public.short_links FOR SELECT 
+-- [SCRUBBED GARBAGE]     USING (public.is_admin());
 
 -- STORAGE OBJECTS (God Mode for Admins)
 DROP POLICY IF EXISTS "Admins full access to secure_documents" ON storage.objects;
 CREATE POLICY "Admins full access to secure_documents"
-    ON storage.objects FOR ALL
-    USING (
-        bucket_id = 'secure_documents' 
-        AND public.is_admin()
+-- [SCRUBBED GARBAGE]     ON storage.objects FOR ALL
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         bucket_id = 'secure_documents' 
+-- [SCRUBBED GARBAGE]         AND public.is_admin()
     )
     WITH CHECK (
-        bucket_id = 'secure_documents' 
-        AND public.is_admin()
+-- [SCRUBBED GARBAGE]         bucket_id = 'secure_documents' 
+-- [SCRUBBED GARBAGE]         AND public.is_admin()
     );
 
 -- 3. Notify Schema Reload
-NOTIFY pgrst, 'reload schema';
+-- [SCRUBBED GARBAGE] NOTIFY pgrst, 'reload schema';
 DO $$
 BEGIN
     -- Update rubi@rentmate.co.il if it exists
     UPDATE public.user_profiles
     SET role = 'admin',
-        is_super_admin = true
-    WHERE email = 'rubi@rentmate.co.il';
+-- [SCRUBBED GARBAGE]         is_super_admin = true
+-- [SCRUBBED GARBAGE]     WHERE email = 'rubi@rentmate.co.il';
 
     -- If the user exists in auth.users but not in profiles (unlikely), handle_new_user should have created it.
     -- But let's be safe.
     IF EXISTS (SELECT 1 FROM auth.users WHERE email = 'rubi@rentmate.co.il') THEN
         INSERT INTO public.user_profiles (id, email, role, is_super_admin)
         SELECT id, email, 'admin', true
-        FROM auth.users
-        WHERE email = 'rubi@rentmate.co.il'
-        ON CONFLICT (id) DO UPDATE 
+-- [SCRUBBED GARBAGE]         FROM auth.users
+-- [SCRUBBED GARBAGE]         WHERE email = 'rubi@rentmate.co.il'
+-- [SCRUBBED GARBAGE]         ON CONFLICT (id) DO UPDATE 
         SET role = 'admin', is_super_admin = true;
     END IF;
 END $$;
 -- Support Tickets Table
 CREATE TABLE IF NOT EXISTS support_tickets (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    title TEXT NOT NULL,
-    description TEXT NOT NULL,
-    category TEXT NOT NULL CHECK (category IN ('technical', 'billing', 'feature_request', 'bug', 'other')),
-    priority TEXT NOT NULL DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'urgent')),
-    status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'in_progress', 'waiting_user', 'resolved', 'closed')),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [SCRUBBED GARBAGE]     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     title TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     description TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     category TEXT NOT NULL CHECK (category IN ('technical', 'billing', 'feature_request', 'bug', 'other')),
+-- [SCRUBBED GARBAGE]     priority TEXT NOT NULL DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'urgent')),
+-- [SCRUBBED GARBAGE]     status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'in_progress', 'waiting_user', 'resolved', 'closed')),
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- Ensure columns exist if table was created by a previous version
 DO $$ 
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'support_tickets' AND column_name = 'assigned_to') THEN
-        ALTER TABLE public.support_tickets ADD COLUMN assigned_to UUID REFERENCES auth.users(id) ON DELETE SET NULL;
+        ALTER TABLE public.support_tickets ADD COLUMN IF NOT EXISTS assigned_to UUID REFERENCES auth.users(id) ON DELETE SET NULL;
     END IF;
     
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'support_tickets' AND column_name = 'chat_context') THEN
-        ALTER TABLE public.support_tickets ADD COLUMN chat_context JSONB;
+        ALTER TABLE public.support_tickets ADD COLUMN IF NOT EXISTS chat_context JSONB;
     END IF;
 
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'support_tickets' AND column_name = 'resolution_notes') THEN
-        ALTER TABLE public.support_tickets ADD COLUMN resolution_notes TEXT;
+        ALTER TABLE public.support_tickets ADD COLUMN IF NOT EXISTS resolution_notes TEXT;
     END IF;
 
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'support_tickets' AND column_name = 'resolved_at') THEN
-        ALTER TABLE public.support_tickets ADD COLUMN resolved_at TIMESTAMPTZ;
+        ALTER TABLE public.support_tickets ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMPTZ;
     END IF;
 END $$;
 
 -- Ticket Comments Table (for back-and-forth communication)
 CREATE TABLE IF NOT EXISTS ticket_comments (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    ticket_id UUID NOT NULL REFERENCES support_tickets(id) ON DELETE CASCADE,
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [SCRUBBED GARBAGE]     ticket_id UUID NOT NULL REFERENCES support_tickets(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     comment TEXT NOT NULL,
-    is_admin BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+-- [SCRUBBED GARBAGE]     is_admin BOOLEAN NOT NULL DEFAULT FALSE,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- Indexes
@@ -6395,84 +6474,84 @@ ALTER TABLE ticket_comments ENABLE ROW LEVEL SECURITY;
 -- Users can view their own tickets
 DROP POLICY IF EXISTS "Users can view own tickets" ON support_tickets;
 CREATE POLICY "Users can view own tickets"
-    ON support_tickets FOR SELECT
-    USING (auth.uid() = user_id);
+-- [SCRUBBED GARBAGE]     ON support_tickets FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (auth.uid() = user_id);
 
 -- Users can create tickets
 DROP POLICY IF EXISTS "Users can create tickets" ON support_tickets;
 CREATE POLICY "Users can create tickets"
-    ON support_tickets FOR INSERT
+-- [SCRUBBED GARBAGE]     ON support_tickets FOR INSERT
     WITH CHECK (auth.uid() = user_id);
 
 -- Users can update their own open tickets
 DROP POLICY IF EXISTS "Users can update own open tickets" ON support_tickets;
 CREATE POLICY "Users can update own open tickets"
-    ON support_tickets FOR UPDATE
-    USING (auth.uid() = user_id AND status = 'open');
+-- [SCRUBBED GARBAGE]     ON support_tickets FOR UPDATE
+-- [SCRUBBED GARBAGE]     USING (auth.uid() = user_id AND status = 'open');
 
 -- Admins can view all tickets
 DROP POLICY IF EXISTS "Admins can view all tickets" ON support_tickets;
 CREATE POLICY "Admins can view all tickets"
-    ON support_tickets FOR SELECT
-    USING (
-        EXISTS (
+-- [SCRUBBED GARBAGE]     ON support_tickets FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [SCRUBBED GARBAGE]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
 -- Admins can update all tickets
 DROP POLICY IF EXISTS "Admins can update all tickets" ON support_tickets;
 CREATE POLICY "Admins can update all tickets"
-    ON support_tickets FOR UPDATE
-    USING (
-        EXISTS (
+-- [SCRUBBED GARBAGE]     ON support_tickets FOR UPDATE
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [SCRUBBED GARBAGE]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
 -- Users can view comments on their tickets
 DROP POLICY IF EXISTS "Users can view own ticket comments" ON ticket_comments;
 CREATE POLICY "Users can view own ticket comments"
-    ON ticket_comments FOR SELECT
-    USING (
-        EXISTS (
+-- [SCRUBBED GARBAGE]     ON ticket_comments FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM support_tickets
-            WHERE id = ticket_comments.ticket_id AND user_id = auth.uid()
+-- [SCRUBBED GARBAGE]             WHERE id = ticket_comments.ticket_id AND user_id = auth.uid()
         )
     );
 
 -- Users can add comments to their tickets
 DROP POLICY IF EXISTS "Users can comment on own tickets" ON ticket_comments;
 CREATE POLICY "Users can comment on own tickets"
-    ON ticket_comments FOR INSERT
+-- [SCRUBBED GARBAGE]     ON ticket_comments FOR INSERT
     WITH CHECK (
-        EXISTS (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM support_tickets
-            WHERE id = ticket_comments.ticket_id AND user_id = auth.uid()
+-- [SCRUBBED GARBAGE]             WHERE id = ticket_comments.ticket_id AND user_id = auth.uid()
         )
     );
 
 -- Admins can view all comments
 DROP POLICY IF EXISTS "Admins can view all comments" ON ticket_comments;
 CREATE POLICY "Admins can view all comments"
-    ON ticket_comments FOR SELECT
-    USING (
-        EXISTS (
+-- [SCRUBBED GARBAGE]     ON ticket_comments FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [SCRUBBED GARBAGE]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
 -- Admins can add comments to any ticket
 DROP POLICY IF EXISTS "Admins can comment on all tickets" ON ticket_comments;
 CREATE POLICY "Admins can comment on all tickets"
-    ON ticket_comments FOR INSERT
+-- [SCRUBBED GARBAGE]     ON ticket_comments FOR INSERT
     WITH CHECK (
-        EXISTS (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [SCRUBBED GARBAGE]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
@@ -6480,15 +6559,17 @@ CREATE POLICY "Admins can comment on all tickets"
 CREATE OR REPLACE FUNCTION update_support_ticket_timestamp()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW.updated_at = NOW();
+-- [SCRUBBED GARBAGE]     NEW.updated_at = NOW();
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger for updated_at
 DROP TRIGGER IF EXISTS update_support_tickets_timestamp ON support_tickets;
+;
+DROP TRIGGER IF EXISTS "update_support_tickets_timestamp" ON support_tickets;
 CREATE TRIGGER update_support_tickets_timestamp
-    BEFORE UPDATE ON support_tickets
+-- [SCRUBBED GARBAGE]     BEFORE UPDATE ON support_tickets
     FOR EACH ROW
     EXECUTE FUNCTION update_support_ticket_timestamp();
 
@@ -6500,8 +6581,8 @@ BEGIN
     INSERT INTO admin_notifications (type, user_id, content, status)
     VALUES (
         'support_ticket',
-        NEW.user_id,
-        jsonb_build_object(
+-- [SCRUBBED GARBAGE]         NEW.user_id,
+-- [SCRUBBED GARBAGE]         jsonb_build_object(
             'ticket_id', NEW.id,
             'title', NEW.title,
             'category', NEW.category,
@@ -6515,48 +6596,50 @@ $$ LANGUAGE plpgsql;
 
 -- Trigger for admin notifications
 DROP TRIGGER IF EXISTS notify_admins_on_new_ticket ON support_tickets;
+;
+DROP TRIGGER IF EXISTS "notify_admins_on_new_ticket" ON support_tickets;
 CREATE TRIGGER notify_admins_on_new_ticket
-    AFTER INSERT ON support_tickets
+-- [SCRUBBED GARBAGE]     AFTER INSERT ON support_tickets
     FOR EACH ROW
     EXECUTE FUNCTION notify_admins_new_ticket();
 -- Update Daily Notification Job to respect User Preferences
 -- Specifically adding support for "Payment Due Today" toggle
 
 CREATE OR REPLACE FUNCTION public.process_daily_notifications()
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS void
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    r RECORD;
-    extension_days_default int := 60;
-    pref jsonb;
+-- [SCRUBBED GARBAGE]     r RECORD;
+-- [SCRUBBED GARBAGE]     extension_days_default int := 60;
+-- [SCRUBBED GARBAGE]     pref jsonb;
 BEGIN
     -------------------------------------------------------
     -- 1. CONTRACT ENDING SOON (Default 30 Days)
     -------------------------------------------------------
     FOR r IN
         SELECT c.id, c.user_id, c.end_date, p.city, p.address, up.notification_preferences
-        FROM public.contracts c
-        JOIN public.properties p ON p.id = c.property_id
-        JOIN public.user_profiles up ON up.id = c.user_id
-        WHERE c.status = 'active'
-        AND c.end_date = CURRENT_DATE + (COALESCE((up.notification_preferences->>'contract_expiry_days')::int, 30) || ' days')::INTERVAL
+-- [SCRUBBED GARBAGE]         FROM public.contracts c
+-- [SCRUBBED GARBAGE]         JOIN public.properties p ON p.id = c.property_id
+-- [SCRUBBED GARBAGE]         JOIN public.user_profiles up ON up.id = c.user_id
+-- [SCRUBBED GARBAGE]         WHERE c.status = 'active'
+-- [SCRUBBED GARBAGE]         AND c.end_date = CURRENT_DATE + (COALESCE((up.notification_preferences->>'contract_expiry_days')::int, 30) || ' days')::INTERVAL
     LOOP
         IF NOT EXISTS (
             SELECT 1 FROM public.notifications 
-            WHERE user_id = r.user_id 
-            AND metadata->>'contract_id' = r.id::text 
-            AND metadata->>'event' = 'ending_soon'
-            AND created_at > (CURRENT_DATE - INTERVAL '1 day')
+-- [SCRUBBED GARBAGE]             WHERE user_id = r.user_id 
+-- [SCRUBBED GARBAGE]             AND metadata->>'contract_id' = r.id::text 
+-- [SCRUBBED GARBAGE]             AND metadata->>'event' = 'ending_soon'
+-- [SCRUBBED GARBAGE]             AND created_at > (CURRENT_DATE - INTERVAL '1 day')
         ) THEN
             INSERT INTO public.notifications (user_id, type, title, message, metadata)
             VALUES (
-                r.user_id,
+-- [SCRUBBED GARBAGE]                 r.user_id,
                 'warning',
                 'Contract Ending Soon',
-                format('Contract for %s, %s ends in %s days.', r.city, r.address, COALESCE((r.notification_preferences->>'contract_expiry_days')::int, 30)),
-                json_build_object('contract_id', r.id, 'event', 'ending_soon')::jsonb
+-- [SCRUBBED GARBAGE]                 format('Contract for %s, %s ends in %s days.', r.city, r.address, COALESCE((r.notification_preferences->>'contract_expiry_days')::int, 30)),
+-- [SCRUBBED GARBAGE]                 json_build_object('contract_id', r.id, 'event', 'ending_soon')::jsonb
             );
         END IF;
     END LOOP;
@@ -6566,27 +6649,27 @@ BEGIN
     -------------------------------------------------------
     FOR r IN
         SELECT c.id, c.user_id, c.end_date, p.city, p.address, up.notification_preferences
-        FROM public.contracts c
-        JOIN public.properties p ON p.id = c.property_id
-        JOIN public.user_profiles up ON up.id = c.user_id
-        WHERE c.status = 'active'
-        AND c.extension_option = TRUE
-        AND c.end_date = CURRENT_DATE + (COALESCE((up.notification_preferences->>'extension_option_end_days')::int, 60) || ' days')::INTERVAL
+-- [SCRUBBED GARBAGE]         FROM public.contracts c
+-- [SCRUBBED GARBAGE]         JOIN public.properties p ON p.id = c.property_id
+-- [SCRUBBED GARBAGE]         JOIN public.user_profiles up ON up.id = c.user_id
+-- [SCRUBBED GARBAGE]         WHERE c.status = 'active'
+-- [SCRUBBED GARBAGE]         AND c.extension_option = TRUE
+-- [SCRUBBED GARBAGE]         AND c.end_date = CURRENT_DATE + (COALESCE((up.notification_preferences->>'extension_option_end_days')::int, 60) || ' days')::INTERVAL
     LOOP
         IF NOT EXISTS (
             SELECT 1 FROM public.notifications 
-            WHERE user_id = r.user_id 
-            AND metadata->>'contract_id' = r.id::text 
-            AND metadata->>'event' = 'extension_deadline'
-            AND created_at > (CURRENT_DATE - INTERVAL '1 day')
+-- [SCRUBBED GARBAGE]             WHERE user_id = r.user_id 
+-- [SCRUBBED GARBAGE]             AND metadata->>'contract_id' = r.id::text 
+-- [SCRUBBED GARBAGE]             AND metadata->>'event' = 'extension_deadline'
+-- [SCRUBBED GARBAGE]             AND created_at > (CURRENT_DATE - INTERVAL '1 day')
         ) THEN
             INSERT INTO public.notifications (user_id, type, title, message, metadata)
             VALUES (
-                r.user_id,
+-- [SCRUBBED GARBAGE]                 r.user_id,
                 'action',
                 'Extension Deadline Approaching',
-                format('Extension option for %s, %s ends in %s days.', r.city, r.address, COALESCE((r.notification_preferences->>'extension_option_end_days')::int, 60)),
-                json_build_object('contract_id', r.id, 'event', 'extension_deadline')::jsonb
+-- [SCRUBBED GARBAGE]                 format('Extension option for %s, %s ends in %s days.', r.city, r.address, COALESCE((r.notification_preferences->>'extension_option_end_days')::int, 60)),
+-- [SCRUBBED GARBAGE]                 json_build_object('contract_id', r.id, 'event', 'extension_deadline')::jsonb
             );
         END IF;
     END LOOP;
@@ -6596,28 +6679,28 @@ BEGIN
     -------------------------------------------------------
     FOR r IN
         SELECT py.id, py.user_id, py.amount, py.date, p.city, p.address, up.notification_preferences
-        FROM public.payments py
-        JOIN public.contracts c ON c.id = py.contract_id
-        JOIN public.properties p ON p.id = c.property_id
-        JOIN public.user_profiles up ON up.id = py.user_id
-        WHERE py.status = 'pending'
-        AND py.date = CURRENT_DATE + (COALESCE((up.notification_preferences->>'rent_due_days')::int, 0) || ' days')::INTERVAL
-        AND (up.notification_preferences->>'rent_due_days')::int > 0
+-- [SCRUBBED GARBAGE]         FROM public.payments py
+-- [SCRUBBED GARBAGE]         JOIN public.contracts c ON c.id = py.contract_id
+-- [SCRUBBED GARBAGE]         JOIN public.properties p ON p.id = c.property_id
+-- [SCRUBBED GARBAGE]         JOIN public.user_profiles up ON up.id = py.user_id
+-- [SCRUBBED GARBAGE]         WHERE py.status = 'pending'
+-- [SCRUBBED GARBAGE]         AND py.date = CURRENT_DATE + (COALESCE((up.notification_preferences->>'rent_due_days')::int, 0) || ' days')::INTERVAL
+-- [SCRUBBED GARBAGE]         AND (up.notification_preferences->>'rent_due_days')::int > 0
     LOOP
         IF NOT EXISTS (
             SELECT 1 FROM public.notifications 
-            WHERE user_id = r.user_id 
-            AND metadata->>'payment_id' = r.id::text 
-            AND metadata->>'event' = 'payment_warning'
-            AND created_at > (CURRENT_DATE - INTERVAL '1 day')
+-- [SCRUBBED GARBAGE]             WHERE user_id = r.user_id 
+-- [SCRUBBED GARBAGE]             AND metadata->>'payment_id' = r.id::text 
+-- [SCRUBBED GARBAGE]             AND metadata->>'event' = 'payment_warning'
+-- [SCRUBBED GARBAGE]             AND created_at > (CURRENT_DATE - INTERVAL '1 day')
         ) THEN
             INSERT INTO public.notifications (user_id, type, title, message, metadata)
             VALUES (
-                r.user_id,
+-- [SCRUBBED GARBAGE]                 r.user_id,
                 'info',
                 'Payment Reminder',
-                format('Payment of ג‚×%s for %s, %s is due in %s days.', r.amount, r.city, r.address, (r.notification_preferences->>'rent_due_days')::int),
-                json_build_object('payment_id', r.id, 'event', 'payment_warning')::jsonb
+-- [SCRUBBED GARBAGE]                 format('Payment of ג‚×%s for %s, %s is due in %s days.', r.amount, r.city, r.address, (r.notification_preferences->>'rent_due_days')::int),
+-- [SCRUBBED GARBAGE]                 json_build_object('payment_id', r.id, 'event', 'payment_warning')::jsonb
             );
         END IF;
     END LOOP;
@@ -6627,28 +6710,28 @@ BEGIN
     -------------------------------------------------------
     FOR r IN
         SELECT py.id, py.user_id, py.amount, py.date, p.city, p.address, up.notification_preferences
-        FROM public.payments py
-        JOIN public.contracts c ON c.id = py.contract_id
-        JOIN public.properties p ON p.id = c.property_id
-        JOIN public.user_profiles up ON up.id = py.user_id
-        WHERE py.status = 'pending'
-        AND py.date = CURRENT_DATE
-        AND COALESCE((up.notification_preferences->>'rent_due_today')::boolean, true) = true
+-- [SCRUBBED GARBAGE]         FROM public.payments py
+-- [SCRUBBED GARBAGE]         JOIN public.contracts c ON c.id = py.contract_id
+-- [SCRUBBED GARBAGE]         JOIN public.properties p ON p.id = c.property_id
+-- [SCRUBBED GARBAGE]         JOIN public.user_profiles up ON up.id = py.user_id
+-- [SCRUBBED GARBAGE]         WHERE py.status = 'pending'
+-- [SCRUBBED GARBAGE]         AND py.date = CURRENT_DATE
+-- [SCRUBBED GARBAGE]         AND COALESCE((up.notification_preferences->>'rent_due_today')::boolean, true) = true
     LOOP
         IF NOT EXISTS (
             SELECT 1 FROM public.notifications 
-            WHERE user_id = r.user_id 
-            AND metadata->>'payment_id' = r.id::text 
-            AND metadata->>'event' = 'payment_due'
-            AND created_at > (CURRENT_DATE - INTERVAL '1 day')
+-- [SCRUBBED GARBAGE]             WHERE user_id = r.user_id 
+-- [SCRUBBED GARBAGE]             AND metadata->>'payment_id' = r.id::text 
+-- [SCRUBBED GARBAGE]             AND metadata->>'event' = 'payment_due'
+-- [SCRUBBED GARBAGE]             AND created_at > (CURRENT_DATE - INTERVAL '1 day')
         ) THEN
             INSERT INTO public.notifications (user_id, type, title, message, metadata)
             VALUES (
-                r.user_id,
+-- [SCRUBBED GARBAGE]                 r.user_id,
                 'warning',
                 'Payment Due Today',
-                format('Payment of ג‚×%s for %s, %s is due today.', r.amount, r.city, r.address),
-                json_build_object('payment_id', r.id, 'event', 'payment_due')::jsonb
+-- [SCRUBBED GARBAGE]                 format('Payment of ג‚×%s for %s, %s is due today.', r.amount, r.city, r.address),
+-- [SCRUBBED GARBAGE]                 json_build_object('payment_id', r.id, 'event', 'payment_due')::jsonb
             );
         END IF;
     END LOOP;
@@ -6664,9 +6747,9 @@ DO $$
 BEGIN
     IF NOT EXISTS (
         SELECT 1 FROM information_schema.columns 
-        WHERE table_name = 'user_profiles' AND column_name = 'subscription_tier'
+-- [SCRUBBED GARBAGE]         WHERE table_name = 'user_profiles' AND column_name = 'subscription_tier'
     ) THEN
-        ALTER TABLE user_profiles ADD COLUMN subscription_tier TEXT DEFAULT 'free';
+        ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS subscription_tier TEXT DEFAULT 'free';
     END IF;
 END $$;
 
@@ -6677,14 +6760,16 @@ UPDATE user_profiles SET subscription_tier = plan_id WHERE subscription_tier IS 
 CREATE OR REPLACE FUNCTION sync_user_tier()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW.subscription_tier := NEW.plan_id;
+-- [SCRUBBED GARBAGE]     NEW.subscription_tier := NEW.plan_id;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS tr_sync_user_tier ON user_profiles;
+;
+DROP TRIGGER IF EXISTS "tr_sync_user_tier" ON user_profiles;
 CREATE TRIGGER tr_sync_user_tier
-    BEFORE INSERT OR UPDATE OF plan_id ON user_profiles
+-- [SCRUBBED GARBAGE]     BEFORE INSERT OR UPDATE OF plan_id ON user_profiles
     FOR EACH ROW
     EXECUTE FUNCTION sync_user_tier();
 
@@ -6697,39 +6782,39 @@ BEGIN
     -- Ensure link to user_profiles
     IF NOT EXISTS (
         SELECT 1 
-        FROM information_schema.table_constraints 
-        WHERE constraint_name = 'user_storage_usage_user_id_profiles_fkey'
+-- [SCRUBBED GARBAGE]         FROM information_schema.table_constraints 
+-- [SCRUBBED GARBAGE]         WHERE constraint_name = 'user_storage_usage_user_id_profiles_fkey'
     ) THEN
         ALTER TABLE public.user_storage_usage 
-        ADD CONSTRAINT user_storage_usage_user_id_profiles_fkey 
-        FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
+-- [SCRUBBED GARBAGE]         ADD CONSTRAINT user_storage_usage_user_id_profiles_fkey 
+-- [SCRUBBED GARBAGE]         FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
     END IF;
 END $$;
 
 -- 3. Fix the AI Chat Usage Function (Make it more robust)
 CREATE OR REPLACE FUNCTION check_ai_chat_usage(
-    p_user_id UUID,
-    p_tokens_used INTEGER DEFAULT 500
+-- [SCRUBBED GARBAGE]     p_user_id UUID,
+-- [SCRUBBED GARBAGE]     p_tokens_used INTEGER DEFAULT 500
 )
 RETURNS JSON AS $$
 DECLARE
-    v_usage RECORD;
-    v_limit RECORD;
-    v_user_tier TEXT;
-    v_result JSON;
+-- [SCRUBBED GARBAGE]     v_usage RECORD;
+-- [SCRUBBED GARBAGE]     v_limit RECORD;
+-- [SCRUBBED GARBAGE]     v_user_tier TEXT;
+-- [SCRUBBED GARBAGE]     v_result JSON;
 BEGIN
     -- Get user's subscription tier (using plan_id as fallback)
     SELECT COALESCE(subscription_tier, plan_id, 'free') INTO v_user_tier
-    FROM user_profiles
-    WHERE id = p_user_id;
+-- [SCRUBBED GARBAGE]     FROM user_profiles
+-- [SCRUBBED GARBAGE]     WHERE id = p_user_id;
     
     -- Default to free if no tier found
-    v_user_tier := COALESCE(v_user_tier, 'free');
+-- [SCRUBBED GARBAGE]     v_user_tier := COALESCE(v_user_tier, 'free');
     
     -- Get limits for this tier
     SELECT * INTO v_limit
-    FROM ai_usage_limits
-    WHERE tier_name = v_user_tier;
+-- [SCRUBBED GARBAGE]     FROM ai_usage_limits
+-- [SCRUBBED GARBAGE]     WHERE tier_name = v_user_tier;
     
     -- Fallback to free limits if tier limits not found
     IF NOT FOUND THEN
@@ -6739,28 +6824,28 @@ BEGIN
     -- Get or create usage record
     INSERT INTO ai_chat_usage (user_id, message_count, tokens_used)
     VALUES (p_user_id, 0, 0)
-    ON CONFLICT (user_id) DO NOTHING;
+-- [SCRUBBED GARBAGE]     ON CONFLICT (user_id) DO NOTHING;
     
     SELECT * INTO v_usage
-    FROM ai_chat_usage
-    WHERE user_id = p_user_id;
+-- [SCRUBBED GARBAGE]     FROM ai_chat_usage
+-- [SCRUBBED GARBAGE]     WHERE user_id = p_user_id;
     
     -- Check if we need to reset (monthly)
     IF v_usage.last_reset_at < DATE_TRUNC('month', NOW()) THEN
         UPDATE ai_chat_usage
         SET message_count = 0,
-            tokens_used = 0,
-            last_reset_at = NOW(),
-            updated_at = NOW()
-        WHERE user_id = p_user_id;
+-- [SCRUBBED GARBAGE]             tokens_used = 0,
+-- [SCRUBBED GARBAGE]             last_reset_at = NOW(),
+-- [SCRUBBED GARBAGE]             updated_at = NOW()
+-- [SCRUBBED GARBAGE]         WHERE user_id = p_user_id;
         
-        v_usage.message_count := 0;
-        v_usage.tokens_used := 0;
+-- [SCRUBBED GARBAGE]         v_usage.message_count := 0;
+-- [SCRUBBED GARBAGE]         v_usage.tokens_used := 0;
     END IF;
     
     -- Check limits (skip if unlimited)
     IF v_limit.monthly_message_limit != -1 AND v_usage.message_count >= v_limit.monthly_message_limit THEN
-        v_result := json_build_object(
+-- [SCRUBBED GARBAGE]         v_result := json_build_object(
             'allowed', false,
             'reason', 'message_limit_exceeded',
             'current_usage', v_usage.message_count,
@@ -6771,7 +6856,7 @@ BEGIN
     END IF;
     
     IF v_limit.monthly_token_limit != -1 AND v_usage.tokens_used >= v_limit.monthly_token_limit THEN
-        v_result := json_build_object(
+-- [SCRUBBED GARBAGE]         v_result := json_build_object(
             'allowed', false,
             'reason', 'token_limit_exceeded',
             'current_usage', v_usage.tokens_used,
@@ -6784,12 +6869,12 @@ BEGIN
     -- Increment usage
     UPDATE ai_chat_usage
     SET message_count = message_count + 1,
-        tokens_used = tokens_used + p_tokens_used,
-        updated_at = NOW()
-    WHERE user_id = p_user_id;
+-- [SCRUBBED GARBAGE]         tokens_used = tokens_used + p_tokens_used,
+-- [SCRUBBED GARBAGE]         updated_at = NOW()
+-- [SCRUBBED GARBAGE]     WHERE user_id = p_user_id;
     
     -- Return success
-    v_result := json_build_object(
+-- [SCRUBBED GARBAGE]     v_result := json_build_object(
         'allowed', true,
         'current_messages', v_usage.message_count + 1,
         'message_limit', v_limit.monthly_message_limit,
@@ -6807,45 +6892,45 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 DROP FUNCTION IF EXISTS get_users_with_stats();
 
 CREATE OR REPLACE FUNCTION get_users_with_stats()
-RETURNS TABLE (
-    id UUID,
-    email TEXT,
-    full_name TEXT,
-    role TEXT,
-    subscription_status TEXT,
-    plan_id TEXT,
-    created_at TIMESTAMPTZ,
-    properties_count BIGINT,
-    tenants_count BIGINT,
-    contracts_count BIGINT
+-- [SCRUBBED GARBAGE] RETURNS TABLE (
+-- [SCRUBBED GARBAGE]     id UUID,
+-- [SCRUBBED GARBAGE]     email TEXT,
+-- [SCRUBBED GARBAGE]     full_name TEXT,
+-- [SCRUBBED GARBAGE]     role TEXT,
+-- [SCRUBBED GARBAGE]     subscription_status TEXT,
+-- [SCRUBBED GARBAGE]     plan_id TEXT,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ,
+-- [SCRUBBED GARBAGE]     properties_count BIGINT,
+-- [SCRUBBED GARBAGE]     tenants_count BIGINT,
+-- [SCRUBBED GARBAGE]     contracts_count BIGINT
 ) 
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 BEGIN
     RETURN QUERY
     SELECT 
-        up.id,
-        up.email,
-        up.full_name,
-        up.role::TEXT,
-        up.subscription_status::TEXT,
-        up.plan_id,
-        up.created_at,
-        COALESCE(p.count, 0) as properties_count,
-        COALESCE(t.count, 0) as tenants_count,
-        COALESCE(c.count, 0) as contracts_count
-    FROM user_profiles up
-    LEFT JOIN (SELECT user_id, count(*) as count FROM properties GROUP BY user_id) p ON up.id = p.user_id
-    LEFT JOIN (SELECT user_id, count(*) as count FROM tenants GROUP BY user_id) t ON up.id = t.user_id
-    LEFT JOIN (SELECT user_id, count(*) as count FROM contracts GROUP BY user_id) c ON up.id = c.user_id
-    WHERE up.deleted_at IS NULL
-    ORDER BY up.created_at DESC;
+-- [SCRUBBED GARBAGE]         up.id,
+-- [SCRUBBED GARBAGE]         up.email,
+-- [SCRUBBED GARBAGE]         up.full_name,
+-- [SCRUBBED GARBAGE]         up.role::TEXT,
+-- [SCRUBBED GARBAGE]         up.subscription_status::TEXT,
+-- [SCRUBBED GARBAGE]         up.plan_id,
+-- [SCRUBBED GARBAGE]         up.created_at,
+-- [SCRUBBED GARBAGE]         COALESCE(p.count, 0) as properties_count,
+-- [SCRUBBED GARBAGE]         COALESCE(t.count, 0) as tenants_count,
+-- [SCRUBBED GARBAGE]         COALESCE(c.count, 0) as contracts_count
+-- [SCRUBBED GARBAGE]     FROM user_profiles up
+-- [SCRUBBED GARBAGE]     LEFT JOIN (SELECT user_id, count(*) as count FROM properties GROUP BY user_id) p ON up.id = p.user_id
+-- [SCRUBBED GARBAGE]     LEFT JOIN (SELECT user_id, count(*) as count FROM tenants GROUP BY user_id) t ON up.id = t.user_id
+-- [SCRUBBED GARBAGE]     LEFT JOIN (SELECT user_id, count(*) as count FROM contracts GROUP BY user_id) c ON up.id = c.user_id
+-- [SCRUBBED GARBAGE]     WHERE up.deleted_at IS NULL
+-- [SCRUBBED GARBAGE]     ORDER BY up.created_at DESC;
 END;
 $$;
 
 -- 5. Force schema cache reload (if possible)
-NOTIFY pgrst, 'reload schema';
+-- [SCRUBBED GARBAGE] NOTIFY pgrst, 'reload schema';
 -- Migration: Fix Schema Integrity and Relationship Join Issues (Robust Version)
 -- This fixes:
 -- 1. Delete user failure (Foreign key violations because objects weren't cascading)
@@ -6859,8 +6944,8 @@ BEGIN
         ALTER TABLE public.properties DROP CONSTRAINT IF EXISTS properties_user_id_profiles_fkey;
         
         ALTER TABLE public.properties
-        ADD CONSTRAINT properties_user_id_profiles_fkey 
-        FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
+-- [SCRUBBED GARBAGE]         ADD CONSTRAINT properties_user_id_profiles_fkey 
+-- [SCRUBBED GARBAGE]         FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
     END IF;
 
     -- 2. TENANTS
@@ -6869,8 +6954,8 @@ BEGIN
         ALTER TABLE public.tenants DROP CONSTRAINT IF EXISTS tenants_user_id_profiles_fkey;
         
         ALTER TABLE public.tenants
-        ADD CONSTRAINT tenants_user_id_profiles_fkey 
-        FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
+-- [SCRUBBED GARBAGE]         ADD CONSTRAINT tenants_user_id_profiles_fkey 
+-- [SCRUBBED GARBAGE]         FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
     END IF;
 
     -- 3. CONTRACTS
@@ -6879,8 +6964,8 @@ BEGIN
         ALTER TABLE public.contracts DROP CONSTRAINT IF EXISTS contracts_user_id_profiles_fkey;
 
         ALTER TABLE public.contracts
-        ADD CONSTRAINT contracts_user_id_profiles_fkey 
-        FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
+-- [SCRUBBED GARBAGE]         ADD CONSTRAINT contracts_user_id_profiles_fkey 
+-- [SCRUBBED GARBAGE]         FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
     END IF;
 
     -- 4. ADMIN_NOTIFICATIONS (Fix relationship for PostgREST joins)
@@ -6889,8 +6974,8 @@ BEGIN
         ALTER TABLE public.admin_notifications DROP CONSTRAINT IF EXISTS admin_notifications_user_id_profiles_fkey;
         
         ALTER TABLE public.admin_notifications
-        ADD CONSTRAINT admin_notifications_user_id_profiles_fkey 
-        FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
+-- [SCRUBBED GARBAGE]         ADD CONSTRAINT admin_notifications_user_id_profiles_fkey 
+-- [SCRUBBED GARBAGE]         FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
     END IF;
 
     -- 5. SUPPORT_TICKETS
@@ -6899,8 +6984,8 @@ BEGIN
         ALTER TABLE public.support_tickets DROP CONSTRAINT IF EXISTS support_tickets_user_id_profiles_fkey;
         
         ALTER TABLE public.support_tickets
-        ADD CONSTRAINT support_tickets_user_id_profiles_fkey 
-        FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
+-- [SCRUBBED GARBAGE]         ADD CONSTRAINT support_tickets_user_id_profiles_fkey 
+-- [SCRUBBED GARBAGE]         FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
     END IF;
 
     -- 6. TICKET_COMMENTS
@@ -6909,8 +6994,8 @@ BEGIN
         ALTER TABLE public.ticket_comments DROP CONSTRAINT IF EXISTS ticket_comments_user_id_profiles_fkey;
         
         ALTER TABLE public.ticket_comments
-        ADD CONSTRAINT ticket_comments_user_id_profiles_fkey 
-        FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
+-- [SCRUBBED GARBAGE]         ADD CONSTRAINT ticket_comments_user_id_profiles_fkey 
+-- [SCRUBBED GARBAGE]         FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
     END IF;
 
     -- 7. PROPERTY_DOCUMENTS
@@ -6919,24 +7004,24 @@ BEGIN
         ALTER TABLE public.property_documents DROP CONSTRAINT IF EXISTS property_documents_user_id_profiles_fkey;
         
         ALTER TABLE public.property_documents
-        ADD CONSTRAINT property_documents_user_id_profiles_fkey 
-        FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
+-- [SCRUBBED GARBAGE]         ADD CONSTRAINT property_documents_user_id_profiles_fkey 
+-- [SCRUBBED GARBAGE]         FOREIGN KEY (user_id) REFERENCES public.user_profiles(id) ON DELETE CASCADE;
     END IF;
 
 END $$;
 
 -- Force schema reload
-NOTIFY pgrst, 'reload schema';
+-- [SCRUBBED GARBAGE] NOTIFY pgrst, 'reload schema';
 -- AI Detailed Usage Tracking for Cost Analysis
 CREATE TABLE IF NOT EXISTS public.ai_usage_logs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-    model TEXT NOT NULL,
-    feature TEXT NOT NULL, -- 'chat' or 'contract-extraction'
-    input_tokens INTEGER DEFAULT 0,
-    output_tokens INTEGER DEFAULT 0,
-    estimated_cost_usd NUMERIC(10, 6) DEFAULT 0,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [SCRUBBED GARBAGE]     user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+-- [SCRUBBED GARBAGE]     model TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     feature TEXT NOT NULL, -- 'chat' or 'contract-extraction'
+-- [SCRUBBED GARBAGE]     input_tokens INTEGER DEFAULT 0,
+-- [SCRUBBED GARBAGE]     output_tokens INTEGER DEFAULT 0,
+-- [SCRUBBED GARBAGE]     estimated_cost_usd NUMERIC(10, 6) DEFAULT 0,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Enable RLS
@@ -6944,125 +7029,125 @@ ALTER TABLE public.ai_usage_logs ENABLE ROW LEVEL SECURITY;
 
 -- Admins can view all AI usage logs
 CREATE POLICY "Admins can view all AI usage logs"
-    ON public.ai_usage_logs FOR SELECT
-    USING (
-        EXISTS (
+-- [SCRUBBED GARBAGE]     ON public.ai_usage_logs FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [SCRUBBED GARBAGE]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
 -- Function to log AI usage with cost calculation
 CREATE OR REPLACE FUNCTION public.log_ai_usage(
-    p_user_id UUID,
-    p_model TEXT,
-    p_feature TEXT,
-    p_input_tokens INTEGER,
-    p_output_tokens INTEGER
+-- [SCRUBBED GARBAGE]     p_user_id UUID,
+-- [SCRUBBED GARBAGE]     p_model TEXT,
+-- [SCRUBBED GARBAGE]     p_feature TEXT,
+-- [SCRUBBED GARBAGE]     p_input_tokens INTEGER,
+-- [SCRUBBED GARBAGE]     p_output_tokens INTEGER
 )
-RETURNS VOID
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS VOID
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    v_cost_input NUMERIC;
-    v_cost_output NUMERIC;
-    v_total_cost NUMERIC;
+-- [SCRUBBED GARBAGE]     v_cost_input NUMERIC;
+-- [SCRUBBED GARBAGE]     v_cost_output NUMERIC;
+-- [SCRUBBED GARBAGE]     v_total_cost NUMERIC;
 BEGIN
     -- Determine costs based on model
     -- Prices per 1M tokens
     IF p_model LIKE 'gpt-4o-mini%' THEN
-        v_cost_input := 0.15;
-        v_cost_output := 0.60;
-    ELSIF p_model LIKE 'gpt-4o%' THEN
-        v_cost_input := 2.50;
-        v_cost_output := 10.00;
-    ELSE
+-- [SCRUBBED GARBAGE]         v_cost_input := 0.15;
+-- [SCRUBBED GARBAGE]         v_cost_output := 0.60;
+-- [SCRUBBED GARBAGE]     ELSIF p_model LIKE 'gpt-4o%' THEN
+-- [SCRUBBED GARBAGE]         v_cost_input := 2.50;
+-- [SCRUBBED GARBAGE]         v_cost_output := 10.00;
+-- [SCRUBBED GARBAGE]     ELSE
         -- Default/Fallback (GPT-4o-mini prices if unknown)
-        v_cost_input := 0.15;
-        v_cost_output := 0.60;
+-- [SCRUBBED GARBAGE]         v_cost_input := 0.15;
+-- [SCRUBBED GARBAGE]         v_cost_output := 0.60;
     END IF;
 
     -- Calculate total cost
-    v_total_cost := (p_input_tokens::NUMERIC / 1000000 * v_cost_input) + (p_output_tokens::NUMERIC / 1000000 * v_cost_output);
+-- [SCRUBBED GARBAGE]     v_total_cost := (p_input_tokens::NUMERIC / 1000000 * v_cost_input) + (p_output_tokens::NUMERIC / 1000000 * v_cost_output);
 
     -- Insert log
     INSERT INTO public.ai_usage_logs (
-        user_id,
-        model,
-        feature,
-        input_tokens,
-        output_tokens,
-        estimated_cost_usd
+-- [SCRUBBED GARBAGE]         user_id,
+-- [SCRUBBED GARBAGE]         model,
+-- [SCRUBBED GARBAGE]         feature,
+-- [SCRUBBED GARBAGE]         input_tokens,
+-- [SCRUBBED GARBAGE]         output_tokens,
+-- [SCRUBBED GARBAGE]         estimated_cost_usd
     ) VALUES (
-        p_user_id,
-        p_model,
-        p_feature,
-        p_input_tokens,
-        p_output_tokens,
-        v_total_cost
+-- [SCRUBBED GARBAGE]         p_user_id,
+-- [SCRUBBED GARBAGE]         p_model,
+-- [SCRUBBED GARBAGE]         p_feature,
+-- [SCRUBBED GARBAGE]         p_input_tokens,
+-- [SCRUBBED GARBAGE]         p_output_tokens,
+-- [SCRUBBED GARBAGE]         v_total_cost
     );
 
     -- Update the old aggregator table if it exists
     INSERT INTO public.ai_chat_usage (user_id, message_count, tokens_used, updated_at)
     VALUES (p_user_id, 1, p_input_tokens + p_output_tokens, NOW())
-    ON CONFLICT (user_id) DO UPDATE
+-- [SCRUBBED GARBAGE]     ON CONFLICT (user_id) DO UPDATE
     SET message_count = public.ai_chat_usage.message_count + 1,
-        tokens_used = public.ai_chat_usage.tokens_used + (p_input_tokens + p_output_tokens),
-        updated_at = NOW();
+-- [SCRUBBED GARBAGE]         tokens_used = public.ai_chat_usage.tokens_used + (p_input_tokens + p_output_tokens),
+-- [SCRUBBED GARBAGE]         updated_at = NOW();
 END;
 $$;
 
 -- Update get_admin_stats to include AI cost
 CREATE OR REPLACE FUNCTION public.get_admin_stats()
-RETURNS JSON
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS JSON
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-    result JSON;
-    total_users_count INTEGER;
-    total_contracts_count INTEGER;
-    total_revenue_amount NUMERIC;
-    active_users_count INTEGER;
-    total_ai_cost_usd NUMERIC;
+-- [SCRUBBED GARBAGE]     result JSON;
+-- [SCRUBBED GARBAGE]     total_users_count INTEGER;
+-- [SCRUBBED GARBAGE]     total_contracts_count INTEGER;
+-- [SCRUBBED GARBAGE]     total_revenue_amount NUMERIC;
+-- [SCRUBBED GARBAGE]     active_users_count INTEGER;
+-- [SCRUBBED GARBAGE]     total_ai_cost_usd NUMERIC;
 BEGIN
     -- Check if the current user is an admin
     IF NOT EXISTS (
         SELECT 1 FROM user_profiles
-        WHERE id = auth.uid()
-        AND role = 'admin'
+-- [SCRUBBED GARBAGE]         WHERE id = auth.uid()
+-- [SCRUBBED GARBAGE]         AND role = 'admin'
     ) THEN
         RAISE EXCEPTION 'Access denied: Admin role required';
     END IF;
 
     -- Get total users count
     SELECT COUNT(*) INTO total_users_count
-    FROM user_profiles
-    WHERE deleted_at IS NULL;
+-- [SCRUBBED GARBAGE]     FROM user_profiles
+-- [SCRUBBED GARBAGE]     WHERE deleted_at IS NULL;
 
     -- Get total contracts count
     SELECT COUNT(*) INTO total_contracts_count
-    FROM contracts;
+-- [SCRUBBED GARBAGE]     FROM contracts;
 
     -- Get total revenue (sum of paid payments)
     SELECT COALESCE(SUM(paid_amount), 0) INTO total_revenue_amount
-    FROM payments
-    WHERE status = 'paid';
+-- [SCRUBBED GARBAGE]     FROM payments
+-- [SCRUBBED GARBAGE]     WHERE status = 'paid';
 
     -- Get active users (users who logged in within last 30 days)
     SELECT COUNT(*) INTO active_users_count
-    FROM user_profiles
-    WHERE deleted_at IS NULL
-    AND updated_at > NOW() - INTERVAL '30 days';
+-- [SCRUBBED GARBAGE]     FROM user_profiles
+-- [SCRUBBED GARBAGE]     WHERE deleted_at IS NULL
+-- [SCRUBBED GARBAGE]     AND updated_at > NOW() - INTERVAL '30 days';
 
     -- Get total AI cost
     SELECT COALESCE(SUM(estimated_cost_usd), 0) INTO total_ai_cost_usd
-    FROM ai_usage_logs;
+-- [SCRUBBED GARBAGE]     FROM ai_usage_logs;
 
     -- Build JSON result
-    result := json_build_object(
+-- [SCRUBBED GARBAGE]     result := json_build_object(
         'totalUsers', total_users_count,
         'totalContracts', total_contracts_count,
         'totalRevenue', total_revenue_amount,
@@ -7075,14 +7160,14 @@ END;
 $$;
 -- AI Conversations Table (Compact Mode)
 CREATE TABLE IF NOT EXISTS public.ai_conversations (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    title TEXT,
-    messages JSONB DEFAULT '[]'::jsonb,
-    total_cost_usd NUMERIC(10, 6) DEFAULT 0,
-    metadata JSONB DEFAULT '{}'::jsonb,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [SCRUBBED GARBAGE]     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     title TEXT,
+-- [SCRUBBED GARBAGE]     messages JSONB DEFAULT '[]'::jsonb,
+-- [SCRUBBED GARBAGE]     total_cost_usd NUMERIC(10, 6) DEFAULT 0,
+-- [SCRUBBED GARBAGE]     metadata JSONB DEFAULT '{}'::jsonb,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Enable RLS
@@ -7091,58 +7176,58 @@ ALTER TABLE public.ai_conversations ENABLE ROW LEVEL SECURITY;
 -- Users can manage their own conversations
 DROP POLICY IF EXISTS "Users can view own AI conversations" ON public.ai_conversations;
 CREATE POLICY "Users can view own AI conversations"
-    ON public.ai_conversations FOR SELECT
-    USING (auth.uid() = user_id);
+-- [SCRUBBED GARBAGE]     ON public.ai_conversations FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (auth.uid() = user_id);
 
 DROP POLICY IF EXISTS "Users can delete own AI conversations" ON public.ai_conversations;
 CREATE POLICY "Users can delete own AI conversations"
-    ON public.ai_conversations FOR DELETE
-    USING (auth.uid() = user_id);
+-- [SCRUBBED GARBAGE]     ON public.ai_conversations FOR DELETE
+-- [SCRUBBED GARBAGE]     USING (auth.uid() = user_id);
 
 -- Admins can view everything
 DROP POLICY IF EXISTS "Admins can view all AI conversations" ON public.ai_conversations;
 CREATE POLICY "Admins can view all AI conversations"
-    ON public.ai_conversations FOR SELECT
-    USING (
-        EXISTS (
+-- [SCRUBBED GARBAGE]     ON public.ai_conversations FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [SCRUBBED GARBAGE]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
 -- RPC to safely append messages and update cost
 -- This prevents race conditions and handles the JSONB manipulation on the server
 CREATE OR REPLACE FUNCTION public.append_ai_messages(
-    p_conversation_id UUID,
-    p_new_messages JSONB,
-    p_cost_usd NUMERIC DEFAULT 0,
-    p_user_id UUID DEFAULT NULL
+-- [SCRUBBED GARBAGE]     p_conversation_id UUID,
+-- [SCRUBBED GARBAGE]     p_new_messages JSONB,
+-- [SCRUBBED GARBAGE]     p_cost_usd NUMERIC DEFAULT 0,
+-- [SCRUBBED GARBAGE]     p_user_id UUID DEFAULT NULL
 )
-RETURNS UUID
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS UUID
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    v_conv_id UUID;
-    v_final_user_id UUID;
+-- [SCRUBBED GARBAGE]     v_conv_id UUID;
+-- [SCRUBBED GARBAGE]     v_final_user_id UUID;
 BEGIN
     -- Determine user ID: prefer explicit, fallback to auth.uid()
-    v_final_user_id := COALESCE(p_user_id, auth.uid());
+-- [SCRUBBED GARBAGE]     v_final_user_id := COALESCE(p_user_id, auth.uid());
 
     -- Update existing or insert new
     INSERT INTO public.ai_conversations (id, user_id, messages, total_cost_usd, updated_at)
     VALUES (
-        p_conversation_id,
-        v_final_user_id,
-        p_new_messages,
-        p_cost_usd,
-        NOW()
+-- [SCRUBBED GARBAGE]         p_conversation_id,
+-- [SCRUBBED GARBAGE]         v_final_user_id,
+-- [SCRUBBED GARBAGE]         p_new_messages,
+-- [SCRUBBED GARBAGE]         p_cost_usd,
+-- [SCRUBBED GARBAGE]         NOW()
     )
-    ON CONFLICT (id) DO UPDATE
+-- [SCRUBBED GARBAGE]     ON CONFLICT (id) DO UPDATE
     SET messages = public.ai_conversations.messages || EXCLUDED.messages,
-        total_cost_usd = public.ai_conversations.total_cost_usd + EXCLUDED.total_cost_usd,
-        updated_at = NOW()
-    RETURNING id INTO v_conv_id;
+-- [SCRUBBED GARBAGE]         total_cost_usd = public.ai_conversations.total_cost_usd + EXCLUDED.total_cost_usd,
+-- [SCRUBBED GARBAGE]         updated_at = NOW()
+-- [SCRUBBED GARBAGE]     RETURNING id INTO v_conv_id;
 
     RETURN v_conv_id;
 END;
@@ -7155,17 +7240,17 @@ CREATE INDEX IF NOT EXISTS idx_ai_conversations_updated ON ai_conversations(upda
 -- Date: 2026-01-25
 
 ALTER TABLE property_documents 
-ADD COLUMN IF NOT EXISTS invoice_number TEXT;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS invoice_number TEXT;
 
 -- Create an index for faster duplicate checks
 CREATE INDEX IF NOT EXISTS idx_property_documents_duplicate_check 
-ON property_documents(vendor_name, document_date, invoice_number);
+-- [SCRUBBED GARBAGE] ON property_documents(vendor_name, document_date, invoice_number);
 -- Migration: Enhance CRM Interactions with Metadata and Human Chat
 -- Adds metadata support for external links (Gmail etc.) and prepares human chat types
 
 -- 1. Add metadata column to crm_interactions
 ALTER TABLE public.crm_interactions 
-ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;
 
 -- 2. Add 'whatsapp' and 'text' to crm_interaction_type if needed
 -- Note: 'chat' is already used for Bot, we'll use 'human_chat' for manual entries or real-time human chat
@@ -7174,27 +7259,27 @@ BEGIN
     ALTER TYPE crm_interaction_type ADD VALUE IF NOT EXISTS 'human_chat';
     ALTER TYPE crm_interaction_type ADD VALUE IF NOT EXISTS 'whatsapp';
 EXCEPTION
-    WHEN others THEN NULL;
+-- [SCRUBBED GARBAGE]     WHEN others THEN NULL;
 END $$;
 
 -- 3. Create Human Chat Tables for real-time support (Phase 3 Prep)
 CREATE TABLE IF NOT EXISTS public.human_conversations (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    admin_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-    status TEXT DEFAULT 'active' CHECK (status IN ('active', 'closed')),
-    last_message_at TIMESTAMPTZ DEFAULT NOW(),
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [SCRUBBED GARBAGE]     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     admin_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+-- [SCRUBBED GARBAGE]     status TEXT DEFAULT 'active' CHECK (status IN ('active', 'closed')),
+-- [SCRUBBED GARBAGE]     last_message_at TIMESTAMPTZ DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS public.human_messages (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    conversation_id UUID REFERENCES public.human_conversations(id) ON DELETE CASCADE,
-    sender_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-    sender_role TEXT CHECK (sender_role IN ('user', 'admin')),
-    content TEXT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [SCRUBBED GARBAGE]     conversation_id UUID REFERENCES public.human_conversations(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     sender_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+-- [SCRUBBED GARBAGE]     sender_role TEXT CHECK (sender_role IN ('user', 'admin')),
+-- [SCRUBBED GARBAGE]     content TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- RLS for Human Chats
@@ -7203,48 +7288,56 @@ ALTER TABLE public.human_messages ENABLE ROW LEVEL SECURITY;
 
 -- Admins can do everything
 DROP POLICY IF EXISTS "Admins manage human conversations" ON public.human_conversations;
+;
+DROP POLICY IF EXISTS "Admins manage human conversations" ON public.human_conversations;
 CREATE POLICY "Admins manage human conversations" ON public.human_conversations
-AS PERMISSIVE FOR ALL TO authenticated
-USING (EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin'));
+-- [SCRUBBED GARBAGE] AS PERMISSIVE FOR ALL TO authenticated
+-- [SCRUBBED GARBAGE] USING (EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin'));
 
 DROP POLICY IF EXISTS "Admins manage human messages" ON public.human_messages;
+;
+DROP POLICY IF EXISTS "Admins manage human messages" ON public.human_messages;
 CREATE POLICY "Admins manage human messages" ON public.human_messages
-AS PERMISSIVE FOR ALL TO authenticated
-USING (EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin'));
+-- [SCRUBBED GARBAGE] AS PERMISSIVE FOR ALL TO authenticated
+-- [SCRUBBED GARBAGE] USING (EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin'));
 
 -- Users can see their own conversations
 DROP POLICY IF EXISTS "Users view own human conversations" ON public.human_conversations;
+;
+DROP POLICY IF EXISTS "Users view own human conversations" ON public.human_conversations;
 CREATE POLICY "Users view own human conversations" ON public.human_conversations
 FOR SELECT TO authenticated
-USING (auth.uid() = user_id);
+-- [SCRUBBED GARBAGE] USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users view/send own human messages" ON public.human_messages;
+;
 DROP POLICY IF EXISTS "Users view/send own human messages" ON public.human_messages;
 CREATE POLICY "Users view/send own human messages" ON public.human_messages
 FOR ALL TO authenticated
-USING (
-    EXISTS (
+-- [SCRUBBED GARBAGE] USING (
+-- [SCRUBBED GARBAGE]     EXISTS (
         SELECT 1 FROM public.human_conversations 
-        WHERE id = public.human_messages.conversation_id AND user_id = auth.uid()
+-- [SCRUBBED GARBAGE]         WHERE id = public.human_messages.conversation_id AND user_id = auth.uid()
     )
 );
 -- Create human_conversations table
 CREATE TABLE IF NOT EXISTS public.human_conversations (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    admin_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-    status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'closed')),
-    last_message_at TIMESTAMPTZ DEFAULT NOW(),
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [SCRUBBED GARBAGE]     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     admin_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+-- [SCRUBBED GARBAGE]     status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'closed')),
+-- [SCRUBBED GARBAGE]     last_message_at TIMESTAMPTZ DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Create human_messages table
 CREATE TABLE IF NOT EXISTS public.human_messages (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    conversation_id UUID NOT NULL REFERENCES public.human_conversations(id) ON DELETE CASCADE,
-    sender_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    role TEXT NOT NULL CHECK (role IN ('user', 'admin')),
-    content TEXT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [SCRUBBED GARBAGE]     conversation_id UUID NOT NULL REFERENCES public.human_conversations(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     sender_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     role TEXT NOT NULL CHECK (role IN ('user', 'admin')),
+-- [SCRUBBED GARBAGE]     content TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Enable RLS
@@ -7254,87 +7347,87 @@ ALTER TABLE public.human_messages ENABLE ROW LEVEL SECURITY;
 -- Policies for humman_conversations
 DROP POLICY IF EXISTS "Admins can view all conversations" ON public.human_conversations;
 CREATE POLICY "Admins can view all conversations"
-    ON public.human_conversations
+-- [SCRUBBED GARBAGE]     ON public.human_conversations
     FOR SELECT
-    USING (
-        EXISTS (
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM public.user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [SCRUBBED GARBAGE]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
 DROP POLICY IF EXISTS "Admins can insert conversations" ON public.human_conversations;
 CREATE POLICY "Admins can insert conversations"
-    ON public.human_conversations
+-- [SCRUBBED GARBAGE]     ON public.human_conversations
     FOR INSERT
     WITH CHECK (
-        EXISTS (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM public.user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [SCRUBBED GARBAGE]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
 DROP POLICY IF EXISTS "Admins can update conversations" ON public.human_conversations;
 CREATE POLICY "Admins can update conversations"
-    ON public.human_conversations
+-- [SCRUBBED GARBAGE]     ON public.human_conversations
     FOR UPDATE
-    USING (
-        EXISTS (
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM public.user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [SCRUBBED GARBAGE]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
 DROP POLICY IF EXISTS "Users can view their own conversations" ON public.human_conversations;
 CREATE POLICY "Users can view their own conversations"
-    ON public.human_conversations
+-- [SCRUBBED GARBAGE]     ON public.human_conversations
     FOR SELECT
-    USING (auth.uid() = user_id);
+-- [SCRUBBED GARBAGE]     USING (auth.uid() = user_id);
 
 -- Policies for human_messages
 DROP POLICY IF EXISTS "Admins can view all messages" ON public.human_messages;
 CREATE POLICY "Admins can view all messages"
-    ON public.human_messages
+-- [SCRUBBED GARBAGE]     ON public.human_messages
     FOR SELECT
-    USING (
-        EXISTS (
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM public.user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [SCRUBBED GARBAGE]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
 DROP POLICY IF EXISTS "Admins can insert messages" ON public.human_messages;
 CREATE POLICY "Admins can insert messages"
-    ON public.human_messages
+-- [SCRUBBED GARBAGE]     ON public.human_messages
     FOR INSERT
     WITH CHECK (
-        EXISTS (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM public.user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
+-- [SCRUBBED GARBAGE]             WHERE id = auth.uid() AND role = 'admin'
         )
     );
 
 DROP POLICY IF EXISTS "Users can view messages in their conversations" ON public.human_messages;
 CREATE POLICY "Users can view messages in their conversations"
-    ON public.human_messages
+-- [SCRUBBED GARBAGE]     ON public.human_messages
     FOR SELECT
-    USING (
-        EXISTS (
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM public.human_conversations
-            WHERE id = human_messages.conversation_id AND user_id = auth.uid()
+-- [SCRUBBED GARBAGE]             WHERE id = human_messages.conversation_id AND user_id = auth.uid()
         )
     );
 
 DROP POLICY IF EXISTS "Users can insert messages in their active conversations" ON public.human_messages;
 CREATE POLICY "Users can insert messages in their active conversations"
-    ON public.human_messages
+-- [SCRUBBED GARBAGE]     ON public.human_messages
     FOR INSERT
     WITH CHECK (
-        EXISTS (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM public.human_conversations
-            WHERE id = human_messages.conversation_id 
-            AND user_id = auth.uid()
-            AND status = 'active'
+-- [SCRUBBED GARBAGE]             WHERE id = human_messages.conversation_id 
+-- [SCRUBBED GARBAGE]             AND user_id = auth.uid()
+-- [SCRUBBED GARBAGE]             AND status = 'active'
         )
     );
 
@@ -7355,9 +7448,9 @@ SELECT cron.schedule(
     '0 6 * * *',
     $$
     SELECT net.http_post(
-        url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/send-daily-admin-summary',
-        headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
-        body := '{}'::jsonb
+-- [SCRUBBED GARBAGE]         url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/send-daily-admin-summary',
+-- [SCRUBBED GARBAGE]         headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
+-- [SCRUBBED GARBAGE]         body := '{}'::jsonb
     );
     $$
 );
@@ -7368,25 +7461,25 @@ DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_preferences' AND column_name = 'ai_data_consent') THEN
         ALTER TABLE user_preferences 
-        ADD COLUMN ai_data_consent BOOLEAN DEFAULT false;
+-- [SCRUBBED GARBAGE]         ADD COLUMN IF NOT EXISTS ai_data_consent BOOLEAN DEFAULT false;
     END IF;
 END $$;
 -- Add 'live_chat_enabled' to system_settings
 INSERT INTO public.system_settings (key, value, description)
 VALUES 
   ('live_chat_enabled', 'true'::jsonb, 'Toggle the visibility of the Live Support button for all tenants.')
-ON CONFLICT (key) DO NOTHING;
+-- [SCRUBBED GARBAGE] ON CONFLICT (key) DO NOTHING;
 -- Add 'hybrid_chat_mode' to system_settings
 INSERT INTO public.system_settings (key, value, description)
 VALUES 
   ('hybrid_chat_mode', 'true'::jsonb, 'Enable rule-based menu before AI chat to reduce costs.')
-ON CONFLICT (key) DO NOTHING;
+-- [SCRUBBED GARBAGE] ON CONFLICT (key) DO NOTHING;
 -- Migration: Add Autonomous Notice Periods to Contracts
 -- Description: Adds columns to store legal notice periods extracted from the contract by AI.
 
 ALTER TABLE public.contracts 
-ADD COLUMN IF NOT EXISTS notice_period_days INTEGER,
-ADD COLUMN IF NOT EXISTS option_notice_days INTEGER;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS notice_period_days INTEGER,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS option_notice_days INTEGER;
 
 -- Migration: Add CRM Autopilot Toggle
 -- Description: Adds a global switch to enable/disable the automated CRM engine.
@@ -7394,7 +7487,7 @@ ADD COLUMN IF NOT EXISTS option_notice_days INTEGER;
 INSERT INTO public.system_settings (key, value, description)
 VALUES 
   ('crm_autopilot_enabled', 'true'::jsonb, 'Global toggle to enable or disable the automated CRM autopilot (rent reminders, lease expiry, ticket drafts).')
-ON CONFLICT (key) DO UPDATE 
+-- [SCRUBBED GARBAGE] ON CONFLICT (key) DO UPDATE 
 SET description = EXCLUDED.description;
 -- Add granular autopilot and voice capture settings
 INSERT INTO system_settings (key, value, description)
@@ -7406,8 +7499,8 @@ VALUES
   ('auto_stagnant_ticket_drafting_enabled', 'true'::jsonb, 'Enable automatic drafting of follow-up messages for stagnant support tickets.'),
   ('voice_capture_enabled', 'false'::jsonb, 'Enable automated phone call capture and AI summarization (Twilio/Vapi).'),
   ('voice_api_key', '""'::jsonb, 'API Key for the voice capture service provider (Twilio/Vapi).')
-ON CONFLICT (key) DO UPDATE SET 
-  description = EXCLUDED.description;
+-- [SCRUBBED GARBAGE] ON CONFLICT (key) DO UPDATE SET 
+-- [SCRUBBED GARBAGE]   description = EXCLUDED.description;
 -- Migration: Embed Tenants in Contracts
 -- Description: Adds a 'tenants' jsonb column to the contracts table to support multiple tenants per contract and removes the need for a separate tenants table.
 
@@ -7417,16 +7510,16 @@ ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS tenants jsonb DEFAULT '[]'
 -- 2. Backfill existing data
 UPDATE public.contracts c
 SET tenants = jsonb_build_array(
-    jsonb_build_object(
+-- [SCRUBBED GARBAGE]     jsonb_build_object(
         'name', t.name,
         'id_number', t.id_number,
         'email', t.email,
         'phone', t.phone
     )
 )
-FROM public.tenants t
-WHERE c.tenant_id = t.id
-AND (c.tenants IS NULL OR c.tenants = '[]'::jsonb);
+-- [SCRUBBED GARBAGE] FROM public.tenants t
+-- [SCRUBBED GARBAGE] WHERE c.tenant_id = t.id
+-- [SCRUBBED GARBAGE] AND (c.tenants IS NULL OR c.tenants = '[]'::jsonb);
 
 -- 3. Update the view/trigger if necessary (none found in research)
 
@@ -7434,71 +7527,71 @@ AND (c.tenants IS NULL OR c.tenants = '[]'::jsonb);
 DROP FUNCTION IF EXISTS get_users_with_stats();
 
 CREATE OR REPLACE FUNCTION get_users_with_stats()
-RETURNS TABLE (
+-- [SCRUBBED GARBAGE] RETURNS TABLE (
     -- User Profile Columns
-    id UUID,
-    email TEXT,
-    full_name TEXT,
-    phone TEXT,
-    role user_role,
-    subscription_status subscription_status,
-    plan_id TEXT,
-    created_at TIMESTAMPTZ,
-    last_login TIMESTAMPTZ,
+-- [SCRUBBED GARBAGE]     id UUID,
+-- [SCRUBBED GARBAGE]     email TEXT,
+-- [SCRUBBED GARBAGE]     full_name TEXT,
+-- [SCRUBBED GARBAGE]     phone TEXT,
+-- [SCRUBBED GARBAGE]     role user_role,
+-- [SCRUBBED GARBAGE]     subscription_status subscription_status,
+-- [SCRUBBED GARBAGE]     plan_id TEXT,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ,
+-- [SCRUBBED GARBAGE]     last_login TIMESTAMPTZ,
     
     -- Stats
-    properties_count BIGINT,
-    tenants_count BIGINT,
-    contracts_count BIGINT,
-    ai_sessions_count BIGINT,
-    open_tickets_count BIGINT,
-    storage_usage_mb NUMERIC
+-- [SCRUBBED GARBAGE]     properties_count BIGINT,
+-- [SCRUBBED GARBAGE]     tenants_count BIGINT,
+-- [SCRUBBED GARBAGE]     contracts_count BIGINT,
+-- [SCRUBBED GARBAGE]     ai_sessions_count BIGINT,
+-- [SCRUBBED GARBAGE]     open_tickets_count BIGINT,
+-- [SCRUBBED GARBAGE]     storage_usage_mb NUMERIC
 ) 
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 BEGIN
     RETURN QUERY
     SELECT 
-        up.id,
-        up.email,
-        up.full_name,
-        up.phone,
-        up.role,
-        up.subscription_status,
-        up.plan_id,
-        up.created_at,
-        up.last_login,
+-- [SCRUBBED GARBAGE]         up.id,
+-- [SCRUBBED GARBAGE]         up.email,
+-- [SCRUBBED GARBAGE]         up.full_name,
+-- [SCRUBBED GARBAGE]         up.phone,
+-- [SCRUBBED GARBAGE]         up.role,
+-- [SCRUBBED GARBAGE]         up.subscription_status,
+-- [SCRUBBED GARBAGE]         up.plan_id,
+-- [SCRUBBED GARBAGE]         up.created_at,
+-- [SCRUBBED GARBAGE]         up.last_login,
         
         -- Basic Counts
-        COALESCE(p.count, 0) as properties_count,
-        COALESCE(t.count, 0) as tenants_count,
-        COALESCE(c.count, 0) as contracts_count,
+-- [SCRUBBED GARBAGE]         COALESCE(p.count, 0) as properties_count,
+-- [SCRUBBED GARBAGE]         COALESCE(t.count, 0) as tenants_count,
+-- [SCRUBBED GARBAGE]         COALESCE(c.count, 0) as contracts_count,
         
         -- AI Usage
-        COALESCE(ai.count, 0) as ai_sessions_count,
+-- [SCRUBBED GARBAGE]         COALESCE(ai.count, 0) as ai_sessions_count,
         
         -- Support Status
-        COALESCE(st.count, 0) as open_tickets_count,
+-- [SCRUBBED GARBAGE]         COALESCE(st.count, 0) as open_tickets_count,
         
         -- Storage Usage (Bytes to MB)
-        ROUND(COALESCE(usu.total_bytes, 0) / (1024.0 * 1024.0), 2) as storage_usage_mb
+-- [SCRUBBED GARBAGE]         ROUND(COALESCE(usu.total_bytes, 0) / (1024.0 * 1024.0), 2) as storage_usage_mb
         
-    FROM user_profiles up
+-- [SCRUBBED GARBAGE]     FROM user_profiles up
     -- Property Counts
-    LEFT JOIN (SELECT user_id, count(*) as count FROM properties GROUP BY user_id) p ON up.id = p.user_id
+-- [SCRUBBED GARBAGE]     LEFT JOIN (SELECT user_id, count(*) as count FROM properties GROUP BY user_id) p ON up.id = p.user_id
     -- Tenant Counts
-    LEFT JOIN (SELECT user_id, count(*) as count FROM tenants GROUP BY user_id) t ON up.id = t.user_id
+-- [SCRUBBED GARBAGE]     LEFT JOIN (SELECT user_id, count(*) as count FROM tenants GROUP BY user_id) t ON up.id = t.user_id
     -- Contract Counts
-    LEFT JOIN (SELECT user_id, count(*) as count FROM contracts GROUP BY user_id) c ON up.id = c.user_id
+-- [SCRUBBED GARBAGE]     LEFT JOIN (SELECT user_id, count(*) as count FROM contracts GROUP BY user_id) c ON up.id = c.user_id
     -- AI Counts
-    LEFT JOIN (SELECT user_id, count(*) as count FROM ai_conversations GROUP BY user_id) ai ON up.id = ai.user_id
+-- [SCRUBBED GARBAGE]     LEFT JOIN (SELECT user_id, count(*) as count FROM ai_conversations GROUP BY user_id) ai ON up.id = ai.user_id
     -- Open Support Tickets
-    LEFT JOIN (SELECT user_id, count(*) as count FROM support_tickets WHERE status != 'resolved' GROUP BY user_id) st ON up.id = st.user_id
+-- [SCRUBBED GARBAGE]     LEFT JOIN (SELECT user_id, count(*) as count FROM support_tickets WHERE status != 'resolved' GROUP BY user_id) st ON up.id = st.user_id
     -- Storage Usage
-    LEFT JOIN user_storage_usage usu ON up.id = usu.user_id
+-- [SCRUBBED GARBAGE]     LEFT JOIN user_storage_usage usu ON up.id = usu.user_id
     
-    ORDER BY up.created_at DESC;
+-- [SCRUBBED GARBAGE]     ORDER BY up.created_at DESC;
 END;
 $$;
 -- Migration: Handle Guest Leads Routing
@@ -7514,7 +7607,7 @@ BEGIN
           '00000000-0000-0000-0000-000000000000', 
           'guest-leads@rentmate.co.il', 
           '{"full_name": "Potential Lead"}'::jsonb, 
-          NOW()
+-- [SCRUBBED GARBAGE]           NOW()
         );
     END IF;
 END $$;
@@ -7537,25 +7630,25 @@ END $$;
 
 -- 3. Update get_admin_stats to include automated actions count
 CREATE OR REPLACE FUNCTION public.get_admin_stats()
-RETURNS JSON
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS JSON
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-    result JSON;
-    total_users_count INTEGER;
-    total_contracts_count INTEGER;
-    total_revenue_amount NUMERIC;
-    active_users_count INTEGER;
-    total_ai_cost_usd NUMERIC;
-    total_automated_actions INTEGER;
+-- [SCRUBBED GARBAGE]     result JSON;
+-- [SCRUBBED GARBAGE]     total_users_count INTEGER;
+-- [SCRUBBED GARBAGE]     total_contracts_count INTEGER;
+-- [SCRUBBED GARBAGE]     total_revenue_amount NUMERIC;
+-- [SCRUBBED GARBAGE]     active_users_count INTEGER;
+-- [SCRUBBED GARBAGE]     total_ai_cost_usd NUMERIC;
+-- [SCRUBBED GARBAGE]     total_automated_actions INTEGER;
 BEGIN
     -- Check if the current user is an admin
     IF NOT EXISTS (
         SELECT 1 FROM user_profiles
-        WHERE id = auth.uid()
-        AND role = 'admin'
+-- [SCRUBBED GARBAGE]         WHERE id = auth.uid()
+-- [SCRUBBED GARBAGE]         AND role = 'admin'
     ) THEN
         RAISE EXCEPTION 'Access denied: Admin role required';
     END IF;
@@ -7579,7 +7672,7 @@ BEGIN
     SELECT COUNT(*) INTO total_automated_actions FROM automation_logs;
 
     -- Build JSON result
-    result := json_build_object(
+-- [SCRUBBED GARBAGE]     result := json_build_object(
         'totalUsers', total_users_count,
         'totalContracts', total_contracts_count,
         'totalRevenue', total_revenue_amount,
@@ -7598,70 +7691,70 @@ DO $$
 BEGIN
     -- 1. Ensure 'first_name' and 'last_name' columns exist in user_profiles
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_profiles' AND column_name = 'first_name') THEN
-        ALTER TABLE public.user_profiles ADD COLUMN first_name TEXT;
+        ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS first_name TEXT;
     END IF;
 
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_profiles' AND column_name = 'last_name') THEN
-        ALTER TABLE public.user_profiles ADD COLUMN last_name TEXT;
+        ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS last_name TEXT;
     END IF;
 
     -- 2. Ensure 'subscription_plans' has the 'free' plan
     INSERT INTO public.subscription_plans (id, name, price_monthly, max_properties, features)
     VALUES ('free', 'Free Forever', 0, 1, '{"support_level": "basic"}'::jsonb)
-    ON CONFLICT (id) DO NOTHING;
+-- [SCRUBBED GARBAGE]     ON CONFLICT (id) DO NOTHING;
 
     -- 3. Ensure 'plan_id' column exists in user_profiles
      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_profiles' AND column_name = 'plan_id') THEN
-        ALTER TABLE public.user_profiles ADD COLUMN plan_id TEXT REFERENCES public.subscription_plans(id) DEFAULT 'free';
+        ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS plan_id TEXT REFERENCES public.subscription_plans(id) DEFAULT 'free';
     END IF;
 
 END $$;
 
 -- 4. Redefine handle_new_user with robust error handling and column usage
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER 
-LANGUAGE plpgsql 
-SECURITY DEFINER SET search_path = public
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER 
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql 
+-- [SCRUBBED GARBAGE] SECURITY DEFINER SET search_path = public
 AS $$
 DECLARE
-    default_plan_id TEXT := 'free';
+-- [SCRUBBED GARBAGE]     default_plan_id TEXT := 'free';
 BEGIN
     -- Verify plan exists, fallback to NULL if 'free' is missing (to prevent crash)
     IF NOT EXISTS (SELECT 1 FROM public.subscription_plans WHERE id = default_plan_id) THEN
-        default_plan_id := NULL; 
+-- [SCRUBBED GARBAGE]         default_plan_id := NULL; 
     END IF;
 
     INSERT INTO public.user_profiles (
-        id, 
-        email, 
-        full_name,
-        first_name,
-        last_name,
-        role, 
-        subscription_status, 
-        plan_id
+-- [SCRUBBED GARBAGE]         id, 
+-- [SCRUBBED GARBAGE]         email, 
+-- [SCRUBBED GARBAGE]         full_name,
+-- [SCRUBBED GARBAGE]         first_name,
+-- [SCRUBBED GARBAGE]         last_name,
+-- [SCRUBBED GARBAGE]         role, 
+-- [SCRUBBED GARBAGE]         subscription_status, 
+-- [SCRUBBED GARBAGE]         plan_id
     )
     VALUES (
-        NEW.id,
-        NEW.email,
-        COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
-        COALESCE(NEW.raw_user_meta_data->>'first_name', split_part(NEW.raw_user_meta_data->>'full_name', ' ', 1), 'User'),
-        COALESCE(NEW.raw_user_meta_data->>'last_name', 'User'),
+-- [SCRUBBED GARBAGE]         NEW.id,
+-- [SCRUBBED GARBAGE]         NEW.email,
+-- [SCRUBBED GARBAGE]         COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
+-- [SCRUBBED GARBAGE]         COALESCE(NEW.raw_user_meta_data->>'first_name', split_part(NEW.raw_user_meta_data->>'full_name', ' ', 1), 'User'),
+-- [SCRUBBED GARBAGE]         COALESCE(NEW.raw_user_meta_data->>'last_name', 'User'),
         'user', -- Default role
         'active', -- Default status
-        default_plan_id
+-- [SCRUBBED GARBAGE]         default_plan_id
     )
-    ON CONFLICT (id) DO UPDATE SET
-        email = EXCLUDED.email,
-        full_name = COALESCE(EXCLUDED.full_name, user_profiles.full_name),
-        updated_at = NOW();
+-- [SCRUBBED GARBAGE]     ON CONFLICT (id) DO UPDATE SET
+-- [SCRUBBED GARBAGE]         email = EXCLUDED.email,
+-- [SCRUBBED GARBAGE]         full_name = COALESCE(EXCLUDED.full_name, user_profiles.full_name),
+-- [SCRUBBED GARBAGE]         updated_at = NOW();
 
     -- Link Past Invoices safely
     BEGIN
         UPDATE public.invoices
         SET user_id = NEW.id
-        WHERE user_id IS NULL 
-        AND billing_email = NEW.email;
+-- [SCRUBBED GARBAGE]         WHERE user_id IS NULL 
+-- [SCRUBBED GARBAGE]         AND billing_email = NEW.email;
     EXCEPTION WHEN OTHERS THEN
         RAISE WARNING 'Invoice linking failed: %', SQLERRM;
     END;
@@ -7676,60 +7769,62 @@ $$;
 
 -- 5. Ensure Trigger is Attached
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+;
+DROP TRIGGER IF EXISTS "on_auth_user_created" ON auth.users;
 CREATE TRIGGER on_auth_user_created
-    AFTER INSERT ON auth.users
+-- [SCRUBBED GARBAGE]     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 -- Create ticket_analysis table
 CREATE TABLE IF NOT EXISTS public.ticket_analysis (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    ticket_id UUID REFERENCES public.support_tickets(id) ON DELETE CASCADE,
-    sentiment_score FLOAT, -- -1.0 to 1.0
-    urgency_level TEXT CHECK (urgency_level IN ('low', 'medium', 'high', 'critical')),
-    category TEXT,
-    confidence_score FLOAT,
-    ai_summary TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [SCRUBBED GARBAGE]     ticket_id UUID REFERENCES public.support_tickets(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     sentiment_score FLOAT, -- -1.0 to 1.0
+-- [SCRUBBED GARBAGE]     urgency_level TEXT CHECK (urgency_level IN ('low', 'medium', 'high', 'critical')),
+-- [SCRUBBED GARBAGE]     category TEXT,
+-- [SCRUBBED GARBAGE]     confidence_score FLOAT,
+-- [SCRUBBED GARBAGE]     ai_summary TEXT,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Create automation_rules table (System-wide or Admin managed rules)
 CREATE TABLE IF NOT EXISTS public.automation_rules (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name TEXT NOT NULL,
-    trigger_type TEXT NOT NULL, -- 'lease_expiry', 'rent_overdue', 'ticket_created'
-    condition JSONB, -- e.g. {"days_before": 60}
-    action_type TEXT NOT NULL, -- 'email', 'notification', 'auto_reply'
-    action_config JSONB, -- template_id, etc.
-    is_enabled BOOLEAN DEFAULT true,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [SCRUBBED GARBAGE]     name TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     trigger_type TEXT NOT NULL, -- 'lease_expiry', 'rent_overdue', 'ticket_created'
+-- [SCRUBBED GARBAGE]     condition JSONB, -- e.g. {"days_before": 60}
+-- [SCRUBBED GARBAGE]     action_type TEXT NOT NULL, -- 'email', 'notification', 'auto_reply'
+-- [SCRUBBED GARBAGE]     action_config JSONB, -- template_id, etc.
+-- [SCRUBBED GARBAGE]     is_enabled BOOLEAN DEFAULT true,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Create automation_logs table
 CREATE TABLE IF NOT EXISTS public.automation_logs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    rule_id UUID REFERENCES public.automation_rules(id),
-    user_id UUID REFERENCES auth.users(id), -- Target user
-    entity_id UUID, -- contract_id, ticket_id, etc.
-    action_taken TEXT,
-    status TEXT, -- 'success', 'failed'
-    details JSONB,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [SCRUBBED GARBAGE]     rule_id UUID REFERENCES public.automation_rules(id),
+-- [SCRUBBED GARBAGE]     user_id UUID REFERENCES auth.users(id), -- Target user
+-- [SCRUBBED GARBAGE]     entity_id UUID, -- contract_id, ticket_id, etc.
+-- [SCRUBBED GARBAGE]     action_taken TEXT,
+-- [SCRUBBED GARBAGE]     status TEXT, -- 'success', 'failed'
+-- [SCRUBBED GARBAGE]     details JSONB,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Create user_automation_settings table
 CREATE TABLE IF NOT EXISTS public.user_automation_settings (
-    user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    lease_expiry_days INTEGER DEFAULT 100,
-    extension_notice_days INTEGER DEFAULT 60,
-    rent_overdue_days INTEGER DEFAULT 5,
-    auto_reply_enabled BOOLEAN DEFAULT false,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+-- [SCRUBBED GARBAGE]     user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     lease_expiry_days INTEGER DEFAULT 100,
+-- [SCRUBBED GARBAGE]     extension_notice_days INTEGER DEFAULT 60,
+-- [SCRUBBED GARBAGE]     rent_overdue_days INTEGER DEFAULT 5,
+-- [SCRUBBED GARBAGE]     auto_reply_enabled BOOLEAN DEFAULT false,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Add auto_reply_draft to support_tickets
 ALTER TABLE public.support_tickets 
-ADD COLUMN IF NOT EXISTS auto_reply_draft TEXT;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS auto_reply_draft TEXT;
 
 -- RLS Policies
 ALTER TABLE public.ticket_analysis ENABLE ROW LEVEL SECURITY;
@@ -7739,23 +7834,31 @@ ALTER TABLE public.user_automation_settings ENABLE ROW LEVEL SECURITY;
 
 -- Admins can view all ticket analysis
 DROP POLICY IF EXISTS "Admins can view all ticket analysis" ON public.ticket_analysis;
+;
+DROP POLICY IF EXISTS "Admins can view all ticket analysis" ON public.ticket_analysis;
 CREATE POLICY "Admins can view all ticket analysis" ON public.ticket_analysis
     FOR SELECT TO authenticated
-    USING (public.is_admin());
+-- [SCRUBBED GARBAGE]     USING (public.is_admin());
 
 -- Users can view their own automation settings
 DROP POLICY IF EXISTS "Users can view own automation settings" ON public.user_automation_settings;
+;
+DROP POLICY IF EXISTS "Users can view own automation settings" ON public.user_automation_settings;
 CREATE POLICY "Users can view own automation settings" ON public.user_automation_settings
     FOR SELECT TO authenticated
-    USING (auth.uid() = user_id);
+-- [SCRUBBED GARBAGE]     USING (auth.uid() = user_id);
 
 -- Users can update their own automation settings
 DROP POLICY IF EXISTS "Users can update own automation settings" ON public.user_automation_settings;
+;
+DROP POLICY IF EXISTS "Users can update own automation settings" ON public.user_automation_settings;
 CREATE POLICY "Users can update own automation settings" ON public.user_automation_settings
     FOR UPDATE TO authenticated
-    USING (auth.uid() = user_id);
+-- [SCRUBBED GARBAGE]     USING (auth.uid() = user_id);
 
 -- Insert policy for user automation settings (so they can create it initially)
+DROP POLICY IF EXISTS "Users can insert own automation settings" ON public.user_automation_settings;
+;
 DROP POLICY IF EXISTS "Users can insert own automation settings" ON public.user_automation_settings;
 CREATE POLICY "Users can insert own automation settings" ON public.user_automation_settings
     FOR INSERT TO authenticated
@@ -7763,23 +7866,27 @@ CREATE POLICY "Users can insert own automation settings" ON public.user_automati
 
 -- Admins can manage automation rules
 DROP POLICY IF EXISTS "Admins can manage automation rules" ON public.automation_rules;
+;
+DROP POLICY IF EXISTS "Admins can manage automation rules" ON public.automation_rules;
 CREATE POLICY "Admins can manage automation rules" ON public.automation_rules
     FOR ALL TO authenticated
-    USING (public.is_admin());
+-- [SCRUBBED GARBAGE]     USING (public.is_admin());
 
 -- Admins can view logs
 DROP POLICY IF EXISTS "Admins can view automation logs" ON public.automation_logs;
+;
+DROP POLICY IF EXISTS "Admins can view automation logs" ON public.automation_logs;
 CREATE POLICY "Admins can view automation logs" ON public.automation_logs
     FOR SELECT TO authenticated
-    USING (public.is_admin());
+-- [SCRUBBED GARBAGE]     USING (public.is_admin());
 -- Add channel preference columns to user_automation_settings
 -- These control the "Dispatcher" logic for outbound alerts
 
 ALTER TABLE IF EXISTS public.user_automation_settings 
-ADD COLUMN IF NOT EXISTS email_notifications_enabled BOOLEAN DEFAULT true,
-ADD COLUMN IF NOT EXISTS sms_notifications_enabled BOOLEAN DEFAULT false,
-ADD COLUMN IF NOT EXISTS whatsapp_notifications_enabled BOOLEAN DEFAULT false,
-ADD COLUMN IF NOT EXISTS push_notifications_enabled BOOLEAN DEFAULT true;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS email_notifications_enabled BOOLEAN DEFAULT true,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS sms_notifications_enabled BOOLEAN DEFAULT false,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS whatsapp_notifications_enabled BOOLEAN DEFAULT false,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS push_notifications_enabled BOOLEAN DEFAULT true;
 
 -- Comment on columns for clarity
 -- Create Webhooks for Reactive Customer Engagement
@@ -7795,9 +7902,9 @@ CREATE EXTENSION IF NOT EXISTS pg_net;
 CREATE OR REPLACE FUNCTION public.handle_automated_engagement_webhook()
 RETURNS TRIGGER AS $$
 DECLARE
-  payload JSONB;
+-- [SCRUBBED GARBAGE]   payload JSONB;
 BEGIN
-  payload := jsonb_build_object(
+-- [SCRUBBED GARBAGE]   payload := jsonb_build_object(
     'type', TG_OP,
     'table', TG_TABLE_NAME,
     'record', row_to_json(NEW),
@@ -7808,13 +7915,13 @@ BEGIN
   -- In Supabase migrations, we often use the net.http_post helper
   -- For security, the Edge Function usually checks for the service role key anyway.
   PERFORM
-    net.http_post(
-      url := 'https://' || (SELECT value FROM system_settings WHERE key = 'supabase_project_ref') || '.supabase.co/functions/v1/on-event-trigger',
-      headers := jsonb_build_object(
+-- [SCRUBBED GARBAGE]     net.http_post(
+-- [SCRUBBED GARBAGE]       url := 'https://' || (SELECT value FROM system_settings WHERE key = 'supabase_project_ref') || '.supabase.co/functions/v1/on-event-trigger',
+-- [SCRUBBED GARBAGE]       headers := jsonb_build_object(
         'Content-Type', 'application/json',
         'Authorization', 'Bearer ' || (SELECT value FROM system_settings WHERE key = 'supabase_service_role_key')
       ),
-      body := payload
+-- [SCRUBBED GARBAGE]       body := payload
     );
 
   RETURN NEW;
@@ -7823,18 +7930,24 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 3. Attach Triggers
 DROP TRIGGER IF EXISTS tr_on_new_ticket ON public.support_tickets;
+;
+DROP TRIGGER IF EXISTS "tr_on_new_ticket" ON public.support_tickets;
 CREATE TRIGGER tr_on_new_ticket
-AFTER INSERT ON public.support_tickets
+-- [SCRUBBED GARBAGE] AFTER INSERT ON public.support_tickets
 FOR EACH ROW EXECUTE FUNCTION public.handle_automated_engagement_webhook();
 
 DROP TRIGGER IF EXISTS tr_on_payment_update ON public.payments;
+;
+DROP TRIGGER IF EXISTS "tr_on_payment_update" ON public.payments;
 CREATE TRIGGER tr_on_payment_update
-AFTER UPDATE ON public.payments
+-- [SCRUBBED GARBAGE] AFTER UPDATE ON public.payments
 FOR EACH ROW EXECUTE FUNCTION public.handle_automated_engagement_webhook();
 
 DROP TRIGGER IF EXISTS tr_on_new_contract ON public.contracts;
+;
+DROP TRIGGER IF EXISTS "tr_on_new_contract" ON public.contracts;
 CREATE TRIGGER tr_on_new_contract
-AFTER INSERT ON public.contracts
+-- [SCRUBBED GARBAGE] AFTER INSERT ON public.contracts
 FOR EACH ROW EXECUTE FUNCTION public.handle_automated_engagement_webhook();
 -- ============================================
 -- UPDATED ADMIN STATS FUNCTION (v2)
@@ -7842,28 +7955,28 @@ FOR EACH ROW EXECUTE FUNCTION public.handle_automated_engagement_webhook();
 -- Adds Automation & Engagement metrics
 
 CREATE OR REPLACE FUNCTION public.get_admin_stats()
-RETURNS JSON
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS JSON
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-    result JSON;
-    total_users_count INTEGER;
-    total_contracts_count INTEGER;
-    total_revenue_amount NUMERIC;
-    active_users_count INTEGER;
-    total_ai_cost NUMERIC;
-    automated_actions_count INTEGER;
-    stagnant_tickets_count INTEGER;
-    avg_sentiment_score NUMERIC;
-    last_automation_run TIMESTAMPTZ;
+-- [SCRUBBED GARBAGE]     result JSON;
+-- [SCRUBBED GARBAGE]     total_users_count INTEGER;
+-- [SCRUBBED GARBAGE]     total_contracts_count INTEGER;
+-- [SCRUBBED GARBAGE]     total_revenue_amount NUMERIC;
+-- [SCRUBBED GARBAGE]     active_users_count INTEGER;
+-- [SCRUBBED GARBAGE]     total_ai_cost NUMERIC;
+-- [SCRUBBED GARBAGE]     automated_actions_count INTEGER;
+-- [SCRUBBED GARBAGE]     stagnant_tickets_count INTEGER;
+-- [SCRUBBED GARBAGE]     avg_sentiment_score NUMERIC;
+-- [SCRUBBED GARBAGE]     last_automation_run TIMESTAMPTZ;
 BEGIN
     -- Check if the current user is an admin
     IF NOT EXISTS (
         SELECT 1 FROM user_profiles
-        WHERE id = auth.uid()
-        AND role IN ('admin', 'super_admin')
+-- [SCRUBBED GARBAGE]         WHERE id = auth.uid()
+-- [SCRUBBED GARBAGE]         AND role IN ('admin', 'super_admin')
     ) THEN
         RAISE EXCEPTION 'Access denied: Admin role required';
     END IF;
@@ -7882,7 +7995,7 @@ BEGIN
     SELECT MAX(created_at) INTO last_automation_run FROM automation_logs;
 
     -- 3. Build Result
-    result := json_build_object(
+-- [SCRUBBED GARBAGE]     result := json_build_object(
         'totalUsers', total_users_count,
         'totalContracts', total_contracts_count,
         'totalRevenue', total_revenue_amount,
@@ -7902,22 +8015,24 @@ $$;
 
 -- 1. Create Cleanup Queue Table
 CREATE TABLE IF NOT EXISTS public.storage_cleanup_queue (
-    id BIGSERIAL PRIMARY KEY,
-    bucket_id TEXT NOT NULL,
-    storage_path TEXT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    processed_at TIMESTAMPTZ,
-    error_log TEXT
+-- [SCRUBBED GARBAGE]     id BIGSERIAL PRIMARY KEY,
+-- [SCRUBBED GARBAGE]     bucket_id TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     storage_path TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]     processed_at TIMESTAMPTZ,
+-- [SCRUBBED GARBAGE]     error_log TEXT
 );
 
 -- Enable RLS (Internal only, but good practice)
 ALTER TABLE public.storage_cleanup_queue ENABLE ROW LEVEL SECURITY;
 
--- 2. Create Trigger Function
+-- 2. ;
+DROP TRIGGER IF EXISTS "Function" ON public.queue_storage_cleanup;
+Create Trigger Function
 CREATE OR REPLACE FUNCTION public.queue_storage_cleanup()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 BEGIN
     INSERT INTO public.storage_cleanup_queue (bucket_id, storage_path)
@@ -7928,8 +8043,10 @@ $$;
 
 -- 3. Attach Trigger to property_documents
 DROP TRIGGER IF EXISTS on_document_deleted_cleanup ON public.property_documents;
+;
+DROP TRIGGER IF EXISTS "on_document_deleted_cleanup" ON public.property_documents;
 CREATE TRIGGER on_document_deleted_cleanup
-AFTER DELETE ON public.property_documents
+-- [SCRUBBED GARBAGE] AFTER DELETE ON public.property_documents
 FOR EACH ROW
 EXECUTE FUNCTION public.queue_storage_cleanup();
 
@@ -7942,9 +8059,9 @@ INSERT INTO public.system_settings (key, value, description)
 VALUES 
     ('auto_autopilot_master_enabled', 'false'::jsonb, 'Master switch for all background automation logic (Lease expiry, overdue rent, etc).'),
     ('auto_monthly_reports_enabled', 'false'::jsonb, 'Whether to automatically generate monthly performance notifications for property owners.')
-ON CONFLICT (key) DO UPDATE SET 
-    value = EXCLUDED.value,
-    description = EXCLUDED.description;
+-- [SCRUBBED GARBAGE] ON CONFLICT (key) DO UPDATE SET 
+-- [SCRUBBED GARBAGE]     value = EXCLUDED.value,
+-- [SCRUBBED GARBAGE]     description = EXCLUDED.description;
 
 -- Remove the old key if it exists
 DELETE FROM public.system_settings WHERE key = 'crm_autopilot_enabled';
@@ -7954,30 +8071,30 @@ DELETE FROM public.system_settings WHERE key = 'crm_autopilot_enabled';
 -- 1. Create a helper function for Edge Functions to log audits
 -- This uses SECURITY DEFINER to bypass RLS since Edge Functions use Service Role
 CREATE OR REPLACE FUNCTION public.log_ai_contract_audit(
-    p_user_id UUID,
-    p_action TEXT,
-    p_contract_id UUID DEFAULT NULL,
-    p_details JSONB DEFAULT '{}'
+-- [SCRUBBED GARBAGE]     p_user_id UUID,
+-- [SCRUBBED GARBAGE]     p_action TEXT,
+-- [SCRUBBED GARBAGE]     p_contract_id UUID DEFAULT NULL,
+-- [SCRUBBED GARBAGE]     p_details JSONB DEFAULT '{}'
 )
 RETURNS VOID AS $$
 BEGIN
     INSERT INTO public.audit_logs (
-        user_id,
-        target_user_id,
-        action,
-        details,
-        created_at
+-- [SCRUBBED GARBAGE]         user_id,
+-- [SCRUBBED GARBAGE]         target_user_id,
+-- [SCRUBBED GARBAGE]         action,
+-- [SCRUBBED GARBAGE]         details,
+-- [SCRUBBED GARBAGE]         created_at
     )
     VALUES (
-        p_user_id,
-        p_user_id, -- In this context, target is usually the same user
-        p_action,
-        p_details || jsonb_build_object(
+-- [SCRUBBED GARBAGE]         p_user_id,
+-- [SCRUBBED GARBAGE]         p_user_id, -- In this context, target is usually the same user
+-- [SCRUBBED GARBAGE]         p_action,
+-- [SCRUBBED GARBAGE]         p_details || jsonb_build_object(
             'audited_by', 'AI Engine',
             'contract_id', p_contract_id,
             'timestamp', NOW()
         ),
-        NOW()
+-- [SCRUBBED GARBAGE]         NOW()
     );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -7985,8 +8102,8 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- 2. Ensure audit_logs is visible to admins
 DROP POLICY IF EXISTS "Admins can view all audit logs" ON public.audit_logs;
 CREATE POLICY "Admins can view all audit logs"
-    ON public.audit_logs FOR SELECT
-    USING (EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin'));
+-- [SCRUBBED GARBAGE]     ON public.audit_logs FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin'));
 
 -- 3. Grant execute to service_role
 GRANT EXECUTE ON FUNCTION public.log_ai_contract_audit TO service_role;
@@ -7997,59 +8114,34 @@ GRANT EXECUTE ON FUNCTION public.log_ai_contract_audit TO authenticated;
 
 -- 1. Create index_data table (if missing)
 CREATE TABLE IF NOT EXISTS index_data (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  index_type TEXT NOT NULL CHECK (index_type IN ('cpi', 'housing', 'construction', 'usd', 'eur')),
-  date TEXT NOT NULL, -- Format: 'YYYY-MM'
-  value DECIMAL(10, 4) NOT NULL,
-  source TEXT DEFAULT 'cbs' CHECK (source IN ('cbs', 'exchange-api', 'manual', 'boi')),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  UNIQUE(index_type, date)
+-- [SCRUBBED GARBAGE]   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [SCRUBBED GARBAGE]   index_type TEXT NOT NULL CHECK (index_type IN ('cpi', 'housing', 'construction', 'usd', 'eur')),
+-- [SCRUBBED GARBAGE]   date TEXT NOT NULL, -- Format: 'YYYY-MM'
+-- [SCRUBBED GARBAGE]   value DECIMAL(10, 4) NOT NULL,
+-- [SCRUBBED GARBAGE]   source TEXT DEFAULT 'cbs' CHECK (source IN ('cbs', 'exchange-api', 'manual', 'boi')),
+-- [SCRUBBED GARBAGE]   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]   UNIQUE(index_type, date)
 );
 
 -- 2. Create index_bases table (if missing)
 CREATE TABLE IF NOT EXISTS index_bases (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    index_type TEXT NOT NULL CHECK (index_type IN ('cpi', 'housing', 'construction', 'usd', 'eur')),
-    base_period_start DATE NOT NULL,
-    base_value NUMERIC NOT NULL DEFAULT 100.0,
-    previous_base_period_start DATE,
-    chain_factor NUMERIC,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    UNIQUE(index_type, base_period_start)
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [SCRUBBED GARBAGE]     index_type TEXT NOT NULL CHECK (index_type IN ('cpi', 'housing', 'construction', 'usd', 'eur')),
+-- [SCRUBBED GARBAGE]     base_period_start DATE NOT NULL,
+-- [SCRUBBED GARBAGE]     base_value NUMERIC NOT NULL DEFAULT 100.0,
+-- [SCRUBBED GARBAGE]     previous_base_period_start DATE,
+-- [SCRUBBED GARBAGE]     chain_factor NUMERIC,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]     UNIQUE(index_type, base_period_start)
 );
 
 -- 3. Seed Construction Inputs Index (Series 200010, Base 2011=100)
-INSERT INTO index_data (index_type, date, value, source)
-VALUES 
-    ('construction', '2025-01', 123.4, 'manual'),
-    ('construction', '2024-12', 123.0, 'manual'),
-    ('construction', '2024-11', 121.8, 'manual'),
-    ('construction', '2024-10', 121.5, 'manual'),
-    ('construction', '2024-09', 121.2, 'manual'),
-    ('construction', '2024-08', 121.0, 'manual')
-ON CONFLICT (index_type, date) DO UPDATE SET value = EXCLUDED.value;
-
+-- [Index Data Stripped]
 -- 4. Seed Housing Price Index (Series 40010)
-INSERT INTO index_data (index_type, date, value, source)
-VALUES 
-    ('housing', '2025-01', 105.5, 'manual'),
-    ('housing', '2024-12', 105.1, 'manual'),
-    ('housing', '2024-11', 104.8, 'manual'),
-    ('housing', '2024-10', 104.5, 'manual'),
-    ('housing', '2024-09', 104.2, 'manual'),
-    ('housing', '2024-08', 104.0, 'manual')
-ON CONFLICT (index_type, date) DO UPDATE SET value = EXCLUDED.value;
-
+-- [Index Data Stripped]
 -- 5. Seed Exchange Rates (USD/EUR)
-INSERT INTO index_data (index_type, date, value, source)
-VALUES 
-    ('usd', '2025-01', 3.73, 'manual'),
-    ('eur', '2025-01', 4.05, 'manual'),
-    ('usd', '2024-12', 3.70, 'manual'),
-    ('eur', '2024-12', 4.02, 'manual')
-ON CONFLICT (index_type, date) DO UPDATE SET value = EXCLUDED.value;
-
+-- [Index Data Stripped]
 -- 6. Insert Base Periods & Chain Factors
 INSERT INTO index_bases (index_type, base_period_start, base_value, chain_factor)
 VALUES 
@@ -8059,7 +8151,7 @@ VALUES
     ('cpi', '2025-01-01', 100.0, 1.074),
     ('cpi', '2023-01-01', 100.0, 1.026),
     ('cpi', '2021-01-01', 100.0, 1.0)
-ON CONFLICT (index_type, base_period_start) DO UPDATE 
+-- [SCRUBBED GARBAGE] ON CONFLICT (index_type, base_period_start) DO UPDATE 
 SET base_value = EXCLUDED.base_value, chain_factor = EXCLUDED.chain_factor;
 
 -- 7. RLS Policies (Safeguard)
@@ -8068,20 +8160,28 @@ ALTER TABLE index_bases ENABLE ROW LEVEL SECURITY;
 
 -- Allow all authenticated users to read
 DO $$ BEGIN
-    CREATE POLICY "Allow authenticated read index_data" ON index_data FOR SELECT TO authenticated USING (true);
+    ;
+DROP POLICY IF EXISTS "Allow authenticated read index_data" ON index_data;
+CREATE POLICY "Allow authenticated read index_data" ON index_data FOR SELECT TO authenticated USING (true);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-    CREATE POLICY "Allow authenticated read index_bases" ON index_bases FOR SELECT TO authenticated USING (true);
+    ;
+DROP POLICY IF EXISTS "Allow authenticated read index_bases" ON index_bases;
+CREATE POLICY "Allow authenticated read index_bases" ON index_bases FOR SELECT TO authenticated USING (true);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Allow service_role to manage (for Edge Functions)
 DO $$ BEGIN
-    CREATE POLICY "Allow full access for service_role index_data" ON index_data FOR ALL TO service_role USING (true) WITH CHECK (true);
+    ;
+DROP POLICY IF EXISTS "Allow full access for service_role index_data" ON index_data;
+CREATE POLICY "Allow full access for service_role index_data" ON index_data FOR ALL TO service_role USING (true) WITH CHECK (true);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-    CREATE POLICY "Allow full access for service_role index_bases" ON index_bases FOR ALL TO service_role USING (true) WITH CHECK (true);
+    ;
+DROP POLICY IF EXISTS "Allow full access for service_role index_bases" ON index_bases;
+CREATE POLICY "Allow full access for service_role index_bases" ON index_bases FOR ALL TO service_role USING (true) WITH CHECK (true);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 -- Migration: add_phone_to_profiles
 -- Description: Adds a phone column to user_profiles and updates handle_new_user trigger.
@@ -8091,9 +8191,9 @@ DO $$
 BEGIN
     IF NOT EXISTS (
         SELECT 1 FROM information_schema.columns 
-        WHERE table_name = 'user_profiles' AND column_name = 'phone'
+-- [SCRUBBED GARBAGE]         WHERE table_name = 'user_profiles' AND column_name = 'phone'
     ) THEN
-        ALTER TABLE public.user_profiles ADD COLUMN phone TEXT;
+        ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS phone TEXT;
     END IF;
 END $$;
 
@@ -8103,10 +8203,10 @@ DO $$
 BEGIN
     UPDATE public.user_profiles up
     SET phone = au.phone
-    FROM auth.users au
-    WHERE up.id = au.id
-    AND up.phone IS NULL
-    AND au.phone IS NOT NULL;
+-- [SCRUBBED GARBAGE]     FROM auth.users au
+-- [SCRUBBED GARBAGE]     WHERE up.id = au.id
+-- [SCRUBBED GARBAGE]     AND up.phone IS NULL
+-- [SCRUBBED GARBAGE]     AND au.phone IS NOT NULL;
 EXCEPTION WHEN OTHERS THEN
     -- Fallback for environments where direct auth.users access isn't allowed without superuser
     RAISE NOTICE 'Backfill from auth.users failed: %', SQLERRM;
@@ -8114,45 +8214,45 @@ END $$;
 
 -- 3. Update handle_new_user() to include phone on signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER 
-LANGUAGE plpgsql 
-SECURITY DEFINER SET search_path = public
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER 
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql 
+-- [SCRUBBED GARBAGE] SECURITY DEFINER SET search_path = public
 AS $$
 DECLARE
-    default_plan_id TEXT := 'free';
+-- [SCRUBBED GARBAGE]     default_plan_id TEXT := 'free';
 BEGIN
     -- Verify plan exists, fallback to NULL if 'free' is missing (to prevent crash)
     IF NOT EXISTS (SELECT 1 FROM public.subscription_plans WHERE id = default_plan_id) THEN
-        default_plan_id := NULL; 
+-- [SCRUBBED GARBAGE]         default_plan_id := NULL; 
     END IF;
 
     INSERT INTO public.user_profiles (
-        id, 
-        email, 
-        full_name,
-        first_name,
-        last_name,
-        phone,
-        role, 
-        subscription_status, 
-        plan_id
+-- [SCRUBBED GARBAGE]         id, 
+-- [SCRUBBED GARBAGE]         email, 
+-- [SCRUBBED GARBAGE]         full_name,
+-- [SCRUBBED GARBAGE]         first_name,
+-- [SCRUBBED GARBAGE]         last_name,
+-- [SCRUBBED GARBAGE]         phone,
+-- [SCRUBBED GARBAGE]         role, 
+-- [SCRUBBED GARBAGE]         subscription_status, 
+-- [SCRUBBED GARBAGE]         plan_id
     )
     VALUES (
-        NEW.id,
-        NEW.email,
-        COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
-        COALESCE(NEW.raw_user_meta_data->>'first_name', split_part(NEW.raw_user_meta_data->>'full_name', ' ', 1), 'User'),
-        COALESCE(NEW.raw_user_meta_data->>'last_name', 'User'),
-        NEW.phone,
+-- [SCRUBBED GARBAGE]         NEW.id,
+-- [SCRUBBED GARBAGE]         NEW.email,
+-- [SCRUBBED GARBAGE]         COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
+-- [SCRUBBED GARBAGE]         COALESCE(NEW.raw_user_meta_data->>'first_name', split_part(NEW.raw_user_meta_data->>'full_name', ' ', 1), 'User'),
+-- [SCRUBBED GARBAGE]         COALESCE(NEW.raw_user_meta_data->>'last_name', 'User'),
+-- [SCRUBBED GARBAGE]         NEW.phone,
         'user', 
         'active', 
-        default_plan_id
+-- [SCRUBBED GARBAGE]         default_plan_id
     )
-    ON CONFLICT (id) DO UPDATE SET
-        email = EXCLUDED.email,
-        full_name = COALESCE(EXCLUDED.full_name, user_profiles.full_name),
-        phone = COALESCE(EXCLUDED.phone, user_profiles.phone),
-        updated_at = NOW();
+-- [SCRUBBED GARBAGE]     ON CONFLICT (id) DO UPDATE SET
+-- [SCRUBBED GARBAGE]         email = EXCLUDED.email,
+-- [SCRUBBED GARBAGE]         full_name = COALESCE(EXCLUDED.full_name, user_profiles.full_name),
+-- [SCRUBBED GARBAGE]         phone = COALESCE(EXCLUDED.phone, user_profiles.phone),
+-- [SCRUBBED GARBAGE]         updated_at = NOW();
 
     RETURN NEW;
 EXCEPTION WHEN OTHERS THEN
@@ -8172,13 +8272,13 @@ SELECT cron.schedule(
     '0 15 * * *',  -- Every day at 15:00 UTC
     $$
     SELECT
-        net.http_post(
-            url := 'https://qfvrekvugdjnwhnaucmz.supabase.co/functions/v1/fetch-index-data',
-            headers := jsonb_build_object(
+-- [SCRUBBED GARBAGE]         net.http_post(
+-- [SCRUBBED GARBAGE]             url := 'https://tipnjnfbbnbskdlodrww.supabase.co/functions/v1/fetch-index-data',
+-- [SCRUBBED GARBAGE]             headers := jsonb_build_object(
                 'Content-Type', 'application/json',
                 'Authorization', 'Bearer ' || current_setting('request.header.apikey', true)
             ),
-            body := '{}'::jsonb
+-- [SCRUBBED GARBAGE]             body := '{}'::jsonb
         ) AS request_id;
     $$
 );
@@ -8190,73 +8290,73 @@ DROP FUNCTION IF EXISTS get_users_with_stats();
 
 -- 2. Create refined version with explicit column matching
 CREATE OR REPLACE FUNCTION get_users_with_stats()
-RETURNS TABLE (
-    id UUID,
-    email TEXT,
-    full_name TEXT,
-    phone TEXT,
-    role TEXT,
-    subscription_status TEXT,
-    plan_id TEXT,
-    created_at TIMESTAMPTZ,
-    last_login TIMESTAMPTZ,
-    properties_count BIGINT,
-    tenants_count BIGINT,
-    contracts_count BIGINT,
-    ai_sessions_count BIGINT,
-    open_tickets_count BIGINT,
-    storage_usage_mb NUMERIC,
-    is_super_admin BOOLEAN
+-- [SCRUBBED GARBAGE] RETURNS TABLE (
+-- [SCRUBBED GARBAGE]     id UUID,
+-- [SCRUBBED GARBAGE]     email TEXT,
+-- [SCRUBBED GARBAGE]     full_name TEXT,
+-- [SCRUBBED GARBAGE]     phone TEXT,
+-- [SCRUBBED GARBAGE]     role TEXT,
+-- [SCRUBBED GARBAGE]     subscription_status TEXT,
+-- [SCRUBBED GARBAGE]     plan_id TEXT,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ,
+-- [SCRUBBED GARBAGE]     last_login TIMESTAMPTZ,
+-- [SCRUBBED GARBAGE]     properties_count BIGINT,
+-- [SCRUBBED GARBAGE]     tenants_count BIGINT,
+-- [SCRUBBED GARBAGE]     contracts_count BIGINT,
+-- [SCRUBBED GARBAGE]     ai_sessions_count BIGINT,
+-- [SCRUBBED GARBAGE]     open_tickets_count BIGINT,
+-- [SCRUBBED GARBAGE]     storage_usage_mb NUMERIC,
+-- [SCRUBBED GARBAGE]     is_super_admin BOOLEAN
 ) 
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 BEGIN
     RETURN QUERY
     SELECT 
-        up.id,
-        up.email,
-        up.full_name,
-        up.phone,
-        up.role::TEXT,
-        COALESCE(up.subscription_status::TEXT, 'active'),
-        up.plan_id,
-        up.created_at,
-        up.last_login,
+-- [SCRUBBED GARBAGE]         up.id,
+-- [SCRUBBED GARBAGE]         up.email,
+-- [SCRUBBED GARBAGE]         up.full_name,
+-- [SCRUBBED GARBAGE]         up.phone,
+-- [SCRUBBED GARBAGE]         up.role::TEXT,
+-- [SCRUBBED GARBAGE]         COALESCE(up.subscription_status::TEXT, 'active'),
+-- [SCRUBBED GARBAGE]         up.plan_id,
+-- [SCRUBBED GARBAGE]         up.created_at,
+-- [SCRUBBED GARBAGE]         up.last_login,
         
         -- Asset Stats
-        COALESCE(p.count, 0)::BIGINT as properties_count,
-        COALESCE(t.count, 0)::BIGINT as tenants_count,
-        COALESCE(c.count, 0)::BIGINT as contracts_count,
+-- [SCRUBBED GARBAGE]         COALESCE(p.count, 0)::BIGINT as properties_count,
+-- [SCRUBBED GARBAGE]         COALESCE(t.count, 0)::BIGINT as tenants_count,
+-- [SCRUBBED GARBAGE]         COALESCE(c.count, 0)::BIGINT as contracts_count,
         
         -- Usage Stats
-        COALESCE(ai.count, 0)::BIGINT as ai_sessions_count,
+-- [SCRUBBED GARBAGE]         COALESCE(ai.count, 0)::BIGINT as ai_sessions_count,
         
         -- Support Stats
-        COALESCE(st.count, 0)::BIGINT as open_tickets_count,
+-- [SCRUBBED GARBAGE]         COALESCE(st.count, 0)::BIGINT as open_tickets_count,
         
         -- Storage Usage (Bytes to MB)
-        ROUND(COALESCE(usu.total_bytes, 0) / (1024.0 * 1024.0), 2)::NUMERIC as storage_usage_mb,
+-- [SCRUBBED GARBAGE]         ROUND(COALESCE(usu.total_bytes, 0) / (1024.0 * 1024.0), 2)::NUMERIC as storage_usage_mb,
         
         -- Permissions
-        COALESCE(up.is_super_admin, false) as is_super_admin
+-- [SCRUBBED GARBAGE]         COALESCE(up.is_super_admin, false) as is_super_admin
         
-    FROM user_profiles up
+-- [SCRUBBED GARBAGE]     FROM user_profiles up
     -- Property Counts
-    LEFT JOIN (SELECT user_id, count(*) as count FROM properties GROUP BY user_id) p ON up.id = p.user_id
+-- [SCRUBBED GARBAGE]     LEFT JOIN (SELECT user_id, count(*) as count FROM properties GROUP BY user_id) p ON up.id = p.user_id
     -- Tenant Counts
-    LEFT JOIN (SELECT user_id, count(*) as count FROM tenants GROUP BY user_id) t ON up.id = t.user_id
+-- [SCRUBBED GARBAGE]     LEFT JOIN (SELECT user_id, count(*) as count FROM tenants GROUP BY user_id) t ON up.id = t.user_id
     -- Contract Counts
-    LEFT JOIN (SELECT user_id, count(*) as count FROM contracts GROUP BY user_id) c ON up.id = c.user_id
+-- [SCRUBBED GARBAGE]     LEFT JOIN (SELECT user_id, count(*) as count FROM contracts GROUP BY user_id) c ON up.id = c.user_id
     -- AI Counts
-    LEFT JOIN (SELECT user_id, count(*) as count FROM ai_conversations GROUP BY user_id) ai ON up.id = ai.user_id
+-- [SCRUBBED GARBAGE]     LEFT JOIN (SELECT user_id, count(*) as count FROM ai_conversations GROUP BY user_id) ai ON up.id = ai.user_id
     -- Open Support Tickets
-    LEFT JOIN (SELECT user_id, count(*) as count FROM support_tickets WHERE status != 'resolved' GROUP BY user_id) st ON up.id = st.user_id
+-- [SCRUBBED GARBAGE]     LEFT JOIN (SELECT user_id, count(*) as count FROM support_tickets WHERE status != 'resolved' GROUP BY user_id) st ON up.id = st.user_id
     -- Storage Usage
-    LEFT JOIN (SELECT user_id, total_bytes FROM user_storage_usage) usu ON up.id = usu.user_id
+-- [SCRUBBED GARBAGE]     LEFT JOIN (SELECT user_id, total_bytes FROM user_storage_usage) usu ON up.id = usu.user_id
     
-    WHERE up.deleted_at IS NULL
-    ORDER BY up.created_at DESC;
+-- [SCRUBBED GARBAGE]     WHERE up.deleted_at IS NULL
+-- [SCRUBBED GARBAGE]     ORDER BY up.created_at DESC;
 END;
 $$;
 -- Historical Backfill for USD and EUR
@@ -13265,7 +13365,7 @@ VALUES
 ('eur', '2006-07-12', 5.6447, 'exchange-api'),
 ('eur', '2006-07-13', 5.7079, 'exchange-api'),
 ('eur', '2006-07-14', 5.7306, 'exchange-api')
-ON CONFLICT (index_type, date) 
+-- [SCRUBBED GARBAGE] ON CONFLICT (index_type, date) 
 DO UPDATE SET value = EXCLUDED.value;
 
 -- Backfill Bank of Israel Exchange Rates (20 Years)
@@ -18061,14 +18161,14 @@ VALUES
 ('eur', '2026-01-26', 3.7179, 'exchange-api'),
 ('eur', '2026-01-27', 3.6971, 'exchange-api'),
 ('eur', '2026-01-28', 3.7039, 'exchange-api')
-ON CONFLICT (index_type, date) 
+-- [SCRUBBED GARBAGE] ON CONFLICT (index_type, date) 
 DO UPDATE SET value = EXCLUDED.value;
 
 -- Add Google Drive integration columns to user_profiles
 ALTER TABLE user_profiles 
-ADD COLUMN IF NOT EXISTS google_refresh_token TEXT,
-ADD COLUMN IF NOT EXISTS google_drive_folder_id TEXT,
-ADD COLUMN IF NOT EXISTS google_drive_enabled BOOLEAN DEFAULT FALSE;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS google_refresh_token TEXT,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS google_drive_folder_id TEXT,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS google_drive_enabled BOOLEAN DEFAULT FALSE;
 
 -- Add index for performance if needed
 CREATE INDEX IF NOT EXISTS idx_user_profiles_google_enabled ON user_profiles(google_drive_enabled);
@@ -18079,7 +18179,7 @@ CREATE INDEX IF NOT EXISTS idx_user_profiles_google_enabled ON user_profiles(goo
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contracts' AND column_name = 'rent_periods') THEN
-        ALTER TABLE public.contracts ADD COLUMN rent_periods JSONB DEFAULT '[]'::jsonb;
+        ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS rent_periods JSONB DEFAULT '[]'::jsonb;
     END IF;
 END $$;
 
@@ -18087,7 +18187,7 @@ END $$;
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contracts' AND column_name = 'option_periods') THEN
-        ALTER TABLE public.contracts ADD COLUMN option_periods JSONB DEFAULT '[]'::jsonb;
+        ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS option_periods JSONB DEFAULT '[]'::jsonb;
     END IF;
 END $$;
 
@@ -18095,7 +18195,7 @@ END $$;
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'contracts' AND column_name = 'tenants') THEN
-        ALTER TABLE public.contracts ADD COLUMN tenants JSONB DEFAULT '[]'::jsonb;
+        ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS tenants JSONB DEFAULT '[]'::jsonb;
     END IF;
 END $$;
 
@@ -18107,21 +18207,21 @@ BEGIN
     IF NEW.status = 'active' THEN
         UPDATE public.properties
         SET status = 'Occupied'
-        WHERE id = NEW.property_id;
+-- [SCRUBBED GARBAGE]         WHERE id = NEW.property_id;
     
     -- If contract becomes archived (ended/terminated in old terms)
-    ELSIF NEW.status = 'archived' THEN
+-- [SCRUBBED GARBAGE]     ELSIF NEW.status = 'archived' THEN
         -- Check if there are ANY other active contracts currently valid
         -- If NO other active contracts exist, set the property to Vacant.
         IF NOT EXISTS (
             SELECT 1 FROM public.contracts 
-            WHERE property_id = NEW.property_id 
-            AND status = 'active' 
-            AND id != NEW.id
+-- [SCRUBBED GARBAGE]             WHERE property_id = NEW.property_id 
+-- [SCRUBBED GARBAGE]             AND status = 'active' 
+-- [SCRUBBED GARBAGE]             AND id != NEW.id
         ) THEN
             UPDATE public.properties
             SET status = 'Vacant'
-            WHERE id = NEW.property_id;
+-- [SCRUBBED GARBAGE]             WHERE id = NEW.property_id;
         END IF;
     END IF;
     
@@ -18131,8 +18231,10 @@ $$ LANGUAGE plpgsql;
 
 -- Re-apply trigger to ensure it uses the updated function
 DROP TRIGGER IF EXISTS trigger_update_property_status ON public.contracts;
+;
+DROP TRIGGER IF EXISTS "trigger_update_property_status" ON public.contracts;
 CREATE TRIGGER trigger_update_property_status
-AFTER INSERT OR UPDATE ON public.contracts
+-- [SCRUBBED GARBAGE] AFTER INSERT OR UPDATE ON public.contracts
 FOR EACH ROW
 EXECUTE FUNCTION public.update_property_status_from_contract();
 -- Migration: Update Property Occupancy Trigger to handle DELETE and improved logic
@@ -18142,37 +18244,37 @@ EXECUTE FUNCTION public.update_property_status_from_contract();
 CREATE OR REPLACE FUNCTION public.update_property_status_from_contract_v2()
 RETURNS TRIGGER AS $$
 DECLARE
-    target_property_id uuid;
+-- [SCRUBBED GARBAGE]     target_property_id uuid;
 BEGIN
     -- Determine which property we are talking about
     -- TG_OP is the operation (INSERT, UPDATE, DELETE)
     IF (TG_OP = 'DELETE') THEN
-        target_property_id := OLD.property_id;
-    ELSE
-        target_property_id := NEW.property_id;
+-- [SCRUBBED GARBAGE]         target_property_id := OLD.property_id;
+-- [SCRUBBED GARBAGE]     ELSE
+-- [SCRUBBED GARBAGE]         target_property_id := NEW.property_id;
     END IF;
 
     -- If contract is active, the property is Occupied
     -- We check if ANY active contract exists for this property
     IF EXISTS (
         SELECT 1 FROM public.contracts 
-        WHERE property_id = target_property_id 
-        AND status = 'active'
+-- [SCRUBBED GARBAGE]         WHERE property_id = target_property_id 
+-- [SCRUBBED GARBAGE]         AND status = 'active'
     ) THEN
         UPDATE public.properties
         SET status = 'Occupied'
-        WHERE id = target_property_id;
-    ELSE
+-- [SCRUBBED GARBAGE]         WHERE id = target_property_id;
+-- [SCRUBBED GARBAGE]     ELSE
         -- No active contracts found, property is Vacant
         UPDATE public.properties
         SET status = 'Vacant'
-        WHERE id = target_property_id;
+-- [SCRUBBED GARBAGE]         WHERE id = target_property_id;
     END IF;
 
     -- Handle TG_OP appropriately for return
     IF (TG_OP = 'DELETE') THEN
         RETURN OLD;
-    ELSE
+-- [SCRUBBED GARBAGE]     ELSE
         RETURN NEW;
     END IF;
 END;
@@ -18181,8 +18283,10 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- 2. Drop old triggers and apply new one
 DROP TRIGGER IF EXISTS trigger_update_property_status ON public.contracts;
 
+;
+DROP TRIGGER IF EXISTS "trigger_update_property_status" ON public.contracts;
 CREATE TRIGGER trigger_update_property_status
-AFTER INSERT OR UPDATE OR DELETE ON public.contracts
+-- [SCRUBBED GARBAGE] AFTER INSERT OR UPDATE OR DELETE ON public.contracts
 FOR EACH ROW
 EXECUTE FUNCTION public.update_property_status_from_contract_v2();
 
@@ -18192,23 +18296,23 @@ EXECUTE FUNCTION public.update_property_status_from_contract_v2();
 
 DO $$
 DECLARE
-    prop RECORD;
+-- [SCRUBBED GARBAGE]     prop RECORD;
 BEGIN
     FOR prop IN SELECT id FROM public.properties LOOP
         -- If an active contract exists, set to Occupied
         IF EXISTS (
             SELECT 1 FROM public.contracts 
-            WHERE property_id = prop.id 
-            AND status = 'active'
+-- [SCRUBBED GARBAGE]             WHERE property_id = prop.id 
+-- [SCRUBBED GARBAGE]             AND status = 'active'
         ) THEN
             UPDATE public.properties
             SET status = 'Occupied'
-            WHERE id = prop.id;
-        ELSE
+-- [SCRUBBED GARBAGE]             WHERE id = prop.id;
+-- [SCRUBBED GARBAGE]         ELSE
             -- Otherwise Vacant
             UPDATE public.properties
             SET status = 'Vacant'
-            WHERE id = prop.id;
+-- [SCRUBBED GARBAGE]             WHERE id = prop.id;
         END IF;
     END LOOP;
 END $$;
@@ -18222,8 +18326,8 @@ BEGIN
     -- Update contracts where the end_date has passed and they are still 'active'
     UPDATE public.contracts
     SET status = 'archived'
-    WHERE status = 'active'
-    AND end_date < CURRENT_DATE;
+-- [SCRUBBED GARBAGE]     WHERE status = 'active'
+-- [SCRUBBED GARBAGE]     AND end_date < CURRENT_DATE;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -18249,15 +18353,15 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Create chaining_factors table
 CREATE TABLE IF NOT EXISTS chaining_factors (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    index_type TEXT NOT NULL CHECK (index_type IN ('cpi', 'housing', 'construction')),
-    from_base TEXT NOT NULL,
-    to_base TEXT NOT NULL,
-    factor DECIMAL(10, 6) NOT NULL,
-    effective_date DATE NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    UNIQUE(index_type, from_base, to_base)
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [SCRUBBED GARBAGE]     index_type TEXT NOT NULL CHECK (index_type IN ('cpi', 'housing', 'construction')),
+-- [SCRUBBED GARBAGE]     from_base TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     to_base TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     factor DECIMAL(10, 6) NOT NULL,
+-- [SCRUBBED GARBAGE]     effective_date DATE NOT NULL,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]     UNIQUE(index_type, from_base, to_base)
 );
 
 -- Add RLS policies
@@ -18265,17 +18369,17 @@ ALTER TABLE chaining_factors ENABLE ROW LEVEL SECURITY;
 
 -- Allow all authenticated users to read chaining factors
 CREATE POLICY "Allow authenticated users to read chaining factors"
-    ON chaining_factors
+-- [SCRUBBED GARBAGE]     ON chaining_factors
     FOR SELECT
-    TO authenticated
-    USING (true);
+-- [SCRUBBED GARBAGE]     TO authenticated
+-- [SCRUBBED GARBAGE]     USING (true);
 
 -- Allow service role to manage chaining factors
 CREATE POLICY "Allow service role to manage chaining factors"
-    ON chaining_factors
+-- [SCRUBBED GARBAGE]     ON chaining_factors
     FOR ALL
-    TO service_role
-    USING (true);
+-- [SCRUBBED GARBAGE]     TO service_role
+-- [SCRUBBED GARBAGE]     USING (true);
 
 -- Seed with known CBS base transitions
 -- Source: Central Bureau of Statistics official publications
@@ -18294,11 +18398,11 @@ INSERT INTO chaining_factors (index_type, from_base, to_base, factor, effective_
     ('construction', '2020', '2024', 1.0267, '2024-01-01'),
     ('construction', '2018', '2020', 1.0189, '2020-01-01'),
     ('construction', '2012', '2018', 1.0112, '2018-01-01')
-ON CONFLICT (index_type, from_base, to_base) DO NOTHING;
+-- [SCRUBBED GARBAGE] ON CONFLICT (index_type, from_base, to_base) DO NOTHING;
 
 -- Add index for faster lookups
 CREATE INDEX IF NOT EXISTS idx_chaining_factors_lookup 
-    ON chaining_factors(index_type, from_base, to_base);
+-- [SCRUBBED GARBAGE]     ON chaining_factors(index_type, from_base, to_base);
 
 -- Add comment
 
@@ -18310,7 +18414,7 @@ CREATE INDEX IF NOT EXISTS idx_chaining_factors_lookup
 CREATE OR REPLACE FUNCTION public.get_supabase_config(p_key TEXT)
 RETURNS TEXT AS $$
 DECLARE
-    v_value TEXT;
+-- [SCRUBBED GARBAGE]     v_value TEXT;
 BEGIN
     -- Try system_settings first
     SELECT value INTO v_value FROM public.system_settings WHERE key = p_key;
@@ -18318,9 +18422,9 @@ BEGIN
     -- Try current_setting as fallback
     IF v_value IS NULL OR v_value = '' THEN
         BEGIN
-            v_value := current_setting('app.settings.' || p_key, true);
+-- [SCRUBBED GARBAGE]             v_value := current_setting('app.settings.' || p_key, true);
         EXCEPTION WHEN OTHERS THEN
-            v_value := NULL;
+-- [SCRUBBED GARBAGE]             v_value := NULL;
         END;
     END IF;
     
@@ -18332,13 +18436,13 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE FUNCTION public.handle_automated_engagement_webhook()
 RETURNS TRIGGER AS $$
 DECLARE
-  v_project_ref TEXT;
-  v_service_key TEXT;
-  v_payload JSONB;
+-- [SCRUBBED GARBAGE]   v_project_ref TEXT;
+-- [SCRUBBED GARBAGE]   v_service_key TEXT;
+-- [SCRUBBED GARBAGE]   v_payload JSONB;
 BEGIN
   -- Get Config
-  v_project_ref := public.get_supabase_config('supabase_project_ref');
-  v_service_key := public.get_supabase_config('supabase_service_role_key');
+-- [SCRUBBED GARBAGE]   v_project_ref := public.get_supabase_config('supabase_project_ref');
+-- [SCRUBBED GARBAGE]   v_service_key := public.get_supabase_config('supabase_service_role_key');
 
   -- If no config, log warning and exit (preventing 22P02 crashes)
   IF v_project_ref IS NULL OR v_service_key IS NULL THEN
@@ -18347,7 +18451,7 @@ BEGIN
   END IF;
 
   -- Build Payload safely using to_jsonb
-  v_payload := jsonb_build_object(
+-- [SCRUBBED GARBAGE]   v_payload := jsonb_build_object(
     'type', TG_OP,
     'table', TG_TABLE_NAME,
     'record', to_jsonb(NEW),
@@ -18356,13 +18460,13 @@ BEGIN
 
   -- Perform HTTP Post with structured headers
   PERFORM
-    net.http_post(
-      url := 'https://' || v_project_ref || '.supabase.co/functions/v1/on-event-trigger',
-      headers := jsonb_build_object(
+-- [SCRUBBED GARBAGE]     net.http_post(
+-- [SCRUBBED GARBAGE]       url := 'https://' || v_project_ref || '.supabase.co/functions/v1/on-event-trigger',
+-- [SCRUBBED GARBAGE]       headers := jsonb_build_object(
         'Content-Type', 'application/json',
         'Authorization', 'Bearer ' || v_service_key
       ),
-      body := v_payload
+-- [SCRUBBED GARBAGE]       body := v_payload
     );
 
   RETURN NEW;
@@ -18375,28 +18479,28 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 3. Update forward_notification_to_email to be robust
 CREATE OR REPLACE FUNCTION public.forward_notification_to_email()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    v_project_ref text;
-    v_service_key text;
-    v_target_email text;
-    v_asset_alerts_enabled boolean;
+-- [SCRUBBED GARBAGE]     v_project_ref text;
+-- [SCRUBBED GARBAGE]     v_service_key text;
+-- [SCRUBBED GARBAGE]     v_target_email text;
+-- [SCRUBBED GARBAGE]     v_asset_alerts_enabled boolean;
 BEGIN
     -- Get project config
-    v_project_ref := public.get_supabase_config('supabase_project_ref');
-    v_service_key := public.get_supabase_config('supabase_service_role_key');
+-- [SCRUBBED GARBAGE]     v_project_ref := public.get_supabase_config('supabase_project_ref');
+-- [SCRUBBED GARBAGE]     v_service_key := public.get_supabase_config('supabase_service_role_key');
 
     -- Get user email and asset alerts preference
     SELECT 
-        u.email, 
-        COALESCE((up.notification_preferences->>'email_asset_alerts')::boolean, true)
-    INTO v_target_email, v_asset_alerts_enabled
-    FROM auth.users u
-    LEFT JOIN public.user_profiles up ON up.id = u.id
-    WHERE u.id = NEW.user_id;
+-- [SCRUBBED GARBAGE]         u.email, 
+-- [SCRUBBED GARBAGE]         COALESCE((up.notification_preferences->>'email_asset_alerts')::boolean, true)
+-- [SCRUBBED GARBAGE]     INTO v_target_email, v_asset_alerts_enabled
+-- [SCRUBBED GARBAGE]     FROM auth.users u
+-- [SCRUBBED GARBAGE]     LEFT JOIN public.user_profiles up ON up.id = u.id
+-- [SCRUBBED GARBAGE]     WHERE u.id = NEW.user_id;
 
     -- DECISION LOGIC:
     -- Forward IF:
@@ -18405,15 +18509,15 @@ BEGIN
     IF (v_project_ref IS NOT NULL AND v_service_key IS NOT NULL AND v_target_email IS NOT NULL) AND 
        ((NEW.type IN ('warning', 'error', 'urgent', 'action')) OR 
         (NEW.metadata->>'event' = 'maintenance_record' AND v_asset_alerts_enabled = true)) 
-    THEN
+-- [SCRUBBED GARBAGE]     THEN
         PERFORM
-          net.http_post(
-            url := 'https://' || v_project_ref || '.supabase.co/functions/v1/send-notification-email',
-            headers := jsonb_build_object(
+-- [SCRUBBED GARBAGE]           net.http_post(
+-- [SCRUBBED GARBAGE]             url := 'https://' || v_project_ref || '.supabase.co/functions/v1/send-notification-email',
+-- [SCRUBBED GARBAGE]             headers := jsonb_build_object(
                 'Content-Type', 'application/json',
                 'Authorization', 'Bearer ' || v_service_key
             ),
-            body := jsonb_build_object(
+-- [SCRUBBED GARBAGE]             body := jsonb_build_object(
                 'email', v_target_email,
                 'notification', to_jsonb(NEW)
             )
@@ -18430,10 +18534,10 @@ $$;
 -- 4. Fix admin_notifications type constraint
 ALTER TABLE public.admin_notifications DROP CONSTRAINT IF EXISTS admin_notifications_type_check;
 ALTER TABLE public.admin_notifications ADD CONSTRAINT admin_notifications_type_check 
-CHECK (type IN ('upgrade_request', 'system_alert', 'support_ticket', 'user_signup', 'payment_success'));
+-- [SCRUBBED GARBAGE] CHECK (type IN ('upgrade_request', 'system_alert', 'support_ticket', 'user_signup', 'payment_success'));
 
 -- 5. Force reload schema
-NOTIFY pgrst, 'reload schema';
+-- [SCRUBBED GARBAGE] NOTIFY pgrst, 'reload schema';
 -- Migration: 20260130153116_final_schema_cleanup.sql
 -- Description: Removes obsolete columns and tables identified in the schema audit.
 -- Replaces: legacy 'tenants' table, redundant 'properties' fields, and legacy 'user_profiles' fields.
@@ -18465,100 +18569,100 @@ DROP TABLE IF EXISTS public.tenants CASCADE;
 
 -- 5. Update get_users_with_stats RPC to count tenants from embedded data
 CREATE OR REPLACE FUNCTION get_users_with_stats()
-RETURNS TABLE (
-    id UUID,
-    email TEXT,
-    full_name TEXT,
-    phone TEXT,
-    role TEXT,
-    subscription_status TEXT,
-    plan_id TEXT,
-    created_at TIMESTAMPTZ,
-    last_login TIMESTAMPTZ,
-    properties_count BIGINT,
-    tenants_count BIGINT,
-    contracts_count BIGINT,
-    ai_sessions_count BIGINT,
-    open_tickets_count BIGINT,
-    storage_usage_mb NUMERIC,
-    is_super_admin BOOLEAN
+-- [SCRUBBED GARBAGE] RETURNS TABLE (
+-- [SCRUBBED GARBAGE]     id UUID,
+-- [SCRUBBED GARBAGE]     email TEXT,
+-- [SCRUBBED GARBAGE]     full_name TEXT,
+-- [SCRUBBED GARBAGE]     phone TEXT,
+-- [SCRUBBED GARBAGE]     role TEXT,
+-- [SCRUBBED GARBAGE]     subscription_status TEXT,
+-- [SCRUBBED GARBAGE]     plan_id TEXT,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ,
+-- [SCRUBBED GARBAGE]     last_login TIMESTAMPTZ,
+-- [SCRUBBED GARBAGE]     properties_count BIGINT,
+-- [SCRUBBED GARBAGE]     tenants_count BIGINT,
+-- [SCRUBBED GARBAGE]     contracts_count BIGINT,
+-- [SCRUBBED GARBAGE]     ai_sessions_count BIGINT,
+-- [SCRUBBED GARBAGE]     open_tickets_count BIGINT,
+-- [SCRUBBED GARBAGE]     storage_usage_mb NUMERIC,
+-- [SCRUBBED GARBAGE]     is_super_admin BOOLEAN
 ) 
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 BEGIN
     RETURN QUERY
     SELECT 
-        up.id,
-        up.email,
-        up.full_name,
-        up.phone,
-        up.role::TEXT,
-        COALESCE(up.subscription_status::TEXT, 'active'),
-        up.plan_id,
-        up.created_at,
-        up.last_login,
+-- [SCRUBBED GARBAGE]         up.id,
+-- [SCRUBBED GARBAGE]         up.email,
+-- [SCRUBBED GARBAGE]         up.full_name,
+-- [SCRUBBED GARBAGE]         up.phone,
+-- [SCRUBBED GARBAGE]         up.role::TEXT,
+-- [SCRUBBED GARBAGE]         COALESCE(up.subscription_status::TEXT, 'active'),
+-- [SCRUBBED GARBAGE]         up.plan_id,
+-- [SCRUBBED GARBAGE]         up.created_at,
+-- [SCRUBBED GARBAGE]         up.last_login,
         
         -- Asset Stats
-        COALESCE(p.count, 0)::BIGINT as properties_count,
-        COALESCE(t.count, 0)::BIGINT as tenants_count,
-        COALESCE(c.count, 0)::BIGINT as contracts_count,
+-- [SCRUBBED GARBAGE]         COALESCE(p.count, 0)::BIGINT as properties_count,
+-- [SCRUBBED GARBAGE]         COALESCE(t.count, 0)::BIGINT as tenants_count,
+-- [SCRUBBED GARBAGE]         COALESCE(c.count, 0)::BIGINT as contracts_count,
         
         -- Usage Stats
-        COALESCE(ai.count, 0)::BIGINT as ai_sessions_count,
+-- [SCRUBBED GARBAGE]         COALESCE(ai.count, 0)::BIGINT as ai_sessions_count,
         
         -- Support Stats
-        COALESCE(st.count, 0)::BIGINT as open_tickets_count,
+-- [SCRUBBED GARBAGE]         COALESCE(st.count, 0)::BIGINT as open_tickets_count,
         
         -- Storage Usage (Bytes to MB)
-        ROUND(COALESCE(usu.total_bytes, 0) / (1024.0 * 1024.0), 2)::NUMERIC as storage_usage_mb,
+-- [SCRUBBED GARBAGE]         ROUND(COALESCE(usu.total_bytes, 0) / (1024.0 * 1024.0), 2)::NUMERIC as storage_usage_mb,
         
         -- Permissions
-        COALESCE(up.is_super_admin, false) as is_super_admin
+-- [SCRUBBED GARBAGE]         COALESCE(up.is_super_admin, false) as is_super_admin
         
-    FROM user_profiles up
+-- [SCRUBBED GARBAGE]     FROM user_profiles up
     -- Property Counts
-    LEFT JOIN (SELECT user_id, count(*) as count FROM properties GROUP BY user_id) p ON up.id = p.user_id
+-- [SCRUBBED GARBAGE]     LEFT JOIN (SELECT user_id, count(*) as count FROM properties GROUP BY user_id) p ON up.id = p.user_id
     -- Tenant Counts (from embedded JSONB in contracts)
-    LEFT JOIN (
+-- [SCRUBBED GARBAGE]     LEFT JOIN (
         SELECT user_id, sum(jsonb_array_length(COALESCE(tenants, '[]'::jsonb))) as count 
-        FROM contracts 
-        GROUP BY user_id
+-- [SCRUBBED GARBAGE]         FROM contracts 
+-- [SCRUBBED GARBAGE]         GROUP BY user_id
     ) t ON up.id = t.user_id
     -- Contract Counts
-    LEFT JOIN (SELECT user_id, count(*) as count FROM contracts GROUP BY user_id) c ON up.id = c.user_id
+-- [SCRUBBED GARBAGE]     LEFT JOIN (SELECT user_id, count(*) as count FROM contracts GROUP BY user_id) c ON up.id = c.user_id
     -- AI Counts
-    LEFT JOIN (SELECT user_id, count(*) as count FROM ai_conversations GROUP BY user_id) ai ON up.id = ai.user_id
+-- [SCRUBBED GARBAGE]     LEFT JOIN (SELECT user_id, count(*) as count FROM ai_conversations GROUP BY user_id) ai ON up.id = ai.user_id
     -- Open Support Tickets
-    LEFT JOIN (SELECT user_id, count(*) as count FROM support_tickets WHERE status != 'resolved' GROUP BY user_id) st ON up.id = st.user_id
+-- [SCRUBBED GARBAGE]     LEFT JOIN (SELECT user_id, count(*) as count FROM support_tickets WHERE status != 'resolved' GROUP BY user_id) st ON up.id = st.user_id
     -- Storage Usage
-    LEFT JOIN (SELECT user_id, total_bytes FROM user_storage_usage) usu ON up.id = usu.user_id
+-- [SCRUBBED GARBAGE]     LEFT JOIN (SELECT user_id, total_bytes FROM user_storage_usage) usu ON up.id = usu.user_id
     
-    WHERE up.deleted_at IS NULL
-    ORDER BY up.created_at DESC;
+-- [SCRUBBED GARBAGE]     WHERE up.deleted_at IS NULL
+-- [SCRUBBED GARBAGE]     ORDER BY up.created_at DESC;
 END;
 $$;
 
 COMMIT;
 -- Add balcony and safe room (׳׳"׳“) columns to properties table
 ALTER TABLE public.properties 
-ADD COLUMN IF NOT EXISTS has_balcony BOOLEAN DEFAULT false,
-ADD COLUMN IF NOT EXISTS has_safe_room BOOLEAN DEFAULT false;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS has_balcony BOOLEAN DEFAULT false,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS has_safe_room BOOLEAN DEFAULT false;
 
 -- Add helpful comments
 -- Migration: Expand Contract Fields
 -- Description: Adds pets_allowed, special_clauses, guarantees, and guarantors_info to the contracts table.
 
 ALTER TABLE IF EXISTS public.contracts 
-ADD COLUMN IF NOT EXISTS pets_allowed BOOLEAN DEFAULT true,
-ADD COLUMN IF NOT EXISTS special_clauses TEXT,
-ADD COLUMN IF NOT EXISTS guarantees TEXT,
-ADD COLUMN IF NOT EXISTS guarantors_info TEXT;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS pets_allowed BOOLEAN DEFAULT true,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS special_clauses TEXT,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS guarantees TEXT,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS guarantors_info TEXT;
 
 -- Add elevator and accessibility columns to properties table
 ALTER TABLE public.properties 
-ADD COLUMN IF NOT EXISTS has_elevator BOOLEAN DEFAULT false,
-ADD COLUMN IF NOT EXISTS is_accessible BOOLEAN DEFAULT false;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS has_elevator BOOLEAN DEFAULT false,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS is_accessible BOOLEAN DEFAULT false;
 
 -- Add helpful comments
 -- Migration: Harden Property Occupancy Logic
@@ -18572,16 +18676,16 @@ BEGIN
     -- This is a batch update to ensure everything is in sync
     UPDATE public.properties p
     SET status = CASE 
-        WHEN EXISTS (
+-- [SCRUBBED GARBAGE]         WHEN EXISTS (
             SELECT 1 FROM public.contracts c
-            WHERE c.property_id = p.id
-            AND c.status = 'active'
-            AND c.start_date <= CURRENT_DATE
-            AND (c.end_date IS NULL OR c.end_date >= CURRENT_DATE)
+-- [SCRUBBED GARBAGE]             WHERE c.property_id = p.id
+-- [SCRUBBED GARBAGE]             AND c.status = 'active'
+-- [SCRUBBED GARBAGE]             AND c.start_date <= CURRENT_DATE
+-- [SCRUBBED GARBAGE]             AND (c.end_date IS NULL OR c.end_date >= CURRENT_DATE)
         ) THEN 'Occupied'
-        ELSE 'Vacant'
+-- [SCRUBBED GARBAGE]         ELSE 'Vacant'
     END
-    WHERE p.id IS NOT NULL; -- Added safe WHERE clause
+-- [SCRUBBED GARBAGE]     WHERE p.id IS NOT NULL; -- Added safe WHERE clause
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -18589,34 +18693,34 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE FUNCTION public.update_property_status_from_contract_v2()
 RETURNS TRIGGER AS $$
 DECLARE
-    target_property_id uuid;
+-- [SCRUBBED GARBAGE]     target_property_id uuid;
 BEGIN
     IF (TG_OP = 'DELETE') THEN
-        target_property_id := OLD.property_id;
-    ELSE
-        target_property_id := NEW.property_id;
+-- [SCRUBBED GARBAGE]         target_property_id := OLD.property_id;
+-- [SCRUBBED GARBAGE]     ELSE
+-- [SCRUBBED GARBAGE]         target_property_id := NEW.property_id;
     END IF;
 
     -- Check if any active contract is effective TODAY
     IF EXISTS (
         SELECT 1 FROM public.contracts 
-        WHERE property_id = target_property_id 
-        AND status = 'active'
-        AND start_date <= CURRENT_DATE
-        AND (end_date IS NULL OR end_date >= CURRENT_DATE)
+-- [SCRUBBED GARBAGE]         WHERE property_id = target_property_id 
+-- [SCRUBBED GARBAGE]         AND status = 'active'
+-- [SCRUBBED GARBAGE]         AND start_date <= CURRENT_DATE
+-- [SCRUBBED GARBAGE]         AND (end_date IS NULL OR end_date >= CURRENT_DATE)
     ) THEN
         UPDATE public.properties
         SET status = 'Occupied'
-        WHERE id = target_property_id;
-    ELSE
+-- [SCRUBBED GARBAGE]         WHERE id = target_property_id;
+-- [SCRUBBED GARBAGE]     ELSE
         UPDATE public.properties
         SET status = 'Vacant'
-        WHERE id = target_property_id;
+-- [SCRUBBED GARBAGE]         WHERE id = target_property_id;
     END IF;
 
     IF (TG_OP = 'DELETE') THEN
         RETURN OLD;
-    ELSE
+-- [SCRUBBED GARBAGE]     ELSE
         RETURN NEW;
     END IF;
 END;
@@ -18647,16 +18751,16 @@ BEGIN;
 
 -- 1. Restore 'status' column if it was dropped
 ALTER TABLE public.properties 
-ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'Vacant' CHECK (status IN ('Occupied', 'Vacant'));
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'Vacant' CHECK (status IN ('Occupied', 'Vacant'));
 
 -- 2. Add 'updated_at' column if missing
 ALTER TABLE public.properties 
-ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
 
 -- 3. Ensure 'has_balcony' and 'has_safe_room' exist (User safety check)
 ALTER TABLE public.properties 
-ADD COLUMN IF NOT EXISTS has_balcony BOOLEAN DEFAULT false,
-ADD COLUMN IF NOT EXISTS has_safe_room BOOLEAN DEFAULT false;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS has_balcony BOOLEAN DEFAULT false,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS has_safe_room BOOLEAN DEFAULT false;
 
 -- 4. Repopulate 'status' using the hardened logic
 -- This depends on recalculate_all_property_statuses() being defined 
@@ -18681,9 +18785,17 @@ DROP POLICY IF EXISTS "Users can update own payments" ON public.payments;
 DROP POLICY IF EXISTS "Users can delete own payments" ON public.payments;
 
 -- 2. Create strict ownership policies based on user_id
+;
+DROP POLICY IF EXISTS "Users can view own payments" ON public.payments;
 CREATE POLICY "Users can view own payments"   ON public.payments FOR SELECT USING (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can insert own payments" ON public.payments;
 CREATE POLICY "Users can insert own payments" ON public.payments FOR INSERT WITH CHECK (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can update own payments" ON public.payments;
 CREATE POLICY "Users can update own payments" ON public.payments FOR UPDATE USING (user_id = auth.uid());
+;
+DROP POLICY IF EXISTS "Users can delete own payments" ON public.payments;
 CREATE POLICY "Users can delete own payments" ON public.payments FOR DELETE USING (user_id = auth.uid());
 
 -- 3. Ensure Admin view is still preserved (if admin_god_mode_rls was applied)
@@ -18692,8 +18804,8 @@ BEGIN
     IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'is_admin') THEN
         DROP POLICY IF EXISTS "Admins view all payments" ON public.payments;
         CREATE POLICY "Admins view all payments" 
-            ON public.payments FOR SELECT 
-            USING (public.is_admin());
+-- [SCRUBBED GARBAGE]             ON public.payments FOR SELECT 
+-- [SCRUBBED GARBAGE]             USING (public.is_admin());
     END IF;
 END $$;
 -- Migration: Fix Orphaned Contract Triggers & Missing Columns
@@ -18712,14 +18824,16 @@ ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH 
 CREATE OR REPLACE FUNCTION public.handle_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW.updated_at = NOW();
+-- [SCRUBBED GARBAGE]     NEW.updated_at = NOW();
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS tr_contracts_updated_at ON public.contracts;
+;
+DROP TRIGGER IF EXISTS "tr_contracts_updated_at" ON public.contracts;
 CREATE TRIGGER tr_contracts_updated_at
-    BEFORE UPDATE ON public.contracts
+-- [SCRUBBED GARBAGE]     BEFORE UPDATE ON public.contracts
     FOR EACH ROW
     EXECUTE FUNCTION public.handle_updated_at();
 
@@ -18748,13 +18862,13 @@ BEGIN;
 
 -- 1. Ensure all expected columns exist on the contracts table
 ALTER TABLE public.contracts 
-ADD COLUMN IF NOT EXISTS pets_allowed BOOLEAN DEFAULT true,
-ADD COLUMN IF NOT EXISTS special_clauses TEXT,
-ADD COLUMN IF NOT EXISTS guarantees TEXT,
-ADD COLUMN IF NOT EXISTS guarantors_info TEXT,
-ADD COLUMN IF NOT EXISTS needs_painting BOOLEAN DEFAULT false,
-ADD COLUMN IF NOT EXISTS option_notice_days INTEGER,
-ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS pets_allowed BOOLEAN DEFAULT true,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS special_clauses TEXT,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS guarantees TEXT,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS guarantors_info TEXT,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS needs_painting BOOLEAN DEFAULT false,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS option_notice_days INTEGER,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
 
 -- 2. Force PostgREST schema cache refresh
 -- Redefining a generic function is a reliable way to trigger a reload in Supabase
@@ -18762,7 +18876,7 @@ CREATE OR REPLACE FUNCTION public.refresh_schema_cache()
 RETURNS void AS $$
 BEGIN
   -- This function exists solely to trigger a schema cache refresh
-  NULL;
+-- [SCRUBBED GARBAGE]   NULL;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -18780,91 +18894,91 @@ DO $$
 BEGIN
     ALTER TABLE public.user_profiles ALTER COLUMN role TYPE TEXT;
 EXCEPTION WHEN OTHERS THEN 
-    NULL; 
+-- [SCRUBBED GARBAGE]     NULL; 
 END $$;
 
 DO $$ 
 BEGIN
     ALTER TABLE public.user_profiles ALTER COLUMN subscription_status TYPE TEXT;
 EXCEPTION WHEN OTHERS THEN 
-    NULL; 
+-- [SCRUBBED GARBAGE]     NULL; 
 END $$;
 
 ALTER TABLE public.user_profiles 
-ADD COLUMN IF NOT EXISTS first_name TEXT,
-ADD COLUMN IF NOT EXISTS last_name TEXT,
-ADD COLUMN IF NOT EXISTS phone TEXT,
-ADD COLUMN IF NOT EXISTS plan_id TEXT,
-ADD COLUMN IF NOT EXISTS marketing_consent BOOLEAN DEFAULT FALSE,
-ADD COLUMN IF NOT EXISTS marketing_consent_at TIMESTAMPTZ,
-ADD COLUMN IF NOT EXISTS subscription_plan TEXT;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS first_name TEXT,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS last_name TEXT,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS phone TEXT,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS plan_id TEXT,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS marketing_consent BOOLEAN DEFAULT FALSE,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS marketing_consent_at TIMESTAMPTZ,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS subscription_plan TEXT;
 
 -- 2. Ensure 'free' plan exists in subscription_plans
 INSERT INTO public.subscription_plans (id, name, price_monthly, max_properties)
 VALUES ('free', 'Free Forever', 0, 1)
-ON CONFLICT (id) DO NOTHING;
+-- [SCRUBBED GARBAGE] ON CONFLICT (id) DO NOTHING;
 
 -- 3. Consolidated Trigger Function
 -- This function handles profile creation, invoice relinking, and metadata parsing
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER 
-LANGUAGE plpgsql 
-SECURITY DEFINER SET search_path = public
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER 
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql 
+-- [SCRUBBED GARBAGE] SECURITY DEFINER SET search_path = public
 AS $$
 DECLARE
-    v_full_name TEXT;
-    v_first_name TEXT;
-    v_last_name TEXT;
-    v_plan_id TEXT := 'free';
+-- [SCRUBBED GARBAGE]     v_full_name TEXT;
+-- [SCRUBBED GARBAGE]     v_first_name TEXT;
+-- [SCRUBBED GARBAGE]     v_last_name TEXT;
+-- [SCRUBBED GARBAGE]     v_plan_id TEXT := 'free';
 BEGIN
     -- Parse metadata
-    v_full_name := COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1));
-    v_first_name := COALESCE(NEW.raw_user_meta_data->>'first_name', split_part(v_full_name, ' ', 1), 'User');
-    v_last_name := COALESCE(NEW.raw_user_meta_data->>'last_name', 'User');
+-- [SCRUBBED GARBAGE]     v_full_name := COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1));
+-- [SCRUBBED GARBAGE]     v_first_name := COALESCE(NEW.raw_user_meta_data->>'first_name', split_part(v_full_name, ' ', 1), 'User');
+-- [SCRUBBED GARBAGE]     v_last_name := COALESCE(NEW.raw_user_meta_data->>'last_name', 'User');
 
     -- Insert or Update Profile
     INSERT INTO public.user_profiles (
-        id, 
-        email, 
-        full_name,
-        first_name,
-        last_name,
-        phone,
-        role, 
-        subscription_status, 
-        plan_id,
-        subscription_plan,
-        marketing_consent,
-        marketing_consent_at
+-- [SCRUBBED GARBAGE]         id, 
+-- [SCRUBBED GARBAGE]         email, 
+-- [SCRUBBED GARBAGE]         full_name,
+-- [SCRUBBED GARBAGE]         first_name,
+-- [SCRUBBED GARBAGE]         last_name,
+-- [SCRUBBED GARBAGE]         phone,
+-- [SCRUBBED GARBAGE]         role, 
+-- [SCRUBBED GARBAGE]         subscription_status, 
+-- [SCRUBBED GARBAGE]         plan_id,
+-- [SCRUBBED GARBAGE]         subscription_plan,
+-- [SCRUBBED GARBAGE]         marketing_consent,
+-- [SCRUBBED GARBAGE]         marketing_consent_at
     )
     VALUES (
-        NEW.id,
-        NEW.email,
-        v_full_name,
-        v_first_name,
-        v_last_name,
-        NEW.phone,
+-- [SCRUBBED GARBAGE]         NEW.id,
+-- [SCRUBBED GARBAGE]         NEW.email,
+-- [SCRUBBED GARBAGE]         v_full_name,
+-- [SCRUBBED GARBAGE]         v_first_name,
+-- [SCRUBBED GARBAGE]         v_last_name,
+-- [SCRUBBED GARBAGE]         NEW.phone,
         'user', 
         'active', 
-        v_plan_id,
+-- [SCRUBBED GARBAGE]         v_plan_id,
         'free_forever', -- Legacy field support
-        COALESCE((NEW.raw_user_meta_data->>'marketing_consent')::boolean, FALSE),
-        CASE WHEN (NEW.raw_user_meta_data->>'marketing_consent')::boolean THEN NOW() ELSE NULL END
+-- [SCRUBBED GARBAGE]         COALESCE((NEW.raw_user_meta_data->>'marketing_consent')::boolean, FALSE),
+-- [SCRUBBED GARBAGE]         CASE WHEN (NEW.raw_user_meta_data->>'marketing_consent')::boolean THEN NOW() ELSE NULL END
     )
-    ON CONFLICT (id) DO UPDATE SET
-        email = EXCLUDED.email,
-        full_name = COALESCE(EXCLUDED.full_name, user_profiles.full_name),
-        first_name = COALESCE(EXCLUDED.first_name, user_profiles.first_name),
-        last_name = COALESCE(EXCLUDED.last_name, user_profiles.last_name),
-        phone = COALESCE(EXCLUDED.phone, user_profiles.phone),
-        updated_at = NOW();
+-- [SCRUBBED GARBAGE]     ON CONFLICT (id) DO UPDATE SET
+-- [SCRUBBED GARBAGE]         email = EXCLUDED.email,
+-- [SCRUBBED GARBAGE]         full_name = COALESCE(EXCLUDED.full_name, user_profiles.full_name),
+-- [SCRUBBED GARBAGE]         first_name = COALESCE(EXCLUDED.first_name, user_profiles.first_name),
+-- [SCRUBBED GARBAGE]         last_name = COALESCE(EXCLUDED.last_name, user_profiles.last_name),
+-- [SCRUBBED GARBAGE]         phone = COALESCE(EXCLUDED.phone, user_profiles.phone),
+-- [SCRUBBED GARBAGE]         updated_at = NOW();
 
     -- Relink Past Invoices (Safely)
     -- This helps if the user had invoices as a guest/unregistered with the same email
     BEGIN
         UPDATE public.invoices
         SET user_id = NEW.id
-        WHERE user_id IS NULL AND billing_email = NEW.email;
+-- [SCRUBBED GARBAGE]         WHERE user_id IS NULL AND billing_email = NEW.email;
     EXCEPTION WHEN OTHERS THEN
         RAISE WARNING 'Relink failed: %', SQLERRM;
     END;
@@ -18878,8 +18992,10 @@ $$;
 
 -- 4. Re-attach Main Trigger
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+;
+DROP TRIGGER IF EXISTS "on_auth_user_created" ON auth.users;
 CREATE TRIGGER on_auth_user_created
-    AFTER INSERT ON auth.users
+-- [SCRUBBED GARBAGE]     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- 5. Clean up redundant triggers to prevent double-execution or conflicts
@@ -18897,41 +19013,41 @@ DROP POLICY IF EXISTS "Admins can delete plans" ON subscription_plans;
 
 -- INSERT: Only admins
 CREATE POLICY "Admins can insert plans"
-    ON subscription_plans FOR INSERT
+-- [SCRUBBED GARBAGE]     ON subscription_plans FOR INSERT
     WITH CHECK (
-        EXISTS (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM user_profiles
-            WHERE id = auth.uid()
-            AND (role = 'admin' OR is_super_admin = true)
+-- [SCRUBBED GARBAGE]             WHERE id = auth.uid()
+-- [SCRUBBED GARBAGE]             AND (role = 'admin' OR is_super_admin = true)
         )
     );
 
 -- UPDATE: Only admins
 CREATE POLICY "Admins can update plans"
-    ON subscription_plans FOR UPDATE
-    USING (
-        EXISTS (
+-- [SCRUBBED GARBAGE]     ON subscription_plans FOR UPDATE
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM user_profiles
-            WHERE id = auth.uid()
-            AND (role = 'admin' OR is_super_admin = true)
+-- [SCRUBBED GARBAGE]             WHERE id = auth.uid()
+-- [SCRUBBED GARBAGE]             AND (role = 'admin' OR is_super_admin = true)
         )
     )
     WITH CHECK (
-        EXISTS (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM user_profiles
-            WHERE id = auth.uid()
-            AND (role = 'admin' OR is_super_admin = true)
+-- [SCRUBBED GARBAGE]             WHERE id = auth.uid()
+-- [SCRUBBED GARBAGE]             AND (role = 'admin' OR is_super_admin = true)
         )
     );
 
 -- DELETE: Only admins
 CREATE POLICY "Admins can delete plans"
-    ON subscription_plans FOR DELETE
-    USING (
-        EXISTS (
+-- [SCRUBBED GARBAGE]     ON subscription_plans FOR DELETE
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM user_profiles
-            WHERE id = auth.uid()
-            AND (role = 'admin' OR is_super_admin = true)
+-- [SCRUBBED GARBAGE]             WHERE id = auth.uid()
+-- [SCRUBBED GARBAGE]             AND (role = 'admin' OR is_super_admin = true)
         )
     );
 -- Migration: fix_subscription_management_rls_and_cleanup
@@ -18939,17 +19055,17 @@ CREATE POLICY "Admins can delete plans"
 
 -- 1. Redefine is_admin to be super robust (SECURITY DEFINER to bypass RLS)
 CREATE OR REPLACE FUNCTION public.is_admin()
-RETURNS BOOLEAN 
-LANGUAGE plpgsql 
-SECURITY DEFINER 
+-- [SCRUBBED GARBAGE] RETURNS BOOLEAN 
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql 
+-- [SCRUBBED GARBAGE] SECURITY DEFINER 
 SET search_path = public
 AS $$
 BEGIN
     RETURN EXISTS (
         SELECT 1 
-        FROM public.user_profiles 
-        WHERE id = auth.uid() 
-        AND (role = 'admin' OR is_super_admin = true)
+-- [SCRUBBED GARBAGE]         FROM public.user_profiles 
+-- [SCRUBBED GARBAGE]         WHERE id = auth.uid() 
+-- [SCRUBBED GARBAGE]         AND (role = 'admin' OR is_super_admin = true)
     );
 END;
 $$;
@@ -18961,43 +19077,43 @@ DROP POLICY IF EXISTS "Admins can delete plans" ON subscription_plans;
 
 -- 3. Create new policies using is_admin() helper
 CREATE POLICY "Admins can insert plans"
-    ON subscription_plans FOR INSERT
+-- [SCRUBBED GARBAGE]     ON subscription_plans FOR INSERT
     WITH CHECK (public.is_admin());
 
 CREATE POLICY "Admins can update plans"
-    ON subscription_plans FOR UPDATE
-    USING (public.is_admin())
+-- [SCRUBBED GARBAGE]     ON subscription_plans FOR UPDATE
+-- [SCRUBBED GARBAGE]     USING (public.is_admin())
     WITH CHECK (public.is_admin());
 
 CREATE POLICY "Admins can delete plans"
-    ON subscription_plans FOR DELETE
-    USING (public.is_admin());
+-- [SCRUBBED GARBAGE]     ON subscription_plans FOR DELETE
+-- [SCRUBBED GARBAGE]     USING (public.is_admin());
 
 -- 4. Remove the max_tenants column as it is irrelevant (no dedicated tenants data)
 DO $$ 
 BEGIN
     IF EXISTS (
         SELECT 1 FROM information_schema.columns 
-        WHERE table_name = 'subscription_plans' AND column_name = 'max_tenants'
+-- [SCRUBBED GARBAGE]         WHERE table_name = 'subscription_plans' AND column_name = 'max_tenants'
     ) THEN
         ALTER TABLE subscription_plans DROP COLUMN max_tenants;
     END IF;
 END $$;
 
 -- 5. Force schema cache reload
-NOTIFY pgrst, 'reload schema';
+-- [SCRUBBED GARBAGE] NOTIFY pgrst, 'reload schema';
 -- Migration: unlock_testing_features
 -- Description: Buffs the 'free' plan to grant unlimited access and features for testing.
 
 UPDATE subscription_plans
 SET 
-    name = 'Beta Access (Unlimited)',
-    max_properties = -1,
-    max_contracts = -1,
-    max_sessions = -1,
+-- [SCRUBBED GARBAGE]     name = 'Beta Access (Unlimited)',
+-- [SCRUBBED GARBAGE]     max_properties = -1,
+-- [SCRUBBED GARBAGE]     max_contracts = -1,
+-- [SCRUBBED GARBAGE]     max_sessions = -1,
     -- max_storage_mb might not exist in all environments yet, but let's try to update it if it does
     -- Better to do a DO block for safety or just assume it's there based on migrations
-    features = jsonb_build_object(
+-- [SCRUBBED GARBAGE]     features = jsonb_build_object(
         'support_level', 'priority',
         'export_data', true,
         'legal_library', true,
@@ -19008,81 +19124,81 @@ SET
         'ai_assistant', true,
         'bill_analysis', true
     )
-WHERE id = 'free';
+-- [SCRUBBED GARBAGE] WHERE id = 'free';
 
 -- Also ensure 'max_storage_mb' is updated if it exists
 DO $$ 
 BEGIN
     IF EXISTS (
         SELECT 1 FROM information_schema.columns 
-        WHERE table_name = 'subscription_plans' AND column_name = 'max_storage_mb'
+-- [SCRUBBED GARBAGE]         WHERE table_name = 'subscription_plans' AND column_name = 'max_storage_mb'
     ) THEN
         UPDATE subscription_plans SET max_storage_mb = -1 WHERE id = 'free';
     END IF;
 END $$;
 
 -- Force schema cache reload
-NOTIFY pgrst, 'reload schema';
+-- [SCRUBBED GARBAGE] NOTIFY pgrst, 'reload schema';
 -- Migration: add_plan_active_status
 -- Description: Adds is_active column to subscription_plans to allow pausing plans.
 
 ALTER TABLE subscription_plans 
-ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
 
 -- Ensure all existing plans are active by default
 UPDATE subscription_plans SET is_active = true WHERE is_active IS NULL;
 
 -- Notify pgrst to reload schema
-NOTIFY pgrst, 'reload schema';
+-- [SCRUBBED GARBAGE] NOTIFY pgrst, 'reload schema';
 -- Migration: link_signup_plan_metadata
 -- Description: Updates handle_new_user trigger to use plan_id from user metadata.
 
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER 
-LANGUAGE plpgsql 
-SECURITY DEFINER SET search_path = public
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER 
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql 
+-- [SCRUBBED GARBAGE] SECURITY DEFINER SET search_path = public
 AS $$
 DECLARE
-    selected_plan TEXT;
+-- [SCRUBBED GARBAGE]     selected_plan TEXT;
 BEGIN
     -- Extract plan_id from metadata or default to 'free'
-    selected_plan := COALESCE(NEW.raw_user_meta_data->>'plan_id', 'free');
+-- [SCRUBBED GARBAGE]     selected_plan := COALESCE(NEW.raw_user_meta_data->>'plan_id', 'free');
 
     -- Create User Profile with UPSERT to handle edge cases
     INSERT INTO public.user_profiles (
-        id, 
-        email, 
-        full_name,
-        first_name,
-        last_name,
-        role, 
-        subscription_status, 
-        plan_id
+-- [SCRUBBED GARBAGE]         id, 
+-- [SCRUBBED GARBAGE]         email, 
+-- [SCRUBBED GARBAGE]         full_name,
+-- [SCRUBBED GARBAGE]         first_name,
+-- [SCRUBBED GARBAGE]         last_name,
+-- [SCRUBBED GARBAGE]         role, 
+-- [SCRUBBED GARBAGE]         subscription_status, 
+-- [SCRUBBED GARBAGE]         plan_id
     )
     VALUES (
-        NEW.id,
-        NEW.email,
-        COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
-        split_part(COALESCE(NEW.raw_user_meta_data->>'full_name', ''), ' ', 1),
-        split_part(COALESCE(NEW.raw_user_meta_data->>'full_name', ''), ' ', 2),
+-- [SCRUBBED GARBAGE]         NEW.id,
+-- [SCRUBBED GARBAGE]         NEW.email,
+-- [SCRUBBED GARBAGE]         COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
+-- [SCRUBBED GARBAGE]         split_part(COALESCE(NEW.raw_user_meta_data->>'full_name', ''), ' ', 1),
+-- [SCRUBBED GARBAGE]         split_part(COALESCE(NEW.raw_user_meta_data->>'full_name', ''), ' ', 2),
         'user',
         'active',
-        selected_plan
+-- [SCRUBBED GARBAGE]         selected_plan
     )
-    ON CONFLICT (id) DO UPDATE SET
-        email = EXCLUDED.email,
-        full_name = COALESCE(EXCLUDED.full_name, user_profiles.full_name),
-        first_name = COALESCE(EXCLUDED.first_name, user_profiles.first_name),
-        last_name = COALESCE(EXCLUDED.last_name, user_profiles.last_name),
-        plan_id = COALESCE(selected_plan, user_profiles.plan_id),
-        updated_at = NOW();
+-- [SCRUBBED GARBAGE]     ON CONFLICT (id) DO UPDATE SET
+-- [SCRUBBED GARBAGE]         email = EXCLUDED.email,
+-- [SCRUBBED GARBAGE]         full_name = COALESCE(EXCLUDED.full_name, user_profiles.full_name),
+-- [SCRUBBED GARBAGE]         first_name = COALESCE(EXCLUDED.first_name, user_profiles.first_name),
+-- [SCRUBBED GARBAGE]         last_name = COALESCE(EXCLUDED.last_name, user_profiles.last_name),
+-- [SCRUBBED GARBAGE]         plan_id = COALESCE(selected_plan, user_profiles.plan_id),
+-- [SCRUBBED GARBAGE]         updated_at = NOW();
 
     -- Link Past Invoices (if any exist)
     BEGIN
         UPDATE public.invoices
         SET user_id = NEW.id
-        WHERE user_id IS NULL 
-        AND billing_email = NEW.email;
+-- [SCRUBBED GARBAGE]         WHERE user_id IS NULL 
+-- [SCRUBBED GARBAGE]         AND billing_email = NEW.email;
     EXCEPTION WHEN OTHERS THEN
         RAISE WARNING 'Invoice linking failed for user %: %', NEW.email, SQLERRM;
     END;
@@ -19093,18 +19209,18 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $$;
 -- Migration: Create rental market data table and update user preferences
--- Create table for rental market trends
+-- CREATE TABLE IF NOT EXISTS for rental market trends
 CREATE TABLE IF NOT EXISTS public.rental_market_data (
-    region_name TEXT PRIMARY KEY,
-    avg_rent NUMERIC NOT NULL,
-    growth_1y NUMERIC DEFAULT 0,
-    growth_2y NUMERIC DEFAULT 0,
-    growth_5y NUMERIC DEFAULT 0,
-    month_over_month NUMERIC DEFAULT 0,
-    room_adjustments JSONB NOT NULL DEFAULT '{"2": 0.8, "3": 1.0, "4": 1.25, "5": 1.5}'::jsonb,
-    type_adjustments JSONB NOT NULL DEFAULT '{"apartment": 1.0, "penthouse": 1.4, "house": 1.8}'::jsonb,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+-- [SCRUBBED GARBAGE]     region_name TEXT PRIMARY KEY,
+-- [SCRUBBED GARBAGE]     avg_rent NUMERIC NOT NULL,
+-- [SCRUBBED GARBAGE]     growth_1y NUMERIC DEFAULT 0,
+-- [SCRUBBED GARBAGE]     growth_2y NUMERIC DEFAULT 0,
+-- [SCRUBBED GARBAGE]     growth_5y NUMERIC DEFAULT 0,
+-- [SCRUBBED GARBAGE]     month_over_month NUMERIC DEFAULT 0,
+-- [SCRUBBED GARBAGE]     room_adjustments JSONB NOT NULL DEFAULT '{"2": 0.8, "3": 1.0, "4": 1.25, "5": 1.5}'::jsonb,
+-- [SCRUBBED GARBAGE]     type_adjustments JSONB NOT NULL DEFAULT '{"apartment": 1.0, "penthouse": 1.4, "house": 1.8}'::jsonb,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ DEFAULT NOW(),
+-- [SCRUBBED GARBAGE]     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Enable RLS on rental_market_data
@@ -19112,16 +19228,16 @@ ALTER TABLE public.rental_market_data ENABLE ROW LEVEL SECURITY;
 
 -- Allow public read access to market data
 CREATE POLICY "Allow public read access to rental market data"
-    ON public.rental_market_data
+-- [SCRUBBED GARBAGE]     ON public.rental_market_data
     FOR SELECT
-    TO public
-    USING (true);
+-- [SCRUBBED GARBAGE]     TO public
+-- [SCRUBBED GARBAGE]     USING (true);
 
 -- Add pinned_cities to user_preferences
 DO $$ 
 BEGIN 
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_preferences' AND column_name = 'pinned_cities') THEN
-        ALTER TABLE public.user_preferences ADD COLUMN pinned_cities JSONB DEFAULT '[]'::jsonb;
+        ALTER TABLE public.user_preferences ADD COLUMN IF NOT EXISTS pinned_cities JSONB DEFAULT '[]'::jsonb;
     END IF;
 END $$;
 
@@ -19159,48 +19275,48 @@ VALUES
     ('Central', 4900, -2.9, 8.4, 28.0, -0.1, '{"2": 0.75, "3": 1.0, "4": 1.2, "5": 1.45}', '{"apartment": 1.0, "penthouse": 1.35, "house": 1.7}'),
     ('North', 3500, 5.4, 10.5, 22.0, 0.4, '{"2": 0.8, "3": 1.0, "4": 1.2, "5": 1.4}', '{"apartment": 1.0, "penthouse": 1.2, "house": 1.5}'),
     ('South', 3600, 1.2, 4.5, 18.0, 0.2, '{"2": 0.8, "3": 1.0, "4": 1.2, "5": 1.4}', '{"apartment": 1.0, "penthouse": 1.2, "house": 1.5}')
-ON CONFLICT (region_name) DO UPDATE SET 
-    avg_rent = EXCLUDED.avg_rent,
-    growth_1y = EXCLUDED.growth_1y,
-    growth_2y = EXCLUDED.growth_2y,
-    growth_5y = EXCLUDED.growth_5y,
-    month_over_month = EXCLUDED.month_over_month,
-    room_adjustments = EXCLUDED.room_adjustments,
-    type_adjustments = EXCLUDED.type_adjustments,
-    updated_at = NOW();
+-- [SCRUBBED GARBAGE] ON CONFLICT (region_name) DO UPDATE SET 
+-- [SCRUBBED GARBAGE]     avg_rent = EXCLUDED.avg_rent,
+-- [SCRUBBED GARBAGE]     growth_1y = EXCLUDED.growth_1y,
+-- [SCRUBBED GARBAGE]     growth_2y = EXCLUDED.growth_2y,
+-- [SCRUBBED GARBAGE]     growth_5y = EXCLUDED.growth_5y,
+-- [SCRUBBED GARBAGE]     month_over_month = EXCLUDED.month_over_month,
+-- [SCRUBBED GARBAGE]     room_adjustments = EXCLUDED.room_adjustments,
+-- [SCRUBBED GARBAGE]     type_adjustments = EXCLUDED.type_adjustments,
+-- [SCRUBBED GARBAGE]     updated_at = NOW();
 -- Migration: enhance_subscription_marketing
 -- Description: Adds marketing-focused columns to subscription_plans table.
 
 ALTER TABLE subscription_plans
-ADD COLUMN IF NOT EXISTS description TEXT,
-ADD COLUMN IF NOT EXISTS subtitle TEXT,
-ADD COLUMN IF NOT EXISTS badge_text TEXT,
-ADD COLUMN IF NOT EXISTS cta_text TEXT,
-ADD COLUMN IF NOT EXISTS sort_order INTEGER DEFAULT 0;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS description TEXT,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS subtitle TEXT,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS badge_text TEXT,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS cta_text TEXT,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS sort_order INTEGER DEFAULT 0;
 
 -- Set some reasonable defaults for existing plans to avoid empty fields
 UPDATE subscription_plans 
 SET 
-    description = CASE 
-        WHEN id = 'free' THEN 'Essential tracking for individual property owners.'
-        WHEN id = 'solo' THEN 'Advanced optimization for serious landlords.'
-        WHEN id = 'pro' THEN 'The ultimate yield maximizer for portfolio managers.'
-        ELSE 'Manage your rental business professionally.'
+-- [SCRUBBED GARBAGE]     description = CASE 
+-- [SCRUBBED GARBAGE]         WHEN id = 'free' THEN 'Essential tracking for individual property owners.'
+-- [SCRUBBED GARBAGE]         WHEN id = 'solo' THEN 'Advanced optimization for serious landlords.'
+-- [SCRUBBED GARBAGE]         WHEN id = 'pro' THEN 'The ultimate yield maximizer for portfolio managers.'
+-- [SCRUBBED GARBAGE]         ELSE 'Manage your rental business professionally.'
     END,
-    cta_text = CASE 
-        WHEN price_monthly = 0 THEN 'Get Started'
-        ELSE 'Start Free Trial'
+-- [SCRUBBED GARBAGE]     cta_text = CASE 
+-- [SCRUBBED GARBAGE]         WHEN price_monthly = 0 THEN 'Get Started'
+-- [SCRUBBED GARBAGE]         ELSE 'Start Free Trial'
     END,
-    sort_order = CASE 
-        WHEN id = 'free' THEN 10
-        WHEN id = 'solo' THEN 20
-        WHEN id = 'pro' THEN 30
-        ELSE 100
+-- [SCRUBBED GARBAGE]     sort_order = CASE 
+-- [SCRUBBED GARBAGE]         WHEN id = 'free' THEN 10
+-- [SCRUBBED GARBAGE]         WHEN id = 'solo' THEN 20
+-- [SCRUBBED GARBAGE]         WHEN id = 'pro' THEN 30
+-- [SCRUBBED GARBAGE]         ELSE 100
     END
-WHERE description IS NULL;
+-- [SCRUBBED GARBAGE] WHERE description IS NULL;
 
 -- Notify PostgREST to reload schema
-NOTIFY pgrst, 'reload schema';
+-- [SCRUBBED GARBAGE] NOTIFY pgrst, 'reload schema';
 
 -- Enable required extensions
 CREATE EXTENSION IF NOT EXISTS pg_cron;
@@ -19215,13 +19331,13 @@ SELECT cron.schedule(
     '0 6 1 2,5,8,11 *',            -- Schedule (Quarterly)
     $$
     SELECT
-        net.http_post(
-            url:=(SELECT value FROM system_settings WHERE key = 'api_url' LIMIT 1) || '/functions/v1/sync-rental-trends',
-            headers:=jsonb_build_object(
+-- [SCRUBBED GARBAGE]         net.http_post(
+-- [SCRUBBED GARBAGE]             url:=(SELECT value FROM system_settings WHERE key = 'api_url' LIMIT 1) || '/functions/v1/sync-rental-trends',
+-- [SCRUBBED GARBAGE]             headers:=jsonb_build_object(
                 'Content-Type', 'application/json',
                 'Authorization', 'Bearer ' || (SELECT value FROM system_settings WHERE key = 'service_role_key' LIMIT 1)
             ),
-            body:='{}'::jsonb
+-- [SCRUBBED GARBAGE]             body:='{}'::jsonb
         ) as request_id;
     $$
 );
@@ -19232,32 +19348,32 @@ INSERT INTO public.system_settings (key, value, description)
 VALUES 
     ('admin_email_daily_summary_enabled', 'true'::jsonb, 'Master toggle for daily admin summary email'),
     ('admin_email_content_preferences', '{"new_users": true, "revenue": true, "support_tickets": true, "upgrades": true, "active_properties": true}'::jsonb, 'JSON object defining which sections to include in the daily summary')
-ON CONFLICT (key) DO NOTHING;
+-- [SCRUBBED GARBAGE] ON CONFLICT (key) DO NOTHING;
 -- Update get_admin_stats to include top 10 cities by property count
 CREATE OR REPLACE FUNCTION public.get_admin_stats()
-RETURNS JSON
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS JSON
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-    result JSON;
-    total_users_count INTEGER;
-    total_contracts_count INTEGER;
-    total_revenue_amount NUMERIC;
-    active_users_count INTEGER;
-    total_ai_cost NUMERIC;
-    automated_actions_count INTEGER;
-    stagnant_tickets_count INTEGER;
-    avg_sentiment_score NUMERIC;
-    last_automation_run TIMESTAMPTZ;
-    top_cities JSON;
+-- [SCRUBBED GARBAGE]     result JSON;
+-- [SCRUBBED GARBAGE]     total_users_count INTEGER;
+-- [SCRUBBED GARBAGE]     total_contracts_count INTEGER;
+-- [SCRUBBED GARBAGE]     total_revenue_amount NUMERIC;
+-- [SCRUBBED GARBAGE]     active_users_count INTEGER;
+-- [SCRUBBED GARBAGE]     total_ai_cost NUMERIC;
+-- [SCRUBBED GARBAGE]     automated_actions_count INTEGER;
+-- [SCRUBBED GARBAGE]     stagnant_tickets_count INTEGER;
+-- [SCRUBBED GARBAGE]     avg_sentiment_score NUMERIC;
+-- [SCRUBBED GARBAGE]     last_automation_run TIMESTAMPTZ;
+-- [SCRUBBED GARBAGE]     top_cities JSON;
 BEGIN
     -- Check if the current user is an admin
     IF NOT EXISTS (
         SELECT 1 FROM user_profiles
-        WHERE id = auth.uid()
-        AND role IN ('admin', 'super_admin')
+-- [SCRUBBED GARBAGE]         WHERE id = auth.uid()
+-- [SCRUBBED GARBAGE]         AND role IN ('admin', 'super_admin')
     ) THEN
         RAISE EXCEPTION 'Access denied: Admin role required';
     END IF;
@@ -19277,18 +19393,18 @@ BEGIN
 
     -- 3. Top Cities Metrics (New)
     SELECT json_agg(city_stats) INTO top_cities
-    FROM (
+-- [SCRUBBED GARBAGE]     FROM (
         SELECT 
-            COALESCE(city, 'Unknown') as name,
-            COUNT(*) as count
-        FROM properties
-        GROUP BY city
-        ORDER BY count DESC
-        LIMIT 10
+-- [SCRUBBED GARBAGE]             COALESCE(city, 'Unknown') as name,
+-- [SCRUBBED GARBAGE]             COUNT(*) as count
+-- [SCRUBBED GARBAGE]         FROM properties
+-- [SCRUBBED GARBAGE]         GROUP BY city
+-- [SCRUBBED GARBAGE]         ORDER BY count DESC
+-- [SCRUBBED GARBAGE]         LIMIT 10
     ) city_stats;
 
     -- 4. Build Result
-    result := json_build_object(
+-- [SCRUBBED GARBAGE]     result := json_build_object(
         'totalUsers', total_users_count,
         'totalContracts', total_contracts_count,
         'totalRevenue', total_revenue_amount,
@@ -19319,26 +19435,26 @@ SELECT cron.schedule(
     -- Matches the 08:00 IL time requirement.
     $$
     SELECT
-      net.http_post(
-        url := 'https://' || public.get_supabase_config('supabase_project_ref') || '.supabase.co/functions/v1/send-daily-admin-summary',
-        headers := jsonb_build_object(
+-- [SCRUBBED GARBAGE]       net.http_post(
+-- [SCRUBBED GARBAGE]         url := 'https://' || public.get_supabase_config('supabase_project_ref') || '.supabase.co/functions/v1/send-daily-admin-summary',
+-- [SCRUBBED GARBAGE]         headers := jsonb_build_object(
           'Content-Type', 'application/json',
           'Authorization', 'Bearer ' || public.get_supabase_config('supabase_service_role_key')
         ),
-        body := '{}'::jsonb
+-- [SCRUBBED GARBAGE]         body := '{}'::jsonb
       )
     $$
 );
 
 -- 2. Ensure the keys exist as fallbacks in system_settings if they aren't there
 INSERT INTO public.system_settings (key, value, description)
-SELECT 'supabase_project_ref', '"qfvrekvugdjnwhnaucmz"'::jsonb, 'Supabase Project Reference'
-WHERE NOT EXISTS (SELECT 1 FROM public.system_settings WHERE key = 'supabase_project_ref');
+SELECT 'supabase_project_ref', '"tipnjnfbbnbskdlodrww"'::jsonb, 'Supabase Project Reference'
+-- [SCRUBBED GARBAGE] WHERE NOT EXISTS (SELECT 1 FROM public.system_settings WHERE key = 'supabase_project_ref');
 
 INSERT INTO public.system_settings (key, value, description)
 SELECT 'supabase_service_role_key', ('"' || current_setting('app.settings.service_role_key', true) || '"')::jsonb, 'Supabase Service Role Key'
-WHERE NOT EXISTS (SELECT 1 FROM public.system_settings WHERE key = 'supabase_service_role_key')
-AND current_setting('app.settings.service_role_key', true) IS NOT NULL;
+-- [SCRUBBED GARBAGE] WHERE NOT EXISTS (SELECT 1 FROM public.system_settings WHERE key = 'supabase_service_role_key')
+-- [SCRUBBED GARBAGE] AND current_setting('app.settings.service_role_key', true) IS NOT NULL;
 -- Migration: final_reliable_cron_and_schema_fix
 -- Description: Repairs the properties table and hardens the daily admin summary cron job.
 
@@ -19353,16 +19469,16 @@ RETURNS void AS $$
 BEGIN
     UPDATE public.properties p
     SET status = CASE 
-        WHEN EXISTS (
+-- [SCRUBBED GARBAGE]         WHEN EXISTS (
             SELECT 1 FROM public.contracts c
-            WHERE c.property_id = p.id
-            AND c.status = 'active'
-            AND c.start_date <= CURRENT_DATE
-            AND (c.end_date IS NULL OR c.end_date >= CURRENT_DATE)
+-- [SCRUBBED GARBAGE]             WHERE c.property_id = p.id
+-- [SCRUBBED GARBAGE]             AND c.status = 'active'
+-- [SCRUBBED GARBAGE]             AND c.start_date <= CURRENT_DATE
+-- [SCRUBBED GARBAGE]             AND (c.end_date IS NULL OR c.end_date >= CURRENT_DATE)
         ) THEN 'Occupied'
-        ELSE 'Vacant'
+-- [SCRUBBED GARBAGE]         ELSE 'Vacant'
     END
-    WHERE p.id IS NOT NULL;
+-- [SCRUBBED GARBAGE]     WHERE p.id IS NOT NULL;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -19374,7 +19490,7 @@ DO $$
 BEGIN
     PERFORM cron.unschedule('daily-admin-summary');
 EXCEPTION WHEN OTHERS THEN
-    NULL; -- Skip if not scheduled
+-- [SCRUBBED GARBAGE]     NULL; -- Skip if not scheduled
 END $$;
 
 SELECT cron.schedule(
@@ -19382,13 +19498,13 @@ SELECT cron.schedule(
     '30 5 * * *', -- 05:30 UTC = 07:30/08:30 IL time (08:00 Target)
     $$
     SELECT
-      net.http_post(
-        url := 'https://' || public.get_supabase_config('supabase_project_ref') || '.supabase.co/functions/v1/send-daily-admin-summary',
-        headers := jsonb_build_object(
+-- [SCRUBBED GARBAGE]       net.http_post(
+-- [SCRUBBED GARBAGE]         url := 'https://' || public.get_supabase_config('supabase_project_ref') || '.supabase.co/functions/v1/send-daily-admin-summary',
+-- [SCRUBBED GARBAGE]         headers := jsonb_build_object(
           'Content-Type', 'application/json',
           'Authorization', 'Bearer ' || public.get_supabase_config('supabase_service_role_key')
         ),
-        body := '{}'::jsonb
+-- [SCRUBBED GARBAGE]         body := '{}'::jsonb
       )
     $$
 );
@@ -19396,9 +19512,9 @@ SELECT cron.schedule(
 -- 4. Sync configuration in system_settings
 INSERT INTO public.system_settings (key, value, description)
 VALUES 
-    ('supabase_project_ref', '"qfvrekvugdjnwhnaucmz"', 'Supabase Project Reference'),
+    ('supabase_project_ref', '"tipnjnfbbnbskdlodrww"', 'Supabase Project Reference'),
     ('admin_email_daily_summary_enabled', 'true'::jsonb, 'Master toggle for daily admin summary email')
-ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+-- [SCRUBBED GARBAGE] ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
 
 -- 5. Trigger initial recalculation
 SELECT public.recalculate_all_property_statuses();
@@ -19411,61 +19527,61 @@ ALTER TABLE contracts DROP COLUMN IF EXISTS pets_allowed;
 
 -- 1. Check Contract Expirations (Dynamic)
 CREATE OR REPLACE FUNCTION public.check_contract_expirations()
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS void
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    expiring_contract RECORD;
-    count_new integer := 0;
-    pref_days integer;
+-- [SCRUBBED GARBAGE]     expiring_contract RECORD;
+-- [SCRUBBED GARBAGE]     count_new integer := 0;
+-- [SCRUBBED GARBAGE]     pref_days integer;
 BEGIN
     FOR expiring_contract IN
         SELECT 
-            c.id, 
-            c.end_date, 
-            c.property_id, 
-            p.user_id, 
-            p.address, 
-            p.city,
-            up.notification_preferences
-        FROM public.contracts c
-        JOIN public.properties p ON c.property_id = p.id
-        JOIN public.user_profiles up ON p.user_id = up.id
-        WHERE c.status = 'active'
+-- [SCRUBBED GARBAGE]             c.id, 
+-- [SCRUBBED GARBAGE]             c.end_date, 
+-- [SCRUBBED GARBAGE]             c.property_id, 
+-- [SCRUBBED GARBAGE]             p.user_id, 
+-- [SCRUBBED GARBAGE]             p.address, 
+-- [SCRUBBED GARBAGE]             p.city,
+-- [SCRUBBED GARBAGE]             up.notification_preferences
+-- [SCRUBBED GARBAGE]         FROM public.contracts c
+-- [SCRUBBED GARBAGE]         JOIN public.properties p ON c.property_id = p.id
+-- [SCRUBBED GARBAGE]         JOIN public.user_profiles up ON p.user_id = up.id
+-- [SCRUBBED GARBAGE]         WHERE c.status = 'active'
     LOOP
         -- Extract preference, default to 60, cap at 180
-        pref_days := COALESCE((expiring_contract.notification_preferences->>'contract_expiry_days')::int, 60);
+-- [SCRUBBED GARBAGE]         pref_days := COALESCE((expiring_contract.notification_preferences->>'contract_expiry_days')::int, 60);
         IF pref_days > 180 THEN pref_days := 180; END IF;
         IF pref_days < 1 THEN pref_days := 1; END IF;
 
         -- Check if contract expires in this window
         IF expiring_contract.end_date <= (CURRENT_DATE + (pref_days || ' days')::interval)
-           AND expiring_contract.end_date >= CURRENT_DATE THEN
+-- [SCRUBBED GARBAGE]            AND expiring_contract.end_date >= CURRENT_DATE THEN
            
             IF NOT EXISTS (
                 SELECT 1 
-                FROM public.notifications n 
-                WHERE n.user_id = expiring_contract.user_id
-                AND n.type = 'warning'
-                AND n.metadata->>'contract_id' = expiring_contract.id::text
-                AND n.title = 'Contract Expiring Soon' 
-                AND n.created_at > (CURRENT_DATE - INTERVAL '6 months')
+-- [SCRUBBED GARBAGE]                 FROM public.notifications n 
+-- [SCRUBBED GARBAGE]                 WHERE n.user_id = expiring_contract.user_id
+-- [SCRUBBED GARBAGE]                 AND n.type = 'warning'
+-- [SCRUBBED GARBAGE]                 AND n.metadata->>'contract_id' = expiring_contract.id::text
+-- [SCRUBBED GARBAGE]                 AND n.title = 'Contract Expiring Soon' 
+-- [SCRUBBED GARBAGE]                 AND n.created_at > (CURRENT_DATE - INTERVAL '6 months')
             ) THEN
                 INSERT INTO public.notifications (
-                    user_id,
-                    type,
-                    title,
-                    message,
-                    metadata
+-- [SCRUBBED GARBAGE]                     user_id,
+-- [SCRUBBED GARBAGE]                     type,
+-- [SCRUBBED GARBAGE]                     title,
+-- [SCRUBBED GARBAGE]                     message,
+-- [SCRUBBED GARBAGE]                     metadata
                 ) VALUES (
-                    expiring_contract.user_id,
+-- [SCRUBBED GARBAGE]                     expiring_contract.user_id,
                     'warning',
                     'Contract Expiring Soon',
                     'Contract for ' || expiring_contract.address || ' ends in ' || (expiring_contract.end_date - CURRENT_DATE)::text || ' days (' || to_char(expiring_contract.end_date, 'DD/MM/YYYY') || '). Review and renew today.',
-                    jsonb_build_object('contract_id', expiring_contract.id)
+-- [SCRUBBED GARBAGE]                     jsonb_build_object('contract_id', expiring_contract.id)
                 );
-                count_new := count_new + 1;
+-- [SCRUBBED GARBAGE]                 count_new := count_new + 1;
             END IF;
         END IF;
     END LOOP;
@@ -19474,59 +19590,59 @@ $$;
 
 -- 2. Check Rent Due (Dynamic)
 CREATE OR REPLACE FUNCTION public.check_rent_due()
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS void
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    due_payment RECORD;
-    count_new integer := 0;
-    pref_days integer;
+-- [SCRUBBED GARBAGE]     due_payment RECORD;
+-- [SCRUBBED GARBAGE]     count_new integer := 0;
+-- [SCRUBBED GARBAGE]     pref_days integer;
 BEGIN
     FOR due_payment IN
         SELECT 
-            pay.id,
-            pay.due_date,
-            pay.amount,
-            pay.currency,
-            p.user_id,
-            p.address,
-            up.notification_preferences
-        FROM public.payments pay
-        JOIN public.contracts c ON pay.contract_id = c.id
-        JOIN public.properties p ON c.property_id = p.id
-        JOIN public.user_profiles up ON p.user_id = up.id
-        WHERE pay.status = 'pending'
+-- [SCRUBBED GARBAGE]             pay.id,
+-- [SCRUBBED GARBAGE]             pay.due_date,
+-- [SCRUBBED GARBAGE]             pay.amount,
+-- [SCRUBBED GARBAGE]             pay.currency,
+-- [SCRUBBED GARBAGE]             p.user_id,
+-- [SCRUBBED GARBAGE]             p.address,
+-- [SCRUBBED GARBAGE]             up.notification_preferences
+-- [SCRUBBED GARBAGE]         FROM public.payments pay
+-- [SCRUBBED GARBAGE]         JOIN public.contracts c ON pay.contract_id = c.id
+-- [SCRUBBED GARBAGE]         JOIN public.properties p ON c.property_id = p.id
+-- [SCRUBBED GARBAGE]         JOIN public.user_profiles up ON p.user_id = up.id
+-- [SCRUBBED GARBAGE]         WHERE pay.status = 'pending'
     LOOP
         -- Extract preference, default to 3, cap at 60
-        pref_days := COALESCE((due_payment.notification_preferences->>'rent_due_days')::int, 3);
+-- [SCRUBBED GARBAGE]         pref_days := COALESCE((due_payment.notification_preferences->>'rent_due_days')::int, 3);
         IF pref_days > 60 THEN pref_days := 60; END IF;
         IF pref_days < 1 THEN pref_days := 1; END IF;
 
         IF due_payment.due_date <= (CURRENT_DATE + (pref_days || ' days')::interval)
-           AND due_payment.due_date >= CURRENT_DATE THEN
+-- [SCRUBBED GARBAGE]            AND due_payment.due_date >= CURRENT_DATE THEN
 
             IF NOT EXISTS (
                 SELECT 1 
-                FROM public.notifications n 
-                WHERE n.user_id = due_payment.user_id
-                AND n.type = 'info'
-                AND n.metadata->>'payment_id' = due_payment.id::text
+-- [SCRUBBED GARBAGE]                 FROM public.notifications n 
+-- [SCRUBBED GARBAGE]                 WHERE n.user_id = due_payment.user_id
+-- [SCRUBBED GARBAGE]                 AND n.type = 'info'
+-- [SCRUBBED GARBAGE]                 AND n.metadata->>'payment_id' = due_payment.id::text
             ) THEN
                 INSERT INTO public.notifications (
-                    user_id,
-                    type,
-                    title,
-                    message,
-                    metadata
+-- [SCRUBBED GARBAGE]                     user_id,
+-- [SCRUBBED GARBAGE]                     type,
+-- [SCRUBBED GARBAGE]                     title,
+-- [SCRUBBED GARBAGE]                     message,
+-- [SCRUBBED GARBAGE]                     metadata
                 ) VALUES (
-                    due_payment.user_id,
+-- [SCRUBBED GARBAGE]                     due_payment.user_id,
                     'info',
                     'Rent Due Soon',
                     'Rent of ' || due_payment.amount || ' ' || due_payment.currency || ' for ' || due_payment.address || ' is due on ' || to_char(due_payment.due_date, 'DD/MM/YYYY') || '.',
-                    jsonb_build_object('payment_id', due_payment.id)
+-- [SCRUBBED GARBAGE]                     jsonb_build_object('payment_id', due_payment.id)
                 );
-                count_new := count_new + 1;
+-- [SCRUBBED GARBAGE]                 count_new := count_new + 1;
             END IF;
         END IF;
     END LOOP;
@@ -19535,61 +19651,61 @@ $$;
 
 -- 3. Check Extension Options (Dynamic)
 CREATE OR REPLACE FUNCTION public.check_extension_options()
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS void
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    extension_record RECORD;
-    count_new integer := 0;
-    pref_days integer;
+-- [SCRUBBED GARBAGE]     extension_record RECORD;
+-- [SCRUBBED GARBAGE]     count_new integer := 0;
+-- [SCRUBBED GARBAGE]     pref_days integer;
 BEGIN
     FOR extension_record IN
         SELECT 
-            c.id, 
-            c.extension_option_start,
-            c.property_id, 
-            p.user_id, 
-            p.address,
-            up.notification_preferences
-        FROM public.contracts c
-        JOIN public.properties p ON c.property_id = p.id
-        JOIN public.user_profiles up ON p.user_id = up.id
-        WHERE c.status = 'active'
-        AND c.extension_option_start IS NOT NULL
+-- [SCRUBBED GARBAGE]             c.id, 
+-- [SCRUBBED GARBAGE]             c.extension_option_start,
+-- [SCRUBBED GARBAGE]             c.property_id, 
+-- [SCRUBBED GARBAGE]             p.user_id, 
+-- [SCRUBBED GARBAGE]             p.address,
+-- [SCRUBBED GARBAGE]             up.notification_preferences
+-- [SCRUBBED GARBAGE]         FROM public.contracts c
+-- [SCRUBBED GARBAGE]         JOIN public.properties p ON c.property_id = p.id
+-- [SCRUBBED GARBAGE]         JOIN public.user_profiles up ON p.user_id = up.id
+-- [SCRUBBED GARBAGE]         WHERE c.status = 'active'
+-- [SCRUBBED GARBAGE]         AND c.extension_option_start IS NOT NULL
     LOOP
         -- Extract preference, default to 30, cap at 180
-        pref_days := COALESCE((extension_record.notification_preferences->>'extension_option_days')::int, 30);
+-- [SCRUBBED GARBAGE]         pref_days := COALESCE((extension_record.notification_preferences->>'extension_option_days')::int, 30);
         IF pref_days > 180 THEN pref_days := 180; END IF;
         IF pref_days < 1 THEN pref_days := 1; END IF;
 
         -- Check if extension option starts in this window
         IF extension_record.extension_option_start <= (CURRENT_DATE + (pref_days || ' days')::interval)
-           AND extension_record.extension_option_start >= CURRENT_DATE THEN
+-- [SCRUBBED GARBAGE]            AND extension_record.extension_option_start >= CURRENT_DATE THEN
            
             IF NOT EXISTS (
                 SELECT 1 
-                FROM public.notifications n 
-                WHERE n.user_id = extension_record.user_id
-                AND n.type = 'info'
-                AND n.metadata->>'contract_id' = extension_record.id::text
-                AND n.title = 'Extension Option Available'
-                AND n.created_at > (CURRENT_DATE - INTERVAL '6 months')
+-- [SCRUBBED GARBAGE]                 FROM public.notifications n 
+-- [SCRUBBED GARBAGE]                 WHERE n.user_id = extension_record.user_id
+-- [SCRUBBED GARBAGE]                 AND n.type = 'info'
+-- [SCRUBBED GARBAGE]                 AND n.metadata->>'contract_id' = extension_record.id::text
+-- [SCRUBBED GARBAGE]                 AND n.title = 'Extension Option Available'
+-- [SCRUBBED GARBAGE]                 AND n.created_at > (CURRENT_DATE - INTERVAL '6 months')
             ) THEN
                 INSERT INTO public.notifications (
-                    user_id,
-                    type,
-                    title,
-                    message,
-                    metadata
+-- [SCRUBBED GARBAGE]                     user_id,
+-- [SCRUBBED GARBAGE]                     type,
+-- [SCRUBBED GARBAGE]                     title,
+-- [SCRUBBED GARBAGE]                     message,
+-- [SCRUBBED GARBAGE]                     metadata
                 ) VALUES (
-                    extension_record.user_id,
+-- [SCRUBBED GARBAGE]                     extension_record.user_id,
                     'info',
                     'Extension Option Available',
                     'Extension option period for ' || extension_record.address || ' starts in ' || (extension_record.extension_option_start - CURRENT_DATE)::text || ' days (' || to_char(extension_record.extension_option_start, 'DD/MM/YYYY') || '). Consider discussing with tenant.',
-                    jsonb_build_object('contract_id', extension_record.id)
+-- [SCRUBBED GARBAGE]                     jsonb_build_object('contract_id', extension_record.id)
                 );
-                count_new := count_new + 1;
+-- [SCRUBBED GARBAGE]                 count_new := count_new + 1;
             END IF;
         END IF;
     END LOOP;
@@ -19598,35 +19714,35 @@ $$;
 
 -- 4. Check Extension Deadlines (Dynamic)
 CREATE OR REPLACE FUNCTION public.check_extension_deadlines()
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS void
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    deadline_record RECORD;
-    count_new integer := 0;
-    pref_days integer;
+-- [SCRUBBED GARBAGE]     deadline_record RECORD;
+-- [SCRUBBED GARBAGE]     count_new integer := 0;
+-- [SCRUBBED GARBAGE]     pref_days integer;
 BEGIN
     FOR deadline_record IN
         SELECT 
-            c.id, 
-            c.extension_option_end,
-            c.property_id, 
-            p.user_id, 
-            p.address,
-            up.notification_preferences
-        FROM public.contracts c
-        JOIN public.properties p ON c.property_id = p.id
-        JOIN public.user_profiles up ON p.user_id = up.id
-        WHERE c.status = 'active'
-        AND c.extension_option_end IS NOT NULL
+-- [SCRUBBED GARBAGE]             c.id, 
+-- [SCRUBBED GARBAGE]             c.extension_option_end,
+-- [SCRUBBED GARBAGE]             c.property_id, 
+-- [SCRUBBED GARBAGE]             p.user_id, 
+-- [SCRUBBED GARBAGE]             p.address,
+-- [SCRUBBED GARBAGE]             up.notification_preferences
+-- [SCRUBBED GARBAGE]         FROM public.contracts c
+-- [SCRUBBED GARBAGE]         JOIN public.properties p ON c.property_id = p.id
+-- [SCRUBBED GARBAGE]         JOIN public.user_profiles up ON p.user_id = up.id
+-- [SCRUBBED GARBAGE]         WHERE c.status = 'active'
+-- [SCRUBBED GARBAGE]         AND c.extension_option_end IS NOT NULL
     LOOP
         -- Extract preference, default to 7, cap at 180
-        pref_days := COALESCE((deadline_record.notification_preferences->>'extension_option_end_days')::int, 7);
+-- [SCRUBBED GARBAGE]         pref_days := COALESCE((deadline_record.notification_preferences->>'extension_option_end_days')::int, 7);
         
         -- Skip if disabled (0)
         IF pref_days = 0 THEN
-            CONTINUE;
+-- [SCRUBBED GARBAGE]             CONTINUE;
         END IF;
         
         IF pref_days > 180 THEN pref_days := 180; END IF;
@@ -19634,31 +19750,31 @@ BEGIN
 
         -- Check if deadline is approaching
         IF deadline_record.extension_option_end <= (CURRENT_DATE + (pref_days || ' days')::interval)
-           AND deadline_record.extension_option_end >= CURRENT_DATE THEN
+-- [SCRUBBED GARBAGE]            AND deadline_record.extension_option_end >= CURRENT_DATE THEN
            
             IF NOT EXISTS (
                 SELECT 1 
-                FROM public.notifications n 
-                WHERE n.user_id = deadline_record.user_id
-                AND n.type = 'warning'
-                AND n.metadata->>'contract_id' = deadline_record.id::text
-                AND n.title = 'Extension Option Deadline Approaching'
-                AND n.created_at > (CURRENT_DATE - INTERVAL '6 months')
+-- [SCRUBBED GARBAGE]                 FROM public.notifications n 
+-- [SCRUBBED GARBAGE]                 WHERE n.user_id = deadline_record.user_id
+-- [SCRUBBED GARBAGE]                 AND n.type = 'warning'
+-- [SCRUBBED GARBAGE]                 AND n.metadata->>'contract_id' = deadline_record.id::text
+-- [SCRUBBED GARBAGE]                 AND n.title = 'Extension Option Deadline Approaching'
+-- [SCRUBBED GARBAGE]                 AND n.created_at > (CURRENT_DATE - INTERVAL '6 months')
             ) THEN
                 INSERT INTO public.notifications (
-                    user_id,
-                    type,
-                    title,
-                    message,
-                    metadata
+-- [SCRUBBED GARBAGE]                     user_id,
+-- [SCRUBBED GARBAGE]                     type,
+-- [SCRUBBED GARBAGE]                     title,
+-- [SCRUBBED GARBAGE]                     message,
+-- [SCRUBBED GARBAGE]                     metadata
                 ) VALUES (
-                    deadline_record.user_id,
+-- [SCRUBBED GARBAGE]                     deadline_record.user_id,
                     'warning',
                     'Extension Option Deadline Approaching',
                     'Deadline to announce extension option for ' || deadline_record.address || ' is in ' || (deadline_record.extension_option_end - CURRENT_DATE)::text || ' days (' || to_char(deadline_record.extension_option_end, 'DD/MM/YYYY') || '). Contact tenant soon.',
-                    jsonb_build_object('contract_id', deadline_record.id)
+-- [SCRUBBED GARBAGE]                     jsonb_build_object('contract_id', deadline_record.id)
                 );
-                count_new := count_new + 1;
+-- [SCRUBBED GARBAGE]                 count_new := count_new + 1;
             END IF;
         END IF;
     END LOOP;
@@ -19666,12 +19782,12 @@ END;
 $$;
 -- Add onboarding tracking flag
 alter table public.user_preferences 
-add column if not exists has_seen_welcome_v1 boolean default false;
+-- [SCRUBBED GARBAGE] add column if not exists has_seen_welcome_v1 boolean default false;
 
 -- Comment for documentation
 -- Add seen_features tracking array
 alter table public.user_preferences 
-add column if not exists seen_features text[] default '{}';
+-- [SCRUBBED GARBAGE] add column if not exists seen_features text[] default '{}';
 
 -- Comment for documentation
 -- Migration: update_pricing_to_new_tiers
@@ -19680,35 +19796,35 @@ add column if not exists seen_features text[] default '{}';
 -- 1. Update SOLO (Free)
 UPDATE subscription_plans
 SET 
-    name = 'SOLO',
-    max_properties = 1,
-    price_monthly = 0,
-    price_yearly = 0,
-    features = '{"legal_library": true, "maintenance_tracker": true, "ai_assistant": false, "bill_analysis": false, "can_export": false, "cpi_autopilot": false}'::jsonb
-WHERE id = 'free' OR id = 'solo';
+-- [SCRUBBED GARBAGE]     name = 'SOLO',
+-- [SCRUBBED GARBAGE]     max_properties = 1,
+-- [SCRUBBED GARBAGE]     price_monthly = 0,
+-- [SCRUBBED GARBAGE]     price_yearly = 0,
+-- [SCRUBBED GARBAGE]     features = '{"legal_library": true, "maintenance_tracker": true, "ai_assistant": false, "bill_analysis": false, "can_export": false, "cpi_autopilot": false}'::jsonb
+-- [SCRUBBED GARBAGE] WHERE id = 'free' OR id = 'solo';
 
 -- 2. Update MATE (Pro)
 UPDATE subscription_plans
 SET 
-    name = 'MATE',
-    max_properties = 3,
-    price_monthly = 0, -- Testing Stage: Free
-    price_yearly = 0,
-    features = '{"legal_library": true, "maintenance_tracker": true, "ai_assistant": true, "bill_analysis": true, "can_export": false, "cpi_autopilot": true, "whatsapp_bot": true}'::jsonb
-WHERE id = 'pro' OR id = 'mate';
+-- [SCRUBBED GARBAGE]     name = 'MATE',
+-- [SCRUBBED GARBAGE]     max_properties = 3,
+-- [SCRUBBED GARBAGE]     price_monthly = 0, -- Testing Stage: Free
+-- [SCRUBBED GARBAGE]     price_yearly = 0,
+-- [SCRUBBED GARBAGE]     features = '{"legal_library": true, "maintenance_tracker": true, "ai_assistant": true, "bill_analysis": true, "can_export": false, "cpi_autopilot": true, "whatsapp_bot": true}'::jsonb
+-- [SCRUBBED GARBAGE] WHERE id = 'pro' OR id = 'mate';
 
 -- 3. Update MASTER (Enterprise)
 UPDATE subscription_plans
 SET 
-    name = 'MASTER',
-    max_properties = 10,
-    price_monthly = 0, -- Testing Stage: Free
-    price_yearly = 0,
-    features = '{"legal_library": true, "maintenance_tracker": true, "ai_assistant": true, "bill_analysis": true, "can_export": true, "cpi_autopilot": true, "whatsapp_bot": true, "portfolio_visualizer": true}'::jsonb
-WHERE id = 'enterprise' OR id = 'master';
+-- [SCRUBBED GARBAGE]     name = 'MASTER',
+-- [SCRUBBED GARBAGE]     max_properties = 10,
+-- [SCRUBBED GARBAGE]     price_monthly = 0, -- Testing Stage: Free
+-- [SCRUBBED GARBAGE]     price_yearly = 0,
+-- [SCRUBBED GARBAGE]     features = '{"legal_library": true, "maintenance_tracker": true, "ai_assistant": true, "bill_analysis": true, "can_export": true, "cpi_autopilot": true, "whatsapp_bot": true, "portfolio_visualizer": true}'::jsonb
+-- [SCRUBBED GARBAGE] WHERE id = 'enterprise' OR id = 'master';
 
 -- Notify PostgREST to reload schema
-NOTIFY pgrst, 'reload schema';
+-- [SCRUBBED GARBAGE] NOTIFY pgrst, 'reload schema';
 -- Migration: Hardening Access Control
 -- Description: Restricts system_settings read access and secures administrative roles.
 
@@ -19716,9 +19832,11 @@ NOTIFY pgrst, 'reload schema';
 -- Only Super Admins can read the full settings. Regular users see nothing (unless we specificy public keys).
 DROP POLICY IF EXISTS "Everyone can read system settings" ON public.system_settings;
 DROP POLICY IF EXISTS "Admins can read system settings" ON public.system_settings;
+;
+DROP POLICY IF EXISTS "Admins can read system settings" ON public.system_settings;
 CREATE POLICY "Admins can read system settings" ON public.system_settings
     FOR SELECT
-    USING (public.is_admin());
+-- [SCRUBBED GARBAGE]     USING (public.is_admin());
 
 -- 2. PREVENT ROLE SELF-ESCALATION
 -- Create a trigger function to ensure only admins can change roles
@@ -19729,7 +19847,7 @@ BEGIN
         -- Check if the PERFOMING user is an admin
         IF NOT EXISTS (
             SELECT 1 FROM public.user_profiles 
-            WHERE id = auth.uid() AND (role = 'admin' OR is_super_admin = true)
+-- [SCRUBBED GARBAGE]             WHERE id = auth.uid() AND (role = 'admin' OR is_super_admin = true)
         ) THEN
             RAISE EXCEPTION 'Access Denied: You cannot modify roles without administrative privileges.';
         END IF;
@@ -19739,8 +19857,10 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS tr_on_role_change ON public.user_profiles;
+;
+DROP TRIGGER IF EXISTS "tr_on_role_change" ON public.user_profiles;
 CREATE TRIGGER tr_on_role_change
-    BEFORE UPDATE ON public.user_profiles
+-- [SCRUBBED GARBAGE]     BEFORE UPDATE ON public.user_profiles
     FOR EACH ROW
     EXECUTE FUNCTION public.check_role_change();
 
@@ -19748,72 +19868,72 @@ CREATE TRIGGER tr_on_role_change
 -- These keys should NOT be in the table for long-term security.
 DELETE FROM public.system_settings WHERE key IN ('supabase_service_role_key', 'WHATSAPP_APP_SECRET', 'WHATSAPP_VERIFY_TOKEN');
 
-NOTIFY pgrst, 'reload schema';
+-- [SCRUBBED GARBAGE] NOTIFY pgrst, 'reload schema';
 -- Migration: Storage Bucket Hardening
 -- Description: Sets sensitive buckets to private and enforces RLS.
 
 -- 1. Harden 'contracts' bucket
 UPDATE storage.buckets 
 SET public = false 
-WHERE id = 'contracts';
+-- [SCRUBBED GARBAGE] WHERE id = 'contracts';
 
 -- 2. Harden 'property_images' bucket (if it exists)
 UPDATE storage.buckets 
 SET public = false 
-WHERE id = 'property_images';
+-- [SCRUBBED GARBAGE] WHERE id = 'property_images';
 
 -- 3. Ensure 'secure_documents' is private
 UPDATE storage.buckets 
 SET public = false 
-WHERE id = 'secure_documents';
+-- [SCRUBBED GARBAGE] WHERE id = 'secure_documents';
 
 -- 4. Apply strict RLS for 'contracts' bucket matching 'secure_documents' pattern
 DROP POLICY IF EXISTS "Users view own contracts" ON storage.objects;
 CREATE POLICY "Users view own contracts"
-    ON storage.objects
+-- [SCRUBBED GARBAGE]     ON storage.objects
     FOR SELECT
-    USING (
-        bucket_id = 'contracts'
-        AND
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         bucket_id = 'contracts'
+-- [SCRUBBED GARBAGE]         AND
         (storage.foldername(name))[1] = auth.uid()::text
     );
 
 DROP POLICY IF EXISTS "Users upload own contracts" ON storage.objects;
 CREATE POLICY "Users upload own contracts"
-    ON storage.objects
+-- [SCRUBBED GARBAGE]     ON storage.objects
     FOR INSERT
     WITH CHECK (
-        bucket_id = 'contracts'
-        AND
+-- [SCRUBBED GARBAGE]         bucket_id = 'contracts'
+-- [SCRUBBED GARBAGE]         AND
         (storage.foldername(name))[1] = auth.uid()::text
-        AND
-        auth.role() = 'authenticated'
+-- [SCRUBBED GARBAGE]         AND
+-- [SCRUBBED GARBAGE]         auth.role() = 'authenticated'
     );
 
 -- 5. Repeat for 'property_images'
 DROP POLICY IF EXISTS "Users view own images" ON storage.objects;
 CREATE POLICY "Users view own images"
-    ON storage.objects
+-- [SCRUBBED GARBAGE]     ON storage.objects
     FOR SELECT
-    USING (
-        bucket_id = 'property_images'
-        AND
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         bucket_id = 'property_images'
+-- [SCRUBBED GARBAGE]         AND
         (storage.foldername(name))[1] = auth.uid()::text
     );
 
 DROP POLICY IF EXISTS "Users upload own images" ON storage.objects;
 CREATE POLICY "Users upload own images"
-    ON storage.objects
+-- [SCRUBBED GARBAGE]     ON storage.objects
     FOR INSERT
     WITH CHECK (
-        bucket_id = 'property_images'
-        AND
+-- [SCRUBBED GARBAGE]         bucket_id = 'property_images'
+-- [SCRUBBED GARBAGE]         AND
         (storage.foldername(name))[1] = auth.uid()::text
-        AND
-        auth.role() = 'authenticated'
+-- [SCRUBBED GARBAGE]         AND
+-- [SCRUBBED GARBAGE]         auth.role() = 'authenticated'
     );
 
-NOTIFY pgrst, 'reload schema';
+-- [SCRUBBED GARBAGE] NOTIFY pgrst, 'reload schema';
 -- Migration: Security Fortress (Total Privacy Hardening - v3)
 -- Description: Enforces strict RLS ownership with Admin audit support (Zero-Exposure to other users).
 
@@ -19824,7 +19944,9 @@ DO $$ BEGIN
     IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'feedback') THEN
         ALTER TABLE public.feedback ENABLE ROW LEVEL SECURITY;
         DROP POLICY IF EXISTS "Users can view own feedback" ON public.feedback;
-        CREATE POLICY "Users can view own feedback" ON public.feedback
+        ;
+DROP POLICY IF EXISTS "Users can view own feedback" ON public.feedback;
+CREATE POLICY "Users can view own feedback" ON public.feedback
             FOR SELECT USING (auth.uid() = user_id OR public.is_admin());
         -- Anyone can still insert (even guests) per current business logic if user_id is null
         -- but if user_id is set, it becomes owned.
@@ -19837,7 +19959,9 @@ DO $$ BEGIN
         ALTER TABLE public.ai_conversations ENABLE ROW LEVEL SECURITY;
         DROP POLICY IF EXISTS "Users can manage their own conversations" ON public.ai_conversations;
         DROP POLICY IF EXISTS "Users can view own AI conversations" ON public.ai_conversations;
-        CREATE POLICY "Users can view own AI conversations" ON public.ai_conversations
+        ;
+DROP POLICY IF EXISTS "Users can view own AI conversations" ON public.ai_conversations;
+CREATE POLICY "Users can view own AI conversations" ON public.ai_conversations
             FOR ALL USING (auth.uid() = user_id OR public.is_admin());
     END IF;
 END $$;
@@ -19847,7 +19971,9 @@ DO $$ BEGIN
     IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'invoices') THEN
         ALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;
         DROP POLICY IF EXISTS "Users can view own invoices" ON public.invoices;
-        CREATE POLICY "Users can view own invoices" ON public.invoices
+        ;
+DROP POLICY IF EXISTS "Users can view own invoices" ON public.invoices;
+CREATE POLICY "Users can view own invoices" ON public.invoices
             FOR SELECT USING (auth.uid() = user_id OR public.is_admin());
     END IF;
 END $$;
@@ -19857,7 +19983,9 @@ DO $$ BEGIN
     IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'user_preferences') THEN
         ALTER TABLE public.user_preferences ENABLE ROW LEVEL SECURITY;
         DROP POLICY IF EXISTS "Users can manage own preferences" ON public.user_preferences;
-        CREATE POLICY "Users can manage own preferences" ON public.user_preferences
+        ;
+DROP POLICY IF EXISTS "Users can manage own preferences" ON public.user_preferences;
+CREATE POLICY "Users can manage own preferences" ON public.user_preferences
             FOR ALL USING (auth.uid() = user_id OR public.is_admin());
     END IF;
 END $$;
@@ -19867,7 +19995,9 @@ DO $$ BEGIN
     IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'audit_logs') THEN
         ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
         DROP POLICY IF EXISTS "Admins can view all audit logs" ON public.audit_logs;
-        CREATE POLICY "Admins can view all audit logs" ON public.audit_logs
+        ;
+DROP POLICY IF EXISTS "Admins can view all audit logs" ON public.audit_logs;
+CREATE POLICY "Admins can view all audit logs" ON public.audit_logs
             FOR SELECT USING (public.is_admin());
     END IF;
 END $$;
@@ -19878,7 +20008,9 @@ DO $$ BEGIN
         ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
         DROP POLICY IF EXISTS "Users can view their own notifications" ON public.notifications;
         DROP POLICY IF EXISTS "Users can manage own notifications" ON public.notifications;
-        CREATE POLICY "Users can manage own notifications" ON public.notifications
+        ;
+DROP POLICY IF EXISTS "Users can manage own notifications" ON public.notifications;
+CREATE POLICY "Users can manage own notifications" ON public.notifications
             FOR ALL USING (auth.uid() = user_id OR public.is_admin());
     END IF;
 END $$;
@@ -19888,7 +20020,9 @@ DO $$ BEGIN
     IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'user_storage_usage') THEN
         ALTER TABLE public.user_storage_usage ENABLE ROW LEVEL SECURITY;
         DROP POLICY IF EXISTS "Users can view own storage usage" ON public.user_storage_usage;
-        CREATE POLICY "Users can view own storage usage" ON public.user_storage_usage
+        ;
+DROP POLICY IF EXISTS "Users can view own storage usage" ON public.user_storage_usage;
+CREATE POLICY "Users can view own storage usage" ON public.user_storage_usage
             FOR SELECT USING (auth.uid() = user_id OR public.is_admin());
     END IF;
 END $$;
@@ -19898,7 +20032,9 @@ DO $$ BEGIN
     IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'whatsapp_conversations') THEN
         ALTER TABLE public.whatsapp_conversations ENABLE ROW LEVEL SECURITY;
         DROP POLICY IF EXISTS "Users can view own whatsapp" ON public.whatsapp_conversations;
-        CREATE POLICY "Users can view own whatsapp" ON public.whatsapp_conversations
+        ;
+DROP POLICY IF EXISTS "Users can view own whatsapp" ON public.whatsapp_conversations;
+CREATE POLICY "Users can view own whatsapp" ON public.whatsapp_conversations
             FOR SELECT USING (auth.uid() = user_id OR public.is_admin());
     END IF;
 END $$;
@@ -19908,12 +20044,14 @@ DO $$ BEGIN
     IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'whatsapp_messages') THEN
         ALTER TABLE public.whatsapp_messages ENABLE ROW LEVEL SECURITY;
         DROP POLICY IF EXISTS "Users can view own whatsapp messages" ON public.whatsapp_messages;
-        CREATE POLICY "Users can view own whatsapp messages" ON public.whatsapp_messages
+        ;
+DROP POLICY IF EXISTS "Users can view own whatsapp messages" ON public.whatsapp_messages;
+CREATE POLICY "Users can view own whatsapp messages" ON public.whatsapp_messages
             FOR SELECT USING (
-                EXISTS (
+-- [SCRUBBED GARBAGE]                 EXISTS (
                     SELECT 1 FROM public.whatsapp_conversations c
-                    WHERE c.id = whatsapp_messages.conversation_id
-                    AND (c.user_id = auth.uid() OR public.is_admin())
+-- [SCRUBBED GARBAGE]                     WHERE c.id = whatsapp_messages.conversation_id
+-- [SCRUBBED GARBAGE]                     AND (c.user_id = auth.uid() OR public.is_admin())
                 )
             );
     END IF;
@@ -19925,21 +20063,25 @@ DO $$ BEGIN
     IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'user_profiles') THEN
         ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
         DROP POLICY IF EXISTS "Users can view own profile" ON public.user_profiles;
-        CREATE POLICY "Users can view own profile" ON public.user_profiles
+        ;
+DROP POLICY IF EXISTS "Users can view own profile" ON public.user_profiles;
+CREATE POLICY "Users can view own profile" ON public.user_profiles
             FOR SELECT USING (auth.uid() = id OR public.is_admin());
             
         DROP POLICY IF EXISTS "Users can update own profile" ON public.user_profiles;
-        CREATE POLICY "Users can update own profile" ON public.user_profiles
+        ;
+DROP POLICY IF EXISTS "Users can update own profile" ON public.user_profiles;
+CREATE POLICY "Users can update own profile" ON public.user_profiles
             FOR UPDATE USING (auth.uid() = id)
             WITH CHECK (auth.uid() = id);
     END IF;
 END $$;
 
 COMMIT;
-NOTIFY pgrst, 'reload schema';
+-- [SCRUBBED GARBAGE] NOTIFY pgrst, 'reload schema';
 
 COMMIT;
-NOTIFY pgrst, 'reload schema';
+-- [SCRUBBED GARBAGE] NOTIFY pgrst, 'reload schema';
 -- Migration: Storage Fortress (Bucket Security)
 -- Description: Sets feedback bucket to private and enforces strict path-based RLS for all sensitive assets.
 
@@ -19948,7 +20090,7 @@ BEGIN;
 -- 1. HARDEN FEEDBACK BUCKET (Critical Fix)
 UPDATE storage.buckets 
 SET public = false 
-WHERE id = 'feedback-screenshots';
+-- [SCRUBBED GARBAGE] WHERE id = 'feedback-screenshots';
 
 -- 2. REMOVE PERMISSIVE FEEDBACK POLICIES
 DROP POLICY IF EXISTS "Anyone can view feedback screenshots" ON storage.objects;
@@ -19957,18 +20099,18 @@ DROP POLICY IF EXISTS "Anyone can upload feedback screenshots" ON storage.object
 -- 3. APPLY OWNER-ONLY FEEDBACK POLICIES
 -- Path naming: feedback-screenshots/{user_id}/{filename}
 CREATE POLICY "Users can upload own feedback screenshots"
-    ON storage.objects FOR INSERT
+-- [SCRUBBED GARBAGE]     ON storage.objects FOR INSERT
     WITH CHECK (
-        bucket_id = 'feedback-screenshots'
-        AND
+-- [SCRUBBED GARBAGE]         bucket_id = 'feedback-screenshots'
+-- [SCRUBBED GARBAGE]         AND
         (storage.foldername(name))[1] = auth.uid()::text
     );
 
 CREATE POLICY "Users can view own feedback screenshots"
-    ON storage.objects FOR SELECT
-    USING (
-        bucket_id = 'feedback-screenshots'
-        AND
+-- [SCRUBBED GARBAGE]     ON storage.objects FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         bucket_id = 'feedback-screenshots'
+-- [SCRUBBED GARBAGE]         AND
         (storage.foldername(name))[1] = auth.uid()::text
     );
 
@@ -19978,16 +20120,16 @@ UPDATE storage.buckets SET public = false WHERE id IN ('contracts', 'property_im
 -- 5. STANDARDIZE POLICY NAMES FOR AUDITABILITY
 DROP POLICY IF EXISTS "Users view own contracts" ON storage.objects;
 CREATE POLICY "Secure Access: Contracts"
-    ON storage.objects FOR SELECT
-    USING (bucket_id = 'contracts' AND (storage.foldername(name))[1] = auth.uid()::text);
+-- [SCRUBBED GARBAGE]     ON storage.objects FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (bucket_id = 'contracts' AND (storage.foldername(name))[1] = auth.uid()::text);
 
 DROP POLICY IF EXISTS "Users view own images" ON storage.objects;
 CREATE POLICY "Secure Access: Property Images"
-    ON storage.objects FOR SELECT
-    USING (bucket_id = 'property_images' AND (storage.foldername(name))[1] = auth.uid()::text);
+-- [SCRUBBED GARBAGE]     ON storage.objects FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (bucket_id = 'property_images' AND (storage.foldername(name))[1] = auth.uid()::text);
 
 COMMIT;
-NOTIFY pgrst, 'reload schema';
+-- [SCRUBBED GARBAGE] NOTIFY pgrst, 'reload schema';
 -- Migration: Add WhatsApp Usage Limits
 -- Description: Adds limits to subscription plans and per-user overrides for WhatsApp messaging.
 
@@ -19995,7 +20137,7 @@ BEGIN;
 
 -- 1. Add max_whatsapp_messages to subscription_plans
 ALTER TABLE public.subscription_plans 
-ADD COLUMN IF NOT EXISTS max_whatsapp_messages INTEGER DEFAULT 50;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS max_whatsapp_messages INTEGER DEFAULT 50;
 
 -- 2. Update Seed Data for existing plans
 UPDATE public.subscription_plans SET max_whatsapp_messages = 50 WHERE id = 'free';
@@ -20005,11 +20147,11 @@ UPDATE public.subscription_plans SET max_whatsapp_messages = -1 WHERE id = 'mast
 
 -- 3. Add whatsapp_limit_override to user_profiles
 ALTER TABLE public.user_profiles 
-ADD COLUMN IF NOT EXISTS whatsapp_limit_override INTEGER DEFAULT NULL;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS whatsapp_limit_override INTEGER DEFAULT NULL;
 
 -- 3b. Also add to ai_usage_limits for UI consistency in Usage Dashboard
 ALTER TABLE public.ai_usage_limits
-ADD COLUMN IF NOT EXISTS monthly_whatsapp_limit INTEGER DEFAULT 50;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS monthly_whatsapp_limit INTEGER DEFAULT 50;
 
 UPDATE public.ai_usage_limits SET monthly_whatsapp_limit = 50 WHERE tier_name = 'free';
 UPDATE public.ai_usage_limits SET monthly_whatsapp_limit = 500 WHERE tier_name = 'pro';
@@ -20018,10 +20160,10 @@ UPDATE public.ai_usage_limits SET monthly_whatsapp_limit = -1 WHERE tier_name = 
 -- 4. Create WhatsApp Usage Logs Table
 -- This tracks OUTBOUND messages to count against the quota
 CREATE TABLE IF NOT EXISTS public.whatsapp_usage_logs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    conversation_id UUID REFERENCES public.whatsapp_conversations(id) ON DELETE SET NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [SCRUBBED GARBAGE]     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     conversation_id UUID REFERENCES public.whatsapp_conversations(id) ON DELETE SET NULL,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Enable RLS
@@ -20032,24 +20174,24 @@ CREATE INDEX IF NOT EXISTS idx_whatsapp_usage_user_date ON public.whatsapp_usage
 
 -- Policies
 CREATE POLICY "Users can view their own whatsapp usage logs"
-    ON public.whatsapp_usage_logs FOR SELECT
-    USING (auth.uid() = user_id OR public.is_admin());
+-- [SCRUBBED GARBAGE]     ON public.whatsapp_usage_logs FOR SELECT
+-- [SCRUBBED GARBAGE]     USING (auth.uid() = user_id OR public.is_admin());
 
 CREATE POLICY "Admins can manage all usage logs"
-    ON public.whatsapp_usage_logs FOR ALL
-    USING (public.is_admin());
+-- [SCRUBBED GARBAGE]     ON public.whatsapp_usage_logs FOR ALL
+-- [SCRUBBED GARBAGE]     USING (public.is_admin());
 
 -- 5. RPC to check and log usage
 -- Returns { allowed: boolean, current_usage: int, limit: int }
 CREATE OR REPLACE FUNCTION public.check_and_log_whatsapp_usage(p_user_id UUID, p_conversation_id UUID DEFAULT NULL)
-RETURNS JSONB
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS JSONB
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    v_limit INTEGER;
-    v_current_usage INTEGER;
-    v_month_start TIMESTAMPTZ;
+-- [SCRUBBED GARBAGE]     v_limit INTEGER;
+-- [SCRUBBED GARBAGE]     v_current_usage INTEGER;
+-- [SCRUBBED GARBAGE]     v_month_start TIMESTAMPTZ;
 BEGIN
     -- SECURITY CHECK: 
     -- Only admin or the user themselves can trigger this check
@@ -20058,25 +20200,25 @@ BEGIN
     END IF;
 
     -- Get current month start
-    v_month_start := date_trunc('month', now());
+-- [SCRUBBED GARBAGE]     v_month_start := date_trunc('month', now());
 
     -- 1. Get User's Limit and Override
     SELECT 
-        COALESCE(up.whatsapp_limit_override, p.max_whatsapp_messages, 50) INTO v_limit
-    FROM public.user_profiles up
-    JOIN public.subscription_plans p ON up.plan_id = p.id
-    WHERE up.id = p_user_id;
+-- [SCRUBBED GARBAGE]         COALESCE(up.whatsapp_limit_override, p.max_whatsapp_messages, 50) INTO v_limit
+-- [SCRUBBED GARBAGE]     FROM public.user_profiles up
+-- [SCRUBBED GARBAGE]     JOIN public.subscription_plans p ON up.plan_id = p.id
+-- [SCRUBBED GARBAGE]     WHERE up.id = p_user_id;
 
     -- Fallback if user or plan not found
     IF v_limit IS NULL THEN
-        v_limit := 50;
+-- [SCRUBBED GARBAGE]         v_limit := 50;
     END IF;
 
     -- 2. Count total WhatsApp usage this month (Outbound messages)
     SELECT COUNT(*)::INTEGER INTO v_current_usage
-    FROM public.whatsapp_usage_logs
-    WHERE user_id = p_user_id
-      AND created_at >= v_month_start;
+-- [SCRUBBED GARBAGE]     FROM public.whatsapp_usage_logs
+-- [SCRUBBED GARBAGE]     WHERE user_id = p_user_id
+-- [SCRUBBED GARBAGE]       AND created_at >= v_month_start;
 
     -- 3. Check if allowed
     IF v_limit = -1 OR (v_current_usage + 1) <= v_limit THEN
@@ -20089,7 +20231,7 @@ BEGIN
             'current_usage', v_current_usage + 1,
             'limit', v_limit
         );
-    ELSE
+-- [SCRUBBED GARBAGE]     ELSE
         RETURN jsonb_build_object(
             'allowed', false,
             'current_usage', v_current_usage,
@@ -20102,7 +20244,7 @@ $$;
 
 COMMIT;
 
-NOTIFY pgrst, 'reload schema';
+-- [SCRUBBED GARBAGE] NOTIFY pgrst, 'reload schema';
 -- Migration: ensure_unique_phone
 -- Description: Enforces unique phone numbers in user_profiles and updates signup trigger.
 
@@ -20114,74 +20256,78 @@ UPDATE public.user_profiles SET phone = NULL WHERE phone = '';
 -- Note: UNIQUE allows multiple NULLs in Postgres, which is perfect for legacy users 
 -- who haven't set a phone yet, but prevents 2 users from having the same number.
 ALTER TABLE public.user_profiles 
-ADD CONSTRAINT user_profiles_phone_key UNIQUE (phone);
+-- [SCRUBBED GARBAGE] ADD CONSTRAINT user_profiles_phone_key UNIQUE (phone);
 
 -- 3. Update handle_new_user() to be stricter
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER 
-LANGUAGE plpgsql 
-SECURITY DEFINER SET search_path = public
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER 
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql 
+-- [SCRUBBED GARBAGE] SECURITY DEFINER SET search_path = public
 AS $$
 DECLARE
-    default_plan_id TEXT := 'free';
-    v_phone TEXT;
+-- [SCRUBBED GARBAGE]     default_plan_id TEXT := 'free';
+-- [SCRUBBED GARBAGE]     v_phone TEXT;
 BEGIN
     -- Extract phone from metadata or use NEW.phone (from auth schema if provided)
-    v_phone := COALESCE(NEW.raw_user_meta_data->>'phone_number', NEW.phone);
+-- [SCRUBBED GARBAGE]     v_phone := COALESCE(NEW.raw_user_meta_data->>'phone_number', NEW.phone);
 
     -- Verify plan exists
     IF NOT EXISTS (SELECT 1 FROM public.subscription_plans WHERE id = default_plan_id) THEN
-        default_plan_id := NULL; 
+-- [SCRUBBED GARBAGE]         default_plan_id := NULL; 
     END IF;
 
     INSERT INTO public.user_profiles (
-        id, 
-        email, 
-        full_name,
-        first_name,
-        last_name,
-        phone,
-        role, 
-        subscription_status, 
-        plan_id
+-- [SCRUBBED GARBAGE]         id, 
+-- [SCRUBBED GARBAGE]         email, 
+-- [SCRUBBED GARBAGE]         full_name,
+-- [SCRUBBED GARBAGE]         first_name,
+-- [SCRUBBED GARBAGE]         last_name,
+-- [SCRUBBED GARBAGE]         phone,
+-- [SCRUBBED GARBAGE]         role, 
+-- [SCRUBBED GARBAGE]         subscription_status, 
+-- [SCRUBBED GARBAGE]         plan_id
     )
     VALUES (
-        NEW.id,
-        NEW.email,
-        COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
-        COALESCE(NEW.raw_user_meta_data->>'first_name', split_part(NEW.raw_user_meta_data->>'full_name', ' ', 1), 'User'),
-        COALESCE(NEW.raw_user_meta_data->>'last_name', 'User'),
-        v_phone,
+-- [SCRUBBED GARBAGE]         NEW.id,
+-- [SCRUBBED GARBAGE]         NEW.email,
+-- [SCRUBBED GARBAGE]         COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
+-- [SCRUBBED GARBAGE]         COALESCE(NEW.raw_user_meta_data->>'first_name', split_part(NEW.raw_user_meta_data->>'full_name', ' ', 1), 'User'),
+-- [SCRUBBED GARBAGE]         COALESCE(NEW.raw_user_meta_data->>'last_name', 'User'),
+-- [SCRUBBED GARBAGE]         v_phone,
         'user', 
         'active', 
-        COALESCE(NEW.raw_user_meta_data->>'plan_id', default_plan_id)
+-- [SCRUBBED GARBAGE]         COALESCE(NEW.raw_user_meta_data->>'plan_id', default_plan_id)
     )
-    ON CONFLICT (id) DO UPDATE SET
-        email = EXCLUDED.email,
-        full_name = COALESCE(EXCLUDED.full_name, user_profiles.full_name),
-        phone = COALESCE(EXCLUDED.phone, user_profiles.phone),
-        updated_at = NOW();
+-- [SCRUBBED GARBAGE]     ON CONFLICT (id) DO UPDATE SET
+-- [SCRUBBED GARBAGE]         email = EXCLUDED.email,
+-- [SCRUBBED GARBAGE]         full_name = COALESCE(EXCLUDED.full_name, user_profiles.full_name),
+-- [SCRUBBED GARBAGE]         phone = COALESCE(EXCLUDED.phone, user_profiles.phone),
+-- [SCRUBBED GARBAGE]         updated_at = NOW();
 
     RETURN NEW;
 EXCEPTION 
-    WHEN unique_violation THEN
+-- [SCRUBBED GARBAGE]     WHEN unique_violation THEN
         RAISE EXCEPTION 'This phone number is already registered to another account.';
-    WHEN OTHERS THEN
+-- [SCRUBBED GARBAGE]     WHEN OTHERS THEN
         RAISE EXCEPTION 'Signup Failed: %', SQLERRM;
 END;
 $$;
--- Create Trigger for User Profile Updates
+-- ;
+DROP TRIGGER IF EXISTS "for" ON public.user_profiles;
+Create Trigger for User Profile Updates
 -- This attaches the user_profiles table to the existing automated engagement webhook system
 
 DROP TRIGGER IF EXISTS tr_on_user_profile_update ON public.user_profiles;
 
+;
+DROP TRIGGER IF EXISTS "tr_on_user_profile_update" ON public.user_profiles;
 CREATE TRIGGER tr_on_user_profile_update
-AFTER UPDATE ON public.user_profiles
+-- [SCRUBBED GARBAGE] AFTER UPDATE ON public.user_profiles
 FOR EACH ROW
-WHEN (
-    OLD.plan_id IS DISTINCT FROM NEW.plan_id OR
-    OLD.email IS DISTINCT FROM NEW.email OR
-    OLD.phone IS DISTINCT FROM NEW.phone
+-- [SCRUBBED GARBAGE] WHEN (
+-- [SCRUBBED GARBAGE]     OLD.plan_id IS DISTINCT FROM NEW.plan_id OR
+-- [SCRUBBED GARBAGE]     OLD.email IS DISTINCT FROM NEW.email OR
+-- [SCRUBBED GARBAGE]     OLD.phone IS DISTINCT FROM NEW.phone
 )
 EXECUTE FUNCTION public.handle_automated_engagement_webhook();
 -- Migration: Unified Property Images Security (v2 - Consolidated)
@@ -20198,44 +20344,44 @@ DROP POLICY IF EXISTS "Secure Access: Property Images" ON storage.objects;
 -- 2. ENSURE CORRECT BUCKET NAME 'property-images' IS PRIVATE
 UPDATE storage.buckets 
 SET public = false 
-WHERE id = 'property-images';
+-- [SCRUBBED GARBAGE] WHERE id = 'property-images';
 
 -- 3. APPLY CONSOLIDATED RLS TO 'property-images'
 -- Handles both direct user uploads and Google Maps imports
 CREATE POLICY "Secure Access: Property Images"
-    ON storage.objects
+-- [SCRUBBED GARBAGE]     ON storage.objects
     FOR ALL
-    USING (
-        bucket_id = 'property-images'
-        AND (
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         bucket_id = 'property-images'
+-- [SCRUBBED GARBAGE]         AND (
             -- Direct user-id folder: {userId}/filename
             (storage.foldername(name))[1] = auth.uid()::text
-            OR
+-- [SCRUBBED GARBAGE]             OR
             -- Google imports folder: google-imports/{userId}/filename
             (
                 (storage.foldername(name))[1] = 'google-imports' 
-                AND 
+-- [SCRUBBED GARBAGE]                 AND 
                 (storage.foldername(name))[2] = auth.uid()::text
             )
         )
     )
     WITH CHECK (
-        bucket_id = 'property-images'
-        AND (
+-- [SCRUBBED GARBAGE]         bucket_id = 'property-images'
+-- [SCRUBBED GARBAGE]         AND (
             -- Direct user-id folder
             (storage.foldername(name))[1] = auth.uid()::text
-            OR
+-- [SCRUBBED GARBAGE]             OR
             -- Google imports folder
             (
                 (storage.foldername(name))[1] = 'google-imports' 
-                AND 
+-- [SCRUBBED GARBAGE]                 AND 
                 (storage.foldername(name))[2] = auth.uid()::text
             )
         )
     );
 
 COMMIT;
-NOTIFY pgrst, 'reload schema';
+-- [SCRUBBED GARBAGE] NOTIFY pgrst, 'reload schema';
 -- Migration: Enhanced Storage Security for property-images
 -- Sets up robust RLS policies for both manual and automated uploads.
 
@@ -20253,34 +20399,34 @@ UPDATE storage.buckets SET public = false WHERE id = 'property-images';
 
 -- 3. Policy for manual uploads: {userId}/{fileName}
 CREATE POLICY "Manual uploads ownership"
-ON storage.objects FOR ALL
-TO authenticated
-USING (
-    bucket_id = 'property-images' AND
+-- [SCRUBBED GARBAGE] ON storage.objects FOR ALL
+-- [SCRUBBED GARBAGE] TO authenticated
+-- [SCRUBBED GARBAGE] USING (
+-- [SCRUBBED GARBAGE]     bucket_id = 'property-images' AND
     (storage.foldername(name))[1] = (auth.uid())::text
 )
 WITH CHECK (
-    bucket_id = 'property-images' AND
+-- [SCRUBBED GARBAGE]     bucket_id = 'property-images' AND
     (storage.foldername(name))[1] = (auth.uid())::text
 );
 
 -- 4. Policy for Google imports: google-imports/{userId}/{fileName}
 CREATE POLICY "Google imports ownership"
-ON storage.objects FOR ALL
-TO authenticated
-USING (
-    bucket_id = 'property-images' AND
+-- [SCRUBBED GARBAGE] ON storage.objects FOR ALL
+-- [SCRUBBED GARBAGE] TO authenticated
+-- [SCRUBBED GARBAGE] USING (
+-- [SCRUBBED GARBAGE]     bucket_id = 'property-images' AND
     (storage.foldername(name))[1] = 'google-imports' AND
     (storage.foldername(name))[2] = (auth.uid())::text
 )
 WITH CHECK (
-    bucket_id = 'property-images' AND
+-- [SCRUBBED GARBAGE]     bucket_id = 'property-images' AND
     (storage.foldername(name))[1] = 'google-imports' AND
     (storage.foldername(name))[2] = (auth.uid())::text
 );
 
 COMMIT;
-NOTIFY pgrst, 'reload schema';
+-- [SCRUBBED GARBAGE] NOTIFY pgrst, 'reload schema';
 -- Migration: Enable public read access for Calculator Magnet Page
 -- Date: 2026-02-08 (Moved from 2026-02-04 to avoid conflict)
 -- Author: Maestro (via Agent)
@@ -20290,10 +20436,10 @@ NOTIFY pgrst, 'reload schema';
 DROP POLICY IF EXISTS "Allow public read access to index_data" ON index_data;
 
 CREATE POLICY "Allow public read access to index_data"
-ON index_data
+-- [SCRUBBED GARBAGE] ON index_data
 FOR SELECT
-TO anon
-USING (true);
+-- [SCRUBBED GARBAGE] TO anon
+-- [SCRUBBED GARBAGE] USING (true);
 
 -- 2. Index Bases (Ensure RLS is on and policy exists)
 ALTER TABLE index_bases ENABLE ROW LEVEL SECURITY;
@@ -20301,31 +20447,31 @@ ALTER TABLE index_bases ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow public read access to index_bases" ON index_bases;
 
 CREATE POLICY "Allow public read access to index_bases"
-ON index_bases
+-- [SCRUBBED GARBAGE] ON index_bases
 FOR SELECT
-TO anon
-USING (true);
+-- [SCRUBBED GARBAGE] TO anon
+-- [SCRUBBED GARBAGE] USING (true);
 
 -- Ensure authenticated users can still read (in case previous logic relied on default open access for bases)
 DROP POLICY IF EXISTS "Allow authenticated users to read index_bases" ON index_bases;
 
 CREATE POLICY "Allow authenticated users to read index_bases"
-ON index_bases
+-- [SCRUBBED GARBAGE] ON index_bases
 FOR SELECT
-TO authenticated
-USING (true);
+-- [SCRUBBED GARBAGE] TO authenticated
+-- [SCRUBBED GARBAGE] USING (true);
 -- Create error_logs table
 CREATE TABLE IF NOT EXISTS public.error_logs (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-    user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-    message TEXT NOT NULL,
-    stack TEXT,
-    route TEXT,
-    component_stack TEXT,
-    metadata JSONB DEFAULT '{}'::jsonb,
-    is_resolved BOOLEAN DEFAULT false,
-    environment TEXT DEFAULT 'production'
+-- [SCRUBBED GARBAGE]     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+-- [SCRUBBED GARBAGE]     user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+-- [SCRUBBED GARBAGE]     message TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     stack TEXT,
+-- [SCRUBBED GARBAGE]     route TEXT,
+-- [SCRUBBED GARBAGE]     component_stack TEXT,
+-- [SCRUBBED GARBAGE]     metadata JSONB DEFAULT '{}'::jsonb,
+-- [SCRUBBED GARBAGE]     is_resolved BOOLEAN DEFAULT false,
+-- [SCRUBBED GARBAGE]     environment TEXT DEFAULT 'production'
 );
 
 -- Enable RLS
@@ -20334,47 +20480,53 @@ ALTER TABLE public.error_logs ENABLE ROW LEVEL SECURITY;
 -- Policies
 -- 1. Anyone (even unauthenticated) can insert logs (so we catch 404s/auth errors)
 DROP POLICY IF EXISTS "Allow anonymous inserts to error_logs" ON public.error_logs;
+;
+DROP POLICY IF EXISTS "Allow anonymous inserts to error_logs" ON public.error_logs;
 CREATE POLICY "Allow anonymous inserts to error_logs" ON public.error_logs
     FOR INSERT WITH CHECK (true);
 
 -- 2. Only admins can view logs
 DROP POLICY IF EXISTS "Allow admins to view error_logs" ON public.error_logs;
+;
+DROP POLICY IF EXISTS "Allow admins to view error_logs" ON public.error_logs;
 CREATE POLICY "Allow admins to view error_logs" ON public.error_logs
     FOR SELECT TO authenticated
-    USING (
-        EXISTS (
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM public.user_profiles
-            WHERE user_profiles.id = auth.uid()
-            AND user_profiles.role IN ('admin', 'super_admin')
+-- [SCRUBBED GARBAGE]             WHERE user_profiles.id = auth.uid()
+-- [SCRUBBED GARBAGE]             AND user_profiles.role IN ('admin', 'super_admin')
         )
     );
 
 -- 3. Only admins can update logs (mark as resolved)
 DROP POLICY IF EXISTS "Allow admins to update error_logs" ON public.error_logs;
+;
+DROP POLICY IF EXISTS "Allow admins to update error_logs" ON public.error_logs;
 CREATE POLICY "Allow admins to update error_logs" ON public.error_logs
     FOR UPDATE TO authenticated
-    USING (
-        EXISTS (
+-- [SCRUBBED GARBAGE]     USING (
+-- [SCRUBBED GARBAGE]         EXISTS (
             SELECT 1 FROM public.user_profiles
-            WHERE user_profiles.id = auth.uid()
-            AND user_profiles.role IN ('admin', 'super_admin')
+-- [SCRUBBED GARBAGE]             WHERE user_profiles.id = auth.uid()
+-- [SCRUBBED GARBAGE]             AND user_profiles.role IN ('admin', 'super_admin')
         )
     );
 
 -- 4. Trigger to notify admin on error
 CREATE OR REPLACE FUNCTION public.notify_admin_on_error()
-RETURNS TRIGGER 
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS TRIGGER 
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    project_url text := 'https://qfvrekvugdjnwhnaucmz.supabase.co';
+-- [SCRUBBED GARBAGE]     project_url text := 'https://tipnjnfbbnbskdlodrww.supabase.co';
 BEGIN
     PERFORM
-      net.http_post(
-        url := project_url || '/functions/v1/send-admin-alert',
-        headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
-        body := json_build_object(
+-- [SCRUBBED GARBAGE]       net.http_post(
+-- [SCRUBBED GARBAGE]         url := project_url || '/functions/v1/send-admin-alert',
+-- [SCRUBBED GARBAGE]         headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key', true) || '"}',
+-- [SCRUBBED GARBAGE]         body := json_build_object(
             'type', TG_OP,
             'table', 'error_logs',
             'record', row_to_json(NEW)
@@ -20388,8 +20540,10 @@ END;
 $$;
 
 DROP TRIGGER IF EXISTS on_error_log_inserted ON public.error_logs;
+;
+DROP TRIGGER IF EXISTS "on_error_log_inserted" ON public.error_logs;
 CREATE TRIGGER on_error_log_inserted
-    AFTER INSERT ON public.error_logs
+-- [SCRUBBED GARBAGE]     AFTER INSERT ON public.error_logs
     FOR EACH ROW
     EXECUTE FUNCTION public.notify_admin_on_error();
 
@@ -20406,7 +20560,7 @@ BEGIN;
 CREATE OR REPLACE FUNCTION public.get_supabase_config(p_key TEXT)
 RETURNS TEXT AS $$
 DECLARE
-    v_value TEXT;
+-- [SCRUBBED GARBAGE]     v_value TEXT;
 BEGIN
     -- Use #>> '{}' to get the unquoted text value from JSONB
     SELECT value #>> '{}' INTO v_value FROM public.system_settings WHERE key = p_key;
@@ -20414,9 +20568,9 @@ BEGIN
     -- Try current_setting as fallback
     IF v_value IS NULL OR v_value = '' THEN
         BEGIN
-            v_value := current_setting('app.settings.' || p_key, true);
+-- [SCRUBBED GARBAGE]             v_value := current_setting('app.settings.' || p_key, true);
         EXCEPTION WHEN OTHERS THEN
-            v_value := NULL;
+-- [SCRUBBED GARBAGE]             v_value := NULL;
         END;
     END IF;
     
@@ -20427,8 +20581,8 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- 2. Clean up potentially broken settings (removing redundant quotes if they exist)
 UPDATE public.system_settings 
 SET value = to_jsonb(value #>> '{}')
-WHERE key IN ('supabase_project_ref', 'supabase_service_role_key')
-AND value::text LIKE '"%"%';
+-- [SCRUBBED GARBAGE] WHERE key IN ('supabase_project_ref', 'supabase_service_role_key')
+-- [SCRUBBED GARBAGE] AND value::text LIKE '"%"%';
 
 -- 3. Reschedule the daily-admin-summary cron job
 -- This ensures it uses the fixed get_supabase_config and correct headers.
@@ -20436,7 +20590,7 @@ DO $$
 BEGIN
     PERFORM cron.unschedule('daily-admin-summary');
 EXCEPTION WHEN OTHERS THEN
-    NULL;
+-- [SCRUBBED GARBAGE]     NULL;
 END $$;
 
 SELECT cron.schedule(
@@ -20444,13 +20598,13 @@ SELECT cron.schedule(
     '30 5 * * *', -- 05:30 UTC = 07:30/08:30 IL time (08:00 Target)
     $$
     SELECT
-      net.http_post(
-        url := 'https://' || public.get_supabase_config('supabase_project_ref') || '.supabase.co/functions/v1/send-daily-admin-summary',
-        headers := jsonb_build_object(
+-- [SCRUBBED GARBAGE]       net.http_post(
+-- [SCRUBBED GARBAGE]         url := 'https://' || public.get_supabase_config('supabase_project_ref') || '.supabase.co/functions/v1/send-daily-admin-summary',
+-- [SCRUBBED GARBAGE]         headers := jsonb_build_object(
           'Content-Type', 'application/json',
           'Authorization', 'Bearer ' || public.get_supabase_config('supabase_service_role_key')
         ),
-        body := '{}'::jsonb
+-- [SCRUBBED GARBAGE]         body := '{}'::jsonb
       )
     $$
 );
@@ -20463,24 +20617,24 @@ ALTER TABLE subscription_plans ADD COLUMN IF NOT EXISTS max_archived_contracts I
 -- Starter Plan (assuming id='starter' or name like '%Starter%')
 UPDATE subscription_plans 
 SET max_archived_contracts = 3 
-WHERE id = 'starter';
+-- [SCRUBBED GARBAGE] WHERE id = 'starter';
 
 -- Pro Plan (assuming id='pro' or name like '%Pro%')
 UPDATE subscription_plans 
 SET max_archived_contracts = 15 
-WHERE id = 'pro';
+-- [SCRUBBED GARBAGE] WHERE id = 'pro';
 
 -- Ensure Free plan is handled (though logic is code-side for total count)
 UPDATE subscription_plans 
 SET max_archived_contracts = 1 
-WHERE id = 'free';
+-- [SCRUBBED GARBAGE] WHERE id = 'free';
 -- Create analytics_events table
 CREATE TABLE IF NOT EXISTS public.analytics_events (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE,
-    event_name TEXT NOT NULL,
-    metadata JSONB DEFAULT '{}'::jsonb,
-    created_at TIMESTAMPTZ DEFAULT now()
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [SCRUBBED GARBAGE]     user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     event_name TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     metadata JSONB DEFAULT '{}'::jsonb,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ DEFAULT now()
 );
 
 -- Index for performance
@@ -20497,15 +20651,17 @@ BEGIN
     -- Admins can read all events
     IF NOT EXISTS (
         SELECT 1 FROM pg_policies 
-        WHERE tablename = 'analytics_events' AND policyname = 'Admins can read all analytics'
+-- [SCRUBBED GARBAGE]         WHERE tablename = 'analytics_events' AND policyname = 'Admins can read all analytics'
     ) THEN
-        CREATE POLICY "Admins can read all analytics" ON public.analytics_events
+        ;
+DROP POLICY IF EXISTS "Admins can read all analytics" ON public.analytics_events;
+CREATE POLICY "Admins can read all analytics" ON public.analytics_events
             FOR SELECT
-            TO authenticated
-            USING (
-                EXISTS (
+-- [SCRUBBED GARBAGE]             TO authenticated
+-- [SCRUBBED GARBAGE]             USING (
+-- [SCRUBBED GARBAGE]                 EXISTS (
                     SELECT 1 FROM public.user_profiles
-                    WHERE id = auth.uid() AND role = 'admin'
+-- [SCRUBBED GARBAGE]                     WHERE id = auth.uid() AND role = 'admin'
                 )
             );
     END IF;
@@ -20513,11 +20669,13 @@ BEGIN
     -- Users can insert their own events (hidden from others)
     IF NOT EXISTS (
         SELECT 1 FROM pg_policies 
-        WHERE tablename = 'analytics_events' AND policyname = 'Users can log their own events'
+-- [SCRUBBED GARBAGE]         WHERE tablename = 'analytics_events' AND policyname = 'Users can log their own events'
     ) THEN
-        CREATE POLICY "Users can log their own events" ON public.analytics_events
+        ;
+DROP POLICY IF EXISTS "Users can log their own events" ON public.analytics_events;
+CREATE POLICY "Users can log their own events" ON public.analytics_events
             FOR INSERT
-            TO authenticated
+-- [SCRUBBED GARBAGE]             TO authenticated
             WITH CHECK (auth.uid() = user_id);
     END IF;
 END $$;
@@ -20525,12 +20683,12 @@ END $$;
 -- RPC for aggregated stats
 DROP FUNCTION IF EXISTS public.get_global_usage_stats(INTEGER);
 CREATE OR REPLACE FUNCTION get_global_usage_stats(days_limit INTEGER DEFAULT 30)
-RETURNS JSONB
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS JSONB
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    result JSONB;
+-- [SCRUBBED GARBAGE]     result JSONB;
 BEGIN
     -- Check if caller is admin
     IF NOT EXISTS (SELECT 1 FROM public.user_profiles WHERE id = auth.uid() AND role = 'admin') THEN
@@ -20541,38 +20699,38 @@ BEGIN
         'top_users', (
             SELECT jsonb_agg(u) FROM (
                 SELECT 
-                    ae.user_id,
-                    up.full_name,
-                    up.email,
-                    count(*) as event_count
-                FROM analytics_events ae
-                JOIN user_profiles up ON ae.user_id = up.id
-                WHERE ae.created_at > now() - (days_limit || ' days')::interval
-                GROUP BY ae.user_id, up.full_name, up.email
-                ORDER BY event_count DESC
-                LIMIT 10
+-- [SCRUBBED GARBAGE]                     ae.user_id,
+-- [SCRUBBED GARBAGE]                     up.full_name,
+-- [SCRUBBED GARBAGE]                     up.email,
+-- [SCRUBBED GARBAGE]                     count(*) as event_count
+-- [SCRUBBED GARBAGE]                 FROM analytics_events ae
+-- [SCRUBBED GARBAGE]                 JOIN user_profiles up ON ae.user_id = up.id
+-- [SCRUBBED GARBAGE]                 WHERE ae.created_at > now() - (days_limit || ' days')::interval
+-- [SCRUBBED GARBAGE]                 GROUP BY ae.user_id, up.full_name, up.email
+-- [SCRUBBED GARBAGE]                 ORDER BY event_count DESC
+-- [SCRUBBED GARBAGE]                 LIMIT 10
             ) u
         ),
         'popular_features', (
             SELECT jsonb_agg(f) FROM (
                 SELECT 
-                    event_name,
-                    count(*) as usage_count
-                FROM analytics_events
-                WHERE created_at > now() - (days_limit || ' days')::interval
-                GROUP BY event_name
-                ORDER BY usage_count DESC
+-- [SCRUBBED GARBAGE]                     event_name,
+-- [SCRUBBED GARBAGE]                     count(*) as usage_count
+-- [SCRUBBED GARBAGE]                 FROM analytics_events
+-- [SCRUBBED GARBAGE]                 WHERE created_at > now() - (days_limit || ' days')::interval
+-- [SCRUBBED GARBAGE]                 GROUP BY event_name
+-- [SCRUBBED GARBAGE]                 ORDER BY usage_count DESC
             ) f
         ),
         'daily_trends', (
             SELECT jsonb_agg(t) FROM (
                 SELECT 
-                    date_trunc('day', created_at)::date as day,
-                    count(*) as count
-                FROM analytics_events
-                WHERE created_at > now() - (days_limit || ' days')::interval
-                GROUP BY 1
-                ORDER BY 1 ASC
+-- [SCRUBBED GARBAGE]                     date_trunc('day', created_at)::date as day,
+-- [SCRUBBED GARBAGE]                     count(*) as count
+-- [SCRUBBED GARBAGE]                 FROM analytics_events
+-- [SCRUBBED GARBAGE]                 WHERE created_at > now() - (days_limit || ' days')::interval
+-- [SCRUBBED GARBAGE]                 GROUP BY 1
+-- [SCRUBBED GARBAGE]                 ORDER BY 1 ASC
             ) t
         )
     ) INTO result;
@@ -20592,21 +20750,21 @@ EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- 2. Update user_profiles with security fields
 ALTER TABLE public.user_profiles 
-ADD COLUMN IF NOT EXISTS security_status public.account_security_status DEFAULT 'active',
-ADD COLUMN IF NOT EXISTS security_notes TEXT[],
-ADD COLUMN IF NOT EXISTS flagged_at TIMESTAMPTZ,
-ADD COLUMN IF NOT EXISTS last_security_check TIMESTAMPTZ;
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS security_status public.account_security_status DEFAULT 'active',
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS security_notes TEXT[],
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS flagged_at TIMESTAMPTZ,
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS last_security_check TIMESTAMPTZ;
 
 -- 3. Create security_logs table
 CREATE TABLE IF NOT EXISTS public.security_logs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE,
-    event_code TEXT NOT NULL, -- e.g. 'AUTH_VELOCITY', 'WHATSAPP_SPIKE', 'RESOURCE_SPIKE'
-    severity TEXT CHECK (severity IN ('low', 'medium', 'high', 'critical')) DEFAULT 'low',
-    details JSONB DEFAULT '{}'::jsonb,
-    ip_address TEXT,
-    user_agent TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [SCRUBBED GARBAGE]     user_id UUID REFERENCES public.user_profiles(id) ON DELETE CASCADE,
+-- [SCRUBBED GARBAGE]     event_code TEXT NOT NULL, -- e.g. 'AUTH_VELOCITY', 'WHATSAPP_SPIKE', 'RESOURCE_SPIKE'
+-- [SCRUBBED GARBAGE]     severity TEXT CHECK (severity IN ('low', 'medium', 'high', 'critical')) DEFAULT 'low',
+-- [SCRUBBED GARBAGE]     details JSONB DEFAULT '{}'::jsonb,
+-- [SCRUBBED GARBAGE]     ip_address TEXT,
+-- [SCRUBBED GARBAGE]     user_agent TEXT,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Enable RLS
@@ -20621,26 +20779,26 @@ DO $$
 BEGIN
     DROP POLICY IF EXISTS "Admins can view security logs" ON public.security_logs;
     CREATE POLICY "Admins can view security logs"
-        ON public.security_logs FOR SELECT
-        USING (public.is_admin());
+-- [SCRUBBED GARBAGE]         ON public.security_logs FOR SELECT
+-- [SCRUBBED GARBAGE]         USING (public.is_admin());
 EXCEPTION WHEN OTHERS THEN
     CREATE POLICY "Admins can view security logs"
-        ON public.security_logs FOR SELECT
-        USING (EXISTS (SELECT 1 FROM public.user_profiles WHERE id = auth.uid() AND role = 'admin'));
+-- [SCRUBBED GARBAGE]         ON public.security_logs FOR SELECT
+-- [SCRUBBED GARBAGE]         USING (EXISTS (SELECT 1 FROM public.user_profiles WHERE id = auth.uid() AND role = 'admin'));
 END $$;
 
 -- 5. Helper Function: log_security_event
 CREATE OR REPLACE FUNCTION public.log_security_event(
-    p_user_id UUID,
-    p_event_code TEXT,
-    p_severity TEXT,
-    p_details JSONB DEFAULT '{}'::jsonb,
-    p_ip TEXT DEFAULT NULL,
-    p_ua TEXT DEFAULT NULL
+-- [SCRUBBED GARBAGE]     p_user_id UUID,
+-- [SCRUBBED GARBAGE]     p_event_code TEXT,
+-- [SCRUBBED GARBAGE]     p_severity TEXT,
+-- [SCRUBBED GARBAGE]     p_details JSONB DEFAULT '{}'::jsonb,
+-- [SCRUBBED GARBAGE]     p_ip TEXT DEFAULT NULL,
+-- [SCRUBBED GARBAGE]     p_ua TEXT DEFAULT NULL
 )
-RETURNS VOID
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] RETURNS VOID
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 BEGIN
     INSERT INTO public.security_logs (user_id, event_code, severity, details, ip_address, user_agent)
@@ -20650,46 +20808,46 @@ BEGIN
     IF p_severity = 'critical' THEN
         UPDATE public.user_profiles 
         SET security_status = 'flagged',
-            flagged_at = NOW()
-        WHERE id = p_user_id AND (security_status = 'active' OR security_status IS NULL);
+-- [SCRUBBED GARBAGE]             flagged_at = NOW()
+-- [SCRUBBED GARBAGE]         WHERE id = p_user_id AND (security_status = 'active' OR security_status IS NULL);
     END IF;
 END;
 $$;
 
 COMMIT;
 
-NOTIFY pgrst, 'reload schema';
+-- [SCRUBBED GARBAGE] NOTIFY pgrst, 'reload schema';
 CREATE OR REPLACE FUNCTION public.perform_abuse_scan()
-RETURNS TABLE (
-    user_id UUID,
-    event_code TEXT,
-    severity TEXT,
-    details JSONB
+-- [SCRUBBED GARBAGE] RETURNS TABLE (
+-- [SCRUBBED GARBAGE]     user_id UUID,
+-- [SCRUBBED GARBAGE]     event_code TEXT,
+-- [SCRUBBED GARBAGE]     severity TEXT,
+-- [SCRUBBED GARBAGE]     details JSONB
 )
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 DECLARE
-    v_user_id UUID;
-    v_event_code TEXT;
-    v_severity TEXT;
-    v_details JSONB;
-    v_hour_ago TIMESTAMPTZ := NOW() - INTERVAL '1 hour';
+-- [SCRUBBED GARBAGE]     v_user_id UUID;
+-- [SCRUBBED GARBAGE]     v_event_code TEXT;
+-- [SCRUBBED GARBAGE]     v_severity TEXT;
+-- [SCRUBBED GARBAGE]     v_details JSONB;
+-- [SCRUBBED GARBAGE]     v_hour_ago TIMESTAMPTZ := NOW() - INTERVAL '1 hour';
 BEGIN
     -- 1. WHATSAPP SPIKE DETECTION
     -- Users who sent more than 30 messages in the last hour
     FOR v_user_id, v_details IN 
         SELECT w.user_id, jsonb_build_object('count', count(*), 'period', '1h')
-        FROM public.whatsapp_usage_logs w
-        WHERE w.created_at >= v_hour_ago
-        GROUP BY w.user_id
-        HAVING count(*) > 30
+-- [SCRUBBED GARBAGE]         FROM public.whatsapp_usage_logs w
+-- [SCRUBBED GARBAGE]         WHERE w.created_at >= v_hour_ago
+-- [SCRUBBED GARBAGE]         GROUP BY w.user_id
+-- [SCRUBBED GARBAGE]         HAVING count(*) > 30
     LOOP
         PERFORM public.log_security_event(v_user_id, 'WHATSAPP_SPIKE', 'medium', v_details);
-        user_id := v_user_id;
-        event_code := 'WHATSAPP_SPIKE';
-        severity := 'medium';
-        details := v_details;
+-- [SCRUBBED GARBAGE]         user_id := v_user_id;
+-- [SCRUBBED GARBAGE]         event_code := 'WHATSAPP_SPIKE';
+-- [SCRUBBED GARBAGE]         severity := 'medium';
+-- [SCRUBBED GARBAGE]         details := v_details;
         RETURN NEXT;
     END LOOP;
 
@@ -20697,16 +20855,16 @@ BEGIN
     -- Users who created more than 5 properties in the last hour
     FOR v_user_id, v_details IN 
         SELECT p.user_id, jsonb_build_object('count', count(*), 'type', 'properties')
-        FROM public.properties p
-        WHERE p.created_at >= v_hour_ago
-        GROUP BY p.user_id
-        HAVING count(*) > 5
+-- [SCRUBBED GARBAGE]         FROM public.properties p
+-- [SCRUBBED GARBAGE]         WHERE p.created_at >= v_hour_ago
+-- [SCRUBBED GARBAGE]         GROUP BY p.user_id
+-- [SCRUBBED GARBAGE]         HAVING count(*) > 5
     LOOP
         PERFORM public.log_security_event(v_user_id, 'RESOURCE_SPIKE', 'high', v_details);
-        user_id := v_user_id;
-        event_code := 'RESOURCE_SPIKE';
-        severity := 'high';
-        details := v_details;
+-- [SCRUBBED GARBAGE]         user_id := v_user_id;
+-- [SCRUBBED GARBAGE]         event_code := 'RESOURCE_SPIKE';
+-- [SCRUBBED GARBAGE]         severity := 'high';
+-- [SCRUBBED GARBAGE]         details := v_details;
         RETURN NEXT;
     END LOOP;
 
@@ -20714,17 +20872,17 @@ BEGIN
     -- Different users with the same IP in the last hour
     FOR v_user_id, v_details IN 
         SELECT s1.user_id, jsonb_build_object('ip', s1.ip_address, 'colliding_users', count(distinct s2.user_id))
-        FROM public.security_logs s1
-        JOIN public.security_logs s2 ON s1.ip_address = s2.ip_address AND s1.user_id != s2.user_id
-        WHERE s1.created_at >= v_hour_ago AND s2.created_at >= v_hour_ago
-        GROUP BY s1.user_id, s1.ip_address
-        HAVING count(distinct s2.user_id) > 2
+-- [SCRUBBED GARBAGE]         FROM public.security_logs s1
+-- [SCRUBBED GARBAGE]         JOIN public.security_logs s2 ON s1.ip_address = s2.ip_address AND s1.user_id != s2.user_id
+-- [SCRUBBED GARBAGE]         WHERE s1.created_at >= v_hour_ago AND s2.created_at >= v_hour_ago
+-- [SCRUBBED GARBAGE]         GROUP BY s1.user_id, s1.ip_address
+-- [SCRUBBED GARBAGE]         HAVING count(distinct s2.user_id) > 2
     LOOP
         PERFORM public.log_security_event(v_user_id, 'IP_COLLISION', 'medium', v_details);
-        user_id := v_user_id;
-        event_code := 'IP_COLLISION';
-        severity := 'medium';
-        details := v_details;
+-- [SCRUBBED GARBAGE]         user_id := v_user_id;
+-- [SCRUBBED GARBAGE]         event_code := 'IP_COLLISION';
+-- [SCRUBBED GARBAGE]         severity := 'medium';
+-- [SCRUBBED GARBAGE]         details := v_details;
         RETURN NEXT;
     END LOOP;
 
@@ -20733,85 +20891,85 @@ $$;
 DROP FUNCTION IF EXISTS public.get_users_with_stats();
 
 CREATE OR REPLACE FUNCTION get_users_with_stats()
-RETURNS TABLE (
-    id UUID,
-    email TEXT,
-    full_name TEXT,
-    phone TEXT,
-    role TEXT,
-    subscription_status TEXT,
-    plan_id TEXT,
-    created_at TIMESTAMPTZ,
-    last_login TIMESTAMPTZ,
-    properties_count BIGINT,
-    tenants_count BIGINT,
-    contracts_count BIGINT,
-    ai_sessions_count BIGINT,
-    open_tickets_count BIGINT,
-    storage_usage_mb NUMERIC,
-    is_super_admin BOOLEAN,
-    security_status TEXT,
-    flagged_at TIMESTAMPTZ,
-    last_security_check TIMESTAMPTZ
+-- [SCRUBBED GARBAGE] RETURNS TABLE (
+-- [SCRUBBED GARBAGE]     id UUID,
+-- [SCRUBBED GARBAGE]     email TEXT,
+-- [SCRUBBED GARBAGE]     full_name TEXT,
+-- [SCRUBBED GARBAGE]     phone TEXT,
+-- [SCRUBBED GARBAGE]     role TEXT,
+-- [SCRUBBED GARBAGE]     subscription_status TEXT,
+-- [SCRUBBED GARBAGE]     plan_id TEXT,
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMPTZ,
+-- [SCRUBBED GARBAGE]     last_login TIMESTAMPTZ,
+-- [SCRUBBED GARBAGE]     properties_count BIGINT,
+-- [SCRUBBED GARBAGE]     tenants_count BIGINT,
+-- [SCRUBBED GARBAGE]     contracts_count BIGINT,
+-- [SCRUBBED GARBAGE]     ai_sessions_count BIGINT,
+-- [SCRUBBED GARBAGE]     open_tickets_count BIGINT,
+-- [SCRUBBED GARBAGE]     storage_usage_mb NUMERIC,
+-- [SCRUBBED GARBAGE]     is_super_admin BOOLEAN,
+-- [SCRUBBED GARBAGE]     security_status TEXT,
+-- [SCRUBBED GARBAGE]     flagged_at TIMESTAMPTZ,
+-- [SCRUBBED GARBAGE]     last_security_check TIMESTAMPTZ
 ) 
-LANGUAGE plpgsql
-SECURITY DEFINER
+-- [SCRUBBED GARBAGE] LANGUAGE plpgsql
+-- [SCRUBBED GARBAGE] SECURITY DEFINER
 AS $$
 BEGIN
     RETURN QUERY
     SELECT 
-        up.id,
-        up.email,
-        up.full_name,
-        up.phone,
-        up.role::TEXT,
-        COALESCE(up.subscription_status::TEXT, 'active'),
-        up.plan_id,
-        up.created_at,
-        up.last_login,
+-- [SCRUBBED GARBAGE]         up.id,
+-- [SCRUBBED GARBAGE]         up.email,
+-- [SCRUBBED GARBAGE]         up.full_name,
+-- [SCRUBBED GARBAGE]         up.phone,
+-- [SCRUBBED GARBAGE]         up.role::TEXT,
+-- [SCRUBBED GARBAGE]         COALESCE(up.subscription_status::TEXT, 'active'),
+-- [SCRUBBED GARBAGE]         up.plan_id,
+-- [SCRUBBED GARBAGE]         up.created_at,
+-- [SCRUBBED GARBAGE]         up.last_login,
         
         -- Asset Stats
-        COALESCE(p.count, 0)::BIGINT as properties_count,
-        COALESCE(t.count, 0)::BIGINT as tenants_count,
-        COALESCE(c.count, 0)::BIGINT as contracts_count,
+-- [SCRUBBED GARBAGE]         COALESCE(p.count, 0)::BIGINT as properties_count,
+-- [SCRUBBED GARBAGE]         COALESCE(t.count, 0)::BIGINT as tenants_count,
+-- [SCRUBBED GARBAGE]         COALESCE(c.count, 0)::BIGINT as contracts_count,
         
         -- Usage Stats
-        COALESCE(ai.count, 0)::BIGINT as ai_sessions_count,
+-- [SCRUBBED GARBAGE]         COALESCE(ai.count, 0)::BIGINT as ai_sessions_count,
         
         -- Support Stats
-        COALESCE(st.count, 0)::BIGINT as open_tickets_count,
+-- [SCRUBBED GARBAGE]         COALESCE(st.count, 0)::BIGINT as open_tickets_count,
         
         -- Storage Usage (Bytes to MB)
-        ROUND(COALESCE(usu.total_bytes, 0) / (1024.0 * 1024.0), 2)::NUMERIC as storage_usage_mb,
+-- [SCRUBBED GARBAGE]         ROUND(COALESCE(usu.total_bytes, 0) / (1024.0 * 1024.0), 2)::NUMERIC as storage_usage_mb,
         
         -- Permissions
-        COALESCE(up.is_super_admin, false) as is_super_admin,
+-- [SCRUBBED GARBAGE]         COALESCE(up.is_super_admin, false) as is_super_admin,
 
         -- Security Fields
-        up.security_status::TEXT,
-        up.flagged_at,
-        up.last_security_check
+-- [SCRUBBED GARBAGE]         up.security_status::TEXT,
+-- [SCRUBBED GARBAGE]         up.flagged_at,
+-- [SCRUBBED GARBAGE]         up.last_security_check
         
-    FROM user_profiles up
+-- [SCRUBBED GARBAGE]     FROM user_profiles up
     -- Property Counts
-    LEFT JOIN (SELECT user_id, count(*) as count FROM properties GROUP BY user_id) p ON up.id = p.user_id
+-- [SCRUBBED GARBAGE]     LEFT JOIN (SELECT user_id, count(*) as count FROM properties GROUP BY user_id) p ON up.id = p.user_id
     -- Tenant Counts (from embedded JSONB in contracts)
-    LEFT JOIN (
+-- [SCRUBBED GARBAGE]     LEFT JOIN (
         SELECT user_id, sum(jsonb_array_length(COALESCE(tenants, '[]'::jsonb))) as count 
-        FROM contracts 
-        GROUP BY user_id
+-- [SCRUBBED GARBAGE]         FROM contracts 
+-- [SCRUBBED GARBAGE]         GROUP BY user_id
     ) t ON up.id = t.user_id
     -- Contract Counts
-    LEFT JOIN (SELECT user_id, count(*) as count FROM contracts GROUP BY user_id) c ON up.id = c.user_id
+-- [SCRUBBED GARBAGE]     LEFT JOIN (SELECT user_id, count(*) as count FROM contracts GROUP BY user_id) c ON up.id = c.user_id
     -- AI Counts
-    LEFT JOIN (SELECT user_id, count(*) as count FROM ai_conversations GROUP BY user_id) ai ON up.id = ai.user_id
+-- [SCRUBBED GARBAGE]     LEFT JOIN (SELECT user_id, count(*) as count FROM ai_conversations GROUP BY user_id) ai ON up.id = ai.user_id
     -- Open Support Tickets
-    LEFT JOIN (SELECT user_id, count(*) as count FROM support_tickets WHERE status != 'resolved' GROUP BY user_id) st ON up.id = st.user_id
+-- [SCRUBBED GARBAGE]     LEFT JOIN (SELECT user_id, count(*) as count FROM support_tickets WHERE status != 'resolved' GROUP BY user_id) st ON up.id = st.user_id
     -- Storage Usage
-    LEFT JOIN (SELECT user_id, total_bytes FROM user_storage_usage) usu ON up.id = usu.user_id
+-- [SCRUBBED GARBAGE]     LEFT JOIN (SELECT user_id, total_bytes FROM user_storage_usage) usu ON up.id = usu.user_id
     
-    WHERE up.deleted_at IS NULL
-    ORDER BY up.created_at DESC;
+-- [SCRUBBED GARBAGE]     WHERE up.deleted_at IS NULL
+-- [SCRUBBED GARBAGE]     ORDER BY up.created_at DESC;
 END;
 $$;
 -- Migration: admin_security_config
@@ -20822,8 +20980,8 @@ VALUES
     ('security_alerts_enabled', 'true'::jsonb, 'Master switch for automated abuse detection alerts (Email/WhatsApp).'),
     ('admin_security_whatsapp', '"972500000000"'::jsonb, 'Admin phone number for WhatsApp security alerts. Format: CountryCode + Number (e.g., 972...)'),
     ('admin_security_email', '"rubi@rentmate.co.il"'::jsonb, 'Admin email for receiving security audit reports.')
-ON CONFLICT (key) DO UPDATE SET 
-    description = EXCLUDED.description;
+-- [SCRUBBED GARBAGE] ON CONFLICT (key) DO UPDATE SET 
+-- [SCRUBBED GARBAGE]     description = EXCLUDED.description;
 -- Add disclaimer_accepted to user_preferences
 -- Defaults to FALSE
 
@@ -20831,7 +20989,7 @@ DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_preferences' AND column_name = 'disclaimer_accepted') THEN
         ALTER TABLE user_preferences 
-        ADD COLUMN disclaimer_accepted BOOLEAN DEFAULT false;
+-- [SCRUBBED GARBAGE]         ADD COLUMN IF NOT EXISTS disclaimer_accepted BOOLEAN DEFAULT false;
     END IF;
 END $$;
 -- ============================================
@@ -20877,13 +21035,13 @@ BEGIN;
 CREATE OR REPLACE FUNCTION public.trigger_daily_admin_summary()
 RETURNS VOID AS $$
 DECLARE
-    v_ref TEXT;
-    v_key TEXT;
-    v_url TEXT;
+-- [SCRUBBED GARBAGE]     v_ref TEXT;
+-- [SCRUBBED GARBAGE]     v_key TEXT;
+-- [SCRUBBED GARBAGE]     v_url TEXT;
 BEGIN
     -- Fetch config 
-    v_ref := public.get_supabase_config('supabase_project_ref');
-    v_key := public.get_supabase_config('supabase_service_role_key');
+-- [SCRUBBED GARBAGE]     v_ref := public.get_supabase_config('supabase_project_ref');
+-- [SCRUBBED GARBAGE]     v_key := public.get_supabase_config('supabase_service_role_key');
     
     -- Validate config
     IF v_ref IS NULL OR v_key IS NULL THEN
@@ -20892,18 +21050,18 @@ BEGIN
     END IF;
 
     -- Construct URL
-    v_url := 'https://' || v_ref || '.supabase.co/functions/v1/send-daily-admin-summary';
+-- [SCRUBBED GARBAGE]     v_url := 'https://' || v_ref || '.supabase.co/functions/v1/send-daily-admin-summary';
     
     -- Perform the request
     -- net.http_post returns bigint, so we must discard it or catch it.
     -- PERFORM discards the result.
     PERFORM net.http_post(
-        url := v_url,
-        headers := jsonb_build_object(
+-- [SCRUBBED GARBAGE]         url := v_url,
+-- [SCRUBBED GARBAGE]         headers := jsonb_build_object(
           'Content-Type', 'application/json',
           'Authorization', 'Bearer ' || v_key
         ),
-        body := '{}'::jsonb
+-- [SCRUBBED GARBAGE]         body := '{}'::jsonb
     );
 EXCEPTION WHEN OTHERS THEN
     RAISE WARNING 'Daily Admin Summary Trigger Failed: %', SQLERRM;
@@ -20931,14 +21089,14 @@ COMMIT;
 -- Created to allow db push to proceed.
 -- Add user_id to payments table
 ALTER TABLE public.payments 
-ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id);
+-- [SCRUBBED GARBAGE] ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id);
 
 -- Backfill user_id from contracts
 UPDATE public.payments p
 SET user_id = c.user_id
-FROM public.contracts c
-WHERE p.contract_id = c.id
-AND p.user_id IS NULL;
+-- [SCRUBBED GARBAGE] FROM public.contracts c
+-- [SCRUBBED GARBAGE] WHERE p.contract_id = c.id
+-- [SCRUBBED GARBAGE] AND p.user_id IS NULL;
 
 -- Enforce NOT NULL after backfill (optional, but good practice if we want to guarantee it)
 -- ALTER TABLE public.payments ALTER COLUMN user_id SET NOT NULL;
@@ -20951,34 +21109,34 @@ DROP POLICY IF EXISTS "Users can only see their own payments" ON public.payments
 
 -- Create RLS Policy
 CREATE POLICY "Users can only see their own payments" 
-ON public.payments 
+-- [SCRUBBED GARBAGE] ON public.payments 
 FOR ALL 
-USING (auth.uid() = user_id)
+-- [SCRUBBED GARBAGE] USING (auth.uid() = user_id)
 WITH CHECK (auth.uid() = user_id);
 -- Create a debug logs table to capture Edge Function execution
 CREATE TABLE IF NOT EXISTS public.debug_logs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-    function_name TEXT NOT NULL,
-    level TEXT DEFAULT 'info',
-    message TEXT NOT NULL,
-    details JSONB
+-- [SCRUBBED GARBAGE]     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- [SCRUBBED GARBAGE]     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+-- [SCRUBBED GARBAGE]     function_name TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     level TEXT DEFAULT 'info',
+-- [SCRUBBED GARBAGE]     message TEXT NOT NULL,
+-- [SCRUBBED GARBAGE]     details JSONB
 );
 
 -- Enable RLS but allow service role to insert
 ALTER TABLE public.debug_logs ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Allow service role to insert debug logs"
-    ON public.debug_logs
+-- [SCRUBBED GARBAGE]     ON public.debug_logs
     FOR INSERT
-    TO service_role
+-- [SCRUBBED GARBAGE]     TO service_role
     WITH CHECK (true);
 
 CREATE POLICY "Allow service role to select debug logs"
-    ON public.debug_logs
+-- [SCRUBBED GARBAGE]     ON public.debug_logs
     FOR SELECT
-    TO service_role
-    USING (true);
+-- [SCRUBBED GARBAGE]     TO service_role
+-- [SCRUBBED GARBAGE]     USING (true);
 
 -- Grant access to authenticated users (admin only ideally, but keeping simple for now)
 GRANT ALL ON public.debug_logs TO service_role;
@@ -20988,8 +21146,8 @@ BEGIN;
 
 DO $$
 DECLARE
-    r RECORD;
-    v_now TIMESTAMP;
+-- [SCRUBBED GARBAGE]     r RECORD;
+-- [SCRUBBED GARBAGE]     v_now TIMESTAMP;
 BEGIN
     SELECT timezone('UTC', now()) INTO v_now;
     RAISE NOTICE 'Current Time (UTC): %', v_now;
@@ -20997,23 +21155,23 @@ BEGIN
     RAISE NOTICE '--- CRON RUNS (Today) ---';
     FOR r IN 
         SELECT d.* 
-        FROM cron.job_run_details d
-        JOIN cron.job j ON j.jobid = d.jobid
-        WHERE j.jobname = 'daily-admin-summary'
-        AND d.start_time > (now() - interval '24 hours')
-        ORDER BY d.start_time DESC 
+-- [SCRUBBED GARBAGE]         FROM cron.job_run_details d
+-- [SCRUBBED GARBAGE]         JOIN cron.job j ON j.jobid = d.jobid
+-- [SCRUBBED GARBAGE]         WHERE j.jobname = 'daily-admin-summary'
+-- [SCRUBBED GARBAGE]         AND d.start_time > (now() - interval '24 hours')
+-- [SCRUBBED GARBAGE]         ORDER BY d.start_time DESC 
     LOOP
         RAISE NOTICE 'RUN: ID=%, Status=%, Msg="%", Time=%', 
-            r.runid, r.status, r.return_message, r.start_time;
+-- [SCRUBBED GARBAGE]             r.runid, r.status, r.return_message, r.start_time;
     END LOOP;
 
     RAISE NOTICE '--- DEBUG LOGS (Today) ---';
     FOR r IN 
         SELECT created_at, message, details 
-        FROM public.debug_logs 
-        WHERE created_at > (now() - interval '24 hours')
-        ORDER BY created_at DESC 
-        LIMIT 10
+-- [SCRUBBED GARBAGE]         FROM public.debug_logs 
+-- [SCRUBBED GARBAGE]         WHERE created_at > (now() - interval '24 hours')
+-- [SCRUBBED GARBAGE]         ORDER BY created_at DESC 
+-- [SCRUBBED GARBAGE]         LIMIT 10
     LOOP
         RAISE NOTICE '[%] % | %', r.created_at, r.message, r.details;
     END LOOP;
@@ -21032,13 +21190,13 @@ BEGIN;
 CREATE OR REPLACE FUNCTION public.trigger_index_sync()
 RETURNS VOID AS $$
 DECLARE
-    v_ref TEXT;
-    v_key TEXT;
-    v_url TEXT;
+-- [SCRUBBED GARBAGE]     v_ref TEXT;
+-- [SCRUBBED GARBAGE]     v_key TEXT;
+-- [SCRUBBED GARBAGE]     v_url TEXT;
 BEGIN
     -- Fetch config 
-    v_ref := public.get_supabase_config('supabase_project_ref');
-    v_key := public.get_supabase_config('supabase_service_role_key');
+-- [SCRUBBED GARBAGE]     v_ref := public.get_supabase_config('supabase_project_ref');
+-- [SCRUBBED GARBAGE]     v_key := public.get_supabase_config('supabase_service_role_key');
     
     -- Validate config
     IF v_ref IS NULL OR v_key IS NULL THEN
@@ -21047,16 +21205,16 @@ BEGIN
     END IF;
 
     -- Construct URL
-    v_url := 'https://' || v_ref || '.supabase.co/functions/v1/fetch-index-data';
+-- [SCRUBBED GARBAGE]     v_url := 'https://' || v_ref || '.supabase.co/functions/v1/fetch-index-data';
     
     -- Perform the request
     PERFORM net.http_post(
-        url := v_url,
-        headers := jsonb_build_object(
+-- [SCRUBBED GARBAGE]         url := v_url,
+-- [SCRUBBED GARBAGE]         headers := jsonb_build_object(
           'Content-Type', 'application/json',
           'Authorization', 'Bearer ' || v_key
         ),
-        body := '{}'::jsonb
+-- [SCRUBBED GARBAGE]         body := '{}'::jsonb
     );
     RAISE LOG 'Index Sync Triggered at %', now();
 EXCEPTION WHEN OTHERS THEN
@@ -21067,11 +21225,11 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- 2. Update Cron Jobs
 DO $$
 DECLARE
-    job_names TEXT[] := ARRAY['index-update-day15', 'index-update-day16', 'index-update-day17', 'index-sync-primary', 'index-sync-retry-15', 'index-sync-retry-16'];
-    jname TEXT;
+-- [SCRUBBED GARBAGE]     job_names TEXT[] := ARRAY['index-update-day15', 'index-update-day16', 'index-update-day17', 'index-sync-primary', 'index-sync-retry-15', 'index-sync-retry-16'];
+-- [SCRUBBED GARBAGE]     jname TEXT;
 BEGIN
     -- Unschedule legacy jobs safely
-    FOREACH jname IN ARRAY job_names LOOP
+-- [SCRUBBED GARBAGE]     FOREACH jname IN ARRAY job_names LOOP
         IF EXISTS (SELECT 1 FROM cron.job WHERE jobname = jname) THEN
             PERFORM cron.unschedule(jname);
         END IF;
