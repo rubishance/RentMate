@@ -32,9 +32,10 @@
 ### 4. Operational Verify & Update ✅
 - **Mandatory Deployment Protocol**:
     - **Step 1: Code Review**: Every deployment MUST be preceded by a comprehensive code review and marked as "OK".
-    - **Step 2: Pre-flight Verification**: Run all tests and build checks.
-    - **Step 3: Execution**: If the code review is "OK" and pre-flight checks pass, proceed to deployment. If issues are found, stop and consult the user.
-    - **Step 4: Post-Deployment Verification**: Every push/deployment must be verified immediately.
+    - **Step 2: Staging Verification**: All non-trivial changes MUST be deployed and verified on the **RentMate TESTS** environment (Staging) before production.
+    - **Step 3: Pre-flight Verification**: Run all tests and build checks on the staging/feature branch.
+    - **Step 4: Execution**: If staging verification is successful and pre-flight checks pass, merge to `main` for production deployment.
+    - **Step 5: Post-Deployment Verification**: Every production deployment must be verified immediately.
     - Check `version.json` and key features on production.
     - **Update the user** with success/failure status immediately after verification.
 

@@ -74,6 +74,7 @@ When user's prompt is NOT in English:
 - **Infrastructure & Safety Mandate:** Every agent is responsible for the deployability and operational safety of their changes. Follow the "5-Phase Deployment Process" (Prepare, Backup, Deploy, Verify, Confirm/Rollback). Always verify environment variables and secrets security.
     - **MANDATORY:** Every deployment request MUST be preceded by a comprehensive code review. If the review is "OK", proceed to deploy automatically. If issues are found, notify the user and obtain explicit confirmation/fixes before proceeding.
     - **MANDATORY:** NEVER deploy to Netlify without a preceding successful code review.
+    - **STAGING-FIRST MANDATE:** All multi-file or structural changes MUST be verified in the **Staging Environment (RentMate TESTS)** before production promotion. Verification includes browser testing of the unique Netlify Preview URL.
 
 ### 📁 File Dependency Awareness
 
@@ -98,6 +99,8 @@ When user's prompt is NOT in English:
 ❌ WRONG: Read agent file → Start coding
 ✅ CORRECT: Read → Understand WHY → Apply PRINCIPLES → Code
 ```
+
+- **Global Memory Check:** At the start of every PLANNING session, search the global memory (`mcp_memory_search_nodes`) for `CommonMistake` or `LessonLearned` entities matching the current task keywords. Apply these lessons to avoid regressions.
 
 **Before coding, answer:**
 1. What is the GOAL of this agent/skill?
@@ -155,6 +158,7 @@ When user's prompt is NOT in English:
 **Rules:**
 - **Completion:** A task is NOT finished until `checklist.py` returns success.
 - **Reporting:** If it fails, fix the **Critical** blockers first (Security/Lint).
+- **Global Learning:** After completing a non-trivial task, summarize the core "Lesson Learned" and update the global memory using `scripts/sync-mistakes.py`.
 
 
 **Available Scripts (12 total):**

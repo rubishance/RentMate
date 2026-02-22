@@ -1,4 +1,5 @@
 
+// @ts-nocheck
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 
@@ -9,16 +10,24 @@ const WEBHOOK_SECRET = Deno.env.get('EMAIL_WEBHOOK_SECRET')
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
-const SUPPORT_EMAILS = ['support@rentmate.co.il', 'service@rentmate.co.il', 'log@rentmate.co.il']
+// Helper to get system settings
+async function getEmailSetting(key: string, defaultValue: string): Promise<string> {
+    try {
+        const { data } = await supabase.from('system_settings').select('value').eq('key', key).single()
+        return data?.value as string || defaultValue
+    } catch {
+        return defaultValue
+    }
+}
 
 function extractEmail(str: string): string {
     const match = str.match(/<(.+)>/)
     if (match) return match[1]
     return str.trim()
 }
-
 // Helper to call OpenAI for analysis
 async function analyzeEmailWithAI(subject: string, body: string, isSales: boolean) {
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
     if (!OPENAI_API_KEY) {
         console.warn('OPENAI_API_KEY missing, skipping AI analysis')
         return null
@@ -83,8 +92,22 @@ serve(async (req) => {
         const toEmail = extractEmail(to).toLowerCase()
 
         // 2. Identify context based on target address
-        const isSupport = toEmail.includes('support@') || toEmail.includes('service@')
-        const isSales = toEmail.includes('sales@')
+        // Fetch support-related emails from settings
+        const { data: contactSettings } = await supabase
+            .from('system_settings')
+            .select('key, value')
+            .in('key', ['global_email_support', 'global_email_service', 'global_email_sales'])
+
+        const supportEmailSetting = contactSettings?.find(s => s.key === 'global_email_support')?.value as string;
+        const serviceEmailSetting = contactSettings?.find(s => s.key === 'global_email_service')?.value as string;
+        const salesEmailSetting = contactSettings?.find(s => s.key === 'global_email_sales')?.value as string;
+
+        const supportEmail = supportEmailSetting || 'support@rentmate.co.il';
+        const serviceEmail = serviceEmailSetting || 'service@rentmate.co.il';
+        const salesEmail = salesEmailSetting || 'sales@rentmate.co.il';
+
+        const isSupport = toEmail.includes('support@') || toEmail.includes('service@') || toEmail === supportEmail.toLowerCase() || toEmail === serviceEmail.toLowerCase()
+        const isSales = toEmail.includes('sales@') || toEmail === salesEmail.toLowerCase()
 
         // 3. Identify if it's an "Admin Forward"
         const { data: adminCheck } = await supabase.from('user_profiles').select('id, role').eq('email', fromEmail).single()
@@ -105,10 +128,13 @@ serve(async (req) => {
         const GUEST_LEAD_ID = '00000000-0000-0000-0000-000000000000'
         if (!user && (isSales || isSupport)) {
             user = { id: GUEST_LEAD_ID }
+
+            const guestLeadsEmail = await getEmailSetting('global_email_guest_leads', 'guest-leads@rentmate.co.il')
+
             // Ensure guest user exists (Service Role handles this)
             await supabase.from('user_profiles').upsert({
                 id: GUEST_LEAD_ID,
-                email: 'guest-leads@rentmate.co.il',
+                email: guestLeadsEmail,
                 full_name: 'Potential Lead',
                 role: 'user'
             }, { onConflict: 'id' })

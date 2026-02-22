@@ -10,7 +10,9 @@ import {
     ToggleLeft,
     ToggleRight,
     RefreshCw,
-    Sparkles
+    Sparkles,
+    Mail,
+    Phone
 } from 'lucide-react';
 
 interface NotificationRule {
@@ -31,7 +33,7 @@ interface SystemSetting {
 }
 
 export default function SystemSettings() {
-    const [activeTab, setActiveTab] = useState<'notifications' | 'general' | 'autopilot' | 'integrations' | 'email_reports'>('notifications');
+    const [activeTab, setActiveTab] = useState<'notifications' | 'general' | 'autopilot' | 'integrations' | 'email_reports' | 'contact'>('notifications');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [rules, setRules] = useState<NotificationRule[]>([]);
@@ -361,6 +363,18 @@ export default function SystemSettings() {
                     <div className="flex items-center gap-2">
                         <Bell className="w-4 h-4" />
                         Email Reports
+                    </div>
+                </button>
+                <button
+                    onClick={() => setActiveTab('contact')}
+                    className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'contact'
+                        ? 'bg-white dark:bg-gray-800 text-brand-600 shadow-sm border border-gray-100 dark:border-gray-700'
+                        : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                        }`}
+                >
+                    <div className="flex items-center gap-2">
+                        <Mail className="w-4 h-4" />
+                        Global Contact
                     </div>
                 </button>
             </div>
@@ -703,6 +717,59 @@ export default function SystemSettings() {
                             )}
                         </>
                     )}
+                </div>
+            )}
+            {activeTab === 'contact' && (
+                <div className="space-y-10">
+                    <div className="bg-white dark:bg-gray-800 p-8 rounded-[2.5rem] border border-gray-200 dark:border-gray-700 shadow-sm">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-3 bg-brand-50 rounded-2xl">
+                                <Mail className="w-6 h-6 text-brand-600" />
+                            </div>
+                            <h2 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight">System Email Addresses</h2>
+                        </div>
+                        <div className="grid gap-6 md:grid-cols-2">
+                            {settings.filter(s => s.key.startsWith('global_email_')).map((setting) => (
+                                <div key={setting.key} className="space-y-2">
+                                    <label className="text-xs font-black uppercase tracking-widest text-gray-400 px-1">
+                                        {setting.key.replace('global_email_', '').replace(/_/g, ' ')}
+                                    </label>
+                                    <input
+                                        type="email"
+                                        value={setting.value as string || ''}
+                                        onChange={(e) => handleSettingChange(setting.key, e.target.value)}
+                                        className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-700 rounded-2xl text-gray-900 dark:text-white font-bold text-sm focus:border-brand-500 outline-none transition-all"
+                                    />
+                                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-tight px-1">{setting.description}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="bg-white dark:bg-gray-800 p-8 rounded-[2.5rem] border border-gray-200 dark:border-gray-700 shadow-sm">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-3 bg-brand-50 rounded-2xl">
+                                <Phone className="w-6 h-6 text-brand-600" />
+                            </div>
+                            <h2 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight">Support Contact Methods</h2>
+                        </div>
+                        <div className="grid gap-6 md:grid-cols-2">
+                            {settings.filter(s => s.key === 'global_phone_support' || s.key === 'global_whatsapp_support').map((setting) => (
+                                <div key={setting.key} className="space-y-2">
+                                    <label className="text-xs font-black uppercase tracking-widest text-gray-400 px-1">
+                                        {setting.key.replace('global_', '').replace(/_/g, ' ')}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={setting.value as string || ''}
+                                        onChange={(e) => handleSettingChange(setting.key, e.target.value)}
+                                        className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-700 rounded-2xl text-gray-900 dark:text-white font-bold text-sm focus:border-brand-500 outline-none transition-all"
+                                    />
+                                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-tight px-1">{setting.description}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

@@ -1,0 +1,161 @@
+﻿
+LineNumber Line                                                                                                                                      P
+                                                                                                                                                     a
+                                                                                                                                                     t
+                                                                                                                                                     h
+---------- ----                                                                                                                                      -
+        57 CREATE POLICY "Allow authenticated users to read index data"                                                                              C
+        65 CREATE POLICY "Allow authenticated users to manage index data"                                                                            C
+        88 CREATE POLICY "Admins can manage system settings" ON public.system_settings                                                               C
+       102 CREATE POLICY "Everyone can read system settings" ON public.system_settings                                                               C
+       123 CREATE POLICY "Admins can manage notification rules" ON public.notification_rules                                                         C
+       296 CREATE POLICY "Users can view own messages"                                                                                               C
+       300 CREATE POLICY "Users can insert own messages"                                                                                             C
+       305 CREATE POLICY "Admins can view all messages"                                                                                              C
+       344 CREATE POLICY "No public access" ON public.rate_limits                                                                                    C
+        49 CREATE POLICY "Users can manage their own preferences"                                                                                    C
+       114 -- CREATE POLICY "Users can manage their own payments" ON public.payments                                                                 C
+       118 CREATE POLICY "Enable all access for authenticated users" ON public.payments                                                              C
+       175 create policy "Allow public read access"                                                                                                  C
+       180 create policy "Allow authenticated insert"                                                                                                C
+       196 create policy "Allow public insert"                                                                                                       C
+       210         CREATE POLICY "Allow public read access to index data"                                                                            C
+       313 CREATE POLICY "Public Read Plans"                                                                                                         C
+       673 CREATE POLICY "Enable insert for everyone"                                                                                                C
+       680 CREATE POLICY "Admins can view all feedback"                                                                                              C
+       692 CREATE POLICY "Admins can update feedback"                                                                                                C
+       709 CREATE POLICY "Anyone can upload feedback screenshots"                                                                                    C
+       715 CREATE POLICY "Anyone can view feedback screenshots"                                                                                      C
+       841 CREATE POLICY "Public can view calculation shares"                                                                                        C
+       846 CREATE POLICY "Authenticated users can create shares"                                                                                     C
+       851 CREATE POLICY "Anyone can update view count"                                                                                              C
+       980 CREATE POLICY "Users can view their property documents"                                                                                   C
+       984 CREATE POLICY "Users can insert their property documents"                                                                                 C
+       988 CREATE POLICY "Users can update their property documents"                                                                                 C
+       992 CREATE POLICY "Users can delete their property documents"                                                                                 C
+      1014 CREATE POLICY "Users can view folders for their properties"                                                                               C
+      1024 CREATE POLICY "Users can insert folders for their properties"                                                                             C
+      1034 CREATE POLICY "Users can update folders for their properties"                                                                             C
+      1044 CREATE POLICY "Users can delete folders for their properties"                                                                             C
+      1080 CREATE POLICY "Users can view their own property media"                                                                                   C
+      1084 CREATE POLICY "Users can insert their own property media"                                                                                 C
+      1088 CREATE POLICY "Users can delete their own property media"                                                                                 C
+      1111 CREATE POLICY "Public can read short links"                                                                                               C
+      1125 CREATE POLICY "Authenticated users can create short links"                                                                                C
+      1131 CREATE POLICY "Public can create short links"                                                                                             C
+      1159 CREATE POLICY "Users can view their own storage usage"                                                                                    C
+      1242 CREATE POLICY "Users can view folders for their properties"                                                                               C
+      1253 CREATE POLICY "Users can insert folders for their properties"                                                                             C
+      1264 CREATE POLICY "Users can update folders for their properties"                                                                             C
+      1275 CREATE POLICY "Users can delete folders for their properties"                                                                             C
+      1542 CREATE POLICY "Users can view own AI usage"                                                                                               C
+      1547 CREATE POLICY "Admins can view all AI usage"                                                                                              C
+      1557 CREATE POLICY "Anyone can view AI limits"                                                                                                 C
+      1563 CREATE POLICY "Admins can modify AI limits"                                                                                               C
+      2420 CREATE POLICY "Users can view their own usage logs"                                                                                       C
+      2633 CREATE POLICY "Admins can view all storage usage"                                                                                         C
+      2640 CREATE POLICY "Admins can view all audit logs"                                                                                            C
+      2653         CREATE POLICY "Admins view all"                                                                                                   C
+      2658         CREATE POLICY "Admins update all"                                                                                                 C
+      2739 CREATE POLICY "Admins can view all storage usage"                                                                                         C
+      2920 CREATE POLICY "Broadcasts are viewable by everyone"                                                                                       C
+      2926 CREATE POLICY "Super Admins have full access to broadcasts"                                                                               C
+      3499 CREATE POLICY "Admins view all properties"                                                                                                C
+      3505 CREATE POLICY "Admins view all contracts"                                                                                                 C
+      3511 CREATE POLICY "Admins view all tenants"                                                                                                   C
+      3517 CREATE POLICY "Admins view all payments"                                                                                                  C
+      3523 CREATE POLICY "Admins view all property documents"                                                                                        C
+      3529 CREATE POLICY "Admins view all document folders"                                                                                          C
+      3535 CREATE POLICY "Admins view all short links"                                                                                               C
+      3541 CREATE POLICY "Admins full access to secure_documents"                                                                                    C
+      3630 CREATE POLICY "Users can view own tickets"                                                                                                C
+      3636 CREATE POLICY "Users can create tickets"                                                                                                  C
+      3642 CREATE POLICY "Users can update own open tickets"                                                                                         C
+      3648 CREATE POLICY "Admins can view all tickets"                                                                                               C
+      3659 CREATE POLICY "Admins can update all tickets"                                                                                             C
+      3670 CREATE POLICY "Users can view own ticket comments"                                                                                        C
+      3681 CREATE POLICY "Users can comment on own tickets"                                                                                          C
+      3692 CREATE POLICY "Admins can view all comments"                                                                                              C
+      3703 CREATE POLICY "Admins can comment on all tickets"                                                                                         C
+      4183 CREATE POLICY "Admins can view all AI usage logs"                                                                                         C
+      4331 CREATE POLICY "Users can view own AI conversations"                                                                                       C
+      4336 CREATE POLICY "Users can delete own AI conversations"                                                                                     C
+      4342 CREATE POLICY "Admins can view all AI conversations"                                                                                      C
+      4446 CREATE POLICY "Admins manage human conversations" ON public.human_conversations                                                           C
+      4451 CREATE POLICY "Admins manage human messages" ON public.human_messages                                                                     C
+      4457 CREATE POLICY "Users view own human conversations" ON public.human_conversations                                                          C
+      4462 CREATE POLICY "Users view/send own human messages" ON public.human_messages                                                               C
+      4497 CREATE POLICY "Admins can view all conversations"                                                                                         C
+      4508 CREATE POLICY "Admins can insert conversations"                                                                                           C
+      4519 CREATE POLICY "Admins can update conversations"                                                                                           C
+      4530 CREATE POLICY "Users can view their own conversations"                                                                                    C
+      4537 CREATE POLICY "Admins can view all messages"                                                                                              C
+      4548 CREATE POLICY "Admins can insert messages"                                                                                                C
+      4559 CREATE POLICY "Users can view messages in their conversations"                                                                            C
+      4570 CREATE POLICY "Users can insert messages in their active conversations"                                                                   C
+      4995 CREATE POLICY "Admins can view all ticket analysis" ON public.ticket_analysis                                                             C
+      5001 CREATE POLICY "Users can view own automation settings" ON public.user_automation_settings                                                 C
+      5007 CREATE POLICY "Users can update own automation settings" ON public.user_automation_settings                                               C
+      5013 CREATE POLICY "Users can insert own automation settings" ON public.user_automation_settings                                               C
+      5019 CREATE POLICY "Admins can manage automation rules" ON public.automation_rules                                                             C
+      5025 CREATE POLICY "Admins can view automation logs" ON public.automation_logs                                                                 C
+      5246 CREATE POLICY "Admins can view all audit logs"                                                                                            C
+      5331     CREATE POLICY "Allow authenticated read index_data" ON index_data FOR SELECT TO authenticated USING (true);                           C
+      5335     CREATE POLICY "Allow authenticated read index_bases" ON index_bases FOR SELECT TO authenticated USING (true);                         C
+      5340     CREATE POLICY "Allow full access for service_role index_data" ON index_data FOR ALL TO service_role USING (true) WITH CHECK (true);   C
+      5344     CREATE POLICY "Allow full access for service_role index_bases" ON index_bases FOR ALL TO service_role USING (true) WITH CHECK (true); C
+     15538 CREATE POLICY "Allow authenticated users to read chaining factors"                                                                        C
+     15545 CREATE POLICY "Allow service role to manage chaining factors"                                                                             C
+     15963 CREATE POLICY "Users can view own payments"   ON public.payments FOR SELECT USING (user_id = auth.uid());                                 C
+     15964 CREATE POLICY "Users can insert own payments" ON public.payments FOR INSERT WITH CHECK (user_id = auth.uid());                            C
+     15965 CREATE POLICY "Users can update own payments" ON public.payments FOR UPDATE USING (user_id = auth.uid());                                 C
+     15966 CREATE POLICY "Users can delete own payments" ON public.payments FOR DELETE USING (user_id = auth.uid());                                 C
+     15973         CREATE POLICY "Admins view all payments"                                                                                          C
+     16183 CREATE POLICY "Admins can insert plans"                                                                                                   C
+     16194 CREATE POLICY "Admins can update plans"                                                                                                   C
+     16212 CREATE POLICY "Admins can delete plans"                                                                                                   C
+     16248 CREATE POLICY "Admins can insert plans"                                                                                                   C
+     16252 CREATE POLICY "Admins can update plans"                                                                                                   C
+     16257 CREATE POLICY "Admins can delete plans"                                                                                                   C
+     16403 CREATE POLICY "Allow public read access to rental market data"                                                                            C
+     17020 CREATE POLICY "Admins can read system settings" ON public.system_settings                                                                 C
+     17074 CREATE POLICY "Users view own contracts"                                                                                                  C
+     17084 CREATE POLICY "Users upload own contracts"                                                                                                C
+     17097 CREATE POLICY "Users view own images"                                                                                                     C
+     17107 CREATE POLICY "Users upload own images"                                                                                                   C
+     17130         CREATE POLICY "Users can view own feedback" ON public.feedback                                                                    C
+     17143         CREATE POLICY "Users can view own AI conversations" ON public.ai_conversations                                                    C
+     17153         CREATE POLICY "Users can view own invoices" ON public.invoices                                                                    C
+     17163         CREATE POLICY "Users can manage own preferences" ON public.user_preferences                                                       C
+     17173         CREATE POLICY "Admins can view all audit logs" ON public.audit_logs                                                               C
+     17184         CREATE POLICY "Users can manage own notifications" ON public.notifications                                                        C
+     17194         CREATE POLICY "Users can view own storage usage" ON public.user_storage_usage                                                     C
+     17204         CREATE POLICY "Users can view own whatsapp" ON public.whatsapp_conversations                                                      C
+     17214         CREATE POLICY "Users can view own whatsapp messages" ON public.whatsapp_messages                                                  C
+     17231         CREATE POLICY "Users can view own profile" ON public.user_profiles                                                                C
+     17235         CREATE POLICY "Users can update own profile" ON public.user_profiles                                                              C
+     17263 CREATE POLICY "Users can upload own feedback screenshots"                                                                                 C
+     17271 CREATE POLICY "Users can view own feedback screenshots"                                                                                   C
+     17284 CREATE POLICY "Secure Access: Contracts"                                                                                                  C
+     17289 CREATE POLICY "Secure Access: Property Images"                                                                                            C
+     17339 CREATE POLICY "Users can view their own whatsapp usage logs"                                                                              C
+     17343 CREATE POLICY "Admins can manage all usage logs"                                                                                          C
+     17513 CREATE POLICY "Secure Access: Property Images"                                                                                            C
+     17564 CREATE POLICY "Manual uploads ownership"                                                                                                  C
+     17577 CREATE POLICY "Google imports ownership"                                                                                                  C
+     17602 CREATE POLICY "Allow public read access to index_data"                                                                                    C
+     17613 CREATE POLICY "Allow public read access to index_bases"                                                                                   C
+     17622 CREATE POLICY "Allow authenticated users to read index_bases"                                                                             C
+     17648 CREATE POLICY "Allow anonymous inserts to error_logs" ON public.error_logs                                                                C
+     17653 CREATE POLICY "Allow admins to view error_logs" ON public.error_logs                                                                      C
+     17665 CREATE POLICY "Allow admins to update error_logs" ON public.error_logs                                                                    C
+     17816         CREATE POLICY "Admins can read all analytics" ON public.analytics_events                                                          C
+     17832         CREATE POLICY "Users can log their own events" ON public.analytics_events                                                         C
+     17938     CREATE POLICY "Admins can view security logs"                                                                                         C
+     17942     CREATE POLICY "Admins can view security logs"                                                                                         C
+     18273 -- Drop existing policy if it exists to avoid conflicts (or use CREATE POLICY IF NOT EXISTS if supported, but DROP is safer for updates)  C
+     18277 CREATE POLICY "Users can only see their own payments"                                                                                     C
+     18296 CREATE POLICY "Allow service role to insert debug logs"                                                                                   C
+     18302 CREATE POLICY "Allow service role to select debug logs"                                                                                   C
+
+

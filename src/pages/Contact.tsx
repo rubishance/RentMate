@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Mail, Phone, Camera, Loader2, Send, CheckCircle2, ArrowRight, ShieldCheck, Clock } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -9,13 +9,38 @@ import { WhatsAppService } from '../services/whatsapp.service';
 import { GlassCard } from '../components/common/GlassCard';
 import { PageHeader } from '../components/common/PageHeader';
 
-const SUPPORT_WHATSAPP = '972503602000'; // Test Number as requested
-const SUPPORT_EMAIL = 'support@rentmate.co.il';
-
 export default function Contact() {
     const { t, lang } = useTranslation();
     const isRtl = lang === 'he';
     const { preferences } = useUserPreferences();
+
+    const [contactInfo, setContactInfo] = useState({
+        whatsapp: '972503602000',
+        email: 'support@rentmate.co.il',
+        phone: '+972-50-360-2000'
+    });
+
+    useEffect(() => {
+        async function fetchContactInfo() {
+            const { data: settings } = await supabase
+                .from('system_settings')
+                .select('key, value')
+                .in('key', ['global_email_support', 'global_phone_support', 'global_whatsapp_support']);
+
+            if (settings) {
+                const email = settings.find(s => s.key === 'global_email_support')?.value as string;
+                const phone = settings.find(s => s.key === 'global_phone_support')?.value as string;
+                const whatsapp = settings.find(s => s.key === 'global_whatsapp_support')?.value as string;
+
+                setContactInfo({
+                    email: email || 'support@rentmate.co.il',
+                    phone: phone || '+972-50-360-2000',
+                    whatsapp: whatsapp || '972503602000'
+                });
+            }
+        }
+        fetchContactInfo();
+    }, []);
 
     const [loading, setLoading] = useState(false);
     const [includeScreenshot, setIncludeScreenshot] = useState(false);
@@ -59,7 +84,7 @@ export default function Contact() {
                 ? `${defaultMsg}\n\nScreenshot: ${finalUrl}`
                 : defaultMsg;
 
-            const waLink = WhatsAppService.generateLink(SUPPORT_WHATSAPP, fullMsg);
+            const waLink = WhatsAppService.generateLink(contactInfo.whatsapp, fullMsg);
             window.open(waLink, '_blank');
             setSent(true);
 
@@ -168,26 +193,26 @@ export default function Contact() {
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <div className="p-8 glass-premium dark:bg-neutral-900/60 border-white/10 rounded-[3rem] shadow-minimal flex items-center gap-6 group cursor-pointer hover:shadow-jewel transition-all duration-700"
-                                onClick={() => window.location.href = `mailto:${SUPPORT_EMAIL}`}
+                                onClick={() => window.location.href = `mailto:${contactInfo.email}`}
                             >
                                 <div className="w-14 h-14 glass-premium dark:bg-neutral-800/40 rounded-2xl flex items-center justify-center text-indigo-500 shadow-minimal border border-white/5 group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
                                     <Mail className="w-6 h-6" />
                                 </div>
                                 <div>
                                     <div className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-40 mb-1">{isRtl ? 'אימייל' : 'Email'}</div>
-                                    <div className="font-black text-foreground tracking-tight lowercase">{SUPPORT_EMAIL}</div>
+                                    <div className="font-black text-foreground tracking-tight lowercase">{contactInfo.email}</div>
                                 </div>
                             </div>
 
                             <div className="p-8 glass-premium dark:bg-neutral-900/60 border-white/10 rounded-[3rem] shadow-minimal flex items-center gap-6 group cursor-pointer hover:shadow-jewel transition-all duration-700"
-                                onClick={() => window.location.href = `tel:+972503602000`}
+                                onClick={() => window.location.href = `tel:${contactInfo.phone.replace(/[^0-9+]/g, '')}`}
                             >
                                 <div className="w-14 h-14 glass-premium dark:bg-neutral-800/40 rounded-2xl flex items-center justify-center text-indigo-500 shadow-minimal border border-white/5 group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
                                     <Phone className="w-6 h-6" />
                                 </div>
                                 <div>
                                     <div className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-40 mb-1">{isRtl ? 'טלפון' : 'Phone'}</div>
-                                    <div className="font-black text-foreground tracking-tight lowercase">+972-50-360-2000</div>
+                                    <div className="font-black text-foreground tracking-tight lowercase">{contactInfo.phone}</div>
                                 </div>
                             </div>
                         </div>
