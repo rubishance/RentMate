@@ -18,6 +18,7 @@ const PageLoader = () => (
 
 // Eager load critical pages
 import { WelcomeLanding } from './pages/WelcomeLanding';
+import WelcomeLandingStitch from './pages/WelcomeLandingStitch';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { Properties } from './pages/Properties';
@@ -29,7 +30,6 @@ const PropertyDetails = lazy(() => import('./pages/PropertyDetails'));
 import { Payments } from './pages/Payments';
 import { Calculator } from './pages/Calculator';
 import { Analytics } from './pages/Analytics';
-const AddContract = lazy(() => import('./pages/AddContract').then(module => ({ default: module.AddContract })));
 const MaintenanceTracker = lazy(() => import('./pages/MaintenanceTracker').then(module => ({ default: module.MaintenanceTracker })));
 const ContractDetails = lazy(() => import('./pages/ContractDetails'));
 const Contracts = lazy(() => import('./pages/Contracts'));
@@ -125,6 +125,10 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <WelcomeLanding />,
+      },
+      {
+        path: "/welcome-new",
+        element: <WelcomeLandingStitch />,
       },
       {
         path: "/design-system",
@@ -246,10 +250,6 @@ const router = createBrowserRouter([
               {
                 path: "/properties-new",
                 element: <Navigate to="/properties" replace />,
-              },
-              {
-                path: "/contracts/new",
-                element: <AddContract />,
               },
               {
                 path: "/contracts/:id",

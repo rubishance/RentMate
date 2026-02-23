@@ -18,7 +18,7 @@ export const Logo: React.FC<LogoProps> = ({
 }) => {
     const isDark = theme === 'dark';
     const mainColor = isDark ? '#F5F5F7' : '#121212';
-    const accentColor = goldAccent ? '#D4AF37' : mainColor;
+    const accentColor = goldAccent ? '#459367' : mainColor;
 
     return (
         <div

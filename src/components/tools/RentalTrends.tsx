@@ -208,17 +208,21 @@ export function RentalTrends() {
                         </div>
                         <div className="flex items-center gap-6">
                             <div className="space-y-1">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{duration} Growth</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-white/60">
+                                    {lang === 'he' ? `צמיחה ל-${duration}` : `${duration} Growth`}
+                                </span>
                                 <div className="text-2xl font-black flex items-center gap-1">
                                     {filteredData.avgGrowth > 0 ? '+' : ''}{filteredData.avgGrowth.toFixed(1)}%
                                     {filteredData.avgGrowth > 0 ? <TrendingUp className="w-5 h-5 text-emerald-300" /> : <TrendingDown className="w-5 h-5 text-red-300" />}
                                 </div>
                             </div>
-                            <div className="w-[1px] h-10 bg-white/10" />
+                            <div className="w-[1px] h-10 bg-white/20" />
                             <div className="space-y-1">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Basis</span>
-                                <div className="text-2xl font-black lowercase">
-                                    {rooms}rm {propertyType}
+                                <span className="text-[10px] font-black uppercase tracking-widest text-white/60">
+                                    {lang === 'he' ? 'בסיס' : 'Basis'}
+                                </span>
+                                <div className="text-2xl font-black lowercase text-white">
+                                    {rooms}{lang === 'he' ? ' חד\'' : 'rm'} {t(propertyType as any) || propertyType}
                                 </div>
                             </div>
                         </div>
@@ -227,30 +231,30 @@ export function RentalTrends() {
 
                 {/* Insight Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <GlassCard className="p-6 border-l-4 border-l-brand-600">
+                    <GlassCard className="p-6 border-l-4 border-l-brand-600 bg-white dark:bg-neutral-900 shadow-sm">
                         <div className="space-y-4">
                             <div className="flex justify-between items-start">
-                                <h4 className="text-[11px] font-black uppercase tracking-widest text-muted-foreground opacity-50">
+                                <h4 className="text-[11px] font-black uppercase tracking-widest text-muted-foreground opacity-70">
                                     {lang === 'he' ? 'שוכר חדש מול חידוש' : 'New vs Renewal'}
                                 </h4>
                                 <ArrowUpRight className="w-4 h-4 text-brand-600" />
                             </div>
                             <div className="space-y-3">
                                 <div>
-                                    <div className="flex justify-between text-xs font-bold mb-1">
-                                        <span>New Tenant</span>
+                                    <div className="flex justify-between text-xs font-bold mb-1 text-foreground">
+                                        <span>{lang === 'he' ? 'שוכר חדש' : 'New Tenant'}</span>
                                         <span className="text-emerald-600">+{nationalStats.newContracts}%</span>
                                     </div>
-                                    <div className="h-1 bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+                                    <div className="h-1.5 bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden">
                                         <div className="h-full bg-emerald-500 w-[46%]" />
                                     </div>
                                 </div>
                                 <div>
-                                    <div className="flex justify-between text-xs font-bold mb-1">
-                                        <span>Renewal</span>
+                                    <div className="flex justify-between text-xs font-bold mb-1 text-foreground">
+                                        <span>{lang === 'he' ? 'חידוש חוזה' : 'Renewal'}</span>
                                         <span className="text-brand-600">+{nationalStats.renewals}%</span>
                                     </div>
-                                    <div className="h-1 bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+                                    <div className="h-1.5 bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden">
                                         <div className="h-full bg-brand-500 w-[30%]" />
                                     </div>
                                 </div>
@@ -258,37 +262,41 @@ export function RentalTrends() {
                         </div>
                     </GlassCard>
 
-                    <GlassCard className="p-6 border-l-4 border-l-emerald-500">
+                    <GlassCard className="p-6 border-l-4 border-l-emerald-500 bg-white dark:bg-neutral-900 shadow-sm">
                         <div className="space-y-3">
-                            <h4 className="text-[11px] font-black uppercase tracking-widest text-muted-foreground opacity-50">
+                            <h4 className="text-[11px] font-black uppercase tracking-widest text-muted-foreground opacity-70">
                                 {lang === 'he' ? 'פרמיית מיגון (ממ"ד)' : 'Safety Premium'}
                             </h4>
                             <div className="flex items-center gap-3">
-                                <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl">
+                                <div className="p-3 bg-emerald-50 dark:bg-emerald-900/40 rounded-2xl">
                                     <ShieldCheck className="w-6 h-6 text-emerald-600" />
                                 </div>
                                 <div>
                                     <div className="text-2xl font-black text-emerald-600">+{nationalStats.safetyPremium}%</div>
-                                    <p className="text-[10px] text-muted-foreground leading-tight">
-                                        Rent premium for units with safe rooms in 2025
+                                    <p className="text-[10px] text-muted-foreground leading-tight font-semibold">
+                                        {lang === 'he' ? 'פרמיית שכירות על יחידות עם ממ"ד ב-2025' : 'Rent premium for units with safe rooms in 2025'}
                                     </p>
                                 </div>
                             </div>
                         </div>
                     </GlassCard>
 
-                    <GlassCard className="p-6 col-span-1 md:col-span-2 border-l-4 border-l-amber-500">
-                        <div className="flex items-center justify-between">
+                    <GlassCard className="p-6 col-span-1 md:col-span-2 border-l-4 border-l-amber-500 bg-white dark:bg-neutral-900 shadow-sm">
+                        <div className="flex items-center justify-between gap-4">
                             <div className="space-y-1">
-                                <h4 className="text-[11px] font-black uppercase tracking-widest text-muted-foreground opacity-50">
+                                <h4 className="text-[11px] font-black uppercase tracking-widest text-muted-foreground opacity-70">
                                     {lang === 'he' ? 'שוק מול מדד המחירים' : 'Market vs CPI Gap'}
                                 </h4>
                                 <p className="text-sm font-bold text-foreground">
-                                    Market rents outpaced the CPI by <span className="text-amber-600">2.4%</span> this year.
+                                    {lang === 'he' ? (
+                                        <>מחירי השוק עקפו את המדד ב-<span className="text-amber-600">2.4%</span> השנה.</>
+                                    ) : (
+                                        <>Market rents outpaced the CPI by <span className="text-amber-600">2.4%</span> this year.</>
+                                    )}
                                 </p>
                             </div>
-                            <div className="px-4 py-2 bg-amber-50 dark:bg-amber-900/20 rounded-2xl text-[10px] font-black text-amber-600 uppercase border border-amber-500/20">
-                                Strategic Gap
+                            <div className="px-4 py-2 bg-amber-50 dark:bg-amber-900/40 rounded-2xl text-[10px] font-black text-amber-600 uppercase border border-amber-500/30 shrink-0">
+                                {lang === 'he' ? 'פער אסטרטגי' : 'Strategic Gap'}
                             </div>
                         </div>
                     </GlassCard>

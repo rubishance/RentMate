@@ -7,10 +7,10 @@ import { RentyCommandCenter } from '../components/dashboard/RentyCommandCenter';
 import { useDataCache } from '../contexts/DataCacheContext';
 import { DashboardGrid } from '../components/dashboard/DashboardGrid';
 import { DEFAULT_WIDGET_LAYOUT, WidgetConfig, DashboardData, WIDGET_REGISTRY } from '../components/dashboard/WidgetRegistry';
-import { Edit3Icon, CheckIcon, FileSearch, ArrowRight, Crown, Sparkles } from 'lucide-react';
+import { Edit3Icon, CheckIcon, FileSearch, ArrowRight } from 'lucide-react';
 import { ReportGenerationModal } from '../components/modals/ReportGenerationModal';
+import { QuickActionFAB } from '../components/dashboard/QuickActionFAB';
 import { cn } from '../lib/utils';
-import { userScoringService } from '../services/user-scoring.service';
 import { useSubscription } from '../hooks/useSubscription';
 import { BriefingService, FeedItem } from '../services/briefing.service';
 
@@ -41,7 +41,6 @@ export function DashboardStitchV1() {
     const [isEditingLayout, setIsEditingLayout] = useState(false);
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [reportsEnabled, setReportsEnabled] = useState(false);
-    const [showProBanner, setShowProBanner] = useState(false);
     const { plan } = useSubscription();
 
     useEffect(() => {
@@ -109,11 +108,10 @@ export function DashboardStitchV1() {
                 profileData = { full_name: 'Developer (Bypass)' };
             }
 
-            const [summaryResponse, feedItemsData, reportSetting, shouldShowBanner] = await Promise.all([
+            const [summaryResponse, feedItemsData, reportSetting] = await Promise.all([
                 user ? supabase.rpc('get_dashboard_summary', { p_user_id: user.id }) : Promise.resolve({ data: null }),
                 BriefingService.getBriefingItems(effectiveUserId, t),
-                supabase.from('system_settings').select('value').eq('key', 'auto_monthly_reports_enabled').single(),
-                user ? userScoringService.shouldShowUpsell(user.id, plan?.name || '') : Promise.resolve(false)
+                supabase.from('system_settings').select('value').eq('key', 'auto_monthly_reports_enabled').single()
             ]);
 
             const summary = summaryResponse.data;
@@ -130,7 +128,6 @@ export function DashboardStitchV1() {
             }
             setFeedItems(feedItemsData);
             setReportsEnabled(reportSetting?.data?.value === true);
-            setShowProBanner(shouldShowBanner);
 
             set(cacheKey, {
                 profile: profileData,
@@ -192,39 +189,6 @@ export function DashboardStitchV1() {
                 <RentyCommandCenter firstName={firstName} feedItems={feedItems} />
             </div>
 
-            <div className="max-w-6xl mx-auto px-4">
-                {showProBanner && (
-                    <div className="mt-8 relative overflow-hidden rounded-[2rem] bg-gradient-to-r from-indigo-600 to-violet-600 p-0.5 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-700">
-                        <div className="absolute top-0 right-0 p-4 opacity-10">
-                            <Crown className="w-32 h-32 rotate-12" />
-                        </div>
-                        <div className="relative bg-white/10 backdrop-blur-sm rounded-[1.9rem] p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-                            <div className="flex items-center gap-6">
-                                <div className="p-3 bg-white/20 rounded-2xl shadow-inner hidden md:block">
-                                    <Sparkles className="w-8 h-8 text-yellow-300" />
-                                </div>
-                                <div className="space-y-1 text-center md:text-start">
-                                    <h3 className="text-xl font-bold text-white font-display">
-                                        {lang === 'he' ? 'זיהינו שאתם מנהלים מקצוענים!' : 'Pro Manager Detected!'}
-                                    </h3>
-                                    <p className="text-indigo-100 max-w-xl text-sm leading-relaxed">
-                                        {lang === 'he'
-                                            ? 'אתם מנצלים את המקסימום מהנכס היחיד שלכם. רוצים לנהל תיק נכסים שלם עם אוטומציות מתקדמות?'
-                                            : 'You\'re maxing out your single asset. Ready to scale? Upgrade to MATE to automate your growing workflow.'}
-                                    </p>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => navigate('/pricing')}
-                                className="whitespace-nowrap px-6 py-3 bg-white text-indigo-600 font-bold rounded-2xl shadow-lg hover:bg-indigo-50 transition-colors flex items-center gap-2 group"
-                            >
-                                {lang === 'he' ? 'שדרגו ל-MATE' : 'Upgrade to MATE'}
-                                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                            </button>
-                        </div>
-                    </div>
-                )}
-            </div>
 
             {/* Content Section - Main Grid */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -273,6 +237,7 @@ export function DashboardStitchV1() {
                 isOpen={isReportModalOpen}
                 onClose={() => setIsReportModalOpen(false)}
             />
+            <QuickActionFAB />
         </div>
     );
 }

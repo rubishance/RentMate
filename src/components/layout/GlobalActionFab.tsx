@@ -10,11 +10,13 @@ import {
 } from '../icons/NavIcons';
 import { useTranslation } from '../../hooks/useTranslation';
 import { cn } from '../../lib/utils';
+import { useStack } from '../../contexts/StackContext';
 
 export function GlobalActionFab() {
     const { t, lang } = useTranslation();
     const navigate = useNavigate();
     const location = useLocation();
+    const { push } = useStack();
     const [isOpen, setIsOpen] = useState(false);
     const isRtl = lang === 'he';
 
@@ -24,7 +26,7 @@ export function GlobalActionFab() {
 
     return (
         <>
-            <div className={`fixed bottom-32 sm:bottom-24 ${isRtl ? 'right-8' : 'left-8'} z-[100] flex flex-col items-end gap-4`}>
+            <div className="fixed-fab-container">
                 <AnimatePresence>
                     {isOpen && (
                         <>
@@ -38,7 +40,7 @@ export function GlobalActionFab() {
                                 initial={{ opacity: 0, scale: 0.8, y: 20 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.8, y: 20 }}
-                                className={`absolute bottom-20 ${isRtl ? 'right-0 origin-bottom-right' : 'left-0 origin-bottom-left'} z-[100] w-64 p-3 glass-premium border-white/10 rounded-[2rem] shadow-jewel flex flex-col gap-2`}
+                                className="absolute bottom-20 right-0 origin-bottom-right z-[100] w-64 p-3 glass-premium border-white/10 rounded-[2rem] shadow-jewel flex flex-col gap-2"
                             >
                                 {/* Option 1: Payment */}
                                 <button
@@ -49,7 +51,7 @@ export function GlobalActionFab() {
                                     className="flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors group w-full text-start"
                                 >
                                     <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform shadow-sm">
-                                        <PaymentIcon className="w-5 h-5" />
+                                        <PaymentIcon className="w-6 h-6" />
                                     </div>
                                     <span className="text-sm font-black lowercase tracking-tight flex-1">{t('addPayment')}</span>
                                 </button>
@@ -58,12 +60,14 @@ export function GlobalActionFab() {
                                 <button
                                     onClick={() => {
                                         setIsOpen(false);
-                                        navigate('/contracts/new');
+                                        push('contract_wizard', {
+                                            onSuccess: () => navigate('/contracts')
+                                        }, { isExpanded: true, title: t('addContract') });
                                     }}
                                     className="flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors group w-full text-start"
                                 >
                                     <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform shadow-sm">
-                                        <ContractIcon className="w-5 h-5" />
+                                        <ContractIcon className="w-6 h-6" />
                                     </div>
                                     <span className="text-sm font-black lowercase tracking-tight flex-1">{t('addContract')}</span>
                                 </button>
@@ -77,7 +81,7 @@ export function GlobalActionFab() {
                                     className="flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors group w-full text-start"
                                 >
                                     <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform shadow-sm">
-                                        <AssetIcon className="w-5 h-5" />
+                                        <AssetIcon className="w-6 h-6" />
                                     </div>
                                     <span className="text-sm font-black lowercase tracking-tight flex-1">{t('addAsset')}</span>
                                 </button>
@@ -91,7 +95,7 @@ export function GlobalActionFab() {
                                     className="flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors group w-full text-start"
                                 >
                                     <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500 group-hover:scale-110 transition-transform shadow-sm">
-                                        <UploadIcon className="w-5 h-5" />
+                                        <UploadIcon className="w-6 h-6" />
                                     </div>
                                     <span className="text-sm font-black lowercase tracking-tight flex-1">{t('uploadFile')}</span>
                                 </button>
@@ -109,7 +113,7 @@ export function GlobalActionFab() {
                         isOpen && "rotate-45"
                     )}
                 >
-                    <Plus className="w-6 h-6 md:w-8 md:h-8" />
+                    <Plus className="w-6 h-6" />
                 </motion.button>
             </div>
         </>

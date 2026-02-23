@@ -106,7 +106,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                                     {[0.5, 1, 0.4, 0.8, 0.3].map((v, i) => (
                                         <motion.div
                                             key={i}
-                                            className="w-1.5 bg-gold rounded-full"
+                                            className="w-1.5 bg-secondary rounded-full"
                                             animate={{ height: ['4px', `${v * 16}px`, '4px'] }}
                                             transition={{ duration: 0.5, repeat: Infinity, delay: i * 0.1 }}
                                         />
@@ -127,7 +127,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                                 </div>
                                 <div className="text-3xl font-black text-foreground tracking-tight flex items-center gap-2">
                                     RentMate
-                                    <div className="w-2 h-2 bg-gold rounded-full" />
+                                    <div className="w-2 h-2 bg-secondary rounded-full" />
                                 </div>
                             </div>
                             <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10 shadow-lg">
@@ -145,7 +145,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                                 <div className="text-5xl font-black text-foreground tracking-tighter leading-none mb-6">₪15,200</div>
                                 <div className="h-2 w-full bg-black/20 dark:bg-white/5 rounded-full overflow-hidden">
                                     <motion.div
-                                        className="h-full bg-gold"
+                                        className="h-full bg-secondary"
                                         initial={{ width: '0%' }}
                                         animate={{ width: '85%' }}
                                         transition={{ duration: 1.5, delay: 0.5 }}
@@ -159,7 +159,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                                     <div className="w-14 h-3 bg-foreground rounded-full opacity-20" />
                                 </div>
                                 <div className="bg-black/40 backdrop-blur-lg p-6 rounded-[2.5rem] border border-white/10 aspect-square flex flex-col justify-between shadow-2xl relative overflow-hidden">
-                                    <Zap className="w-8 h-8 text-gold animate-pulse" />
+                                    <Zap className="w-8 h-8 text-secondary animate-pulse" />
                                     <div className="w-14 h-3 bg-white rounded-full opacity-40" />
                                 </div>
                             </div>
@@ -227,7 +227,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                                     <AnimatePresence>
                                         {(step === 'USER_VOICE' || step === 'SCANNING') && (
                                             <motion.div
-                                                className="absolute top-[-10px] left-1/2 -translate-x-1/2 w-[60%] bg-gold text-black p-3 rounded-xl shadow-xl border border-white/20 z-20 text-center"
+                                                className="absolute top-[-10px] left-1/2 -translate-x-1/2 w-[60%] bg-secondary text-primary-foreground p-3 rounded-xl shadow-xl border border-white/20 z-20 text-center"
                                                 initial={{ scale: 0, opacity: 0 }}
                                                 animate={{ scale: 1, opacity: 1 }}
                                                 exit={{ scale: 0, opacity: 0 }}
@@ -262,7 +262,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                                             <div className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1">{isRtl ? 'חברת החשמל' : 'IEC ISRAEL'}</div>
                                             <div className="text-3xl font-black dark:text-white tracking-tighter">₪324.50</div>
                                         </div>
-                                        <Zap className="w-8 h-8 text-gold drop-shadow-[0_0_10px_#c5a059]" />
+                                        <Zap className="w-8 h-8 text-secondary drop-shadow-[0_0_10px_rgba(69,147,103,0.5)]" />
                                     </div>
                                     <div className="space-y-3 mb-6">
                                         <div className="h-2.5 w-full bg-neutral-100 dark:bg-neutral-800 rounded-full" />
@@ -274,7 +274,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                                     </div>
                                     {/* Scanning High-Tec Beam */}
                                     <motion.div
-                                        className="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-gold to-transparent shadow-[0_0_20px_#c5a059]"
+                                        className="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-secondary to-transparent shadow-[0_0_20px_rgba(69,147,103,0.5)]"
                                         animate={{ top: ['0%', '100%', '0%'] }}
                                         transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
                                     />
@@ -291,18 +291,18 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                                     animate={{ opacity: 1 }}
                                 >
                                     <motion.div
-                                        className="w-28 h-28 bg-gold rounded-[2.5rem] flex items-center justify-center shadow-[0_0_60px_#c5a059] relative"
+                                        className="w-28 h-28 bg-secondary rounded-[2.5rem] flex items-center justify-center shadow-[0_0_60px_rgba(69,147,103,0.3)] relative"
                                         initial={{ scale: 0, rotate: -45 }}
                                         animate={{ scale: 1, rotate: 0 }}
                                         transition={{ type: 'spring', damping: 10 }}
                                     >
-                                        <ShieldCheck className="w-14 h-14 text-black" />
+                                        <ShieldCheck className="w-14 h-14 text-primary-foreground" />
                                         <motion.div
-                                            className="absolute -top-3 -right-3 w-10 h-10 bg-black border-4 border-gold rounded-full flex items-center justify-center"
+                                            className="absolute -top-3 -right-3 w-10 h-10 bg-black border-4 border-secondary rounded-full flex items-center justify-center"
                                             animate={{ scale: [1, 1.2, 1] }}
                                             transition={{ repeat: Infinity, duration: 2 }}
                                         >
-                                            <Zap className="w-5 h-5 text-gold" />
+                                            <Zap className="w-5 h-5 text-secondary" />
                                         </motion.div>
                                     </motion.div>
                                     <motion.div
@@ -311,7 +311,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                                         animate={{ y: 0, opacity: 1 }}
                                         transition={{ delay: 0.2 }}
                                     >
-                                        <div className="text-gold font-black text-2xl mb-2 tracking-tighter">{isRtl ? 'הקובץ תויק!' : 'SUCCESSFULLY FILED'}</div>
+                                        <div className="text-secondary font-black text-2xl mb-2 tracking-tighter">{isRtl ? 'הקובץ תויק!' : 'SUCCESSFULLY FILED'}</div>
                                         <div className="text-white/40 text-[10px] uppercase font-bold tracking-[0.2em]">
                                             {isRtl ? 'תיקיית חשבונות חשמל 2026' : 'ELECTRICITY BILLS 2026'}
                                         </div>
@@ -332,7 +332,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                 {['DASHBOARD', 'RENTY_GREET', 'USER_VOICE', 'SCANNING', 'SUCCESS'].map((s) => (
                     <motion.div
                         key={s}
-                        className={`h-1.5 rounded-full ${step === s ? 'bg-gold' : 'bg-neutral-800'}`}
+                        className={`h-1.5 rounded-full ${step === s ? 'bg-secondary' : 'bg-neutral-800'}`}
                         animate={{ width: step === s ? '40px' : '10px' }}
                         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                     />

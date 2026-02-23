@@ -102,7 +102,6 @@ class PropertyDocumentsService {
         const plan = (profile as any)?.subscription_plans || {};
         const maxTotalMB = plan.max_storage_mb ?? 100;
 
-        // 1. Check Global
         const totalBytes = usage?.total_bytes || 0;
         if (maxTotalMB !== -1 && (totalBytes + fileSize) > (maxTotalMB * 1024 * 1024)) {
             return {
@@ -176,7 +175,7 @@ class PropertyDocumentsService {
             .single();
 
         const quotaMB = (profile as any)?.subscription_plans?.max_storage_mb || 100;
-        const quotaBytes = quotaMB === -1 ? Infinity : quotaMB * 1024 * 1024;
+        const quotaBytes = (quotaMB === -1 || quotaMB === null) ? Infinity : quotaMB * 1024 * 1024;
 
         return {
             totalBytes: usage?.total_bytes || 0,

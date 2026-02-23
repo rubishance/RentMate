@@ -6,6 +6,7 @@ import { Wrench, Plus, Search, Filter, ArrowUpRight, Building } from 'lucide-rea
 import { AddMaintenanceModal } from '../components/modals/AddMaintenanceModal';
 import { GlassCard } from '../components/common/GlassCard';
 import { format } from 'date-fns';
+import { Button } from '../components/ui/Button';
 
 export function MaintenanceTracker() {
     const { t } = useTranslation();
@@ -34,11 +35,11 @@ export function MaintenanceTracker() {
     const recentActivity = documents.slice(0, 5);
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="pb-40 pt-8 px-4 md:px-8 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 px-4 md:px-0">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div className="space-y-1">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-orange-500/5 dark:bg-orange-500/10 backdrop-blur-md rounded-full border border-orange-500/10 shadow-sm mb-2">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-orange-500/5 dark:bg-orange-500/10 backdrop-blur-md rounded-full border border-orange-500/10 shadow-sm mb-1">
                         <Wrench className="w-3 h-3 text-orange-500" />
                         <span className="text-[9px] font-black uppercase tracking-widest text-orange-600 dark:text-orange-400">
                             {t('maintenanceHub') || 'Maintenance Hub'}
@@ -48,17 +49,19 @@ export function MaintenanceTracker() {
                         {t('maintenanceOverview') || 'Portfolio Health'}
                     </h1>
                 </div>
-                <button
-                    onClick={() => setIsAddModalOpen(true)}
-                    className="h-14 px-10 button-jewel font-black text-xs uppercase tracking-[0.2em] rounded-[1.5rem] hover:scale-105 active:scale-95 transition-all shadow-jewel flex items-center justify-center gap-4 group"
-                >
-                    <Plus className="w-5 h-5 transition-transform group-hover:rotate-90" />
-                    {t('logExpense') || 'Log Expense'}
-                </button>
+                <div className="flex items-center gap-3">
+                    <Button
+                        onClick={() => setIsAddModalOpen(true)}
+                        className="h-14 w-14 rounded-2xl p-0 flex items-center justify-center shadow-jewel shrink-0"
+                        title={t('logExpense')}
+                    >
+                        <Plus className="w-7 h-7" />
+                    </Button>
+                </div>
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 px-4 md:px-0">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <GlassCard variant="deep" className="p-8 rounded-[3rem] flex flex-col justify-between min-h-[160px] group hover:shadow-jewel transition-all duration-700 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
                     <div className="flex items-center justify-between relative z-10">
@@ -107,7 +110,7 @@ export function MaintenanceTracker() {
 
             {/* Recent Activity List */}
             <div className="space-y-6">
-                <div className="px-4 md:px-0">
+                <div className="">
                     <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground opacity-40 lowercase">{t('recentActivity') || 'Recent Activity'}</h3>
                 </div>
 

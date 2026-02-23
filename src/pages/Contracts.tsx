@@ -20,6 +20,7 @@ import { useDataCache } from '../contexts/DataCacheContext';
 import { Card, CardContent } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
+import { useStack } from '../contexts/StackContext';
 
 interface ExtendedContract {
     id: string;
@@ -41,6 +42,7 @@ const MotionCard = motion(Card);
 export default function Contracts() {
     const { t, lang } = useTranslation();
     const navigate = useNavigate();
+    const { push } = useStack();
     const { get, set } = useDataCache();
     const CACHE_KEY = 'contracts_list_all';
 
@@ -104,7 +106,9 @@ export default function Contracts() {
     };
 
     const handleAdd = () => {
-        navigate('/contracts/new');
+        push('contract_wizard', {
+            onSuccess: () => fetchContracts()
+        }, { isExpanded: true, title: t('addContract') });
     };
 
     if (loading) {
@@ -131,11 +135,11 @@ export default function Contracts() {
                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/5 dark:bg-emerald-500/10 backdrop-blur-md rounded-full border border-emerald-500/10 shadow-sm mb-1">
                         <FileText className="w-3 h-3 text-emerald-500" />
                         <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
-                            {lang === 'he' ? 'ניהול משפטי' : 'legal management'}
+                            {t('legal_management')}
                         </span>
                     </div>
                     <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground leading-tight lowercase">
-                        {lang === 'he' ? 'חוזים' : 'contracts'}
+                        {t('contracts')}
                     </h1>
                 </div>
 
@@ -159,7 +163,9 @@ export default function Contracts() {
                     </div>
                     <Button
                         onClick={handleAdd}
-                        className="w-12 h-12 rounded-[1.2rem] shadow-jewel p-0 flex items-center justify-center shrink-0"
+                        variant="jewel"
+                        className="h-14 w-14 rounded-2xl p-0 shrink-0"
+                        title={t('addContract')}
                     >
                         <Plus className="w-6 h-6" />
                     </Button>
@@ -171,7 +177,7 @@ export default function Contracts() {
                 <Input
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder={lang === 'he' ? 'חיפוש לפי דייר, כתובת או עיר...' : 'Search by tenant, address or city...'}
+                    placeholder={t('searchPlaceholderContracts')}
                     className="h-16 pl-12 pr-6 rounded-3xl border-slate-100 dark:border-neutral-800 shadow-minimal font-medium"
                     leftIcon={<Search className="w-5 h-5 text-slate-300 group-focus-within:text-primary transition-colors" />}
                 />

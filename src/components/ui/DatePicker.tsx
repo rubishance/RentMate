@@ -1,11 +1,13 @@
 import * as React from 'react';
 import { DayPicker } from 'react-day-picker';
 import { format } from 'date-fns';
+import { he } from 'date-fns/locale';
 import { Calendar as CalendarIcon, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useScrollLock } from '../../hooks/useScrollLock';
+import { useTranslation } from '../../hooks/useTranslation';
 
 // Import react-day-picker styles if not using custom classNames exclusively?
 // Actually, we'll use custom classNames to fit the Glass Bionic theme perfectly.
@@ -20,7 +22,7 @@ export interface DatePickerProps {
     placeholder?: string;
     label?: React.ReactNode;
     className?: string;
-    error?: boolean;
+    error?: string | boolean;
     readonly?: boolean;
     variant?: 'default' | 'inline' | 'compact';
 }
@@ -31,7 +33,7 @@ export function DatePicker({
     disabledDays = [],
     minDate,
     maxDate,
-    placeholder = "Pick a date",
+    placeholder = "pickDate",
     label,
     className,
     error,
@@ -40,6 +42,8 @@ export function DatePicker({
 }: DatePickerProps) {
     const [isOpen, setIsOpen] = React.useState(false);
     const [month, setMonth] = React.useState<Date | undefined>(value || new Date());
+
+    const { t } = useTranslation();
 
     useScrollLock(isOpen);
 
@@ -84,7 +88,7 @@ export function DatePicker({
                             variant === 'default' ? "text-sm font-medium" : (variant === 'compact' ? "text-xs font-semibold" : "text-[11px] font-bold"),
                             value ? "text-foreground" : "text-muted-foreground"
                         )}>
-                            {value ? format(value, 'dd/MM/yyyy') : placeholder}
+                            {value ? format(value, 'dd/MM/yyyy') : t(placeholder as any)}
                         </span>
                     </div>
                 </button>
@@ -111,7 +115,7 @@ export function DatePicker({
                                     className="relative bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl w-auto max-w-[90vw] overflow-hidden"
                                 >
                                     <div className="flex justify-between items-center mb-4 px-4 pt-4">
-                                        <h2 className="font-bold text-lg text-foreground">Select Date</h2>
+                                        <h2 className="font-bold text-lg text-foreground">{t('selectDate')}</h2>
                                         <button
                                             onClick={() => setIsOpen(false)}
                                             className="p-1 hover:bg-secondary rounded-full transition-colors"
@@ -121,30 +125,6 @@ export function DatePicker({
                                     </div>
 
                                     <div className="p-4 pt-0">
-                                        <style>{`
-                                        .rdp { --rdp-cell-size: 40px; --rdp-accent-color: #000; --rdp-background-color: #f3f4f6; margin: 0; width: 100%; }
-                                        .dark .rdp { --rdp-accent-color: #fff; --rdp-background-color: #262626; }
-                                        .rdp-month { width: 100%; }
-                                        .rdp-table { width: 100%; max-width: none; display: table; border-collapse: collapse; }
-                                        .rdp-tbody { display: table-row-group; }
-                                        .rdp-row { display: table-row; }
-                                        .rdp-cell { display: table-cell; text-align: center; vertical-align: middle; padding: 2px; }
-                                        .rdp-day_selected:not([disabled]) { font-weight: 900; color: var(--rdp-background-color); background: var(--rdp-accent-color); border-radius: 12px; }
-                                        .rdp-day_selected:hover:not([disabled]) { opacity: 0.9; }
-                                        .rdp-button:hover:not([disabled]):not(.rdp-day_selected) { background-color: rgba(0,0,0,0.05); }
-                                        .dark .rdp-button:hover:not([disabled]):not(.rdp-day_selected) { background-color: rgba(255,255,255,0.05); }
-                                        .rdp-day_today:not(.rdp-day_selected) { border: 2px solid var(--rdp-accent-color); color: var(--rdp-accent-color); font-weight: 900; }
-                                        .rdp-nav_button { width: 32px; height: 32px; border-radius: 10px; background: rgba(0,0,0,0.03); }
-                                        .dark .rdp-nav_button { background: rgba(255,255,255,0.03); }
-                                        .rdp-nav_button:hover { background-color: rgba(0,0,0,0.1); }
-                                        .rdp-head_cell { color: #94a3b8; font-weight: 900; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; }
-                                        .rdp-day { border-radius: 12px; font-size: 13px; font-weight: 600; transition: all 0.2s; }
-                                        .rdp-day_disabled { opacity: 0.15; cursor: not-allowed; }
-                                        .rdp-caption_dropdowns { display: flex; gap: 0.5rem; flex-grow: 1; justify-content: center; }
-                                        .rdp-dropdown { background: transparent; border: 1px solid transparent; font-weight: 900; font-size: 14px; text-transform: uppercase; color: var(--rdp-accent-color); padding: 4px 8px; border-radius: 8px; cursor: pointer; }
-                                        .rdp-dropdown:hover { background-color: rgba(0,0,0,0.05); }
-                                    `}</style>
-
                                         <DayPicker
                                             mode="single"
                                             selected={value}
@@ -156,7 +136,8 @@ export function DatePicker({
                                             endMonth={maxDate || new Date(new Date().getFullYear() + 40, 11)}
                                             captionLayout="dropdown"
                                             showOutsideDays
-                                            className="p-0"
+                                            className="p-0 border-none"
+                                            locale={he}
                                         />
                                     </div>
                                 </motion.div>
@@ -166,6 +147,9 @@ export function DatePicker({
                     document.body
                 )}
             </div>
+            {typeof error === 'string' && error && (
+                <p className="text-[0.8rem] font-medium text-red-500 mt-1.5">{error}</p>
+            )}
         </div>
     );
 }

@@ -152,16 +152,18 @@ export function PropertyHub({ property: initialProperty, propertyId, onDelete, o
 
     const handleAddContract = () => {
         setIsMoreMenuOpen(false);
-        pop(); // Close the sheet
-        navigate('/contracts/new', {
-            state: {
-                prefill: {
-                    property_id: propertyId,
-                    property_address: property.address,
-                    city: property.city
-                }
+        push('contract_wizard', {
+            propertyId: propertyId,
+            prefill: {
+                property_id: propertyId,
+                property_address: property.address,
+                city: property.city
+            },
+            onSuccess: () => {
+                setRefreshKey(prev => prev + 1);
+                clear();
             }
-        });
+        }, { isExpanded: true, title: t('addContract') });
     };
 
     const handleEdit = () => {

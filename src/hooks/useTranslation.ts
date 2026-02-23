@@ -16,7 +16,6 @@ export type TranslationKeys =
     | 'search'
     | 'actions'
     | 'logPayment' | 'quickAction' | 'addExpense' | 'maintenanceRequest' | 'messageTenant'
-    | 'logPayment' | 'quickAction' | 'addExpense' | 'maintenanceRequest' | 'messageTenant'
     | 'view' | 'view_female'
     | 'deleteConfirmation' | 'deleteConfirmation_female'
     | 'clear' | 'clear_female'
@@ -30,6 +29,7 @@ export type TranslationKeys =
     | 'yes'
     | 'no'
     | 'close'
+    | 'selectOption'
     | 'saving' | 'saving_female'
     | 'adding' | 'adding_female'
     | 'saveChanges' | 'saveChanges_female'
@@ -40,9 +40,6 @@ export type TranslationKeys =
     | 'signup'
     | 'property'
     | 'tenant'
-    | 'setupSignup'
-    | 'setupProperty'
-    | 'setupTenant'
     | 'linkageCalculation'
     | 'from'
     | 'to'
@@ -56,7 +53,6 @@ export type TranslationKeys =
     | 'contractDetails'
     | 'editContract'
     | 'contractPeriodStatus'
-    | 'paymentFreq'
     | 'paymentDay'
     | 'day'
     | 'rentStepsVariable'
@@ -101,6 +97,12 @@ export type TranslationKeys =
     | 'financeBills'
     | 'utilityInternet'
     | 'utilityCable'
+    | 'fillRequiredFields'
+    | 'contractSavedSuccess'
+    | 'errorSavingContract'
+    | 'addNew'
+    | 'pickDate'
+    | 'selectDate'
 
     // Auth & Navigation
     | 'login'
@@ -140,6 +142,15 @@ export type TranslationKeys =
     | 'termsOfService'
 
     // Dashboard
+    | 'online'
+    | 'monthly'
+    | 'quarterly'
+    | 'annually'
+    | 'checks'
+    | 'transfer'
+    | 'cash'
+    | 'paybox'
+    | 'other'
     | 'totalProperties'
     | 'activeTenants'
     | 'monthlyRevenue'
@@ -212,6 +223,25 @@ export type TranslationKeys =
     | 'contract'
     | 'asset'
     | 'guaranteesLabel'
+    | 'baseDateRequired'
+    | 'summaryDetails'
+    | 'leasePeriod'
+    | 'linkage'
+    | 'baseDate'
+    | 'optionNoticeDays'
+    | 'hasParking'
+    | 'hasStorage'
+    | 'hasBalcony'
+    | 'hasSafeRoom'
+    | 'guarantorsInfo'
+    | 'specialClauses'
+    | 'paintingIncluded'
+    | 'infrastructure'
+    | 'parties'
+    | 'timeline'
+    | 'additionalDetails'
+    | 'features'
+    | 'until'
 
     | 'saveContractFileQuery'
     | 'storageRentMateCloud'
@@ -253,6 +283,7 @@ export type TranslationKeys =
     | 'bills'
     | 'paymentType'
     | 'addPayment' | 'addPayment_female'
+    | 'financialOverview'
     | 'monthlyExpected'
     | 'pendingCollection'
     | 'upcomingPayments'
@@ -569,11 +600,9 @@ export type TranslationKeys =
     | 'contactSupportDesc' | 'contactSupportDesc_female'
     | 'typeMessageHere' | 'typeMessageHere_female'
     | 'orEmailDirectly' | 'orEmailDirectly_female'
-    | 'upgradeToPro' | 'upgradeToPro_female'
-    | 'unlockMoreLimits' | 'unlockMoreLimits_female'
-    | 'currentPlan'
-    | 'freeForever'
-    | 'greatForGettingStarted'
+    | 'myPortfolio'
+    | 'leaseEnds'
+    | 'leaseTimeline'
 
     // Misc
     | 'noActiveContracts'
@@ -640,6 +669,9 @@ export type TranslationKeys =
     | 'active_contract'
     | 'archived_contract'
     | 'view_details'
+    | 'total'
+    | 'searchPlaceholderContracts'
+    | 'searchPlaceholderProperties'
     | 'storageUsage'
     | 'totalStorage'
     | 'usedStorage'
@@ -1027,6 +1059,9 @@ export const translations: Record<string, any> = {
         yes: 'כן',
         no: 'לא',
         close: 'סגור',
+        selectOption: 'בחרו אפשרות...',
+        pickDate: 'בחר תאריך',
+        selectDate: 'בחר תאריך',
         saving: 'שומר...',
         saving_female: 'שומרת...',
         adding: 'מוסיף...',
@@ -1054,20 +1089,18 @@ export const translations: Record<string, any> = {
         optionalFolderNote: 'שם התיקייה (אופציונלי)',
         eg_january_bill: 'לדוגמה: חשבון ינואר 2024',
         eg_electric_corp: 'לדוגמה: חברת החשמל',
+        monthly: 'חודשי',
+        quarterly: 'רבעוני',
+        annually: 'שנתי',
         contractDetails: 'פרטי החוזה',
         editContract: 'עריכת חוזה',
         contractPeriodStatus: 'סטטוס תקופת החוזה',
         paymentFreq: 'תדירות תשלום',
         paymentDay: 'יום התשלום',
         day: 'יום',
-        setupProfile: 'השלמת הפרופיל שלך',
-        setupDesc: 'הוסיפו את הנכס הראשון שלכם כדי לפתוח את מלוא העוצמה של RentMate ולהגיע לרמת ברונזה.',
         addProperty: 'הוספת נכס',
         complete: 'הושלם',
         step: 'שלב',
-        setupSignup: 'יצירת חשבון',
-        setupProperty: 'הוספת נכס ראשון',
-        setupTenant: 'הוספת שוכר',
         rentStepsVariable: 'מדרגות שכ"ד',
         addRentStep: 'הוסף מדרגת שכ"ד',
         linkageAdjustments: 'התאמות הצמדה',
@@ -1245,6 +1278,7 @@ export const translations: Record<string, any> = {
         paymentType: 'סוג תשלום',
         addPayment: 'הוסף תשלום',
         addPayment_female: 'הוסיפי תשלום',
+        financialOverview: 'סקירה פיננסית',
         monthlyExpected: 'צפי חודשי',
         pendingCollection: 'ממתין לגבייה',
         upcomingPayments: 'תשלומים קרובים',
@@ -1342,8 +1376,6 @@ export const translations: Record<string, any> = {
         knownIndexHelp: 'לפי המדד האחרון שפורסם במועד התחשבנות',
         updateFrequency: 'תדירות עדכון',
         everyMonth: 'בכל חודש',
-        quarterly: 'כל רבעון',
-        annually: 'כל שנה',
         updateFrequencyHelp: 'באיזו תכיפות מעדכנים את שכר הדירה?',
         linkageFloor: 'רצפת הצמדה',
         indexBaseMin: 'מדד בסיס הוא רצפה',
@@ -1396,6 +1428,7 @@ export const translations: Record<string, any> = {
         clickToUpload: 'לחץ להעלאת תמונה',
         uploading: 'מעלה...',
         tenantDetails: 'פרטי הדייר',
+        monthlyRentLabel: 'שכירות חודשית',
         newTenant: 'דייר חדש',
         existingTenant: 'דייר קיים',
         chooseTenant: 'בחר דייר מהרשימה',
@@ -1428,44 +1461,13 @@ export const translations: Record<string, any> = {
         ceiling: 'תקרה (מקסימום %)',
         floorIndex: 'מדד בסיס מהווה רצפה',
         paymentFrequency: 'תדירות תשלום',
-        bimonthly: 'דו-חודשי',
-        monthly: 'חודשי',
         paymentMethod: 'אמצעי תשלום',
-        securityAndAppendices: 'ביטחונות ונספחים',
-        securityDeposit: 'פיקדון כספי',
-        guarantors: 'ערבים',
-        guarantorName: 'שם הערב',
-        addGuarantor: 'הוסף ערב',
-        addGuarantor_female: 'הוסיפי ערב',
-        noGuarantors: 'לא הוגדרו ערבים',
-
-        contractFile: 'קובץ חוזה',
-        savePreferences: 'העדפות שמירה',
-        saveToCloud: 'שמור בענן',
-        saveToDevice: 'שמור במכשיר',
-        summary: 'סיכום',
-        createContract: 'צור חוזה',
-        createContract_female: 'צרי חוזה',
-        stepAsset: 'נכס',
-        stepTenant: 'דייר',
-        stepPeriods: 'תקופות',
-        stepPayments: 'תשלומים',
-        stepSecurity: 'ביטחונות',
-        stepSummary: 'סיכום',
-        limitReached: 'הגעת למגבלה',
-        limitReachedDesc: 'כמות הנכסים בתוכנית שלך הגיעה למקסימום',
-        backToContracts: 'חזרה לחוזים',
-        check: 'צ\'ק',
-        cash: 'מזומן',
-        bit: 'Bit',
-        paybox: 'PayBox',
-        creditCard: 'כרטיס אשראי',
-        other: 'אחר',
-        semiAnnually: 'חצי שנתי',
         contractIsIndexed: 'החוזה צמוד למדד',
-        and: 'ו-',
-        days: 'ימים',
-        enterAddressAndCityFirst: 'הזן כתובת ועיר תחילה',
+        linkedToCpi: 'צמוד למדד המחירים לצרכן',
+        linkedToHousing: 'צמוד למדד מחירי הדיור',
+        linkedToUsd: 'צמוד לדולר',
+        linkedToEur: 'צמוד לאירו',
+        linkedToConstruction: 'צמוד למדד תשומות הבנייה',
         needsPaintingMsg: 'הדירה תיצבע בסיום החוזה',
 
         // Tenant Modal & Limits
@@ -1487,6 +1489,8 @@ export const translations: Record<string, any> = {
         planName: 'שם התוכנית',
         foreignCurrency: 'מטבע חוץ',
         baseIndexValue: 'ערך מדד בסיס',
+        baseDateRequired: 'יש להזין תאריך בסיס',
+        indexTypeRequired: 'יש לבחור סוג הצמדה',
         indexOption: 'אופציית מדד',
         linkageCategory: 'קטגוריית הצמדה',
         propertySpecs: 'מפרט נכס',
@@ -1495,6 +1499,24 @@ export const translations: Record<string, any> = {
         partiesInvolved: 'צדדים בחוזה',
         option: 'אופציה',
         periods: 'תקופות',
+        summaryDetails: 'פרטי הסיכום',
+        leasePeriod: 'תקופת השכירות',
+        linkage: 'הצמדה',
+        property: 'נכס',
+        tenant: 'דייר',
+        garden: 'דירת גן',
+        optionNoticeDays: 'הודעת מימוש אופציה (ימים)',
+        hasParking: 'חניה',
+        hasStorage: 'מחסן',
+        hasBalcony: 'מרפסת',
+        hasSafeRoom: 'ממ"ד',
+        guarantorsInfo: 'פרטי ערבים',
+        specialClauses: 'תנאים מיוחדים',
+        paintingIncluded: 'צביעה כלולה',
+        infrastructure: 'תשתית ומפרט',
+        parties: 'צדדים בחוזה',
+        timeline: 'לוח זמנים',
+        additionalDetails: 'פרטים נוספים',
 
         // Subscription & Plan
         unlockPotential: 'פתח את הפוטנציאל של הפורטפוליו שלך',
@@ -1605,6 +1627,8 @@ export const translations: Record<string, any> = {
         issueCarpentry: 'נגרות',
         issueAppliance: 'מכשירי חשמל',
         issueOther: 'אחר',
+        features: 'מאפיינים',
+        until: 'עד',
         addRecord: 'הוסף תיעוד',
         addRecord_female: 'הוסיפי תיעוד',
         documentsDesc: 'ניהול מסמכים וקבצי חוזה',
@@ -2029,39 +2053,24 @@ export const translations: Record<string, any> = {
         contract: 'חוזה',
         asset: 'נכס',
         guaranteesLabel: 'ערבויות',
-
         dataSummary: 'סיכום נתונים',
         selectRooms: 'בחירת חדרים',
-        'Northern District': 'מחוז הצפון',
-        'Haifa District': 'מחוז חיפה',
-        'Central District': 'מחוז המרכז',
-        'Tel Aviv District': 'מחוז תל אביב',
-        'Jerusalem District': 'מחוז ירושלים',
-        'Southern District': 'מחוז הדרום',
-        'Judea and Samaria': 'יהודה ושומרון',
-        'North': 'צפון',
-        'South': 'דרום',
-        'Center': 'מרכז',
-        selectDisplayedIndices: 'בחר מדדים להצגה',
-        cpi: 'מדד המחירים',
-        housing: 'דיור',
-        construction: 'תשומות הבנייה',
-        usd: 'דולר',
-        eur: 'אירו',
+        securityAndAppendices: 'ביטחונות ונספחים',
+        securityDeposit: 'פיקדון כספי',
+        guarantors: 'ערבים',
+        guarantorName: 'שם הערב',
+        addGuarantor: 'הוסף ערב',
+        addGuarantor_female: 'הוסיפי ערב',
+        noGuarantors: 'אין ערבים',
     },
     en: {
         appName: 'RentMate',
         commandCenterUpdates: 'I have {count} new updates for you.',
         commandCenterAllClear: 'Everything looks great. No pending tasks.',
         rentySuggestsAction: 'RENTY SUGGESTS ACTION',
-        setupProfile: 'Complete Your Profile',
-        setupDesc: 'Add your first property to unlock the full power of RentMate and reach Bronze level.',
-        addProperty: 'Add Property',
-        complete: 'Complete',
-        step: 'Step',
-        setupSignup: 'Create Account',
-        setupProperty: 'Add First Property',
-        setupTenant: 'Add Tenant',
+        monthly: 'Monthly',
+        quarterly: 'Quarterly',
+        annually: 'Annually',
         welcomeMessage: 'Welcome to RentMate',
         welcomeMessageDashboard: 'good evening',
         commandCenter: 'Command Center',
@@ -2085,6 +2094,9 @@ export const translations: Record<string, any> = {
         maintenanceRequest: 'Maintenance Request',
         messageTenant: 'Message Tenant',
         cancel: 'Cancel',
+        selectOption: 'Select an option...',
+        pickDate: 'Pick a date',
+        selectDate: 'Select Date',
         errorTitle404: 'Oops! Page Not Found',
         errorDesc404: "Sorry, the page you're looking for doesn't exist or has been moved.",
         errorTitle500: 'Something Went Wrong',
@@ -2206,6 +2218,7 @@ export const translations: Record<string, any> = {
         shareMessage: 'I calculated the rent adjustment using RentMate\'s CPI calculator. See the result here:',
         loadFromContract: 'Load from contract (optional)',
         calculateLinkageAndMore: 'Open Calculator',
+        monthlyRentLabel: 'Current Rent',
         currentRent: 'Current Rent',
         projectedRent: 'Projected Rent',
         autoDetectContracts: 'Auto Detect Contracts',
@@ -2220,6 +2233,33 @@ export const translations: Record<string, any> = {
         construction: 'Construction',
         usd: 'USD',
         eur: 'EUR',
+        bit: 'Bit',
+        paybox: 'PayBox',
+        linkedToCpi: 'Linked to CPI',
+        linkedToHousing: 'Linked to Housing',
+        linkedToUsd: 'Linked to USD',
+        linkedToEur: 'Linked to EUR',
+        linkedToConstruction: 'Linked to Construction',
+        baseDateRequired: 'Base index date is required',
+        summaryDetails: 'Summary Details',
+        leasePeriod: 'Lease Period',
+        linkage: 'Linkage',
+        baseDate: 'Base Date',
+        property: 'Property',
+        tenant: 'Tenant',
+        garden: 'Garden Apartment',
+        optionNoticeDays: 'Option Notice (days)',
+        hasParking: 'Parking',
+        hasStorage: 'Storage',
+        hasBalcony: 'Balcony',
+        hasSafeRoom: 'Safe Room',
+        guarantorsInfo: 'Guarantors Info',
+        specialClauses: 'Special Clauses',
+        paintingIncluded: 'Painting Included',
+        infrastructure: 'Property & Infrastructure',
+        parties: 'Parties',
+        timeline: 'Timeline',
+        additionalDetails: 'Additional Details',
 
         // Plans
         free: 'SOLO',
@@ -2278,6 +2318,18 @@ export const translations: Record<string, any> = {
         next6Months: 'Next 6 Months',
         nextYear: 'Next Year',
         currentWindow: 'Current Window (-1m to +3m)',
+        fillRequiredFields: 'Please fill all required fields',
+        contractSavedSuccess: 'Contract saved successfully',
+        errorSavingContract: 'Error saving contract',
+        searchPlaceholderContracts: 'Search by tenant, address or city...',
+        searchPlaceholderProperties: 'Search by address or city...',
+        total: 'Total',
+        securityAndAppendices: 'Security & Appendices',
+        securityDeposit: 'Security Deposit',
+        guarantors: 'Guarantors',
+        guarantorName: 'Guarantor Name',
+        addGuarantor: 'Add Guarantor',
+        noGuarantors: 'No Guarantors',
     },
 };
 

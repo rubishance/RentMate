@@ -15,49 +15,50 @@ module.exports = {
         },
         extend: {
             fontFamily: {
-                sans: ["Inter", "Outfit", "Satoshi", "Assistant", "sans-serif"],
-                heading: ["Outfit", "Inter", "Assistant", "sans-serif"],
-                display: ["Outfit", "sans-serif"],
+                hebrew: ["Assistant", "sans-serif"],
+                english: ["IBM Plex Sans", "sans-serif"],
+                sans: ["Assistant", "Inter", "sans-serif"],
+                heading: ["Assistant", "Outfit", "sans-serif"],
             },
-            // Mid-Century Financial Palette
+            // Modern Real Estate Palette
             colors: {
                 canvas: {
-                    DEFAULT: '#F5F2EB', // Almond Milk
-                    50: '#FCFBF9',
-                    100: '#F5F2EB',
-                    200: '#EBE6DA',
-                    300: '#D6CDB8',
-                    900: '#1A1917',
+                    DEFAULT: '#F2F5F9', // Off-White
+                    50: '#F9FBFE',
+                    100: '#F2F5F9',
+                    200: '#E5EAF2',
+                    300: '#D1DAE6',
+                    900: '#0C131D',
                 },
                 primary: {
-                    DEFAULT: '#0F5156', // Deep Teal
+                    DEFAULT: '#14284B', // Deep Navy
                     foreground: '#FFFFFF',
-                    50: '#F0F9FA',
-                    100: '#DFF1F2',
-                    200: '#BFE0E3',
-                    300: '#90C6CB',
-                    400: '#5BA5AC',
-                    500: '#34868D',
-                    600: '#236C73',
-                    700: '#0F5156',
-                    800: '#0E4348',
-                    900: '#10383C',
-                    950: '#062326',
+                    50: '#F0F4FA',
+                    100: '#DEE7F4',
+                    200: '#BFCEE6',
+                    300: '#90ACD4',
+                    400: '#5B86BD',
+                    500: '#34619C',
+                    600: '#234676',
+                    700: '#14284B',
+                    800: '#0E1D38',
+                    900: '#0B152A',
+                    950: '#060B18',
                 },
                 secondary: {
-                    DEFAULT: '#E0A458', // Harvest Gold
-                    foreground: '#1A1A1A',
-                    50: '#FDF9F3',
-                    100: '#FBF2E5',
-                    200: '#F6E0C5',
-                    300: '#EFCA9F',
-                    400: '#E7B073',
-                    500: '#E0A458',
-                    600: '#C4843D',
-                    700: '#A36832',
-                    800: '#85532E',
-                    900: '#6C4529',
-                    950: '#3E2413',
+                    DEFAULT: '#459367', // Sage Green
+                    foreground: '#FFFFFF',
+                    50: '#F4FAF6',
+                    100: '#E9F5ED',
+                    200: '#C7E6D3',
+                    300: '#97CEAD',
+                    400: '#64AE82',
+                    500: '#459367',
+                    600: '#347552',
+                    700: '#26573E',
+                    800: '#1B402E',
+                    900: '#142F22',
+                    950: '#0A1811',
                 },
                 success: {
                     DEFAULT: '#4B5F43', // Olive Drab
@@ -97,6 +98,22 @@ module.exports = {
                 background: "hsl(var(--background))",
                 foreground: "hsl(var(--foreground))",
                 window: "hsl(var(--window-background))",
+                muted: {
+                    DEFAULT: "hsl(var(--muted))",
+                    foreground: "hsl(var(--muted-foreground))",
+                },
+                accent: {
+                    DEFAULT: "hsl(var(--accent))",
+                    foreground: "hsl(var(--accent-foreground))",
+                },
+                card: {
+                    DEFAULT: "hsl(var(--card))",
+                    foreground: "hsl(var(--card-foreground))",
+                },
+                popover: {
+                    DEFAULT: "hsl(var(--popover))",
+                    foreground: "hsl(var(--popover-foreground))",
+                },
             },
             borderRadius: {
                 lg: "var(--radius)",

@@ -7,6 +7,7 @@ import { ArrowRight } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { userPreferencesService } from '../../services/user-preferences.service';
 import { RentyMascot } from '../common/RentyMascot';
+import { useStack } from '../../contexts/StackContext';
 
 interface BionicWelcomeOverlayProps {
     firstName: string;
@@ -15,6 +16,7 @@ interface BionicWelcomeOverlayProps {
 export function BionicWelcomeOverlay({ firstName }: BionicWelcomeOverlayProps) {
     const { lang } = useTranslation();
     const { preferences, refreshPreferences } = useUserPreferences();
+    const { push } = useStack();
     const navigate = useNavigate();
 
     // Initialize visible based on preference to avoid useEffect flicker
@@ -45,7 +47,7 @@ export function BionicWelcomeOverlay({ firstName }: BionicWelcomeOverlayProps) {
         setIsVisible(false);
         userPreferencesService.setHasSeenWelcome(true);
         await refreshPreferences();
-        navigate('/contracts/new'); // Direct to wizard
+        push('contract_wizard', {}, { isExpanded: true, title: lang === 'he' ? 'הוספת חוזה' : 'Add Contract' });
     };
 
     return (

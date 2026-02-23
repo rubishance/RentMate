@@ -3,6 +3,7 @@ import { Checkbox } from '../components/ui/Checkbox';
 import { Select } from '../components/ui/Select';
 import { MultiSelect } from '../components/ui/MultiSelect';
 import { Calendar, User, Mail, CreditCard } from 'lucide-react';
+import { DatePicker } from '../components/ui/DatePicker';
 
 export const DesignSystem = () => {
     // Checkbox States
@@ -16,6 +17,10 @@ export const DesignSystem = () => {
 
     // MultiSelect States
     const [multiSelectValue, setMultiSelectValue] = useState<string[]>([]);
+
+    // DatePicker States
+    const [date1, setDate1] = useState<Date | undefined>(new Date());
+    const [date2, setDate2] = useState<Date | undefined>(undefined);
 
     const options = [
         { value: 'option1', label: 'Option 1' },
@@ -158,6 +163,29 @@ export const DesignSystem = () => {
                             selected={[]}
                             onChange={() => { }}
                             error="Please select at least one"
+                        />
+                    </div>
+                </div>
+
+                {/* Date Pickers */}
+                <div className="space-y-4">
+                    <h3 className="text-xl font-semibold">Date Pickers (Standardized)</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <DatePicker
+                            label="Default Date Picker"
+                            value={date1}
+                            onChange={setDate1}
+                        />
+                        <DatePicker
+                            label="With Placeholder"
+                            value={date2}
+                            onChange={setDate2}
+                            placeholder="Select a date..."
+                        />
+                        <DatePicker
+                            label="Disabled/Readonly"
+                            value={new Date()}
+                            readonly
                         />
                     </div>
                 </div>

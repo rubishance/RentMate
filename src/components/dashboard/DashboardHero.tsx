@@ -1,10 +1,11 @@
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ArrowRightIcon as ArrowRight, AlertCircleIcon as AlertCircle } from '../icons/NavIcons';
 import { cn } from '../../lib/utils';
 import { Card, CardContent } from '../ui/Card';
-import { DashboardChatBar } from './DashboardChatBar';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Plus } from 'lucide-react';
+import { Button } from '../ui/Button';
 
 interface FeedItem {
     id: string;
@@ -19,30 +20,32 @@ interface FeedItem {
 interface DashboardHeroProps {
     firstName: string;
     feedItems: FeedItem[];
+    showOnly?: 'welcome' | 'alerts';
 }
 
-export function DashboardHero({ firstName, feedItems }: DashboardHeroProps) {
+export function DashboardHero({ firstName, feedItems, showOnly }: DashboardHeroProps) {
     const { t, lang } = useTranslation();
+
+    const progressItems = feedItems;
+
 
     return (
         <div className="space-y-8">
-            {/* Zen Welcome */}
-            <div className="flex flex-col space-y-1">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.4em]">
-                    {getTimeBasedGreeting(t)}
-                </span>
-                <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground lowercase">
-                    {firstName || t('user_generic')}
-                </h1>
-            </div>
+            {(!showOnly || showOnly === 'welcome') && (
+                /* Zen Welcome */
+                <div className="flex flex-col space-y-1">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.4em]">
+                        {getTimeBasedGreeting(t)}
+                    </span>
+                    <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground lowercase">
+                        {firstName || t('user_generic')}
+                    </h1>
+                </div>
+            )}
 
-            {/* Dashboard AI Chat Bar */}
-            <DashboardChatBar className="mb-4" />
-
-            {/* High Impact Alert Card / Carousel */}
-            {feedItems.length > 0 && (
+            {(!showOnly || showOnly === 'alerts') && progressItems.length > 0 && (
                 <div className="flex overflow-x-auto pb-6 -mx-4 px-4 gap-4 snap-x snap-mandatory scrollbar-hide md:justify-center">
-                    {feedItems.filter(item => item.id !== 'welcome').map((item, idx) => (
+                    {progressItems.filter((item: FeedItem) => item.id !== 'welcome').map((item: FeedItem, idx: number) => (
                         <motion.div
                             key={item.id}
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -98,7 +101,7 @@ export function DashboardHero({ firstName, feedItems }: DashboardHeroProps) {
     );
 }
 
-function getTimeBasedGreeting(t: (key: string) => string) {
+export function getTimeBasedGreeting(t: (key: string) => string) {
     const hour = new Date().getHours();
     if (hour < 5) return t('goodNight');
     if (hour < 12) return t('goodMorning');

@@ -86,7 +86,7 @@ export function SnapshotTab({ property, isEditing, onPropertyChange }: SnapshotT
                         {/* Safe Room (Mamad) */}
                         {(isEditing || property.has_safe_room) ? (
                             <div className="p-4 bg-slate-50 dark:bg-neutral-900 rounded-xl flex flex-col gap-2">
-                                <div className="text-[10px] text-muted-foreground uppercase tracking-widest">{t('safe_room')}</div>
+                                <div className="text-[10px] text-muted-foreground uppercase tracking-widest">{t('safeRoom')}</div>
                                 <label className="flex items-center gap-3 cursor-pointer group">
                                     <input
                                         type="checkbox"

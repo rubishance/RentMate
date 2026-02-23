@@ -2,7 +2,7 @@ import { AlertTriangle, Trash2, ArrowRight } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from '../../hooks/useTranslation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export interface AffectedItem {
     label: string;
@@ -40,7 +40,13 @@ export function ConfirmDeleteModal({
     const [step, setStep] = useState(1);
     const [inputValue, setInputValue] = useState('');
 
-    // State reset is handled by the parent component or via key prop to ensure clean state on open
+    // Reset state whenever modal is opened
+    useEffect(() => {
+        if (isOpen) {
+            setStep(1);
+            setInputValue('');
+        }
+    }, [isOpen]);
 
     if (!isOpen) return null;
 

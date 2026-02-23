@@ -5,19 +5,19 @@ import { useTranslation } from '../hooks/useTranslation';
 import { useNavigate } from 'react-router-dom';
 import { useDataCache } from '../contexts/DataCacheContext';
 import { DashboardHero } from '../components/dashboard/DashboardHero';
+import { QuickActionFAB } from '../components/dashboard/QuickActionFAB';
 import { DEFAULT_WIDGET_LAYOUT, WidgetConfig, DashboardData, WIDGET_REGISTRY } from '../components/dashboard/WidgetRegistry';
-import { FileSearch } from 'lucide-react';
+import { FileSearch, Plus } from 'lucide-react';
 import { ReportGenerationModal } from '../components/modals/ReportGenerationModal';
 import { cn } from '../lib/utils';
-import { userScoringService } from '../services/user-scoring.service';
 import { useSubscription } from '../hooks/useSubscription';
 import { BriefingService, FeedItem } from '../services/briefing.service';
 import { BionicWelcomeOverlay } from '../components/onboarding/BionicWelcomeOverlay';
 import { BionicSpotlight } from '../components/onboarding/BionicSpotlight';
 import { useAuth } from '../contexts/AuthContext';
 import { SmartActionsRow } from '../components/dashboard/SmartActionsRow';
-import { SetupProgressWidget } from '../components/dashboard/SetupProgressWidget';
 import { Button } from '../components/ui/Button';
+import { useStack } from '../contexts/StackContext';
 
 export function Dashboard() {
     const { lang, t } = useTranslation();
@@ -26,6 +26,7 @@ export function Dashboard() {
     const { get, set } = useDataCache();
     const { user, profile: authProfile } = useAuth();
     const { plan } = useSubscription();
+    const { push } = useStack();
 
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({ monthlyIncome: 0, collected: 0, pending: 0 });
@@ -37,7 +38,6 @@ export function Dashboard() {
     const [isRefetching, setIsRefetching] = useState(false);
 
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
-    const [showProBanner, setShowProBanner] = useState(false);
 
     const [mountId] = useState(() => Math.random().toString(36).substring(7));
 
@@ -82,7 +82,6 @@ export function Dashboard() {
             const fetchPromise = Promise.all([
                 supabase.rpc('get_dashboard_summary', { p_user_id: user.id }),
                 BriefingService.getBriefingItems(user.id, t),
-                userScoringService.shouldShowUpsell(user.id, plan?.name || ''),
                 supabase.from('properties').select('id', { count: 'exact', head: true }),
                 supabase.from('contracts').select('id, tenants', { count: 'exact' })
             ]);
@@ -90,10 +89,9 @@ export function Dashboard() {
             const responses = await Promise.race([fetchPromise, timeoutPromise]) as any;
             const summary = responses[0]?.data;
             const briefing = responses[1];
-            const shouldShowBanner = responses[2];
-            const propertiesCount = responses[3]?.count || 0;
-            const contractsData = responses[4]?.data || [];
-            const contractsCount = responses[4]?.count || 0;
+            const propertiesCount = responses[2]?.count || 0;
+            const contractsData = responses[3]?.data || [];
+            const contractsCount = responses[3]?.count || 0;
             const totalTenants = contractsData.reduce((acc: number, c: any) => acc + (Array.isArray(c.tenants) ? c.tenants.length : 0), 0);
 
             setCounts({
@@ -104,14 +102,13 @@ export function Dashboard() {
 
             if (summary) {
                 const newStats = {
-                    monthlyIncome: summary.monthly_income || 0,
-                    collected: summary.collected_this_month || 0,
-                    pending: summary.pending_payments || 0
+                    monthlyIncome: summary.income?.monthlyTotal || 0,
+                    collected: summary.income?.collected || 0,
+                    pending: summary.income?.pending || 0
                 };
                 setStats(newStats);
                 setStorageCounts(summary.storage_counts || storageCounts);
                 setActiveContracts(summary.active_contracts || []);
-                setShowProBanner(shouldShowBanner);
 
                 set(cacheKey, {
                     stats: newStats,
@@ -161,8 +158,10 @@ export function Dashboard() {
         switch (item.metadata.type) {
             case 'contract_expired':
             case 'maintenance_active':
-            case 'onboarding_stalled':
                 navigate('/properties');
+                break;
+            case 'onboarding_stalled':
+                push('contract_wizard', {}, { isExpanded: true, title: t('newContract') });
                 break;
             case 'payment_overdue':
                 navigate('/payments');
@@ -171,7 +170,7 @@ export function Dashboard() {
                 // Default: toggle notifications if we don't know where to go
                 window.dispatchEvent(new CustomEvent('TOGGLE_NOTIFICATIONS'));
         }
-    }, [navigate]);
+    }, [navigate, push, t]);
 
     const feedItemsWithActions = useMemo(() => {
         return feedItems.map(item => ({
@@ -197,42 +196,54 @@ export function Dashboard() {
             {/* Bionic Elements */}
             <BionicWelcomeOverlay firstName={firstName} />
 
-            <div className="container mx-auto px-4 pt-4 md:pt-10 relative z-10 max-w-7xl space-y-8 md:space-y-12">
+            <div className="pb-32 pt-8 px-4 md:px-8 space-y-8 md:space-y-12 relative z-10">
 
-                {/* Dashboard Hero (Welcome & Alerts) */}
-                <div className="mb-6 md:mb-10">
-                    <DashboardHero firstName={firstName} feedItems={feedItemsWithActions} />
-                </div>
-
-                {/* Gamification: Setup Progress */}
-                {!loading && !isRefetching && counts && (counts.properties === 0 || counts.tenants === 0) && (
-                    <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
-                        <SetupProgressWidget
-                            hasProperty={counts.properties > 0}
-                            hasTenant={counts.tenants > 0}
+                {/* Header Area: Hero + Actions aligned with other pages */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div className="flex-1">
+                        <DashboardHero
+                            firstName={firstName}
+                            feedItems={feedItemsWithActions}
+                            showOnly="welcome"
                         />
                     </div>
-                )}
 
-                {/* Edit Mode Toggle & Status */}
-                <div className="flex flex-wrap items-center justify-end gap-3">
-                    <div className="hidden md:inline-flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-full border border-primary/10 mr-auto">
-                        <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                            {lang === 'he' ? 'מחובר' : 'online'}
-                        </span>
+                    <div className="flex items-center gap-3">
+                        {/* Edit Mode Toggle & Status */}
+                        <div className="hidden md:inline-flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-full border border-primary/10">
+                            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                                {t('online')}
+                            </span>
+                        </div>
+
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setIsReportModalOpen(true)}
+                            className="text-[10px] uppercase tracking-widest font-bold bg-white/50 dark:bg-black/20 backdrop-blur-md border border-white/20 hover:bg-white/80 transition-all"
+                        >
+                            <FileSearch className="w-3.5 h-3.5 mr-2" />
+                            {t('generateReport')}
+                        </Button>
+
+                        <Button
+                            onClick={() => window.dispatchEvent(new CustomEvent('TOGGLE_QUICK_ACTIONS'))}
+                            className="h-14 w-14 rounded-2xl p-0 shrink-0 bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-600 text-white shadow-xl shadow-indigo-500/20 hover:scale-105 active:scale-95 transition-all duration-300"
+                            title={t('addNew')}
+                        >
+                            <Plus className="w-6 h-6" />
+                        </Button>
                     </div>
+                </div>
 
-
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setIsReportModalOpen(true)}
-                        className="text-[10px] uppercase tracking-widest font-bold bg-white/50 dark:bg-black/20 backdrop-blur-md border border-white/20 hover:bg-white/80 transition-all"
-                    >
-                        <FileSearch className="w-3.5 h-3.5 mr-2" />
-                        {t('generateReport')}
-                    </Button>
+                {/* Alerts / Insights Carousel below header */}
+                <div className="mb-6 md:mb-10">
+                    <DashboardHero
+                        firstName={firstName}
+                        feedItems={feedItemsWithActions}
+                        showOnly="alerts"
+                    />
                 </div>
 
                 {/* Bento Stack / Grid Layout */}
@@ -274,6 +285,7 @@ export function Dashboard() {
                 isOpen={isReportModalOpen}
                 onClose={() => setIsReportModalOpen(false)}
             />
+            <QuickActionFAB />
         </div>
     );
 }

@@ -62,7 +62,7 @@ export const contractSchema = z.object({
     currency: z.enum(['ILS', 'USD', 'EUR']).default('ILS'),
     paymentFrequency: z.enum(['Monthly', 'Quarterly', 'Annually']).default('Monthly'),
     paymentDay: z.coerce.number().min(1).max(31).default(1),
-    paymentMethod: z.enum(['Checks', 'Transfer', 'Cash', 'bit', 'paybox', 'Other']).default('Checks'),
+    paymentMethod: z.enum(['checks', 'transfer', 'cash', 'bit', 'paybox', 'other']).optional().or(z.literal('')),
     rentSteps: z.array(rentStepSchema).default([]),
 
     // Linkage
@@ -92,6 +92,22 @@ export const contractSchema = z.object({
 }, {
     message: 'propertyRequired',
     path: ['selectedPropertyId']
+}).refine((data) => {
+    if (data.hasLinkage) {
+        return !!data.baseIndexDate;
+    }
+    return true;
+}, {
+    message: 'baseDateRequired',
+    path: ['baseIndexDate']
+}).refine((data) => {
+    if (data.hasLinkage) {
+        return data.linkageType !== 'none';
+    }
+    return true;
+}, {
+    message: 'indexTypeRequired',
+    path: ['linkageType']
 });
 
 export type ContractFormData = z.infer<typeof contractSchema>;

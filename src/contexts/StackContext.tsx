@@ -7,6 +7,8 @@ export type StackLayerType =
     | 'contract_viewer'   // Level 1: Contract Sheet
     | 'maintenance_chat'  // Level 1: Maintenance Sheet
     | 'wizard'            // Level 2: Full Screen Creation Flow
+    | 'property_wizard'   // Level 2: Property Creation
+    | 'contract_wizard'   // Level 2: Contract Creation
     | 'document_viewer'   // Level 2: File Preview
     | 'single_bill';      // Level 2: Bill Details
 

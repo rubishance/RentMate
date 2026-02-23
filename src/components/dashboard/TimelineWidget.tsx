@@ -4,6 +4,7 @@ import { CalendarIcon as Calendar, ClockIcon as Clock, AlertCircleIcon as AlertT
 import { format, differenceInDays, addMonths, isAfter, isBefore } from 'date-fns';
 import { he, enUS } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
+import { useStack } from '../../contexts/StackContext';
 
 interface Contract {
     id: string;
@@ -25,6 +26,7 @@ interface TimelineWidgetProps {
 export function TimelineWidget({ contracts, loading }: TimelineWidgetProps) {
     const { t, lang } = useTranslation();
     const navigate = useNavigate();
+    const { push } = useStack();
     const dateLocale = lang === 'he' ? he : enUS;
 
     const timelineItems = useMemo(() => {
@@ -90,7 +92,7 @@ export function TimelineWidget({ contracts, loading }: TimelineWidgetProps) {
                     <p className="text-sm text-gray-500 dark:text-gray-400 max-w-[200px]">{t('addContractDesc')}</p>
                 </div>
                 <button
-                    onClick={() => navigate('/contracts/new')}
+                    onClick={() => push('contract_wizard', {}, { isExpanded: true, title: t('addContract') })}
                     className="px-6 py-3 bg-black dark:bg-white text-white dark:text-black rounded-xl font-bold transition-all active:scale-95 shadow-lg"
                 >
                     {t('createContract')}

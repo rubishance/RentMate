@@ -201,10 +201,8 @@ When user's prompt is NOT in English:
 
 > **Design rules are in the specialist agents, NOT here.**
 
-| Task | Read |
-|------|------|
-| Web UI/UX | `.agent/frontend-specialist.md` |
-| Mobile UI/UX | `.agent/mobile-developer.md` |
+| Web UI/UX | `.agent/frontend-specialist.md`, `docs/UI_STANDARDIZATION.md` |
+| Mobile UI/UX | `.agent/mobile-developer.md`, `docs/UI_STANDARDIZATION.md` |
 
 **These agents contain:**
 - Purple Ban (no violet/purple colors)

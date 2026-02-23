@@ -24,7 +24,7 @@ import { useDataCache } from '../contexts/DataCacheContext';
 import { useSubscription } from '../hooks/useSubscription';
 import { SecureImage } from '../components/common/SecureImage';
 
-import { Trash2 } from 'lucide-react';
+import { Trash2, Plus } from 'lucide-react';
 
 import { cn } from '../lib/utils';
 import { useStack } from '../contexts/StackContext';
@@ -267,22 +267,31 @@ export function Properties() {
     }
 
     return (
-        <div className="pb-40 pt-8 space-y-16 animate-in fade-in slide-in-from-bottom-6 duration-300">
+        <div className="pb-40 pt-8 px-4 md:px-8 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300">
             {/* Header */}
-            <div className="flex items-center justify-between gap-8 px-4 md:px-8">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div className="space-y-1">
                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/5 dark:bg-indigo-500/10 backdrop-blur-md rounded-full border border-indigo-500/10 shadow-sm mb-1">
                         <Home className="w-3 h-3 text-indigo-500" />
                         <span className="text-[9px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
-                            {lang === 'he' ? 'הפורטפוליו שלי' : 'my portfolio'}
+                            {t('myPortfolio')}
                         </span>
                     </div>
-                    <h1 className="text-2xl md:text-5xl font-black tracking-tighter text-foreground leading-tight lowercase">
-                        {lang === 'he' ? 'נכסים' : 'properties'}
+                    <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground leading-tight lowercase">
+                        {t('properties')}
                     </h1>
                 </div>
 
-
+                <div className="flex items-center gap-3">
+                    <Button
+                        onClick={handleAdd}
+                        variant="jewel"
+                        className="h-14 w-14 rounded-2xl p-0 shrink-0"
+                        title={t('addProperty')}
+                    >
+                        <Plus className="w-6 h-6" />
+                    </Button>
+                </div>
             </div>
 
             {/* Empty State */}
@@ -319,11 +328,11 @@ export function Properties() {
                                 <Card
                                     key={property.id}
                                     onClick={() => handleView(property)}
-                                    className="group flex flex-col h-full overflow-hidden rounded-[2.5rem] border-0 shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer p-0 gap-0 bg-card dark:bg-card"
+                                    className="group flex flex-col h-full rounded-[2.5rem] border-none shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer p-0 gap-0 bg-card dark:bg-card mask-clip-card"
                                     hoverEffect
                                 >
                                     {/* Image Section */}
-                                    <div className="relative h-64 bg-slate-100 dark:bg-neutral-800 overflow-hidden">
+                                    <div className="relative h-64 bg-slate-100 dark:bg-neutral-800 overflow-hidden rounded-t-[2.5rem]">
                                         <SecureImage
                                             bucket="property-images"
                                             path={property.image_url}
@@ -424,7 +433,7 @@ export function Properties() {
                                             {activeContract && (
                                                 <div className="flex flex-col items-end gap-1">
                                                     <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground opacity-60">
-                                                        {lang === 'he' ? 'סיום חוזה' : 'lease ends'}
+                                                        {t('leaseEnds')}
                                                     </span>
                                                     <span className="px-3 py-1 rounded-lg bg-secondary/50 text-xs font-bold text-foreground">
                                                         {formatDate(activeContract.end_date)}
@@ -451,7 +460,8 @@ export function Properties() {
                         })}
                     </div>
                 </>
-            )}
+            )
+            }
 
             <IndexedRentModal
                 isOpen={!!indexedRentContract}
@@ -463,10 +473,8 @@ export function Properties() {
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={confirmDelete}
-                title={lang === 'he' ? 'מחיקת נכס' : 'Delete Asset'}
-                message={lang === 'he'
-                    ? `האם את/ה בטוח/ה שברצונך למחוק את הנכס "${deleteTarget?.address}, ${deleteTarget?.city}"?`
-                    : `Are you sure you want to delete "${deleteTarget?.address}, ${deleteTarget?.city}"?`}
+                title={t('deleteAsset')}
+                message={t('deleteAssetConfirm', { address: deleteTarget?.address || '', city: deleteTarget?.city || '' })}
                 isDeleting={isDeleting}
                 affectedItems={affectedItems}
                 requireDoubleConfirm={true}
@@ -489,6 +497,6 @@ export function Properties() {
                     navigate(`/properties/${propertyId}`, { state: { action: 'upload' } });
                 }}
             />
-        </div>
+        </div >
     );
 }

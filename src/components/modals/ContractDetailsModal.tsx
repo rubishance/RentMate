@@ -94,7 +94,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
             hasLinkageCeiling: false,
             needsPainting: false,
 
-            paymentMethod: 'Checks'
+            paymentMethod: 'checks'
         }
     });
 

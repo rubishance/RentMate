@@ -17,6 +17,7 @@ import { SecureImage } from '../common/SecureImage';
 import { useAuth } from '../../contexts/AuthContext';
 import { useUsageTracking } from '../../hooks/useUsageTracking';
 import { ValidatedField } from '../common/ValidatedField';
+import { WizardFooter } from '../common/WizardFooter';
 
 // Animations
 const containerVariants = {
@@ -368,7 +369,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                         icon={<Wind className="w-5 h-5" />}
                                                     />
                                                     <Checkbox
-                                                        label={t('safe_room')}
+                                                        label={t('safeRoom')}
                                                         checked={formData.has_safe_room || false}
                                                         onChange={(val) => setFormData(prev => ({ ...prev, has_safe_room: val }))}
                                                         icon={<ShieldCheck className="w-5 h-5" />}
@@ -485,32 +486,13 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
             </div>
 
             {/* FOOTER */}
-            <div className="p-8 pb-12 glass-premium dark:bg-neutral-900/60 border-t border-white/5 flex justify-between items-center px-12 z-[70] backdrop-blur-2xl">
-                <Button
-                    onClick={back}
-                    variant="ghost"
-                    className="h-14 px-10 rounded-2xl font-black text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground hover:bg-white/5"
-                >
-                    {t('back')}
-                </Button>
-                <Button
-                    onClick={next}
-                    disabled={!isCurrentStepValid() || isSaving}
-                    className="h-14 px-12 button-jewel font-black text-[11px] uppercase tracking-[0.2em] text-white rounded-[1.5rem] shadow-jewel hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-4 disabled:opacity-50 border-none bg-indigo-500 hover:bg-indigo-600"
-                >
-                    {isSaving ? (
-                        <span className="flex items-center gap-3">
-                            <Loader2 className="w-5 h-5 animate-spin" />
-                            {t('saving') || 'Saving...'}
-                        </span>
-                    ) : (
-                        <>
-                            {currentStep === STEPS.length - 1 ? t('finish') || 'Finish' : t('next') || 'Next'}
-                            <ArrowRightIcon className="w-5 h-5" />
-                        </>
-                    )}
-                </Button>
-            </div>
+            <WizardFooter
+                onNext={next}
+                onBack={back}
+                isSaving={isSaving}
+                isValid={isCurrentStepValid()}
+                isLastStep={currentStep === STEPS.length - 1}
+            />
         </div>
     );
 }

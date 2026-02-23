@@ -74,6 +74,13 @@ export const contracts = pgTable('contracts', {
     rent_periods: jsonb('rent_periods'),
     tenants: jsonb('tenants'),
 
+    // New Fields (Synced with verified DB schema)
+    payment_method: text('payment_method'),
+    pets_allowed: boolean('pets_allowed').default(true),
+    special_clauses: text('special_clauses'),
+    guarantees: text('guarantees'),
+    guarantors_info: text('guarantors_info'),
+
     created_at: timestamp('created_at').defaultNow(),
     updated_at: timestamp('updated_at').defaultNow(),
 });

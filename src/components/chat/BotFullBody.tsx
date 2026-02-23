@@ -46,12 +46,12 @@ export function BotFullBody({ size = 500, className = "" }: { size?: number, cla
                 {/* Main Back Glare - Enhanced for Bright Mode */}
                 {/* We use a multi-layered glare with mixed blend modes to ensure visibility */}
                 <motion.div
-                    className="absolute w-[130%] h-[130%] bg-gold/20 dark:bg-gold/10 rounded-full blur-[100px] z-0 mix-blend-multiply dark:mix-blend-screen"
+                    className="absolute w-[130%] h-[130%] bg-secondary/20 dark:bg-secondary/10 rounded-full blur-[100px] z-0 mix-blend-multiply dark:mix-blend-screen"
                     animate={{ opacity: [0.3, 0.5, 0.3] }}
                     transition={{ duration: 6, repeat: Infinity }}
                 />
                 <motion.div
-                    className="absolute w-[100%] h-[100%] bg-amber-500/20 dark:bg-amber-500/10 rounded-full blur-[60px] z-0"
+                    className="absolute w-[100%] h-[100%] bg-secondary/10 dark:bg-secondary/5 rounded-full blur-[60px] z-0"
                     animate={{ scale: [1, 1.1, 1] }}
                     transition={{ duration: 4, repeat: Infinity }}
                 />
@@ -63,8 +63,8 @@ export function BotFullBody({ size = 500, className = "" }: { size?: number, cla
                     transition={{ duration: 3, repeat: Infinity }}
                     style={{ transform: "translateZ(50px)" }}
                 >
-                    <div className="w-[12px] h-[12px] bg-gold dark:bg-gold/60 blur-md rounded-full"></div>
-                    <div className="w-[12px] h-[12px] bg-gold dark:bg-gold/60 blur-md rounded-full"></div>
+                    <div className="w-[12px] h-[12px] bg-secondary dark:bg-secondary/60 blur-md rounded-full"></div>
+                    <div className="w-[12px] h-[12px] bg-secondary dark:bg-secondary/60 blur-md rounded-full"></div>
                 </motion.div>
 
                 <motion.img

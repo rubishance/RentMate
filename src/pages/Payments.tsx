@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { format, subMonths, addMonths, isBefore, isAfter, startOfDay } from 'date-fns';
+import { motion, AnimatePresence } from 'framer-motion';
+import { format, subMonths, addMonths, isBefore, isAfter, startOfDay, parseISO } from 'date-fns';
 import { supabase } from '../lib/supabase';
 import { cn } from '../lib/utils';
 import type { Payment } from '../types/database';
@@ -89,6 +90,7 @@ export function Payments() {
         if (cached) {
             setPayments(cached);
             setLoading(false);
+            calculateStats(cached);
         }
 
         try {
@@ -165,25 +167,36 @@ export function Payments() {
 
     function calculateStats(data: any[]) {
         const now = new Date();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
+        const yearMonth = format(now, 'yyyy-MM');
+        const today = startOfDay(now);
 
         let monthly = 0;
         let indexSum = 0;
         let pending = 0;
+        let overdue = 0;
 
         data.forEach(p => {
-            const dueDate = new Date(p.due_date);
+            if (!p.due_date || p.status === 'cancelled') return;
 
-            if (dueDate.getMonth() === currentMonth && dueDate.getFullYear() === currentYear) {
+            const dueDate = parseISO(p.due_date);
+            const pYearMonth = p.due_date.substring(0, 7);
+
+            // Monthly Expected (Total for this month)
+            if (pYearMonth === yearMonth) {
                 monthly += p.amount;
                 if (p.original_amount && p.amount > p.original_amount) {
                     indexSum += (p.amount - p.original_amount);
                 }
             }
 
+            // Pending (Future or Today, not paid)
             if (p.status === 'pending') {
                 pending += p.amount;
+            }
+
+            // Overdue (Past, not paid/cancelled)
+            if (p.status === 'overdue' || (p.status === 'pending' && dueDate < today)) {
+                overdue += p.amount;
             }
         });
 
@@ -191,7 +204,7 @@ export function Payments() {
             monthlyExpected: monthly,
             monthlyIndexSum: indexSum,
             pending: pending,
-            overdue: 0
+            overdue: overdue
         });
     }
 
@@ -309,14 +322,27 @@ export function Payments() {
                 <div className="flex items-center gap-3">
                     <Button
                         variant="secondary"
+                        onClick={() => setShowFilters(!showFilters)}
+                        className={cn(
+                            "h-14 px-6 rounded-2xl flex items-center justify-center gap-2 transition-all duration-300",
+                            showFilters ? "bg-indigo-500 text-white shadow-jewel border-indigo-500/50" : "bg-white/50 dark:bg-neutral-800/50 hover:bg-white dark:hover:bg-neutral-800"
+                        )}
+                    >
+                        <Filter className={cn("w-5 h-5", showFilters ? "text-white" : "text-indigo-500")} />
+                        <span className="text-sm font-bold">{t('filters') || 'Filters'}</span>
+                    </Button>
+
+                    <Button
+                        variant="secondary"
                         onClick={() => setIsBulkCheckModalOpen(true)}
-                        className="hidden sm:flex"
+                        className="hidden sm:flex h-14 px-6 rounded-2xl"
                     >
                         <Wallet className="w-4 h-4 mr-2 text-amber-500" />
                         {t('bulkCheckEntryTitle')}
                     </Button>
                     <Button
                         onClick={() => setIsAddModalOpen(true)}
+                        variant="jewel"
                         className="h-14 w-14 rounded-2xl p-0 flex items-center justify-center shadow-jewel"
                         title={t('addPayment')}
                     >
@@ -326,114 +352,126 @@ export function Payments() {
             </div>
 
             {/* Inline Filters */}
-            <Card glass className="relative z-50 rounded-[2rem] border shadow-minimal bg-slate-500/5 border-slate-500/10 overflow-visible">
-                <CardContent className="p-6">
-                    <div className="flex flex-col gap-6">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('timePeriod')}</label>
-                                <Select
-                                    value={periodFilter}
-                                    onChange={(v: any) => setPeriodFilter(v)}
-                                    options={[
-                                        { value: 'all', label: t('allTime') },
-                                        { value: '3m', label: t('last3Months') },
-                                        { value: '6m', label: t('last6Months') },
-                                        { value: '1y', label: t('lastYear') },
-                                        { value: 'next3m', label: t('next3Months') || 'Next 3 Months' },
-                                        { value: 'next6m', label: t('next6Months') || 'Next 6 Months' },
-                                        { value: 'next1y', label: t('nextYear') || 'Next Year' },
-                                        { value: 'currentWindow', label: t('currentWindow') || 'Current Window' }
-                                    ]}
-                                />
-                            </div>
+            <AnimatePresence>
+                {showFilters && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0, marginBottom: 0 }}
+                        animate={{ height: 'auto', opacity: 1, marginBottom: 48 }}
+                        exit={{ height: 0, opacity: 0, marginBottom: 0 }}
+                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                        className="overflow-hidden"
+                    >
+                        <Card glass className="relative z-50 rounded-[2rem] border shadow-minimal bg-slate-500/5 border-slate-500/10 overflow-visible">
+                            <CardContent className="p-6">
+                                <div className="flex flex-col gap-6">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('timePeriod')}</label>
+                                            <Select
+                                                value={periodFilter}
+                                                onChange={(v: any) => setPeriodFilter(v)}
+                                                options={[
+                                                    { value: 'all', label: t('allTime') },
+                                                    { value: '3m', label: t('last3Months') },
+                                                    { value: '6m', label: t('last6Months') },
+                                                    { value: '1y', label: t('lastYear') },
+                                                    { value: 'next3m', label: t('next3Months') || 'Next 3 Months' },
+                                                    { value: 'next6m', label: t('next6Months') || 'Next 6 Months' },
+                                                    { value: 'next1y', label: t('nextYear') || 'Next Year' },
+                                                    { value: 'currentWindow', label: t('currentWindow') || 'Current Window' }
+                                                ]}
+                                            />
+                                        </div>
 
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('tenant')}</label>
-                                <MultiSelect
-                                    placeholder={t('allTenants')}
-                                    options={uniqueTenants.map((t: any) => ({ value: t.id, label: t.name }))}
-                                    selected={filters.tenantIds}
-                                    onChange={(vals) => setFilters(prev => ({ ...prev, tenantIds: vals }))}
-                                />
-                            </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('tenant')}</label>
+                                            <MultiSelect
+                                                placeholder={t('allTenants')}
+                                                options={uniqueTenants.map((t: any) => ({ value: t.id, label: t.name }))}
+                                                selected={filters.tenantIds}
+                                                onChange={(vals) => setFilters(prev => ({ ...prev, tenantIds: vals }))}
+                                            />
+                                        </div>
 
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('asset')}</label>
-                                <MultiSelect
-                                    placeholder={t('allAssets')}
-                                    options={uniqueProperties.map((p: any) => ({ value: p.id, label: p.address }))}
-                                    selected={filters.propertyIds}
-                                    onChange={(vals) => setFilters(prev => ({ ...prev, propertyIds: vals }))}
-                                />
-                            </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('asset')}</label>
+                                            <MultiSelect
+                                                placeholder={t('allAssets')}
+                                                options={uniqueProperties.map((p: any) => ({ value: p.id, label: p.address }))}
+                                                selected={filters.propertyIds}
+                                                onChange={(vals) => setFilters(prev => ({ ...prev, propertyIds: vals }))}
+                                            />
+                                        </div>
 
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('method')}</label>
-                                <MultiSelect
-                                    placeholder={t('allMethods')}
-                                    options={[
-                                        { value: 'transfer', label: t('transfer') },
-                                        { value: 'check', label: t('check') },
-                                        { value: 'cash', label: t('cash') },
-                                        { value: 'bit', label: t('bit') || 'Bit' }
-                                    ]}
-                                    selected={filters.paymentMethods}
-                                    onChange={(vals) => setFilters(prev => ({ ...prev, paymentMethods: vals }))}
-                                />
-                            </div>
-                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('method')}</label>
+                                            <MultiSelect
+                                                placeholder={t('allMethods')}
+                                                options={[
+                                                    { value: 'transfer', label: t('transfer') },
+                                                    { value: 'check', label: t('check') },
+                                                    { value: 'cash', label: t('cash') },
+                                                    { value: 'bit', label: t('bit') || 'Bit' }
+                                                ]}
+                                                selected={filters.paymentMethods}
+                                                onChange={(vals) => setFilters(prev => ({ ...prev, paymentMethods: vals }))}
+                                            />
+                                        </div>
+                                    </div>
 
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t border-slate-500/10">
-                            <div className="flex flex-wrap items-center gap-2">
-                                <div className="flex items-center gap-2 bg-slate-500/5 px-4 py-2 rounded-xl border border-slate-500/10">
-                                    <DatePicker
-                                        placeholder={t('from')}
-                                        value={filters.startDate ? new Date(filters.startDate) : undefined}
-                                        onChange={(date) => setFilters(prev => ({
-                                            ...prev,
-                                            startDate: date ? format(date, 'yyyy-MM-dd') : ''
-                                        }))}
-                                        className="bg-transparent border-0 h-auto p-0 w-24 text-xs font-bold"
-                                    />
-                                    <span className="text-muted-foreground text-[10px]">—</span>
-                                    <DatePicker
-                                        placeholder={t('to')}
-                                        value={filters.endDate ? new Date(filters.endDate) : undefined}
-                                        onChange={(date) => setFilters(prev => ({
-                                            ...prev,
-                                            endDate: date ? format(date, 'yyyy-MM-dd') : ''
-                                        }))}
-                                        className="bg-transparent border-0 h-auto p-0 w-24 text-xs font-bold"
-                                    />
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t border-slate-500/10">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <div className="flex items-center gap-2 bg-slate-500/5 px-4 py-2 rounded-xl border border-slate-500/10">
+                                                <DatePicker
+                                                    placeholder={t('from')}
+                                                    value={filters.startDate ? new Date(filters.startDate) : undefined}
+                                                    onChange={(date) => setFilters(prev => ({
+                                                        ...prev,
+                                                        startDate: date ? format(date, 'yyyy-MM-dd') : ''
+                                                    }))}
+                                                    className="bg-transparent border-0 h-auto p-0 w-24 text-xs font-bold"
+                                                />
+                                                <span className="text-muted-foreground text-[10px]">—</span>
+                                                <DatePicker
+                                                    placeholder={t('to')}
+                                                    value={filters.endDate ? new Date(filters.endDate) : undefined}
+                                                    onChange={(date) => setFilters(prev => ({
+                                                        ...prev,
+                                                        endDate: date ? format(date, 'yyyy-MM-dd') : ''
+                                                    }))}
+                                                    className="bg-transparent border-0 h-auto p-0 w-24 text-xs font-bold"
+                                                />
+                                            </div>
+
+                                            <Select
+                                                value={filters.types.length === 1 ? filters.types[0] : 'all'}
+                                                onChange={(v: any) => setFilters(prev => ({ ...prev, types: v === 'all' ? [] : [v] }))}
+                                                options={[
+                                                    { value: 'all', label: t('allTypes') },
+                                                    { value: 'rent', label: t('rent') },
+                                                    { value: 'bills', label: t('bills') }
+                                                ]}
+                                                className="w-32"
+                                            />
+                                        </div>
+
+                                        {(periodFilter !== 'all' || filters.tenantIds.length > 0 || filters.propertyIds.length > 0 || filters.paymentMethods.length > 0 || filters.startDate || filters.endDate || filters.types.length > 0) && (
+                                            <Button
+                                                variant="ghost"
+                                                onClick={resetFilters}
+                                                className="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-700"
+                                            >
+                                                <RotateCcw className="w-3 h-3 mr-2" />
+                                                {t('resetFilters') || 'Reset'}
+                                            </Button>
+                                        )}
+                                    </div>
                                 </div>
-
-                                <Select
-                                    value={filters.types.length === 1 ? filters.types[0] : 'all'}
-                                    onChange={(v: any) => setFilters(prev => ({ ...prev, types: v === 'all' ? [] : [v] }))}
-                                    options={[
-                                        { value: 'all', label: t('allTypes') },
-                                        { value: 'rent', label: t('rent') },
-                                        { value: 'bills', label: t('bills') }
-                                    ]}
-                                    className="w-32"
-                                />
-                            </div>
-
-                            {(periodFilter !== 'all' || filters.tenantIds.length > 0 || filters.propertyIds.length > 0 || filters.paymentMethods.length > 0 || filters.startDate || filters.endDate || filters.types.length > 0) && (
-                                <Button
-                                    variant="ghost"
-                                    onClick={resetFilters}
-                                    className="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-700"
-                                >
-                                    <RotateCcw className="w-3 h-3 mr-2" />
-                                    {t('resetFilters') || 'Reset'}
-                                </Button>
-                            )}
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Active Filters Summary (Quick remove) */}
             {(periodFilter !== 'all' || filters.tenantIds.length > 0 || filters.propertyIds.length > 0) && (
@@ -504,7 +542,6 @@ export function Payments() {
                         </div>
                         <div className="space-y-2">
                             <h3 className="text-2xl font-black tracking-tighter text-foreground lowercase opacity-40">{t('noPaymentsFound')}</h3>
-                            <p className="text-sm text-muted-foreground max-w-xs mx-auto">{t('addPaymentDesc')}</p>
                         </div>
                         <Button
                             onClick={() => setIsAddModalOpen(true)}

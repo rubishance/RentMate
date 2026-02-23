@@ -4,86 +4,85 @@
 
 @layer base {
   :root {
-    /* Mid-Century Financial Theme - Light Mode */
-    /* Almond Milk Background */
-    --background: 38 29% 94%;
+    /* Modern Real Estate Theme - Light Mode */
+    /* Crisp Off-White Background */
+    --background: 210 20% 98%;
     /* Ink Black Foreground */
-    --foreground: 0 0% 10%;
+    --foreground: 220 40% 10%;
 
     /* Card White */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
+    --card-foreground: 220 40% 10%;
 
     /* Popover White */
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
+    --popover-foreground: 220 40% 10%;
 
-    /* Deep Teal Primary */
-    --primary: 184 70% 20%;
+    /* Deep Navy Primary */
+    --primary: 220 60% 20%;
     --primary-foreground: 0 0% 100%;
 
-    /* Harvest Gold Secondary */
-    --secondary: 34 69% 61%;
-    --secondary-foreground: 0 0% 10%;
+    /* Sage Green Secondary */
+    --secondary: 150 30% 45%;
+    --secondary-foreground: 0 0% 100%;
 
-    /* Almond Muted */
-    --muted: 38 26% 78%;
-    --muted-foreground: 0 0% 40%;
+    /* Muted Slate */
+    --muted: 210 20% 90%;
+    --muted-foreground: 215 16% 47%;
 
-    /* Almond Accent */
-    --accent: 38 26% 78%;
-    --accent-foreground: 184 70% 20%;
+    /* Accent Slate */
+    --accent: 210 20% 90%;
+    --accent-foreground: 220 60% 20%;
 
-    /* Terracotta Destructive */
+    /* Terracotta Destructive (Keeping clear error color) */
     --destructive: 8 50% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 38 20% 88%;
-    --input: 38 20% 88%;
-    --ring: 184 70% 20%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 220 60% 20%;
 
     --radius: 0.75rem;
-    /* Slightly softer 12px */
 
     /* Window Background - Solid for consistency */
     --window-background: 0 0% 100%;
   }
 
   .dark {
-    /* Mid-Century Dark Theme (Ink & Gold) */
-    /* Deep Ink Background */
-    --background: 184 70% 5%;
-    --foreground: 38 29% 94%;
+    /* Modern Real Estate Dark Theme (Navy & Sage) */
+    /* Deep Rich Navy Background */
+    --background: 220 40% 8%;
+    --foreground: 210 20% 98%;
 
-    /* Dark Teal Card */
-    --card: 184 50% 8%;
-    --card-foreground: 38 29% 94%;
+    /* Darker Navy Card */
+    --card: 220 40% 12%;
+    --card-foreground: 210 20% 98%;
 
-    --popover: 184 50% 8%;
-    --popover-foreground: 38 29% 94%;
+    --popover: 220 40% 12%;
+    --popover-foreground: 210 20% 98%;
 
-    /* Lighter Teal for Dark Mode Primary */
-    --primary: 184 50% 40%;
+    /* Lighter Navy for Dark Mode Primary */
+    --primary: 220 50% 50%;
     --primary-foreground: 0 0% 100%;
 
-    /* Gold remains clear accent */
-    --secondary: 34 69% 61%;
-    --secondary-foreground: 0 0% 10%;
+    /* Sage Green remains clear accent */
+    --secondary: 150 30% 45%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 184 30% 15%;
-    --muted-foreground: 184 20% 60%;
+    --muted: 215 28% 17%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 184 30% 15%;
-    --accent-foreground: 38 29% 94%;
+    --accent: 215 28% 17%;
+    --accent-foreground: 210 20% 98%;
 
     --destructive: 8 50% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 184 30% 15%;
-    --input: 184 30% 15%;
-    --ring: 34 69% 61%;
+    --border: 215 28% 17%;
+    --input: 215 28% 17%;
+    --ring: 150 30% 45%;
 
-    --window-background: 184 50% 8%;
+    --window-background: 220 40% 8%;
   }
 }
 
@@ -93,8 +92,19 @@
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground antialiased transition-colors duration-300;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Language Specific Standardization */
+  :root:lang(he) body,
+  [dir="rtl"] body {
+    @apply font-hebrew;
+  }
+
+  :root:lang(en) body,
+  [dir="ltr"] body {
+    @apply font-english;
   }
 
   /* Typography Defaults */
@@ -236,27 +246,123 @@ a {
 @layer components {
   .glass-premium {
     @apply backdrop-blur-xl border border-white/20 shadow-glass transition-all duration-300;
-    background: rgba(245, 242, 235, 0.65);
-    /* Almond Warmth */
+    background: rgba(242, 245, 249, 0.65);
+    /* Off-White Warmth */
   }
 
   .dark .glass-premium {
     @apply border-white/5 shadow-none;
-    background: rgba(15, 81, 86, 0.2);
-    /* Deep Teal Depth */
+    background: rgba(20, 40, 75, 0.2);
+    /* Deep Navy Depth */
   }
 
   .shadow-premium {
     box-shadow:
-      0 4px 6px -1px rgba(15, 81, 86, 0.1),
-      /* Deep Teal Shadow */
-      0 2px 4px -1px rgba(15, 81, 86, 0.06);
+      0 4px 6px -1px rgba(20, 40, 75, 0.1),
+      /* Deep Navy Shadow */
+      0 2px 4px -1px rgba(20, 40, 75, 0.06);
   }
 
   .shadow-jewel {
     box-shadow:
-      0 10px 15px -3px rgba(14, 165, 233, 0.1),
-      0 4px 6px -2px rgba(14, 165, 233, 0.05),
+      0 10px 15px -3px rgba(20, 40, 75, 0.1),
+      0 4px 6px -2px rgba(20, 40, 75, 0.05),
       inset 0 0 0 1px rgba(255, 255, 255, 0.1);
   }
+
+  .mask-clip-card {
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+    mask-image: -webkit-radial-gradient(white, black);
+    overflow: hidden;
+  }
+}
+
+.button-jewel {
+  @apply shadow-jewel flex items-center justify-center transition-all duration-300 active:scale-95;
+  background: linear-gradient(135deg, hsl(var(--secondary)), hsl(150, 30%, 35%));
+  color: hsl(var(--secondary-foreground));
+}
+
+
+.fixed-fab-container {
+  @apply fixed bottom-32 sm:bottom-24 right-8 z-[100] flex flex-col items-end gap-4;
+}
+
+/* Standardized Calendar Styles (react-day-picker) */
+.rdp {
+  --rdp-cell-size: 40px;
+  --rdp-accent-color: hsl(var(--primary));
+  --rdp-background-color: hsl(var(--secondary) / 0.1);
+  margin: 0;
+  width: 100%;
+}
+
+.rdp-month {
+  width: 100%;
+}
+
+.rdp-table {
+  width: 100%;
+  max-width: none;
+  display: table;
+  border-collapse: collapse;
+}
+
+.rdp-tbody {
+  display: table-row-group;
+}
+
+.rdp-row {
+  display: table-row;
+}
+
+.rdp-cell {
+  display: table-cell;
+  text-align: center;
+  vertical-align: middle;
+  padding: 2px;
+}
+
+.rdp-day_selected:not([disabled]) {
+  @apply font-black text-white bg-primary rounded-xl;
+}
+
+.rdp-day_selected:hover:not([disabled]) {
+  @apply opacity-90;
+}
+
+.rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
+  @apply bg-secondary/10;
+}
+
+.rdp-day_today:not(.rdp-day_selected) {
+  @apply border-2 border-primary text-primary font-black;
+}
+
+.rdp-nav_button {
+  @apply w-8 h-8 rounded-xl bg-secondary/10 hover:bg-secondary/20 transition-colors flex items-center justify-center;
+}
+
+.rdp-head_cell {
+  @apply text-muted-foreground font-black text-[10px] uppercase tracking-widest py-4;
+}
+
+.rdp-day {
+  @apply rounded-xl text-sm font-bold transition-all duration-200;
+}
+
+.rdp-day_disabled {
+  @apply opacity-20 cursor-not-allowed;
+}
+
+.rdp-caption_dropdowns {
+  @apply flex gap-2 flex-grow justify-center;
+}
+
+.rdp-dropdown {
+  @apply bg-transparent border-none font-black text-xs uppercase tracking-tight text-foreground p-2 rounded-lg cursor-pointer hover:bg-secondary/10 transition-colors;
+}
+
+.dark .rdp-dropdown:hover {
+  @apply bg-white/5;
 }

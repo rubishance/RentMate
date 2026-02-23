@@ -10,10 +10,12 @@ import {
 } from '../icons/NavIcons';
 import { useTranslation } from '../../hooks/useTranslation';
 import { cn } from '../../lib/utils';
+import { useStack } from '../../contexts/StackContext';
 
 export function HeaderActionMenu() {
     const { t, lang } = useTranslation();
     const navigate = useNavigate();
+    const { push } = useStack();
     const [isOpen, setIsOpen] = useState(false);
     const isRtl = lang === 'he';
 
@@ -52,7 +54,9 @@ export function HeaderActionMenu() {
                             <button
                                 onClick={() => {
                                     setIsOpen(false);
-                                    navigate('/contracts/new');
+                                    push('contract_wizard', {
+                                        onSuccess: () => navigate('/contracts')
+                                    }, { isExpanded: true, title: t('addContract') });
                                 }}
                                 className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors group w-full text-start"
                             >
