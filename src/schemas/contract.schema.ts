@@ -16,7 +16,7 @@ const tenantSchema = z.object({
 const rentStepSchema = z.object({
     startDate: z.string().min(1, 'dateRequired'),
     amount: z.coerce.number().positive('amountGreaterThanZero').optional().or(z.null()),
-    currency: z.enum(['ILS', 'USD', 'EUR']),
+    currency: z.enum(['ILS']),
 });
 
 /**
@@ -25,7 +25,9 @@ const rentStepSchema = z.object({
 const optionPeriodSchema = z.object({
     endDate: z.string().min(1, 'dateRequired'),
     rentAmount: z.coerce.number().positive('amountGreaterThanZero').optional().or(z.null()),
-    currency: z.enum(['ILS', 'USD', 'EUR']).optional(),
+    currency: z.enum(['ILS']).optional(),
+    noticeDays: z.coerce.number().optional(),
+    reminderDays: z.coerce.number().optional()
 });
 
 /**
@@ -59,15 +61,15 @@ export const contractSchema = z.object({
 
     // Step 4: Payments
     rent: z.coerce.number().positive('rentRequired'),
-    currency: z.enum(['ILS', 'USD', 'EUR']).default('ILS'),
-    paymentFrequency: z.enum(['Monthly', 'Quarterly', 'Annually']).default('Monthly'),
+    currency: z.enum(['ILS']).default('ILS'),
+    paymentFrequency: z.enum(['Monthly', 'Bimonthly', 'Quarterly', 'Semiannually', 'Annually']).default('Monthly'),
     paymentDay: z.coerce.number().min(1).max(31).default(1),
     paymentMethod: z.enum(['checks', 'transfer', 'cash', 'bit', 'paybox', 'other']).optional().or(z.literal('')),
     rentSteps: z.array(rentStepSchema).default([]),
 
     // Linkage
-    linkageType: z.enum(['cpi', 'housing', 'construction', 'usd', 'eur', 'none']).default('none'),
-    linkageSubType: z.enum(['known', 'respect_of', 'base']).optional(),
+    linkageType: z.enum(['cpi', 'housing', 'construction', 'none']).default('none'),
+    linkageSubType: z.enum(['known', 'respect_of', 'base']).default('known'),
     baseIndexDate: z.string().optional(),
     baseIndexValue: z.coerce.number().optional(),
     linkageCeiling: z.coerce.number().optional(),

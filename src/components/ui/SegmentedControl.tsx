@@ -14,6 +14,7 @@ interface SegmentedControlProps {
     onChange: (value: string) => void;
     className?: string;
     size?: 'sm' | 'md';
+    disabled?: boolean;
 }
 
 export const SegmentedControl: React.FC<SegmentedControlProps> = ({
@@ -22,6 +23,7 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
     onChange,
     className,
     size = 'md',
+    disabled = false,
 }) => {
     return (
         <div className={cn(
@@ -34,11 +36,13 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
                     <button
                         key={option.value}
                         onClick={() => onChange(option.value)}
+                        disabled={disabled}
                         className={cn(
                             "relative flex-1 flex items-center justify-center gap-2 z-10 transition-colors duration-200",
                             size === 'sm' ? "px-3 py-1.5 text-[10px]" : "px-4 py-2.5 text-xs",
                             "font-bold uppercase tracking-wide whitespace-nowrap",
-                            isActive ? "text-white" : "text-muted-foreground hover:text-foreground/80"
+                            isActive ? "text-white" : "text-muted-foreground hover:text-foreground/80",
+                            disabled && "opacity-50 pointer-events-none cursor-not-allowed"
                         )}
                     >
                         {option.icon && <span className="shrink-0">{option.icon}</span>}

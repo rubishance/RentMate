@@ -148,7 +148,6 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                     // For now, let's map what we can.
                     ...p
                 })) || [],
-                optionNoticeDays: contract.option_notice_days || undefined,
 
                 rentSteps: (contract.rent_periods as any[])?.map(p => ({
                     startDate: p.startDate,
@@ -212,7 +211,6 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
 
                 option_periods: data.optionPeriods,
                 rent_periods: data.rentSteps,
-                option_notice_days: data.optionPeriods.length > 0 ? data.optionNoticeDays : null,
 
                 tenants: data.tenants
             };
@@ -245,7 +243,6 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
     // Watch values for conditional rendering
     const linkageType = watch('linkageType');
     const currency = watch('currency');
-    const optionPeriods = watch('optionPeriods');
 
     return (
         <Modal
@@ -431,9 +428,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                 value={field.value}
                                                 onChange={field.onChange}
                                                 options={[
-                                                    { value: 'ILS', label: 'ILS (₪)' },
-                                                    { value: 'USD', label: 'USD ($)' },
-                                                    { value: 'EUR', label: 'EUR (€)' }
+                                                    { value: 'ILS', label: 'ILS (₪)' }
                                                 ]}
                                                 className="w-full"
                                             />
@@ -507,9 +502,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                         value={field.value}
                                                         onChange={field.onChange}
                                                         options={[
-                                                            { value: 'ILS', label: 'ILS' },
-                                                            { value: 'USD', label: 'USD' },
-                                                            { value: 'EUR', label: 'EUR' }
+                                                            { value: 'ILS', label: 'ILS' }
                                                         ]}
                                                         className="w-24"
                                                     />
@@ -566,9 +559,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                         { value: 'none', label: t('notLinked') },
                                                         { value: 'cpi', label: t('linkedToCpi') },
                                                         { value: 'housing', label: t('linkedToHousing') },
-                                                        { value: 'construction', label: t('linkedToConstruction') },
-                                                        { value: 'usd', label: t('linkedToUsd') },
-                                                        { value: 'eur', label: t('linkedToEur') }
+                                                        { value: 'construction', label: t('linkedToConstruction') }
                                                     ]}
                                                     className="w-full"
                                                 />
@@ -703,15 +694,33 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                                 value={field.value}
                                                                 onChange={field.onChange}
                                                                 options={[
-                                                                    { value: 'ILS', label: 'ILS' },
-                                                                    { value: 'USD', label: 'USD' },
-                                                                    { value: 'EUR', label: 'EUR' }
+                                                                    { value: 'ILS', label: 'ILS' }
                                                                 ]}
                                                                 className="w-full"
                                                             />
                                                         )}
                                                     />
                                                 </div>
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <div className="relative">
+                                                <label className="text-[10px] text-muted-foreground mb-1 block">{t('optionNoticeDays')}</label>
+                                                <Input
+                                                    type="number"
+                                                    disabled={readOnly}
+                                                    {...register(`optionPeriods.${idx}.noticeDays`, { valueAsNumber: true })}
+                                                    className="w-full px-2 py-1.5 text-xs border border-border rounded-lg"
+                                                />
+                                            </div>
+                                            <div className="relative">
+                                                <label className="text-[10px] text-muted-foreground mb-1 block">{t('optionReminderDays')}</label>
+                                                <Input
+                                                    type="number"
+                                                    disabled={readOnly}
+                                                    {...register(`optionPeriods.${idx}.reminderDays`, { valueAsNumber: true })}
+                                                    className="w-full px-2 py-1.5 text-xs border border-border rounded-lg"
+                                                />
                                             </div>
                                         </div>
                                     </div>
@@ -726,25 +735,6 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                     </button>
                                 )}
                             </div>
-
-                            {/* Extension Notice Days */}
-                            {optionPeriods.length > 0 && (
-                                <div className="pt-2 animate-in fade-in slide-in-from-top-1 duration-200">
-                                    <label className="text-xs font-medium text-muted-foreground uppercase block mb-1">
-                                        {t('extensionNoticeDays')}
-                                    </label>
-                                    <div className="relative">
-                                        <Clock className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                                        <Input
-                                            type="number"
-                                            disabled={readOnly}
-                                            {...register('optionNoticeDays')}
-                                            className="w-full pl-8 pr-3 py-1.5 text-xs border border-border dark:border-gray-700 rounded-lg bg-white dark:bg-foreground disabled:bg-secondary disabled:text-muted-foreground no-spinner focus:ring-1 focus:ring-primary"
-                                            placeholder="e.g. 60"
-                                        />
-                                    </div>
-                                </div>
-                            )}
                         </section>
 
                         {/* Security Deposit */}

@@ -112,11 +112,8 @@ export function StandardCalculator({ initialValues, shouldAutoCalculate }: Stand
                             onChange={(e) => setLinkageType(e.target.value as any)}
                             className="w-full h-20 px-8 bg-slate-50 dark:bg-neutral-800/50 border-2 border-transparent focus:bg-white dark:focus:bg-neutral-800 focus:border-black dark:focus:border-white rounded-[2rem] font-black text-xl text-foreground transition-all outline-none appearance-none"
                         >
-                            <option value="cpi">{t('cpi')}</option>
-                            <option value="housing">{t('housingServices')}</option>
-                            <option value="construction">{t('constructionInputs')}</option>
-                            <option value="usd">{t('usdRate')}</option>
-                            <option value="eur">{t('eurRate')}</option>
+                            <option value="cpi">{t('linkedToCpi')}</option>
+                            <option value="housing">{t('linkedToHousing')}</option>
                         </select>
                     </div>
                     <div className="space-y-4">

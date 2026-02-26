@@ -308,7 +308,7 @@ export function ChatWidget() {
                 contract_id: contract?.id || '',
                 amount: scannedBill.amount,
                 due_date: scannedBill.date,
-                payment_method: 'bank_transfer',
+                payment_method: 'transfer',
                 status: 'paid'
             });
             setActiveModal('payment');
@@ -331,312 +331,312 @@ export function ChatWidget() {
     if (isAuthPage) return null;
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={cn(
-                "fixed top-4 left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center space-y-4 w-full px-4 max-w-[500px]"
-            )}
-        >
-            <AnimatePresence>
-                {isOpen && (
-                    <motion.div
-                        drag
-                        dragConstraints={{ left: -window.innerWidth + 80, right: 0, top: -window.innerHeight + 80, bottom: 0 }}
-                        dragElastic={0.1}
-                        dragTransition={{ bounceStiffness: 600, bounceDamping: 20 }}
-                        initial={{ opacity: 0, y: -20, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                        className="w-full max-w-[400px] h-[540px] bg-white/90 dark:bg-black/80 backdrop-blur-xl border border-gray-200 dark:border-white/20 rounded-2xl shadow-2xl flex flex-col overflow-hidden origin-top"
-                    >
-                        {/* Header */}
-                        <div className="p-4 border-b border-gray-200 dark:border-white/10 flex justify-between items-center cursor-move transition-colors bg-white dark:bg-black text-gray-900 dark:text-white">
-                            <div className="flex items-center space-x-3 rtl:space-x-reverse">
-                                <div className="p-1.5 flex items-center justify-center overflow-hidden w-9 h-9">
-                                    <RentyMascot size={28} showBackground={false} />
+        <div className="fixed top-0 left-0 md:left-64 right-0 z-[60] pointer-events-none flex justify-center">
+            <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="pointer-events-auto flex flex-col items-center space-y-4 w-full px-4 max-w-[500px] pt-4"
+            >
+                <AnimatePresence>
+                    {isOpen && (
+                        <motion.div
+                            drag
+                            dragConstraints={{ left: -window.innerWidth + 80, right: 0, top: -window.innerHeight + 80, bottom: 0 }}
+                            dragElastic={0.1}
+                            dragTransition={{ bounceStiffness: 600, bounceDamping: 20 }}
+                            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                            className="w-full max-w-[400px] h-[540px] bg-white/90 dark:bg-black/80 backdrop-blur-xl border border-gray-200 dark:border-white/20 rounded-2xl shadow-2xl flex flex-col overflow-hidden origin-top"
+                        >
+                            {/* Header */}
+                            <div className="p-4 border-b border-gray-200 dark:border-white/10 flex justify-between items-center cursor-move transition-colors bg-white dark:bg-black text-gray-900 dark:text-white">
+                                <div className="flex items-center space-x-3 rtl:space-x-reverse">
+                                    <div className="p-1.5 flex items-center justify-center overflow-hidden w-9 h-9">
+                                        <RentyMascot size={28} showBackground={false} />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-gray-900 dark:text-white">Renty - תמיכה חכמה</h3>
+                                        <p className="text-xs text-gray-400">{isRtl ? 'העוזר האישי שלך' : 'Your Personal Assistant'}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 className="font-semibold text-gray-900 dark:text-white">Renty - תמיכה חכמה</h3>
-                                    <p className="text-xs text-gray-400">{isRtl ? 'העוזר האישי שלך' : 'Your Personal Assistant'}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-1">
-                                <button
-                                    onClick={toggleChat}
-                                    className="p-1 hover:bg-white/10 rounded-full transition-colors"
-                                >
-                                    <X className="w-5 h-5 text-gray-400" />
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* CONTENT AREA: Messages only */}
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-white/10 scrollbar-track-transparent bg-gray-50 dark:bg-white/5">
-                            {activeMessages.map((msg, idx) => {
-                                const isUser = msg.role === 'user';
-
-                                return (
-                                    <div
-                                        key={idx}
-                                        className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'}`}
+                                <div className="flex items-center gap-1">
+                                    <button
+                                        onClick={toggleChat}
+                                        className="p-1 hover:bg-white/10 rounded-full transition-colors"
                                     >
+                                        <X className="w-5 h-5 text-gray-400" />
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* CONTENT AREA: Messages only */}
+                            <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-white/10 scrollbar-track-transparent bg-gray-50 dark:bg-white/5">
+                                {activeMessages.map((msg, idx) => {
+                                    const isUser = msg.role === 'user';
+
+                                    return (
                                         <div
-                                            className={`max-w-[80%] p-3 rounded-2xl text-sm shadow-sm ${isUser
-                                                ? "bg-black dark:bg-white text-white dark:text-black rounded-br-none border border-gray-700 dark:border-white/10"
-                                                : "bg-white dark:bg-neutral-800 text-black dark:text-white rounded-bl-none border border-gray-200 dark:border-white/20"
-                                                }`}
-                                            dir="auto"
+                                            key={idx}
+                                            className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'}`}
                                         >
-                                            {msg.type === 'action' && msg.actionData ? (
-                                                <ActionCard
-                                                    title={msg.actionData.title}
-                                                    description={msg.actionData.description}
-                                                    options={msg.actionData.options}
-                                                    onSelect={handleAction}
-                                                />
-                                            ) : (
-                                                msg.content
-                                            )}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                            {isListening && (
-                                <div className="flex justify-start">
-                                    <div className="bg-white dark:bg-white/10 border border-gray-200 dark:border-white/5 p-3 rounded-2xl rounded-bl-none">
-                                        <div className="flex items-center space-x-2 text-gray-900 dark:text-white">
-                                            <Mic className="w-4 h-4 animate-pulse text-brand-500" />
-                                            <span className="text-sm">מקשיב...</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                            {isLoading && (
-                                <div className="flex justify-start">
-                                    <div className="bg-white dark:bg-white/10 border border-gray-200 dark:border-white/5 p-3 rounded-2xl rounded-bl-none">
-                                        <div className="flex space-x-2">
-                                            <div className="w-2 h-2 bg-gray-400 dark:bg-white rounded-full animate-bounce" />
-                                            <div className="w-2 h-2 bg-gray-400 dark:bg-white rounded-full animate-bounce delay-100" />
-                                            <div className="w-2 h-2 bg-gray-400 dark:bg-white rounded-full animate-bounce delay-200" />
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Analyzing Bill State */}
-                            {analyzingBill && (
-                                <div className="flex justify-start">
-                                    <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-500/30 p-4 rounded-2xl w-full flex flex-col items-center gap-3">
-                                        <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
-                                        <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">
-                                            {isRtl ? 'מנתח פרטי חשבון...' : 'Analyzing Bill Details...'}
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Scanned Bill Result */}
-                            {scannedBill && (
-                                <div className="flex justify-start">
-                                    <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-500/30 p-4 rounded-2xl w-full space-y-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-800 rounded-full flex items-center justify-center">
-                                                <Paperclip className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                                            </div>
-                                            <div>
-                                                <h4 className="font-bold text-emerald-900 dark:text-emerald-100">{t('billDetected')}</h4>
-                                                <p className="text-xs text-emerald-600 dark:text-emerald-400">{scannedBill.vendor} - {scannedBill.amount} {scannedBill.currency}</p>
+                                            <div
+                                                className={`max-w-[80%] p-3 rounded-2xl text-sm shadow-sm ${isUser
+                                                    ? "bg-black dark:bg-white text-white dark:text-black rounded-br-none border border-gray-700 dark:border-white/10"
+                                                    : "bg-white dark:bg-neutral-800 text-black dark:text-white rounded-bl-none border border-gray-200 dark:border-white/20"
+                                                    }`}
+                                                dir="auto"
+                                            >
+                                                {msg.type === 'action' && msg.actionData ? (
+                                                    <ActionCard
+                                                        title={msg.actionData.title}
+                                                        description={msg.actionData.description}
+                                                        options={msg.actionData.options}
+                                                        onSelect={handleAction}
+                                                    />
+                                                ) : (
+                                                    msg.content
+                                                )}
                                             </div>
                                         </div>
+                                    );
+                                })}
+                                {isListening && (
+                                    <div className="flex justify-start">
+                                        <div className="bg-white dark:bg-white/10 border border-gray-200 dark:border-white/5 p-3 rounded-2xl rounded-bl-none">
+                                            <div className="flex items-center space-x-2 text-gray-900 dark:text-white">
+                                                <Mic className="w-4 h-4 animate-pulse text-brand-500" />
+                                                <span className="text-sm">מקשיב...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                                {isLoading && (
+                                    <div className="flex justify-start">
+                                        <div className="bg-white dark:bg-white/10 border border-gray-200 dark:border-white/5 p-3 rounded-2xl rounded-bl-none">
+                                            <div className="flex space-x-2">
+                                                <div className="w-2 h-2 bg-gray-400 dark:bg-white rounded-full animate-bounce" />
+                                                <div className="w-2 h-2 bg-gray-400 dark:bg-white rounded-full animate-bounce delay-100" />
+                                                <div className="w-2 h-2 bg-gray-400 dark:bg-white rounded-full animate-bounce delay-200" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
 
-                                        {scannedBill.propertyId && selectedPropertyId === scannedBill.propertyId && scannedBill.confidence > 0.8 ? (
-                                            <div className="bg-emerald-100/50 dark:bg-emerald-900/30 p-3 rounded-xl border border-emerald-200 dark:border-emerald-500/30 mb-2">
-                                                <div className="flex justify-between items-start">
-                                                    <div>
-                                                        <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mb-1">
-                                                            {isRtl ? 'זוהה אוטומטית' : 'Auto-Detected'}
-                                                        </p>
-                                                        <p className="text-sm font-bold text-emerald-900 dark:text-emerald-100 line-clamp-1">
-                                                            {scannedBill.propertyAddress || properties.find(p => p.id === selectedPropertyId)?.address}
-                                                        </p>
-                                                    </div>
-                                                    <button
-                                                        onClick={() => setSelectedPropertyId('')}
-                                                        className="text-xs text-emerald-500 underline hover:text-emerald-700 dark:hover:text-emerald-300"
-                                                    >
-                                                        {isRtl ? 'שנה' : 'Change'}
-                                                    </button>
+                                {/* Analyzing Bill State */}
+                                {analyzingBill && (
+                                    <div className="flex justify-start">
+                                        <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-500/30 p-4 rounded-2xl w-full flex flex-col items-center gap-3">
+                                            <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
+                                            <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">
+                                                {isRtl ? 'מנתח פרטי חשבון...' : 'Analyzing Bill Details...'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Scanned Bill Result */}
+                                {scannedBill && (
+                                    <div className="flex justify-start">
+                                        <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-500/30 p-4 rounded-2xl w-full space-y-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-800 rounded-full flex items-center justify-center">
+                                                    <Paperclip className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-bold text-emerald-900 dark:text-emerald-100">{t('billDetected')}</h4>
+                                                    <p className="text-xs text-emerald-600 dark:text-emerald-400">{scannedBill.vendor} - {scannedBill.amount} {scannedBill.currency}</p>
                                                 </div>
                                             </div>
-                                        ) : (
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400">
-                                                    {scannedBill.confidence < 0.8
-                                                        ? (isRtl ? 'לא הצלחתי לזהות את הנכס. אנא בחר:' : 'Could not identify property. Please select:')
-                                                        : t('associateWithProperty')
-                                                    }
-                                                </label>
-                                                <select
-                                                    value={selectedPropertyId}
-                                                    onChange={(e) => setSelectedPropertyId(e.target.value)}
-                                                    className="w-full bg-white dark:bg-neutral-800 border-2 border-emerald-100 dark:border-emerald-500/30 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-500 transition-all"
-                                                >
-                                                    <option value="">{t('selectProperty')}</option>
-                                                    {properties.map(p => (
-                                                        <option key={p.id} value={p.id}>{p.address}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                        )}
 
-                                        <div className="flex gap-2">
-                                            <button
-                                                onClick={() => setScannedBill(null)}
-                                                className="flex-1 py-2 text-xs font-bold text-gray-500 hover:text-gray-700 transition-colors"
-                                            >
-                                                {t('cancel')}
-                                            </button>
-                                            <button
-                                                disabled={!selectedPropertyId}
-                                                onClick={handleSaveBill}
-                                                className="flex-1 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold shadow-lg shadow-emerald-600/20 disabled:opacity-50 disabled:grayscale transition-all"
-                                            >
-                                                {t('saveAndRecord')}
-                                            </button>
+                                            {scannedBill.propertyId && selectedPropertyId === scannedBill.propertyId && scannedBill.confidence > 0.8 ? (
+                                                <div className="bg-emerald-100/50 dark:bg-emerald-900/30 p-3 rounded-xl border border-emerald-200 dark:border-emerald-500/30 mb-2">
+                                                    <div className="flex justify-between items-start">
+                                                        <div>
+                                                            <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mb-1">
+                                                                {isRtl ? 'זוהה אוטומטית' : 'Auto-Detected'}
+                                                            </p>
+                                                            <p className="text-sm font-bold text-emerald-900 dark:text-emerald-100 line-clamp-1">
+                                                                {scannedBill.propertyAddress || properties.find(p => p.id === selectedPropertyId)?.address}
+                                                            </p>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => setSelectedPropertyId('')}
+                                                            className="text-xs text-emerald-500 underline hover:text-emerald-700 dark:hover:text-emerald-300"
+                                                        >
+                                                            {isRtl ? 'שנה' : 'Change'}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400">
+                                                        {scannedBill.confidence < 0.8
+                                                            ? (isRtl ? 'לא הצלחתי לזהות את הנכס. אנא בחר:' : 'Could not identify property. Please select:')
+                                                            : t('associateWithProperty')
+                                                        }
+                                                    </label>
+                                                    <select
+                                                        value={selectedPropertyId}
+                                                        onChange={(e) => setSelectedPropertyId(e.target.value)}
+                                                        className="w-full bg-white dark:bg-neutral-800 border-2 border-emerald-100 dark:border-emerald-500/30 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-500 transition-all"
+                                                    >
+                                                        <option value="">{t('selectProperty')}</option>
+                                                        {properties.map(p => (
+                                                            <option key={p.id} value={p.id}>{p.address}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            )}
+
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => setScannedBill(null)}
+                                                    className="flex-1 py-2 text-xs font-bold text-gray-500 hover:text-gray-700 transition-colors"
+                                                >
+                                                    {t('cancel')}
+                                                </button>
+                                                <button
+                                                    disabled={!selectedPropertyId}
+                                                    onClick={handleSaveBill}
+                                                    className="flex-1 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold shadow-lg shadow-emerald-600/20 disabled:opacity-50 disabled:grayscale transition-all"
+                                                >
+                                                    {t('saveAndRecord')}
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            )}
+                                )}
 
-                            <div ref={messagesEndRef} />
-                        </div>
-
-                        {/* Input */}
-                        <form onSubmit={handleSubmit} className="px-5 py-4 bg-gray-50 dark:bg-black border-t border-gray-200 dark:border-white/10">
-                            <div className="flex items-center gap-3">
-                                <button
-                                    type="submit"
-                                    disabled={isLoading}
-                                    className="p-2 bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-200 rounded-xl transition-colors disabled:opacity-50 shrink-0"
-                                    aria-label="שלח הודעה"
-                                >
-                                    <Send className="w-5 h-5 text-white dark:text-black" />
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={toggleVoiceInput}
-                                    className={`p-2 rounded-xl transition-colors shrink-0 ${isListening
-                                        ? 'bg-red-600 hover:bg-red-500'
-                                        : 'bg-white dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 border border-gray-200 dark:border-transparent'
-                                        } `}
-                                    aria-label={isListening ? 'עצור הקלטה' : 'התחל הקלטה'}
-                                >
-                                    {isListening ? (
-                                        <MicOff className="w-5 h-5 text-white" />
-                                    ) : (
-                                        <Mic className="w-5 h-5 text-gray-700 dark:text-white" />
-                                    )}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => fileInputRef.current?.click()}
-                                    disabled={isUploading || isLoading || !user}
-                                    className="p-2 bg-white dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 border border-gray-200 dark:border-transparent rounded-xl transition-colors shrink-0 disabled:opacity-20"
-                                    aria-label="צרף קובץ"
-                                >
-                                    {isUploading ? (
-                                        <Loader2 className="w-5 h-5 text-brand-600 dark:text-white animate-spin" />
-                                    ) : (
-                                        <Paperclip className="w-5 h-5 text-gray-700 dark:text-white" />
-                                    )}
-                                </button>
-                                <input
-                                    type="file"
-                                    ref={fileInputRef}
-                                    className="hidden"
-                                    onChange={handleFileSelect}
-                                    accept=".pdf,image/*"
-                                />
-                                <div className="flex-1">
-                                    <label htmlFor="chat-input" className="sr-only">שאלה לצ׳אט</label>
-                                    <input
-                                        id="chat-input"
-                                        type="text"
-                                        value={inputText}
-                                        onChange={(e) => setInputText(e.target.value)}
-                                        placeholder={
-                                            !user
-                                                ? (isRtl ? "שאל על RentMate..." : "Ask about RentMate...")
-                                                : (isRtl ? "שאל שאלה או דבר..." : "Ask or tell me something...")
-                                        }
-                                        dir="auto"
-                                        className="w-full bg-white dark:bg-white/10 border border-gray-200 dark:border-white/20 rounded-xl px-3 py-2 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:focus:ring-white/30 text-sm"
-                                    />
-                                </div>
+                                <div ref={messagesEndRef} />
                             </div>
-                        </form>
-                    </motion.div>
+
+                            {/* Input */}
+                            <form onSubmit={handleSubmit} className="px-5 py-4 bg-gray-50 dark:bg-black border-t border-gray-200 dark:border-white/10">
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        type="submit"
+                                        disabled={isLoading}
+                                        className="p-2 bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-200 rounded-xl transition-colors disabled:opacity-50 shrink-0"
+                                        aria-label="שלח הודעה"
+                                    >
+                                        <Send className="w-5 h-5 text-white dark:text-black" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={toggleVoiceInput}
+                                        className={`p-2 rounded-xl transition-colors shrink-0 ${isListening
+                                            ? 'bg-red-600 hover:bg-red-500'
+                                            : 'bg-white dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 border border-gray-200 dark:border-transparent'
+                                            } `}
+                                        aria-label={isListening ? 'עצור הקלטה' : 'התחל הקלטה'}
+                                    >
+                                        {isListening ? (
+                                            <MicOff className="w-5 h-5 text-white" />
+                                        ) : (
+                                            <Mic className="w-5 h-5 text-gray-700 dark:text-white" />
+                                        )}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        disabled={isUploading || isLoading || !user}
+                                        className="p-2 bg-white dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 border border-gray-200 dark:border-transparent rounded-xl transition-colors shrink-0 disabled:opacity-20"
+                                        aria-label="צרף קובץ"
+                                    >
+                                        {isUploading ? (
+                                            <Loader2 className="w-5 h-5 text-brand-600 dark:text-white animate-spin" />
+                                        ) : (
+                                            <Paperclip className="w-5 h-5 text-gray-700 dark:text-white" />
+                                        )}
+                                    </button>
+                                    <input
+                                        type="file"
+                                        ref={fileInputRef}
+                                        className="hidden"
+                                        onChange={handleFileSelect}
+                                        accept=".pdf,image/*"
+                                    />
+                                    <div className="flex-1">
+                                        <label htmlFor="chat-input" className="sr-only">שאלה לצ׳אט</label>
+                                        <input
+                                            id="chat-input"
+                                            type="text"
+                                            value={inputText}
+                                            onChange={(e) => setInputText(e.target.value)}
+                                            placeholder={
+                                                !user
+                                                    ? (isRtl ? "שאל על RentMate..." : "Ask about RentMate...")
+                                                    : (isRtl ? "שאל שאלה או דבר..." : "Ask or tell me something...")
+                                            }
+                                            dir="auto"
+                                            className="w-full bg-white dark:bg-white/10 border border-gray-200 dark:border-white/20 rounded-xl px-3 py-2 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:focus:ring-white/30 text-sm"
+                                        />
+                                    </div>
+                                </div>
+                            </form>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* FAB - Horizontal Bar */}
+                {!isOpen && (
+                    <motion.button
+                        onClick={toggleChat}
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.99 }}
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="flex items-center bg-white/80 dark:bg-black/80 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-full shadow-lg p-1.5 px-4 w-full group transition-all overflow-hidden"
+                        dir="ltr"
+                    >
+                        <div className="flex items-center gap-3 shrink-0">
+                            <div className="flex items-center justify-center w-8 h-8 bg-indigo-500 rounded-full shadow-sm text-white shrink-0">
+                                <MessageCircle className="w-5 h-5" />
+                            </div>
+                            <div className="p-1.5 bg-gray-100 dark:bg-white/5 rounded-full shrink-0">
+                                <Paperclip className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+                            </div>
+                            <Mic className="w-4 h-4 text-gray-400 shrink-0" />
+                        </div>
+
+                        <div className="flex-1 px-4 text-right min-w-0" dir="rtl">
+                            <p className="text-gray-400 dark:text-gray-500 text-sm truncate font-medium">
+                                {isRtl ? 'איך אוכל לעזור לך לנהל את הנכסים היום?' : 'How can I help you manage your properties today?'}
+                            </p>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                            <div className="w-8 h-8 flex items-center justify-center overflow-hidden shrink-0">
+                                <RentyMascot size={24} showBackground={false} />
+                            </div>
+                        </div>
+                    </motion.button>
                 )}
-            </AnimatePresence>
 
-            {/* FAB - Horizontal Bar */}
-            {!isOpen && (
-                <motion.button
-                    onClick={toggleChat}
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className="flex items-center bg-white/80 dark:bg-black/80 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-full shadow-lg p-1.5 px-4 w-full group transition-all"
-                    dir="ltr"
-                >
-                    <div className="flex items-center gap-3">
-                        <div className="flex items-center justify-center w-8 h-8 bg-indigo-500 rounded-full shadow-sm text-white shrink-0">
-                            <MessageCircle className="w-5 h-5" />
-                        </div>
-                        <div className="p-1.5 bg-gray-100 dark:bg-white/5 rounded-full">
-                            <Paperclip className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-                        </div>
-                        <Mic className="w-4 h-4 text-gray-400" />
-                    </div>
-
-                    <div className="flex-1 px-4 text-right" dir="rtl">
-                        <span className="text-gray-400 dark:text-gray-500 text-sm truncate font-medium">
-                            {isRtl ? 'איך אוכל לעזור לך לנהל את הנכסים היום?' : 'How can I help you manage your properties today?'}
-                        </span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 flex items-center justify-center overflow-hidden">
-                            <RentyMascot size={24} showBackground={false} />
-                        </div>
-                    </div>
-                </motion.button>
-            )}
-
-            {/* AI-Triggered Modals */}
-            <AddPaymentModal
-                isOpen={activeModal === 'payment' || activeModal === 'add_payment'}
-                onClose={() => setActiveModal(null)}
-                onSuccess={() => {
-                    clear();
-                    setActiveModal(null);
-                }}
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                initialData={modalData as any}
-            />
-            <AddMaintenanceModal
-                isOpen={activeModal === 'maintenance' || activeModal === 'add_maintenance'}
-                onClose={() => setActiveModal(null)}
-                onSuccess={() => {
-                    clear();
-                    setActiveModal(null);
-                }}
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                initialData={modalData as any}
-            />
-        </motion.div>
+                {/* AI-Triggered Modals */}
+                <AddPaymentModal
+                    isOpen={activeModal === 'payment' || activeModal === 'add_payment'}
+                    onClose={() => setActiveModal(null)}
+                    onSuccess={() => {
+                        clear();
+                        setActiveModal(null);
+                    }}
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    initialData={modalData as any}
+                />
+                <AddMaintenanceModal
+                    isOpen={activeModal === 'maintenance' || activeModal === 'add_maintenance'}
+                    onClose={() => setActiveModal(null)}
+                    onSuccess={() => {
+                        clear();
+                        setActiveModal(null);
+                    }}
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    initialData={modalData as any}
+                />
+            </motion.div>
+        </div>
     );
 }

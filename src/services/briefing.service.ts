@@ -31,12 +31,14 @@ export const BriefingService = {
             expired?.forEach((c: any) => {
                 const property = Array.isArray(c.properties) ? c.properties[0] : c.properties;
                 const address = property?.address || t('unknownProperty');
+                const city = property?.city ? `, ${property.city}` : '';
+                const fullAddress = `${address}${city}`;
 
                 items.push({
                     id: `expired-${c.id}`,
                     type: 'warning',
                     title: t('contractEnded'),
-                    desc: `${address} • ${t('contractExpiringSoon')}`,
+                    desc: `${fullAddress} • ${t('contractExpiringSoon')}`,
                     date: formatDate(new Date(c.end_date)),
                     actionLabel: t('calculate'),
                     metadata: { type: 'contract_expired', contractId: c.id }
@@ -47,7 +49,7 @@ export const BriefingService = {
             // Fetch payments due before today and still pending
             const { data: overdue } = await supabase
                 .from('payments')
-                .select('*, contracts(properties(address), tenants(full_name))')
+                .select('*, contracts(properties(address, city), tenants(full_name))')
                 .eq('user_id', userId)
                 .eq('status', 'pending')
                 .lt('due_date', todayStr)
@@ -55,14 +57,17 @@ export const BriefingService = {
                 .limit(5); // Limit to top 5 to avoid clutter
 
             overdue?.forEach((p: any) => {
-                const property = p.contracts?.properties?.address || t('unknownProperty');
+                const prop = p.contracts?.properties;
+                const address = prop?.address || t('unknownProperty');
+                const city = prop?.city ? `, ${prop.city}` : '';
+                const fullAddress = `${address}${city}`;
                 const tenant = p.contracts?.tenants?.full_name || t('unknown');
 
                 items.push({
                     id: `overdue-${p.id}`,
                     type: 'urgent',
                     title: t('paymentOverdue'),
-                    desc: `${property} • ${tenant} • ${p.amount} ${p.currency}`,
+                    desc: `${fullAddress} • ${tenant} • ${p.amount} ${p.currency}`,
                     date: formatDate(new Date(p.due_date)),
                     actionLabel: t('sendReminder'),
                     metadata: { type: 'payment_overdue', paymentId: p.id, tenantParams: { name: tenant, amount: p.amount } }

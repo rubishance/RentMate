@@ -33,7 +33,7 @@ When you sign a rental contract, you establish a **base rent** and a **base inde
 - More common in residential contracts
 - Provides predictability for both parties
 
-**2. Begin Index (מדד בגין)**
+**2. Begin Index (מדד קובע)**
 - Uses the index from the contract start date
 - Calculates cumulative changes since signing
 - Often results in larger adjustments over time
@@ -79,7 +79,7 @@ Our platform automatically tracks CPI changes and calculates exact rent adjustme
 - נפוץ יותר בחוזי מגורים
 - מספק צפיות לשני הצדדים
 
-**2. מדד בגין**
+**2. מדד קובע**
 - משתמש במדד מתאריך תחילת החוזה
 - מחשב שינויים מצטברים מאז החתימה
 - לעיתים קרובות מביא להתאמות גדולות יותר לאורך זמן

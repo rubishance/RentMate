@@ -84,7 +84,7 @@ export function BulkCheckModal({ isOpen, onClose, onSuccess }: BulkCheckModalPro
                 due_date: format(addMonths(firstDate, i), 'yyyy-MM-dd'),
                 amount: amount,
                 reference: startNum > 0 ? `Check #${startNum + i}` : t('check'),
-                payment_method: 'check',
+                payment_method: 'checks',
                 status: 'pending'
             });
         }

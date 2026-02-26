@@ -99,7 +99,7 @@ export interface UserStorageUsage {
 export type ConfidenceLevel = 'high' | 'medium' | 'low';
 
 export interface ExtractedField {
-    fieldName: keyof Omit<Contract, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'status' | 'contract_file_url' | 'contract_file_name' | 'ai_extracted' | 'ai_extraction_data'> | 'linkageCeiling' | 'buildingNum' | 'aptNum' | 'paymentFrequency' | 'tenantName' | 'tenantId' | 'tenantEmail' | 'tenantPhone' | 'landlordName' | 'landlordId' | 'landlordPhone' | 'address' | 'city' | 'street' | 'rooms' | 'floor' | 'hasParking' | 'hasStorage' | 'size' | 'rent' | 'paymentDay' | 'securityDeposit' | 'guaranteeType' | 'startDate' | 'endDate' | 'signingDate' | 'linkageType' | 'indexCalculationMethod' | 'baseIndexDate' | 'baseIndexValue' | 'indexLimitType' | 'renewalOption' | 'guarantorsInfo' | 'specialClauses';
+    fieldName: string;
     extractedValue: string | number | null | boolean | any;
     sourceText?: string; // Actual excerpt from contract
     confidence: ConfidenceLevel;
@@ -144,12 +144,12 @@ export interface Contract {
 
     // Financials
     base_rent: number;
-    currency: 'ILS' | 'USD' | 'EUR';
-    payment_frequency: 'monthly' | 'quarterly' | 'annually';
+    currency: 'ILS';
+    payment_frequency: 'monthly' | 'bimonthly' | 'quarterly' | 'semiannually' | 'annually';
     payment_day: number;
 
     // Linkage
-    linkage_type: 'cpi' | 'housing' | 'construction' | 'usd' | 'eur' | 'none';
+    linkage_type: 'cpi' | 'housing' | 'construction' | 'none';
     base_index_date: string | null;
     base_index_value: number | null;
     linkage_sub_type?: 'known' | 'respect_of' | 'base' | null;
@@ -166,17 +166,18 @@ export interface Contract {
     contract_file_name: string | null;
     needs_painting?: boolean;
     notice_period_days?: number | null;
-    option_notice_days?: number | null;
     option_periods?: {
         length: number;
         unit: 'months' | 'years';
         rentAmount?: number;
-        currency?: 'ILS' | 'USD' | 'EUR';
+        currency?: 'ILS';
+        noticeDays?: number;
+        reminderDays?: number;
     }[];
     rent_periods?: {
         startDate: string;
         amount: number;
-        currency: 'ILS' | 'USD' | 'EUR';
+        currency: 'ILS';
     }[];
     tenants?: {
         name: string;
@@ -196,7 +197,7 @@ export interface Contract {
 
 export interface IndexData {
     id?: string;
-    index_type: 'cpi' | 'housing' | 'construction' | 'usd' | 'eur';
+    index_type: 'cpi' | 'housing' | 'construction';
     date: string; // 'YYYY-MM'
     value: number;
     source: 'cbs' | 'exchange-api' | 'manual';
@@ -218,7 +219,7 @@ export interface RentalMarketData {
 
 export interface IndexBase {
     id: string;
-    index_type: 'cpi' | 'housing' | 'construction' | 'usd' | 'eur';
+    index_type: 'cpi' | 'housing' | 'construction';
     base_period_start: string; // 'YYYY-MM-DD'
     base_value: number; // Usually 100.0 or something
     chain_factor: number; // The factor to multiply when crossing INTO this base from previous
@@ -227,7 +228,7 @@ export interface IndexBase {
 
 export interface StandardCalculationInput {
     baseRent: number;
-    linkageType: 'cpi' | 'housing' | 'construction' | 'usd' | 'eur';
+    linkageType: 'cpi' | 'housing' | 'construction';
     baseDate: string; // 'YYYY-MM'
     targetDate: string; // 'YYYY-MM'
     partialLinkage?: number; // Default 100 (full linkage)
@@ -251,7 +252,7 @@ export interface StandardCalculationResult {
 
 export interface ReconciliationInput {
     baseRent: number;
-    linkageType: 'cpi' | 'housing' | 'construction' | 'usd' | 'eur';
+    linkageType: 'cpi' | 'housing' | 'construction';
     contractStartDate: string; // 'YYYY-MM'
     periodStart: string; // 'YYYY-MM'
     periodEnd: string; // 'YYYY-MM'
@@ -259,7 +260,7 @@ export interface ReconciliationInput {
     monthlyActuals?: Record<string, number>;
     partialLinkage?: number; // Default 100
     // Advanced Options
-    linkageSubType?: 'known' | 'respect_of'; // known = מדד ידוע (default), respect_of = מדד בגין
+    linkageSubType?: 'known' | 'respect_of'; // known = מדד ידוע (default), respect_of = מדד קובע
     updateFrequency?: 'monthly' | 'quarterly' | 'semiannually' | 'annually'; // Default 'monthly'
     isIndexBaseMinimum?: boolean; // If true, index cannot drop below base index (effective floor of 0%)
     maxIncreasePercentage?: number; // Ceiling (e.g., 5% max increase per year)
@@ -411,7 +412,7 @@ export interface Payment {
     user_id: string;
     contract_id: string;
     amount: number;
-    currency: 'ILS' | 'USD' | 'EUR';
+    currency: 'ILS';
     due_date: string;
     status: 'paid' | 'pending' | 'overdue' | 'cancelled';
     paid_date: string | null;

@@ -269,15 +269,15 @@ export function Properties() {
     return (
         <div className="pb-40 pt-8 px-4 md:px-8 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div className="space-y-1">
+            <div className="flex items-center justify-between gap-4">
+                <div className="space-y-1 overflow-hidden">
                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/5 dark:bg-indigo-500/10 backdrop-blur-md rounded-full border border-indigo-500/10 shadow-sm mb-1">
                         <Home className="w-3 h-3 text-indigo-500" />
                         <span className="text-[9px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
                             {t('myPortfolio')}
                         </span>
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground leading-tight lowercase">
+                    <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground leading-tight truncate lowercase">
                         {t('properties')}
                     </h1>
                 </div>

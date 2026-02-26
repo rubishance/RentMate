@@ -130,28 +130,39 @@ export default function Contracts() {
     return (
         <div className="pb-40 pt-8 px-4 md:px-8 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300">
             {/* Header Area */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div className="space-y-1">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/5 dark:bg-emerald-500/10 backdrop-blur-md rounded-full border border-emerald-500/10 shadow-sm mb-1">
-                        <FileText className="w-3 h-3 text-emerald-500" />
-                        <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
-                            {t('legal_management')}
-                        </span>
+            <div className="flex flex-col gap-6">
+                <div className="flex items-center justify-between gap-4">
+                    <div className="space-y-1 overflow-hidden">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/5 dark:bg-emerald-500/10 backdrop-blur-md rounded-full border border-emerald-500/10 shadow-sm mb-1">
+                            <FileText className="w-3 h-3 text-emerald-500" />
+                            <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+                                {t('legal_management')}
+                            </span>
+                        </div>
+                        <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground leading-tight truncate lowercase">
+                            {t('contracts')}
+                        </h1>
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground leading-tight lowercase">
-                        {t('contracts')}
-                    </h1>
+
+                    <Button
+                        onClick={handleAdd}
+                        variant="jewel"
+                        className="h-14 w-14 rounded-2xl p-0 shrink-0"
+                        title={t('addContract')}
+                    >
+                        <Plus className="w-6 h-6" />
+                    </Button>
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <div className="flex p-1 bg-slate-100 dark:bg-neutral-800 rounded-2xl border border-slate-200 dark:border-neutral-700 shadow-sm">
+                    <div className="flex p-1 bg-slate-100 dark:bg-neutral-800 rounded-2xl border border-slate-200 dark:border-neutral-700 shadow-sm overflow-x-auto scrollbar-hide">
                         {(['active', 'archived', 'all'] as const).map((s) => (
                             <Button
                                 key={s}
                                 onClick={() => setStatusFilter(s)}
                                 variant={statusFilter === s ? 'secondary' : 'ghost'}
                                 className={cn(
-                                    "px-4 py-2 h-9 text-[10px] font-black uppercase tracking-widest transition-all rounded-xl",
+                                    "px-4 py-2 h-9 text-[10px] font-black uppercase tracking-widest transition-all rounded-xl whitespace-nowrap",
                                     statusFilter === s
                                         ? "bg-white dark:bg-neutral-700 text-foreground shadow-sm"
                                         : "text-muted-foreground hover:bg-transparent hover:text-foreground"
@@ -161,14 +172,6 @@ export default function Contracts() {
                             </Button>
                         ))}
                     </div>
-                    <Button
-                        onClick={handleAdd}
-                        variant="jewel"
-                        className="h-14 w-14 rounded-2xl p-0 shrink-0"
-                        title={t('addContract')}
-                    >
-                        <Plus className="w-6 h-6" />
-                    </Button>
                 </div>
             </div>
 
@@ -184,11 +187,10 @@ export default function Contracts() {
             </div>
 
             {/* Statistics Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-8">
+            <div className="grid grid-cols-2 gap-4 md:gap-8">
                 {[
                     { label: t('active'), value: stats.active, color: 'text-emerald-500', bg: 'bg-emerald-500/5', border: 'border-emerald-500/10' },
                     { label: t('archived'), value: stats.archived, color: 'text-slate-400', bg: 'bg-slate-500/5', border: 'border-slate-200 dark:border-slate-800' },
-                    { label: t('total'), value: stats.total, color: 'text-primary', bg: 'bg-primary/5', border: 'border-primary/10' },
                 ].map((stat, i) => (
                     <Card key={i} glass className={cn("rounded-[2rem] border shadow-sm", stat.bg, stat.border)}>
                         <CardContent className="p-6 flex items-center justify-between">

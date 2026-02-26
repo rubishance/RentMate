@@ -73,7 +73,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
             amount: '',
             due_date: new Date().toISOString().split('T')[0],
             status: 'paid',
-            payment_method: 'bank_transfer',
+            payment_method: 'transfer',
             paid_date: new Date().toISOString().split('T')[0],
         }
     });
@@ -91,7 +91,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                     amount: initialData.amount ? initialData.amount.toString() : '',
                     due_date: initialData.due_date || new Date().toISOString().split('T')[0],
                     status: initialData.status || 'paid',
-                    payment_method: initialData.payment_method || 'bank_transfer',
+                    payment_method: initialData.payment_method || 'transfer',
                     paid_date: initialData.status === 'paid' ? (initialData.due_date || new Date().toISOString().split('T')[0]) : new Date().toISOString().split('T')[0],
                 });
             }
@@ -416,10 +416,10 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                     <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">{t('method')}</label>
                     <div className="grid grid-cols-3 gap-2">
                         {[
-                            { label: 'transfer', value: 'bank_transfer' },
+                            { label: 'transfer', value: 'transfer' },
                             { label: 'bit', value: 'bit' },
                             { label: 'paybox', value: 'paybox' },
-                            { label: 'check', value: 'check' },
+                            { label: 'check', value: 'checks' },
                             { label: 'cash', value: 'cash' },
                             { label: 'other', value: 'other' }
                         ].map(method => (

@@ -124,7 +124,7 @@ serve(async (req) => {
         const { data: users, error: userError } = await adminClient
             .from('user_profiles')
             .select(`
-                id, email, full_name, created_at, subscription_plan,
+                id, email, full_name, created_at, subscription_plan, lang,
                 user_automation_settings (
                     lease_expiry_days, extension_notice_days, rent_overdue_days, 
                     email_notifications_enabled, sms_notifications_enabled
@@ -146,7 +146,7 @@ serve(async (req) => {
 
             const { data: activeContracts } = await adminClient
                 .from('contracts')
-                .select('id, end_date, property_id, properties(address, status), notice_period_days, option_notice_days, option_periods, base_rent, linkage_type, base_index_value')
+                .select('id, end_date, property_id, properties(address, city, status), notice_period_days, option_periods, base_rent, linkage_type, base_index_value')
                 .eq('user_id', user.id)
                 .eq('status', 'active');
 
@@ -160,7 +160,12 @@ serve(async (req) => {
                     const expiryTarget = new Date();
                     expiryTarget.setDate(expiryTarget.getDate() + leaseThreshold);
                     if (contract.end_date === expiryTarget.toISOString().split('T')[0]) {
-                        await dispatcher.dispatch('warning', 'Lease Ending Soon', `Contract for ${address} ends in ${leaseThreshold} days.`, { contract_id: contract.id, action: 'renew' });
+                        const city = contract.properties?.city ? `, ${contract.properties.city}` : '';
+                        const title = user.lang === 'he' ? 'חוזה עומד להסתיים' : 'Lease Ending Soon';
+                        const body = user.lang === 'he'
+                            ? `החוזה עבור ${address}${city} מסתיים בעוד ${leaseThreshold} ימים.`
+                            : `Contract for ${address}${city} ends in ${leaseThreshold} days.`;
+                        await dispatcher.dispatch('warning', title, body, { contract_id: contract.id, action: 'renew' });
                     }
                 }
             }
@@ -171,14 +176,21 @@ serve(async (req) => {
                 overdueTargetDate.setDate(overdueTargetDate.getDate() - (settings.rent_overdue_days || 5));
                 const { data: latePayments } = await adminClient
                     .from('payments')
-                    .select('id, amount, currency, contracts!inner(properties(address))')
+                    .select('id, amount, currency, contracts!inner(properties(address, city))')
                     .eq('contracts.user_id', user.id)
                     .eq('status', 'pending')
                     .eq('due_date', overdueTargetDate.toISOString().split('T')[0]);
 
                 if (latePayments) {
                     for (const payment of latePayments) {
-                        await dispatcher.dispatch('error', 'Rent Overdue Alert', `Payment for ${payment.contracts?.properties?.address} is late.`, { payment_id: payment.id, action: 'collect' });
+                        const prop = payment.contracts?.properties;
+                        const address = prop?.address || 'הנכס';
+                        const city = prop?.city ? `, ${prop.city}` : '';
+                        const title = user.lang === 'he' ? 'שכר דירה שלא שולם' : 'Rent Overdue Alert';
+                        const body = user.lang === 'he'
+                            ? `התשלום עבור ${address}${city} לא בוצע בזמן.`
+                            : `Payment for ${address}${city} is late.`;
+                        await dispatcher.dispatch('error', title, body, { payment_id: payment.id, action: 'collect' });
                     }
                 }
             }
@@ -193,7 +205,14 @@ serve(async (req) => {
                         if (targetIndex) {
                             const newRent = Math.round(contract.base_rent * (targetIndex.value / contract.base_index_value));
                             if (Math.abs(newRent - contract.base_rent) > 10) {
-                                await dispatcher.dispatch('info', 'Rent Adjustment Calculated', `New rent for ${contract.properties?.address || 'property'} should be ${newRent} ILS.`, { contract_id: contract.id, action: 'update_rent', new_rent: newRent });
+                                const prop = contract.properties;
+                                const address = prop?.address || 'הנכס';
+                                const city = prop?.city ? `, ${prop.city}` : '';
+                                const title = user.lang === 'he' ? 'חישוב הצמדה למדד' : 'Rent Adjustment Calculated';
+                                const body = user.lang === 'he'
+                                    ? `שכר הדירה המעודכן עבור ${address}${city} צריך להיות ${newRent} ש"ח.`
+                                    : `New rent for ${address}${city} should be ${newRent} ILS.`;
+                                await dispatcher.dispatch('info', title, body, { contract_id: contract.id, action: 'update_rent', new_rent: newRent });
                             }
                         }
                     }
@@ -234,10 +253,12 @@ serve(async (req) => {
                 if (userProps) {
                     for (const prop of userProps) {
                         const dispatcher = new NotificationDispatcher(adminClient, user, user.user_automation_settings?.[0] || {});
-                        await dispatcher.dispatch('info',
-                            'Monthly Performance Report Ready',
-                            `Your financial report for ${prop.address} is now available.`,
-                            { action: 'view_report', property_id: prop.id, period: today.toISOString().slice(0, 7), channels: { email: true } }
+                        const city = prop.city ? `, ${prop.city}` : '';
+                        const title = user.lang === 'he' ? 'דוח ביצועים חודשי מוכן' : 'Monthly Performance Report Ready';
+                        const body = user.lang === 'he'
+                            ? `הדוח הפיננסי עבור ${prop.address}${city} זמין כעת.`
+                            : `Your financial report for ${prop.address}${city} is now available.`;
+                        await dispatcher.dispatch('info', title, body, { action: 'view_report', property_id: prop.id, period: today.toISOString().slice(0, 7), channels: { email: true } }
                         );
                     }
                 }

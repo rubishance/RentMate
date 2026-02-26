@@ -97,33 +97,39 @@ Extract these fields from the rental contract:
 16. floor - Floor number
 17. has_parking - Boolean (true/false) if parking is mentioned
 18. has_storage - Boolean (true/false) if storage/machsan is mentioned
+19. has_balcony - Boolean (true/false) if balcony/mirpeset is mentioned
+20. has_safe_room - Boolean (true/false) if safe room/mamad is mentioned
 
 # Contract Terms
-19. signing_date - Date contract was signed (YYYY-MM-DD)
-20. start_date - Contract start date (YYYY-MM-DD)
-21. end_date - Contract end date (YYYY-MM-DD)
-22. payment_day - Day of month rent is due (1-31)
-23. payment_frequency - e.g., Monthly, Quarterly, Annually
+21. signing_date - Date contract was signed (YYYY-MM-DD)
+22. start_date - Contract start date (YYYY-MM-DD)
+23. end_date - Contract end date (YYYY-MM-DD)
+24. payment_day - Day of month rent is due (1-31)
+25. payment_frequency - e.g., Monthly, Quarterly, Annually
 
 # Financials
-24. monthly_rent - Monthly rent amount (number only)
-25. currency - Currency code (ILS, USD, EUR)
-26. security_deposit_amount - Security deposit amount (number only)
-27. guarantees - Type of guarantee (e.g., Bank Guarantee, Promissory Note, Check)
+26. monthly_rent - Monthly rent amount (number only)
+27. currency - Currency code (ILS, USD, EUR)
+28. payment_method - e.g., Checks, Bank Transfer, Cash, Bit, Paybox
+29. security_deposit_amount - Security deposit amount (number only)
+30. guarantees - Type of guarantee (e.g., Bank Guarantee, Promissory Note, Check)
+31. rent_steps - A single text block of rent increase steps mid-contract. Format: "Start Date: YYYY-MM-DD, Rent: amount". Return null if none.
 
 # Linkage (Madad/Index)
-28. linkage_type - 'cpi' (Madad), 'usd', 'eur', or 'none'
-29. index_calculation_method - 'known' (Madad Yadua - published index) OR 'respect_of' (Madad B'gin - index of the month)
-30. base_index_date - Base date for index (YYYY-MM-DD). Look for "Madad Bassis" or specific date.
-31. base_index_value - Base index value (number)
-32. limit_type - 'ceiling' (max inc), 'floor' (min inc/no drop), or 'none'
+32. linkage_type - 'cpi' (Madad), 'usd', 'eur', or 'none'
+33. index_calculation_method - 'known' (Madad Yadua - published index) OR 'respect_of' (Madad B'gin - index of the month)
+34. base_index_date - Base date for index (YYYY-MM-DD). Look for "Madad Bassis" or specific date.
+35. base_index_value - Base index value (number)
+36. limit_type - 'ceiling' (max inc), 'floor' (min inc/no drop), or 'none'
 
 # Options & Extras
-33. renewal_option - Boolean (true/false) if option to renew exists
-34. pets_allowed - Boolean (true/false) or null if not mentioned
-35. special_clauses - A text summary of special terms (Pets, Smoking, Repairs, Breach, Early Exit).
-36. notice_period_days - Number of days notice required for non-renewal or termination (e.g., 90). If mentioned in months, convert to days (1 month = 30 days).
-37. option_notice_days - Number of days notice required to exercise a renewal option (e.g., 60). If mentioned in months, convert to days (1 month = 30 days).
+37. renewal_option - Boolean (true/false) if option to renew exists
+38. option_periods - A single text block of renewal options. Format: "End Date: YYYY-MM-DD, Rent: amount, Notice Days: X". Return null if none.
+39. pets_allowed - Boolean (true/false) or null if not mentioned
+40. special_clauses - A text summary of special terms (Pets, Smoking, Repairs, Breach, Early Exit).
+41. notice_period_days - Number of days notice required for non-renewal or termination (e.g., 90).
+42. option_notice_days - Number of days notice required to exercise a renewal option (e.g., 60).
+43. needs_painting - Boolean (true/false) if tenant must paint the apartment at the end of the contract
 
 Return ONLY valid JSON in this exact format:
 {

@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Checkbox } from '../ui/Checkbox';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
-import { MapPin, Info, Upload, Loader2, Trash2, Wind, ShieldCheck, Car, Package, ArrowRightIcon } from 'lucide-react';
+import { MapPin, Info, Upload, Loader2, Trash2, Wind, ShieldCheck, Car, Package, ArrowRightIcon, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PropertyTypeSelect } from '../common/PropertyTypeSelect';
 import type { Property } from '../../types/database';
@@ -35,8 +35,8 @@ const itemVariants = {
 
 // Wizard Steps Configuration
 const STEPS = [
-    { id: 'address', title: 'Location', question: 'Where is it located?', icon: <MapPin className="w-6 h-6" /> },
-    { id: 'details', title: 'Details', question: 'Tell us about the property.', icon: <Info className="w-6 h-6" /> },
+    { id: 'address', titleKey: 'location', questionKey: 'whereIsItLocated', icon: <MapPin className="w-6 h-6" /> },
+    { id: 'details', titleKey: 'propertyDetails', questionKey: 'tellUsAboutProperty', icon: <Info className="w-6 h-6" /> },
 ];
 
 interface AddPropertyWizardProps {
@@ -252,7 +252,9 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                         <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40 leading-none mb-1">
                             {t('step')} {currentStep + 1} / {STEPS.length}
                         </span>
-                        <span className="font-black text-xl tracking-tighter text-foreground leading-none lowercase"><bdi>{STEPS[currentStep].title}</bdi></span>
+                        <span className="font-black text-xl tracking-tighter text-foreground leading-none lowercase">
+                            <bdi>{t(STEPS[currentStep].titleKey as any)}</bdi>
+                        </span>
                     </div>
                 </div>
 
@@ -280,7 +282,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                         >
                             <div className="space-y-4 text-center mb-16">
                                 <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground leading-tight lowercase">
-                                    <bdi>{STEPS[currentStep].question}</bdi>
+                                    <bdi>{t(STEPS[currentStep].questionKey as any)}</bdi>
                                 </h2>
                                 <p className="text-muted-foreground text-lg font-medium opacity-40 max-w-md mx-auto">
                                     {t('wizard_desc') || 'We help you categorize and manage your assets effectively.'}
@@ -316,6 +318,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                             value={formData.city || ''}
                                                             onChange={(val) => setFormData(prev => ({ ...prev, city: val }))}
                                                             type="cities"
+                                                            required={true}
                                                         />
                                                     </div>
                                                 </ValidatedField>
@@ -328,6 +331,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                             onChange={(val) => setFormData(prev => ({ ...prev, address: val }))}
                                                             type="address"
                                                             biasCity={formData.city}
+                                                            required={true}
                                                         />
                                                     </div>
                                                 </ValidatedField>
@@ -361,31 +365,59 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                     />
                                                 </div>
 
-                                                <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    <Checkbox
-                                                        label={t('balcony')}
-                                                        checked={formData.has_balcony || false}
-                                                        onChange={(val) => setFormData(prev => ({ ...prev, has_balcony: val }))}
-                                                        icon={<Wind className="w-5 h-5" />}
-                                                    />
-                                                    <Checkbox
-                                                        label={t('safeRoom')}
-                                                        checked={formData.has_safe_room || false}
-                                                        onChange={(val) => setFormData(prev => ({ ...prev, has_safe_room: val }))}
-                                                        icon={<ShieldCheck className="w-5 h-5" />}
-                                                    />
-                                                    <Checkbox
-                                                        label={t('parking')}
-                                                        checked={formData.has_parking || false}
-                                                        onChange={(val) => setFormData(prev => ({ ...prev, has_parking: val }))}
-                                                        icon={<Car className="w-5 h-5" />}
-                                                    />
-                                                    <Checkbox
-                                                        label={t('storage')}
-                                                        checked={formData.has_storage || false}
-                                                        onChange={(val) => setFormData(prev => ({ ...prev, has_storage: val }))}
-                                                        icon={<Package className="w-5 h-5" />}
-                                                    />
+                                                <div className="col-span-1 md:col-span-2 space-y-6">
+                                                    <div className="flex items-center justify-between px-2">
+                                                        <div className="h-px flex-1 bg-slate-100 dark:bg-neutral-800" />
+                                                        <span className="mx-4 text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-50">
+                                                            {t('amenities')}
+                                                        </span>
+                                                        <div className="h-px flex-1 bg-slate-100 dark:bg-neutral-800" />
+                                                    </div>
+
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        {[
+                                                            { id: 'has_balcony', label: t('balcony'), icon: <Wind className="w-6 h-6" /> },
+                                                            { id: 'has_safe_room', label: t('safeRoom'), icon: <ShieldCheck className="w-6 h-6" /> },
+                                                            { id: 'has_parking', label: t('parking'), icon: <Car className="w-6 h-6" /> },
+                                                            { id: 'has_storage', label: t('storage'), icon: <Package className="w-6 h-6" /> }
+                                                        ].map((amenity) => {
+                                                            const isActive = !!(formData as any)[amenity.id];
+                                                            return (
+                                                                <button
+                                                                    key={amenity.id}
+                                                                    type="button"
+                                                                    onClick={() => setFormData(prev => ({ ...prev, [amenity.id]: !isActive }))}
+                                                                    className={cn(
+                                                                        "flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border transition-all duration-300 group relative overflow-hidden",
+                                                                        isActive
+                                                                            ? "bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-600/20 scale-[1.02] z-10"
+                                                                            : "bg-slate-50 dark:bg-neutral-800/50 border-transparent text-muted-foreground hover:bg-slate-100 hover:scale-[1.01]"
+                                                                    )}
+                                                                >
+                                                                    <div className={cn(
+                                                                        "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300",
+                                                                        isActive
+                                                                            ? "bg-white/20 text-white"
+                                                                            : "bg-white dark:bg-neutral-800 text-indigo-600 shadow-sm"
+                                                                    )}>
+                                                                        {React.cloneElement(amenity.icon as any, { className: "w-4 h-4" })}
+                                                                    </div>
+                                                                    <span className={cn(
+                                                                        "font-bold text-[11px] transition-colors py-0.5",
+                                                                        isActive ? "text-white" : "text-slate-600 dark:text-slate-300"
+                                                                    )}>
+                                                                        {amenity.label || amenity.id}
+                                                                    </span>
+
+                                                                    {isActive && (
+                                                                        <div className="absolute top-1.5 right-1.5 w-3.5 h-3.5 rounded-full bg-white flex items-center justify-center animate-in zoom-in duration-300">
+                                                                            <Check className="w-2 h-2 text-indigo-600 stroke-[4px]" />
+                                                                        </div>
+                                                                    )}
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
                                                 </div>
 
                                                 <div className="col-span-1 md:col-span-2 space-y-4 pt-4 border-t border-slate-100 dark:border-neutral-800">
@@ -418,7 +450,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                         <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-slate-200 dark:border-neutral-800 rounded-[2rem] bg-slate-50/50 dark:bg-neutral-800/20">
                                                             <Loader2 className="w-8 h-8 text-primary animate-spin mb-4" />
                                                             <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">
-                                                                Fetching Street View...
+                                                                {t('fetchingStreetView')}
                                                             </span>
                                                         </div>
                                                     )}
@@ -439,7 +471,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                                     <Upload className="w-8 h-8 text-slate-300 group-hover:text-primary transition-all" />
                                                                 )}
                                                                 <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                                                                    {isUploading ? 'Uploading...' : 'Click to upload picture'}
+                                                                    {isUploading ? t('uploading_ellipsis') : t('clickToUploadPicture')}
                                                                 </span>
                                                             </div>
                                                         </div>

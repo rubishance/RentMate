@@ -157,15 +157,43 @@ export async function calculateReconciliation(
     input: ReconciliationInput
 ): Promise<ReconciliationResult | null> {
     try {
-        const months = getMonthsBetween(input.periodStart, input.periodEnd);
-        const indices = await getIndexRange(input.linkageType, input.contractStartDate, input.periodEnd);
+        const allMonths = getMonthsBetween(input.periodStart, input.periodEnd);
+        const currentMonthStr = format(new Date(), 'yyyy-MM');
+
+        // Filter out future months to avoid calculating for periods that haven't happened
+        const months = allMonths.filter(m => m <= currentMonthStr);
+
+        if (months.length === 0) {
+            return {
+                totalBackPayOwed: 0,
+                monthlyBreakdown: [],
+                totalMonths: 0
+            };
+        }
+
+        // Update periodEnd based on the filtered months to avoid fetching future indices
+        const effectivePeriodEnd = months[months.length - 1];
+
+        let adjustedContractStartDate = input.contractStartDate;
+        let fetchStartDate = input.contractStartDate;
+
+        if (input.periodStart < fetchStartDate) {
+            fetchStartDate = input.periodStart;
+        }
+
+        if (input.linkageSubType !== 'respect_of') {
+            adjustedContractStartDate = format(subMonths(parseISO(input.contractStartDate + '-01'), 1), 'yyyy-MM');
+            fetchStartDate = format(subMonths(parseISO(fetchStartDate + '-01'), 1), 'yyyy-MM');
+        }
+
+        const indices = await getIndexRange(input.linkageType, fetchStartDate, effectivePeriodEnd);
 
         if (indices.length === 0) throw new Error('No index data found');
 
-        const baseIndex = indices.find(idx => idx.date === input.contractStartDate) ||
-            indices.filter(idx => idx.date <= input.contractStartDate).pop();
+        const baseIndex = indices.find(idx => idx.date === adjustedContractStartDate) ||
+            indices.filter(idx => idx.date <= adjustedContractStartDate).pop();
 
-        if (!baseIndex) throw new Error(`Base index not found for ${input.contractStartDate}`);
+        if (!baseIndex) throw new Error(`Base index not found for ${adjustedContractStartDate}`);
 
         const monthlyBreakdown: MonthlyPayment[] = [];
         let runningBalance = 0;
@@ -241,6 +269,6 @@ export async function calculateReconciliation(
         };
     } catch (error) {
         console.error('calculateReconciliation failed:', error);
-        return null;
+        throw error;
     }
 }

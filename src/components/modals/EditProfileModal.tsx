@@ -204,10 +204,12 @@ import { createPortal } from 'react-dom';
 export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
     const { lang } = useTranslation();
     const [contractExpiryDays, setContractExpiryDays] = useState(60);
-    const [rentDueDays, setRentDueDays] = useState(3);
     const [extensionOptionDays, setExtensionOptionDays] = useState(30);
     const [extensionOptionEndDays, setExtensionOptionEndDays] = useState(7);
     const [marketingConsent, setMarketingConsent] = useState(true);
+    const [unpaidRentEnabled, setUnpaidRentEnabled] = useState(true);
+    const [whatsappEnabled, setWhatsappEnabled] = useState(false);
+    const [emailEnabled, setEmailEnabled] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
@@ -234,10 +236,22 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
             if (!error && data?.notification_preferences) {
                 const prefs = data.notification_preferences as any;
                 setContractExpiryDays(prefs.contract_expiry_days ?? 60);
-                setRentDueDays(prefs.rent_due_days ?? 3);
                 setExtensionOptionDays(prefs.extension_option_days ?? 30);
                 setExtensionOptionEndDays(prefs.extension_option_end_days ?? 7);
+                setUnpaidRentEnabled(prefs.unpaid_rent_enabled ?? true);
                 setMarketingConsent(data.marketing_consent ?? true);
+            }
+
+            // Also fetch channel preferences
+            const { data: autoSettings, error: autoError } = await supabase
+                .from('user_automation_settings')
+                .select('whatsapp_notifications_enabled')
+                .eq('user_id', user.id)
+                .single();
+
+            if (!autoError && autoSettings) {
+                setWhatsappEnabled(autoSettings.whatsapp_notifications_enabled ?? false);
+                setEmailEnabled(autoSettings.email_notifications_enabled ?? true);
             }
         } catch (error) {
             console.error('Error loading notification preferences:', error);
@@ -264,9 +278,9 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
             const newPrefs = {
                 ...currentPrefs,
                 contract_expiry_days: Math.min(Math.max(contractExpiryDays, 1), 365),
-                rent_due_days: Math.min(Math.max(rentDueDays, 1), 180),
                 extension_option_days: Math.min(Math.max(extensionOptionDays, 1), 180),
-                extension_option_end_days: Math.min(Math.max(extensionOptionEndDays, 1), 180)
+                extension_option_end_days: Math.min(Math.max(extensionOptionEndDays, 1), 180),
+                unpaid_rent_enabled: unpaidRentEnabled
             };
 
             const { error } = await supabase
@@ -278,6 +292,21 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
                 .eq('id', user.id);
 
             if (error) throw error;
+
+            // Save channel preferences
+            const { error: autoError } = await supabase
+                .from('user_automation_settings')
+                .upsert({
+                    user_id: user.id,
+                    whatsapp_notifications_enabled: whatsappEnabled,
+                    email_notifications_enabled: emailEnabled,
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'user_id' });
+
+            if (autoError) {
+                console.error('Error saving channel preferences:', autoError);
+                // We won't throw here to not block the main save success, but log it
+            }
 
             alert(lang === 'he' ? 'העדפות נשמרו בהצלחה!' : 'Preferences saved successfully!');
             onClose();
@@ -323,6 +352,26 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
                             </div>
 
                             <h3 className="text-sm font-semibold text-foreground/70 mb-2 mt-4">
+                                {lang === 'he' ? 'ערוצי קבלת התראות' : 'Delivery Channels'}
+                            </h3>
+
+                            {/* Delivery Channels */}
+                            <div className="space-y-3 pb-4 border-b border-border">
+                                <Checkbox
+                                    label={lang === 'he' ? 'קבלת התראות ב-WhatsApp (בקרוב)' : 'WhatsApp Notifications (Soon)'}
+                                    checked={whatsappEnabled}
+                                    onChange={setWhatsappEnabled}
+                                    className="border-none p-0 bg-transparent"
+                                />
+                                <Checkbox
+                                    label={lang === 'he' ? 'קבלת התראות באימייל' : 'Email Notifications'}
+                                    checked={emailEnabled}
+                                    onChange={setEmailEnabled}
+                                    className="border-none p-0 bg-transparent"
+                                />
+                            </div>
+
+                            <h3 className="text-sm font-semibold text-foreground/70 mb-2 mt-4">
                                 {lang === 'he' ? 'תזכורות אישיות' : 'Personal Reminders'}
                             </h3>
 
@@ -352,8 +401,23 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
                             </div>
 
 
+                            {/* Unpaid Rent */}
+                            <div className="space-y-3 pb-4 border-b border-border">
+                                <Checkbox
+                                    label={lang === 'he' ? 'התראה על שכר דירה שלא שולם' : 'Unpaid Rent Notification'}
+                                    checked={unpaidRentEnabled}
+                                    onChange={setUnpaidRentEnabled}
+                                    className="border-none p-0 bg-transparent"
+                                />
+                                <div className="mr-8 space-y-2">
+                                    <p className="text-xs text-muted-foreground">
+                                        {lang === 'he' ? 'קבל התראה כאשר תשלום שכר דירה לא בוצע בזמן' : 'Get notified when a rent payment has not been paid'}
+                                    </p>
+                                </div>
+                            </div>
+
                             {/* Extension Option */}
-                            <div className="space-y-3">
+                            <div className="space-y-3 pb-4 border-b border-border">
                                 <Checkbox
                                     label={lang === 'he' ? 'התראה לפני תחילת אופציית הארכה' : 'Extension Option Starting'}
                                     checked={extensionOptionDays > 0}

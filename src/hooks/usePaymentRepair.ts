@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useToast } from './useToast';
 import { useTranslation } from './useTranslation';
+import { generatePaymentSchedule } from '../utils/payment-generator';
 
 export function usePaymentRepair() {
     const { t } = useTranslation();
@@ -19,7 +20,7 @@ export function usePaymentRepair() {
             // 1. Get all active contracts
             const { data: contracts, error: contractError } = await supabase
                 .from('contracts')
-                .select('id, property_id, properties(address, city), start_date, end_date, base_rent, currency, payment_frequency, payment_day, linkage_type, linkage_sub_type, base_index_date, base_index_value, linkage_ceiling, linkage_floor, rent_periods(startDate, amount, currency)')
+                .select('id, property_id, properties(address, city), start_date, end_date, base_rent, currency, payment_frequency, payment_day, linkage_type, linkage_sub_type, base_index_date, base_index_value, linkage_ceiling, linkage_floor, rent_periods')
                 .eq('user_id', user.id)
                 .eq('status', 'active');
 
@@ -28,12 +29,43 @@ export function usePaymentRepair() {
             // 2. Contracts with payments
             const { data: payments, error: paymentError } = await supabase
                 .from('payments')
-                .select('contract_id')
+                .select('id, contract_id, due_date, status')
                 .eq('user_id', user.id);
 
             if (paymentError) throw paymentError;
 
-            const contractIdsWithPayments = new Set(payments?.map(p => p.contract_id));
+            // --- Deduplication Logic ---
+            const paymentMap = new Map();
+            const duplicateIds: string[] = [];
+
+            payments?.forEach(p => {
+                const key = `${p.contract_id}_${p.due_date}`;
+                if (paymentMap.has(key)) {
+                    const existing = paymentMap.get(key);
+                    // Prefer keeping the one that is 'paid'
+                    if (existing.status === 'paid' && p.status !== 'paid') {
+                        duplicateIds.push(p.id);
+                    } else if (p.status === 'paid' && existing.status !== 'paid') {
+                        duplicateIds.push(existing.id);
+                        paymentMap.set(key, p);
+                    } else {
+                        duplicateIds.push(p.id);
+                    }
+                } else {
+                    paymentMap.set(key, p);
+                }
+            });
+
+            if (duplicateIds.length > 0) {
+                console.warn('[PaymentRepair] Found duplicate payments, cleaning up...', duplicateIds.length);
+                const { error: deleteError } = await supabase.from('payments').delete().in('id', duplicateIds);
+                if (!deleteError && !silent) {
+                    success(t('success') || 'Success', t('cleanedDuplicates') || `Removed ${duplicateIds.length} duplicate payment records.`);
+                }
+            }
+            // ---------------------------
+
+            const contractIdsWithPayments = new Set(Array.from(paymentMap.values()).map(p => p.contract_id));
             const orphans = contracts?.filter(c => !contractIdsWithPayments.has(c.id)) || [];
 
             if (orphans.length === 0) {
@@ -84,7 +116,28 @@ export function usePaymentRepair() {
                         repairedCount++;
                     }
                 } catch (err) {
-                    console.error(`Failed to repair contract ${contract.id}`, err);
+                    console.error(`Failed to repair contract ${contract.id} via Edge Function:`, err);
+
+                    // FALLBACK: Simple client-side generation if server fails
+                    try {
+                        const fallbackPayments = generatePaymentSchedule({
+                            startDate: contract.start_date,
+                            endDate: contract.end_date,
+                            baseRent: contract.base_rent,
+                            currency: contract.currency,
+                            paymentFrequency: contract.payment_frequency,
+                            paymentDay: contract.payment_day,
+                            contractId: contract.id,
+                            userId: user.id
+                        });
+
+                        if (fallbackPayments.length > 0) {
+                            const { error: insertError } = await supabase.from('payments').insert(fallbackPayments);
+                            if (!insertError) repairedCount++;
+                        }
+                    } catch (fallbackErr) {
+                        console.error('Fallback repair failed:', fallbackErr);
+                    }
                 }
             }
 

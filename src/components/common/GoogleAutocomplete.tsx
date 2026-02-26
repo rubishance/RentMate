@@ -14,6 +14,7 @@ interface GoogleAutocompleteProps {
     type?: 'cities' | 'address';
     biasCity?: string;
     error?: string | boolean;
+    required?: boolean;
 }
 
 export function GoogleAutocomplete({
@@ -25,7 +26,8 @@ export function GoogleAutocomplete({
     autoFocus,
     type = 'cities',
     biasCity,
-    error: hasError
+    error: hasError,
+    required
 }: GoogleAutocompleteProps) {
     const { lang } = useTranslation();
     const [inputValue, setInputValue] = useState(value);
@@ -122,6 +124,7 @@ export function GoogleAutocomplete({
             {label && (
                 <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">
                     {label}
+                    {required && <span className="text-red-500 ml-1">*</span>}
                 </label>
             )}
             <div className="relative group">

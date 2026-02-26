@@ -73,12 +73,11 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
                 .limit(50);
 
             if (!error && data) {
-                // Filter out automated notifications as requested (reminders and receipts)
+                // Filter out some automated notifications as requested (receipts and basic reminders)
+                // We keep payment_warning and payment_due so overdue alerts show up in the center
                 const filtered = data.filter((n: any) => {
                     const event = n.metadata?.event;
                     return (
-                        event !== 'payment_warning' &&
-                        event !== 'payment_due' &&
                         event !== 'payment_receipt' &&
                         event !== 'rent_reminder'
                     );

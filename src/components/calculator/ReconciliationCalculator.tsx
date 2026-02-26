@@ -31,7 +31,7 @@ interface ReconciliationCalculatorProps {
 }
 
 export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }: ReconciliationCalculatorProps) {
-    const { t } = useTranslation();
+    const { t, lang } = useTranslation();
     const [loading, setLoading] = useState(false);
 
     // Core State
@@ -66,6 +66,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
 
     // Contracts
     const [contracts, setContracts] = useState<any[]>([]);
+    const [selectedContract, setSelectedContract] = useState<any | null>(null);
 
     useEffect(() => {
         fetchContracts();
@@ -199,7 +200,10 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
     };
 
     const handleLoadContract = async (contractId: string) => {
-        if (!contractId) return;
+        if (!contractId) {
+            setSelectedContract(null);
+            return;
+        }
         setLoading(true);
         try {
             const { data: { user } } = await supabase.auth.getUser();
@@ -213,6 +217,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                 .single();
 
             if (contract) {
+                setSelectedContract(contract);
                 setRecBaseRent(contract.base_rent.toString());
                 setRecLinkageType(contract.linkage_type);
                 setContractStartDate(contract.base_index_date || contract.start_date);
@@ -232,11 +237,13 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                     tempDate = addMonths(tempDate, 1);
                 }
 
+                const todayStr = format(new Date(), 'yyyy-MM-dd');
                 const expected = months.map((m, i) => ({
                     id: `expected-${i}`,
                     due_date: `${m}-${String(startDate.getDate()).padStart(2, '0')}`,
                     amount: contract.base_rent
-                }));
+                })).filter(payment => payment.due_date <= todayStr);
+
                 setExpectedHistory(expected);
 
                 // Fetch Actuals
@@ -264,8 +271,16 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
         setLoading(true);
         try {
             const monthlyBaseRent: Record<string, number> = {};
+            const currentDate = new Date();
+
             if (expectedHistory.length > 0) {
-                expectedHistory.forEach(p => {
+                // Filter out future expected payments
+                const pastAndCurrentExpected = expectedHistory.filter(p => {
+                    const paymentDate = new Date(p.due_date);
+                    return paymentDate <= currentDate;
+                });
+
+                pastAndCurrentExpected.forEach(p => {
                     const month = p.due_date.slice(0, 7);
                     monthlyBaseRent[month] = (monthlyBaseRent[month] || 0) + p.amount;
                 });
@@ -316,10 +331,10 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                 </select>
             </div>
 
-            <section className="bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[3rem] p-10 md:p-14 shadow-premium space-y-12">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
+            <section className="bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[3rem] p-6 sm:p-10 md:p-14 shadow-premium space-y-12">
+                <div className="flex flex-col xl:grid xl:grid-cols-2 gap-16">
                     {/* Left Column: Payments History */}
-                    <div className="space-y-12">
+                    <div className="order-2 xl:order-1 space-y-12">
                         {/* Expected Base Rent */}
                         <div className="space-y-6">
                             <div className="flex justify-between items-center px-1">
@@ -514,108 +529,114 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                     </div>
 
                     {/* Right Column: Configuration */}
-                    <div className="space-y-10">
+                    <div className="order-1 xl:order-2 space-y-10">
                         <div className="space-y-4">
                             <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground block ml-1">{t('linkageType')}</label>
-                            <select
+                            <SegmentedControl
+                                options={[
+                                    { label: t('linkedToCpi'), value: 'cpi' },
+                                    { label: t('linkedToHousing'), value: 'housing' }
+                                ]}
                                 value={recLinkageType}
-                                onChange={(e) => setRecLinkageType(e.target.value as any)}
-                                className="w-full h-16 px-8 bg-slate-50 dark:bg-neutral-800/50 border-2 border-transparent focus:bg-white dark:focus:bg-neutral-800 focus:border-black dark:focus:border-white rounded-[1.5rem] font-black text-sm text-foreground transition-all outline-none appearance-none"
-                            >
-                                <option value="cpi">{t('cpi')}</option>
-                                <option value="housing">{t('housingServices')}</option>
-                                <option value="construction">{t('constructionInputs')}</option>
-                                <option value="usd">{t('usdRate')}</option>
-                                <option value="eur">{t('eurRate')}</option>
-                            </select>
+                                onChange={(val) => setRecLinkageType(val as any)}
+                                size="md"
+                            />
                         </div>
 
                         <div className="space-y-4">
-                            <DatePicker
-                                label={t('baseIndexDate')}
-                                value={contractStartDate ? parseISO(contractStartDate) : undefined}
-                                onChange={(date) => setContractStartDate(date ? format(date, 'yyyy-MM-dd') : '')}
-                                placeholder={t('baseIndexDate')}
-                            />
-                            <DatePicker
-                                label={t('periodStart')}
-                                value={periodStart ? parseISO(periodStart) : undefined}
-                                onChange={(date) => setPeriodStart(date ? format(date, 'yyyy-MM-dd') : '')}
-                                placeholder={t('periodStart')}
-                            />
-                            <DatePicker
-                                label={t('periodEnd')}
-                                value={periodEnd ? parseISO(periodEnd) : undefined}
-                                onChange={(date) => setPeriodEnd(date ? format(date, 'yyyy-MM-dd') : '')}
-                                placeholder={t('periodEnd')}
-                            />
+                            {selectedContract ? (
+                                <div className="flex flex-col gap-2 p-5 bg-slate-50 dark:bg-neutral-800/30 border border-slate-100 dark:border-neutral-800 rounded-[1.5rem] shadow-minimal">
+                                    <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-neutral-700/50">
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{t('baseIndexDate')}</span>
+                                        <span className="font-black text-sm text-foreground bg-white dark:bg-neutral-800 px-3 py-1 rounded-full shadow-minimal">{contractStartDate ? format(parseISO(contractStartDate), 'MM/yyyy') : '-'}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-neutral-700/50 hover:bg-transparent">
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{t('periodStart')}</span>
+                                        <span className="font-black text-sm text-foreground bg-white dark:bg-neutral-800 px-3 py-1 rounded-full shadow-minimal">{periodStart ? format(parseISO(periodStart), 'MM/yyyy') : '-'}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between pt-1 hover:bg-transparent">
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{t('periodEnd')}</span>
+                                        <span className="font-black text-sm text-foreground bg-white dark:bg-neutral-800 px-3 py-1 rounded-full shadow-minimal">{periodEnd ? format(parseISO(periodEnd), 'MM/yyyy') : '-'}</span>
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    <DatePicker
+                                        label={t('baseIndexDate')}
+                                        value={contractStartDate ? parseISO(contractStartDate) : undefined}
+                                        onChange={(date) => setContractStartDate(date ? format(date, 'yyyy-MM-dd') : '')}
+                                        placeholder={t('baseIndexDate')}
+                                    />
+                                    <DatePicker
+                                        label={t('periodStart')}
+                                        value={periodStart ? parseISO(periodStart) : undefined}
+                                        onChange={(date) => setPeriodStart(date ? format(date, 'yyyy-MM-dd') : '')}
+                                        placeholder={t('periodStart')}
+                                    />
+                                    <DatePicker
+                                        label={t('periodEnd')}
+                                        value={periodEnd ? parseISO(periodEnd) : undefined}
+                                        onChange={(date) => setPeriodEnd(date ? format(date, 'yyyy-MM-dd') : '')}
+                                        placeholder={t('periodEnd')}
+                                    />
+                                </>
+                            )}
                         </div>
 
-                        <div className="flex flex-col gap-4">
-                            <button
-                                onClick={() => setShowRecAdvanced(!showRecAdvanced)}
-                                className="flex items-center gap-2 self-start text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-all px-1"
-                            >
-                                {showRecAdvanced ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                                {t('advancedReconciliationOptions')}
-                            </button>
+                        <div className="space-y-8 pt-8 border-t border-slate-100 dark:border-neutral-800">
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block ml-1">{t('linkageCalculationMethod')}</label>
+                                <SegmentedControl
+                                    options={[
+                                        { label: t('knownIndex'), value: 'known' },
+                                        { label: t('inRespectOf'), value: 'respect_of' }
+                                    ]}
+                                    value={recLinkageSubType}
+                                    onChange={(val) => setRecLinkageSubType(val as any)}
+                                />
+                            </div>
 
-                            {showRecAdvanced && (
-                                <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: 'auto' }}
-                                    className="space-y-8 p-10 rounded-[2.5rem] bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-800 mt-2"
-                                >
-                                    <div className="space-y-4">
-                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block ml-1">{t('linkageCalculationMethod')}</label>
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block ml-1">{t('updateFrequency')}</label>
+                                <SegmentedControl
+                                    options={[
+                                        { label: t('everyMonth'), value: 'monthly' },
+                                        { label: t('quarterly'), value: 'quarterly' },
+                                        { label: t('semiannually'), value: 'semiannually' },
+                                        { label: t('annually'), value: 'annually' }
+                                    ]}
+                                    value={recUpdateFrequency}
+                                    onChange={(val) => setRecUpdateFrequency(val as any)}
+                                    size="sm"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-5 gap-4 md:gap-6">
+                                <div className="col-span-3 space-y-4">
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block ml-1">{t('linkageFloor')}</label>
+                                    <div className="flex items-center justify-between gap-4 h-14 bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[1.25rem]">
                                         <SegmentedControl
                                             options={[
-                                                { label: t('knownIndex'), value: 'known' },
-                                                { label: t('inRespectOf'), value: 'respect_of' }
+                                                { label: lang === 'he' ? 'פעיל' : 'On', value: 'true' },
+                                                { label: lang === 'he' ? 'כבוי' : 'Off', value: 'false' }
                                             ]}
-                                            value={recLinkageSubType}
-                                            onChange={(val) => setRecLinkageSubType(val as any)}
+                                            value={recIndexBaseMinimum ? 'true' : 'false'}
+                                            onChange={(val) => setRecIndexBaseMinimum(val === 'true')}
+                                            className="w-full h-full p-1"
                                         />
                                     </div>
-
-                                    <div className="space-y-4">
-                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block ml-1">{t('updateFrequency')}</label>
-                                        <select
-                                            value={recUpdateFrequency}
-                                            onChange={(e) => setRecUpdateFrequency(e.target.value as any)}
-                                            className="w-full h-14 px-6 bg-white dark:bg-neutral-900 border-2 border-transparent focus:border-primary rounded-[1.25rem] text-xs font-black text-foreground outline-none transition-all appearance-none"
-                                        >
-                                            <option value="monthly">{t('everyMonth')}</option>
-                                            <option value="quarterly">{t('quarterly')}</option>
-                                            <option value="semiannually">{t('semiannually')}</option>
-                                            <option value="annually">{t('annually')}</option>
-                                        </select>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-8">
-                                        <div className="space-y-4">
-                                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block ml-1">{t('linkageFloor')}</label>
-                                            <div className="flex items-center justify-between gap-4 h-14 px-4 bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[1.25rem]">
-                                                <span className="text-[10px] font-black uppercase tracking-widest text-foreground">
-                                                    {t('indexBaseMin')}
-                                                </span>
-                                                <Switch
-                                                    checked={recIndexBaseMinimum}
-                                                    onChange={setRecIndexBaseMinimum}
-                                                />
-                                            </div>
-                                        </div>
-                                        <Input
-                                            label={t('maxIncrease')}
-                                            type="number"
-                                            value={recMaxIncrease}
-                                            onChange={(e) => setRecMaxIncrease(e.target.value)}
-                                            placeholder="5"
-                                            rightIcon={<span className="font-bold">%</span>}
-                                        />
-                                    </div>
-                                </motion.div>
-                            )}
+                                </div>
+                                <div className="col-span-2">
+                                    <Input
+                                        label={t('maxIncrease')}
+                                        type="number"
+                                        value={recMaxIncrease}
+                                        onChange={(e) => setRecMaxIncrease(e.target.value)}
+                                        placeholder="5"
+                                        rightIcon={<span className="font-bold"> %</span>}
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

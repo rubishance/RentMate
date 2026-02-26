@@ -18,6 +18,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { SmartActionsRow } from '../components/dashboard/SmartActionsRow';
 import { Button } from '../components/ui/Button';
 import { useStack } from '../contexts/StackContext';
+import { NotificationGeneratorService } from '../services/NotificationGeneratorService';
 
 export function Dashboard() {
     const { lang, t } = useTranslation();
@@ -55,6 +56,15 @@ export function Dashboard() {
                 } catch (e) { console.warn('Layout parse error', e); }
             }
             loadData();
+
+            // Run Notification Checks periodically per session
+            const lastCheck = sessionStorage.getItem('last_notification_check');
+            const shouldCheck = !lastCheck || (new Date().getTime() - new Date(lastCheck).getTime() > 1000 * 60 * 60 * 2); // Every 2 hours
+            if (shouldCheck) {
+                // Don't await to not block rendering
+                NotificationGeneratorService.runChecks();
+            }
+
         } else {
             setLoading(false);
         }
@@ -100,25 +110,55 @@ export function Dashboard() {
                 tenants: totalTenants
             });
 
+            // Calculate precise financials client-side to ensure we ignore archived contracts
+            const startOfCurrentMonth = new Date();
+            startOfCurrentMonth.setDate(1);
+            startOfCurrentMonth.setHours(0, 0, 0, 0);
+
+            const endOfCurrentMonth = new Date(startOfCurrentMonth);
+            endOfCurrentMonth.setMonth(endOfCurrentMonth.getMonth() + 1);
+
+            const activeContractIds = contractsData.filter((c: any) => c.status === 'active').map((c: any) => c.id);
+
+            let finalStats = { monthlyIncome: 0, collected: 0, pending: 0 };
+
+            if (activeContractIds.length > 0) {
+                const { data: paymentsData } = await supabase
+                    .from('payments')
+                    .select('amount, status, due_date')
+                    .eq('user_id', user.id)
+                    .in('contract_id', activeContractIds)
+                    .gte('due_date', startOfCurrentMonth.toISOString().split('T')[0])
+                    .lt('due_date', endOfCurrentMonth.toISOString().split('T')[0]);
+
+                if (paymentsData) {
+                    const collected = paymentsData.filter(p => p.status === 'paid').reduce((acc, p) => acc + p.amount, 0);
+                    const pending = paymentsData.filter(p => p.status === 'pending' || p.status === 'overdue').reduce((acc, p) => acc + p.amount, 0);
+
+                    finalStats = {
+                        monthlyIncome: collected + pending,
+                        collected,
+                        pending
+                    };
+                }
+            }
+
+            setStats(finalStats);
+
             if (summary) {
-                const newStats = {
-                    monthlyIncome: summary.income?.monthlyTotal || 0,
-                    collected: summary.income?.collected || 0,
-                    pending: summary.income?.pending || 0
-                };
-                setStats(newStats);
                 setStorageCounts(summary.storage_counts || storageCounts);
                 setActiveContracts(summary.active_contracts || []);
-
-                set(cacheKey, {
-                    stats: newStats,
-                    storageCounts: summary.storage_counts || storageCounts,
-                    activeContracts: summary.active_contracts || [],
-                    feedItems: briefing,
-                    counts: { properties: propertiesCount, contracts: contractsCount, tenants: totalTenants },
-                    layout
-                }, { persist: true });
             }
+
+            set(cacheKey, {
+                stats: finalStats,
+                storageCounts: summary?.storage_counts || storageCounts,
+                activeContracts: summary?.active_contracts || activeContracts,
+                feedItems: briefing,
+                counts: { properties: propertiesCount, contracts: contractsCount, tenants: totalTenants },
+                layout
+            }, { persist: true });
+
             setFeedItems(briefing);
         } catch (e) {
             console.error('[Dashboard] Restore failed:', e);
@@ -199,13 +239,23 @@ export function Dashboard() {
             <div className="pb-32 pt-8 px-4 md:px-8 space-y-8 md:space-y-12 relative z-10">
 
                 {/* Header Area: Hero + Actions aligned with other pages */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                    <div className="flex-1">
-                        <DashboardHero
-                            firstName={firstName}
-                            feedItems={feedItemsWithActions}
-                            showOnly="welcome"
-                        />
+                <div className="flex flex-col gap-6">
+                    <div className="flex items-center justify-between gap-4">
+                        <div className="flex-1 overflow-hidden">
+                            <DashboardHero
+                                firstName={firstName}
+                                feedItems={feedItemsWithActions}
+                                showOnly="welcome"
+                            />
+                        </div>
+
+                        <Button
+                            onClick={() => window.dispatchEvent(new CustomEvent('TOGGLE_QUICK_ACTIONS'))}
+                            className="h-14 w-14 rounded-2xl p-0 shrink-0 bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-600 text-white shadow-xl shadow-indigo-500/20 hover:scale-105 active:scale-95 transition-all duration-300"
+                            title={t('addNew')}
+                        >
+                            <Plus className="w-6 h-6" />
+                        </Button>
                     </div>
 
                     <div className="flex items-center gap-3">
@@ -221,18 +271,10 @@ export function Dashboard() {
                             variant="ghost"
                             size="sm"
                             onClick={() => setIsReportModalOpen(true)}
-                            className="text-[10px] uppercase tracking-widest font-bold bg-white/50 dark:bg-black/20 backdrop-blur-md border border-white/20 hover:bg-white/80 transition-all"
+                            className="text-[10px] uppercase tracking-widest font-bold bg-white/50 dark:bg-black/20 backdrop-blur-md border border-white/20 hover:bg-white/80 transition-all flex-1 sm:flex-none"
                         >
                             <FileSearch className="w-3.5 h-3.5 mr-2" />
                             {t('generateReport')}
-                        </Button>
-
-                        <Button
-                            onClick={() => window.dispatchEvent(new CustomEvent('TOGGLE_QUICK_ACTIONS'))}
-                            className="h-14 w-14 rounded-2xl p-0 shrink-0 bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-600 text-white shadow-xl shadow-indigo-500/20 hover:scale-105 active:scale-95 transition-all duration-300"
-                            title={t('addNew')}
-                        >
-                            <Plus className="w-6 h-6" />
                         </Button>
                     </div>
                 </div>

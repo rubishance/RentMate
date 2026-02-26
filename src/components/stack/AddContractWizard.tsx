@@ -24,6 +24,9 @@ import { Select } from '../ui/Select';
 import { Checkbox } from '../ui/Checkbox';
 import { Button } from '../ui/Button';
 import { Textarea } from '../ui/Textarea';
+import { RegeneratePaymentsModal } from '../modals/RegeneratePaymentsModal';
+import { generatePaymentSchedule } from '../../utils/payment-generator';
+import { SegmentedControl } from '../ui/SegmentedControl';
 import { useScrollLock } from '../../hooks/useScrollLock';
 
 import { supabase } from '../../lib/supabase';
@@ -416,7 +419,6 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                     guarantees: data.guarantees,
                     guarantors_info: data.guarantorsInfo,
                     special_clauses: data.specialClauses,
-                    option_notice_days: data.optionNoticeDays,
                     status: 'active',
                     needs_painting: data.needsPainting,
                     // Consolidated JSONB data
@@ -428,6 +430,63 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                 .single();
 
             if (contractErr) throw contractErr;
+
+            // 3. Generate Payments
+            try {
+                const { data: genData, error: genError } = await supabase.functions.invoke('generate-payments', {
+                    body: {
+                        startDate: data.startDate,
+                        endDate: data.endDate,
+                        baseRent: data.rent,
+                        currency: data.currency,
+                        paymentFrequency: data.paymentFrequency.toLowerCase(),
+                        paymentDay: data.paymentDay,
+                        linkageType: data.linkageType,
+                        linkageSubType: data.linkageSubType,
+                        baseIndexDate: data.baseIndexDate,
+                        baseIndexValue: data.baseIndexValue,
+                        linkageCeiling: data.linkageCeiling,
+                        linkageFloor: data.linkageFloor,
+                        rent_periods: data.rentSteps
+                    }
+                });
+
+                if (genError) throw genError;
+
+                const schedule = genData?.payments || [];
+                if (schedule.length > 0) {
+                    const { error: insertError } = await supabase.from('payments').insert(
+                        schedule.map((p: any) => ({
+                            ...p,
+                            contract_id: contractData.id,
+                            user_id: user.id
+                        }))
+                    );
+                    if (insertError) throw insertError;
+                }
+            } catch (pGenErr) {
+                console.error('Failed to generate initial payments via Edge Function:', pGenErr);
+
+                // FALLBACK: Simple client-side generation if server fails
+                try {
+                    const fallbackPayments = generatePaymentSchedule({
+                        startDate: data.startDate,
+                        endDate: data.endDate,
+                        baseRent: data.rent,
+                        currency: data.currency,
+                        paymentFrequency: data.paymentFrequency,
+                        paymentDay: data.paymentDay,
+                        contractId: contractData.id,
+                        userId: user.id
+                    });
+
+                    if (fallbackPayments.length > 0) {
+                        await supabase.from('payments').insert(fallbackPayments);
+                    }
+                } catch (fallbackErr) {
+                    console.error('Fallback payment generation failed:', fallbackErr);
+                }
+            }
 
             // 6. Handle Contract File
             if (contractFile && data.isExistingProperty) {
@@ -456,6 +515,34 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
         const quotes: Record<string, string> = {};
         const confidences: Record<string, any> = {};
 
+        // Map snake_case AI fields to camelCase form fields for the confidence dots
+        const FIELD_MAP: Record<string, string> = {
+            'property_address': 'address',
+            'size_sqm': 'size',
+            'has_parking': 'hasParking',
+            'has_storage': 'hasStorage',
+            'has_balcony': 'hasBalcony',
+            'has_safe_room': 'hasSafeRoom',
+            'start_date': 'startDate',
+            'end_date': 'endDate',
+            'signing_date': 'signingDate',
+            'monthly_rent': 'rent',
+            'payment_day': 'paymentDay',
+            'payment_frequency': 'paymentFrequency',
+            'payment_method': 'paymentMethod',
+            'linkage_type': 'linkageType',
+            'index_calculation_method': 'linkageSubType',
+            'base_index_date': 'baseIndexDate',
+            'base_index_value': 'baseIndexValue',
+            'security_deposit_amount': 'securityDeposit',
+            'needs_painting': 'needsPainting',
+            'special_clauses': 'specialClauses',
+            'rent_steps': 'specialClauses',
+            'option_periods': 'specialClauses',
+            'pets_allowed': 'specialClauses',
+            'guarantors_info': 'specialClauses',
+        };
+
         // Helper to simplify the mapping
         let scannedFullAddress = '';
         let scannedStreet = '';
@@ -465,26 +552,56 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
             const val = field.extractedValue;
             if (val === undefined || val === null) return;
 
-            quotes[field.fieldName] = field.sourceText || '';
-            confidences[field.fieldName] = field.confidence;
+            const mappedName = FIELD_MAP[field.fieldName] || field.fieldName;
+
+            // Append to existing if multiple things map to specialClauses
+            if (mappedName === 'specialClauses' && quotes[mappedName]) {
+                quotes[mappedName] = quotes[mappedName] + '\n' + (field.sourceText || '');
+                // Keep the lowest confidence if multiple map to the same field
+                if (field.confidence === 'low' || confidences[mappedName] === 'low') confidences[mappedName] = 'low';
+                else if (field.confidence === 'medium' || confidences[mappedName] === 'medium') confidences[mappedName] = 'medium';
+            } else {
+                quotes[mappedName] = field.sourceText || '';
+                confidences[mappedName] = field.confidence;
+            }
 
             switch (field.fieldName) {
+                // People
+                case 'tenant_name': setValue('tenants.0.name', val, { shouldValidate: true }); break;
+                case 'tenant_id': setValue('tenants.0.id_number', val, { shouldValidate: true }); break;
+                case 'tenant_email': setValue('tenants.0.email', val, { shouldValidate: true }); break;
+                case 'tenant_phone': setValue('tenants.0.phone', val, { shouldValidate: true }); break;
+
                 // Address Components
                 case 'street': scannedStreet = val; break;
-                case 'buildingNum': scannedBuilding = val; break;
+                case 'building_number': scannedBuilding = val; break;
                 case 'city': setValue('city', val, { shouldValidate: true }); break;
-                case 'address':
+                case 'property_address':
                     setValue('address', val, { shouldValidate: true });
                     scannedFullAddress = val;
                     break;
+                case 'rooms': {
+                    const numVal = parseFloat(val);
+                    if (!isNaN(numVal)) setValue('rooms', numVal, { shouldValidate: true });
+                    break;
+                }
+                case 'size_sqm': {
+                    const numVal = parseFloat(val);
+                    if (!isNaN(numVal)) setValue('size', numVal, { shouldValidate: true });
+                    break;
+                }
+                case 'has_parking': setValue('hasParking', String(val).toLowerCase() === 'true', { shouldValidate: true }); break;
+                case 'has_storage': setValue('hasStorage', String(val).toLowerCase() === 'true', { shouldValidate: true }); break;
+                case 'has_balcony': setValue('hasBalcony', String(val).toLowerCase() === 'true', { shouldValidate: true }); break;
+                case 'has_safe_room': setValue('hasSafeRoom', String(val).toLowerCase() === 'true', { shouldValidate: true }); break;
 
                 // Dates
-                case 'startDate': setValue('startDate', val, { shouldValidate: true }); break;
-                case 'endDate': setValue('endDate', val, { shouldValidate: true }); break;
-                case 'signingDate': setValue('signingDate', val, { shouldValidate: true }); break;
+                case 'start_date': setValue('startDate', val, { shouldValidate: true }); break;
+                case 'end_date': setValue('endDate', val, { shouldValidate: true }); break;
+                case 'signing_date': setValue('signingDate', val, { shouldValidate: true }); break;
 
                 // Financials
-                case 'rent': {
+                case 'monthly_rent': {
                     const numVal = parseFloat(val);
                     if (!isNaN(numVal)) setValue('rent', numVal, { shouldValidate: true });
                     break;
@@ -494,58 +611,69 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                         setValue('currency', val as any, { shouldValidate: true });
                     }
                     break;
-                case 'paymentFrequency':
-                    if (['Monthly', 'Quarterly', 'Annually'].includes(val)) {
-                        setValue('paymentFrequency', val as any, { shouldValidate: true });
-                    }
-                    break;
-                case 'paymentDay': {
+                case 'payment_day': {
                     const numVal = parseInt(val);
                     if (!isNaN(numVal)) setValue('paymentDay', numVal, { shouldValidate: true });
                     break;
                 }
+                case 'payment_frequency':
+                    if (['Monthly', 'Bimonthly', 'Quarterly', 'Semiannually', 'Annually'].includes(val)) {
+                        setValue('paymentFrequency', val as any, { shouldValidate: true });
+                    }
+                    break;
+                case 'payment_method':
+                    // Just take a basic matching heuristic or append to special clauses if no match
+                    if (val.toLowerCase().includes('check')) setValue('paymentMethod', 'checks');
+                    else if (val.toLowerCase().includes('transfer') || val.toLowerCase().includes('העברה')) setValue('paymentMethod', 'transfer');
+                    else if (val.toLowerCase().includes('cash')) setValue('paymentMethod', 'cash');
+                    else if (val.toLowerCase().includes('bit')) setValue('paymentMethod', 'bit');
+                    else if (val.toLowerCase().includes('paybox')) setValue('paymentMethod', 'paybox');
+                    break;
 
                 // Linkage
-                case 'linkageType':
+                case 'linkage_type':
                     if (['cpi', 'housing', 'construction', 'usd', 'eur', 'none'].includes(val)) {
                         setValue('linkageType', val as any, { shouldValidate: true });
                         setValue('hasLinkage', val !== 'none', { shouldValidate: true });
                     }
                     break;
-                case 'indexCalculationMethod':
+                case 'index_calculation_method':
                     setValue('linkageSubType', val as any, { shouldValidate: true });
                     break;
-                case 'baseIndexDate':
+                case 'base_index_date':
                     setValue('baseIndexDate', val, { shouldValidate: true });
                     break;
-                case 'baseIndexValue': {
+                case 'base_index_value': {
                     const numVal = parseFloat(val);
                     if (!isNaN(numVal)) setValue('baseIndexValue', numVal, { shouldValidate: true });
                     break;
                 }
-                case 'linkageCeiling': {
-                    const numVal = parseFloat(val);
-                    if (!isNaN(numVal)) {
-                        setValue('linkageCeiling', numVal, { shouldValidate: true });
-                        setValue('hasLinkageCeiling', numVal > 0, { shouldValidate: true });
-                    }
-                    break;
-                }
+                // (limit_type ceiling / floor is harder to parse automatically since the prompt just asks limit_type, I will skip ceiling/floor parsing for now or map it simply later)
 
-                // Security
-                case 'securityDeposit': {
+                // Security & Others
+                case 'security_deposit_amount': {
                     const numVal = parseFloat(val);
                     if (!isNaN(numVal)) setValue('securityDeposit', numVal, { shouldValidate: true });
                     break;
                 }
-                case 'guaranteeType':
+                case 'guarantees':
                     setValue('guarantees', val, { shouldValidate: true });
                     break;
-                case 'guarantorsInfo':
-                    setValue('guarantorsInfo', val, { shouldValidate: true });
+                case 'needs_painting':
+                    setValue('needsPainting', String(val).toLowerCase() === 'true', { shouldValidate: true });
                     break;
-                case 'specialClauses':
+                case 'special_clauses':
                     setValue('specialClauses', val, { shouldValidate: true });
+                    break;
+                case 'rent_steps':
+                case 'option_periods':
+                case 'pets_allowed':
+                case 'guarantors_info':
+                    // Append unstructured text to special clauses so user sees it
+                    if (val) {
+                        const existing = watch('specialClauses') || '';
+                        setValue('specialClauses', existing ? `${existing}\n\n${field.fieldName}:\n${val}` : `${field.fieldName}:\n${val}`);
+                    }
                     break;
             }
         });
@@ -919,9 +1047,22 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
 
                                                     <div className="pt-6 border-t border-border">
                                                         <h4 className="font-black text-sm mb-4 uppercase tracking-widest text-muted-foreground">{t('optionPeriods')}</h4>
+                                                        {formData.optionPeriods.length === 0 && (
+                                                            <div className="text-center py-6 text-muted-foreground text-xs italic">
+                                                                {t('noOptionsDefined')}
+                                                            </div>
+                                                        )}
                                                         {formData.optionPeriods.map((period, idx) => (
-                                                            <div key={idx} className="flex gap-4 items-end bg-secondary/10 p-4 rounded-2xl mb-4">
-                                                                <div className="flex-1">
+                                                            <div key={idx} className="flex flex-col gap-4 bg-secondary/10 p-4 rounded-2xl mb-4 relative">
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="absolute top-2 left-2 text-red-500 hover:bg-red-500/10 rounded-full w-8 h-8"
+                                                                    onClick={() => setValue('optionPeriods', formData.optionPeriods.filter((_, i) => i !== idx))}
+                                                                >
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </Button>
+                                                                <div className="pr-8">
                                                                     <DatePicker
                                                                         label={`${t('extensionEndDate')} ${idx + 1}`}
                                                                         value={period.endDate ? parseISO(period.endDate) : undefined}
@@ -932,14 +1073,34 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                                         }}
                                                                     />
                                                                 </div>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    className="h-[46px] w-[46px] text-red-500"
-                                                                    onClick={() => setValue('optionPeriods', formData.optionPeriods.filter((_, i) => i !== idx))}
-                                                                >
-                                                                    <Trash2 className="w-5 h-5" />
-                                                                </Button>
+                                                                <div className="grid grid-cols-2 gap-4">
+                                                                    <Input
+                                                                        type="number"
+                                                                        label={t('optionNoticeDays')}
+                                                                        value={period.noticeDays || ''}
+                                                                        onChange={(e) => {
+                                                                            const newPeriods = [...formData.optionPeriods];
+                                                                            newPeriods[idx].noticeDays = e.target.value ? parseInt(e.target.value) : undefined;
+                                                                            setValue('optionPeriods', newPeriods);
+                                                                        }}
+                                                                        placeholder="0"
+                                                                        className="bg-background font-mono"
+                                                                        dir="ltr"
+                                                                    />
+                                                                    <Input
+                                                                        type="number"
+                                                                        label={t('optionReminderDays')}
+                                                                        value={period.reminderDays || ''}
+                                                                        onChange={(e) => {
+                                                                            const newPeriods = [...formData.optionPeriods];
+                                                                            newPeriods[idx].reminderDays = e.target.value ? parseInt(e.target.value) : undefined;
+                                                                            setValue('optionPeriods', newPeriods);
+                                                                        }}
+                                                                        placeholder="0"
+                                                                        className="bg-background font-mono"
+                                                                        dir="ltr"
+                                                                    />
+                                                                </div>
                                                             </div>
                                                         ))}
                                                         <Button
@@ -970,6 +1131,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                         >
                                                             <Plus className="w-4 h-4 mr-1" /> {t('addPeriod')}
                                                         </Button>
+
                                                     </div>
                                                 </div>
                                             )}
@@ -990,17 +1152,32 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                     />
 
                                                     <div className="grid grid-cols-2 gap-4">
+                                                        <Input
+                                                            label={t('paymentDay')}
+                                                            type="number"
+                                                            min={1}
+                                                            max={31}
+                                                            value={formData.paymentDay || ''}
+                                                            onChange={e => {
+                                                                const val = parseInt(e.target.value);
+                                                                if (!isNaN(val) && val >= 1 && val <= 31) setValue('paymentDay', val);
+                                                            }}
+                                                        />
                                                         <Select
                                                             label={t('paymentFrequency')}
                                                             value={formData.paymentFrequency}
                                                             onChange={val => setValue('paymentFrequency', val as any)}
-                                                            placeholder={t('selectOption')}
                                                             options={[
-                                                                { value: 'monthly', label: t('monthly') },
-                                                                { value: 'quarterly', label: t('quarterly') },
-                                                                { value: 'annually', label: t('annually') }
+                                                                { value: 'Monthly', label: t('monthly') },
+                                                                { value: 'Bimonthly', label: t('bimonthly') },
+                                                                { value: 'Quarterly', label: t('quarterly') },
+                                                                { value: 'Semiannually', label: t('semiannually') },
+                                                                { value: 'Annually', label: t('annually') }
                                                             ]}
                                                         />
+                                                    </div>
+
+                                                    <div className="grid grid-cols-1 gap-4">
                                                         <Select
                                                             label={t('paymentMethod')}
                                                             value={formData.paymentMethod}
@@ -1041,6 +1218,19 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                                         { value: 'housing', label: t('linkedToHousing') }
                                                                     ]}
                                                                 />
+
+                                                                <div className="space-y-2">
+                                                                    <label className="text-sm font-medium text-foreground">{t('linkageMethod')}</label>
+                                                                    <SegmentedControl
+                                                                        size="sm"
+                                                                        options={[
+                                                                            { label: t('knownIndex'), value: 'known' },
+                                                                            { label: t('determiningIndex'), value: 'base' }
+                                                                        ]}
+                                                                        value={formData.linkageSubType === 'known' ? 'known' : 'base'}
+                                                                        onChange={val => setValue('linkageSubType', val as any)}
+                                                                    />
+                                                                </div>
                                                                 <DatePicker
                                                                     label={<span>{t('baseDate')} <span className="text-red-500">*</span></span>}
                                                                     value={formData.baseIndexDate ? parseISO(formData.baseIndexDate) : undefined}
@@ -1075,11 +1265,20 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                         className="min-h-[120px] rounded-2xl"
                                                     />
 
-                                                    <div className="p-6 border-2 border-border rounded-3xl">
-                                                        <Checkbox
-                                                            label={<span className="font-black">{t('needsPaintingQuery')}</span>}
-                                                            checked={formData.needsPainting}
-                                                            onChange={checked => setValue('needsPainting', checked)}
+                                                    <div className="p-6 border-2 border-border rounded-3xl flex items-center justify-between">
+                                                        <div className="space-y-1">
+                                                            <h4 className="font-black text-sm">{t('needsPainting')}</h4>
+                                                            <p className="text-xs text-muted-foreground">{t('needsPaintingDesc')}</p>
+                                                        </div>
+                                                        <SegmentedControl
+                                                            size="sm"
+                                                            options={[
+                                                                { label: t('yes'), value: 'yes' },
+                                                                { label: t('no'), value: 'no' }
+                                                            ]}
+                                                            value={formData.needsPainting ? 'yes' : 'no'}
+                                                            onChange={(val) => setValue('needsPainting', val === 'yes')}
+                                                            className="shrink-0"
                                                         />
                                                     </div>
                                                 </div>
@@ -1185,19 +1384,18 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                                         <span className="text-muted-foreground">{t('optionPeriods')}</span>
                                                                         <div className="text-right space-y-1">
                                                                             {formData.optionPeriods.map((p, i) => (
-                                                                                <div key={i} className="text-[11px] font-normal">
-                                                                                    {t('until')} {format(parseISO(p.endDate), 'dd/MM/yyyy')}
-                                                                                    {p.rentAmount ? ` | ${p.rentAmount}₪` : ''}
+                                                                                <div key={i} className="text-[11px] font-normal flex flex-col gap-0.5">
+                                                                                    <div>{t('until')} {format(parseISO(p.endDate), 'dd/MM/yyyy')}{p.rentAmount ? ` | ${p.rentAmount}₪` : ''}</div>
+                                                                                    {(p.noticeDays || p.reminderDays) && (
+                                                                                        <div className="text-[10px] text-muted-foreground">
+                                                                                            {p.noticeDays ? `${t('optionNoticeDays')}: ${p.noticeDays}` : ''}
+                                                                                            {p.noticeDays && p.reminderDays ? ' | ' : ''}
+                                                                                            {p.reminderDays ? `${t('optionReminderDays')}: ${p.reminderDays}` : ''}
+                                                                                        </div>
+                                                                                    )}
                                                                                 </div>
                                                                             ))}
                                                                         </div>
-                                                                    </>
-                                                                )}
-
-                                                                {formData.optionNoticeDays && (
-                                                                    <>
-                                                                        <span className="text-muted-foreground">{t('optionNoticeDays')}</span>
-                                                                        <span className="text-right font-normal">{formData.optionNoticeDays} {t('days')}</span>
                                                                     </>
                                                                 )}
                                                             </div>
@@ -1211,9 +1409,8 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                             <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm font-bold">
                                                                 <span className="text-muted-foreground">{t('rent')}</span>
                                                                 <span className="text-right text-brand-600">
-                                                                    {formData.currency === 'USD' ? '$' : formData.currency === 'EUR' ? '€' : '₪'}
+                                                                    ₪
                                                                     {formatNumber(formData.rent)}
-                                                                    <span className="text-[10px] text-muted-foreground ml-1 uppercase">({t(formData.paymentFrequency.toLowerCase() as any)})</span>
                                                                 </span>
 
                                                                 <span className="text-muted-foreground">{t('paymentMethod')}</span>
@@ -1398,6 +1595,6 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                     <ImageCropper imageSrc={imageToCrop} onCropComplete={onCropComplete} onCancel={onCropCancel} aspect={4 / 3} />
                 )}
             </AnimatePresence>
-        </div>
+        </div >
     );
 }

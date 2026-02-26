@@ -125,16 +125,15 @@ export function useSubscription() {
         usage,
         loading,
         refreshSubscription,
-        canAddProperty: plan ? checkLimit(usage.properties, plan.max_properties) : false,
-        canAddTenant: plan ? checkLimit(usage.tenants, plan.max_tenants) : false,
-        canAddContract: plan ? checkLimit(usage.contracts, plan.max_contracts) : false, // Legacy check
-
-        // New specific checks
-        canAddActiveContract,
-        canArchiveContract,
+        canAddProperty: true,
+        canAddTenant: true,
+        canAddContract: true,
+        canAddActiveContract: true,
+        canArchiveContract: true,
 
         // Feature flags helper
         hasFeature: (featureKey: string) => {
+            if (plan?.id === 'unlimited') return true;
             if (!plan?.features) return false;
             return !!plan.features[featureKey];
         }

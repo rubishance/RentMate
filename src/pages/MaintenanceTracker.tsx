@@ -36,19 +36,20 @@ export function MaintenanceTracker() {
 
     return (
         <div className="pb-40 pt-8 px-4 md:px-8 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div className="space-y-1">
+            {/* Header Area */}
+            <div className="flex items-center justify-between gap-4">
+                <div className="space-y-1 overflow-hidden">
                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-orange-500/5 dark:bg-orange-500/10 backdrop-blur-md rounded-full border border-orange-500/10 shadow-sm mb-1">
                         <Wrench className="w-3 h-3 text-orange-500" />
                         <span className="text-[9px] font-black uppercase tracking-widest text-orange-600 dark:text-orange-400">
                             {t('maintenanceHub') || 'Maintenance Hub'}
                         </span>
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground leading-tight lowercase">
+                    <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground leading-tight truncate lowercase">
                         {t('maintenanceOverview') || 'Portfolio Health'}
                     </h1>
                 </div>
+
                 <div className="flex items-center gap-3">
                     <Button
                         onClick={() => setIsAddModalOpen(true)}

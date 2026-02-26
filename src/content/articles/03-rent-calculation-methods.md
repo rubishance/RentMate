@@ -51,7 +51,7 @@ This method uses the index published **15 days before** the rent payment date.
 **Advantage:** Predictable and timely  
 **How to find:** Check CBS website for index published 2 weeks before rent is due
 
-### Method 2: Begin Index (מדד בגין)
+### Method 2: Begin Index (מדד קובע)
 
 This method uses the index from the **contract start date** as the base.
 
@@ -125,7 +125,7 @@ Manual calculations are prone to errors. RentMate automatically fetches CBS data
 **יתרון:** צפוי ובזמן  
 **איך למצוא:** בדקו באתר הלמ"ס את המדד שפורסם שבועיים לפני מועד התשלום
 
-### שיטה 2: מדד בגין
+### שיטה 2: מדד קובע
 
 שיטה זו משתמשת במדד מ**תאריך תחילת החוזה** כבסיס.
 

@@ -18,6 +18,7 @@ export type TranslationKeys =
     | 'logPayment' | 'quickAction' | 'addExpense' | 'maintenanceRequest' | 'messageTenant'
     | 'view' | 'view_female'
     | 'deleteConfirmation' | 'deleteConfirmation_female'
+    | 'base_rent'
     | 'clear' | 'clear_female'
     | 'generate' | 'generate_female'
     | 'share' | 'share_female'
@@ -103,6 +104,8 @@ export type TranslationKeys =
     | 'addNew'
     | 'pickDate'
     | 'selectDate'
+    | 'stepAsset' | 'stepTenant' | 'stepPeriods' | 'stepPayments' | 'stepSecurity' | 'stepSummary'
+    | 'whereIsItLocated' | 'tellUsAboutProperty' | 'fetchingStreetView' | 'clickToUploadPicture' | 'uploading_ellipsis'
 
     // Auth & Navigation
     | 'login'
@@ -145,6 +148,7 @@ export type TranslationKeys =
     | 'online'
     | 'monthly'
     | 'quarterly'
+    | 'semiannually'
     | 'annually'
     | 'checks'
     | 'transfer'
@@ -202,23 +206,33 @@ export type TranslationKeys =
     | 'byDate'
     | 'linkageCeiling'
     | 'maxRisePercentage'
-    | 'needsPainting'
+    | 'needsPaintingQuery'
+    | 'optionPeriods'
+    | 'transfer'
+    | 'check'
+    | 'cash'
+    | 'bit'
+    | 'paybox'
+    | 'other'
     | 'contractReadySummary'
     | 'contractReadySummaryDesc'
     | 'dataSummary'
     | 'legalProtection'
     | 'upgradeToUnlock'
-    | 'needsPaintingQuery'
     | 'storageCloudSuccess'
     | 'storageDeviceSuccess'
     | 'storageBothSuccess'
     | 'linkedToIndex'
     | 'linkedToDollar'
     | 'knownIndexLabel'
+    | 'determiningIndex'
+    | 'linkageMethod'
     | 'respectOfLabel'
     | 'restrictions'
     | 'ceilingLabel'
+    | 'ceilingPlaceholder'
     | 'floorLabel'
+    | 'floorPlaceholder'
     | 'payment'
     | 'contract'
     | 'asset'
@@ -229,6 +243,7 @@ export type TranslationKeys =
     | 'linkage'
     | 'baseDate'
     | 'optionNoticeDays'
+    | 'optionReminderDays'
     | 'hasParking'
     | 'hasStorage'
     | 'hasBalcony'
@@ -242,6 +257,9 @@ export type TranslationKeys =
     | 'additionalDetails'
     | 'features'
     | 'until'
+    | 'contractPeriod'
+    | 'duration'
+    | 'securityAndExtras'
 
     | 'saveContractFileQuery'
     | 'storageRentMateCloud'
@@ -275,6 +293,13 @@ export type TranslationKeys =
     | 'associateWithProperty'
     | 'saveAndRecord'
 
+
+    // Missing Payment UI Keys
+    | 'cardsView'
+    | 'tableView'
+    | 'actionNeeded'
+    | 'upcomingAndPaid'
+    | 'unnamedTenant'
     // Payments Page
     | 'paymentsTitle'
     | 'trackFuturePayments'
@@ -301,6 +326,8 @@ export type TranslationKeys =
     | 'nextYear'
     | 'currentWindow'
     | 'allTime'
+    | 'sortOldestFirst'
+    | 'sortNewestFirst'
     | 'filters'
     | 'tenant'
     | 'allTenants'
@@ -327,6 +354,20 @@ export type TranslationKeys =
     | 'undo'
     | 'errorMarkingPaid'
     | 'back'
+    | 'amountGreaterThanZero'
+    | 'dueDateRequired'
+    | 'methodRequired'
+    | 'errorFetchingContracts'
+    | 'paymentLinkedToPending'
+    | 'savingPayment'
+    | 'paymentSavedSuccess'
+    | 'addAnotherReady'
+    | 'errorSavingPayment'
+    | 'linkToExpectedPayment'
+    | 'bestMatch'
+    | 'linkedToPaymentOf'
+    | 'addAnother'
+    | 'sessionAdded'
 
     // Calculator & Reconciliation
     | 'indexCalculator'
@@ -384,6 +425,7 @@ export type TranslationKeys =
     | 'shouldPay'
     | 'paid'
     | 'diff'
+    | 'remainingDebt'
     | 'knownIndex'
     | 'inRespectOf'
     | 'knownIndexHelp'
@@ -433,6 +475,7 @@ export type TranslationKeys =
     | 'rooms'
     | 'sizeSqm'
     | 'parking'
+    | 'amenities'
     | 'storage'
     | 'propertyImage'
     | 'uploadFile'
@@ -449,6 +492,7 @@ export type TranslationKeys =
     | 'email'
     | 'signingDate'
     | 'optionPeriods'
+    | 'optionPeriod'
     | 'addPeriod' | 'addPeriod_female'
     | 'noOptionPeriods'
     | 'months'
@@ -628,6 +672,8 @@ export type TranslationKeys =
     | 'paymentsDeletedWarning'
     | 'deleteContractTitle'
     | 'deleteContractMessage' | 'deleteContractMessage_female'
+    | 'unsavedChangesWarningTitle'
+    | 'unsavedChangesWarning'
     | 'noPhone'
     | 'deleteTenantError'
     | 'addNewTenant' | 'addNewTenant_female'
@@ -823,6 +869,7 @@ export type TranslationKeys =
     | 'auth_password'
     | 'auth_forgot_password'
     | 'auth_sign_in'
+    | 'auth_sign_up'
     | 'auth_create_account'
     | 'auth_or_continue'
     | 'auth_no_account'
@@ -1003,7 +1050,14 @@ export type TranslationKeys =
     | 'Yokneam Illit'
     | 'Beer Sheba'
     | 'Ness Ziona'
-    | 'Zefat';
+    | 'Zefat'
+    | 'baseIndex'
+    | 'needsPainting'
+    | 'needsPaintingDesc'
+    | 'specialClausesPlaceholder'
+    | 'guarantees'
+    | 'guaranteesPlaceholder'
+    | 'noOptionsDefined';
 
 export const translations: Record<string, any> = {
     he: {
@@ -1090,7 +1144,9 @@ export const translations: Record<string, any> = {
         eg_january_bill: 'לדוגמה: חשבון ינואר 2024',
         eg_electric_corp: 'לדוגמה: חברת החשמל',
         monthly: 'חודשי',
+        bimonthly: 'דו חודשי',
         quarterly: 'רבעוני',
+        semiannually: 'חציוני',
         annually: 'שנתי',
         contractDetails: 'פרטי החוזה',
         editContract: 'עריכת חוזה',
@@ -1269,6 +1325,13 @@ export const translations: Record<string, any> = {
         associateWithProperty: 'שייך לנכס',
         saveAndRecord: 'שמור ותעד',
 
+
+        // Missing Payment UI Keys
+        cardsView: 'תצוגת כרטיסיות',
+        tableView: 'תצוגת טבלה',
+        actionNeeded: 'לטיפולך',
+        upcomingAndPaid: 'קרובים ושולמו',
+        unnamedTenant: 'דייר ללא שם',
         // Payments Page
         paymentsTitle: 'תשלומים',
         trackFuturePayments: 'מעקב תשלומים',
@@ -1292,6 +1355,8 @@ export const translations: Record<string, any> = {
         last6Months: '6 חד\' אחרונים',
         lastYear: 'שנה אחרונה',
         allTime: 'כל הזמן',
+        sortOldestFirst: 'מהישן לחדש',
+        sortNewestFirst: 'מהחדש לישן',
         filters: 'סינונים',
         allTenants: 'כל הדיירים',
         allAssets: 'כל הנכסים',
@@ -1316,6 +1381,20 @@ export const translations: Record<string, any> = {
         undo: 'ביטול',
         errorMarkingPaid: 'שגיאה בסימון כנפרע',
         back: 'חזור',
+        amountGreaterThanZero: 'הסכום חייב להיות גדול מאפס',
+        dueDateRequired: 'תאריך יעד הוא שדה חובה',
+        methodRequired: 'שיטת תשלום היא חובה',
+        errorFetchingContracts: 'שגיאה בטעינת החוזים',
+        paymentLinkedToPending: 'התשלום קושר לתשלום צפוי!',
+        savingPayment: 'שומר תשלום...',
+        paymentSavedSuccess: 'התשלום נשמר בהצלחה!',
+        addAnotherReady: 'הוסף תשלום נוסף',
+        errorSavingPayment: 'שגיאה בשמירת התשלום',
+        linkToExpectedPayment: 'קישור לתשלום צפוי',
+        bestMatch: 'התאמה מיטבית',
+        linkedToPaymentOf: 'מקושר לתשלום ע"ס',
+        addAnother: 'הוסף עוד',
+        sessionAdded: 'נוספו בסשן זה',
 
         // Calculator & Reconciliation
         indexCalculator: 'מחשבון הצמדה',
@@ -1371,7 +1450,10 @@ export const translations: Record<string, any> = {
         shouldPay: 'צריך לשלם',
         paid: 'שולם',
         diff: 'הפרש',
+        remainingDebt: 'יתרות חוב',
+        linkageMethod: 'שיטת הצמדה',
         knownIndex: 'מדד ידוע',
+        determiningIndex: 'מדד קובע',
         inRespectOf: 'בגין חודש',
         knownIndexHelp: 'לפי המדד האחרון שפורסם במועד התחשבנות',
         updateFrequency: 'תדירות עדכון',
@@ -1421,6 +1503,7 @@ export const translations: Record<string, any> = {
         rooms: 'מס\' חדרים',
         sizeSqm: 'גודל (מ"ר)',
         parking: 'חניה',
+        amenities: 'מאפיינים נוספים',
         storage: 'מחסן',
         propertyImage: 'תמונת הנכס',
         uploadFile: 'העלאת קובץ',
@@ -1439,6 +1522,7 @@ export const translations: Record<string, any> = {
         email: 'אימייל',
         signingDate: 'תאריך חתימה',
         optionPeriods: 'תקופות אופציה',
+        optionPeriod: 'תקופת אופציה',
         addPeriod: 'הוסף תקופה',
         addPeriod_female: 'הוסיפי תקופה',
         noOptionPeriods: 'לא הוגדרו תקופות אופציה',
@@ -1463,8 +1547,8 @@ export const translations: Record<string, any> = {
         paymentFrequency: 'תדירות תשלום',
         paymentMethod: 'אמצעי תשלום',
         contractIsIndexed: 'החוזה צמוד למדד',
-        linkedToCpi: 'צמוד למדד המחירים לצרכן',
-        linkedToHousing: 'צמוד למדד מחירי הדיור',
+        linkedToCpi: 'מדד המחירים לצרכן',
+        linkedToHousing: 'מדד מחירי הדיור',
         linkedToUsd: 'צמוד לדולר',
         linkedToEur: 'צמוד לאירו',
         linkedToConstruction: 'צמוד למדד תשומות הבנייה',
@@ -1506,6 +1590,7 @@ export const translations: Record<string, any> = {
         tenant: 'דייר',
         garden: 'דירת גן',
         optionNoticeDays: 'הודעת מימוש אופציה (ימים)',
+        optionReminderDays: 'תזכורת לפני מועד הודעה (ימים)',
         hasParking: 'חניה',
         hasStorage: 'מחסן',
         hasBalcony: 'מרפסת',
@@ -1598,6 +1683,12 @@ export const translations: Record<string, any> = {
         uploadNewBill: 'העלה חשבון חדש',
         uploadNewBill_female: 'העלי חשבון חדש',
         uploadBillTitle: 'העלאת חשבון',
+        stepAsset: 'נכס',
+        stepTenant: 'דיירים',
+        stepPeriods: 'תקופות',
+        stepPayments: 'תשלומים',
+        stepSecurity: 'ביטחונות',
+        stepSummary: 'סיכום',
         billDate: 'תאריך חשבון',
         markAsPaid: 'סמן כסדר',
         markAsPaid_female: 'סמני כסדר',
@@ -1629,6 +1720,9 @@ export const translations: Record<string, any> = {
         issueOther: 'אחר',
         features: 'מאפיינים',
         until: 'עד',
+        contractPeriod: 'תקופת החוזה',
+        duration: 'משך',
+        securityAndExtras: 'ביטחונות ותוספות',
         addRecord: 'הוסף תיעוד',
         addRecord_female: 'הוסיפי תיעוד',
         documentsDesc: 'ניהול מסמכים וקבצי חוזה',
@@ -1751,6 +1845,7 @@ export const translations: Record<string, any> = {
         auth_confirmation_sent: 'שלחנו לינק לאישור הרישום לכתובת המייל שהזנת.',
         auth_invalid_credentials: 'פרטי התחברות שגויים',
         auth_email_not_confirmed: 'המייל טרם אושר',
+        auth_sign_up: 'הירשם עכשיו',
         user_generic: 'משתמש',
         passwordRequirementLength: 'לפחות 8 תווים',
         passwordRequirementUppercase: 'אות גדולה אחת לפחות',
@@ -1909,6 +2004,8 @@ export const translations: Record<string, any> = {
         unlockMoreLimits_male: 'שחרר מגבלות נוספות',
         sendMessage_male: 'שלח הודעה',
         deleteContractMessage_male: 'האם למחוק חוזה זה וכל נתוניו?',
+        unsavedChangesWarningTitle: 'שינויים שלא נשמרו',
+        unsavedChangesWarning: 'ישנם שינויים שלא נשמרו. האם לצאת ללא שמירה?',
         addNewTenant_male: 'הוסף דייר חדש',
         addProperty_male: 'הוסף נכס',
         addFirstPropertyDesc: 'עדיין לא הוספת נכסים. התחל בהוספת היחידה הראשונה שלך למעקב.',
@@ -1927,6 +2024,13 @@ export const translations: Record<string, any> = {
         selectCategory: 'בחר סוג נכס',
         finish: 'סיום',
         occupied: 'מושכר',
+        base_rent: 'שכירות בסיס',
+        whereIsItLocated: 'איפה הנכס ממוקם?',
+        noAssetsFound: 'לא נמצאו נכסים',
+        tellUsAboutProperty: 'ספרו לנו על הנכס',
+        fetchingStreetView: 'טוען תמונת רחוב...',
+        clickToUploadPicture: 'לחץ להעלאת תמונה',
+        uploading_ellipsis: 'מעלה...',
         addFirstTenantDesc_male: 'התחל בהוספת הדייר הראשון שלך',
         uploadNewBill_male: 'העלה חשבון חדש',
         markAsPaid_male: 'סמן כסדר',
@@ -2024,7 +2128,12 @@ export const translations: Record<string, any> = {
         'Zefat': 'צפת',
         legalProtection: 'חבילת הגנה משפטית',
         upgradeToUnlock: 'שדרגו לפתיחה',
-        needsPaintingQuery: 'הדירה דורשת צביעה?',
+        needsPaintingQuery: 'האם התחייב צביעה מחדש בפינוי?',
+        check: 'צ׳קים',
+        cash: 'מזומן',
+        bit: 'ביט',
+        paybox: 'פייבוקס',
+        other: 'אחר',
         contractReadySummary: 'החוזה מוכן הסיכום!',
         contractReadySummaryDesc: 'החוזה עבור {address}, {city} מוכן ליצירה.',
         saveContractFileQuery: 'לשמור את קובץ החוזה?',
@@ -2048,7 +2157,9 @@ export const translations: Record<string, any> = {
         respectOfLabel: 'בגין חודש',
         restrictions: 'מגבלות',
         ceilingLabel: 'תקרה',
+        ceilingPlaceholder: 'תקרה %',
         floorLabel: 'רצפה',
+        floorPlaceholder: 'רצפה %',
         payment: 'תשלום',
         contract: 'חוזה',
         asset: 'נכס',
@@ -2062,14 +2173,41 @@ export const translations: Record<string, any> = {
         addGuarantor: 'הוסף ערב',
         addGuarantor_female: 'הוסיפי ערב',
         noGuarantors: 'אין ערבים',
+        all: 'הכל',
+        active: 'פעילים',
+        archived: 'בארכיון',
+        searchPlaceholderContracts: 'חיפוש לפי דייר, כתובת או עיר...',
+        upgradeRequired: 'שדרוג נדרש',
+        limitReachedDesc: 'הגעת למגבלת היצירה בתוכנית הנוכחית. שדרג את התוכנית כדי להמשיך.',
+        upgradeNow: 'שדרג עכשיו',
+        days: 'ימים',
+        error_missing_id: 'שגיאת מערכת: מזהה חוזה חסר',
+        baseIndex: 'מדד בסיס',
+        needsPainting: 'נדרשת צביעה',
+        needsPaintingDesc: 'האם נדרשת צביעה בעת פינוי הנכס?',
+        specialClausesPlaceholder: 'הכנס תנאים מיוחדים כאן...',
+        guarantees: 'ביטחונות',
+        guaranteesPlaceholder: 'פירוט שטרות, צ\'ק ביטחון, ערבות בנקאית וכו\'',
+        noOptionsDefined: 'לא הוגדרו אפשרויות',
+        selectDisplayedIndices: 'בחירת מדדים להצגה',
+        cpi: 'מדד המחירים לצרכן',
+        housing: 'מדד שירותי דיור',
+        construction: 'מדד תשומות הבנייה',
+        usd: 'דולר ארה"ב',
+        eur: 'אירו',
     },
     en: {
         appName: 'RentMate',
         commandCenterUpdates: 'I have {count} new updates for you.',
         commandCenterAllClear: 'Everything looks great. No pending tasks.',
+        linkageMethod: 'Linkage Method',
+        knownIndex: 'Known Index',
+        determiningIndex: 'Determining Index',
         rentySuggestsAction: 'RENTY SUGGESTS ACTION',
         monthly: 'Monthly',
+        bimonthly: 'Bimonthly',
         quarterly: 'Quarterly',
+        semiannually: 'Semiannually',
         annually: 'Annually',
         welcomeMessage: 'Welcome to RentMate',
         welcomeMessageDashboard: 'good evening',
@@ -2171,7 +2309,7 @@ export const translations: Record<string, any> = {
         'Nazareth Illit': 'Nazareth Illit',
         'Nof HaGalil': 'Nof HaGalil',
         'Nes Ziona': 'Nes Ziona',
-        'Ness Ziona': 'Ness Ziona',
+        'Ness Ziona': 'Nes Ziona',
         'Netivot': 'Netivot',
         'Ofakim': 'Ofakim',
         'Or Akiva': 'Or Akiva',
@@ -2193,7 +2331,13 @@ export const translations: Record<string, any> = {
         manualRate: 'Manual Rate',
         legalProtection: 'Legal Safe Suite',
         upgradeToUnlock: 'Upgrade to Unlock',
-        needsPaintingQuery: 'Does the apartment require painting?',
+        needsPaintingQuery: 'Repainting required upon evacuation?',
+        transfer: 'Bank Transfer',
+        check: 'Checks',
+        cash: 'Cash',
+        bit: 'Bit',
+        paybox: 'PayBox',
+        other: 'Other',
         contractReadySummary: 'Contract is Ready!',
         contractReadySummaryDesc: 'The contract for {address}, {city} is ready to be created.',
         saveContractFileQuery: 'Save contract file?',
@@ -2233,13 +2377,16 @@ export const translations: Record<string, any> = {
         construction: 'Construction',
         usd: 'USD',
         eur: 'EUR',
-        bit: 'Bit',
-        paybox: 'PayBox',
-        linkedToCpi: 'Linked to CPI',
-        linkedToHousing: 'Linked to Housing',
+        linkedToCpi: 'CPI',
+        linkedToHousing: 'Housing Index',
         linkedToUsd: 'Linked to USD',
         linkedToEur: 'Linked to EUR',
         linkedToConstruction: 'Linked to Construction',
+        whereIsItLocated: 'Where is it located?',
+        tellUsAboutProperty: 'Tell us about the property.',
+        fetchingStreetView: 'Fetching Street View...',
+        clickToUploadPicture: 'Click to upload picture',
+        uploading_ellipsis: 'Uploading...',
         baseDateRequired: 'Base index date is required',
         summaryDetails: 'Summary Details',
         leasePeriod: 'Lease Period',
@@ -2249,6 +2396,7 @@ export const translations: Record<string, any> = {
         tenant: 'Tenant',
         garden: 'Garden Apartment',
         optionNoticeDays: 'Option Notice (days)',
+        optionReminderDays: 'Reminder before Notice (days)',
         hasParking: 'Parking',
         hasStorage: 'Storage',
         hasBalcony: 'Balcony',
@@ -2295,6 +2443,13 @@ export const translations: Record<string, any> = {
         bulkCheckReviewDesc: 'Please review the generated checks before creating them.',
         bulkChecksAddedSuccess: 'Added {count} checks successfully',
         errorSavingPayments: 'Error saving payments',
+
+        cardsView: 'Cards View',
+        tableView: 'Table View',
+        actionNeeded: 'Action Needed',
+        upcomingAndPaid: 'Upcoming & Paid',
+        unnamedTenant: 'Unnamed Tenant',
+
         approveAndCreate: 'Approve & Create',
         paymentMarkedPaid: 'Payment marked as paid',
         paymentUndoSuccess: 'Action undone',
@@ -2302,7 +2457,24 @@ export const translations: Record<string, any> = {
         undo: 'Undo',
         errorMarkingPaid: 'Error marking as paid',
         back: 'Back',
+        amountGreaterThanZero: 'Amount must be greater than zero',
+        dueDateRequired: 'Due date is required',
+        methodRequired: 'Payment method is required',
+        errorFetchingContracts: 'Error fetching contracts',
+        paymentLinkedToPending: 'Payment linked to expected payment!',
+        savingPayment: 'Saving payment...',
+        paymentSavedSuccess: 'Payment saved successfully!',
+        addAnotherReady: 'Ready for another payment',
+        errorSavingPayment: 'Error saving payment',
+        linkToExpectedPayment: 'LINK TO EXPECTED PAYMENT',
+        bestMatch: 'BEST MATCH',
+        linkedToPaymentOf: 'Linked to payment of',
+        addAnother: 'Add Another',
+        sessionAdded: 'Added in session',
         rooms: 'Rooms',
+        amenities: 'Amenities',
+        parking: 'Parking',
+        storage: 'Storage',
         selectRooms: 'Select Rooms',
         'Northern District': 'Northern District',
         'Haifa District': 'Haifa District',
@@ -2318,6 +2490,8 @@ export const translations: Record<string, any> = {
         next6Months: 'Next 6 Months',
         nextYear: 'Next Year',
         currentWindow: 'Current Window (-1m to +3m)',
+        sortOldestFirst: 'Oldest to Newest',
+        sortNewestFirst: 'Newest to Oldest',
         fillRequiredFields: 'Please fill all required fields',
         contractSavedSuccess: 'Contract saved successfully',
         errorSavingContract: 'Error saving contract',
@@ -2330,6 +2504,46 @@ export const translations: Record<string, any> = {
         guarantorName: 'Guarantor Name',
         addGuarantor: 'Add Guarantor',
         noGuarantors: 'No Guarantors',
+        stepAsset: 'Asset',
+        stepTenant: 'Tenants',
+        stepPeriods: 'Periods',
+        stepPayments: 'Payments',
+        stepSecurity: 'Security',
+        stepSummary: 'Summary',
+        base_rent: 'Base Rent',
+        noAssetsFound: 'No assets found',
+        contractPeriod: 'Contract Period',
+        duration: 'Duration',
+        securityAndExtras: 'Security & Extras',
+        upgradeRequired: 'Upgrade Required',
+        limitReachedDesc: 'You have reached the creation limit for your current plan. Please upgrade to continue.',
+        upgradeNow: 'Upgrade Now',
+        days: 'days',
+        balcony: 'Balcony',
+        safeRoom: 'Safe Room',
+        error_missing_id: 'System Error: Missing Contract ID',
+        baseIndex: 'Base Index',
+        needsPainting: 'Painting Required',
+        needsPaintingDesc: 'Is painting required upon vacating the property?',
+        specialClausesPlaceholder: 'Enter special clauses here...',
+        guarantees: 'Guarantees',
+        guaranteesPlaceholder: 'Details of bills, security check, bank guarantee, etc.',
+        noOptionsDefined: 'No options defined',
+        auth_welcome_back: 'Welcome back!',
+        auth_join: 'Join us',
+        auth_email: 'Email address',
+        auth_password: 'Password',
+        auth_forgot_password: 'Forgot password?',
+        auth_sign_in: 'Sign in',
+        auth_sign_up: 'Sign up now',
+        auth_create_account: 'Create account',
+        auth_or_continue: 'Or continue with',
+        auth_no_account: "Don't have an account?",
+        auth_have_account: 'Already have an account?',
+        auth_check_inbox: 'Check your inbox!',
+        auth_confirmation_sent: 'We sent a confirmation email to {email}',
+        auth_invalid_credentials: 'Invalid login credentials',
+        auth_email_not_confirmed: 'Email not confirmed yet',
     },
 };
 

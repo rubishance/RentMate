@@ -114,20 +114,20 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
 
             {/* Header */}
             {!embedMode && (
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-4">
-                    <div className="space-y-1">
+                <div className="flex items-center justify-between gap-4 mb-4">
+                    <div className="space-y-1 overflow-hidden">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/5 dark:bg-indigo-500/10 backdrop-blur-md rounded-full border border-indigo-500/10 shadow-sm mb-2">
                             <CalcIcon className="w-3 h-3 text-indigo-500" />
                             <span className="text-[9px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
                                 {t('smartCalculator')}
                             </span>
                         </div>
-                        <h1 className="h1-bionic">
+                        <h1 className="h1-bionic truncate">
                             {t('calculator')}
                         </h1>
                     </div>
-                    <div className="w-16 h-16 rounded-[2rem] glass-premium border-white/10 flex items-center justify-center shadow-minimal group hover:scale-110 group-hover:rotate-6 transition-all duration-700">
-                        <CalcIcon className="w-8 h-8 text-muted-foreground opacity-30 group-hover:opacity-100" />
+                    <div className="w-14 h-14 rounded-2xl glass-premium border-white/10 flex items-center justify-center shadow-minimal shrink-0">
+                        <CalcIcon className="w-7 h-7 text-muted-foreground opacity-30" />
                     </div>
                 </div>
             )}

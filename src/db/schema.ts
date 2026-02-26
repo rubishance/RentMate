@@ -7,6 +7,7 @@ export const currencyEnum = pgEnum('currency', ['ILS', 'USD', 'EUR']);
 export const paymentFrequencyEnum = pgEnum('payment_frequency', ['monthly', 'quarterly', 'annually']);
 export const linkageTypeEnum = pgEnum('linkage_type', ['cpi', 'housing', 'construction', 'usd', 'eur', 'none']);
 export const paymentStatusEnum = pgEnum('payment_status', ['paid', 'pending', 'overdue', 'cancelled']);
+export const paymentMethodEnum = pgEnum('payment_method_enum', ['transfer', 'checks', 'cash', 'bit', 'paybox', 'other']);
 
 // Properties Table
 export const properties = pgTable('properties', {
@@ -67,7 +68,6 @@ export const contracts = pgTable('contracts', {
     // Israeli Specifics
     needs_painting: boolean('needs_painting').default(false),
     notice_period_days: integer('notice_period_days'),
-    option_notice_days: integer('option_notice_days'),
 
     // JSONB Arrays for complex structures
     option_periods: jsonb('option_periods'),
@@ -75,7 +75,7 @@ export const contracts = pgTable('contracts', {
     tenants: jsonb('tenants'),
 
     // New Fields (Synced with verified DB schema)
-    payment_method: text('payment_method'),
+    payment_method: paymentMethodEnum('payment_method'),
     pets_allowed: boolean('pets_allowed').default(true),
     special_clauses: text('special_clauses'),
     guarantees: text('guarantees'),
@@ -95,7 +95,7 @@ export const payments = pgTable('payments', {
     due_date: timestamp('due_date').notNull(),
     status: paymentStatusEnum('status').notNull().default('pending'),
     paid_date: timestamp('paid_date'),
-    payment_method: text('payment_method'),
+    payment_method: paymentMethodEnum('payment_method'),
     reference: text('reference'),
     created_at: timestamp('created_at').defaultNow(),
 });
