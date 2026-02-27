@@ -288,7 +288,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
 
             const res = await calculateReconciliation({
                 baseRent: parseFloat(recBaseRent),
-                linkageType: recLinkageType as 'cpi' | 'housing' | 'construction',
+                linkageType: recLinkageType,
                 contractStartDate: contractStartDate.slice(0, 7),
                 periodStart: periodStart.slice(0, 7),
                 periodEnd: periodEnd.slice(0, 7),

@@ -1,0 +1,1 @@
+const { chromium } = require('playwright'); (async () => { const browser = await chromium.launch(); const page = await browser.newPage(); await page.goto('https://www.rentmate.co.il', { waitUntil: 'networkidle' }); await page.screenshot({ path: 'live_proof.png' }); await browser.close(); console.log('Screenshot taken!'); })();

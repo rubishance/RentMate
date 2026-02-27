@@ -74,7 +74,7 @@ export function StandardCalculator({ initialValues, shouldAutoCalculate }: Stand
 
             const res = await calculateStandard({
                 baseRent: parseFloat(baseRent),
-                linkageType: linkageType as 'cpi' | 'housing' | 'construction',
+                linkageType,
                 baseDate: processedBaseDate,
                 targetDate: processedTargetDate,
                 partialLinkage: parseFloat(partialLinkage) || 100,

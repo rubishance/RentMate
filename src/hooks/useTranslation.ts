@@ -2256,6 +2256,7 @@ export const translations: Record<string, any> = {
         coming_soon_slide_3_desc: 'שליטה מלאה בתשלומים, חובות, והכנסות מכל הנכסים יחד.',
         coming_soon_slide_4_title: 'עוזר A.I. אישי',
         coming_soon_slide_4_desc: 'ניתוח נתונים, הפקת תובנות וניהול אוטומטי של הנכסים בעזרת בינה מלאכותית.',
+        language_toggle: 'English',
     },
     en: {
         appName: 'RentMate',

@@ -1,13 +1,11 @@
 import React from 'react';
-import { useTranslation } from '../../hooks/useTranslation';
-import { useUserPreferences } from '../../contexts/UserPreferencesContext';
+import { useTranslation } from 'react-i18next';
 import { PageHeader } from '../../components/common/PageHeader';
 import { GlassCard } from '../../components/common/GlassCard';
 
 export default function TermsOfService() {
-    const { t } = useTranslation();
-    const { preferences } = useUserPreferences();
-    const isRtl = preferences.language === 'he';
+    const { t, i18n } = useTranslation();
+    const isRtl = i18n.dir() === 'rtl';
     const lastUpdatedDate = new Date('2026-02-27').toLocaleDateString(isRtl ? 'he-IL' : 'en-US');
 
     return (
