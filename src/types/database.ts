@@ -476,3 +476,15 @@ export interface WhatsAppMessage {
     status: 'sent' | 'delivered' | 'read' | 'failed';
     created_at: string;
 }
+
+// ============================================
+// Waitlist Types
+// ============================================
+
+export interface WaitlistEntry {
+    id: string; // UUID
+    full_name: string;
+    email: string;
+    phone?: string | null;
+    created_at: string;
+}

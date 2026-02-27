@@ -161,7 +161,7 @@ export function IndexCalculator() {
             try {
                 const res = await calculateStandard({
                     baseRent: rent,
-                    linkageType: indexType,
+                    linkageType: indexType as 'cpi' | 'housing' | 'construction',
                     linkageSubType: linkageSubType,
                     baseDate: baseDate.slice(0, 7), // Pass YYYY-MM
                     targetDate: currentDate.slice(0, 7), // Pass YYYY-MM

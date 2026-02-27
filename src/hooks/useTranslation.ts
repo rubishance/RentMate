@@ -18,7 +18,6 @@ export type TranslationKeys =
     | 'logPayment' | 'quickAction' | 'addExpense' | 'maintenanceRequest' | 'messageTenant'
     | 'view' | 'view_female'
     | 'deleteConfirmation' | 'deleteConfirmation_female'
-    | 'base_rent'
     | 'clear' | 'clear_female'
     | 'generate' | 'generate_female'
     | 'share' | 'share_female'
@@ -106,6 +105,10 @@ export type TranslationKeys =
     | 'selectDate'
     | 'stepAsset' | 'stepTenant' | 'stepPeriods' | 'stepPayments' | 'stepSecurity' | 'stepSummary'
     | 'whereIsItLocated' | 'tellUsAboutProperty' | 'fetchingStreetView' | 'clickToUploadPicture' | 'uploading_ellipsis'
+    | 'coming_soon_slide_1_title' | 'coming_soon_slide_1_desc'
+    | 'coming_soon_slide_2_title' | 'coming_soon_slide_2_desc'
+    | 'coming_soon_slide_3_title' | 'coming_soon_slide_3_desc'
+    | 'coming_soon_slide_4_title' | 'coming_soon_slide_4_desc'
 
     // Auth & Navigation
     | 'login'
@@ -176,10 +179,12 @@ export type TranslationKeys =
     | 'activeMaintenanceDesc'
     | 'viewRequests' | 'viewRequests_female'
     | 'smartRecommendation'
-    | 'alerts'
-    | 'manageStorage' | 'manageStorage_female'
-    | 'items'
+    | 'active'
+    | 'archived'
+    | 'ACTIVE'
+    | 'ARCHIVED'
     | 'now'
+    | 'items'
     | 'commandCenter'
     | 'welcomeMessageDashboard'
     | 'goodMorning'
@@ -248,6 +253,11 @@ export type TranslationKeys =
     | 'hasStorage'
     | 'hasBalcony'
     | 'hasSafeRoom'
+    | 'upcoming_payment'
+    | 'contract_expiry'
+    | 'overdue_payment'
+    | 'archived_contract'
+    | 'active_contract'
     | 'guarantorsInfo'
     | 'specialClauses'
     | 'paintingIncluded'
@@ -282,8 +292,25 @@ export type TranslationKeys =
     | 'rentyMantra'
     | 'generateReport'
     | 'done'
+    | 'noContractsFound'
+    | 'noPropertiesFound'
+    | 'noTenantsFound'
     | 'customize'
     | 'myPortfolio'
+    // Coming Soon
+    | 'coming_soon_title'
+    | 'coming_soon_subtitle'
+    | 'coming_soon_feature_1'
+    | 'coming_soon_feature_2'
+    | 'coming_soon_feature_3'
+    | 'coming_soon_name_label'
+    | 'coming_soon_email_label'
+    | 'coming_soon_phone_label'
+    | 'coming_soon_cta'
+    | 'coming_soon_success'
+    | 'coming_soon_error'
+    | 'coming_soon_already_registered'
+    | 'language_toggle'
     | 'leaseEnds'
     | 'deleteAsset'
     | 'deleteAssetConfirm'
@@ -2176,6 +2203,8 @@ export const translations: Record<string, any> = {
         all: 'הכל',
         active: 'פעילים',
         archived: 'בארכיון',
+        ACTIVE: 'פעילים',
+        ARCHIVED: 'בארכיון',
         searchPlaceholderContracts: 'חיפוש לפי דייר, כתובת או עיר...',
         upgradeRequired: 'שדרוג נדרש',
         limitReachedDesc: 'הגעת למגבלת היצירה בתוכנית הנוכחית. שדרג את התוכנית כדי להמשיך.',
@@ -2183,7 +2212,15 @@ export const translations: Record<string, any> = {
         days: 'ימים',
         error_missing_id: 'שגיאת מערכת: מזהה חוזה חסר',
         baseIndex: 'מדד בסיס',
+        noContractsFound: 'לא נמצאו חוזים',
+        noPropertiesFound: 'לא נמצאו נכסים',
+        noTenantsFound: 'לא נמצאו דיירים',
         needsPainting: 'נדרשת צביעה',
+
+        // Coming Soon Waitlist
+
+        language_toggle: 'English',
+
         needsPaintingDesc: 'האם נדרשת צביעה בעת פינוי הנכס?',
         specialClausesPlaceholder: 'הכנס תנאים מיוחדים כאן...',
         guarantees: 'ביטחונות',
@@ -2195,6 +2232,30 @@ export const translations: Record<string, any> = {
         construction: 'מדד תשומות הבנייה',
         usd: 'דולר ארה"ב',
         eur: 'אירו',
+        unnamed: 'ללא שם',
+        upcoming_payment: 'תשלום קרוב',
+        contract_expiry: 'סיום חוזה',
+        overdue_payment: 'תשלום בפיגור',
+        coming_soon_title: 'הדור הבא של ניהול נכסים',
+        coming_soon_subtitle: 'אנחנו בונים את הפלטפורמה המתקדמת ביותר לניהול נכסים, חוזים ושוכרים. הצטרפו לרשימת ההמתנה וקבלו עדכון כשנעלה לאוויר!',
+        coming_soon_feature_1: 'אינטגרציות AI לחוזים חכמים',
+        coming_soon_feature_2: 'תזכורות והמלצות לייעול עבודה',
+        coming_soon_feature_3: 'לוח בקרה פיננסי אוטומטי',
+        coming_soon_name_label: 'שם מלא (חובה)',
+        coming_soon_email_label: 'דואר אלקטרוני (חובה)',
+        coming_soon_phone_label: 'טלפון (רשות)',
+        coming_soon_cta: 'הצטרפו לרשימת ההמתנה',
+        coming_soon_success: 'תודה על ההרשמה! נעדכן אותך בקרוב.',
+        coming_soon_error: 'אירעה שגיאה. אנא נסו שוב מאוחר יותר.',
+        coming_soon_already_registered: 'תודה רבה! כתובת המייל הזו כבר נמצאת ברשימה.',
+        coming_soon_slide_1_title: 'ניהול חוזים מתקדם',
+        coming_soon_slide_1_desc: 'מעקב דינמי אחר תאריכי סיום, אופציות וכל פרטי החוזה.',
+        coming_soon_slide_2_title: 'מחשבון הצמדה חכם',
+        coming_soon_slide_2_desc: 'חישוב מדויק של שכר דירה צמוד למדד בלחיצת כפתור.',
+        coming_soon_slide_3_title: 'מעקב פיננסי אוטומטי',
+        coming_soon_slide_3_desc: 'שליטה מלאה בתשלומים, חובות, והכנסות מכל הנכסים יחד.',
+        coming_soon_slide_4_title: 'עוזר A.I. אישי',
+        coming_soon_slide_4_desc: 'ניתוח נתונים, הפקת תובנות וניהול אוטומטי של הנכסים בעזרת בינה מלאכותית.',
     },
     en: {
         appName: 'RentMate',
@@ -2221,6 +2282,8 @@ export const translations: Record<string, any> = {
         all: 'All',
         active: 'Active',
         archived: 'Archived',
+        ACTIVE: 'Active',
+        ARCHIVED: 'Archived',
         legal_management: 'Legal Management',
         active_contract: 'Active Contract',
         archived_contract: 'Archived Contract',
@@ -2544,7 +2607,34 @@ export const translations: Record<string, any> = {
         auth_confirmation_sent: 'We sent a confirmation email to {email}',
         auth_invalid_credentials: 'Invalid login credentials',
         auth_email_not_confirmed: 'Email not confirmed yet',
-    },
+        noTenantsFound: 'No tenants found',
+        upcoming_payment: 'Upcoming Payment',
+
+        // Coming Soon Waitlist
+        coming_soon_title: 'The New Era of Property Management',
+        coming_soon_subtitle: 'We are building an advanced AI platform for property and tenant management. Join the waitlist to be notified!',
+        coming_soon_feature_1: 'AI integrations for smart contracts',
+        coming_soon_feature_2: 'Reminders and recommendations for increased efficiency',
+        coming_soon_feature_3: 'Automated financial tracking dashboard',
+        coming_soon_name_label: 'Full Name (Required)',
+        coming_soon_email_label: 'Email (Required)',
+        coming_soon_phone_label: 'Phone (Optional)',
+        coming_soon_cta: 'Join the Waitlist',
+        coming_soon_success: 'Thanks for signing up! We will notify you soon.',
+        coming_soon_error: 'An error occurred. Please try again later.',
+        coming_soon_already_registered: 'Thank you! This email is already on our list.',
+        coming_soon_slide_1_title: 'Advanced Contract Management',
+        coming_soon_slide_1_desc: 'Dynamic tracking of end dates, options, and all contract details.',
+        coming_soon_slide_2_title: 'Smart Indexation Calculator',
+        coming_soon_slide_2_desc: 'Accurate CPI-linked rent calculation with the click of a button.',
+        coming_soon_slide_3_title: 'Automated Financial Tracking',
+        coming_soon_slide_3_desc: 'Full control over payments, debts, and income from all properties together.',
+        coming_soon_slide_4_title: 'Personal A.I. Assistant',
+        coming_soon_slide_4_desc: 'Data analysis, insight generation, and automated property management using artificial intelligence.',
+        language_toggle: 'עברית',
+        contract_expiry: 'Contract Expiry',
+        overdue_payment: 'Overdue Payment',
+    }
 };
 
 export type TranslationKey = TranslationKeys;

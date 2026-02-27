@@ -16,8 +16,8 @@ const PageLoader = () => (
   </div>
 );
 
-// Eager load critical pages
 import { WelcomeLanding } from './pages/WelcomeLanding';
+import { ComingSoon } from './pages/ComingSoon';
 import WelcomeLandingStitch from './pages/WelcomeLandingStitch';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
@@ -67,7 +67,7 @@ const AutomationTracking = lazy(() => import('./pages/admin/AutomationTracking')
 const AdminErrorLogs = lazy(() => import('./pages/admin/AdminErrorLogs'));
 const SupportTickets = lazy(() => import('./pages/admin/SupportTickets'));
 const SupportChat = lazy(() => import('./pages/admin/SupportChat'));
-
+const AdminWaitlist = lazy(() => import('./pages/admin/AdminWaitlist'));
 const PlanManagement = lazy(() => import('./pages/admin/PlanManagement'));
 const Pricing = lazy(() => import('./pages/Pricing'));
 const PrivacyPolicy = lazy(() => import('./pages/legal/PrivacyPolicy'));
@@ -101,7 +101,7 @@ const RootLayout = () => {
     location.pathname.includes('/onboarding') ||
     activeLayer?.type === 'wizard';
 
-  const hideChatPaths = ['/login', '/signup', '/forgot-password', '/reset-password'];
+  const hideChatPaths = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/accessibility'];
   const shouldHideChat = hideChatPaths.includes(location.pathname) || isWizard;
 
   return (
@@ -124,7 +124,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <WelcomeLanding />,
+        element: <ComingSoon />,
       },
       {
         path: "/welcome-new",
@@ -346,6 +346,10 @@ const router = createBrowserRouter([
               {
                 path: "tickets",
                 element: <SupportTickets />,
+              },
+              {
+                path: "waitlist",
+                element: <AdminWaitlist />,
               },
               {
                 path: "chat",

@@ -245,7 +245,7 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
             // Also fetch channel preferences
             const { data: autoSettings, error: autoError } = await supabase
                 .from('user_automation_settings')
-                .select('whatsapp_notifications_enabled')
+                .select('whatsapp_notifications_enabled, email_notifications_enabled')
                 .eq('user_id', user.id)
                 .single();
 

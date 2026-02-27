@@ -6,7 +6,7 @@ import { NotificationSuccessIcon, NotificationWarningIcon, NotificationErrorIcon
 import { useNotifications } from '../../contexts/NotificationsContext';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from '../../hooks/useTranslation';
+import { useTranslation, type TranslationKeys } from '../../hooks/useTranslation';
 import { WhatsAppService } from '../../services/whatsapp.service';
 import { cn } from '../../lib/utils';
 import { useEffect, useRef } from 'react';
@@ -148,7 +148,16 @@ export function NotificationCenter() {
                                                             ? 'font-semibold text-foreground dark:text-white'
                                                             : 'font-medium text-gray-700 dark:text-gray-300'
                                                             }`}>
-                                                            {notification.title}
+                                                            {(() => {
+                                                                // Dynamic translation mapping for legacy English titles
+                                                                const titleMap: Record<string, TranslationKeys> = {
+                                                                    'Upcoming Payment': 'upcoming_payment',
+                                                                    'Contract Expiring Soon': 'contract_expiry',
+                                                                    'Unpaid Rent Notification': 'overdue_payment'
+                                                                };
+                                                                const key = titleMap[notification.title];
+                                                                return key ? t(key) : notification.title;
+                                                            })()}
                                                         </p>
                                                         <p className="text-sm text-muted-foreground dark:text-muted-foreground mt-1 line-clamp-2">
                                                             {notification.message}

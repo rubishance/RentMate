@@ -1,8 +1,7 @@
-import React from 'react';
 import { useTranslation } from '../hooks/useTranslation';
+import { useUserPreferences } from '../contexts/UserPreferencesContext';
 import { PageHeader } from '../components/common/PageHeader';
 import { Accessibility, Mail, Phone, ExternalLink } from 'lucide-react';
-import { useUserPreferences } from '../contexts/UserPreferencesContext';
 
 export function AccessibilityStatement() {
     const { t } = useTranslation();
@@ -10,7 +9,7 @@ export function AccessibilityStatement() {
     const isRtl = preferences.language === 'he';
 
     return (
-        <div className="min-h-screen bg-secondary dark:bg-foreground pb-20">
+        <div className="min-h-screen bg-secondary dark:bg-foreground pb-20" dir={isRtl ? 'rtl' : 'ltr'}>
             <div className="max-w-4xl mx-auto px-4 py-8">
                 <PageHeader
                     title={isRtl ? 'הצהרת נגישות' : 'Accessibility Statement'}
