@@ -250,8 +250,8 @@ export function NotificationsSettingsModal({ isOpen, onClose }: { isOpen: boolea
                 .single();
 
             if (!autoError && autoSettings) {
-                setWhatsappEnabled(autoSettings.whatsapp_notifications_enabled ?? false);
-                setEmailEnabled(autoSettings.email_notifications_enabled ?? true);
+                setWhatsappEnabled((autoSettings as any).whatsapp_notifications_enabled ?? false);
+                setEmailEnabled((autoSettings as any).email_notifications_enabled ?? true);
             }
         } catch (error) {
             console.error('Error loading notification preferences:', error);

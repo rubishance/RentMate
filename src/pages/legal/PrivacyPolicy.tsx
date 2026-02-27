@@ -1,11 +1,11 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../hooks/useTranslation';
 import { PageHeader } from '../../components/common/PageHeader';
 import { GlassCard } from '../../components/common/GlassCard';
 
 export default function PrivacyPolicy() {
-    const { t, i18n } = useTranslation();
-    const isRtl = i18n.dir() === 'rtl';
+    const { t, lang } = useTranslation();
+    const isRtl = lang === 'he';
     const lastUpdatedDate = new Date('2026-02-27').toLocaleDateString(isRtl ? 'he-IL' : 'en-US');
 
     return (

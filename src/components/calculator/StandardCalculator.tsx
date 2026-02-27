@@ -74,7 +74,7 @@ export function StandardCalculator({ initialValues, shouldAutoCalculate }: Stand
 
             const res = await calculateStandard({
                 baseRent: parseFloat(baseRent),
-                linkageType,
+                linkageType: linkageType as any,
                 baseDate: processedBaseDate,
                 targetDate: processedTargetDate,
                 partialLinkage: parseFloat(partialLinkage) || 100,
