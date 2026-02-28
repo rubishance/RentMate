@@ -101,7 +101,7 @@ const RootLayout = () => {
     location.pathname.includes('/onboarding') ||
     activeLayer?.type === 'wizard';
 
-  const hideChatPaths = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/accessibility'];
+  const hideChatPaths = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/accessibility', '/legal/privacy', '/legal/terms'];
   const shouldHideChat = hideChatPaths.includes(location.pathname) || isWizard;
 
   return (
