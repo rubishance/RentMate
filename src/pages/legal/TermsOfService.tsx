@@ -33,6 +33,9 @@ export default function TermsOfService() {
                             <div className="prose prose-slate dark:prose-invert max-w-none space-y-6 text-slate-700 dark:text-slate-300" dir="rtl">
                                 <h2 className="text-2xl font-bold text-slate-900 dark:text-white">תנאי שימוש ושימוש הוגן (Fair Use)</h2>
                                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">עודכן לאחרונה: {lastUpdatedDate}</p>
+                                <p className="text-sm italic text-slate-500 dark:text-slate-400 mb-2">
+                                    * האמור באתר, באפליקציה ובתקנון זה מנוסח בלשון זכר מטעמי נוחות בלבד, אך מתייחס ופונה לשני המינים כאחד באופן שווה וללא כל הבדל.
+                                </p>
 
                                 <p className="text-base md:text-lg leading-relaxed">
                                     ברוכים הבאים ל-RentMate. השימוש באתר ובאפליקציה כפוף לתנאים המפורטים להלן.

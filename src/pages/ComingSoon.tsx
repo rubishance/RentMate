@@ -381,7 +381,15 @@ export function ComingSoon() {
                         {isRtl ? 'הצהרת נגישות' : 'Accessibility Statement'}
                     </a>
                 </div>
+                {isRtl && (
+                    <div className="mt-4 text-center">
+                        <p className="text-[10px] md:text-xs text-slate-400 dark:text-slate-500 max-w-sm mx-auto leading-relaxed">
+                            * האתר והאפליקציה מנוסחים בלשון זכר מטעמי נוחות בלבד, אך מתייחסים ופונים לשני המינים כאחד.
+                        </p>
+                    </div>
+                )}
             </div >
+
 
             {/* Right Column - Visuals */}
             <div className="flex w-full min-h-[500px] md:min-h-0 md:w-1/2 md:h-full relative overflow-hidden bg-slate-100 dark:bg-slate-900 border-t md:border-t-0 md:border-l border-slate-200 dark:border-slate-800 items-center justify-center p-4 sm:p-8 lg:p-16">
