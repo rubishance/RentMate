@@ -386,9 +386,9 @@ const UserManagement = () => {
                                     />
                                 </th>
                                 <th className="px-3 py-2">
-                                    <div className="flex flex-col gap-1">
+                                    <div className="flex items-center gap-2">
                                         <Select
-                                            className="h-7 text-[10px]"
+                                            className="h-7 text-[10px] min-w-[100px]"
                                             value={columnFilters.role}
                                             onChange={(val) => setColumnFilters({ ...columnFilters, role: val })}
                                             options={[
@@ -399,7 +399,7 @@ const UserManagement = () => {
                                             ]}
                                         />
                                         <Select
-                                            className="h-7 text-[10px]"
+                                            className="h-7 text-[10px] min-w-[100px]"
                                             value={columnFilters.plan}
                                             onChange={(val) => setColumnFilters({ ...columnFilters, plan: val })}
                                             options={[
