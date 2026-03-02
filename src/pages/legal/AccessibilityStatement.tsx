@@ -75,7 +75,6 @@ export default function AccessibilityStatement() {
                             <ul className="list-none space-y-1 mt-2">
                                 <li>שם: צוות התמיכה</li>
                                 <li>אימייל: <a href={`mailto:${contactInfo.email}`} className="text-brand-primary hover:underline">{contactInfo.email}</a></li>
-                                <li>טלפון: <a href={`tel:${contactInfo.phone.replace(/[^0-9+]/g, '')}`} className="text-brand-primary hover:underline">{contactInfo.phone}</a></li>
                             </ul>
                         </div>
 

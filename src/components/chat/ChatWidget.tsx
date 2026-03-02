@@ -331,11 +331,11 @@ export function ChatWidget() {
     if (isAuthPage) return null;
 
     return (
-        <div className="fixed top-0 left-0 md:left-64 right-0 z-[60] pointer-events-none flex justify-center">
+        <div className="fixed top-16 md:top-4 left-0 md:left-64 right-0 z-[60] pointer-events-none flex justify-center">
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="pointer-events-auto flex flex-col items-center space-y-4 w-full px-4 max-w-[500px] pt-4"
+                className="pointer-events-auto flex flex-col items-center space-y-4 w-full px-4 max-w-[500px]"
             >
                 <AnimatePresence>
                     {isOpen && (

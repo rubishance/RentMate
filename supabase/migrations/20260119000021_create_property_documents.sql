@@ -85,3 +85,9 @@ COMMENT ON TABLE property_documents IS 'Stores metadata for all property-related
 COMMENT ON COLUMN property_documents.category IS 'Type of document: photo, video, utility bills, maintenance, etc.';
 COMMENT ON COLUMN property_documents.storage_bucket IS 'Supabase storage bucket name';
 COMMENT ON COLUMN property_documents.storage_path IS 'Full path to file in storage bucket';
+
+-- Add folder_id to property_documents
+ALTER TABLE property_documents
+ADD COLUMN IF NOT EXISTS folder_id UUID REFERENCES document_folders(id) ON DELETE CASCADE;
+
+CREATE INDEX IF NOT EXISTS idx_property_documents_folder ON property_documents(folder_id);

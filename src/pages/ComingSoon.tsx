@@ -384,15 +384,15 @@ export function ComingSoon() {
             </div >
 
             {/* Right Column - Visuals */}
-            < div className="hidden md:flex md:w-1/2 md:h-full relative overflow-hidden bg-slate-100 dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 items-center justify-center p-8 lg:p-16" >
+            <div className="flex w-full min-h-[500px] md:min-h-0 md:w-1/2 md:h-full relative overflow-hidden bg-slate-100 dark:bg-slate-900 border-t md:border-t-0 md:border-l border-slate-200 dark:border-slate-800 items-center justify-center p-4 sm:p-8 lg:p-16">
 
                 {/* Decorative Background Elements */}
-                < div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-primary-100/50 via-slate-100/10 to-transparent dark:from-primary-900/10 dark:via-slate-900/10 dark:to-transparent z-0 pointer-events-none" />
+                <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-primary-100/50 via-slate-100/10 to-transparent dark:from-primary-900/10 dark:via-slate-900/10 dark:to-transparent z-0 pointer-events-none" />
                 <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/10 dark:bg-blue-600/5 filter blur-3xl rounded-full z-0 pointer-events-none" />
                 <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-teal-500/10 dark:bg-teal-600/5 filter blur-3xl rounded-full z-0 pointer-events-none" />
 
                 {/* Carousel */}
-                <div className="absolute top-4 left-4 right-4 bottom-24 lg:top-8 lg:left-8 lg:right-8 lg:bottom-4 px-20 flex flex-col justify-center items-center h-full z-10 pt-16">
+                <div className="absolute top-4 left-4 right-4 bottom-36 md:bottom-24 lg:top-8 lg:left-8 lg:right-8 lg:bottom-4 px-4 md:px-20 flex flex-col justify-center items-center z-10 pt-4 md:pt-16">
                     <AnimatePresence mode="wait">
                         <motion.img
                             key={currentImageIndex}
@@ -402,13 +402,13 @@ export function ComingSoon() {
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.98, y: -10 }}
                             transition={{ duration: 0.8, type: "spring" }}
-                            className="max-w-full max-h-full object-contain rounded-xl shadow-2xl relative border border-slate-200/50 dark:border-slate-700/50"
+                            className="max-w-full max-h-[300px] md:max-h-full object-contain rounded-xl shadow-2xl relative border border-slate-200/50 dark:border-slate-700/50"
                         />
                     </AnimatePresence>
                 </div>
 
                 {/* Overlay Graphic Element */}
-                <div className="absolute bottom-8 right-8 left-8 z-30 flex justify-center pointer-events-none">
+                <div className="absolute bottom-4 md:bottom-8 right-4 md:right-8 left-4 md:left-8 z-30 flex justify-center pointer-events-none">
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={`content-${currentImageIndex}`}
@@ -417,24 +417,24 @@ export function ComingSoon() {
                             exit={{ opacity: 0, y: -10 }}
                             transition={{ duration: 0.4 }}
                         >
-                            <GlassCard className="w-[300px] sm:w-[380px] h-[140px] flex flex-col justify-center p-6 border-white/20 bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl text-slate-900 dark:text-white shadow-xl pointer-events-auto">
-                                <div className={`flex items-center gap-3 mb-2 ${isRtl ? 'flex-row' : 'flex-row'}`} dir={isRtl ? 'rtl' : 'ltr'}>
-                                    <div className="p-2 bg-primary-500 rounded-lg text-white">
+                            <GlassCard className="w-[300px] sm:w-[380px] h-auto min-h-[120px] md:h-[140px] flex flex-col justify-center p-4 md:p-6 border-white/20 bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl text-slate-900 dark:text-white shadow-xl pointer-events-auto">
+                                <div className={`flex items-center gap-2 md:gap-3 mb-2 ${isRtl ? 'flex-row' : 'flex-row'}`} dir={isRtl ? 'rtl' : 'ltr'}>
+                                    <div className="p-1.5 md:p-2 bg-primary-500 rounded-lg text-white">
                                         {(() => {
                                             const Icon = SLIDE_CONTENT[currentImageIndex].icon;
-                                            return <Icon className="w-5 h-5" />;
+                                            return <Icon className="w-4 h-4 md:w-5 md:h-5" />;
                                         })()}
                                     </div>
-                                    <h4 className="font-bold">{SLIDE_CONTENT[currentImageIndex].title}</h4>
+                                    <h4 className="font-bold text-sm md:text-base">{SLIDE_CONTENT[currentImageIndex].title}</h4>
                                 </div>
-                                <p className="text-sm text-slate-700 dark:text-slate-300" dir={isRtl ? 'rtl' : 'ltr'}>
+                                <p className="text-xs md:text-sm text-slate-700 dark:text-slate-300" dir={isRtl ? 'rtl' : 'ltr'}>
                                     {SLIDE_CONTENT[currentImageIndex].desc}
                                 </p>
                             </GlassCard>
                         </motion.div>
                     </AnimatePresence>
                 </div>
-            </div >
+            </div>
         </div >
     );
 }

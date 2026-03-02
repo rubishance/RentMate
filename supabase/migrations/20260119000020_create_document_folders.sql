@@ -54,10 +54,5 @@ CREATE POLICY "Users can delete folders for their properties"
         )
     );
 
--- Add folder_id to property_documents
-ALTER TABLE property_documents
-ADD COLUMN IF NOT EXISTS folder_id UUID REFERENCES document_folders(id) ON DELETE CASCADE;
-
 -- Create index for performance
 CREATE INDEX IF NOT EXISTS idx_document_folders_property_category ON document_folders(property_id, category);
-CREATE INDEX IF NOT EXISTS idx_property_documents_folder ON property_documents(folder_id);
