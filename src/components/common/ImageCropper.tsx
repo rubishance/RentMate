@@ -125,8 +125,8 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel, aspect = 4 / 
                             disabled={loading}
                             className={cn(
                                 "flex items-center gap-2 px-8 py-3 rounded-xl",
-                                "bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-medium",
-                                "hover:from-indigo-500 hover:to-violet-500 transition-all shadow-jewel",
+                                "bg-primary text-primary-foreground font-medium",
+                                "hover:brightness-110 transition-all shadow-jewel",
                                 "disabled:opacity-50 disabled:cursor-not-allowed"
                             )}
                         >

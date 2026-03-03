@@ -439,7 +439,7 @@ export function RedactionStudio({ images, onConfirm, onCancel }: RedactionStudio
                     <button
                         onClick={handleConfirm}
                         disabled={isProcessing}
-                        className="w-full lg:w-auto flex items-center justify-center gap-2 px-6 lg:px-8 py-3 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 rounded-lg font-bold text-white shadow-lg shadow-green-900/20 transform hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-70 disabled:cursor-wait text-sm lg:text-base"
+                        className="w-full lg:w-auto flex items-center justify-center gap-2 px-6 lg:px-8 py-3 bg-secondary hover:brightness-110 rounded-lg font-bold text-secondary-foreground shadow-lg shadow-secondary/20 transform hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-70 disabled:cursor-wait text-sm lg:text-base"
                     >
                         {isProcessing ? 'מעבד...' : (
                             <>

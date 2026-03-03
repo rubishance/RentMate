@@ -79,10 +79,10 @@ export function MaintenanceTracker() {
                 </GlassCard>
 
                 <GlassCard variant="deep" className="p-8 rounded-[3rem] flex flex-col justify-between min-h-[160px] group hover:shadow-jewel transition-all duration-700 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
                     <div className="flex items-center justify-between relative z-10">
                         <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40 lowercase">{t('totalTickets') || 'Total Tickets'}</span>
-                        <div className="w-12 h-12 rounded-xl glass-premium flex items-center justify-center text-indigo-500 border-white/5 shadow-minimal group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
+                        <div className="w-12 h-12 rounded-xl glass-premium flex items-center justify-center text-primary border-white/5 shadow-minimal group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
                             <Filter className="w-5 h-5" />
                         </div>
                     </div>

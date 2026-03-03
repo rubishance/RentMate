@@ -34,7 +34,7 @@ export default function WelcomeLandingStitch() {
             title: "סריקת חוזים בבינה מלאכותית",
             description: "ה-AI שלנו קורא את החוזה עבורך, מחלץ את הסעיפים החשובים ומזין את הנתונים למערכת באופן אוטומטי.",
             icon: <FileSearch className="w-8 h-8" />,
-            color: "from-primary to-indigo-600",
+            color: "from-primary to-primary",
             tag: "בלעדי"
         },
         {
@@ -61,7 +61,7 @@ export default function WelcomeLandingStitch() {
     ];
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white selection:bg-indigo-500/30 selection:text-indigo-200" dir="rtl">
+        <div className="min-h-screen bg-[#050505] text-white selection:bg-primary/30 selection:text-indigo-200" dir="rtl">
             {/* Navigation */}
             <nav className={cn(
                 "fixed top-0 left-0 right-0 z-50 transition-all duration-500 px-6 py-4",
@@ -70,11 +70,11 @@ export default function WelcomeLandingStitch() {
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-8">
                         <div className="flex items-center gap-2 cursor-pointer group" onClick={() => navigate('/')}>
-                            <div className="w-10 h-10 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:scale-110 transition-transform">
+                            <div className="w-10 h-10 bg-gradient-to-tr from-primary to-secondary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
                                 <LayoutDashboard className="w-6 h-6 text-white" />
                             </div>
                             <span className="text-2xl font-black tracking-tighter uppercase">
-                                Rent<span className="text-indigo-500">Mate</span>
+                                Rent<span className="text-primary">Mate</span>
                             </span>
                         </div>
 
@@ -108,8 +108,8 @@ export default function WelcomeLandingStitch() {
             <section className="relative pt-32 pb-20 overflow-hidden lg:pt-48 lg:pb-32 min-h-screen flex items-center">
                 {/* Background Gradients */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full pointer-events-none">
-                    <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/20 blur-[120px] rounded-full animate-pulse" />
-                    <div className="absolute bottom-[20%] right-[-5%] w-[40%] h-[40%] bg-violet-600/10 blur-[120px] rounded-full animate-pulse delay-700" />
+                    <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/20 blur-[120px] rounded-full animate-pulse" />
+                    <div className="absolute bottom-[20%] right-[-5%] w-[40%] h-[40%] bg-secondary/10 blur-[120px] rounded-full animate-pulse delay-700" />
                 </div>
 
                 <div className="max-w-7xl mx-auto px-6 relative z-10">
@@ -134,7 +134,7 @@ export default function WelcomeLandingStitch() {
                                 className="text-6xl md:text-8xl lg:text-[6.5rem] font-black tracking-tighter leading-[0.85] text-white"
                             >
                                 ניהול שכירות <br />
-                                <span className="bg-gradient-to-r from-indigo-400 via-violet-400 to-indigo-500 bg-clip-text text-transparent">
+                                <span className="bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent">
                                     על אוטומט.
                                 </span>
                             </motion.h1>
@@ -157,7 +157,7 @@ export default function WelcomeLandingStitch() {
                             >
                                 <Button
                                     onClick={() => navigate('/login?mode=signup')}
-                                    className="h-16 px-10 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm uppercase tracking-widest rounded-3xl shadow-2xl shadow-indigo-600/30 group"
+                                    className="h-16 px-10 bg-primary hover:bg-primary text-white font-black text-sm uppercase tracking-widest rounded-3xl shadow-2xl shadow-primary/30 group"
                                 >
                                     התחל עכשיו חינם
                                     <ArrowRight className="mr-3 w-5 h-5 transition-transform group-hover:-translate-x-1" />
@@ -166,7 +166,7 @@ export default function WelcomeLandingStitch() {
                                     variant="outline"
                                     className="h-16 px-10 border-white/10 bg-white/5 hover:bg-white/10 text-white font-black text-sm uppercase tracking-widest rounded-3xl backdrop-blur-md flex gap-3"
                                 >
-                                    <PlayCircle className="w-5 h-5 text-indigo-400" />
+                                    <PlayCircle className="w-5 h-5 text-primary" />
                                     ראה איך זה עובד
                                 </Button>
                             </motion.div>
@@ -198,7 +198,7 @@ export default function WelcomeLandingStitch() {
                             >
                                 {/* 3D-ish Bot Placeholder/Visual */}
                                 <div className="relative group">
-                                    <div className="absolute inset-0 bg-indigo-600/20 blur-[100px] rounded-full scale-150 group-hover:scale-175 transition-transform duration-1000" />
+                                    <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full scale-150 group-hover:scale-175 transition-transform duration-1000" />
                                     <BotFullBody size={450} />
                                 </div>
                             </motion.div>
@@ -226,13 +226,13 @@ export default function WelcomeLandingStitch() {
                                 className="absolute bottom-20 left-0 bg-black/40 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl"
                             >
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-lg bg-indigo-500/20 flex items-center justify-center">
-                                        <Sparkles className="w-5 h-5 text-indigo-400" />
+                                    <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                                        <Sparkles className="w-5 h-5 text-primary" />
                                     </div>
                                     <div>
                                         <div className="text-[10px] text-white/40 uppercase font-black">AI מנתח חוזה...</div>
                                         <div className="w-20 h-1.5 bg-white/10 rounded-full mt-1 overflow-hidden">
-                                            <motion.div animate={{ x: [-80, 80] }} transition={{ repeat: Infinity, duration: 1.5 }} className="w-1/2 h-full bg-indigo-500 rounded-full" />
+                                            <motion.div animate={{ x: [-80, 80] }} transition={{ repeat: Infinity, duration: 1.5 }} className="w-1/2 h-full bg-primary rounded-full" />
                                         </div>
                                     </div>
                                 </div>
@@ -269,7 +269,7 @@ export default function WelcomeLandingStitch() {
                                     </span>
                                 </div>
 
-                                <h3 className="text-2xl font-black tracking-tighter mb-4 group-hover:text-indigo-400 transition-colors">
+                                <h3 className="text-2xl font-black tracking-tighter mb-4 group-hover:text-primary transition-colors">
                                     {feature.title}
                                 </h3>
                                 <p className="text-white/40 text-lg leading-relaxed group-hover:text-white/60 transition-colors">
@@ -323,9 +323,9 @@ export default function WelcomeLandingStitch() {
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="flex flex-col md:flex-row items-center justify-between gap-10">
                         <div className="flex items-center gap-2">
-                            <LayoutDashboard className="w-5 h-5 text-indigo-500" />
+                            <LayoutDashboard className="w-5 h-5 text-primary" />
                             <span className="text-lg font-black tracking-tighter uppercase">
-                                Rent<span className="text-indigo-500">Mate</span>
+                                Rent<span className="text-primary">Mate</span>
                             </span>
                         </div>
 

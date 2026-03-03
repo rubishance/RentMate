@@ -23,7 +23,7 @@ export function QuickActionFAB() {
             id: 'add_contract',
             icon: <FileText className="w-5 h-5" />,
             label: t('newContract') || 'Add Contract',
-            color: 'bg-blue-500',
+            color: 'bg-primary',
             onClick: () => {
                 push('contract_wizard', {}, { isExpanded: true, title: t('newContract') });
                 setIsOpen(false);
@@ -33,7 +33,7 @@ export function QuickActionFAB() {
             id: 'add_asset',
             icon: <Home className="w-5 h-5" />,
             label: t('addProperty') || 'Add Asset',
-            color: 'bg-emerald-500',
+            color: 'bg-secondary',
             onClick: () => {
                 push('property_wizard', {}, { isExpanded: true, title: t('addProperty') });
                 setIsOpen(false);
@@ -43,7 +43,7 @@ export function QuickActionFAB() {
             id: 'add_payment',
             icon: <CreditCard className="w-5 h-5" />,
             label: t('logPayment') || 'Add Payment',
-            color: 'bg-amber-500',
+            color: 'bg-primary/90',
             onClick: () => {
                 setIsPaymentModalOpen(true);
                 setIsOpen(false);
@@ -94,10 +94,10 @@ export function QuickActionFAB() {
                     layout
                     onClick={() => setIsOpen(!isOpen)}
                     className={cn(
-                        "hidden md:flex w-16 h-16 rounded-[1.5rem] items-center justify-center text-white shadow-[0_20px_50px_rgba(79,70,229,0.3)] transition-all duration-500",
+                        "hidden md:flex w-16 h-16 rounded-[1.5rem] items-center justify-center text-primary-foreground shadow-[0_20px_50px_rgba(var(--primary)_/_0.3)] transition-all duration-500",
                         isOpen
                             ? "bg-neutral-900 dark:bg-neutral-800 rotate-90 scale-90"
-                            : "bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-600 hover:shadow-[0_20px_50px_rgba(79,70,229,0.5)] hover:-translate-y-1"
+                            : "bg-primary hover:shadow-[0_20px_50px_rgba(var(--primary)_/_0.5)] hover:-translate-y-1"
                     )}
                 >
                     {isOpen ? <X className="w-8 h-8" /> : <Plus className="w-8 h-8" />}

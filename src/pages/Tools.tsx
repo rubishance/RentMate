@@ -15,9 +15,9 @@ export function Tools() {
     return (
         <div className="space-y-12 px-4 pt-12 pb-32 animate-in fade-in duration-1000">
             <div className="space-y-4 px-4 md:px-0">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/5 dark:bg-indigo-500/10 backdrop-blur-md rounded-full border border-indigo-500/10 shadow-sm mb-2">
-                    <TrendingUp className="w-3 h-3 text-indigo-500" />
-                    <span className="text-[9px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 dark:bg-primary/10 backdrop-blur-md rounded-full border border-primary/10 shadow-sm mb-2">
+                    <TrendingUp className="w-3 h-3 text-primary" />
+                    <span className="text-[9px] font-black uppercase tracking-widest text-primary dark:text-primary">
                         {lang === 'he' ? 'מרכז הכלים' : 'Tools Hub'}
                     </span>
                 </div>

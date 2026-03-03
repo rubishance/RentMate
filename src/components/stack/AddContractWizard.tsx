@@ -780,7 +780,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
             {/* PROGRESS TRACKER */}
             <div className="absolute top-0 inset-x-0 h-1 bg-black/5 dark:bg-white/5 z-[100]">
                 <motion.div
-                    className="h-full bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.5)]"
+                    className="h-full bg-primary shadow-lg shadow-primary/20"
                     initial={{ width: 0 }}
                     animate={{ width: `${(step / STEPS.length) * 100}%` }}
                 />
@@ -794,7 +794,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                         animate={{ opacity: 1, scale: 1, x: 0 }}
                         exit={{ opacity: 0, scale: 0.8, x: -20 }}
                         onClick={() => setIsContractViewerOpen(!isContractViewerOpen)}
-                        className="fixed top-24 left-6 z-50 glass-premium dark:bg-neutral-800/60 shadow-lg border border-white/5 p-3 rounded-full flex items-center gap-3 hover:scale-105 transition-all text-indigo-500"
+                        className="fixed top-24 left-6 z-50 glass-premium dark:bg-neutral-800/60 shadow-lg border border-white/5 p-3 rounded-full flex items-center gap-3 hover:scale-105 transition-all text-primary"
                     >
                         {isContractViewerOpen ? <ChevronDown className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
                         <span className="text-[10px] font-black uppercase tracking-widest pr-1 text-foreground">{t('hideContract')}</span>
@@ -844,7 +844,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                         key={s.id}
                                         className={cn(
                                             "w-2 h-2 rounded-full transition-all duration-700",
-                                            s.id === step ? "w-8 bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]" : s.id < step ? "bg-indigo-300 dark:bg-indigo-900" : "bg-slate-200 dark:bg-neutral-800"
+                                            s.id === step ? "w-8 bg-primary shadow-md shadow-primary/30" : s.id < step ? "bg-primary/50 dark:bg-primary/30" : "bg-slate-200 dark:bg-neutral-800"
                                         )}
                                     />
                                 ))}
@@ -878,7 +878,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                             {step === 1 && (
                                                 <div className="space-y-6">
                                                     {!contractFile && (
-                                                        <div className="bg-gradient-to-l from-indigo-600 to-primary rounded-2xl p-6 text-white flex items-center justify-between shadow-xl">
+                                                        <div className="bg-primary rounded-2xl p-6 text-primary-foreground flex items-center justify-between shadow-xl">
                                                             <div>
                                                                 <h3 className="font-black text-lg mb-1">{t('aiScanTitle')}</h3>
                                                                 <p className="text-white/80 text-sm">{t('aiScanDesc')}</p>

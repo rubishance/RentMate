@@ -235,7 +235,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
             {/* PROGRESS TRACKER */}
             <div className="absolute top-0 inset-x-0 h-1.5 bg-black/5 dark:bg-white/5 z-[100]">
                 <motion.div
-                    className="h-full bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.5)]"
+                    className="h-full bg-primary shadow-lg shadow-primary/20"
                     initial={{ width: 0 }}
                     animate={{ width: `${((currentStep + 1) / STEPS.length) * 100}%` }}
                     transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
@@ -245,7 +245,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
             {/* HEADER */}
             <div className="h-24 flex items-center justify-between px-8 md:px-12 glass-premium dark:bg-neutral-900/60 border-b border-white/5 z-10 pt-4 backdrop-blur-2xl">
                 <div className="flex items-center gap-6">
-                    <div className="w-12 h-12 glass-premium dark:bg-neutral-800/40 rounded-2xl flex items-center justify-center text-indigo-500 shadow-minimal border border-white/5">
+                    <div className="w-12 h-12 glass-premium dark:bg-neutral-800/40 rounded-2xl flex items-center justify-center text-primary shadow-minimal border border-white/5">
                         {STEPS[currentStep].icon}
                     </div>
                     <div className="flex flex-col">
@@ -390,7 +390,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                                     className={cn(
                                                                         "flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border transition-all duration-300 group relative overflow-hidden",
                                                                         isActive
-                                                                            ? "bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-600/20 scale-[1.02] z-10"
+                                                                            ? "bg-primary border-primary text-primary-foreground shadow-md shadow-primary/20 scale-[1.02] z-10"
                                                                             : "bg-background dark:bg-neutral-800/50 border-transparent text-muted-foreground hover:bg-muted/50 hover:scale-[1.01]"
                                                                     )}
                                                                 >
@@ -398,7 +398,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                                         "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300",
                                                                         isActive
                                                                             ? "bg-white/20 text-white"
-                                                                            : "bg-white dark:bg-neutral-800 text-indigo-600 shadow-sm"
+                                                                            : "bg-white dark:bg-neutral-800 text-primary shadow-sm"
                                                                     )}>
                                                                         {React.cloneElement(amenity.icon as any, { className: "w-4 h-4" })}
                                                                     </div>
@@ -411,7 +411,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
 
                                                                     {isActive && (
                                                                         <div className="absolute top-1.5 right-1.5 w-3.5 h-3.5 rounded-full bg-white flex items-center justify-center animate-in zoom-in duration-300">
-                                                                            <Check className="w-2 h-2 text-indigo-600 stroke-[4px]" />
+                                                                            <Check className="w-2 h-2 text-primary stroke-[4px]" />
                                                                         </div>
                                                                     )}
                                                                 </button>

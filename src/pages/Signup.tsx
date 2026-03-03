@@ -126,7 +126,7 @@ export function Signup() {
     };
 
     return (
-        <div className={`min-h-screen flex flex-col items-center justify-start sm:justify-center bg-white dark:bg-[#0a0a0a] py-4 sm:py-12 ${isRtl ? 'text-right' : 'text-left'}`} dir={isRtl ? 'rtl' : 'ltr'}>
+        <div className={`min-h-screen flex flex-col items-center justify-start sm:justify-center bg-white dark:bg-[#0a0a0a] py-4 sm:py-12 ${isRtl ? 'text-right font-hebrew' : 'text-left font-english'}`} dir={isRtl ? 'rtl' : 'ltr'}>
             <Button
                 variant="ghost"
                 size="icon"
@@ -147,7 +147,7 @@ export function Signup() {
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-md px-4 sm:p-0 relative z-10"
+                className="w-full max-w-[420px] px-4 sm:p-0 relative z-10"
             >
                 <Card className="border-border/50 shadow-2xl bg-window">
                     <AnimatePresence mode="wait">
@@ -299,8 +299,8 @@ const SignupFormView = ({
                                 if (i === 1) {
                                     const [p1, p2] = part.split('{privacy}');
                                     return <React.Fragment key={i}>
-                                        <Link to="/legal/terms" className="text-black dark:text-white font-bold hover:underline" target="_blank">{t('termsOfService')}</Link>{p1}
-                                        <Link to="/legal/privacy" className="text-black dark:text-white font-bold hover:underline" target="_blank">{t('privacyPolicy')}</Link>{p2}
+                                        <Link to="/legal/terms" className="font-semibold text-primary hover:text-primary/80 transition-colors underline underline-offset-4 decoration-primary/30 hover:decoration-primary/80 text-[11px] md:text-xs" target="_blank">{t('termsOfService')}</Link>{p1}
+                                        <Link to="/legal/privacy" className="font-semibold text-primary hover:text-primary/80 transition-colors underline underline-offset-4 decoration-primary/30 hover:decoration-primary/80 text-[11px] md:text-xs" target="_blank">{t('privacyPolicy')}</Link>{p2}
                                     </React.Fragment>;
                                 }
                                 return part;

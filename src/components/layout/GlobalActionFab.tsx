@@ -26,7 +26,7 @@ export function GlobalActionFab() {
 
     return (
         <>
-            <div className="fixed-fab-container">
+            <div className="fixed-fab-container hidden md:block">
                 <AnimatePresence>
                     {isOpen && (
                         <>

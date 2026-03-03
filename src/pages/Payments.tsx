@@ -616,9 +616,9 @@ export function Payments() {
             <div className="flex flex-col gap-6">
                 <div className="flex items-center justify-between gap-4">
                     <div className="space-y-1 overflow-hidden">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/5 dark:bg-indigo-500/10 backdrop-blur-md rounded-full border border-indigo-500/10 shadow-sm mb-1">
-                            <CalendarCheck className="w-3 h-3 text-indigo-500" />
-                            <span className="text-[9px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 dark:bg-primary/10 backdrop-blur-md rounded-full border border-primary/10 shadow-sm mb-1">
+                            <CalendarCheck className="w-3 h-3 text-primary" />
+                            <span className="text-[9px] font-black uppercase tracking-widest text-primary dark:text-primary">
                                 {t('financialOverview')}
                             </span>
                         </div>
@@ -650,7 +650,7 @@ export function Payments() {
                                 className={cn(
                                     "flex-1 sm:flex-none px-4 sm:px-6 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 snap-center whitespace-nowrap",
                                     displayMode === tab.id
-                                        ? "bg-white dark:bg-neutral-800 text-indigo-600 shadow-sm border border-slate-200 dark:border-white/10"
+                                        ? "bg-white dark:bg-neutral-800 text-primary shadow-sm border border-slate-200 dark:border-white/10"
                                         : "text-muted-foreground hover:text-foreground"
                                 )}
                             >
@@ -671,7 +671,7 @@ export function Payments() {
                                     className={cn(
                                         "px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300",
                                         sortOrder === tab.id
-                                            ? "bg-white dark:bg-neutral-800 text-indigo-600 shadow-sm border border-slate-200 dark:border-white/10"
+                                            ? "bg-white dark:bg-neutral-800 text-primary shadow-sm border border-slate-200 dark:border-white/10"
                                             : "text-muted-foreground hover:text-foreground"
                                     )}
                                 >
@@ -691,7 +691,7 @@ export function Payments() {
                                     className={cn(
                                         "px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 flex items-center justify-center min-w-[3rem]",
                                         viewStyle === tab.id
-                                            ? "bg-white dark:bg-neutral-800 text-indigo-600 shadow-sm border border-slate-200 dark:border-white/10"
+                                            ? "bg-white dark:bg-neutral-800 text-primary shadow-sm border border-slate-200 dark:border-white/10"
                                             : "text-muted-foreground hover:text-foreground"
                                     )}
                                     title={tab.label}
@@ -706,11 +706,11 @@ export function Payments() {
                             onClick={() => setShowFilters(!showFilters)}
                             className={cn(
                                 "h-12 px-6 rounded-2xl flex items-center justify-center gap-2 transition-all duration-300 flex-1 sm:flex-none",
-                                showFilters ? "bg-indigo-500 text-white shadow-jewel border-indigo-500/50" : "bg-white/50 dark:bg-neutral-800/50 hover:bg-white dark:hover:bg-neutral-800 text-indigo-600 dark:text-indigo-400"
+                                showFilters ? "bg-indigo-500 text-white shadow-jewel border-primary/50" : "bg-white/50 dark:bg-neutral-800/50 hover:bg-white dark:hover:bg-neutral-800 text-primary dark:text-primary"
                             )}
                         >
-                            <Filter className={cn("w-5 h-5", showFilters ? "text-white" : "text-indigo-500")} />
-                            <span className={cn("text-sm font-bold", showFilters ? "text-white" : "text-indigo-600 dark:text-indigo-400")}>{t('filters') || 'Filters'}</span>
+                            <Filter className={cn("w-5 h-5", showFilters ? "text-white" : "text-primary")} />
+                            <span className={cn("text-sm font-bold", showFilters ? "text-white" : "text-primary dark:text-primary")}>{t('filters') || 'Filters'}</span>
                         </Button>
 
                         <Button
@@ -848,7 +848,7 @@ export function Payments() {
                                             <Button
                                                 variant="ghost"
                                                 onClick={resetFilters}
-                                                className="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-700"
+                                                className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-primary"
                                             >
                                                 <RotateCcw className="w-3 h-3 mr-2" />
                                                 {t('resetFilters') || 'Reset'}
@@ -883,11 +883,11 @@ export function Payments() {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
-                <Card glass className="rounded-[2.5rem] border shadow-sm bg-indigo-500/5 border-indigo-500/10">
+                <Card glass className="rounded-[2.5rem] border shadow-sm bg-primary/5 border-primary/10">
                     <CardContent className="p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-8 h-full">
                         <div className="flex items-center gap-8">
                             <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center border border-white/10 shrink-0">
-                                <CalendarCheck className="w-8 h-8 text-indigo-500" />
+                                <CalendarCheck className="w-8 h-8 text-primary" />
                             </div>
                             <div>
                                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60 mb-1 block">{t('monthlyExpected')}</span>
@@ -906,8 +906,8 @@ export function Payments() {
 
                         {/* Per-contract Breakdown */}
                         {Object.values(stats.contractBreakdown).filter(c => c.isRent && c.monthlyExpected > 0).length > 1 && (
-                            <div className="w-full md:w-auto md:min-w-[40%] bg-indigo-500/5 rounded-2xl p-4 border border-indigo-500/10">
-                                <div className="text-[10px] font-black uppercase tracking-widest text-indigo-500/60 mb-3">{t('contractBreakdown') || 'Breakdown'}</div>
+                            <div className="w-full md:w-auto md:min-w-[40%] bg-primary/5 rounded-2xl p-4 border border-primary/10">
+                                <div className="text-[10px] font-black uppercase tracking-widest text-primary/60 mb-3">{t('contractBreakdown') || 'Breakdown'}</div>
                                 <div className="space-y-2">
                                     {Object.values(stats.contractBreakdown)
                                         .filter(c => c.isRent && c.monthlyExpected > 0)
@@ -917,7 +917,7 @@ export function Payments() {
                                                     <span className="text-xs font-bold text-foreground truncate">{contract.name || t('unnamedTenant')}</span>
                                                     <span className="text-[10px] text-muted-foreground truncate">{contract.properties?.address}</span>
                                                 </div>
-                                                <div className="text-xs font-black text-indigo-600 dark:text-indigo-400 shrink-0">
+                                                <div className="text-xs font-black text-primary dark:text-primary shrink-0">
                                                     ₪{contract.monthlyExpected.toLocaleString()}
                                                 </div>
                                             </div>

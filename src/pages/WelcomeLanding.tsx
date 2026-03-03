@@ -354,12 +354,12 @@ export function WelcomeLanding() {
                                     {/* Feature 2: Local Expertise (SEO) - Reverse Layout */}
                                     <div className="flex flex-col lg:flex-row items-center gap-16">
                                         <div className="lg:w-1/2 space-y-8">
-                                            <div className="inline-flex px-4 py-2 rounded-full glass-premium dark:bg-white/5 border border-black/5 dark:border-white/10 text-[10px] font-black uppercase tracking-widest text-indigo-500 shadow-jewel">
+                                            <div className="inline-flex px-4 py-2 rounded-full glass-premium dark:bg-white/5 border border-black/5 dark:border-white/10 text-[10px] font-black uppercase tracking-widest text-primary shadow-jewel">
                                                 {isRtl ? 'דאטה מקומי' : 'Local Data'}
                                             </div>
                                             <h2 className="text-4xl lg:text-5xl font-black tracking-tighter text-foreground">
                                                 {isRtl ? 'שולטים במרכז.' : 'Mastering Central Israel.'} <br />
-                                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-violet-500">
+                                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
                                                     {isRtl ? 'חולון, ת״א והסביבה.' : 'Holon, TLV & Global.'}
                                                 </span>
                                             </h2>
@@ -370,13 +370,13 @@ export function WelcomeLanding() {
                                             </p>
                                         </div>
                                         <div className="lg:w-1/2 relative group">
-                                            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-violet-500/20 blur-[100px] rounded-full opacity-50 group-hover:opacity-75 transition-opacity" />
+                                            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 blur-[100px] rounded-full opacity-50 group-hover:opacity-75 transition-opacity" />
                                             <div className="relative glass-premium dark:bg-black/40 border border-white/20 p-8 rounded-[2.5rem] shadow-2xl -rotate-3 group-hover:-rotate-1 transition-transform duration-700">
                                                 {/* Map Abstract */}
                                                 <div className="aspect-video bg-muted/50 dark:bg-neutral-800 rounded-2xl relative overflow-hidden flex items-center justify-center border border-black/5 dark:border-white/5">
-                                                    <MapPin className="w-16 h-16 text-indigo-500 animate-bounce" />
-                                                    <div className="absolute bottom-4 left-4 right-4 h-2 bg-indigo-500/10 rounded-full overflow-hidden">
-                                                        <div className="h-full w-2/3 bg-indigo-500 rounded-full" />
+                                                    <MapPin className="w-16 h-16 text-primary animate-bounce" />
+                                                    <div className="absolute bottom-4 left-4 right-4 h-2 bg-primary/10 rounded-full overflow-hidden">
+                                                        <div className="h-full w-2/3 bg-primary rounded-full" />
                                                     </div>
                                                 </div>
                                             </div>

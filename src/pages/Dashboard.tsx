@@ -251,7 +251,7 @@ export function Dashboard() {
 
                         <Button
                             onClick={() => window.dispatchEvent(new CustomEvent('TOGGLE_QUICK_ACTIONS'))}
-                            className="h-14 w-14 rounded-2xl p-0 shrink-0 bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-600 text-white shadow-xl shadow-indigo-500/20 hover:scale-105 active:scale-95 transition-all duration-300"
+                            className="h-14 w-14 rounded-2xl p-0 shrink-0 bg-primary text-primary-foreground shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all duration-300"
                             title={t('addNew')}
                         >
                             <Plus className="w-6 h-6" />

@@ -50,7 +50,7 @@ export function ForgotPassword() {
     };
 
     return (
-        <div className={`min-h-screen flex flex-col items-center justify-start sm:justify-center bg-background py-6 sm:py-12 ${isRtl ? 'text-right' : 'text-left'}`} dir={isRtl ? 'rtl' : 'ltr'}>
+        <div className={`min-h-screen flex flex-col items-center justify-start sm:justify-center bg-background py-6 sm:py-12 ${isRtl ? 'text-right font-hebrew' : 'text-left font-english'}`} dir={isRtl ? 'rtl' : 'ltr'}>
             <Button
                 variant="ghost"
                 size="icon"
@@ -72,7 +72,7 @@ export function ForgotPassword() {
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-md px-4 sm:p-0 relative z-10"
+                className="w-full max-w-[420px] px-4 sm:p-0 relative z-10"
             >
                 <Card className="border-border/50 shadow-2xl bg-window">
                     <CardHeader className="space-y-4 pb-2 text-center">

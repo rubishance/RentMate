@@ -103,9 +103,9 @@ export function Settings() {
         <div className="pb-40 pt-8 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300 px-4 md:px-8">
             {/* Header */}
             <div className="space-y-1">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/5 dark:bg-indigo-500/10 backdrop-blur-md rounded-full border border-indigo-500/10 shadow-sm mb-1">
-                    <User className="w-3 h-3 text-indigo-500" />
-                    <span className="text-[9px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 dark:bg-primary/10 backdrop-blur-md rounded-full border border-primary/10 shadow-sm mb-1">
+                    <User className="w-3 h-3 text-primary" />
+                    <span className="text-[9px] font-black uppercase tracking-widest text-primary dark:text-primary">
                         {t('preferencesAndAccount')}
                     </span>
                 </div>
@@ -119,7 +119,7 @@ export function Settings() {
                 onClick={() => setIsEditProfileOpen(true)}
                 className="glass-premium dark:bg-neutral-900/60 border-white/10 rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-10 flex items-center gap-6 md:gap-10 cursor-pointer shadow-minimal hover:shadow-jewel transition-all duration-300 group relative overflow-hidden"
             >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-bl-[4rem] -translate-y-full group-hover:translate-y-0 transition-transform duration-500 pointer-events-none" />
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-[4rem] -translate-y-full group-hover:translate-y-0 transition-transform duration-500 pointer-events-none" />
 
                 <div className="w-16 h-16 md:w-24 md:h-24 rounded-2xl md:rounded-[2rem] bg-white/5 dark:bg-neutral-800/40 flex items-center justify-center text-foreground font-black text-2xl md:text-4xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-minimal border border-white/5">
                     {userData.full_name?.charAt(0) || userData.email?.charAt(0).toUpperCase()}

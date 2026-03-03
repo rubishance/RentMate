@@ -271,9 +271,9 @@ export function Properties() {
             {/* Header */}
             <div className="flex items-center justify-between gap-4">
                 <div className="space-y-1 overflow-hidden">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/5 dark:bg-indigo-500/10 backdrop-blur-md rounded-full border border-indigo-500/10 shadow-sm mb-1">
-                        <Home className="w-3 h-3 text-indigo-500" />
-                        <span className="text-[9px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 dark:bg-primary/10 backdrop-blur-md rounded-full border border-primary/10 shadow-sm mb-1">
+                        <Home className="w-3 h-3 text-primary" />
+                        <span className="text-[9px] font-black uppercase tracking-widest text-primary dark:text-primary">
                             {t('myPortfolio')}
                         </span>
                     </div>

@@ -278,9 +278,7 @@ a {
 }
 
 .button-jewel {
-  @apply shadow-jewel flex items-center justify-center transition-all duration-300 active:scale-95;
-  background: linear-gradient(135deg, hsl(var(--secondary)), hsl(150, 30%, 35%));
-  color: hsl(var(--secondary-foreground));
+  @apply shadow-jewel flex items-center justify-center transition-all duration-300 active:scale-95 bg-secondary text-secondary-foreground;
 }
 
 
