@@ -98,7 +98,7 @@ export function ActivityWidget() {
         <div className="space-y-8">
             <div className="flex items-center gap-4 mb-6">
                 <div className="p-3 bg-blue-500/10 rounded-xl">
-                    <Users className="w-6 h-6 text-blue-500" />
+                    <Users className="w-6 h-6 text-primary" />
                 </div>
                 <div>
                     <h2 className="text-2xl font-black text-foreground tracking-tight lowercase">
@@ -144,7 +144,7 @@ export function ActivityWidget() {
                 {/* Page Views Chart */}
                 <div className="glass-premium dark:bg-neutral-900/40 border-white/5 rounded-[2.5rem] p-8 shadow-minimal">
                     <h3 className="text-lg font-black text-foreground mb-6 flex items-center gap-2 lowercase">
-                        <Eye className="w-4 h-4 text-blue-500" />
+                        <Eye className="w-4 h-4 text-primary" />
                         page views trend
                     </h3>
                     <div className="h-[250px] w-full">

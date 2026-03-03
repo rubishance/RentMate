@@ -97,7 +97,7 @@ export function FinancialHealthWidget({ stats }: FinancialHealthWidgetProps) {
                             <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
                                 {isRtl ? 'נאסף החודש' : 'Collected'}
                             </span>
-                            <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold text-xl">
+                            <div className="flex items-center gap-1 text-secondary font-bold text-xl">
                                 <span>₪</span>
                                 <span>{stats.collected.toLocaleString()}</span>
                             </div>
@@ -116,7 +116,7 @@ export function FinancialHealthWidget({ stats }: FinancialHealthWidgetProps) {
                 </div>
 
                 {/* Progress Bar */}
-                <div className="mt-8 relative h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div className="mt-8 relative h-2 bg-muted rounded-full overflow-hidden">
                     <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${Math.min((stats.collected / (stats.monthlyIncome || 1)) * 100, 100)}%` }}

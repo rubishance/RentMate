@@ -238,7 +238,7 @@ rentmate.co.il`
                                 className="absolute top-2 left-2 p-1.5 bg-white dark:bg-gray-800 border border-border dark:border-gray-700 rounded-lg hover:bg-secondary dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
                                 title="Copy Text"
                             >
-                                {copied ? <CheckIcon className="w-4 h-4 text-green-500" /> : <CopyIcon className="w-4 h-4 text-muted-foreground" />}
+                                {copied ? <CheckIcon className="w-4 h-4 text-secondary" /> : <CopyIcon className="w-4 h-4 text-muted-foreground" />}
                             </button>
                         </div>
 

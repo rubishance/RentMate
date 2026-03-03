@@ -16,7 +16,7 @@ export function DocumentTimeline({ documents, onDocumentClick, loading }: Docume
         return (
             <div className="space-y-4 p-4">
                 {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-24 bg-slate-100 dark:bg-neutral-800 animate-pulse rounded-2xl" />
+                    <div key={i} className="h-24 bg-muted/50 dark:bg-neutral-800 animate-pulse rounded-2xl" />
                 ))}
             </div>
         );
@@ -25,10 +25,10 @@ export function DocumentTimeline({ documents, onDocumentClick, loading }: Docume
     if (documents.length === 0) {
         return (
             <div className="text-center py-16">
-                <div className="w-16 h-16 bg-slate-100 dark:bg-neutral-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-muted/50 dark:bg-neutral-800 rounded-full flex items-center justify-center mx-auto mb-4">
                     <FileText className="w-8 h-8 text-slate-300" />
                 </div>
-                <h4 className="font-semibold text-slate-900 dark:text-white">{t('noDocumentsFound')}</h4>
+                <h4 className="font-semibold text-foreground">{t('noDocumentsFound')}</h4>
                 <p className="text-sm text-slate-500 mt-1">{t('startByAddingAbove')}</p>
             </div>
         );
@@ -53,7 +53,7 @@ export function DocumentTimeline({ documents, onDocumentClick, loading }: Docume
     return (
         <div className="p-4 space-y-8 relative">
             {/* Timeline Line */}
-            <div className="absolute top-0 bottom-0 left-[27px] rtl:right-[27px] w-[2px] bg-slate-100 dark:bg-neutral-800" />
+            <div className="absolute top-0 bottom-0 left-[27px] rtl:right-[27px] w-[2px] bg-muted/50 dark:bg-neutral-800" />
 
             {sortedGroupKeys.map((monthKey) => (
                 <div key={monthKey} className="space-y-4 relative">
@@ -80,7 +80,7 @@ export function DocumentTimeline({ documents, onDocumentClick, loading }: Docume
                                     className="w-full flex items-center gap-4 bg-white dark:bg-neutral-900 p-4 rounded-2xl border border-slate-100 dark:border-neutral-800 hover:border-primary/30 transition-all hover:shadow-md group text-start outline-none focus:ring-2 focus:ring-primary/20"
                                 >
                                     {/* Icon / Date Sticker */}
-                                    <div className="shrink-0 flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-slate-50 dark:bg-neutral-800 text-slate-400 group-hover:text-primary transition-colors">
+                                    <div className="shrink-0 flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-background dark:bg-neutral-800 text-slate-400 group-hover:text-primary transition-colors">
                                         <span className="text-[10px] font-bold uppercase leading-none mb-1">
                                             {doc.document_date ? format(parseISO(doc.document_date), 'MMM') : format(new Date(doc.created_at), 'MMM')}
                                         </span>
@@ -91,7 +91,7 @@ export function DocumentTimeline({ documents, onDocumentClick, loading }: Docume
 
                                     {/* Info */}
                                     <div className="flex-1 min-w-0">
-                                        <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                                        <h4 className="text-sm font-bold text-foreground truncate">
                                             {doc.title || doc.file_name}
                                         </h4>
                                         <p className="text-xs text-slate-500 dark:text-neutral-400 truncate mt-0.5">
@@ -102,7 +102,7 @@ export function DocumentTimeline({ documents, onDocumentClick, loading }: Docume
                                     {/* Amount / Action */}
                                     <div className="shrink-0 text-right flex flex-col items-end gap-1">
                                         {doc.amount ? (
-                                            <div className="flex items-center gap-1 text-sm font-black text-slate-900 dark:text-white">
+                                            <div className="flex items-center gap-1 text-sm font-black text-foreground">
                                                 <span className="text-xs opacity-50">₪</span>
                                                 {doc.amount.toLocaleString()}
                                             </div>

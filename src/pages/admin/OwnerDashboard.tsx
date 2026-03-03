@@ -103,7 +103,7 @@ export default function OwnerDashboard() {
         return (
             <div className="flex flex-col items-center justify-center h-96 text-center space-y-4">
                 <div className="p-4 bg-red-50 rounded-full">
-                    <LockClosedIcon className="w-12 h-12 text-red-500" />
+                    <LockClosedIcon className="w-12 h-12 text-destructive" />
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Access Denied</h2>
                 <p className="text-gray-500 max-w-md">
@@ -127,7 +127,7 @@ export default function OwnerDashboard() {
             {/* Header */}
             <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-3">
-                    <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-purple-600 tracking-tight">
+                    <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-600 tracking-tight">
                         Owner Control Center
                     </h1>
                     <span className="px-2 py-1 text-[10px] font-black bg-black text-white rounded uppercase tracking-widest">
@@ -160,14 +160,14 @@ export default function OwnerDashboard() {
 
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-4 opacity-5">
-                        <UsersIcon className="w-24 h-24 text-purple-600" />
+                        <UsersIcon className="w-24 h-24 text-primary" />
                     </div>
                     <div className="relative">
                         <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Active Subscribers</div>
                         <div className="text-4xl font-black text-gray-900 dark:text-white mb-2">
                             {metrics?.active_subscribers}
                         </div>
-                        <div className="text-xs font-bold text-purple-500">
+                        <div className="text-xs font-bold text-primary">
                             {metrics ? ((metrics.active_subscribers / metrics.total_users) * 100).toFixed(1) : '0'}% Conversion Rate
                         </div>
                     </div>
@@ -182,7 +182,7 @@ export default function OwnerDashboard() {
                         <div className="text-4xl font-black text-gray-900 dark:text-white mb-2">
                             {metrics?.total_users}
                         </div>
-                        <div className="text-xs font-bold text-blue-500">
+                        <div className="text-xs font-bold text-primary">
                             +{metrics?.new_users_30d} New (30d)
                         </div>
                     </div>
@@ -251,7 +251,7 @@ export default function OwnerDashboard() {
                                                 style={{ width: `${metrics?.storage?.total_mb ? (metrics.storage.media_mb / (metrics.storage.total_mb || 1)) * 100 : 0}%` }}
                                             />
                                             <div
-                                                className="bg-purple-500 h-full transition-all duration-500"
+                                                className="bg-primary h-full transition-all duration-500"
                                                 style={{ width: `${metrics?.storage?.total_mb ? (metrics.storage.docs_mb / (metrics.storage.total_mb || 1)) * 100 : 0}%` }}
                                             />
                                         </div>
@@ -261,7 +261,7 @@ export default function OwnerDashboard() {
                                                 <span className="text-[8px] font-black uppercase text-gray-400">Media ({metrics?.storage?.media_mb?.toFixed(1)} MB)</span>
                                             </div>
                                             <div className="flex items-center gap-1.5">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
+                                                <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
                                                 <span className="text-[8px] font-black uppercase text-gray-400">Docs ({metrics?.storage?.docs_mb?.toFixed(1)} MB)</span>
                                             </div>
                                         </div>
@@ -276,7 +276,7 @@ export default function OwnerDashboard() {
                                             "p-4 rounded-2xl border transition-all flex flex-col gap-2 text-left relative overflow-hidden group",
                                             metrics?.system_status?.maintenance_mode
                                                 ? "bg-red-500 border-red-600 text-white shadow-lg shadow-red-500/20"
-                                                : "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10"
+                                                : "bg-muted/50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10"
                                         )}
                                     >
                                         <div className="flex justify-between items-center">
@@ -296,7 +296,7 @@ export default function OwnerDashboard() {
                                             "p-4 rounded-2xl border transition-all flex flex-col gap-2 text-left relative overflow-hidden group",
                                             metrics?.system_status?.ai_disabled
                                                 ? "bg-amber-500 border-amber-600 text-white shadow-lg shadow-amber-500/20"
-                                                : "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10"
+                                                : "bg-muted/50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10"
                                         )}
                                     >
                                         <div className="flex justify-between items-center">
@@ -313,7 +313,7 @@ export default function OwnerDashboard() {
                         </div>
                         {/* Abstract background blobs */}
                         <div className="absolute -top-20 -right-20 w-64 h-64 bg-brand-500/30 rounded-full blur-3xl"></div>
-                        <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-purple-500/30 rounded-full blur-3xl"></div>
+                        <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-primary/30 rounded-full blur-3xl"></div>
                     </div>
 
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm relative overflow-hidden group">

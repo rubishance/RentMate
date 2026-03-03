@@ -105,7 +105,7 @@ export function WelcomeLanding() {
                     </div>
 
                     {/* Desktop Nav */}
-                    <nav className="hidden lg:flex items-center gap-2 p-1.5 bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-full shadow-minimal">
+                    <nav className="hidden lg:flex items-center gap-2 p-1.5 bg-background dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-full shadow-minimal">
                         {['home', 'blog', 'demo', 'calculator'].map((tab) => (
                             <button
                                 key={tab}
@@ -144,7 +144,7 @@ export function WelcomeLanding() {
                             {isRtl ? 'כניסה' : 'Sign In'}
                         </Button>
                         <button
-                            className="lg:hidden p-3 text-foreground hover:bg-slate-50 dark:hover:bg-neutral-900 rounded-xl transition-colors"
+                            className="lg:hidden p-3 text-foreground hover:bg-background dark:hover:bg-neutral-900 rounded-xl transition-colors"
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                             aria-label="Toggle Menu"
                         >
@@ -184,7 +184,7 @@ export function WelcomeLanding() {
                                         className={cn(
                                             "w-full text-right p-5 rounded-3xl text-3xl font-black uppercase tracking-tighter transition-all flex items-center justify-between group",
                                             activeTab === tab
-                                                ? "bg-slate-100 dark:bg-neutral-900 text-foreground"
+                                                ? "bg-muted/50 dark:bg-neutral-900 text-foreground"
                                                 : "text-muted-foreground hover:text-foreground"
                                         )}
                                     >
@@ -251,7 +251,7 @@ export function WelcomeLanding() {
                                             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
                                             className="space-y-8"
                                         >
-                                            <div className="inline-flex items-center gap-3 px-4 py-2 bg-slate-50 dark:bg-neutral-900 rounded-full border border-slate-100 dark:border-neutral-800 shadow-minimal">
+                                            <div className="inline-flex items-center gap-3 px-4 py-2 bg-background dark:bg-neutral-900 rounded-full border border-slate-100 dark:border-neutral-800 shadow-minimal">
                                                 <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                                                 <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
                                                     {isRtl ? 'בינה מלאכותית בשירות הנדל״ן' : 'AI Powered Real Estate'}
@@ -289,7 +289,7 @@ export function WelcomeLanding() {
                                             <Button
                                                 onClick={() => setActiveTab('demo')}
                                                 variant="outline"
-                                                className="h-16 px-10 font-black text-xs uppercase tracking-[0.2em] rounded-[1.5rem] gap-4 shadow-minimal bg-slate-50 dark:bg-neutral-900 border-slate-100 dark:border-neutral-800"
+                                                className="h-16 px-10 font-black text-xs uppercase tracking-[0.2em] rounded-[1.5rem] gap-4 shadow-minimal bg-background dark:bg-neutral-900 border-slate-100 dark:border-neutral-800"
                                             >
                                                 <Play className="w-4 h-4 fill-current" />
                                                 {isRtl ? 'הדגמה' : 'Demo'}
@@ -300,7 +300,7 @@ export function WelcomeLanding() {
                                     {/* Bot Column */}
                                     <div className="order-1 lg:order-2 relative h-[40vh] lg:h-[70vh] flex items-center justify-center">
                                         <div className="relative w-full h-full flex items-center justify-center">
-                                            <div className="absolute inset-0 bg-slate-100 dark:bg-neutral-900 blur-[150px] rounded-full opacity-30 animate-pulse"></div>
+                                            <div className="absolute inset-0 bg-muted/50 dark:bg-neutral-900 blur-[150px] rounded-full opacity-30 animate-pulse"></div>
                                             <div className="relative z-20">
                                                 <BotFullBody size={320} />
                                             </div>
@@ -310,7 +310,7 @@ export function WelcomeLanding() {
                             </section>
 
                             {/* --- FEATURES GRID --- */}
-                            <section className="py-32 bg-slate-50 dark:bg-black/50 border-y border-slate-100 dark:border-neutral-900 relative">
+                            <section className="py-32 bg-background dark:bg-black/50 border-y border-slate-100 dark:border-neutral-900 relative">
                                 <div className="max-w-7xl mx-auto px-4 sm:px-8">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
                                         {features.map((f, i) => (
@@ -332,7 +332,7 @@ export function WelcomeLanding() {
                                                 <div className="absolute -top-4 -right-4 p-8 opacity-5 font-black text-8xl text-foreground select-none group-hover:scale-110 transition-transform duration-1000">
                                                     {f.stat}
                                                 </div>
-                                                <div className="w-16 h-16 rounded-[1.5rem] bg-slate-50 dark:bg-neutral-800 shadow-minimal flex items-center justify-center mb-10 text-foreground group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                                                <div className="w-16 h-16 rounded-[1.5rem] bg-background dark:bg-neutral-800 shadow-minimal flex items-center justify-center mb-10 text-foreground group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
                                                     <f.icon className="w-7 h-7" />
                                                 </div>
                                                 <h3 className="text-xl font-black tracking-tighter mb-4 text-foreground lowercase">{f.title}</h3>
@@ -373,7 +373,7 @@ export function WelcomeLanding() {
                                             <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-violet-500/20 blur-[100px] rounded-full opacity-50 group-hover:opacity-75 transition-opacity" />
                                             <div className="relative glass-premium dark:bg-black/40 border border-white/20 p-8 rounded-[2.5rem] shadow-2xl -rotate-3 group-hover:-rotate-1 transition-transform duration-700">
                                                 {/* Map Abstract */}
-                                                <div className="aspect-video bg-slate-100 dark:bg-neutral-800 rounded-2xl relative overflow-hidden flex items-center justify-center border border-black/5 dark:border-white/5">
+                                                <div className="aspect-video bg-muted/50 dark:bg-neutral-800 rounded-2xl relative overflow-hidden flex items-center justify-center border border-black/5 dark:border-white/5">
                                                     <MapPin className="w-16 h-16 text-indigo-500 animate-bounce" />
                                                     <div className="absolute bottom-4 left-4 right-4 h-2 bg-indigo-500/10 rounded-full overflow-hidden">
                                                         <div className="h-full w-2/3 bg-indigo-500 rounded-full" />
@@ -422,7 +422,7 @@ export function WelcomeLanding() {
                             className="min-h-[80vh] flex items-center justify-center px-8"
                         >
                             <div className="text-center space-y-8">
-                                <div className="w-24 h-24 bg-slate-50 dark:bg-neutral-900 rounded-[2rem] flex items-center justify-center mx-auto shadow-minimal">
+                                <div className="w-24 h-24 bg-background dark:bg-neutral-900 rounded-[2rem] flex items-center justify-center mx-auto shadow-minimal">
                                     <Clock className="w-10 h-10 text-slate-300" />
                                 </div>
                                 <h2 className="text-3xl font-black tracking-tighter text-foreground uppercase">Coming Soon</h2>

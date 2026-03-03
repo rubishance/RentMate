@@ -136,8 +136,8 @@ export function ActionInbox() {
     if (loading) return <div className="animate-pulse h-40 bg-gray-50 dark:bg-gray-800/50 rounded-2xl" />;
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-minimal overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border/50 shadow-minimal overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-50 dark:border-slate-800 bg-background/50 dark:bg-slate-900/50 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <SparklesIcon className="w-5 h-5 text-brand-600" />
                     <h3 className="text-sm font-black uppercase tracking-widest text-gray-900 dark:text-white">AI Action Inbox</h3>
@@ -153,11 +153,11 @@ export function ActionInbox() {
                     </div>
                 ) : (
                     actions.map(action => (
-                        <div key={action.id} className="p-6 hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-all group">
+                        <div key={action.id} className="p-6 hover:bg-background/50 dark:hover:bg-slate-900/30 transition-all group">
                             <div className="flex gap-4">
                                 <div className={`mt-1 p-2 rounded-xl border ${action.type === 'sales_lead' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
                                     action.type === 'ticket_reply' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                                        'bg-blue-50 text-blue-600 border-blue-100'
+                                        'bg-primary/10 text-primary border-blue-100'
                                     }`}>
                                     {action.type === 'sales_lead' ? <CurrencyDollarIcon className="w-4 h-4" /> : <TicketIcon className="w-4 h-4" />}
                                 </div>
@@ -210,7 +210,7 @@ export function ActionInbox() {
                                             <CheckCircleIcon className="w-4 h-4" />
                                             Approve & Send
                                         </button>
-                                        <button className="px-4 py-2 bg-white dark:bg-gray-800 text-gray-500 text-[10px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 transition-all flex items-center gap-2">
+                                        <button className="px-4 py-2 bg-white dark:bg-gray-800 text-gray-500 text-[10px] font-black uppercase tracking-widest border border-border rounded-lg hover:bg-gray-50 transition-all flex items-center gap-2">
                                             <XCircleIcon className="w-4 h-4" />
                                             Dismiss
                                         </button>

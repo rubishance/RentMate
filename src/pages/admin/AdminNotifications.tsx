@@ -198,7 +198,7 @@ const AdminNotifications = () => {
                             <li key={n.id} className={`p-6 transition-colors ${n.status === 'pending' ? 'bg-white dark:bg-gray-800' : 'bg-gray-50/20 dark:bg-gray-900/20 opacity-60'}`}>
                                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                                     <div className="flex-1 flex gap-4">
-                                        <div className={`p-3 rounded-2xl border shrink-0 ${n.type === 'upgrade_request' ? 'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-900/20 dark:border-purple-800' :
+                                        <div className={`p-3 rounded-2xl border shrink-0 ${n.type === 'upgrade_request' ? 'bg-primary-50 text-primary border-primary-100 dark:bg-primary-900/20 dark:border-primary-800' :
                                             'bg-brand-50 text-brand-600 border-brand-100 dark:bg-brand-900/20 dark:border-brand-800'
                                             }`}>
                                             {n.type === 'upgrade_request' ? <ArrowUpCircleIcon className="w-6 h-6" /> : <BellIcon className="w-6 h-6" />}

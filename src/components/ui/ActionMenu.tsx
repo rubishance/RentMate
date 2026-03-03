@@ -62,7 +62,7 @@ export function ActionMenu({ onView, onEdit, onDelete, onCalculate, onSnooze, al
                                             }}
                                             className={cn(
                                                 "w-full flex items-center gap-2 px-4 py-2 text-sm rounded-xl transition-colors",
-                                                focus ? "bg-slate-50 dark:bg-neutral-800 text-foreground" : "text-muted-foreground"
+                                                focus ? "bg-background dark:bg-neutral-800 text-foreground" : "text-muted-foreground"
                                             )}
                                         >
                                             <Eye className="w-4 h-4 text-primary" />
@@ -81,7 +81,7 @@ export function ActionMenu({ onView, onEdit, onDelete, onCalculate, onSnooze, al
                                             }}
                                             className={cn(
                                                 "w-full flex items-center gap-2 px-4 py-2 text-sm rounded-xl transition-colors",
-                                                focus ? "bg-slate-50 dark:bg-neutral-800 text-foreground" : "text-muted-foreground"
+                                                focus ? "bg-background dark:bg-neutral-800 text-foreground" : "text-muted-foreground"
                                             )}
                                         >
                                             <Edit className="w-4 h-4 text-orange-500" />
@@ -100,10 +100,10 @@ export function ActionMenu({ onView, onEdit, onDelete, onCalculate, onSnooze, al
                                             }}
                                             className={cn(
                                                 "w-full flex items-center gap-2 px-4 py-2 text-sm rounded-xl transition-colors",
-                                                focus ? "bg-slate-50 dark:bg-neutral-800 text-foreground" : "text-muted-foreground"
+                                                focus ? "bg-background dark:bg-neutral-800 text-foreground" : "text-muted-foreground"
                                             )}
                                         >
-                                            <Calculator className="w-4 h-4 text-green-500" />
+                                            <Calculator className="w-4 h-4 text-secondary" />
                                             {t('calculate_payments') || 'Calculate Payments'}
                                         </button>
                                     )}
@@ -129,7 +129,7 @@ export function ActionMenu({ onView, onEdit, onDelete, onCalculate, onSnooze, al
                                                         focus ? "bg-primary/5 text-foreground" : "text-muted-foreground"
                                                     )}
                                                 >
-                                                    <Bell className="w-4 h-4 text-blue-500" />
+                                                    <Bell className="w-4 h-4 text-primary" />
                                                     {days} {days === 1 ? t('day') : t('days')}
                                                 </button>
                                             )}
@@ -148,7 +148,7 @@ export function ActionMenu({ onView, onEdit, onDelete, onCalculate, onSnooze, al
                                             }}
                                             className={cn(
                                                 "w-full flex items-center gap-2 px-4 py-2 text-sm rounded-xl transition-colors",
-                                                focus ? "bg-red-50 dark:bg-red-900/20 text-red-600" : "text-red-500"
+                                                focus ? "bg-red-50 dark:bg-red-900/20 text-red-600" : "text-destructive"
                                             )}
                                         >
                                             <Trash2 className="w-4 h-4" />

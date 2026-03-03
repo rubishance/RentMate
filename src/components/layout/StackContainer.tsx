@@ -132,7 +132,7 @@ export function StackContainer() {
                                 <div className="flex-1 flex justify-end">
                                     <button
                                         onClick={() => pop()}
-                                        className="p-2 bg-slate-100 dark:bg-neutral-800 rounded-full hover:bg-slate-200 transition-colors"
+                                        className="p-2 bg-muted/50 dark:bg-neutral-800 rounded-full hover:bg-slate-200 transition-colors"
                                     >
                                         <CloseIcon className="w-4 h-4 text-muted-foreground" />
                                     </button>

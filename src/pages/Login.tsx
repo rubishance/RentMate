@@ -187,22 +187,23 @@ export function Login() {
                         )}
 
                         <form className="space-y-4" onSubmit={handleAuth}>
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block ml-1">{t('auth_email')}</label>
+                            <div>
+                                <label className="block text-sm font-semibold text-foreground mb-1">{t('auth_email')}</label>
                                 <Input
                                     type="email"
                                     required={isSupabaseConfigured}
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     placeholder="demo@rentmate.com"
-                                    className="h-12 bg-background/50"
+                                    className="h-12 block w-full rounded-xl border-border bg-background/50 shadow-inner py-2.5 md:py-3 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-base transition-all"
                                     leftIcon={<Mail className="w-4 h-4 text-muted-foreground" />}
+                                    dir="ltr"
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <div className="flex justify-between items-center px-1">
-                                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">{t('auth_password')}</label>
-                                    <Link to="/forgot-password" className="text-xs font-bold text-primary hover:text-primary/80 transition-colors">
+                            <div>
+                                <div className="flex justify-between items-center mb-1">
+                                    <label className="block text-sm font-semibold text-foreground">{t('auth_password')}</label>
+                                    <Link to="/forgot-password" className="text-sm font-bold text-primary hover:text-primary/80 transition-colors">
                                         {t('auth_forgot_password')}
                                     </Link>
                                 </div>
@@ -212,15 +213,16 @@ export function Login() {
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="••••••••"
-                                    className="h-12 bg-background/50"
+                                    className="h-12 block w-full rounded-xl border-border bg-background/50 shadow-inner py-2.5 md:py-3 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-base transition-all"
                                     leftIcon={<Lock className="w-4 h-4 text-muted-foreground" />}
+                                    dir="ltr"
                                 />
                             </div>
 
                             <Button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full h-12 text-sm font-bold shadow-lg shadow-primary/20"
+                                className="w-full h-12 text-sm font-bold"
                                 size="lg"
                             >
                                 {loading ? (

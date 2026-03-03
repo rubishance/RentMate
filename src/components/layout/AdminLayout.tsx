@@ -106,7 +106,7 @@ const AdminLayout = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-slate-900 dark:text-white font-['Heebo']" dir="rtl">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-foreground font-['Heebo']" dir="rtl">
             {/* Mobile sidebar backdrop */}
             {sidebarOpen && (
                 <div

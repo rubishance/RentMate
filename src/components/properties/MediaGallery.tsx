@@ -239,11 +239,11 @@ export function MediaGallery({ property, readOnly }: MediaGalleryProps) {
                 <div className="relative overflow-hidden bg-white/80 dark:bg-foreground/80 backdrop-blur-xl p-6 rounded-2xl border border-white/20 dark:border-gray-700/50 space-y-6 shadow-2xl animate-in fade-in zoom-in-95 duration-300">
                     {/* Decorative Gradient Blob */}
                     <div className="absolute -top-20 -right-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-                    <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+                    <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
 
                     <div className="relative flex items-center justify-between">
                         <div>
-                            <h4 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
+                            <h4 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary-600 dark:from-primary dark:to-primary-400">
                                 {editingFolder ? t('edit') : t('newAlbum')}
                             </h4>
                             <h4 className="font-semibold text-foreground">{t('newUploads')}</h4>
@@ -380,7 +380,7 @@ export function MediaGallery({ property, readOnly }: MediaGalleryProps) {
                                 flex items-center justify-center gap-2 transition-all
                                 ${uploading
                                     ? 'bg-gray-400 cursor-not-allowed opacity-70'
-                                    : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-blue-500/40 active:scale-[0.98]'
+                                    : 'bg-gradient-to-r from-primary to-indigo-600 hover:from-primary hover:to-indigo-700 hover:shadow-blue-500/40 active:scale-[0.98]'
                                 }
                             `}
                         >
@@ -443,7 +443,7 @@ export function MediaGallery({ property, readOnly }: MediaGalleryProps) {
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteFolder(folder.id)}
-                                                className="p-2 text-muted-foreground hover:text-red-500 transition-colors"
+                                                className="p-2 text-muted-foreground hover:text-destructive transition-colors"
                                                 title={t('deleteAlbum')}
                                             >
                                                 <Trash2 className="w-4 h-4" />

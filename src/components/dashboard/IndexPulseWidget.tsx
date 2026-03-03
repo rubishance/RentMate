@@ -164,7 +164,7 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
                                 <motion.div
                                     key={pulse.id}
                                     layoutId={pulse.id}
-                                    className="bg-slate-50 dark:bg-neutral-900/50 p-4 rounded-xl border border-slate-100 dark:border-white/5 hover:border-indigo-500/20 transition-all group/item"
+                                    className="bg-background dark:bg-neutral-900/50 p-4 rounded-xl border border-slate-100 dark:border-white/5 hover:border-indigo-500/20 transition-all group/item"
                                 >
                                     <div className="flex items-center justify-between mb-2">
                                         <div className="flex items-center gap-3">
@@ -257,7 +257,7 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
                                 </p>
                                 <div className="space-y-4">
                                     {ALL_TYPES.map(type => (
-                                        <div key={type} className="bg-slate-50 dark:bg-white/5 p-3 rounded-xl border border-slate-100 dark:border-white/10 space-y-2">
+                                        <div key={type} className="bg-background dark:bg-white/5 p-3 rounded-xl border border-slate-100 dark:border-white/10 space-y-2">
                                             <div className="flex items-center justify-between">
                                                 <label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">
                                                     {t(type) || type.toUpperCase()} - {t('baseDate')}
@@ -286,7 +286,7 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
                                             "w-full flex items-center justify-between p-3 rounded-xl border transition-all duration-300",
                                             displayedIndices.includes(type)
                                                 ? "bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-500/10 dark:border-indigo-500/30 dark:text-indigo-400"
-                                                : "bg-slate-50 border-slate-100 text-muted-foreground hover:border-slate-200 dark:bg-white/5 dark:border-white/5 dark:hover:border-white/10"
+                                                : "bg-background border-slate-100 text-muted-foreground hover:border-slate-200 dark:bg-white/5 dark:border-white/5 dark:hover:border-white/10"
                                         )}
                                     >
                                         <span className="text-xs font-bold uppercase tracking-wider">{t(type) || type.toUpperCase()}</span>

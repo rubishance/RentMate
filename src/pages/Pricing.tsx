@@ -40,16 +40,16 @@ const ICON_MAP: Record<string, any> = {
 
 const COLOR_MAP: Record<string, string> = {
     'solo': 'text-slate-500',
-    'mate': 'text-blue-500',
+    'mate': 'text-primary',
     'master': 'text-amber-500',
-    'unlimited': 'text-purple-500'
+    'unlimited': 'text-primary'
 };
 
 const BG_MAP: Record<string, string> = {
-    'solo': 'bg-slate-50 dark:bg-slate-900/50',
+    'solo': 'bg-background/50',
     'mate': 'bg-blue-50/50 dark:bg-blue-900/20',
     'master': 'bg-amber-50/50 dark:bg-amber-900/20',
-    'unlimited': 'bg-purple-50/50 dark:bg-purple-900/20'
+    'unlimited': 'bg-primary-50/50 dark:bg-primary-900/20'
 };
 
 const FEATURE_ICON_MAP: Record<string, any> = {
@@ -99,7 +99,7 @@ export default function Pricing() {
                     cta: isRtl ? 'התחל בחינם' : 'Start for Free',
                     popular: false,
                     color: 'text-slate-500',
-                    bg: 'bg-slate-50 dark:bg-slate-900/50'
+                    bg: 'bg-background/50'
                 },
                 {
                     id: 'mate', // Starter
@@ -115,7 +115,7 @@ export default function Pricing() {
                     ],
                     cta: isRtl ? 'שדרג ל-Starter' : 'Upgrade to Starter',
                     popular: true,
-                    color: 'text-blue-500',
+                    color: 'text-primary',
                     bg: 'bg-blue-50/50 dark:bg-blue-900/20'
                 },
                 {
@@ -164,7 +164,7 @@ export default function Pricing() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-black pt-20 pb-20 px-4">
+        <div className="min-h-screen bg-background dark:bg-black pt-20 pb-20 px-4">
             <div className="max-w-6xl mx-auto space-y-12">
 
                 {/* Header */}
@@ -172,27 +172,27 @@ export default function Pricing() {
                     <motion.h1
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-4xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white"
+                        className="text-4xl md:text-5xl font-black tracking-tight text-foreground"
                     >
                         {t('pricing_title')}
                     </motion.h1>
-                    <p className="text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+                    <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                         {t('pricing_subtitle')}
                     </p>
 
                     {/* Billing Toggle */}
                     <div className="flex items-center justify-center gap-3 pt-6">
-                        <span className={`text-sm font-medium ${billingCycle === 'monthly' ? 'text-slate-900 dark:text-white' : 'text-slate-500'}`}>{t('pricing_monthly')}</span>
+                        <span className={`text-sm font-medium ${billingCycle === 'monthly' ? 'text-foreground' : 'text-slate-500'}`}>{t('pricing_monthly')}</span>
                         <button
                             onClick={() => setBillingCycle(prev => prev === 'monthly' ? 'yearly' : 'monthly')}
-                            className="w-14 h-8 bg-slate-200 dark:bg-slate-800 rounded-full p-1 transition-colors relative"
+                            className="w-14 h-8 bg-muted rounded-full p-1 transition-colors relative"
                         >
                             <motion.div
                                 animate={{ x: billingCycle === 'monthly' ? (isRtl ? 24 : 0) : (isRtl ? 0 : 24) }}
                                 className="w-6 h-6 bg-white dark:bg-blue-500 rounded-full shadow-sm"
                             />
                         </button>
-                        <span className={`text-sm font-medium ${billingCycle === 'yearly' ? 'text-slate-900 dark:text-white' : 'text-slate-500'}`}>
+                        <span className={`text-sm font-medium ${billingCycle === 'yearly' ? 'text-foreground' : 'text-slate-500'}`}>
                             {t('pricing_yearly')} <span className="text-green-600 text-xs font-bold bg-green-100 px-2 py-0.5 rounded-full ml-1">{t('pricing_save', { percent: '20%' })}</span>
                         </span>
                     </div>
@@ -202,7 +202,7 @@ export default function Pricing() {
                 <div className="relative">
                     {loading ? (
                         <div className="flex flex-col items-center justify-center py-20 animate-in fade-in duration-500">
-                            <Loader2 className="w-12 h-12 text-blue-500 animate-spin mb-4" />
+                            <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
                             <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">{t('curating_plans')}</p>
                         </div>
                     ) : (
@@ -210,12 +210,12 @@ export default function Pricing() {
                             {tiers.map((tier) => (
                                 <GlassCard
                                     key={tier.id}
-                                    className={`p-8 relative flex flex-col ${tier.isPopular ? 'border-blue-500/50 ring-4 ring-blue-500/10' : ''} ${tier.bg}`}
+                                    className={`p-8 relative flex flex-col ${tier.isPopular ? 'border-primary/50 ring-4 ring-primary/10' : ''} ${tier.bg}`}
                                     hoverEffect
                                 >
                                     {tier.badgeText && (
                                         <div className="absolute -top-4 inset-x-0 flex justify-center">
-                                            <span className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg uppercase tracking-widest">
+                                            <span className="bg-gradient-to-r from-primary to-cyan-500 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg uppercase tracking-widest">
                                                 {tier.badgeText}
                                             </span>
                                         </div>
@@ -240,17 +240,17 @@ export default function Pricing() {
                                         </p>
                                     </div>
 
-                                    <p className="text-slate-600 dark:text-slate-300 font-medium mb-8">
+                                    <p className="text-muted-foreground font-medium mb-8">
                                         {tier.description}
                                     </p>
 
                                     <div className="space-y-4 flex-1">
                                         {tier.features.map((feature, fIdx) => (
                                             <div key={fIdx} className="flex items-center gap-3 text-sm">
-                                                <div className="p-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600">
+                                                <div className="p-1 rounded-full bg-secondary/10 text-green-600">
                                                     <Check className="w-3 h-3" />
                                                 </div>
-                                                <span className="text-slate-700 dark:text-slate-300">{feature.text}</span>
+                                                <span className="text-foreground/80">{feature.text}</span>
                                             </div>
                                         ))}
                                     </div>
@@ -258,8 +258,8 @@ export default function Pricing() {
                                     <button
                                         onClick={() => navigate('/login?plan=' + tier.id)}
                                         className={`w-full mt-8 py-3 rounded-xl font-bold transition-all ${tier.buttonVariant === 'primary'
-                                            ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-blue-500/25'
-                                            : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 text-slate-900 dark:text-white'
+                                            ? 'bg-primary hover:bg-primary/90 text-white shadow-lg hover:shadow-blue-500/25'
+                                            : 'bg-card border border-border hover:border-slate-300 text-foreground'
                                             }`}
                                     >
                                         {tier.ctaText || (tier.price === 0 ? t('pricing_get_started') : t('pricing_start_free_trial'))}
@@ -272,7 +272,7 @@ export default function Pricing() {
                 </div>
 
                 <div className="text-center pt-12 text-slate-400 text-sm">
-                    <p>{t('pricing_need_custom_plan')} <span className="underline cursor-pointer hover:text-blue-500" onClick={() => navigate('/contact')}>{t('pricing_contact_sales_link')}</span></p>
+                    <p>{t('pricing_need_custom_plan')} <span className="underline cursor-pointer hover:text-primary" onClick={() => navigate('/contact')}>{t('pricing_contact_sales_link')}</span></p>
                 </div>
 
             </div>

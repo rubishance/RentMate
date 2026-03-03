@@ -12,7 +12,7 @@ import { SettingsTray } from '../components/common/SettingsTray';
 import { useUserPreferences } from '../contexts/UserPreferencesContext';
 import { cn } from '../lib/utils';
 import { Input } from '../components/ui/Input';
-import { Checkbox } from '../components/ui/Checkbox';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 
 export function Signup() {
@@ -25,8 +25,7 @@ export function Signup() {
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
+    const [fullName, setFullName] = useState('');
     const [phone, setPhone] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -71,8 +70,8 @@ export function Signup() {
             return;
         }
 
-        if (!firstName.trim() || !lastName.trim()) {
-            setError(isRtl ? 'יש למלא שם פרטי ושם משפחה' : 'First name and last name are required');
+        if (!fullName.trim()) {
+            setError(isRtl ? 'יש למלא שם מלא' : 'Full name is required');
             setLoading(false);
             return;
         }
@@ -103,7 +102,7 @@ export function Signup() {
                 password,
                 options: {
                     data: {
-                        full_name: `${firstName.trim()} ${lastName.trim()}`,
+                        full_name: fullName.trim(),
                         phone_number: phone.trim() || null,
                         marketing_consent: marketingConsent,
                         plan_id: planFromUrl || 'free'
@@ -148,9 +147,9 @@ export function Signup() {
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-md px-4 sm:px-6 relative z-10"
+                className="w-full max-w-md px-4 sm:p-0 relative z-10"
             >
-                <div className="bg-window border border-gray-100 dark:border-neutral-800 shadow-2xl rounded-3xl sm:rounded-[2.5rem] p-5 sm:p-8 md:p-12">
+                <Card className="border-border/50 shadow-2xl bg-window">
                     <AnimatePresence mode="wait">
                         {awaitingConfirmation ? (
                             <ConfirmationView email={email} onBack={() => navigate('/login')} isRtl={isRtl} t={t} />
@@ -159,8 +158,7 @@ export function Signup() {
                                 handleAuth={handleAuth}
                                 email={email} setEmail={setEmail}
                                 password={password} setPassword={setPassword}
-                                firstName={firstName} setFirstName={setFirstName}
-                                lastName={lastName} setLastName={setLastName}
+                                fullName={fullName} setFullName={setFullName}
                                 phone={phone} setPhone={setPhone}
                                 agreeToTerms={agreeToTerms} setAgreeToTerms={setAgreeToTerms}
                                 marketingConsent={marketingConsent} setMarketingConsent={setMarketingConsent}
@@ -173,7 +171,7 @@ export function Signup() {
                             />
                         )}
                     </AnimatePresence>
-                </div>
+                </Card>
             </motion.div>
         </div>
     );
@@ -197,131 +195,149 @@ const ConfirmationView = ({ email, onBack, isRtl, t }: any) => (
 );
 
 const SignupFormView = ({
-    handleAuth, email, setEmail, password, setPassword, firstName, setFirstName, lastName, setLastName,
+    handleAuth, email, setEmail, password, setPassword, fullName, setFullName,
     phone, setPhone, agreeToTerms, setAgreeToTerms, marketingConsent, setMarketingConsent, loading, error, handleSocialLogin,
     t, isRtl, effectiveTheme
 }: any) => (
-    <div className="space-y-6 sm:space-y-10">
-        <div className="text-center space-y-3 sm:space-y-6">
-            <img src={effectiveTheme === 'dark' ? logoIconDark : logoIconOnly} alt="RentMate" className="h-10 sm:h-20 w-auto mx-auto object-contain" />
-            <div className="space-y-1">
-                <h2 className="text-2xl sm:text-3xl font-bold text-black dark:text-white">{t('auth_join')}</h2>
-                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">{isRtl ? 'ניהול נכסים חכם' : 'Smart Property Management'}</p>
-            </div>
-        </div>
+    <div className="space-y-0">
+        <CardHeader className="space-y-4 pb-2 text-center">
+            <img src={effectiveTheme === 'dark' ? logoIconDark : logoIconOnly} alt="RentMate" className="h-16 h-20 w-auto mx-auto object-contain transition-all mb-4" />
+            <CardTitle className="text-3xl font-black tracking-tight">{t('auth_join')}</CardTitle>
+            <CardDescription className="text-base font-medium">{isRtl ? 'ניהול נכסים חכם' : 'Smart Property Management'}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6 pt-6">
+            {error && <div className="bg-destructive/10 text-destructive p-4 rounded-xl text-sm border border-destructive/20 text-center font-bold shadow-sm">{error}</div>}
 
-        {error && <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-4 rounded-2xl text-sm border border-red-100 dark:border-red-900/40 text-center font-medium">{error}</div>}
-
-        <div className="space-y-6 sm:space-y-10">
-            <Button
-                variant="outline"
-                onClick={() => handleSocialLogin('google')}
-                disabled={loading}
-                className="w-full h-12 gap-3 bg-white dark:bg-neutral-800 border-gray-100 rounded-2xl hover:bg-gray-50 dark:hover:bg-neutral-700 shadow-sm"
-            >
-                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
-                <span className="text-sm font-bold text-black dark:text-white">{isRtl ? 'המשך עם Google' : 'Continue with Google'}</span>
-            </Button>
-            <div className="relative"><div className="absolute inset-0 flex items-center"><span className="w-full border-t border-gray-100 dark:border-neutral-800" /></div><div className="relative flex justify-center text-[10px] font-bold uppercase tracking-widest text-gray-400"><span className="bg-window px-3">{t('auth_or_continue')}</span></div></div>
-        </div>
-
-        <form className="space-y-4 sm:space-y-6" onSubmit={handleAuth}>
-            <div className="space-y-2">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block ml-1">
-                    {isRtl ? 'שם מלא' : 'Full Name'}
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                    <Input
-                        type="text"
-                        required
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        placeholder={isRtl ? 'שם פרטי' : 'First Name'}
-                        className="h-12 bg-gray-50 dark:bg-neutral-800"
-                    />
-                    <Input
-                        type="text"
-                        required
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        placeholder={isRtl ? 'שם משפחה' : 'Last Name'}
-                        className="h-12 bg-gray-50 dark:bg-neutral-800"
-                    />
+            <div className="space-y-6 sm:space-y-10">
+                <Button
+                    variant="outline"
+                    onClick={() => handleSocialLogin('google')}
+                    disabled={loading}
+                    className="w-full h-12 text-sm font-bold gap-3"
+                >
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
+                    <span>{isRtl ? 'המשך עם Google' : 'Continue with Google'}</span>
+                </Button>
+                <div className="relative">
+                    <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
+                    <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground"><span className="bg-window px-3">{t('auth_or_continue')}</span></div>
                 </div>
             </div>
-            <div className="space-y-2">
-                <Input
-                    label={t('phone')}
-                    type="tel"
-                    required
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="050-0000000"
-                    className="h-12 bg-gray-50 dark:bg-neutral-800"
-                />
-            </div>
-            <div className="space-y-2">
-                <Input
-                    label={t('auth_email')}
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@example.com"
-                    className="h-12 bg-gray-50 dark:bg-neutral-800"
-                    leftIcon={<Mail className="w-4 h-4 text-muted-foreground" />}
-                />
-            </div>
-            <div className="space-y-2">
-                <Input
-                    label={t('auth_password')}
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="h-12 bg-gray-50 dark:bg-neutral-800"
-                />
-            </div>
 
-            <div className="space-y-3 pt-2">
-                <Checkbox
-                    checked={agreeToTerms}
-                    onChange={setAgreeToTerms}
-                    label={(
-                        <span className="text-xs text-gray-500 font-medium leading-relaxed group-hover:text-black transition-colors">
+            <form className="space-y-4 sm:space-y-6" onSubmit={handleAuth}>
+                <div>
+                    <label className="block text-sm font-semibold text-foreground mb-1">
+                        {isRtl ? 'שם מלא' : 'Full Name'}
+                    </label>
+                    <Input
+                        type="text"
+                        required
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        placeholder={isRtl ? 'שם מלא' : 'Full Name'}
+                        className={`h-12 block w-full rounded-xl border-border bg-background/50 shadow-inner ${isRtl ? 'pr-3' : 'pl-3'} py-2.5 md:py-3 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-base transition-all`}
+                    />
+                </div>
+                <div>
+                    <label className="block text-sm font-semibold text-foreground mb-1">
+                        {t('phone')}
+                    </label>
+                    <Input
+                        type="tel"
+                        required
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="050-0000000"
+                        className={`h-12 block w-full rounded-xl border-border bg-background/50 shadow-inner ${isRtl ? 'pr-3' : 'pl-3'} py-2.5 md:py-3 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-base transition-all`}
+                        dir="ltr"
+                    />
+                </div>
+                <div>
+                    <label className="block text-sm font-semibold text-foreground mb-1">
+                        {t('auth_email')}
+                    </label>
+                    <Input
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="name@example.com"
+                        className={`h-12 block w-full rounded-xl border-border bg-background/50 shadow-inner ${isRtl ? 'pr-10' : 'pl-10'} py-2.5 md:py-3 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-base transition-all`}
+                        leftIcon={<Mail className="w-4 h-4 text-muted-foreground" />}
+                        dir="ltr"
+                    />
+                </div>
+                <div>
+                    <label className="block text-sm font-semibold text-foreground mb-1">
+                        {t('auth_password')}
+                    </label>
+                    <Input
+                        type="password"
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className={`h-12 block w-full rounded-xl border-border bg-background/50 shadow-inner ${isRtl ? 'pr-3' : 'pl-3'} py-2.5 md:py-3 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-base transition-all`}
+                        dir="ltr"
+                    />
+                </div>
+
+                <div className="space-y-3 pt-2">
+                    <div className="flex items-start gap-2.5 mt-2">
+                        <div className="flex items-center h-4 md:h-5">
+                            <input
+                                id="termsConsentSignup"
+                                type="checkbox"
+                                checked={agreeToTerms}
+                                onChange={(e) => setAgreeToTerms(e.target.checked)}
+                                required
+                                className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary bg-background border-border rounded focus:ring-primary ring-offset-background focus:ring-2 md:mt-0.5 cursor-pointer transition-colors"
+                            />
+                        </div>
+                        <label htmlFor="termsConsentSignup" className="text-[11px] md:text-xs font-medium text-muted-foreground cursor-pointer">
                             {t('agreeToTerms').split('{terms}').map((part: string, i: number) => {
                                 if (i === 1) {
                                     const [p1, p2] = part.split('{privacy}');
                                     return <React.Fragment key={i}>
-                                        <Link to="/legal/terms" className="text-black font-bold hover:underline" target="_blank">{t('termsOfService')}</Link>{p1}
-                                        <Link to="/legal/privacy" className="text-black font-bold hover:underline" target="_blank">{t('privacyPolicy')}</Link>{p2}
+                                        <Link to="/legal/terms" className="text-black dark:text-white font-bold hover:underline" target="_blank">{t('termsOfService')}</Link>{p1}
+                                        <Link to="/legal/privacy" className="text-black dark:text-white font-bold hover:underline" target="_blank">{t('privacyPolicy')}</Link>{p2}
                                     </React.Fragment>;
                                 }
                                 return part;
                             })}
-                        </span>
-                    )}
-                />
-                <Checkbox
-                    checked={marketingConsent}
-                    onChange={setMarketingConsent}
-                    label={<span className="text-xs text-gray-500 font-medium leading-relaxed group-hover:text-black transition-colors">{t('marketingConsent')}</span>}
-                />
+                        </label>
+                    </div>
+                    <div className="flex items-start gap-2.5 mt-2">
+                        <div className="flex items-center h-4 md:h-5">
+                            <input
+                                id="marketingConsentSignup"
+                                type="checkbox"
+                                checked={marketingConsent}
+                                onChange={(e) => setMarketingConsent(e.target.checked)}
+                                className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary bg-background border-border rounded focus:ring-primary ring-offset-background focus:ring-2 md:mt-0.5 cursor-pointer transition-colors"
+                            />
+                        </div>
+                        <label htmlFor="marketingConsentSignup" className="text-[11px] md:text-xs font-medium text-muted-foreground cursor-pointer">
+                            <span>{t('marketingConsent')}</span>
+                        </label>
+                    </div>
+                </div>
+
+                <Button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full h-12 text-sm font-bold mt-4"
+                    size="lg"
+                >
+                    {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : <div className="flex items-center gap-2">{t('auth_create_account')} <ArrowRight className={cn("w-4 h-4", isRtl && "rotate-180")} /></div>}
+                </Button>
+            </form>
+        </CardContent>
+        <CardFooter className="flex flex-col gap-6 pb-8">
+            <div className="text-center">
+                <span className="text-muted-foreground text-sm font-medium mr-2">{t('auth_have_account')}</span>
+                <Link to="/login" className="text-primary font-black hover:underline underline-offset-4 text-sm">{t('auth_sign_in')}</Link>
             </div>
-
-            <Button
-                type="submit"
-                disabled={loading}
-                className="w-full h-12 shadow-xl hover:scale-[1.02] transition-all"
-                size="lg"
-            >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : <div className="flex items-center gap-2">{t('auth_create_account')} <ArrowRight className={cn("w-4 h-4", isRtl && "rotate-180")} /></div>}
-            </Button>
-        </form>
-
-        <div className="text-center pt-2">
-            <Link to="/login" className="text-black dark:text-white font-black hover:underline underline-offset-4">{t('auth_have_account')}</Link>
-        </div>
+        </CardFooter>
     </div>
 );

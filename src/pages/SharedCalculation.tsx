@@ -73,7 +73,7 @@ export function SharedCalculation() {
         return (
             <div className={`min-h-screen bg-background flex flex-col items-center justify-center p-4 text-center ${isRtl ? 'text-right' : 'text-left'}`} dir={isRtl ? 'rtl' : 'ltr'}>
                 <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-full mb-4">
-                    <AlertCircle className="w-8 h-8 text-red-500" />
+                    <AlertCircle className="w-8 h-8 text-destructive" />
                 </div>
                 <h1 className="text-xl font-bold mb-2">{t('shared_calc_not_found')}</h1>
                 <p className="text-muted-foreground mb-6 max-w-sm">

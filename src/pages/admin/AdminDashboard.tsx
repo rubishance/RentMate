@@ -148,7 +148,7 @@ const AdminDashboard = () => {
 
     const statCards = [
         { name: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-brand-600', bg: 'bg-brand-50' },
-        { name: 'Total Contracts', value: stats.totalContracts, icon: FileText, color: 'text-purple-600', bg: 'bg-purple-50' },
+        { name: 'Total Contracts', value: stats.totalContracts, icon: FileText, color: 'text-primary', bg: 'bg-primary-50' },
         { name: 'Total Revenue', value: stats.totalRevenue ? `₪${stats.totalRevenue.toLocaleString()}` : '₪0', icon: Wallet, color: 'text-emerald-600', bg: 'bg-emerald-50' },
         { name: 'Active Users', value: stats.activeUsers, icon: Activity, color: 'text-orange-600', bg: 'bg-orange-50' },
         { name: 'AI Usage Cost', value: stats.totalAiCost ? `$${stats.totalAiCost.toFixed(2)}` : '$0.00', icon: Cpu, color: 'text-blue-600', bg: 'bg-blue-50' },

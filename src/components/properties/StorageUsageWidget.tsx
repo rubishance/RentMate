@@ -58,7 +58,7 @@ export function StorageUsageWidget() {
                 className="w-full flex items-center justify-between p-6 hover:bg-secondary dark:hover:bg-gray-700/50 transition-colors"
             >
                 <div className="flex items-center gap-2">
-                    <HardDrive className={`w-5 h-5 ${isOverLimit ? 'text-red-500' : isNearLimit ? 'text-orange-500' : 'text-primary'}`} />
+                    <HardDrive className={`w-5 h-5 ${isOverLimit ? 'text-destructive' : isNearLimit ? 'text-orange-500' : 'text-primary'}`} />
                     <h3 className="font-bold text-foreground dark:text-white">{t('storageUsage')}</h3>
                 </div>
                 <div className="flex items-center gap-3">

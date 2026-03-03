@@ -358,7 +358,7 @@ export default function SupportTickets() {
                                     )}
                                 >
                                     {analysis && (
-                                        <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-brand-500 to-purple-500 opacity-60" />
+                                        <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-primary to-primary-500 opacity-60" />
                                     )}
 
                                     <div className="flex items-start justify-between gap-2 mb-3">
@@ -396,7 +396,7 @@ export default function SupportTickets() {
                     {!selectedTicket ? (
                         <div className="bg-white dark:bg-gray-800 rounded-3xl border border-slate-100 dark:border-neutral-800 p-20 text-center h-[800px] flex items-center justify-center shadow-minimal">
                             <div className="space-y-4">
-                                <div className="w-24 h-24 bg-slate-50 dark:bg-neutral-900 rounded-[2.5rem] flex items-center justify-center mx-auto shadow-minimal border border-slate-100 dark:border-neutral-800">
+                                <div className="w-24 h-24 bg-background dark:bg-neutral-900 rounded-[2.5rem] flex items-center justify-center mx-auto shadow-minimal border border-slate-100 dark:border-neutral-800">
                                     <MessageSquare className="w-10 h-10 text-slate-200" />
                                 </div>
                                 <p className="font-black text-gray-400 uppercase tracking-[0.3em] text-xs">Select a ticket to reveal intelligence</p>
@@ -443,7 +443,7 @@ export default function SupportTickets() {
                                         <select
                                             value={selectedTicket.status}
                                             onChange={(e) => handleUpdateStatus(selectedTicket.id, e.target.value)}
-                                            className="px-4 py-2 bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[1.2rem] text-[10px] font-black uppercase tracking-widest focus:ring-2 focus:ring-brand-500/20 outline-none cursor-pointer"
+                                            className="px-4 py-2 bg-background dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[1.2rem] text-[10px] font-black uppercase tracking-widest focus:ring-2 focus:ring-brand-500/20 outline-none cursor-pointer"
                                         >
                                             <option value="open">Open</option>
                                             <option value="in_progress">In Progress</option>
@@ -454,19 +454,19 @@ export default function SupportTickets() {
                                     </div>
                                 </div>
 
-                                <blockquote className="p-5 bg-slate-50 dark:bg-neutral-900/50 rounded-2xl border border-slate-100 dark:border-neutral-800 text-sm font-medium text-gray-600 dark:text-gray-400 italic mb-6 leading-relaxed">
+                                <blockquote className="p-5 bg-background dark:bg-neutral-900/50 rounded-2xl border border-slate-100 dark:border-neutral-800 text-sm font-medium text-gray-600 dark:text-gray-400 italic mb-6 leading-relaxed">
                                     "{selectedTicket.description}"
                                 </blockquote>
 
                                 <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-widest text-gray-400">
                                     <div className="flex items-center gap-2">
-                                        <div className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-neutral-800 flex items-center justify-center">
+                                        <div className="w-6 h-6 rounded-lg bg-muted/50 dark:bg-neutral-800 flex items-center justify-center">
                                             <User className="w-3 h-3" />
                                         </div>
                                         {selectedTicket.user?.email || 'Unknown'}
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <div className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-neutral-800 flex items-center justify-center">
+                                        <div className="w-6 h-6 rounded-lg bg-muted/50 dark:bg-neutral-800 flex items-center justify-center">
                                             <Calendar className="w-3 h-3" />
                                         </div>
                                         {new Date(selectedTicket.created_at).toLocaleString()}
@@ -475,7 +475,7 @@ export default function SupportTickets() {
                             </div>
 
                             {/* Comments & AI Intelligence View */}
-                            <div className="flex-1 overflow-y-auto p-8 space-y-8 bg-slate-50/30 dark:bg-black/20 no-scrollbar">
+                            <div className="flex-1 overflow-y-auto p-8 space-y-8 bg-background/30 dark:bg-black/20 no-scrollbar">
                                 {/* AI Intelligence Panel */}
                                 {selectedTicket.ticket_analysis?.[0] && (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -509,7 +509,7 @@ export default function SupportTickets() {
 
                                 {/* Auto Reply Section */}
                                 {selectedTicket.auto_reply_draft && (
-                                    <div className="p-8 bg-gradient-to-br from-brand-50 to-purple-50 dark:from-brand-900/10 dark:to-purple-900/10 rounded-[2.5rem] border border-brand-100/50 dark:border-brand-500/10 shadow-premium-dark relative overflow-hidden group">
+                                    <div className="p-8 bg-gradient-to-br from-brand-50 to-primary-50 dark:from-brand-900/10 dark:to-primary-900/10 rounded-[2.5rem] border border-brand-100/50 dark:border-brand-500/10 shadow-premium-dark relative overflow-hidden group">
                                         <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform">
                                             <Sparkles className="w-16 h-16 text-brand-600" />
                                         </div>
@@ -547,15 +547,15 @@ export default function SupportTickets() {
                                 {/* History / Comments */}
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-4 px-2">
-                                        <div className="h-px flex-1 bg-slate-100 dark:border-neutral-800" />
+                                        <div className="h-px flex-1 bg-muted/50 dark:border-neutral-800" />
                                         <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Communication History</span>
-                                        <div className="h-px flex-1 bg-slate-100 dark:border-neutral-800" />
+                                        <div className="h-px flex-1 bg-muted/50 dark:border-neutral-800" />
                                     </div>
                                     {comments.map((comment) => (
                                         <div key={comment.id} className={cn("p-6 rounded-[2rem] shadow-minimal relative group",
                                             comment.is_admin
                                                 ? 'bg-white dark:bg-neutral-900 ml-12 border border-slate-100 dark:border-neutral-800'
-                                                : 'bg-slate-50 dark:bg-neutral-800/50 mr-12 border-transparent'
+                                                : 'bg-background dark:bg-neutral-800/50 mr-12 border-transparent'
                                         )}>
                                             <div className="flex items-center justify-between mb-3">
                                                 <span className="text-[10px] font-black text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
@@ -586,7 +586,7 @@ export default function SupportTickets() {
                                         onChange={(e) => setNewComment(e.target.value)}
                                         onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
                                         placeholder="Add to follow-up..."
-                                        className="flex-1 px-6 py-4 bg-slate-50 dark:bg-neutral-800 border-none rounded-2xl text-[10px] font-bold tracking-widest focus:ring-2 focus:ring-brand-500/20 outline-none placeholder:uppercase placeholder:text-[9px]"
+                                        className="flex-1 px-6 py-4 bg-background dark:bg-neutral-800 border-none rounded-2xl text-[10px] font-bold tracking-widest focus:ring-2 focus:ring-brand-500/20 outline-none placeholder:uppercase placeholder:text-[9px]"
                                     />
                                     <button
                                         onClick={handleAddComment}

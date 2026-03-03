@@ -459,10 +459,10 @@ const UserManagement = () => {
                                         </td>
                                         <td className="whitespace-nowrap px-3 py-5">
                                             <div className="flex flex-col gap-1">
-                                                <span className={`inline-flex w-fit rounded-lg px-2 py-0.5 text-[9px] font-black uppercase tracking-widest ${user.role === 'admin' ? 'bg-purple-50 text-purple-700 border border-purple-100 dark:bg-purple-900/20 dark:border-purple-800' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'}`}>
+                                                <span className={`inline-flex w-fit rounded-lg px-2 py-0.5 text-[9px] font-black uppercase tracking-widest ${user.role === 'admin' ? 'bg-primary-50 text-primary-700 border border-primary-100 dark:bg-primary-900/20 dark:border-primary-800' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'}`}>
                                                     {user.role}
                                                 </span>
-                                                <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">
+                                                <span className="text-[10px] font-bold text-primary uppercase tracking-widest">
                                                     {getPlanName(user)}
                                                 </span>
                                             </div>
@@ -477,7 +477,7 @@ const UserManagement = () => {
                                         <td className="whitespace-nowrap px-3 py-5 text-right">
                                             <div className="flex flex-col gap-1 text-[10px] font-black uppercase">
                                                 <div className="text-gray-500 flex justify-between gap-4">STORAGE: <span className="text-emerald-600">{user.storage_usage_mb || 0} MB</span></div>
-                                                <div className="text-gray-500 flex justify-between gap-4">AI SESS: <span className="text-purple-600">{user.ai_sessions_count || 0}</span></div>
+                                                <div className="text-gray-500 flex justify-between gap-4">AI SESS: <span className="text-primary">{user.ai_sessions_count || 0}</span></div>
                                             </div>
                                         </td>
                                         <td className="whitespace-nowrap px-3 py-5">
@@ -619,7 +619,7 @@ const UserManagement = () => {
                                     </div>
                                     <div className="flex justify-between items-center text-xs">
                                         <span className="font-bold text-gray-500 uppercase tracking-tighter">AI Sessions</span>
-                                        <span className="font-black text-purple-600">{selectedUser.ai_sessions_count || 0}</span>
+                                        <span className="font-black text-primary">{selectedUser.ai_sessions_count || 0}</span>
                                     </div>
                                     <div className="flex justify-between items-center text-xs">
                                         <span className="font-bold text-gray-500 uppercase tracking-tighter">Active Tenants</span>
@@ -651,7 +651,7 @@ const UserManagement = () => {
                                         variant="destructive"
                                         onClick={handleDeleteUser}
                                         disabled={actionLoading || selectedUser?.id === currentUser?.id}
-                                        className="w-full justify-center rounded-xl bg-red-50 text-red-600 border border-red-100 px-4 py-2.5 text-xs font-bold hover:bg-red-100 hover:text-red-700 h-auto"
+                                        className="w-full justify-center rounded-xl bg-destructive/10 text-destructive border border-red-100 px-4 py-2.5 text-xs font-bold hover:bg-red-100 hover:text-red-700 h-auto"
                                         title={selectedUser?.id === currentUser?.id ? "You cannot delete your own account" : ""}
                                     >
                                         {actionLoading ? 'Deleting...' : 'Delete User & All Linked Data'}

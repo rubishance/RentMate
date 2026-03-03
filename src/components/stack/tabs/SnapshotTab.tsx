@@ -16,7 +16,7 @@ export function SnapshotTab({ property, isEditing, onPropertyChange }: SnapshotT
                 <h3 className="text-lg font-bold mb-4">{t('overview') || 'Overview'}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {(isEditing || property.rooms) ? (
-                        <div className="p-4 bg-slate-50 dark:bg-neutral-900 rounded-xl">
+                        <div className="p-4 bg-background dark:bg-neutral-900 rounded-xl">
                             <div className="text-xs text-muted-foreground uppercase tracking-wider">{t('rooms')}</div>
                             {isEditing ? (
                                 <input
@@ -32,7 +32,7 @@ export function SnapshotTab({ property, isEditing, onPropertyChange }: SnapshotT
                         </div>
                     ) : null}
                     {(isEditing || property.size_sqm) ? (
-                        <div className="p-4 bg-slate-50 dark:bg-neutral-900 rounded-xl">
+                        <div className="p-4 bg-background dark:bg-neutral-900 rounded-xl">
                             <div className="text-xs text-muted-foreground uppercase tracking-wider">{t('sqm')}</div>
                             {isEditing ? (
                                 <input
@@ -51,7 +51,7 @@ export function SnapshotTab({ property, isEditing, onPropertyChange }: SnapshotT
                     <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
                         {/* Parking */}
                         {(isEditing || property.has_parking) ? (
-                            <div className="p-4 bg-slate-50 dark:bg-neutral-900 rounded-xl flex flex-col gap-2">
+                            <div className="p-4 bg-background dark:bg-neutral-900 rounded-xl flex flex-col gap-2">
                                 <div className="text-[10px] text-muted-foreground uppercase tracking-widest">{t('parking')}</div>
                                 <label className="flex items-center gap-3 cursor-pointer group">
                                     <input
@@ -68,7 +68,7 @@ export function SnapshotTab({ property, isEditing, onPropertyChange }: SnapshotT
 
                         {/* Balcony */}
                         {(isEditing || property.has_balcony) ? (
-                            <div className="p-4 bg-slate-50 dark:bg-neutral-900 rounded-xl flex flex-col gap-2">
+                            <div className="p-4 bg-background dark:bg-neutral-900 rounded-xl flex flex-col gap-2">
                                 <div className="text-[10px] text-muted-foreground uppercase tracking-widest">{t('balcony')}</div>
                                 <label className="flex items-center gap-3 cursor-pointer group">
                                     <input
@@ -85,7 +85,7 @@ export function SnapshotTab({ property, isEditing, onPropertyChange }: SnapshotT
 
                         {/* Safe Room (Mamad) */}
                         {(isEditing || property.has_safe_room) ? (
-                            <div className="p-4 bg-slate-50 dark:bg-neutral-900 rounded-xl flex flex-col gap-2">
+                            <div className="p-4 bg-background dark:bg-neutral-900 rounded-xl flex flex-col gap-2">
                                 <div className="text-[10px] text-muted-foreground uppercase tracking-widest">{t('safeRoom')}</div>
                                 <label className="flex items-center gap-3 cursor-pointer group">
                                     <input
@@ -102,7 +102,7 @@ export function SnapshotTab({ property, isEditing, onPropertyChange }: SnapshotT
 
                         {/* Storage */}
                         {(isEditing || property.has_storage) ? (
-                            <div className="p-4 bg-slate-50 dark:bg-neutral-900 rounded-xl flex flex-col gap-2">
+                            <div className="p-4 bg-background dark:bg-neutral-900 rounded-xl flex flex-col gap-2">
                                 <div className="text-[10px] text-muted-foreground uppercase tracking-widest">{t('storage')}</div>
                                 <label className="flex items-center gap-3 cursor-pointer group">
                                     <input

@@ -431,7 +431,7 @@ export function PropertyHub({
   const [refreshKey, setRefreshKey] = useState(0);
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 dark:bg-black">
+    <div className="flex flex-col h-full bg-background dark:bg-black">
       {/* 1. Header & Cover */}
       <div className="relative shrink-0">
         <div className="h-48 bg-slate-200 dark:bg-neutral-800 relative overflow-hidden">
@@ -521,7 +521,7 @@ export function PropertyHub({
 
               {isEditing ? (
                 <div className="space-y-6 bg-white/5 dark:bg-neutral-900/60 p-4 md:p-6 rounded-[2rem] border border-white/10 backdrop-blur-3xl shadow-xl">
-                  <div className="p-4 rounded-[1.5rem] bg-slate-50 dark:bg-neutral-800/30 border border-slate-100 dark:border-neutral-700">
+                  <div className="p-4 rounded-[1.5rem] bg-background dark:bg-neutral-800/30 border border-slate-100 dark:border-neutral-700">
                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block mb-3 text-center">
                       {t("selectCategory") || t("propertyType")}
                     </label>
@@ -536,7 +536,7 @@ export function PropertyHub({
                     />
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700 focus-within:ring-2 ring-primary/20 transition-all">
+                  <div className="p-4 rounded-2xl bg-background dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700 focus-within:ring-2 ring-primary/20 transition-all">
                     <GoogleAutocomplete
                       label={t("city")}
                       value={editedProperty.city || ""}
@@ -547,7 +547,7 @@ export function PropertyHub({
                     />
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700 focus-within:ring-2 ring-primary/20 transition-all">
+                  <div className="p-4 rounded-2xl bg-background dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700 focus-within:ring-2 ring-primary/20 transition-all">
                     <GoogleAutocomplete
                       label={t("address")}
                       value={editedProperty.address || ""}
@@ -560,7 +560,7 @@ export function PropertyHub({
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 rounded-[1.5rem] bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
+                    <div className="p-4 rounded-[1.5rem] bg-background dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
                       <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">
                         {t("rooms")}
                       </label>
@@ -578,7 +578,7 @@ export function PropertyHub({
                         }
                       />
                     </div>
-                    <div className="p-4 rounded-[1.5rem] bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
+                    <div className="p-4 rounded-[1.5rem] bg-background dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
                       <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">
                         {t("sqm")}
                       </label>
@@ -599,11 +599,11 @@ export function PropertyHub({
 
                   <div className="space-y-4">
                     <div className="flex items-center justify-between px-2">
-                      <div className="h-px flex-1 bg-slate-100 dark:bg-neutral-800" />
+                      <div className="h-px flex-1 bg-muted/50 dark:bg-neutral-800" />
                       <span className="mx-4 text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-50">
                         {t("amenities")}
                       </span>
-                      <div className="h-px flex-1 bg-slate-100 dark:bg-neutral-800" />
+                      <div className="h-px flex-1 bg-muted/50 dark:bg-neutral-800" />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       {[
@@ -644,7 +644,7 @@ export function PropertyHub({
                               "flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border transition-all duration-300 group relative overflow-hidden",
                               isActive
                                 ? "bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-600/20 scale-[1.02] z-10"
-                                : "bg-slate-50 dark:bg-neutral-800/50 border-transparent text-muted-foreground hover:bg-slate-100 hover:scale-[1.01]",
+                                : "bg-background dark:bg-neutral-800/50 border-transparent text-muted-foreground hover:bg-muted/50 hover:scale-[1.01]",
                             )}
                           >
                             <div
@@ -664,7 +664,7 @@ export function PropertyHub({
                                 "font-bold text-[11px] transition-colors py-0.5",
                                 isActive
                                   ? "text-white"
-                                  : "text-slate-600 dark:text-slate-300",
+                                  : "text-muted-foreground",
                               )}
                             >
                               {feat.label}
@@ -685,7 +685,7 @@ export function PropertyHub({
                       <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                         {t("propertyImage")}
                       </label>
-                      <div className="flex p-1 bg-slate-100 dark:bg-neutral-800 rounded-xl">
+                      <div className="flex p-1 bg-muted/50 dark:bg-neutral-800 rounded-xl">
                         <Button
                           onClick={() => setUploadMode("upload")}
                           variant="ghost"
@@ -719,7 +719,7 @@ export function PropertyHub({
                     </div>
 
                     {uploadMode === "url" && isFetchingMap && (
-                      <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-200 dark:border-neutral-800 rounded-2xl bg-slate-50/50 dark:bg-neutral-800/20 h-24">
+                      <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-200 dark:border-neutral-800 rounded-2xl bg-background/50 dark:bg-neutral-800/20 h-24">
                         <Loader2 className="w-5 h-5 text-primary animate-spin mb-1" />
                         <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">
                           {t("fetchingStreetView") || "Fetching..."}
@@ -728,7 +728,7 @@ export function PropertyHub({
                     )}
 
                     {uploadMode === "upload" && (
-                      <div className="relative border-2 border-dashed border-slate-200 dark:border-neutral-800 rounded-2xl p-6 hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-all text-center group cursor-pointer h-24 flex items-center justify-center">
+                      <div className="relative border-2 border-dashed border-slate-200 dark:border-neutral-800 rounded-2xl p-6 hover:bg-background dark:hover:bg-neutral-800/50 transition-all text-center group cursor-pointer h-24 flex items-center justify-center">
                         <input
                           type="file"
                           accept="image/*"
@@ -788,7 +788,7 @@ export function PropertyHub({
                               }
                               variant="destructive"
                               size="icon"
-                              className="p-2 rounded-full hover:bg-red-600 shadow-xl w-10 h-10"
+                              className="p-2 rounded-full hover:bg-destructive shadow-xl w-10 h-10"
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
@@ -797,7 +797,7 @@ export function PropertyHub({
                       )}
                     </AnimatePresence>
                     {imageError && (
-                      <p className="text-[10px] text-red-500 font-bold">
+                      <p className="text-[10px] text-destructive font-bold">
                         {imageError}
                       </p>
                     )}
@@ -938,7 +938,7 @@ export function PropertyHub({
                                 className={cn(
                                   "w-full flex items-center justify-start gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all h-auto",
                                   focus
-                                    ? "bg-slate-50 dark:bg-neutral-800 text-foreground"
+                                    ? "bg-background dark:bg-neutral-800 text-foreground"
                                     : "text-muted-foreground",
                                 )}
                               >
@@ -948,7 +948,7 @@ export function PropertyHub({
                             )}
                           </MenuItem>
 
-                          <div className="h-[1px] bg-slate-50 dark:bg-neutral-800 my-2 mx-4" />
+                          <div className="h-[1px] bg-background dark:bg-neutral-800 my-2 mx-4" />
 
                           <MenuItem>
                             {({ focus }) => (
@@ -958,7 +958,7 @@ export function PropertyHub({
                                 className={cn(
                                   "w-full flex items-center justify-start gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all h-auto",
                                   focus
-                                    ? "bg-slate-50 dark:bg-neutral-800 text-foreground"
+                                    ? "bg-background dark:bg-neutral-800 text-foreground"
                                     : "text-muted-foreground",
                                 )}
                               >
@@ -976,7 +976,7 @@ export function PropertyHub({
                                 className={cn(
                                   "w-full flex items-center justify-start gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all h-auto",
                                   focus
-                                    ? "bg-slate-50 dark:bg-neutral-800 text-foreground"
+                                    ? "bg-background dark:bg-neutral-800 text-foreground"
                                     : "text-muted-foreground",
                                 )}
                               >
@@ -995,7 +995,7 @@ export function PropertyHub({
                                   "w-full flex items-center justify-start gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all h-auto",
                                   focus
                                     ? "bg-red-50 dark:bg-red-900/20 text-red-600"
-                                    : "text-red-500",
+                                    : "text-destructive",
                                 )}
                               >
                                 <Trash2 className="w-4 h-4" />

@@ -82,7 +82,7 @@ export function Sidebar() {
                             "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors",
                             isActive
                                 ? "bg-primary/10 text-primary"
-                                : "text-muted-foreground hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-foreground"
+                                : "text-muted-foreground hover:bg-muted/50 dark:hover:bg-slate-800 hover:text-foreground"
                         )}
                     >
                         <item.icon className="w-5 h-5" />
@@ -92,7 +92,7 @@ export function Sidebar() {
             </nav>
 
             {/* User Profile & Actions */}
-            <div className="p-4 border-t border-border/50 bg-slate-50/50 dark:bg-slate-900/50">
+            <div className="p-4 border-t border-border/50 bg-background/50 dark:bg-slate-900/50">
                 <div className="flex flex-col gap-2">
                     <NavLink
                         to="/settings"
@@ -100,7 +100,7 @@ export function Sidebar() {
                             "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
                             isActive
                                 ? "bg-primary/10 text-primary"
-                                : "text-muted-foreground hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-foreground"
+                                : "text-muted-foreground hover:bg-muted/50 dark:hover:bg-slate-800 hover:text-foreground"
                         )}
                     >
                         <Settings className="w-4 h-4" />

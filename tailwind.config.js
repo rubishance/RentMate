@@ -31,8 +31,8 @@ module.exports = {
                     900: '#0C131D',
                 },
                 primary: {
-                    DEFAULT: '#14284B', // Deep Navy
-                    foreground: '#FFFFFF',
+                    DEFAULT: 'hsl(var(--primary))',
+                    foreground: 'hsl(var(--primary-foreground))',
                     50: '#F0F4FA',
                     100: '#DEE7F4',
                     200: '#BFCEE6',
@@ -46,8 +46,8 @@ module.exports = {
                     950: '#060B18',
                 },
                 secondary: {
-                    DEFAULT: '#459367', // Sage Green
-                    foreground: '#FFFFFF',
+                    DEFAULT: 'hsl(var(--secondary))',
+                    foreground: 'hsl(var(--secondary-foreground))',
                     50: '#F4FAF6',
                     100: '#E9F5ED',
                     200: '#C7E6D3',
@@ -73,8 +73,8 @@ module.exports = {
                     foreground: '#1A1A1A',
                 },
                 destructive: {
-                    DEFAULT: '#C05746', // Terracotta
-                    foreground: '#FFFFFF',
+                    DEFAULT: 'hsl(var(--destructive))',
+                    foreground: 'hsl(var(--destructive-foreground))',
                     50: '#FEF2F2',
                     500: '#C05746',
                     900: '#451510',

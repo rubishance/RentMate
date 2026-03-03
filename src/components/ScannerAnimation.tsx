@@ -33,26 +33,26 @@ export const ScannerAnimation = () => {
             >
                 {/* Header Mock */}
                 <div className="flex gap-2 mb-2">
-                    <div className="w-8 h-8 rounded-full bg-slate-100 shrink-0" />
+                    <div className="w-8 h-8 rounded-full bg-muted/50 shrink-0" />
                     <div className="flex flex-col gap-1 w-full justify-center">
                         <div className="w-16 h-2 bg-slate-200 rounded-full" />
-                        <div className="w-10 h-1.5 bg-slate-100 rounded-full" />
+                        <div className="w-10 h-1.5 bg-muted/50 rounded-full" />
                     </div>
                 </div>
 
                 {/* Content Lines Mock */}
                 <div className="space-y-2">
-                    <div className="w-full h-2 bg-slate-100 rounded-full" />
-                    <div className="w-5/6 h-2 bg-slate-100 rounded-full" />
-                    <div className="w-full h-2 bg-slate-100 rounded-full" />
-                    <div className="w-4/5 h-2 bg-slate-100 rounded-full" />
-                    <div className="w-full h-2 bg-slate-100 rounded-full" />
-                    <div className="w-3/4 h-2 bg-slate-100 rounded-full" />
+                    <div className="w-full h-2 bg-muted/50 rounded-full" />
+                    <div className="w-5/6 h-2 bg-muted/50 rounded-full" />
+                    <div className="w-full h-2 bg-muted/50 rounded-full" />
+                    <div className="w-4/5 h-2 bg-muted/50 rounded-full" />
+                    <div className="w-full h-2 bg-muted/50 rounded-full" />
+                    <div className="w-3/4 h-2 bg-muted/50 rounded-full" />
                 </div>
 
                 {/* Scanning Beam */}
                 <motion.div
-                    className="absolute left-0 right-0 h-16 bg-gradient-to-b from-blue-500/0 via-blue-500/20 to-blue-500/0 z-10"
+                    className="absolute left-0 right-0 h-16 bg-gradient-to-b from-primary/0 via-blue-500/20 to-blue-500/0 z-10"
                     style={{ top: '-20%' }}
                     animate={{
                         top: ['-20%', '120%'],

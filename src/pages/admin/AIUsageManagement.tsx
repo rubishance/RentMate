@@ -157,7 +157,7 @@ export default function AIUsageManagement() {
 
     const getTierColor = (tier: string) => {
         switch (tier?.toLowerCase()) {
-            case 'pro': return 'bg-purple-50 text-purple-700 border-purple-100 dark:bg-purple-900/20 dark:border-purple-800';
+            case 'pro': return 'bg-primary-50 text-primary-700 border-primary-100 dark:bg-primary-900/20 dark:border-primary-800';
             case 'business': return 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/20 dark:border-amber-800';
             case 'basic': return 'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:border-blue-800';
             default: return 'bg-gray-50 text-gray-700 border-gray-100 dark:bg-gray-900/40 dark:border-gray-700 dark:text-gray-400';
@@ -226,7 +226,7 @@ export default function AIUsageManagement() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
+                        <div className="p-3 bg-primary/5 rounded-xl border border-blue-100 dark:border-blue-800">
                             <MessageSquare className="w-6 h-6 text-blue-600" />
                         </div>
                         <div>
@@ -250,8 +250,8 @@ export default function AIUsageManagement() {
 
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-100 dark:border-purple-800">
-                            <Users className="w-6 h-6 text-purple-600" />
+                        <div className="p-3 bg-primary/5 rounded-xl border border-primary-100 dark:border-primary-800">
+                            <Users className="w-6 h-6 text-primary" />
                         </div>
                         <div>
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Active Chatters</p>
@@ -393,7 +393,7 @@ export default function AIUsageManagement() {
                                                     <div className="flex items-center justify-between gap-3">
                                                         <div className="flex-1 h-2.5 bg-gray-100 dark:bg-gray-900 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700">
                                                             <div
-                                                                className={`h-full rounded-full transition-all duration-500 ${messagePercent > 90 ? 'bg-red-600' : messagePercent > 70 ? 'bg-orange-500' : 'bg-brand-600'}`}
+                                                                className={`h-full rounded-full transition-all duration-500 ${messagePercent > 90 ? 'bg-destructive' : messagePercent > 70 ? 'bg-orange-500' : 'bg-brand-600'}`}
                                                                 style={{ width: `${messagePercent}%` }}
                                                             />
                                                         </div>

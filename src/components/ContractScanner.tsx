@@ -344,7 +344,7 @@ export function ContractScanner({ onScanComplete, onCancel, mode = 'modal', skip
                         animate={{ opacity: 1, height: 'auto' }}
                         className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3"
                     >
-                        <AlertTriangle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                        <AlertTriangle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
                         <div className="text-right">
                             <h3 className="font-bold text-red-800 text-sm">שגיאה בתהליך</h3>
                             <p className="text-red-600 text-sm mt-1">{error}</p>
@@ -365,9 +365,9 @@ export function ContractScanner({ onScanComplete, onCancel, mode = 'modal', skip
                         <p className="text-slate-500 text-sm">אנא המתן, הניתוח יקח כ-20 שניות...</p>
 
                         {/* Animated AI Progress bar */}
-                        <div className="relative w-full h-3 bg-slate-100 rounded-full mt-8 overflow-hidden">
+                        <div className="relative w-full h-3 bg-muted/50 rounded-full mt-8 overflow-hidden">
                             <motion.div
-                                className="absolute inset-0 bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-500"
+                                className="absolute inset-0 bg-gradient-to-r from-primary via-cyan-500 to-emerald-500"
                                 animate={{ x: ["-100%", "100%"] }}
                                 transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
                             />

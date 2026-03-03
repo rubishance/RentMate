@@ -110,7 +110,7 @@ export function StandardCalculator({ initialValues, shouldAutoCalculate }: Stand
                         <select
                             value={linkageType}
                             onChange={(e) => setLinkageType(e.target.value as any)}
-                            className="w-full h-20 px-8 bg-slate-50 dark:bg-neutral-800/50 border-2 border-transparent focus:bg-white dark:focus:bg-neutral-800 focus:border-black dark:focus:border-white rounded-[2rem] font-black text-xl text-foreground transition-all outline-none appearance-none"
+                            className="w-full h-20 px-8 bg-background dark:bg-neutral-800/50 border-2 border-transparent focus:bg-white dark:focus:bg-neutral-800 focus:border-black dark:focus:border-white rounded-[2rem] font-black text-xl text-foreground transition-all outline-none appearance-none"
                         >
                             <option value="cpi">{t('linkedToCpi')}</option>
                             <option value="housing">{t('linkedToHousing')}</option>
@@ -148,7 +148,7 @@ export function StandardCalculator({ initialValues, shouldAutoCalculate }: Stand
                         <motion.div
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
-                            className="space-y-4 p-8 rounded-[2rem] bg-slate-50 dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-800"
+                            className="space-y-4 p-8 rounded-[2rem] bg-background dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-800"
                         >
                             <div className="flex items-center justify-between">
                                 <span className="text-xs font-black uppercase tracking-widest text-foreground">
@@ -246,19 +246,19 @@ export function StandardCalculator({ initialValues, shouldAutoCalculate }: Stand
                     <h3 className="font-black text-[10px] uppercase tracking-[0.4em] text-muted-foreground text-center">{t('results')}</h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="bg-slate-50 dark:bg-neutral-800/50 p-10 rounded-[2.5rem] text-center space-y-2 border border-slate-100 dark:border-neutral-800">
+                        <div className="bg-background dark:bg-neutral-800/50 p-10 rounded-[2.5rem] text-center space-y-2 border border-slate-100 dark:border-neutral-800">
                             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block">{t('newRent')}</span>
                             <span className="text-5xl font-black text-foreground">₪{result.newRent.toLocaleString()}</span>
                         </div>
-                        <div className="bg-slate-50 dark:bg-neutral-800/50 p-10 rounded-[2.5rem] text-center space-y-2 border border-slate-100 dark:border-neutral-800">
+                        <div className="bg-background dark:bg-neutral-800/50 p-10 rounded-[2.5rem] text-center space-y-2 border border-slate-100 dark:border-neutral-800">
                             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block">{t('linkageCoefficient')}</span>
                             <span className="text-5xl font-black text-foreground">{result.linkageCoefficient.toFixed(2)}%</span>
                         </div>
-                        <div className="bg-slate-50 dark:bg-neutral-800/50 p-8 rounded-[2rem] flex justify-between items-center px-10">
+                        <div className="bg-background dark:bg-neutral-800/50 p-8 rounded-[2rem] flex justify-between items-center px-10">
                             <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('change')}</span>
                             <span className="text-2xl font-black text-foreground">+₪{Math.round(result.absoluteChange).toLocaleString()}</span>
                         </div>
-                        <div className="bg-slate-50 dark:bg-neutral-800/50 p-8 rounded-[2rem] flex justify-between items-center px-10">
+                        <div className="bg-background dark:bg-neutral-800/50 p-8 rounded-[2rem] flex justify-between items-center px-10">
                             <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('percentage')}</span>
                             <span className="text-2xl font-black text-foreground">{result.percentageChange.toFixed(2)}%</span>
                         </div>
@@ -271,7 +271,7 @@ export function StandardCalculator({ initialValues, shouldAutoCalculate }: Stand
 
                     <button
                         onClick={() => setIsGeneratorOpen(true)}
-                        className="w-full h-20 bg-white dark:bg-neutral-800 border-2 border-slate-100 dark:border-neutral-700 text-foreground py-5 rounded-[1.5rem] font-black text-xs uppercase tracking-[0.2em] transition-all hover:bg-slate-50 dark:hover:bg-neutral-700 flex items-center justify-center gap-4 hover:shadow-minimal"
+                        className="w-full h-20 bg-white dark:bg-neutral-800 border-2 border-slate-100 dark:border-neutral-700 text-foreground py-5 rounded-[1.5rem] font-black text-xs uppercase tracking-[0.2em] transition-all hover:bg-background dark:hover:bg-neutral-700 flex items-center justify-center gap-4 hover:shadow-minimal"
                     >
                         <Share2 className="w-5 h-5" />
                         {t('shareResult')}

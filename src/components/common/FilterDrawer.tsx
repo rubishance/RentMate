@@ -75,7 +75,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
                                         variant="ghost"
                                         size="icon"
                                         onClick={onReset}
-                                        className="rounded-xl hover:bg-slate-100 dark:hover:bg-neutral-800"
+                                        className="rounded-xl hover:bg-muted/50 dark:hover:bg-neutral-800"
                                         title={t('resetFilters')}
                                     >
                                         <RotateCcw className="w-4 h-4 text-muted-foreground" />
@@ -85,7 +85,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
                                     variant="ghost"
                                     size="icon"
                                     onClick={onClose}
-                                    className="rounded-xl hover:bg-slate-100 dark:hover:bg-neutral-800"
+                                    className="rounded-xl hover:bg-muted/50 dark:hover:bg-neutral-800"
                                 >
                                     <X className="w-5 h-5 text-muted-foreground" />
                                 </Button>
@@ -98,7 +98,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
                         </div>
 
                         {/* Footer - Final Action */}
-                        <div className="p-8 border-t border-border bg-slate-50/50 dark:bg-neutral-950/20 shrink-0">
+                        <div className="p-8 border-t border-border bg-background/50 dark:bg-neutral-950/20 shrink-0">
                             <Button
                                 onClick={onClose}
                                 className="w-full h-14 rounded-2xl bg-foreground text-background font-black uppercase tracking-widest text-[11px]"

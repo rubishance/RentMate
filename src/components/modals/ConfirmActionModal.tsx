@@ -76,7 +76,7 @@ export const ConfirmActionModal: React.FC<ConfirmActionModalProps> = ({
             }
         >
             <div className="flex flex-col items-center text-center space-y-4 py-4">
-                <div className="w-20 h-20 rounded-full bg-slate-50 dark:bg-neutral-800 flex items-center justify-center shadow-minimal border border-slate-100 dark:border-neutral-700 mb-2">
+                <div className="w-20 h-20 rounded-full bg-background dark:bg-neutral-800 flex items-center justify-center shadow-minimal border border-slate-100 dark:border-neutral-700 mb-2">
                     {getIcon()}
                 </div>
                 <div className="space-y-2">

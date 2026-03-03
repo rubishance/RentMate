@@ -135,7 +135,7 @@ export default function Contracts() {
                     <div className="space-y-1 overflow-hidden">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/5 dark:bg-emerald-500/10 backdrop-blur-md rounded-full border border-emerald-500/10 shadow-sm mb-1">
                             <FileText className="w-3 h-3 text-emerald-500" />
-                            <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+                            <span className="text-[9px] font-black uppercase tracking-widest text-secondary">
                                 {t('legal_management')}
                             </span>
                         </div>
@@ -155,7 +155,7 @@ export default function Contracts() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <div className="flex p-1 bg-slate-100 dark:bg-neutral-800 rounded-2xl border border-slate-200 dark:border-neutral-700 shadow-sm overflow-x-auto scrollbar-hide">
+                    <div className="flex p-1 bg-muted/50 dark:bg-neutral-800 rounded-2xl border border-slate-200 dark:border-neutral-700 shadow-sm overflow-x-auto scrollbar-hide">
                         {(['active', 'archived', 'all'] as const).map((s) => (
                             <Button
                                 key={s}
@@ -190,7 +190,7 @@ export default function Contracts() {
             <div className="grid grid-cols-2 gap-4 md:gap-8">
                 {[
                     { label: t('active'), value: stats.active, color: 'text-emerald-500', bg: 'bg-emerald-500/5', border: 'border-emerald-500/10' },
-                    { label: t('archived'), value: stats.archived, color: 'text-slate-400', bg: 'bg-slate-500/5', border: 'border-slate-200 dark:border-slate-800' },
+                    { label: t('archived'), value: stats.archived, color: 'text-slate-400', bg: 'bg-background0/5', border: 'border-border' },
                 ].map((stat, i) => (
                     <Card key={i} glass className={cn("rounded-[2rem] border shadow-sm", stat.bg, stat.border)}>
                         <CardContent className="p-6 flex items-center justify-between">
@@ -209,7 +209,7 @@ export default function Contracts() {
             {filteredContracts.length === 0 ? (
                 <div
                     onClick={handleAdd}
-                    className="py-32 text-center space-y-6 bg-slate-50/50 dark:bg-neutral-900/50 rounded-[3.5rem] border border-dashed border-slate-200 dark:border-neutral-800 mx-auto max-w-4xl w-full cursor-pointer hover:bg-emerald-500/5 hover:border-emerald-500/30 transition-all group"
+                    className="py-32 text-center space-y-6 bg-background/50 dark:bg-neutral-900/50 rounded-[3.5rem] border border-dashed border-slate-200 dark:border-neutral-800 mx-auto max-w-4xl w-full cursor-pointer hover:bg-emerald-500/5 hover:border-emerald-500/30 transition-all group"
                 >
                     <div className="w-24 h-24 bg-white dark:bg-neutral-900 rounded-[2.5rem] shadow-minimal flex items-center justify-center mx-auto mb-4 group-hover:scale-110 group-hover:shadow-jewel transition-all">
                         <FileText className="w-10 h-10 text-slate-200 group-hover:text-emerald-500 transition-colors" />

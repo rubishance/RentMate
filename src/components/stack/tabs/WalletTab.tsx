@@ -165,7 +165,7 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
                         <select
                             value={selectedContractId}
                             onChange={(e) => setSelectedContractId(e.target.value)}
-                            className="w-full h-12 pl-10 pr-4 bg-slate-50 dark:bg-neutral-800 border-none rounded-2xl text-xs font-bold appearance-none focus:ring-2 focus:ring-primary/20 outline-none"
+                            className="w-full h-12 pl-10 pr-4 bg-background dark:bg-neutral-800 border-none rounded-2xl text-xs font-bold appearance-none focus:ring-2 focus:ring-primary/20 outline-none"
                         >
                             <option value="all">{t('allContracts')}</option>
                             {contracts.map(c => {
@@ -204,7 +204,7 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
                             <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60 ml-2">
                                 {t('paymentType')}
                             </label>
-                            <div className="flex p-1 bg-slate-50 dark:bg-neutral-800 rounded-xl">
+                            <div className="flex p-1 bg-background dark:bg-neutral-800 rounded-xl">
                                 {(['actual', 'expected', 'both'] as const).map(type => (
                                     <button
                                         key={type}
@@ -229,7 +229,7 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
                             <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60 ml-2">
                                 {t('category')}
                             </label>
-                            <div className="flex p-1 bg-slate-50 dark:bg-neutral-800 rounded-xl">
+                            <div className="flex p-1 bg-background dark:bg-neutral-800 rounded-xl">
                                 {(['rent', 'bills', 'both'] as const).map(cat => (
                                     <button
                                         key={cat}
@@ -277,7 +277,7 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
             <div className="bg-white dark:bg-neutral-900 rounded-[2.5rem] border border-slate-100 dark:border-neutral-800 shadow-premium overflow-hidden">
                 {filteredPayments.length === 0 ? (
                     <div className="py-24 text-center space-y-4">
-                        <div className="w-20 h-20 bg-slate-50 dark:bg-neutral-800 rounded-3xl flex items-center justify-center mx-auto shadow-minimal">
+                        <div className="w-20 h-20 bg-background dark:bg-neutral-800 rounded-3xl flex items-center justify-center mx-auto shadow-minimal">
                             <AlertCircleIcon className="w-8 h-8 text-slate-200" />
                         </div>
                         <h3 className="text-xl font-black tracking-tight text-foreground opacity-40">
@@ -293,7 +293,7 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
                             return (
                                 <div
                                     key={item.id}
-                                    className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-slate-50/50 dark:hover:bg-neutral-800/10 transition-all group"
+                                    className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-background/50 dark:hover:bg-neutral-800/10 transition-all group"
                                 >
                                     <div className="flex items-center gap-6">
                                         {/* Date Circle */}
@@ -340,7 +340,7 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
 
                                         <div className={cn(
                                             "w-10 h-10 rounded-xl flex items-center justify-center transition-all",
-                                            isPaid ? "bg-emerald-500/10 text-emerald-500" : "bg-slate-100 dark:bg-neutral-800 text-slate-300"
+                                            isPaid ? "bg-emerald-500/10 text-emerald-500" : "bg-muted/50 dark:bg-neutral-800 text-slate-300"
                                         )}>
                                             {isPaid ? <CheckCircle2Icon className="w-5 h-5" /> : <ClockIcon className="w-5 h-5" />}
                                         </div>

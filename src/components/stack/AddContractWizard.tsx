@@ -747,12 +747,12 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
         return (
             <div className="flex flex-col items-center justify-center h-full p-8 text-center space-y-6">
                 <div className="w-20 h-20 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mb-4 ring-8 ring-red-50 dark:ring-red-900/10">
-                    <Lock className="w-10 h-10 text-red-500" />
+                    <Lock className="w-10 h-10 text-destructive" />
                 </div>
-                <h2 className="text-3xl font-black text-slate-900 dark:text-white">
+                <h2 className="text-3xl font-black text-foreground">
                     {t('upgradeRequired')}
                 </h2>
-                <p className="text-lg text-slate-600 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+                <p className="text-lg text-muted-foreground max-w-md mx-auto leading-relaxed">
                     {t('limitReachedDesc')}
                 </p>
                 <div className="flex gap-4 pt-4">
@@ -775,7 +775,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
 
     return (
         <div className={cn(
-            "relative h-full overflow-hidden bg-slate-50 dark:bg-neutral-950 flex flex-col rounded-t-[2.5rem]",
+            "relative h-full overflow-hidden bg-background dark:bg-neutral-950 flex flex-col rounded-t-[2.5rem]",
         )}>
             {/* PROGRESS TRACKER */}
             <div className="absolute top-0 inset-x-0 h-1 bg-black/5 dark:bg-white/5 z-[100]">
@@ -878,7 +878,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                             {step === 1 && (
                                                 <div className="space-y-6">
                                                     {!contractFile && (
-                                                        <div className="bg-gradient-to-l from-indigo-600 to-brand-600 rounded-2xl p-6 text-white flex items-center justify-between shadow-xl">
+                                                        <div className="bg-gradient-to-l from-indigo-600 to-primary rounded-2xl p-6 text-white flex items-center justify-between shadow-xl">
                                                             <div>
                                                                 <h3 className="font-black text-lg mb-1">{t('aiScanTitle')}</h3>
                                                                 <p className="text-white/80 text-sm">{t('aiScanDesc')}</p>
@@ -961,14 +961,14 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                                         newTenants.splice(index, 1);
                                                                         setValue('tenants', newTenants);
                                                                     }}
-                                                                    className="absolute top-4 left-4 p-2 text-red-500 hover:bg-red-500/10 rounded-full transition-all"
+                                                                    className="absolute top-4 left-4 p-2 text-destructive hover:bg-red-500/10 rounded-full transition-all"
                                                                 >
                                                                     <Trash2 className="w-4 h-4" />
                                                                 </button>
                                                             )}
 
                                                             <Input
-                                                                label={<span>{t('fullName')} <span className="text-red-500">*</span></span>}
+                                                                label={<span>{t('fullName')} <span className="text-destructive">*</span></span>}
                                                                 value={tenant.name}
                                                                 onChange={e => {
                                                                     const newTenants = [...formData.tenants];
@@ -1025,13 +1025,13 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
 
                                                     <div className="grid grid-cols-2 gap-4">
                                                         <DatePicker
-                                                            label={<span>{t('startDate')} <span className="text-red-500">*</span></span>}
+                                                            label={<span>{t('startDate')} <span className="text-destructive">*</span></span>}
                                                             value={formData.startDate ? parseISO(formData.startDate) : undefined}
                                                             onChange={(date) => setValue('startDate', date ? format(date, 'yyyy-MM-dd') : '')}
                                                             placeholder={t('pickDate')}
                                                         />
                                                         <DatePicker
-                                                            label={<span>{t('endDate')} <span className="text-red-500">*</span></span>}
+                                                            label={<span>{t('endDate')} <span className="text-destructive">*</span></span>}
                                                             value={formData.endDate ? parseISO(formData.endDate) : undefined}
                                                             onChange={(date) => setValue('endDate', date ? format(date, 'yyyy-MM-dd') : '')}
                                                             placeholder={t('pickDate')}
@@ -1057,7 +1057,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="icon"
-                                                                    className="absolute top-2 left-2 text-red-500 hover:bg-red-500/10 rounded-full w-8 h-8"
+                                                                    className="absolute top-2 left-2 text-destructive hover:bg-red-500/10 rounded-full w-8 h-8"
                                                                     onClick={() => setValue('optionPeriods', formData.optionPeriods.filter((_, i) => i !== idx))}
                                                                 >
                                                                     <Trash2 className="w-4 h-4" />
@@ -1141,7 +1141,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                     <h3 className="font-black text-xl flex items-center gap-3 mb-6"><SettingsIcon className="w-5 h-5 text-brand-500" /> {t('paymentDetails')}</h3>
 
                                                     <Input
-                                                        label={<span>{t('monthlyRent')} <span className="text-red-500">*</span></span>}
+                                                        label={<span>{t('monthlyRent')} <span className="text-destructive">*</span></span>}
                                                         value={formatNumber(formData.rent)}
                                                         onChange={e => {
                                                             const val = parseNumber(e.target.value);
@@ -1209,7 +1209,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                         {formData.hasLinkage && (
                                                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-4 pt-4">
                                                                 <Select
-                                                                    label={<span>{t('indexOption')} <span className="text-red-500">*</span></span>}
+                                                                    label={<span>{t('indexOption')} <span className="text-destructive">*</span></span>}
                                                                     value={formData.linkageType}
                                                                     onChange={val => setValue('linkageType', val as any)}
                                                                     placeholder={t('selectOption')}
@@ -1232,7 +1232,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                                     />
                                                                 </div>
                                                                 <DatePicker
-                                                                    label={<span>{t('baseDate')} <span className="text-red-500">*</span></span>}
+                                                                    label={<span>{t('baseDate')} <span className="text-destructive">*</span></span>}
                                                                     value={formData.baseIndexDate ? parseISO(formData.baseIndexDate) : undefined}
                                                                     onChange={date => setValue('baseIndexDate', date ? format(date, 'yyyy-MM-dd') : '')}
                                                                     error={errors.baseIndexDate?.message ? t(errors.baseIndexDate.message as any) : undefined}
@@ -1287,7 +1287,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                             {step === 6 && (
                                                 <div className="space-y-8">
                                                     <div className="text-center py-6">
-                                                        <div className="w-20 h-20 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6 scale-110">
+                                                        <div className="w-20 h-20 bg-green-500/10 text-secondary rounded-full flex items-center justify-center mx-auto mb-6 scale-110">
                                                             <Check className="w-10 h-10" />
                                                         </div>
                                                         <h3 className="text-2xl font-black">{t('contractReadySummary')}</h3>
@@ -1558,7 +1558,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                     <span className="text-xs font-black text-muted-foreground flex items-center gap-2">
                                         <FileText className="w-4 h-4" /> {t('originalContract')}
                                     </span>
-                                    <button onClick={() => setIsContractViewerOpen(false)} className="text-muted-foreground hover:text-red-500 transition-colors">
+                                    <button onClick={() => setIsContractViewerOpen(false)} className="text-muted-foreground hover:text-destructive transition-colors">
                                         <ChevronDown className="w-6 h-6 rotate-180" />
                                     </button>
                                 </div>

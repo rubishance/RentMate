@@ -79,7 +79,7 @@ const AdminErrorLogs = () => {
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-3">
-                        <BugAntIcon className="w-8 h-8 text-red-500" />
+                        <BugAntIcon className="w-8 h-8 text-destructive" />
                         System Error Logs
                     </h1>
                     <p className="text-gray-500 text-sm mt-1">Monitor and manage application-wide errors and user reports.</p>
@@ -115,7 +115,7 @@ const AdminErrorLogs = () => {
                 </div>
             ) : logs.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-gray-800/50 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 text-center">
-                    <CheckCircleIcon className="w-12 h-12 text-green-500 mb-4" />
+                    <CheckCircleIcon className="w-12 h-12 text-secondary mb-4" />
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white">Clean Slate!</h3>
                     <p className="text-gray-500 text-sm max-w-xs mx-auto">No system errors found in this category. Your application is running smoothly.</p>
                 </div>
@@ -133,8 +133,8 @@ const AdminErrorLogs = () => {
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-3 mb-2 flex-wrap">
                                         <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${log.is_resolved
-                                            ? 'bg-green-50 text-green-600 border-green-100 dark:bg-green-900/10 dark:text-green-400'
-                                            : 'bg-red-50 text-red-600 border-red-100 dark:bg-red-900/10 dark:text-red-400'
+                                            ? 'bg-secondary/10 text-secondary border-green-100 dark:bg-green-900/10 dark:text-green-400'
+                                            : 'bg-destructive/10 text-destructive border-red-100 dark:bg-red-900/10 dark:text-red-400'
                                             }`}>
                                             {log.is_resolved ? 'Resolved' : 'Open'}
                                         </span>
@@ -149,7 +149,7 @@ const AdminErrorLogs = () => {
                                     </div>
 
                                     <h3 className="text-base font-black text-gray-900 dark:text-white mb-2 truncate group">
-                                        <span className="text-red-500 mr-2 group-hover:animate-pulse">●</span>
+                                        <span className="text-destructive mr-2 group-hover:animate-pulse">●</span>
                                         {log.message}
                                     </h3>
 
@@ -188,8 +188,8 @@ const AdminErrorLogs = () => {
                                     <button
                                         onClick={() => toggleResolve(log.id, log.is_resolved)}
                                         className={`p-2.5 rounded-xl border transition-all ${log.is_resolved
-                                            ? 'bg-gray-50 text-gray-400 border-gray-100 hover:bg-red-50 hover:text-red-500 hover:border-red-100'
-                                            : 'bg-green-50 text-green-600 border-green-100 hover:bg-green-100 hover:shadow-minimal'
+                                            ? 'bg-gray-50 text-gray-400 border-gray-100 hover:bg-red-50 hover:text-destructive hover:border-red-100'
+                                            : 'bg-secondary/10 text-secondary border-green-100 hover:bg-green-100 hover:shadow-minimal'
                                             }`}
                                         title={log.is_resolved ? 'Reopen' : 'Resolve'}
                                     >

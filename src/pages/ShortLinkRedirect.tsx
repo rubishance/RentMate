@@ -36,8 +36,8 @@ export function ShortLinkRedirect() {
         return (
             <div className="min-h-screen flex items-center justify-center bg-secondary dark:bg-foreground p-4">
                 <div className="bg-window p-8 rounded-2xl shadow-xl max-w-md w-full text-center space-y-4">
-                    <div className="mx-auto w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
-                        <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+                    <div className="mx-auto w-12 h-12 bg-destructive/10 rounded-full flex items-center justify-center">
+                        <AlertCircle className="w-6 h-6 text-destructive" />
                     </div>
                     <h2 className="text-xl font-bold text-foreground dark:text-white">
                         {error === 'linkExpiredOrInvalid' ? t('linkExpired') : t('errorOccurred')}

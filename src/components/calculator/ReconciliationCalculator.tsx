@@ -313,7 +313,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
     return (
         <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Contract Loading */}
-            <div className="bg-slate-50 dark:bg-neutral-800/30 p-8 rounded-[2.5rem] border border-slate-100/50 dark:border-neutral-800/50">
+            <div className="bg-background dark:bg-neutral-800/30 p-8 rounded-[2.5rem] border border-slate-100/50 dark:border-neutral-800/50">
                 <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-4 block ml-1">
                     {t('loadFromContract')}
                 </label>
@@ -369,7 +369,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                                     {expectedHistory.length > 0 ? t('clearList') : t('generateList')}
                                 </button>
                             </div>
-                            <div className="border border-slate-100 dark:border-neutral-800 rounded-[2rem] overflow-hidden bg-slate-50/50 dark:bg-neutral-800/30">
+                            <div className="border border-slate-100 dark:border-neutral-800 rounded-[2rem] overflow-hidden bg-background/50 dark:bg-neutral-800/30">
                                 <div className="bg-white dark:bg-neutral-900/50 p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground grid grid-cols-12 gap-4 px-6 border-b border-slate-100 dark:border-neutral-800">
                                     <span className="col-span-7">{t('date')}</span>
                                     <span className="col-span-4 text-center">{t('amount')}</span>
@@ -398,7 +398,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                                                     />
                                                 </div>
                                                 <div className="col-span-1 flex justify-end">
-                                                    <button onClick={() => handleRemoveExpected(payment.id)} className="text-slate-300 hover:text-red-500 transition-all p-2">
+                                                    <button onClick={() => handleRemoveExpected(payment.id)} className="text-slate-300 hover:text-destructive transition-all p-2">
                                                         <Trash2 className="w-4 h-4" />
                                                     </button>
                                                 </div>
@@ -449,7 +449,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                         {/* Actual Payments */}
                         <div className="space-y-6">
                             <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground block ml-1">{t('actualPayments')}</label>
-                            <div className="border border-slate-100 dark:border-neutral-800 rounded-[2rem] overflow-hidden bg-slate-50/50 dark:bg-neutral-800/30">
+                            <div className="border border-slate-100 dark:border-neutral-800 rounded-[2rem] overflow-hidden bg-background/50 dark:bg-neutral-800/30">
                                 <div className="bg-white dark:bg-neutral-900/50 p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground grid grid-cols-12 gap-4 px-6 border-b border-slate-100 dark:border-neutral-800">
                                     <span className="col-span-7">{t('date')}</span>
                                     <span className="col-span-4 text-center">{t('amount')}</span>
@@ -478,7 +478,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                                                     />
                                                 </div>
                                                 <div className="col-span-1 flex justify-end">
-                                                    <button onClick={() => handleRemovePayment(payment.id)} className="text-slate-300 hover:text-red-500 transition-all p-2">
+                                                    <button onClick={() => handleRemovePayment(payment.id)} className="text-slate-300 hover:text-destructive transition-all p-2">
                                                         <Trash2 className="w-4 h-4" />
                                                     </button>
                                                 </div>
@@ -545,7 +545,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
 
                         <div className="space-y-4">
                             {selectedContract ? (
-                                <div className="flex flex-col gap-2 p-5 bg-slate-50 dark:bg-neutral-800/30 border border-slate-100 dark:border-neutral-800 rounded-[1.5rem] shadow-minimal">
+                                <div className="flex flex-col gap-2 p-5 bg-background dark:bg-neutral-800/30 border border-slate-100 dark:border-neutral-800 rounded-[1.5rem] shadow-minimal">
                                     <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-neutral-700/50">
                                         <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{t('baseIndexDate')}</span>
                                         <span className="font-black text-sm text-foreground bg-white dark:bg-neutral-800 px-3 py-1 rounded-full shadow-minimal">{contractStartDate ? format(parseISO(contractStartDate), 'MM/yyyy') : '-'}</span>
@@ -660,7 +660,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
 
                         <div className="bg-red-50 dark:bg-red-950/20 p-12 rounded-[2.5rem] border border-red-100 dark:border-red-900/30 text-center space-y-3">
                             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-red-400 block">{t('totalBackPayOwed')}</span>
-                            <span className="text-6xl font-black text-red-600 dark:text-red-400">₪{result.totalBackPayOwed.toLocaleString()}</span>
+                            <span className="text-6xl font-black text-destructive">₪{result.totalBackPayOwed.toLocaleString()}</span>
                             <p className="text-xs font-bold text-red-300 dark:text-red-800 uppercase tracking-widest pt-2">
                                 {result.totalMonths} {t('months')} {t('totalBase').toLowerCase()}
                             </p>
@@ -684,7 +684,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-sm">
                                             <thead>
-                                                <tr className="bg-slate-50 dark:bg-neutral-800/80 border-b border-slate-100 dark:border-neutral-800">
+                                                <tr className="bg-background dark:bg-neutral-800/80 border-b border-slate-100 dark:border-neutral-800">
                                                     <th className="p-6 text-start text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('month')}</th>
                                                     <th className="p-6 text-end text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('shouldPay')}</th>
                                                     <th className="p-6 text-end text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('paid')}</th>
@@ -693,13 +693,13 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                                             </thead>
                                             <tbody className="divide-y divide-slate-50 dark:divide-neutral-800">
                                                 {result.monthlyBreakdown.map((month) => (
-                                                    <tr key={month.month} className="hover:bg-slate-50/50 dark:hover:bg-neutral-800/30 transition-colors">
+                                                    <tr key={month.month} className="hover:bg-background/50 dark:hover:bg-neutral-800/30 transition-colors">
                                                         <td className="p-6 text-start font-black text-xs uppercase tracking-tight">
                                                             {month.month.split('-').reverse().join('/') || t('now')}
                                                         </td>
                                                         <td className="p-6 text-end font-black">₪{month.shouldHavePaid.toLocaleString()}</td>
                                                         <td className="p-6 text-end font-bold text-muted-foreground/60">₪{month.actuallyPaid.toLocaleString()}</td>
-                                                        <td className={cn("p-6 text-end font-black", month.difference > 0 ? "text-red-500" : "text-emerald-500")}>
+                                                        <td className={cn("p-6 text-end font-black", month.difference > 0 ? "text-destructive" : "text-emerald-500")}>
                                                             {month.difference > 0 ? '+' : ''}₪{month.difference.toLocaleString()}
                                                         </td>
                                                     </tr>

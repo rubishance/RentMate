@@ -246,7 +246,7 @@ export function IndexCalculator() {
                                 {baseIndexValue.toFixed(1)}
                             </span>
                         ) : (
-                            !loading && <span className="absolute right-12 top-1/2 -translate-y-1/2 text-[10px] font-black text-red-500 z-10">N/A</span>
+                            !loading && <span className="absolute right-12 top-1/2 -translate-y-1/2 text-[10px] font-black text-destructive z-10">N/A</span>
                         )}
                     </div>
                 </div>
@@ -265,7 +265,7 @@ export function IndexCalculator() {
                                 {currentIndexValue.toFixed(1)}
                             </span>
                         ) : (
-                            !loading && <span className="absolute right-12 top-1/2 -translate-y-1/2 text-[10px] font-black text-red-500 z-10">N/A</span>
+                            !loading && <span className="absolute right-12 top-1/2 -translate-y-1/2 text-[10px] font-black text-destructive z-10">N/A</span>
                         )}
                     </div>
                 </div>
@@ -306,7 +306,7 @@ export function IndexCalculator() {
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <span className="font-black uppercase text-[10px] tracking-widest">{t('change')}:</span>
-                            <span className={`font-bold ${calculatedResult.percentageChange >= 0 ? 'text-red-500' : 'text-emerald-500'}`}>
+                            <span className={`font-bold ${calculatedResult.percentageChange >= 0 ? 'text-destructive' : 'text-emerald-500'}`}>
                                 {calculatedResult.percentageChange > 0 ? '+' : ''}{calculatedResult.percentageChange.toFixed(2)}%
                             </span>
                         </div>
@@ -336,7 +336,7 @@ export function IndexCalculator() {
             )}
 
             {(baseIndexValue === null || currentIndexValue === null) && !loading && baseDate && currentDate && (
-                <div className="text-xs text-red-500 bg-red-50 dark:bg-red-900/20 p-2 rounded">
+                <div className="text-xs text-destructive bg-red-50 dark:bg-red-900/20 p-2 rounded">
                     Missing index data for selected dates.
                 </div>
             )}

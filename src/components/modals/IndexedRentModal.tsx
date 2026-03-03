@@ -114,7 +114,7 @@ export function IndexedRentModal({ isOpen, onClose, contract }: IndexedRentModal
                     ) : calculation ? (
                         <div className="space-y-6">
                             {/* Result Card */}
-                            <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-6 text-white text-center shadow-lg shadow-blue-500/20">
+                            <div className="bg-gradient-to-br from-primary to-indigo-600 rounded-2xl p-6 text-white text-center shadow-lg shadow-blue-500/20">
                                 <p className="text-blue-100 text-sm font-medium mb-2">Updated Monthly Rent</p>
                                 <div className="text-4xl font-bold font-mono tracking-tight mb-2">
                                     ₪{calculation.newRent.toLocaleString()}

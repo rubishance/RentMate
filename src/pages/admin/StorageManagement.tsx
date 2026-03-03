@@ -249,7 +249,7 @@ export function StorageManagement() {
                                     </td>
                                     <td className="px-6 py-5">
                                         <span className={`px-2.5 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg border ${item.plan_name === 'pro' ? 'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:border-blue-800' :
-                                            item.plan_name === 'enterprise' ? 'bg-purple-50 text-purple-700 border-purple-100 dark:bg-purple-900/20 dark:border-purple-800' :
+                                            item.plan_name === 'enterprise' ? 'bg-primary-50 text-primary-700 border-primary-100 dark:bg-primary-900/20 dark:border-primary-800' :
                                                 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400'
                                             }`}>
                                             {item.plan_name}
@@ -266,7 +266,7 @@ export function StorageManagement() {
                                             <div className="flex items-center justify-between gap-4">
                                                 <div className="flex-1 h-3 bg-gray-100 dark:bg-gray-900 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700">
                                                     <div
-                                                        className={`h-full rounded-full transition-all duration-500 ${item.usage_percent > 90 ? 'bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.5)]' :
+                                                        className={`h-full rounded-full transition-all duration-500 ${item.usage_percent > 90 ? 'bg-destructive shadow-[0_0_8px_rgba(220,38,38,0.5)]' :
                                                             item.usage_percent > 75 ? 'bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.5)]' :
                                                                 'bg-brand-600 shadow-[0_0_8px_rgba(37,99,235,0.5)]'
                                                             }`}

@@ -164,7 +164,7 @@ export function ConfirmDeleteModal({
                                 disabled={isDeleting || !canConfirm}
                                 className={`flex-1 px-4 py-2.5 text-white rounded-xl font-medium transition-colors shadow-lg flex items-center justify-center gap-2 ${isDeleting || !canConfirm
                                     ? 'bg-gray-400 cursor-not-allowed opacity-70'
-                                    : 'bg-red-600 hover:bg-red-700 shadow-red-500/30'
+                                    : 'bg-destructive hover:bg-red-700 shadow-red-500/30'
                                     }`}
                             >
                                 {isDeleting ? (

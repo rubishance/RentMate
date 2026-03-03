@@ -39,7 +39,7 @@ export function ActionCard({ title, description, options, onSelect }: ActionCard
                             opt.variant === 'destructive'
                                 ? "bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200"
                                 : opt.variant === 'outline'
-                                    ? "bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200"
+                                    ? "bg-background text-slate-600 hover:bg-muted/50 border border-slate-200"
                                     : "bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm"
                         )}
                     >

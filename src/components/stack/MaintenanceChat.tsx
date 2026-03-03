@@ -32,7 +32,7 @@ export function MaintenanceChat({ ticketId: _ticketId, propertyAddress }: Mainte
     };
 
     return (
-        <div className="flex flex-col h-full bg-slate-50 dark:bg-black">
+        <div className="flex flex-col h-full bg-background dark:bg-black">
             {/* Header */}
             <div className="h-16 border-b border-border bg-white dark:bg-neutral-900 flex items-center justify-between px-6 shrink-0">
                 <div>
@@ -50,7 +50,7 @@ export function MaintenanceChat({ ticketId: _ticketId, propertyAddress }: Mainte
                     <div key={msg.id} className={`flex flex-col ${msg.sender === 'me' ? 'items-end' : msg.sender === 'system' ? 'items-center' : 'items-start'}`}>
                         {/* System Message */}
                         {msg.sender === 'system' ? (
-                            <div className="bg-slate-100 dark:bg-neutral-800 px-4 py-2 rounded-full text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
+                            <div className="bg-muted/50 dark:bg-neutral-800 px-4 py-2 rounded-full text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
                                 {msg.text}
                             </div>
                         ) : (
@@ -85,7 +85,7 @@ export function MaintenanceChat({ ticketId: _ticketId, propertyAddress }: Mainte
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                             placeholder={t('typeMessage')}
-                            className="w-full bg-slate-50 dark:bg-neutral-800 border-none rounded-2xl px-4 py-3 text-sm focus-visible:ring-1 focus-visible:ring-primary shadow-none h-auto"
+                            className="w-full bg-background dark:bg-neutral-800 border-none rounded-2xl px-4 py-3 text-sm focus-visible:ring-1 focus-visible:ring-primary shadow-none h-auto"
                         />
                     </div>
                     <Button onClick={handleSend} size="icon" className="rounded-full w-10 h-10 shrink-0">

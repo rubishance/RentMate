@@ -148,7 +148,7 @@ export function DatePicker({
                 )}
             </div>
             {typeof error === 'string' && error && (
-                <p className="text-[0.8rem] font-medium text-red-500 mt-1.5">{error}</p>
+                <p className="text-[0.8rem] font-medium text-destructive mt-1.5">{error}</p>
             )}
         </div>
     );

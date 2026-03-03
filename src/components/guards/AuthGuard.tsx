@@ -11,7 +11,7 @@ const AuthGuard = () => {
             console.log('[AuthGuard] Still loading, waiting for AuthContext...');
         }
         return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-neutral-950">
+            <div className="min-h-screen flex items-center justify-center bg-background dark:bg-neutral-950">
                 <div className="relative">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
                     <div className="absolute inset-0 flex items-center justify-center">

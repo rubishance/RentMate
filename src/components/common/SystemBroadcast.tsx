@@ -55,9 +55,9 @@ export function SystemBroadcast() {
     const current = broadcasts[0]; // Display the latest one
 
     const icons = {
-        info: <InformationCircleIcon className="w-5 h-5 text-blue-500" />,
+        info: <InformationCircleIcon className="w-5 h-5 text-primary" />,
         warning: <ExclamationTriangleIcon className="w-5 h-5 text-amber-500" />,
-        error: <ExclamationCircleIcon className="w-5 h-5 text-red-500" />,
+        error: <ExclamationCircleIcon className="w-5 h-5 text-destructive" />,
         success: <CheckCircleIcon className="w-5 h-5 text-emerald-500" />
     };
 

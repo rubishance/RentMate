@@ -61,7 +61,7 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
 
                 {/* Icon Container */}
                 <div className="relative glass-premium rounded-3xl p-6 shadow-premium hover:scale-105 transition-transform duration-300 border border-white/20 dark:border-white/10">
-                    <AlertTriangle className={`h-16 w-16 ${is404 ? 'text-amber-500' : 'text-red-500'}`} />
+                    <AlertTriangle className={`h-16 w-16 ${is404 ? 'text-amber-500' : 'text-destructive'}`} />
                 </div>
             </div>
 
@@ -100,7 +100,7 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
                 )}
 
                 {reportSent && (
-                    <div className="flex items-center gap-2 px-6 py-3 bg-green-50 text-green-600 rounded-xl font-bold border border-green-100 animate-in zoom-in duration-300 text-sm">
+                    <div className="flex items-center gap-2 px-6 py-3 bg-secondary/10 text-secondary rounded-xl font-bold border border-green-100 animate-in zoom-in duration-300 text-sm">
                         <RefreshCw className="h-5 w-5" />
                         <span>{t('reportSuccess')}</span>
                     </div>

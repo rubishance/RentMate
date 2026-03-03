@@ -175,7 +175,7 @@ export function AddMaintenanceModal({ isOpen, onClose, onSuccess, initialData }:
                                     </option>
                                 ))}
                             </select>
-                            {errors.property_id && <p className="text-xs text-red-500 mt-1 ml-1">{t(errors.property_id.message as string)}</p>}
+                            {errors.property_id && <p className="text-xs text-destructive mt-1 ml-1">{t(errors.property_id.message as string)}</p>}
                         </div>
                     )}
                 </div>
@@ -191,7 +191,7 @@ export function AddMaintenanceModal({ isOpen, onClose, onSuccess, initialData }:
                             {...register('amount')}
                             className={`w-full pl-9 pr-4 py-3 bg-secondary border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none ${errors.amount ? 'border-red-500' : 'border-border'}`}
                         />
-                        {errors.amount && <p className="text-xs text-red-500 mt-1 ml-1">{t(errors.amount.message as string)}</p>}
+                        {errors.amount && <p className="text-xs text-destructive mt-1 ml-1">{t(errors.amount.message as string)}</p>}
                     </div>
                 </div>
 
@@ -204,7 +204,7 @@ export function AddMaintenanceModal({ isOpen, onClose, onSuccess, initialData }:
                         {...register('description')}
                         className={`w-full px-4 py-3 bg-secondary border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none ${errors.description ? 'border-red-500' : 'border-border'}`}
                     />
-                    {errors.description && <p className="text-xs text-red-500 mt-1 ml-1">{t(errors.description.message as string)}</p>}
+                    {errors.description && <p className="text-xs text-destructive mt-1 ml-1">{t(errors.description.message as string)}</p>}
                 </div>
 
                 {/* Vendor & Issue Type */}
@@ -250,7 +250,7 @@ export function AddMaintenanceModal({ isOpen, onClose, onSuccess, initialData }:
                         onChange={(date) => setValue('date', date ? format(date, 'yyyy-MM-dd') : '')}
                         className="w-full"
                     />
-                    {errors.date && <p className="text-xs text-red-500 mt-1 ml-1">{t(errors.date.message as string)}</p>}
+                    {errors.date && <p className="text-xs text-destructive mt-1 ml-1">{t(errors.date.message as string)}</p>}
                 </div>
             </form>
         </Modal>

@@ -119,18 +119,18 @@ export function PrivacySecurityModal({ isOpen, onClose }: PrivacySecurityModalPr
                     {/* AI Data Access Consent */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-2">
-                            <Cloud className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                            <Cloud className="w-5 h-5 text-primary" />
                             <h3 className="font-semibold text-foreground dark:text-white">
                                 RentMate AI
                             </h3>
                         </div>
 
-                        <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-4 flex items-start justify-between gap-4">
+                        <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex items-start justify-between gap-4">
                             <div>
-                                <h4 className="font-medium text-purple-900 dark:text-purple-100 mb-1">
+                                <h4 className="font-medium text-primary-900 dark:text-primary-100 mb-1">
                                     Allow AI Analysis
                                 </h4>
-                                <p className="text-sm text-purple-700 dark:text-purple-300">
+                                <p className="text-sm text-primary">
                                     Allow RentMate AI to access your contracts, payments, and tenant data to provide financial insights and smart alerts.
                                     <span className='block mt-1 font-semibold'>This is required for features like "How much did I earn?"</span>
                                     <span className='block mt-2 text-xs opacity-80 italic'>
@@ -143,7 +143,7 @@ export function PrivacySecurityModal({ isOpen, onClose }: PrivacySecurityModalPr
                                 onClick={() => {
                                     setAiDataConsent(!aiConsent);
                                 }}
-                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${aiConsent ? 'bg-purple-600' : 'bg-gray-200 dark:bg-gray-700'
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${aiConsent ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'
                                     }`}
                             >
                                 <span
@@ -210,11 +210,11 @@ export function PrivacySecurityModal({ isOpen, onClose }: PrivacySecurityModalPr
                                 </div>
 
                                 {passwordError && (
-                                    <p className="text-sm text-red-600 dark:text-red-400">{passwordError}</p>
+                                    <p className="text-sm text-destructive">{passwordError}</p>
                                 )}
 
                                 {passwordSuccess && (
-                                    <p className="text-sm text-green-600 dark:text-green-400">
+                                    <p className="text-sm text-secondary">
                                         {t('passwordChangedSuccess')}
                                     </p>
                                 )}
@@ -245,15 +245,15 @@ export function PrivacySecurityModal({ isOpen, onClose }: PrivacySecurityModalPr
                     {/* Delete Account Section */}
                     <div className="space-y-4 pt-6 border-t border-border dark:border-gray-700">
                         <div className="flex items-center gap-2">
-                            <Trash2 className="w-5 h-5 text-red-600 dark:text-red-400" />
-                            <h3 className="font-semibold text-red-600 dark:text-red-400">
+                            <Trash2 className="w-5 h-5 text-destructive" />
+                            <h3 className="font-semibold text-destructive">
                                 {t('deleteAccount')}
                             </h3>
                         </div>
 
                         <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-4">
                             <div className="flex gap-3">
-                                <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
+                                <AlertTriangle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
                                 <div className="text-sm text-orange-800 dark:text-orange-200">
                                     <p className="font-semibold mb-2">
                                         {t('deletionProcessTitle')}
@@ -271,7 +271,7 @@ export function PrivacySecurityModal({ isOpen, onClose }: PrivacySecurityModalPr
 
                         <button
                             onClick={handleSuspendAccount}
-                            className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors flex items-center gap-2"
+                            className="px-4 py-2 bg-destructive text-white rounded-xl hover:bg-red-700 transition-colors flex items-center gap-2"
                         >
                             <Trash2 className="w-4 h-4" />
                             {t('suspendAccountBtn')}

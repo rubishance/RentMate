@@ -69,12 +69,12 @@ export default function UpgradeRequestModal({ isOpen, onClose, source }: Upgrade
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                         >
-                            <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white dark:bg-slate-900 p-6 text-left align-middle shadow-xl transition-all border border-white/20">
+                            <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-card p-6 text-left align-middle shadow-xl transition-all border border-white/20">
 
                                 {success ? (
                                     <div className="text-center py-10">
-                                        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30 mb-6">
-                                            <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
+                                        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-secondary/10 mb-6">
+                                            <Check className="h-8 w-8 text-secondary" />
                                         </div>
                                         <Dialog.Title as="h3" className="text-2xl font-bold leading-6 text-foreground dark:text-white mb-2">
                                             {t('requestSent')}
@@ -84,7 +84,7 @@ export default function UpgradeRequestModal({ isOpen, onClose, source }: Upgrade
                                         </p>
                                         <button
                                             onClick={onClose}
-                                            className="inline-flex justify-center rounded-xl border border-transparent bg-primary px-8 py-3 text-sm font-medium text-white hover:bg-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                                            className="inline-flex justify-center rounded-xl border border-transparent bg-primary px-8 py-3 text-sm font-medium text-white hover:bg-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                                         >
                                             {t('gotItThanks')}
                                         </button>
@@ -105,7 +105,7 @@ export default function UpgradeRequestModal({ isOpen, onClose, source }: Upgrade
                                             </button>
                                         </div>
 
-                                        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 mb-6 border border-slate-200 dark:border-slate-700">
+                                        <div className="bg-muted/30/50 rounded-xl p-4 mb-6 border border-border">
                                             <div className="grid grid-cols-3 gap-4 text-sm mb-3 font-semibold text-muted-foreground dark:text-muted-foreground border-b border-border dark:border-gray-700 pb-2">
                                                 <div>{t('feature')}</div>
                                                 <div className="text-center">{t('free')}</div>

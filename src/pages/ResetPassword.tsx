@@ -14,6 +14,7 @@ export function ResetPassword() {
     const { t, lang } = useTranslation();
     const isRtl = lang === 'he';
     const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
@@ -29,6 +30,11 @@ export function ResetPassword() {
 
     const handleUpdatePassword = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (newPassword !== confirmPassword) {
+            setError(isRtl ? 'הסיסמאות אינן תואמות' : 'Passwords do not match');
+            return;
+        }
 
         const passwordRequirements = {
             length: newPassword.length >= 8,
@@ -95,7 +101,7 @@ export function ResetPassword() {
 
                         {success ? (
                             <div className="text-center py-8 space-y-4">
-                                <div className="w-16 h-16 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto ring-8 ring-emerald-500/5">
+                                <div className="w-16 h-16 bg-emerald-500/10 text-secondary rounded-full flex items-center justify-center mx-auto ring-8 ring-emerald-500/5">
                                     <CheckIcon />
                                 </div>
                                 <div className="space-y-2">
@@ -122,7 +128,24 @@ export function ResetPassword() {
                                         placeholder="••••••••"
                                         leftIcon={<Lock className="w-4 h-4 text-muted-foreground" />}
                                     />
+                                </div>
 
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block ml-1">
+                                        {isRtl ? 'אימות סיסמה' : 'Confirm Password'}
+                                    </label>
+                                    <Input
+                                        type="password"
+                                        required
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        className="h-12 bg-background/50"
+                                        placeholder="••••••••"
+                                        leftIcon={<Lock className="w-4 h-4 text-muted-foreground" />}
+                                    />
+                                </div>
+
+                                <div>
                                     <div className="mt-4 p-4 bg-muted/30 rounded-xl border border-border/50 space-y-3">
                                         <div className="flex justify-between items-center mb-1">
                                             <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t('passwordStrength')}</span>

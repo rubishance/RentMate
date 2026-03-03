@@ -194,7 +194,7 @@ export function ChecksManager({ property, readOnly }: ChecksManagerProps) {
                                     <div className="flex-1 space-y-2">
                                         <div className="flex justify-between">
                                             <span className="text-sm font-medium truncate">{file.file.name}</span>
-                                            <button onClick={() => removeStagedFile(file.id)} className="text-red-500"><X className="w-4 h-4" /></button>
+                                            <button onClick={() => removeStagedFile(file.id)} className="text-destructive"><X className="w-4 h-4" /></button>
                                         </div>
                                         <div className="grid grid-cols-2 gap-2">
                                             <DatePicker

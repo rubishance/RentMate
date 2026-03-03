@@ -33,7 +33,7 @@ export const UsageOverviewWidget: FC = () => {
                 </div>
                 <div className="flex-1 space-y-2">
                     <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-orange-600 dark:text-orange-400 opacity-80">Plan Advisory</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-warning opacity-80">Plan Advisory</span>
                     </div>
                     <h3 className="text-xl font-bold tracking-tight text-foreground leading-tight">
                         {lang === 'he' ? 'מתקרבים למגבלות החבילה' : 'Approaching Plan Limits'}
@@ -45,7 +45,7 @@ export const UsageOverviewWidget: FC = () => {
                     </p>
                     <Button
                         variant="ghost"
-                        className="p-0 h-auto text-[10px] uppercase tracking-[0.2em] text-orange-600 dark:text-orange-400 hover:text-orange-700 gap-2 hover:bg-transparent"
+                        className="p-0 h-auto text-[10px] uppercase tracking-[0.2em] text-warning hover:text-orange-700 gap-2 hover:bg-transparent"
                         onClick={() => navigate('/settings')}
                     >
                         {lang === 'he' ? 'צפייה בפרטי החבילה' : 'View Plan Details'}

@@ -210,7 +210,7 @@ export function RentyCommandCenter({ firstName, feedItems, className }: RentyCom
                                 "mx-1 w-10 h-10 rounded-full flex items-center justify-center transition-all",
                                 isListening
                                     ? "bg-rose-100 text-rose-600 animate-pulse"
-                                    : "text-slate-400 hover:text-indigo-600 hover:bg-slate-50"
+                                    : "text-slate-400 hover:text-indigo-600 hover:bg-background"
                             )}
                         >
                             {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
@@ -221,7 +221,7 @@ export function RentyCommandCenter({ firstName, feedItems, className }: RentyCom
                     <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="mx-1 w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-slate-50 transition-all shadow-sm"
+                        className="mx-1 w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-background transition-all shadow-sm"
                     >
                         <Paperclip className="w-5 h-5" />
                     </button>

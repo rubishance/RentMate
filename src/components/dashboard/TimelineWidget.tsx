@@ -123,7 +123,7 @@ export function TimelineWidget({ contracts, loading }: TimelineWidgetProps) {
                                 </p>
                             </div>
                             <div className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5
-                                ${item.status === 'critical' ? 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 border border-red-100 dark:border-red-900/40' :
+                                ${item.status === 'critical' ? 'bg-destructive/10 text-destructive dark:bg-red-900/20 dark:text-red-400 border border-red-100 dark:border-red-900/40' :
                                     item.status === 'warning' ? 'bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400 border border-orange-100 dark:border-orange-900/40' :
                                         'bg-gray-50 text-black dark:bg-neutral-800 dark:text-white border border-gray-100 dark:border-neutral-700'}`}
                             >

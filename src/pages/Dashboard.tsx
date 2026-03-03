@@ -222,8 +222,8 @@ export function Dashboard() {
     if (loading && !feedItems.length) {
         return (
             <div className="px-3 py-20 max-w-5xl mx-auto space-y-12">
-                <div className="h-8 w-48 bg-slate-100 animate-pulse rounded-2xl" />
-                <div className="h-96 w-full bg-slate-100 animate-pulse rounded-[3rem]" />
+                <div className="h-8 w-48 bg-muted/50 animate-pulse rounded-2xl" />
+                <div className="h-96 w-full bg-muted/50 animate-pulse rounded-[3rem]" />
             </div>
         );
     }

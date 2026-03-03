@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, PieChart, ShieldCheck, Mail, ArrowRight, CheckCircle2, Calculator, Receipt, Sparkles, MessageCircle, Building2, AlertCircle, User, Phone, ArrowLeft, Globe } from 'lucide-react';
+import { Home, PieChart, ShieldCheck, Mail, ArrowRight, CheckCircle2, Calculator, Receipt, Sparkles, MessageCircle, Building2, AlertCircle, User, Phone, ArrowLeft, Globe, Instagram, Facebook, Twitter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from '../hooks/useTranslation';
 import { useUserPreferences } from '../contexts/UserPreferencesContext';
@@ -28,6 +28,20 @@ const MOCKUP_IMAGES_EN = [
     showcase2_en, // Calculator
     showcase3_en, // Payments
     showcase4     // AI Assistant (Fallback to same image for now)
+];
+
+const MOBILE_MOCKUP_IMAGES_HE = [
+    showcase1, // TODO: Replace with mobile image for Contracts
+    showcase2, // TODO: Replace with mobile image for Calculator
+    showcase3, // TODO: Replace with mobile image for Payments
+    showcase4  // TODO: Replace with mobile image for AI Assistant
+];
+
+const MOBILE_MOCKUP_IMAGES_EN = [
+    showcase1_en, // TODO: Replace with mobile image for Contracts
+    showcase2_en, // TODO: Replace with mobile image for Calculator
+    showcase3_en, // TODO: Replace with mobile image for Payments
+    showcase4     // TODO: Replace with mobile image for AI Assistant
 ];
 
 export function ComingSoon() {
@@ -67,6 +81,25 @@ export function ComingSoon() {
     });
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error' | 'duplicate'>('idle');
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+    const buttonRef = useRef<HTMLButtonElement>(null);
+    const [ripple, setRipple] = useState({ x: 0, y: 0, active: false, size: 0 });
+
+    const handlePointerEnter = (e: React.PointerEvent<HTMLButtonElement>) => {
+        if (!buttonRef.current) return;
+        const rect = buttonRef.current.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height) * 2.5;
+        setRipple({
+            x: e.clientX - rect.left - size / 2,
+            y: e.clientY - rect.top - size / 2,
+            size,
+            active: true
+        });
+    };
+
+    const handlePointerLeave = () => {
+        setRipple(prev => ({ ...prev, active: false }));
+    };
 
     // Auto-change image every 5 seconds
     useEffect(() => {
@@ -122,65 +155,67 @@ export function ComingSoon() {
     ];
 
     return (
-        <div className={`relative min-h-screen md:h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 overflow-y-auto md:overflow-hidden flex flex-col md:flex-row ${isRtl ? 'font-hebrew' : 'font-english'}`} dir={isRtl ? 'rtl' : 'ltr'}>
+        <div className={`relative min-h-screen md:h-screen md:h-[100dvh] bg-gradient-to-br from-background to-muted/20 overflow-y-auto md:overflow-hidden flex flex-col md:flex-row ${isRtl ? 'font-hebrew' : 'font-english'}`} dir={isRtl ? 'rtl' : 'ltr'}>
 
             {/* Desktop Top-Centered Logo (Centered between columns) */}
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, type: "spring", bounce: 0.5, delay: 0.2 }}
-                className="hidden md:flex absolute top-6 md:top-6 inset-x-0 mx-auto w-max justify-center items-center z-50 pointer-events-none drop-shadow-xl"
+                className="hidden md:flex absolute top-4 md:top-4 lg:top-6 inset-x-0 mx-auto w-max justify-center items-center z-50 pointer-events-none drop-shadow-xl"
             >
-                <span className="text-5xl lg:text-6xl font-black tracking-tighter text-slate-900 dark:text-white drop-shadow-sm font-hebrew" dir="ltr">
-                    Rent<span className="text-primary-600">Mate</span>
+                <span className="text-6xl lg:text-7xl font-black tracking-tighter text-foreground drop-shadow-sm font-hebrew" dir="ltr">
+                    Rent<span className="text-primary">Mate</span>
                 </span>
             </motion.div>
 
             {/* Left Column - Content & Form */}
-            <div className="w-full md:w-1/2 md:h-full flex flex-col justify-start md:justify-center px-6 md:px-10 lg:px-16 xl:px-20 py-8 md:py-6 lg:py-8 relative z-10 overflow-y-auto custom-scrollbar">
+            <div className="w-full md:w-1/2 md:h-full flex flex-col justify-start md:justify-center px-6 md:px-8 lg:px-12 py-4 md:py-2 relative z-10 overflow-y-auto md:overflow-hidden custom-scrollbar">
 
                 {/* Main Content */}
-                <div className="max-w-md w-full mx-auto md:my-auto mt-16 md:mt-2">
+                <div className="max-w-md w-full mx-auto md:my-auto mt-6 md:mt-0 z-10">
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
+                        initial={{ opacity: 0, x: -50 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true, amount: 0.1 }}
+                        transition={{ duration: 0.6 }}
                     >
-                        {/* Mobile Badge Only */}
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
-                            animate={{ opacity: 1, scale: 1, rotate: -10 }}
-                            transition={{ duration: 0.6, type: "spring" }}
-                            className="md:hidden mb-6 inline-block"
-                        >
-                            <div className="flex flex-col items-center justify-center font-black leading-none drop-shadow-sm select-none">
-                                <span className="text-5xl text-blue-600 dark:text-blue-500 pb-1">
-                                    {isRtl ? 'בקרוב' : 'Coming Soon'}
-                                </span>
-                            </div>
-                        </motion.div>
-
-                        <h1 className="text-3xl md:text-3xl lg:text-4xl xl:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 tracking-tight leading-tight mb-3 lg:mb-4" style={{ textWrap: 'balance' }}>
-                            {t('coming_soon_title')}
-                        </h1>
+                        {/* Mobile Badge Only - Now shown on Desktop too */}
+                        <div className="flex items-center gap-2 lg:gap-3 mb-1 lg:mb-2">
+                            <h1 className="text-4xl md:text-4xl lg:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-foreground to-muted-foreground tracking-tight leading-tight" style={{ textWrap: 'balance' }}>
+                                {t('coming_soon_title')}
+                            </h1>
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
+                                animate={{ opacity: 1, scale: 1, rotate: -10 }}
+                                transition={{ duration: 0.6, type: "spring" }}
+                                className="inline-block"
+                            >
+                                <div className="flex flex-col items-center justify-center font-black leading-none drop-shadow-sm select-none bg-primary/10 px-3 py-1 md:px-3 md:py-1.5 rounded-xl border border-primary/20 -rotate-6 shadow-sm">
+                                    <span className="text-xl md:text-2xl text-primary">
+                                        {isRtl ? 'בקרוב!' : 'Coming Soon!'}
+                                    </span>
+                                </div>
+                            </motion.div>
+                        </div>
 
                         {/* Inline Language Toggle */}
-                        <div className="flex md:justify-start justify-center mb-4 lg:mb-5">
+                        <div className="flex md:justify-start justify-center mb-2 lg:mb-3">
                             <button
                                 onClick={() => setLanguage(isRtl ? 'en' : 'he')}
-                                className="px-4 py-1.5 md:px-5 md:py-2 rounded-full border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all shadow-sm flex items-center gap-2"
+                                className="px-4 py-1.5 md:px-5 md:py-2 rounded-full border border-border bg-background/50 backdrop-blur-md text-sm font-semibold text-foreground hover:bg-accent hover:text-accent-foreground transition-all shadow-sm flex items-center gap-1.5"
                                 aria-label="Toggle Language"
                             >
-                                <Globe className="w-4 h-4" />
+                                <Globe className="w-3.5 h-3.5" />
                                 {t('language_toggle')}
                             </button>
                         </div>
 
                         <motion.p
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.1, duration: 0.5 }}
-                            className="text-base md:text-base text-slate-600 dark:text-slate-400 mb-4 lg:mb-5 leading-snug font-medium max-w-lg mx-auto md:mx-0"
+                            className="text-base md:text-lg text-muted-foreground mb-2 lg:mb-3 leading-relaxed font-medium max-w-lg mx-auto md:mx-0"
                         >
                             {t('coming_soon_subtitle')}
                         </motion.p>
@@ -188,78 +223,81 @@ export function ComingSoon() {
                         {/* Features List */}
                         <motion.ul
                             initial="hidden"
-                            animate="visible"
+                            whileInView="visible"
+                            viewport={{ once: true, amount: 0.1 }}
                             variants={{
                                 hidden: { opacity: 0 },
                                 visible: {
                                     opacity: 1,
-                                    transition: { staggerChildren: 0.1, delayChildren: 0.2 }
+                                    transition: { staggerChildren: 0.1, delayChildren: 0.1 }
                                 }
                             }}
-                            className="space-y-2 lg:space-y-3 mb-5 lg:mb-6"
+                            className="space-y-1 mb-2 lg:mb-3"
                         >
                             {features.map((feature, idx) => (
                                 <motion.li
                                     key={idx}
                                     variants={{
-                                        hidden: { opacity: 0, x: -10 },
+                                        hidden: { opacity: 0, x: -50 },
                                         visible: { opacity: 1, x: 0 }
                                     }}
-                                    className="flex items-center gap-4 group transition-all duration-300 hover:translate-x-1 cursor-default"
+                                    className="flex items-center gap-3 group transition-all duration-300 hover:translate-x-1 cursor-default"
                                 >
-                                    <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 flex items-center justify-center text-primary-500 group-hover:bg-primary-50 group-hover:border-primary-200 group-hover:text-primary-600 dark:group-hover:bg-primary-900/40 group-hover:shadow-md group-hover:shadow-primary-500/10 transition-all duration-300">
+                                    <div className="flex-shrink-0 w-10 h-10 md:w-11 md:h-11 rounded-xl bg-card shadow-sm border border-border flex items-center justify-center text-primary group-hover:bg-primary-50 group-hover:border-primary-200 group-hover:text-primary dark:group-hover:bg-primary-900/40 group-hover:shadow-md group-hover:shadow-primary-500/10 transition-all duration-300">
                                         <feature.icon className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
                                     </div>
-                                    <span className="text-sm md:text-base text-slate-700 dark:text-slate-300 font-semibold group-hover:text-slate-900 dark:group-hover:text-white transition-colors">{feature.text}</span>
+                                    <span className="text-sm md:text-base text-foreground font-semibold group-hover:text-foreground transition-colors">{feature.text}</span>
                                 </motion.li>
                             ))}
                         </motion.ul>
 
                         {/* Form Section */}
-                        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl p-6 shadow-2xl shadow-slate-200/50 dark:shadow-black/50 border border-white dark:border-slate-800 ring-1 ring-slate-900/5 dark:ring-white/10">
+                        <div className="bg-card/80 backdrop-blur-xl rounded-3xl p-3 md:p-4 shadow-2xl shadow-slate-200/50 dark:shadow-black/50 border border-border ring-1 ring-border/50">
                             <AnimatePresence mode="wait">
                                 {status === 'success' ? (
                                     <motion.div
                                         key="success"
                                         initial={{ opacity: 0, scale: 0.95 }}
                                         animate={{ opacity: 1, scale: 1 }}
-                                        className="flex flex-col items-center justify-center text-center py-8"
+                                        className="flex flex-col items-center justify-center text-center py-4"
                                     >
-                                        <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4">
-                                            <CheckCircle2 className="w-8 h-8" />
+                                        <div className="w-12 h-12 md:w-14 md:h-14 bg-secondary/20 text-secondary rounded-full flex items-center justify-center mb-2">
+                                            <CheckCircle2 className="w-6 h-6 md:w-7 md:h-7" />
                                         </div>
-                                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{t('coming_soon_success')}</h3>
-                                        <p className="text-slate-500">{t('coming_soon_subtitle')}</p>
+                                        <h3 className="text-lg md:text-xl font-bold text-foreground mb-1">{t('coming_soon_success')}</h3>
+                                        <p className="text-muted-foreground text-sm">{t('coming_soon_subtitle')}</p>
                                     </motion.div>
                                 ) : (
                                     <motion.form
                                         key="form"
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
+                                        initial={{ opacity: 0, x: -50 }}
+                                        whileInView={{ opacity: 1, x: 0 }}
+                                        viewport={{ once: true, amount: 0.1 }}
+                                        transition={{ duration: 0.5 }}
                                         onSubmit={handleSubmit}
-                                        className="space-y-3"
+                                        className="space-y-1.5"
                                     >
                                         {/* Error Messages */}
                                         {status === 'error' && (
-                                            <div className="p-2 bg-red-50 text-red-600 rounded-xl flex items-center gap-2 text-sm">
-                                                <AlertCircle className="w-4 h-4" />
+                                            <div className="p-2 bg-destructive/10 text-destructive rounded-xl flex items-center gap-2 text-base">
+                                                <AlertCircle className="w-5 h-5" />
                                                 <span>{t('coming_soon_error')}</span>
                                             </div>
                                         )}
                                         {status === 'duplicate' && (
-                                            <div className="p-2 bg-blue-50 text-blue-600 rounded-xl flex items-center gap-2 text-sm">
-                                                <ShieldCheck className="w-4 h-4" />
+                                            <div className="p-2 bg-primary/10 text-primary rounded-xl flex items-center gap-2 text-base">
+                                                <ShieldCheck className="w-5 h-5" />
                                                 <span>{t('coming_soon_already_registered')}</span>
                                             </div>
                                         )}
 
                                         <div>
-                                            <label htmlFor="fullName" className="block text-xs md:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                                            <label htmlFor="fullName" className="block text-sm font-semibold text-foreground mb-1">
                                                 {t('coming_soon_name_label')}
                                             </label>
                                             <div className="relative group">
                                                 <div className={`absolute inset-y-0 ${isRtl ? 'right-0 pr-3' : 'left-0 pl-3'} flex items-center pointer-events-none`}>
-                                                    <User className="h-4 w-4 md:h-5 md:w-5 text-slate-400 group-focus-within:text-primary-500 transition-colors" />
+                                                    <User className="h-5 w-5 md:h-6 md:w-6 text-muted-foreground group-focus-within:text-primary transition-colors" />
                                                 </div>
                                                 <input
                                                     type="text"
@@ -268,18 +306,18 @@ export function ComingSoon() {
                                                     required
                                                     value={formData.fullName}
                                                     onChange={handleChange}
-                                                    className={`block w-full rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 shadow-inner ${isRtl ? 'pr-9 md:pr-10' : 'pl-9 md:pl-10'} py-2.5 text-slate-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 focus:bg-white dark:focus:bg-slate-800 focus:shadow-md text-sm transition-all`}
+                                                    className={`block w-full rounded-xl border-border bg-background/50 shadow-inner ${isRtl ? 'pr-10 md:pr-12' : 'pl-10 md:pl-12'} py-2.5 md:py-3 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-base transition-all`}
                                                     aria-label={t('coming_soon_name_label')}
                                                 />
                                             </div>
                                         </div>
                                         <div>
-                                            <label htmlFor="email" className="block text-xs md:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                                            <label htmlFor="email" className="block text-sm font-semibold text-foreground mb-1">
                                                 {t('coming_soon_email_label')}
                                             </label>
                                             <div className="relative group">
                                                 <div className={`absolute inset-y-0 ${isRtl ? 'right-0 pr-3' : 'left-0 pl-3'} flex items-center pointer-events-none`}>
-                                                    <Mail className="h-4 w-4 md:h-5 md:w-5 text-slate-400 group-focus-within:text-primary-500 transition-colors" />
+                                                    <Mail className="h-5 w-5 md:h-6 md:w-6 text-muted-foreground group-focus-within:text-primary transition-colors" />
                                                 </div>
                                                 <input
                                                     type="email"
@@ -288,19 +326,19 @@ export function ComingSoon() {
                                                     required
                                                     value={formData.email}
                                                     onChange={handleChange}
-                                                    className={`block w-full rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 shadow-inner ${isRtl ? 'pr-9 md:pr-10' : 'pl-9 md:pl-10'} py-3 text-slate-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 focus:bg-white dark:focus:bg-slate-800 focus:shadow-md text-sm transition-all`}
+                                                    className={`block w-full rounded-xl border-border bg-background/50 shadow-inner ${isRtl ? 'pr-10 md:pr-12' : 'pl-10 md:pl-12'} py-2.5 md:py-3 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-base transition-all`}
                                                     aria-label={t('coming_soon_email_label')}
                                                     dir="ltr"
                                                 />
                                             </div>
                                         </div>
                                         <div>
-                                            <label htmlFor="phone" className="block text-xs md:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                                            <label htmlFor="phone" className="block text-sm font-semibold text-foreground mb-1">
                                                 {t('coming_soon_phone_label')}
                                             </label>
                                             <div className="relative group">
                                                 <div className={`absolute inset-y-0 ${isRtl ? 'right-0 pr-3' : 'left-0 pl-3'} flex items-center pointer-events-none`}>
-                                                    <Phone className="h-4 w-4 md:h-5 md:w-5 text-slate-400 group-focus-within:text-primary-500 transition-colors" />
+                                                    <Phone className="h-5 w-5 md:h-6 md:w-6 text-muted-foreground group-focus-within:text-primary transition-colors" />
                                                 </div>
                                                 <input
                                                     type="tel"
@@ -308,15 +346,15 @@ export function ComingSoon() {
                                                     name="phone"
                                                     value={formData.phone}
                                                     onChange={handleChange}
-                                                    className={`block w-full rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 shadow-inner ${isRtl ? 'pr-9 md:pr-10' : 'pl-9 md:pl-10'} py-3 text-slate-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 focus:bg-white dark:focus:bg-slate-800 focus:shadow-md text-sm transition-all`}
+                                                    className={`block w-full rounded-xl border-border bg-background/50 shadow-inner ${isRtl ? 'pr-10 md:pr-12' : 'pl-10 md:pl-12'} py-2.5 md:py-3 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-base transition-all`}
                                                     aria-label={t('coming_soon_phone_label')}
                                                     dir="ltr"
                                                 />
                                             </div>
                                         </div>
 
-                                        <div className="flex items-start gap-3 mt-3">
-                                            <div className="flex items-center h-5">
+                                        <div className="flex items-start gap-2.5 mt-2">
+                                            <div className="flex items-center h-4 md:h-5">
                                                 <input
                                                     id="termsConsent"
                                                     name="termsConsent"
@@ -324,33 +362,53 @@ export function ComingSoon() {
                                                     checked={formData.termsConsent}
                                                     onChange={handleChange}
                                                     required
-                                                    className="w-4 h-4 text-primary-600 bg-slate-100 border-slate-300 rounded focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-slate-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600 md:mt-0.5 cursor-pointer transition-colors"
+                                                    className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary bg-background border-border rounded focus:ring-primary ring-offset-background focus:ring-2   md:mt-0.5 cursor-pointer transition-colors"
                                                 />
                                             </div>
-                                            <label htmlFor="termsConsent" className="text-xs md:text-sm font-medium text-slate-600 dark:text-slate-400 cursor-pointer">
+                                            <label htmlFor="termsConsent" className="text-[11px] md:text-xs font-medium text-muted-foreground cursor-pointer">
                                                 {isRtl ? (
                                                     <span>
-                                                        אני מסכים/ה <a href="/legal/terms" target="_blank" className="font-semibold text-primary-600 dark:text-primary-400 hover:text-primary-500 transition-colors underline underline-offset-4 decoration-primary-600/30 hover:decoration-primary-500">לתנאי השימוש</a> ול<a href="/legal/privacy" target="_blank" className="font-semibold text-primary-600 dark:text-primary-400 hover:text-primary-500 transition-colors underline underline-offset-4 decoration-primary-600/30 hover:decoration-primary-500">מדיניות הפרטיות</a>.
+                                                        אני מסכים/ה <a href="/legal/terms" target="_blank" className="font-semibold text-primary hover:text-primary/80 transition-colors underline underline-offset-4 decoration-primary/30 hover:decoration-primary/80">לתנאי השימוש</a> ול<a href="/legal/privacy" target="_blank" className="font-semibold text-primary hover:text-primary/80 transition-colors underline underline-offset-4 decoration-primary/30 hover:decoration-primary/80">מדיניות הפרטיות</a>.
                                                     </span>
                                                 ) : (
                                                     <span>
-                                                        I agree to the <a href="/legal/terms" target="_blank" className="font-semibold text-primary-600 dark:text-primary-400 hover:text-primary-500 transition-colors underline underline-offset-4 decoration-primary-600/30 hover:decoration-primary-500">Terms of Service</a> and <a href="/legal/privacy" target="_blank" className="font-semibold text-primary-600 dark:text-primary-400 hover:text-primary-500 transition-colors underline underline-offset-4 decoration-primary-600/30 hover:decoration-primary-500">Privacy Policy</a>.
+                                                        I agree to the <a href="/legal/terms" target="_blank" className="font-semibold text-primary hover:text-primary/80 transition-colors underline underline-offset-4 decoration-primary/30 hover:decoration-primary/80">Terms of Service</a> and <a href="/legal/privacy" target="_blank" className="font-semibold text-primary hover:text-primary/80 transition-colors underline underline-offset-4 decoration-primary/30 hover:decoration-primary/80">Privacy Policy</a>.
                                                     </span>
                                                 )}
                                             </label>
                                         </div>
 
                                         <button
+                                            ref={buttonRef}
+                                            onPointerEnter={handlePointerEnter}
+                                            onPointerLeave={handlePointerLeave}
                                             type="submit"
                                             disabled={status === 'loading'}
-                                            className="group relative w-full flex items-center justify-center gap-2 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 py-3 md:py-3.5 rounded-xl text-white font-bold text-base md:text-lg mt-6 shadow-lg shadow-primary-500/30 overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-500/50 active:scale-[0.98] disabled:opacity-70 disabled:pointer-events-none disabled:transform-none border border-primary-400/20"
+                                            className="group relative w-full flex items-center justify-center gap-2 bg-primary py-3 md:py-3.5 rounded-xl text-primary-foreground font-bold text-base md:text-lg mt-2 md:mt-3 shadow-md shadow-primary/20 overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_35px_-10px_hsl(var(--primary))] hover:brightness-110 active:scale-[0.98] disabled:opacity-70 disabled:pointer-events-none border border-primary/20"
                                         >
-                                            {/* Shine Effect */}
-                                            <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 ease-in-out group-hover:translate-x-full z-0" />
+                                            {/* Ripple Effect */}
+                                            <span
+                                                className="absolute rounded-full pointer-events-none bg-background/20 z-20"
+                                                style={{
+                                                    width: ripple.size,
+                                                    height: ripple.size,
+                                                    left: ripple.x,
+                                                    top: ripple.y,
+                                                    transform: ripple.active ? 'scale(1)' : 'scale(0)',
+                                                    transition: 'transform 1s ease-in-out',
+                                                    opacity: ripple.active ? 1 : 0,
+                                                }}
+                                            />
+
+                                            {/* Aurora Fluid Fill Effect */}
+                                            <div className="absolute inset-0 overflow-hidden rounded-[inherit] z-0 pointer-events-none">
+                                                <div className="absolute -inset-[100%] opacity-40 group-hover:opacity-100 transition-opacity duration-700 blur-xl bg-[conic-gradient(from_90deg_at_50%_50%,hsl(var(--primary))_0%,hsl(var(--secondary))_50%,hsl(var(--primary))_100%)] animate-[spin_20s_linear_infinite]" />
+                                                <div className="absolute inset-[1px] bg-primary/95 rounded-[inherit] z-10 backdrop-blur-3xl group-hover:bg-primary/50 transition-colors duration-500" />
+                                            </div>
 
                                             <div className="relative z-10 flex items-center justify-center gap-2">
                                                 {status === 'loading' ? (
-                                                    <div className="w-5 h-5 md:w-6 md:h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                    <div className="w-4 h-4 md:w-5 md:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                                 ) : (
                                                     <>
                                                         <span>{t('coming_soon_cta')}</span>
@@ -364,9 +422,9 @@ export function ComingSoon() {
                                             </div>
                                         </button>
 
-                                        <div className="flex items-center justify-center gap-1.5 mt-2 text-xs md:text-sm font-medium text-slate-500 dark:text-slate-400">
-                                            <ShieldCheck className="w-4 h-4 text-primary-500" />
-                                            <span>{isRtl ? 'רישום ומנוי ללא עלות' : 'Free registration and subscription'}</span>
+                                        <div className="flex items-center justify-center gap-1.5 mt-2 text-xs md:text-sm font-medium text-muted-foreground">
+                                            <ShieldCheck className="w-4 h-4 text-primary" />
+                                            <span>{isRtl ? 'רישום ומנוי ללא עלות ו/או הזנת פרטי אשראי' : 'Free registration and subscription, no credit card required'}</span>
                                         </div>
                                     </motion.form>
                                 )}
@@ -375,43 +433,71 @@ export function ComingSoon() {
                     </motion.div>
                 </div>
 
-                {/* Footer (Accessibility) */}
-                <div className="mt-8 flex justify-center pb-4 lg:absolute lg:bottom-4 lg:left-0 lg:right-0 lg:mt-0 lg:pb-0 z-50">
-                    <a href="/accessibility" className="text-xs md:text-sm text-slate-500 hover:text-primary-600 transition-colors underline underline-offset-4">
-                        {isRtl ? 'הצהרת נגישות' : 'Accessibility Statement'}
-                    </a>
-                </div>
-                {isRtl && (
-                    <div className="mt-4 text-center">
-                        <p className="text-[10px] md:text-xs text-slate-400 dark:text-slate-500 max-w-sm mx-auto leading-relaxed">
-                            * האתר והאפליקציה מנוסחים בלשון זכר מטעמי נוחות בלבד, אך מתייחסים ופונים לשני המינים כאחד.
-                        </p>
+                {/* Desktop Footer (Hidden on Mobile) */}
+                <div className="hidden md:flex w-full mt-2 lg:mt-auto pt-2 md:pt-2 flex-col items-center justify-end pb-2 lg:pb-2 z-50">
+                    <div className="flex items-center justify-center gap-4 mb-2 md:mb-1.5 text-muted-foreground">
+                        <a href="https://instagram.com/RentMate_IL" target="_blank" rel="noopener noreferrer" className="p-1.5 hover:bg-accent hover:text-foreground rounded-full hover:text-foreground transition-colors" aria-label="Instagram">
+                            <Instagram className="w-4 h-4 md:w-5 md:h-5" />
+                        </a>
+                        <a href="https://facebook.com/RentMate.co.il" target="_blank" rel="noopener noreferrer" className="p-1.5 hover:bg-accent hover:text-foreground rounded-full hover:text-foreground transition-colors" aria-label="Facebook">
+                            <Facebook className="w-4 h-4 md:w-5 md:h-5" />
+                        </a>
+                        <a href="https://twitter.com/RentMate_IL" target="_blank" rel="noopener noreferrer" className="p-1.5 hover:bg-accent hover:text-foreground rounded-full hover:text-foreground transition-colors" aria-label="X (Twitter)">
+                            <Twitter className="w-4 h-4 md:w-5 md:h-5" />
+                        </a>
                     </div>
-                )}
+
+                    <div className="flex flex-col items-center gap-1 md:gap-0.5">
+                        <a href="/accessibility" className="text-[10px] md:text-xs text-muted-foreground hover:text-primary transition-colors underline underline-offset-4">
+                            {isRtl ? 'הצהרת נגישות' : 'Accessibility Statement'}
+                        </a>
+                        {isRtl && (
+                            <p className="text-[9px] md:text-[10px] text-muted-foreground/80 max-w-sm text-center leading-relaxed">
+                                * האתר והאפליקציה מנוסחים בלשון זכר מטעמי נוחות בלבד, אך מתייחסים ופונים לשני המינים כאחד.
+                            </p>
+                        )}
+                    </div>
+                </div>
             </div >
 
 
             {/* Right Column - Visuals */}
-            <div className="flex w-full min-h-[500px] md:min-h-0 md:w-1/2 md:h-full relative overflow-hidden bg-slate-100 dark:bg-slate-900 border-t md:border-t-0 md:border-l border-slate-200 dark:border-slate-800 items-center justify-center p-4 sm:p-8 lg:p-16">
+            <motion.div
+                initial={{ opacity: 0, x: 100 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, amount: 0.1 }}
+                transition={{ duration: 0.8 }}
+                className="flex w-full min-h-[500px] md:min-h-0 md:w-1/2 md:h-full relative overflow-hidden bg-muted/30 border-t md:border-t-0 md:border-l border-border items-center justify-center p-4 sm:p-8 lg:p-16"
+            >
 
                 {/* Decorative Background Elements */}
-                <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-primary-100/50 via-slate-100/10 to-transparent dark:from-primary-900/10 dark:via-slate-900/10 dark:to-transparent z-0 pointer-events-none" />
-                <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/10 dark:bg-blue-600/5 filter blur-3xl rounded-full z-0 pointer-events-none" />
-                <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-teal-500/10 dark:bg-teal-600/5 filter blur-3xl rounded-full z-0 pointer-events-none" />
+                <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-primary/10 via-background/10 to-transparent z-0 pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/10 filter blur-3xl rounded-full z-0 pointer-events-none" />
+                <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-secondary/10 filter blur-3xl rounded-full z-0 pointer-events-none" />
 
                 {/* Carousel */}
-                <div className="absolute top-4 left-4 right-4 bottom-36 md:bottom-24 lg:top-8 lg:left-8 lg:right-8 lg:bottom-4 px-4 md:px-20 flex flex-col justify-center items-center z-10 pt-4 md:pt-16">
+                <div className="absolute top-4 left-4 right-4 bottom-32 md:bottom-20 lg:top-8 lg:left-8 lg:right-8 lg:bottom-4 px-4 md:px-16 flex flex-col justify-center items-center z-10 pt-4 md:pt-12">
                     <AnimatePresence mode="wait">
-                        <motion.img
+                        <motion.div
                             key={currentImageIndex}
-                            src={isRtl ? MOCKUP_IMAGES_HE[currentImageIndex] : MOCKUP_IMAGES_EN[currentImageIndex]}
-                            alt="App Preview"
-                            initial={{ opacity: 0, scale: 1.02, y: 10 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.98, y: -10 }}
+                            initial={{ opacity: 0, scale: 1.02, x: 50 }}
+                            animate={{ opacity: 1, scale: 1, x: 0 }}
+                            exit={{ opacity: 0, scale: 0.98, x: -50 }}
                             transition={{ duration: 0.8, type: "spring" }}
-                            className="max-w-full max-h-[300px] md:max-h-full object-contain rounded-xl shadow-2xl relative border border-slate-200/50 dark:border-slate-700/50"
-                        />
+                            className="flex justify-center items-center h-full w-full max-w-full max-h-[300px] md:max-h-full relative"
+                        >
+                            <picture className="contents">
+                                <source
+                                    media="(min-width: 768px)"
+                                    srcSet={isRtl ? MOCKUP_IMAGES_HE[currentImageIndex] : MOCKUP_IMAGES_EN[currentImageIndex]}
+                                />
+                                <img
+                                    src={isRtl ? MOBILE_MOCKUP_IMAGES_HE[currentImageIndex] : MOBILE_MOCKUP_IMAGES_EN[currentImageIndex]}
+                                    alt="App Preview"
+                                    className="max-w-full max-h-[300px] md:max-h-full object-contain rounded-xl shadow-2xl border border-border/50"
+                                />
+                            </picture>
+                        </motion.div>
                     </AnimatePresence>
                 </div>
 
@@ -420,14 +506,14 @@ export function ComingSoon() {
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={`content-${currentImageIndex}`}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
+                            initial={{ opacity: 0, x: 50 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -50 }}
                             transition={{ duration: 0.4 }}
                         >
-                            <GlassCard className="w-[300px] sm:w-[380px] h-auto min-h-[120px] md:h-[140px] flex flex-col justify-center p-4 md:p-6 border-white/20 bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl text-slate-900 dark:text-white shadow-xl pointer-events-auto">
+                            <GlassCard className="w-[300px] sm:w-[380px] h-auto min-h-[120px] md:h-[140px] flex flex-col justify-center p-4 md:p-6 border-white/20 bg-card/70 backdrop-blur-2xl text-foreground shadow-xl pointer-events-auto">
                                 <div className={`flex items-center gap-2 md:gap-3 mb-2 ${isRtl ? 'flex-row' : 'flex-row'}`} dir={isRtl ? 'rtl' : 'ltr'}>
-                                    <div className="p-1.5 md:p-2 bg-primary-500 rounded-lg text-white">
+                                    <div className="p-1.5 md:p-2 bg-primary rounded-lg text-white">
                                         {(() => {
                                             const Icon = SLIDE_CONTENT[currentImageIndex].icon;
                                             return <Icon className="w-4 h-4 md:w-5 md:h-5" />;
@@ -435,14 +521,45 @@ export function ComingSoon() {
                                     </div>
                                     <h4 className="font-bold text-sm md:text-base">{SLIDE_CONTENT[currentImageIndex].title}</h4>
                                 </div>
-                                <p className="text-xs md:text-sm text-slate-700 dark:text-slate-300" dir={isRtl ? 'rtl' : 'ltr'}>
+                                <p className="text-xs md:text-sm text-foreground" dir={isRtl ? 'rtl' : 'ltr'}>
                                     {SLIDE_CONTENT[currentImageIndex].desc}
                                 </p>
                             </GlassCard>
                         </motion.div>
                     </AnimatePresence>
                 </div>
-            </div>
-        </div >
+            </motion.div>
+
+            {/* Mobile Footer (Hidden on Desktop) */}
+            <motion.div
+                initial={{ opacity: 0, x: 50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, amount: 0.1 }}
+                transition={{ duration: 0.6 }}
+                className="md:hidden w-full bg-white/50 bg-background/50 backdrop-blur-md border-t border-border/50 pt-8 pb-8 flex flex-col items-center justify-center z-50">
+                <div className="flex items-center justify-center gap-6 mb-4 text-muted-foreground">
+                    <a href="https://instagram.com/RentMate_IL" target="_blank" rel="noopener noreferrer" className="p-3 bg-background/50 hover:bg-accent rounded-full hover:text-foreground shadow-sm border border-border/50 transition-all" aria-label="Instagram">
+                        <Instagram className="w-6 h-6" />
+                    </a>
+                    <a href="https://facebook.com/RentMate.co.il" target="_blank" rel="noopener noreferrer" className="p-3 bg-background/50 hover:bg-accent rounded-full hover:text-foreground shadow-sm border border-border/50 transition-all" aria-label="Facebook">
+                        <Facebook className="w-6 h-6" />
+                    </a>
+                    <a href="https://twitter.com/RentMate_IL" target="_blank" rel="noopener noreferrer" className="p-3 bg-background/50 hover:bg-accent rounded-full hover:text-foreground shadow-sm border border-border/50 transition-all" aria-label="X (Twitter)">
+                        <Twitter className="w-6 h-6" />
+                    </a>
+                </div>
+
+                <div className="flex flex-col items-center gap-3">
+                    <a href="/accessibility" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors underline underline-offset-4">
+                        {isRtl ? 'הצהרת נגישות' : 'Accessibility Statement'}
+                    </a>
+                    {isRtl && (
+                        <p className="text-[10px] text-muted-foreground/80 px-6 max-w-sm text-center leading-relaxed">
+                            * האתר והאפליקציה מנוסחים בלשון זכר מטעמי נוחות בלבד, אך מתייחסים ופונים לשני המינים כאחד.
+                        </p>
+                    )}
+                </div>
+            </motion.div>
+        </div>
     );
 }

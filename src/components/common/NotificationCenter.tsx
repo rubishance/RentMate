@@ -28,9 +28,9 @@ export function NotificationCenter() {
 
     const getIcon = (type: string) => {
         switch (type) {
-            case 'success': return <NotificationSuccessIcon className="w-5 h-5 text-green-500" />;
+            case 'success': return <NotificationSuccessIcon className="w-5 h-5 text-secondary" />;
             case 'warning': return <NotificationWarningIcon className="w-5 h-5 text-orange-500" />;
-            case 'error': return <NotificationErrorIcon className="w-5 h-5 text-red-500" />;
+            case 'error': return <NotificationErrorIcon className="w-5 h-5 text-destructive" />;
             default: return <NotificationInfoIcon className="w-5 h-5 text-primary" />;
         }
     };

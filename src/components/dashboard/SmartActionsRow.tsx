@@ -38,7 +38,7 @@ export function SmartActionsRow() {
             id: 'add_expense',
             icon: PlusCircle,
             label: t('addExpense') || 'Add Expense',
-            gradient: 'from-blue-500/20 to-indigo-500/20 hover:from-blue-500/30 hover:to-indigo-500/30 border-blue-500/20',
+            gradient: 'from-primary/20 to-indigo-500/20 hover:from-primary/30 hover:to-indigo-500/30 border-primary/20',
             onClick: () => navigate('/properties?tab=maintenance&action=log'),
             variant: 'standard'
         }
@@ -70,7 +70,7 @@ export function SmartActionsRow() {
                                 {action.label}
                             </span>
                             {action.subLabel && (
-                                <span className="text-[10px] uppercase tracking-wider font-medium text-slate-500 dark:text-slate-400">
+                                <span className="text-[10px] uppercase tracking-wider font-medium text-muted-foreground">
                                     {action.subLabel}
                                 </span>
                             )}

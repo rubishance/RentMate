@@ -40,7 +40,7 @@ export function PropertyDocumentsHub({ property, readOnly, requestedTab, autoOpe
     return (
         <div className="flex flex-col h-full">
             {/* Tab Navigation */}
-            <div className="flex items-center gap-2 p-1.5 bg-slate-100/50 dark:bg-neutral-800/50 rounded-2xl border border-slate-200/50 dark:border-neutral-700/50 mb-6 overflow-x-auto no-scrollbar">
+            <div className="flex items-center gap-2 p-1.5 bg-muted/50/50 dark:bg-neutral-800/50 rounded-2xl border border-slate-200/50 dark:border-neutral-700/50 mb-6 overflow-x-auto no-scrollbar">
                 {categories.map((tab) => {
                     const Icon = tab.icon;
                     const isActive = activeTab === tab.id;
@@ -63,7 +63,7 @@ export function PropertyDocumentsHub({ property, readOnly, requestedTab, autoOpe
             </div>
 
             {/* Tab Content */}
-            <div className="flex-1 overflow-y-auto min-h-0 bg-slate-50/50 dark:bg-neutral-900/30 rounded-3xl border border-slate-200/40 dark:border-neutral-800/40 p-1">
+            <div className="flex-1 overflow-y-auto min-h-0 bg-background/50 dark:bg-neutral-900/30 rounded-3xl border border-slate-200/40 dark:border-neutral-800/40 p-1">
                 {activeTab === 'media' && <MediaGallery property={property} readOnly={readOnly} />}
                 {activeTab === 'utilities' && <UtilityBillsManager property={property} readOnly={readOnly} />}
                 {activeTab === 'maintenance' && <MaintenanceRecords property={property} readOnly={readOnly} />}

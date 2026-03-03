@@ -81,7 +81,7 @@ export function ContractsTab({ propertyId, onAddContract }: ContractsTabProps) {
             <div className="p-6">
                 <button
                     onClick={onAddContract}
-                    className="w-full text-center py-12 bg-slate-50 dark:bg-neutral-800 rounded-3xl border border-dashed border-slate-200 dark:border-neutral-700 hover:bg-slate-100 dark:hover:bg-neutral-700/50 transition-all group"
+                    className="w-full text-center py-12 bg-background dark:bg-neutral-800 rounded-3xl border border-dashed border-slate-200 dark:border-neutral-700 hover:bg-muted/50 dark:hover:bg-neutral-700/50 transition-all group"
                 >
                     <div className="w-16 h-16 bg-white dark:bg-black rounded-2xl shadow-sm flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                         <FileTextIcon className="w-8 h-8 text-slate-300 group-hover:text-primary transition-colors" />
@@ -107,7 +107,7 @@ export function ContractsTab({ propertyId, onAddContract }: ContractsTabProps) {
                     <div className="flex items-center gap-3">
                         <div className={cn(
                             "w-10 h-10 rounded-xl flex items-center justify-center",
-                            isActive ? "bg-emerald-500/10 text-emerald-600" : "bg-slate-500/10 text-slate-400"
+                            isActive ? "bg-emerald-500/10 text-emerald-600" : "bg-background0/10 text-slate-400"
                         )}>
                             {isActive ? <CheckCircle2Icon className="w-5 h-5" /> : <ArchiveIcon className="w-5 h-5" />}
                         </div>

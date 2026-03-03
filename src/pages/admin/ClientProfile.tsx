@@ -217,7 +217,7 @@ const ClientProfile = () => {
 
     if (error || !data) return (
         <div className="p-8 text-center">
-            <ExclamationCircleIcon className="w-12 h-12 text-red-500 mx-auto mb-4" />
+            <ExclamationCircleIcon className="w-12 h-12 text-destructive mx-auto mb-4" />
             <p className="text-gray-900 dark:text-white font-bold">{error || 'Client not found'}</p>
             <button onClick={() => navigate('/admin/users')} className="mt-4 text-brand-600 font-bold hover:underline">
                 Back to User Management
@@ -254,7 +254,7 @@ const ClientProfile = () => {
                 <div className="ml-auto flex gap-2">
                     <button
                         onClick={() => setIsChatOpen(!isChatOpen)}
-                        className={`inline-flex items-center gap-2 px-4 py-2 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg ${isChatOpen ? 'bg-gray-600 hover:bg-gray-700 shadow-gray-600/20' : 'bg-purple-600 hover:bg-purple-700 shadow-purple-600/20'
+                        className={`inline-flex items-center gap-2 px-4 py-2 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg ${isChatOpen ? 'bg-gray-600 hover:bg-gray-700 shadow-gray-600/20' : 'bg-primary hover:bg-primary-700 shadow-primary-600/20'
                             }`}
                     >
                         <ChatBubbleLeftEllipsisIcon className="w-4 h-4" />
@@ -404,13 +404,13 @@ const ClientProfile = () => {
                                 ) : (
                                     <div className="space-y-4">
                                         {usageEvents.map(event => (
-                                            <div key={event.id} className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-neutral-800/20 border border-slate-100 dark:border-neutral-800">
+                                            <div key={event.id} className="flex items-center justify-between p-4 rounded-2xl bg-background dark:bg-neutral-800/20 border border-slate-100 dark:border-neutral-800">
                                                 <div className="flex items-center gap-3">
                                                     <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg">
                                                         <MousePointer2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                                                     </div>
                                                     <div>
-                                                        <div className="text-sm font-bold text-slate-900 dark:text-white capitalize">
+                                                        <div className="text-sm font-bold text-foreground capitalize">
                                                             {event.event_name.replace(/_/g, ' ')}
                                                         </div>
                                                         <div className="text-[10px] text-slate-400">

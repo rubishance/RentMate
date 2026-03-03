@@ -441,11 +441,11 @@ export function ChatWidget() {
                                         <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-500/30 p-4 rounded-2xl w-full space-y-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-800 rounded-full flex items-center justify-center">
-                                                    <Paperclip className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                                                    <Paperclip className="w-5 h-5 text-secondary" />
                                                 </div>
                                                 <div>
                                                     <h4 className="font-bold text-emerald-900 dark:text-emerald-100">{t('billDetected')}</h4>
-                                                    <p className="text-xs text-emerald-600 dark:text-emerald-400">{scannedBill.vendor} - {scannedBill.amount} {scannedBill.currency}</p>
+                                                    <p className="text-xs text-secondary">{scannedBill.vendor} - {scannedBill.amount} {scannedBill.currency}</p>
                                                 </div>
                                             </div>
 
@@ -453,7 +453,7 @@ export function ChatWidget() {
                                                 <div className="bg-emerald-100/50 dark:bg-emerald-900/30 p-3 rounded-xl border border-emerald-200 dark:border-emerald-500/30 mb-2">
                                                     <div className="flex justify-between items-start">
                                                         <div>
-                                                            <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mb-1">
+                                                            <p className="text-[10px] font-bold uppercase tracking-widest text-secondary mb-1">
                                                                 {isRtl ? 'זוהה אוטומטית' : 'Auto-Detected'}
                                                             </p>
                                                             <p className="text-sm font-bold text-emerald-900 dark:text-emerald-100 line-clamp-1">
@@ -526,7 +526,7 @@ export function ChatWidget() {
                                         type="button"
                                         onClick={toggleVoiceInput}
                                         className={`p-2 rounded-xl transition-colors shrink-0 ${isListening
-                                            ? 'bg-red-600 hover:bg-red-500'
+                                            ? 'bg-destructive hover:bg-red-500'
                                             : 'bg-white dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 border border-gray-200 dark:border-transparent'
                                             } `}
                                         aria-label={isListening ? 'עצור הקלטה' : 'התחל הקלטה'}

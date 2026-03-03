@@ -175,15 +175,15 @@ export function DashboardStitchV1() {
     if (loading) {
         return (
             <div className="px-3 py-20 max-w-5xl mx-auto space-y-12">
-                <div className="h-8 w-48 bg-slate-100 animate-pulse rounded-2xl" />
-                <div className="h-96 w-full bg-slate-100 animate-pulse rounded-[3rem]" />
+                <div className="h-8 w-48 bg-muted/50 animate-pulse rounded-2xl" />
+                <div className="h-96 w-full bg-muted/50 animate-pulse rounded-[3rem]" />
             </div>
         );
     }
 
     // Stitch Design V1: "Thin Layout" & "Essentialism"
     return (
-        <div className="min-h-screen bg-slate-50/50 dark:bg-neutral-950 pb-40 pt-2 space-y-6 animate-in fade-in slide-in-from-bottom-6 duration-700">
+        <div className="min-h-screen bg-background/50 dark:bg-neutral-950 pb-40 pt-2 space-y-6 animate-in fade-in slide-in-from-bottom-6 duration-700">
             {/* Hero Section - Wrapped in glass for separation */}
             <div className="relative sticky top-0 z-10 backdrop-blur-xl bg-background/40 border-b border-white/20 dark:border-neutral-800/50 pb-4 pt-2">
                 <RentyCommandCenter firstName={firstName} feedItems={feedItems} />

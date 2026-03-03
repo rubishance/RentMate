@@ -80,13 +80,13 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete }: Do
                                     <div className="p-3 bg-brand-500/10 text-brand-500 rounded-2xl shrink-0">
                                         <FileText className="w-6 h-6" />
                                     </div>
-                                    <h2 className="text-xl font-bold text-slate-900 dark:text-white truncate">
+                                    <h2 className="text-xl font-bold text-foreground truncate">
                                         {document.title || document.file_name}
                                     </h2>
                                 </div>
                                 <button
                                     onClick={onClose}
-                                    className="p-2 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded-full transition-colors text-slate-400"
+                                    className="p-2 hover:bg-muted/50 dark:hover:bg-neutral-800 rounded-full transition-colors text-slate-400"
                                 >
                                     <X className="w-5 h-5" />
                                 </button>
@@ -96,19 +96,19 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete }: Do
                             <div className="p-6 overflow-y-auto space-y-8">
                                 {/* Key Stats */}
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="p-4 bg-slate-50 dark:bg-neutral-800/50 rounded-2xl border border-slate-100 dark:border-neutral-800">
+                                    <div className="p-4 bg-background dark:bg-neutral-800/50 rounded-2xl border border-slate-100 dark:border-neutral-800">
                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
                                             <Calendar className="w-3 h-3" /> {t('date')}
                                         </p>
-                                        <p className="text-sm font-black text-slate-900 dark:text-white">
+                                        <p className="text-sm font-black text-foreground">
                                             {formattedDate || t('noDate')}
                                         </p>
                                     </div>
-                                    <div className="p-4 bg-slate-50 dark:bg-neutral-800/50 rounded-2xl border border-slate-100 dark:border-neutral-800">
+                                    <div className="p-4 bg-background dark:bg-neutral-800/50 rounded-2xl border border-slate-100 dark:border-neutral-800">
                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
                                             <DollarSign className="w-3 h-3" /> {t('amount')}
                                         </p>
-                                        <p className="text-sm font-black text-slate-900 dark:text-white">
+                                        <p className="text-sm font-black text-foreground">
                                             {document.amount ? `₪${document.amount.toLocaleString()}` : t('noAmount')}
                                         </p>
                                     </div>
@@ -119,14 +119,14 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete }: Do
                                     <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">
                                         {t('additionalMetadata')}
                                     </h3>
-                                    <div className="bg-slate-50/50 dark:bg-neutral-800/30 rounded-2xl border border-slate-100 dark:border-neutral-800 divide-y divide-slate-100 dark:divide-neutral-800">
+                                    <div className="bg-background/50 dark:bg-neutral-800/30 rounded-2xl border border-slate-100 dark:border-neutral-800 divide-y divide-slate-100 dark:divide-neutral-800">
                                         {/* Vendor */}
                                         <div className="flex items-center justify-between p-4">
                                             <div className="flex items-center gap-3 text-slate-400">
                                                 <Building className="w-4 h-4" />
                                                 <span className="text-sm font-medium">{t('vendor')}</span>
                                             </div>
-                                            <span className="text-sm font-bold text-slate-900 dark:text-white">
+                                            <span className="text-sm font-bold text-foreground">
                                                 {document.vendor_name || '-'}
                                             </span>
                                         </div>
@@ -137,7 +137,7 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete }: Do
                                                 <Hash className="w-4 h-4" />
                                                 <span className="text-sm font-medium">{t('invoiceNumber')}</span>
                                             </div>
-                                            <span className="text-sm font-bold text-slate-900 dark:text-white">
+                                            <span className="text-sm font-bold text-foreground">
                                                 {document.invoice_number || '-'}
                                             </span>
                                         </div>
@@ -149,7 +149,7 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete }: Do
                                                     <Calendar className="w-4 h-4" />
                                                     <span className="text-sm font-medium">{t('billingPeriod')}</span>
                                                 </div>
-                                                <span className="text-sm font-bold text-slate-900 dark:text-white">
+                                                <span className="text-sm font-bold text-foreground">
                                                     {document.period_start ? format(parseISO(document.period_start), 'dd/MM/yy') : ''}
                                                     {document.period_start && document.period_end ? ' - ' : ''}
                                                     {document.period_end ? format(parseISO(document.period_end), 'dd/MM/yy') : ''}
@@ -190,11 +190,11 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete }: Do
                             </div>
 
                             {/* Footer Actions */}
-                            <div className="p-6 border-t border-slate-100 dark:border-neutral-800 bg-slate-50/50 dark:bg-neutral-800/30 flex gap-3">
+                            <div className="p-6 border-t border-slate-100 dark:border-neutral-800 bg-background/50 dark:bg-neutral-800/30 flex gap-3">
                                 <button
                                     onClick={handleDelete}
                                     disabled={isDeleting}
-                                    className="p-4 text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-2xl transition-all disabled:opacity-50"
+                                    className="p-4 text-destructive bg-red-500/10 hover:bg-red-500/20 rounded-2xl transition-all disabled:opacity-50"
                                     title={t('delete')}
                                 >
                                     <Trash2 className="w-5 h-5" />
@@ -208,7 +208,7 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete }: Do
                                 </button>
                                 <button
                                     onClick={handleDownload}
-                                    className="p-4 text-slate-600 dark:text-neutral-400 bg-slate-100 dark:bg-neutral-800 hover:bg-slate-200 dark:hover:bg-neutral-700 rounded-2xl transition-all"
+                                    className="p-4 text-slate-600 dark:text-neutral-400 bg-muted/50 dark:bg-neutral-800 hover:bg-slate-200 dark:hover:bg-neutral-700 rounded-2xl transition-all"
                                     title={t('openExternal')}
                                 >
                                     <ExternalLink className="w-5 h-5" />

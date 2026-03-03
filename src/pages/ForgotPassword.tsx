@@ -85,7 +85,7 @@ export function ForgotPassword() {
 
                     <CardContent className="space-y-6 pt-6">
                         {error && <div className="bg-destructive/10 text-destructive p-4 rounded-xl text-sm border border-destructive/20 text-center font-medium">{error}</div>}
-                        {message && <div className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 p-4 rounded-xl text-sm border border-emerald-500/20 text-center font-medium">{message}</div>}
+                        {message && <div className="bg-emerald-500/10 text-secondary p-4 rounded-xl text-sm border border-emerald-500/20 text-center font-medium">{message}</div>}
 
                         <form onSubmit={handlePasswordReset} className="space-y-6">
                             <div className="space-y-2">

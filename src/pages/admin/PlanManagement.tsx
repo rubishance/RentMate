@@ -277,8 +277,8 @@ const PlanManagement = () => {
                 id.includes('master') || id.includes('enterprise') ? 'master' : 'unlimited';
 
         const ICON_MAP: Record<string, any> = { 'solo': Star, 'mate': Zap, 'master': Shield, 'unlimited': Lock };
-        const COLOR_MAP: Record<string, string> = { 'solo': 'text-slate-500', 'mate': 'text-blue-500', 'master': 'text-amber-500', 'unlimited': 'text-purple-500' };
-        const BG_MAP: Record<string, string> = { 'solo': 'bg-slate-50 dark:bg-slate-900/50', 'mate': 'bg-blue-50/50 dark:bg-blue-900/20', 'master': 'bg-amber-50/50 dark:bg-amber-900/20', 'unlimited': 'bg-purple-50/50 dark:bg-purple-900/20' };
+        const COLOR_MAP: Record<string, string> = { 'solo': 'text-slate-500', 'mate': 'text-primary', 'master': 'text-amber-500', 'unlimited': 'text-primary' };
+        const BG_MAP: Record<string, string> = { 'solo': 'bg-background/50', 'mate': 'bg-blue-50/50 dark:bg-blue-900/20', 'master': 'bg-amber-50/50 dark:bg-amber-900/20', 'unlimited': 'bg-primary-50/50 dark:bg-primary-900/20' };
 
         const Icon = ICON_MAP[baseId] || Star;
 
@@ -287,19 +287,19 @@ const PlanManagement = () => {
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 text-center">Live Preview (Mobile/Desktop Card)</p>
                 <div className="max-w-sm mx-auto">
                     <GlassCard
-                        className={`p-8 relative flex flex-col ${plan.id === 'mate' ? 'border-blue-500/50 ring-4 ring-blue-500/10' : ''} ${BG_MAP[baseId] || 'bg-white dark:bg-slate-800'}`}
+                        className={`p-8 relative flex flex-col ${plan.id === 'mate' ? 'border-primary/50 ring-4 ring-primary/10' : ''} ${BG_MAP[baseId] || 'bg-card'}`}
                         hoverEffect
                     >
                         {plan.badge_text && (
                             <div className="absolute -top-4 inset-x-0 flex justify-center">
-                                <span className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg uppercase">
+                                <span className="bg-gradient-to-r from-primary to-cyan-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg uppercase">
                                     {plan.badge_text}
                                 </span>
                             </div>
                         )}
 
                         <div className="flex items-center gap-3 mb-6">
-                            <div className={`p-3 rounded-xl bg-white dark:bg-black/40 shadow-sm ${COLOR_MAP[baseId] || 'text-blue-500'}`}>
+                            <div className={`p-3 rounded-xl bg-white dark:bg-black/40 shadow-sm ${COLOR_MAP[baseId] || 'text-primary'}`}>
                                 <Icon className="w-6 h-6" />
                             </div>
                             <h3 className="text-2xl font-bold font-mono tracking-tight dark:text-white uppercase">{plan.name || 'Plan Name'}</h3>
@@ -313,28 +313,28 @@ const PlanManagement = () => {
                             <p className="text-sm text-slate-500 mt-1">billed monthly</p>
                         </div>
 
-                        <p className="text-slate-600 dark:text-slate-300 font-medium mb-8 text-sm leading-relaxed">
+                        <p className="text-muted-foreground font-medium mb-8 text-sm leading-relaxed">
                             {plan.description || 'No description provided.'}
                         </p>
 
                         <div className="space-y-4 flex-1">
                             <div className="flex items-center gap-3 text-sm">
-                                <div className="p-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600">
+                                <div className="p-1 rounded-full bg-secondary/10 text-green-600">
                                     <Check className="w-3 h-3" />
                                 </div>
-                                <span className="text-slate-700 dark:text-slate-300 font-bold">{plan.max_properties === -1 ? 'Unlimited' : plan.max_properties} Property Units</span>
+                                <span className="text-foreground/80 font-bold">{plan.max_properties === -1 ? 'Unlimited' : plan.max_properties} Property Units</span>
                             </div>
                             {Object.entries(plan.features || {}).map(([key, value]) => value ? (
                                 <div key={key} className="flex items-center gap-3 text-sm">
-                                    <div className="p-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600">
+                                    <div className="p-1 rounded-full bg-secondary/10 text-green-600">
                                         <Check className="w-3 h-3" />
                                     </div>
-                                    <span className="text-slate-700 dark:text-slate-300 capitalize">{key.replace('_', ' ')}</span>
+                                    <span className="text-foreground/80 capitalize">{key.replace('_', ' ')}</span>
                                 </div>
                             ) : null)}
                         </div>
 
-                        <button className={`w-full mt-8 py-3 rounded-xl font-bold transition-all ${plan.id === 'mate' ? 'bg-blue-600 text-white shadow-lg' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white'}`}>
+                        <button className={`w-full mt-8 py-3 rounded-xl font-bold transition-all ${plan.id === 'mate' ? 'bg-primary text-white shadow-lg' : 'bg-card border border-border text-foreground'}`}>
                             {plan.cta_text || 'Start Free Trial'}
                         </button>
                     </GlassCard>

@@ -26,7 +26,7 @@ export function PropertyIcon({ type, className }: PropertyIconProps) {
     };
 
     return (
-        <div className={cn("relative flex-shrink-0 overflow-hidden rounded-xl bg-slate-50 dark:bg-neutral-800 shadow-sm", className)}>
+        <div className={cn("relative flex-shrink-0 overflow-hidden rounded-xl bg-background dark:bg-neutral-800 shadow-sm", className)}>
             <img
                 src={getImage()}
                 alt={type || 'property'}

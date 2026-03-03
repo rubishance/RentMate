@@ -14,7 +14,7 @@ export function AccessibilityStatement() {
         <div className="relative min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 overflow-hidden font-hebrew" dir={isRtl ? 'rtl' : 'ltr'}>
             {/* Decorative Background Elements */}
             <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-primary-100/50 via-slate-100/10 to-transparent dark:from-primary-900/10 dark:via-slate-900/10 dark:to-transparent z-0 pointer-events-none" />
-            <div className="absolute top-0 left-0 w-full h-96 bg-blue-500/5 dark:bg-blue-600/5 filter blur-3xl z-0 pointer-events-none" />
+            <div className="absolute top-0 left-0 w-full h-96 bg-blue-500/5 dark:bg-primary/5 filter blur-3xl z-0 pointer-events-none" />
             <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-teal-500/10 dark:bg-teal-600/5 filter blur-3xl rounded-full z-0 pointer-events-none" />
 
             <div className="relative z-10 pb-20 pt-8">
@@ -26,23 +26,23 @@ export function AccessibilityStatement() {
                         <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 tracking-tight leading-tight mb-2">
                             {isRtl ? 'הצהרת נגישות' : 'Accessibility Statement'}
                         </h1>
-                        <p className="text-slate-500 dark:text-slate-400 font-medium">
+                        <p className="text-muted-foreground font-medium">
                             {isRtl ? 'המחויבות שלנו לשוויון ושוויון הזדמנויות באינטרנט' : 'Our commitment to equality and equal opportunities online'}
                         </p>
                     </div>
 
                     <div className="mt-8 space-y-8">
                         {/* Introduction Card */}
-                        <GlassCard className="p-6 md:p-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-white dark:border-slate-800 ring-1 ring-slate-900/5 dark:ring-white/10">
+                        <GlassCard className="p-6 md:p-8 bg-card/80 backdrop-blur-xl rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-white dark:border-slate-800 ring-1 ring-slate-900/5 dark:ring-white/10">
                             <div className="flex items-start gap-4">
                                 <div className="p-3 bg-primary-100 dark:bg-primary-900/20 rounded-xl shrink-0">
                                     <Accessibility className="w-8 h-8 text-primary-600 dark:text-primary-400" />
                                 </div>
                                 <div className="space-y-4">
-                                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                                    <h2 className="text-xl font-bold text-foreground">
                                         {isRtl ? 'כללי' : 'General'}
                                     </h2>
-                                    <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-base md:text-lg">
+                                    <p className="text-foreground/80 leading-relaxed text-base md:text-lg">
                                         {isRtl
                                             ? 'אנו ב-RentMate שואפים להבטיח כי השירותים הדיגיטליים שלנו יהיו נגישים לאנשים עם מוגבלויות, מתוך אמונה כי לכל אדם מגיעה הזכות לחיות בכבוד, שוויון, נוחות ועצמאות. השקענו משאבים רבים כדי להקל את השימוש באתר עבור אנשים עם מוגבלויות, ככל האפשר, מתוך אמונה כי לכל אדם מגיעה הזכות לחיות בשוויון, כבוד, נוחות ועצמאות.'
                                             : 'We at RentMate strive to ensure that our digital services are accessible to people with disabilities, believing that every person deserves the right to live with dignity, equality, comfort, and independence. We have invested significant resources to make the site easier to use for people with disabilities, as much as possible.'}
@@ -52,11 +52,11 @@ export function AccessibilityStatement() {
                         </GlassCard>
 
                         {/* Compliance Level */}
-                        <GlassCard className="p-6 md:p-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-white dark:border-slate-800 ring-1 ring-slate-900/5 dark:ring-white/10">
-                            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
+                        <GlassCard className="p-6 md:p-8 bg-card/80 backdrop-blur-xl rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-white dark:border-slate-800 ring-1 ring-slate-900/5 dark:ring-white/10">
+                            <h2 className="text-xl font-bold text-foreground mb-4">
                                 {isRtl ? 'רמת הנגישות באתר' : 'Accessibility Compliance Level'}
                             </h2>
-                            <ul className="list-disc list-inside space-y-2 text-slate-700 dark:text-slate-300 leading-relaxed marker:text-primary-500">
+                            <ul className="list-disc list-inside space-y-2 text-foreground/80 leading-relaxed marker:text-primary-500">
                                 <li>
                                     {isRtl
                                         ? 'אתר זה עומד בדרישות תקנות שוויון זכויות לאנשים עם מוגבלות (התאמות נגישות לשירות), התשע"ג 2013.'
@@ -81,17 +81,17 @@ export function AccessibilityStatement() {
                         </GlassCard>
 
                         {/* Contact Info */}
-                        <GlassCard className="p-6 md:p-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-white dark:border-slate-800 ring-1 ring-slate-900/5 dark:ring-white/10">
-                            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">
+                        <GlassCard className="p-6 md:p-8 bg-card/80 backdrop-blur-xl rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-white dark:border-slate-800 ring-1 ring-slate-900/5 dark:ring-white/10">
+                            <h2 className="text-xl font-bold text-foreground mb-6">
                                 {isRtl ? 'פרטי רכז נגישות' : 'Accessibility Coordinator Details'}
                             </h2>
                             <div className="grid grid-cols-1 gap-6 max-w-lg">
-                                <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700">
-                                    <div className="p-2.5 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
-                                        <Mail className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                                <div className="flex items-center gap-4 p-4 bg-muted/30/50 rounded-2xl border border-slate-100 dark:border-slate-700">
+                                    <div className="p-2.5 bg-card rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+                                        <Mail className="w-5 h-5 text-muted-foreground" />
                                     </div>
                                     <div>
-                                        <div className="text-sm text-slate-500 dark:text-slate-400 mb-0.5">{isRtl ? 'דואר אלקטרוני' : 'Email'}</div>
+                                        <div className="text-sm text-muted-foreground mb-0.5">{isRtl ? 'דואר אלקטרוני' : 'Email'}</div>
                                         <a href="mailto:support@rentmate.co.il" className="font-semibold text-primary-600 hover:text-primary-500 transition-colors">
                                             support@rentmate.co.il
                                         </a>

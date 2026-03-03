@@ -321,7 +321,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 text-purple-600 shadow-sm flex items-center justify-center shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 text-primary shadow-sm flex items-center justify-center shrink-0">
                             <Building2 className="w-5 h-5" />
                         </div>
                         <div>
@@ -380,7 +380,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                             />
                                         )}
                                     />
-                                    {errors.startDate && <p className="text-red-500 text-xs">{t(errors.startDate.message as any)}</p>}
+                                    {errors.startDate && <p className="text-destructive text-xs">{t(errors.startDate.message as any)}</p>}
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-medium text-muted-foreground uppercase">{t('endDate')}</label>
@@ -395,7 +395,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                             />
                                         )}
                                     />
-                                    {errors.endDate && <p className="text-red-500 text-xs">{t(errors.endDate.message as any)}</p>}
+                                    {errors.endDate && <p className="text-destructive text-xs">{t(errors.endDate.message as any)}</p>}
                                 </div>
                             </div>
                         </section>
@@ -403,7 +403,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                         {/* Financials */}
                         <section className="space-y-4">
                             <h3 className="font-semibold text-foreground dark:text-white flex items-center gap-2 pb-2 border-b border-border dark:border-gray-700">
-                                <DollarSign className="w-4 h-4 text-green-500" /> {t('paymentDetails')}
+                                <DollarSign className="w-4 h-4 text-secondary" /> {t('paymentDetails')}
                             </h3>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
@@ -540,7 +540,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                         {/* Linkage */}
                         <section className="space-y-4">
                             <h3 className="font-semibold text-foreground dark:text-white flex items-center gap-2 pb-2 border-b border-border dark:border-gray-700">
-                                <TrendingUp className="w-4 h-4 text-purple-500" /> {t('linkageAdjustments')}
+                                <TrendingUp className="w-4 h-4 text-primary" /> {t('linkageAdjustments')}
                             </h3>
 
                             <div className="space-y-4">

@@ -226,9 +226,9 @@ export function Settings() {
                 <div className="bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[3rem] overflow-hidden shadow-minimal">
                     <button
                         onClick={() => setIsContactOpen(!isContactOpen)}
-                        className="w-full flex items-center gap-8 p-10 hover:bg-slate-50/50 dark:hover:bg-neutral-800/20 transition-all text-left group"
+                        className="w-full flex items-center gap-8 p-10 hover:bg-background/50 dark:hover:bg-neutral-800/20 transition-all text-left group"
                     >
-                        <div className="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-neutral-800 flex items-center justify-center border border-slate-100 dark:border-neutral-700 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                        <div className="w-16 h-16 rounded-2xl bg-background dark:bg-neutral-800 flex items-center justify-center border border-slate-100 dark:border-neutral-700 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                             <Mail className="w-7 h-7 text-foreground" />
                         </div>
                         <div className="flex-1 space-y-2">
@@ -239,7 +239,7 @@ export function Settings() {
                         </div>
                         <div className={cn(
                             "w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300",
-                            isContactOpen ? 'bg-foreground text-background scale-110 rotate-90 shadow-premium-dark' : 'bg-slate-50 dark:bg-neutral-800 text-slate-300 group-hover:text-foreground'
+                            isContactOpen ? 'bg-foreground text-background scale-110 rotate-90 shadow-premium-dark' : 'bg-background dark:bg-neutral-800 text-slate-300 group-hover:text-foreground'
                         )}>
                             <ChevronRight className="w-6 h-6" />
                         </div>
@@ -253,7 +253,7 @@ export function Settings() {
                                 exit={{ height: 0, opacity: 0 }}
                                 className="overflow-hidden"
                             >
-                                <div className="p-10 bg-slate-50/50 dark:bg-neutral-800/10 border-t border-slate-50 dark:border-neutral-800/10 space-y-8">
+                                <div className="p-10 bg-background/50 dark:bg-neutral-800/10 border-t border-slate-50 dark:border-neutral-800/10 space-y-8">
                                     <textarea
                                         value={contactMessage}
                                         onChange={(e) => setContactMessage(e.target.value)}
@@ -270,21 +270,21 @@ export function Settings() {
                                                 <MessageCircle className="w-6 h-6" />
                                             </div>
                                             <div className="text-left rtl:text-right">
-                                                <div className="text-[10px] font-black uppercase tracking-widest text-green-600 dark:text-green-400">{t('whatsapp_support_title') || 'WhatsApp'}</div>
-                                                <div className="font-bold text-slate-900 dark:text-white">{t('whatsapp_support_desc') || 'Fast Response'}</div>
+                                                <div className="text-[10px] font-black uppercase tracking-widest text-secondary">{t('whatsapp_support_title') || 'WhatsApp'}</div>
+                                                <div className="font-bold text-foreground">{t('whatsapp_support_desc') || 'Fast Response'}</div>
                                             </div>
                                         </button>
 
                                         <button
                                             onClick={() => window.location.href = 'mailto:support@rentmate.co.il'}
-                                            className="p-6 bg-blue-500/10 dark:bg-blue-500/5 border border-blue-500/20 rounded-[2rem] flex items-center gap-4 hover:bg-blue-500/20 transition-all group"
+                                            className="p-6 bg-blue-500/10 dark:bg-blue-500/5 border border-primary/20 rounded-[2rem] flex items-center gap-4 hover:bg-blue-500/20 transition-all group"
                                         >
                                             <div className="w-12 h-12 rounded-xl bg-blue-500 text-white flex items-center justify-center group-hover:scale-110 transition-transform">
                                                 <Mail className="w-6 h-6" />
                                             </div>
                                             <div className="text-left rtl:text-right">
-                                                <div className="text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400">{t('email_support_title') || 'Email'}</div>
-                                                <div className="font-bold text-slate-900 dark:text-white">support@rentmate.co.il</div>
+                                                <div className="text-[10px] font-black uppercase tracking-widest text-primary">{t('email_support_title') || 'Email'}</div>
+                                                <div className="font-bold text-foreground">support@rentmate.co.il</div>
                                             </div>
                                         </button>
                                     </div>
@@ -296,7 +296,7 @@ export function Settings() {
                                             className={cn(
                                                 "w-full h-18 py-6 rounded-full font-black uppercase text-xs tracking-[0.3em] transition-all flex items-center justify-center gap-4",
                                                 !contactMessage.trim() || isSendingMessage
-                                                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                                    ? 'bg-muted/50 text-slate-400 cursor-not-allowed'
                                                     : 'bg-foreground text-background hover:scale-[1.02] active:scale-[0.98] shadow-premium-dark'
                                             )}
                                         >

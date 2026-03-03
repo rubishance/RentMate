@@ -166,7 +166,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
 
                             {/* NEW: Renty App Icon Widget */}
                             <motion.div
-                                className="bg-gradient-to-br from-indigo-600 to-purple-700 p-4 rounded-3xl shadow-lg border border-white/20 flex items-center gap-4 relative overflow-hidden"
+                                className="bg-gradient-to-br from-indigo-600 to-primary-700 p-4 rounded-3xl shadow-lg border border-white/20 flex items-center gap-4 relative overflow-hidden"
                                 whileHover={{ scale: 1.02 }}
                             >
                                 <div className="w-10 h-10 bg-white/20 rounded-xl backdrop-blur-md flex items-center justify-center shrink-0 border border-white/30">
@@ -259,7 +259,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                                 >
                                     <div className="flex justify-between items-center mb-8">
                                         <div>
-                                            <div className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1">{isRtl ? 'חברת החשמל' : 'IEC ISRAEL'}</div>
+                                            <div className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">{isRtl ? 'חברת החשמל' : 'IEC ISRAEL'}</div>
                                             <div className="text-3xl font-black dark:text-white tracking-tighter">₪324.50</div>
                                         </div>
                                         <Zap className="w-8 h-8 text-secondary drop-shadow-[0_0_10px_rgba(69,147,103,0.5)]" />
@@ -270,7 +270,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                                     </div>
                                     <div className="flex justify-between items-center text-[10px] font-black text-neutral-400 tracking-tighter">
                                         <span className="bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-lg">15/01/2026</span>
-                                        <span className="text-red-500">{isRtl ? 'ממתין לתשלום' : 'PENDING'}</span>
+                                        <span className="text-destructive">{isRtl ? 'ממתין לתשלום' : 'PENDING'}</span>
                                     </div>
                                     {/* Scanning High-Tec Beam */}
                                     <motion.div

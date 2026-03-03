@@ -64,7 +64,7 @@ export default function PropertyDetails() {
     if (error || !property) {
         return (
             <div className="p-8 text-center">
-                <h2 className="text-xl font-bold text-red-500">{t('error')}</h2>
+                <h2 className="text-xl font-bold text-destructive">{t('error')}</h2>
                 <p className="text-muted-foreground">{error || t('propertyNotFound')}</p>
                 <button
                     onClick={() => navigate('/properties')}

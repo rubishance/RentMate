@@ -286,7 +286,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                 <div className="space-y-4">
                     <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">
                         {t('contracts')}
-                        {errors.contract_id && <span className="text-red-500 ml-2">({t(errors.contract_id.message as any)})</span>}
+                        {errors.contract_id && <span className="text-destructive ml-2">({t(errors.contract_id.message as any)})</span>}
                     </label>
                     {fetchingContracts ? (
                         <div className="h-12 bg-gray-50 dark:bg-neutral-800 rounded-2xl animate-pulse" />
@@ -359,7 +359,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                             exit={{ opacity: 0, height: 0 }}
                             className="p-4 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/20 rounded-2xl flex items-center gap-3"
                         >
-                            <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
+                            <div className="w-6 h-6 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
                                 <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                             </div>
                             <div className="flex flex-col">
@@ -397,7 +397,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                     <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">
                             {t('dueDate')}
-                            {errors.due_date && <span className="text-red-500 ml-2">*</span>}
+                            {errors.due_date && <span className="text-destructive ml-2">*</span>}
                         </label>
                         <Controller
                             name="due_date"

@@ -22,8 +22,8 @@ export function AutomationAnalytics({ stats }: { stats: AutomationStats }) {
     const sentimentColor = stats.avgSentiment > 0.3 ? 'text-emerald-500' : stats.avgSentiment < -0.3 ? 'text-rose-500' : 'text-amber-500';
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-minimal overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border/50 shadow-minimal overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-50 dark:border-slate-800 bg-background/50 dark:bg-slate-900/50 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <TrendingUp className="w-5 h-5 text-brand-600" />
                     <h3 className="text-sm font-black uppercase tracking-widest text-gray-900 dark:text-white">Autopilot Intelligence</h3>
@@ -99,7 +99,7 @@ export function AutomationAnalytics({ stats }: { stats: AutomationStats }) {
                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Automation Efficiency</span>
                         <span className="text-xs font-black text-brand-600">84%</span>
                     </div>
-                    <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
                         <div className="h-full bg-brand-600 rounded-full w-[84%] shadow-[0_0_10px_rgba(var(--brand-primary),0.5)]"></div>
                     </div>
                     <div className="mt-4 flex gap-4">

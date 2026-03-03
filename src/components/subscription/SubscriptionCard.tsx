@@ -22,7 +22,7 @@ export const SubscriptionCard: FC = () => {
     return (
         <div className="relative overflow-hidden bg-card border border-border rounded-2xl p-6 shadow-sm">
             {/* Background Decoration */}
-            <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-full blur-3xl" />
+            <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-gradient-to-br from-primary/10 to-primary-500/10 rounded-full blur-3xl" />
 
             <div className="relative">
                 {/* Header */}
@@ -79,7 +79,7 @@ export const SubscriptionCard: FC = () => {
                             </div>
                             <button
                                 onClick={() => setIsUpgradeModalOpen(true)}
-                                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-medium shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all active:scale-95 flex items-center gap-2"
+                                className="px-4 py-2 bg-gradient-to-r from-primary to-indigo-600 text-white rounded-xl font-medium shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all active:scale-95 flex items-center gap-2"
                             >
                                 {t('upgradeToPro')}
                                 <ArrowRight className="w-4 h-4" />

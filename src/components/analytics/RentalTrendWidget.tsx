@@ -121,7 +121,7 @@ export const RentalTrendWidget: React.FC = () => {
                                     </div>
                                     <button
                                         onClick={() => removeCityCard(index)}
-                                        className="text-gray-400 hover:text-red-500 transition-colors"
+                                        className="text-gray-400 hover:text-destructive transition-colors"
                                     >
                                         <X className="h-4 w-4" />
                                     </button>
@@ -193,7 +193,7 @@ export const RentalTrendWidget: React.FC = () => {
                                         >
                                             {t(pinned.city)} ({pinned.rooms})
                                             <button onClick={() => removeCityCard(index)}>
-                                                <X className="h-3 w-3 hover:text-red-500" />
+                                                <X className="h-3 w-3 hover:text-destructive" />
                                             </button>
                                         </span>
                                     ))}

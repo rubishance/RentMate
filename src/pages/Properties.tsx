@@ -267,7 +267,7 @@ export function Properties() {
     }
 
     return (
-        <div className="pb-40 pt-8 px-4 md:px-8 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300">
+        <div className="pb-40 pt-8 px-4 md:px-8 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300 w-full max-w-[100vw] overflow-x-hidden">
             {/* Header */}
             <div className="flex items-center justify-between gap-4">
                 <div className="space-y-1 overflow-hidden">
@@ -296,7 +296,7 @@ export function Properties() {
 
             {/* Empty State */}
             {properties.length === 0 ? (
-                <div className="px-4 md:px-8 flex flex-col items-center justify-center py-40 rounded-[3rem] border border-slate-100 dark:border-neutral-800 bg-slate-50/50 dark:bg-neutral-900/50 mx-4 md:mx-8">
+                <div className="px-4 md:px-8 flex flex-col items-center justify-center py-40 rounded-[3rem] border border-slate-100 dark:border-neutral-800 bg-background/50 dark:bg-neutral-900/50 mx-4 md:mx-8">
                     <div className="w-32 h-32 bg-white dark:bg-neutral-900 rounded-[3rem] flex items-center justify-center mx-auto shadow-minimal mb-10">
                         <Home className="w-12 h-12 text-slate-200" />
                     </div>
@@ -332,7 +332,7 @@ export function Properties() {
                                     hoverEffect
                                 >
                                     {/* Image Section */}
-                                    <div className="relative h-64 bg-slate-100 dark:bg-neutral-800 overflow-hidden rounded-t-[2.5rem]">
+                                    <div className="relative h-64 bg-muted/50 dark:bg-neutral-800 overflow-hidden rounded-t-[2.5rem]">
                                         <SecureImage
                                             bucket="property-images"
                                             path={property.image_url}
@@ -368,13 +368,13 @@ export function Properties() {
                                     {/* Content */}
                                     <CardContent className="p-8 flex-1 flex flex-col space-y-6">
                                         <div className="min-h-[3rem]">
-                                            <h3 className="text-xl font-bold tracking-tight text-foreground line-clamp-2 leading-tight group-hover:text-primary transition-colors">
+                                            <h3 className="text-xl font-bold tracking-tight text-foreground line-clamp-2 leading-tight group-hover:text-primary transition-colors max-w-full break-words">
                                                 {[property.address, property.city].filter(Boolean).join(', ')}
                                             </h3>
                                         </div>
 
                                         {/* Detailed Specs Row */}
-                                        <div className="grid grid-cols-6 gap-2 py-4 border-t border-border/50">
+                                        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 py-4 border-t border-border/50">
                                             {/* Rooms */}
                                             <div className="flex flex-col items-center gap-1">
                                                 <BedDouble className="w-4 h-4 text-muted-foreground" />

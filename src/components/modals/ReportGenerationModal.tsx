@@ -78,7 +78,7 @@ export function ReportGenerationModal({ isOpen, onClose, propertyId }: ReportGen
                         <select
                             value={selectedPropertyId}
                             onChange={(e) => setSelectedPropertyId(e.target.value)}
-                            className="w-full h-14 px-6 bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-2xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                            className="w-full h-14 px-6 bg-background dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-2xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                         >
                             <option value="">Choose a property...</option>
                             {properties.map(p => (

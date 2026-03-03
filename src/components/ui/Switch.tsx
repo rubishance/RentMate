@@ -27,26 +27,21 @@ export const Switch: React.FC<SwitchProps> = ({
                 disabled={disabled}
                 onClick={() => !disabled && onChange(!checked)}
                 className={cn(
-                    "relative inline-flex h-8 w-14 shrink-0 cursor-pointer items-center rounded-full transition-all duration-700 glass-premium border-white/5 shadow-minimal",
-                    checked ? "dark:bg-indigo-500/20 bg-indigo-50/50" : "bg-white/5 dark:bg-black/40",
+                    "relative inline-flex h-8 w-14 shrink-0 cursor-pointer items-center rounded-full transition-colors duration-300 shadow-inner border border-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                    checked ? "bg-secondary" : "bg-muted",
                     disabled && "opacity-50 cursor-not-allowed"
                 )}
             >
                 <motion.span
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     animate={{
                         x: checked ? 28 : 4,
-                        scale: checked ? 1 : 0.9,
-                        backgroundColor: checked ? "#ffffff" : "rgba(255,255,255,0.2)"
+                        scale: checked ? 1.05 : 0.9,
                     }}
                     initial={false}
-                    className={cn(
-                        "pointer-events-none block h-6 w-6 rounded-full transition-all duration-700",
-                        checked
-                            ? "shadow-jewel bg-white"
-                            : "bg-white/20"
-                    )}
+                    className="pointer-events-none block h-6 w-6 rounded-full bg-white ring-0"
                     style={{
-                        boxShadow: checked ? '0 0 15px rgba(99, 102, 241, 0.5)' : 'none'
+                        boxShadow: checked ? '0 0 15px hsl(var(--secondary))' : '0 2px 4px rgba(0,0,0,0.1)'
                     }}
                 />
             </button>

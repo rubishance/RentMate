@@ -34,7 +34,7 @@ export default function WelcomeLandingStitch() {
             title: "סריקת חוזים בבינה מלאכותית",
             description: "ה-AI שלנו קורא את החוזה עבורך, מחלץ את הסעיפים החשובים ומזין את הנתונים למערכת באופן אוטומטי.",
             icon: <FileSearch className="w-8 h-8" />,
-            color: "from-blue-500 to-indigo-600",
+            color: "from-primary to-indigo-600",
             tag: "בלעדי"
         },
         {

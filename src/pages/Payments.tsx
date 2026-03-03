@@ -390,7 +390,7 @@ export function Payments() {
                             </h3>
                             <span className={cn(
                                 "text-[9px] px-2 py-0.5 rounded-full uppercase font-black tracking-widest border shrink-0",
-                                payment.displayType === 'bill' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
+                                payment.displayType === 'bill' ? 'bg-blue-500/10 text-primary border-primary/20' :
                                     payment.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
                                         payment.status === 'overdue' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' :
                                             'bg-amber-500/10 text-amber-500 border-amber-500/20'
@@ -456,7 +456,7 @@ export function Payments() {
                             </Button>
                         )}
 
-                        <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl bg-slate-100 dark:bg-neutral-800 flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
+                        <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl bg-muted/50 dark:bg-neutral-800 flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
                             <ArrowRight className={cn("w-4 h-4 transition-transform group-hover:translate-x-0.5", lang === 'he' ? 'rotate-180' : '')} />
                         </div>
                     </div>
@@ -469,7 +469,7 @@ export function Payments() {
         <div className="overflow-x-auto glass-premium rounded-[2.5rem] border border-white/5 shadow-sm bg-white/30 dark:bg-neutral-900/30">
             <table className="w-full text-left border-collapse min-w-[600px]">
                 <thead>
-                    <tr className="border-b border-black/5 dark:border-white/5 bg-slate-500/5 text-[10px] uppercase font-black tracking-widest text-muted-foreground">
+                    <tr className="border-b border-black/5 dark:border-white/5 bg-background0/5 text-[10px] uppercase font-black tracking-widest text-muted-foreground">
                         <th className={cn("p-6", lang === 'he' ? "rounded-tr-[2.5rem]" : "rounded-tl-[2.5rem]")}>{t('date') || 'Date'}</th>
                         <th className="p-6">{t('tenant') || 'Tenant'}</th>
                         <th className="p-6">{t('asset') || 'Asset'}</th>
@@ -507,7 +507,7 @@ export function Payments() {
                             <td className="p-6">
                                 <span className={cn(
                                     "text-[9px] px-2 py-0.5 rounded-full uppercase font-black tracking-widest border shrink-0 inline-block",
-                                    payment.displayType === 'bill' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
+                                    payment.displayType === 'bill' ? 'bg-blue-500/10 text-primary border-primary/20' :
                                         payment.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
                                             payment.status === 'overdue' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' :
                                                 'bg-amber-500/10 text-amber-500 border-amber-500/20'
@@ -611,7 +611,7 @@ export function Payments() {
     }
 
     return (
-        <div className="pb-40 pt-8 px-4 md:px-8 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300">
+        <div className="pb-40 pt-8 px-4 md:px-8 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300 w-full max-w-[100vw] overflow-x-hidden">
             {/* Header */}
             <div className="flex flex-col gap-6">
                 <div className="flex items-center justify-between gap-4">
@@ -638,7 +638,7 @@ export function Payments() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <div className="flex p-1 bg-slate-500/5 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-slate-500/10 w-full sm:w-fit">
+                    <div className="flex p-1 bg-background0/5 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-slate-500/10 w-full sm:w-fit overflow-x-auto no-scrollbar snap-x">
                         {[
                             { id: 'expected', label: t('financeExpected') || 'Expected' },
                             { id: 'actual', label: t('financeActual') || 'Actual' },
@@ -648,7 +648,7 @@ export function Payments() {
                                 key={tab.id}
                                 onClick={() => setDisplayMode(tab.id as any)}
                                 className={cn(
-                                    "flex-1 sm:flex-none px-6 py-2.5 rounded-xl text-xs font-bold transition-all duration-300",
+                                    "flex-1 sm:flex-none px-4 sm:px-6 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 snap-center whitespace-nowrap",
                                     displayMode === tab.id
                                         ? "bg-white dark:bg-neutral-800 text-indigo-600 shadow-sm border border-slate-200 dark:border-white/10"
                                         : "text-muted-foreground hover:text-foreground"
@@ -660,7 +660,7 @@ export function Payments() {
                     </div>
 
                     <div className="flex items-center gap-3 w-full sm:w-auto">
-                        <div className="hidden sm:flex p-1 bg-slate-500/5 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-slate-500/10 h-12">
+                        <div className="hidden sm:flex p-1 bg-background0/5 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-slate-500/10 h-12">
                             {[
                                 { id: 'desc', label: t('sortNewestFirst') || 'מהחדש לישן' },
                                 { id: 'asc', label: t('sortOldestFirst') || 'מהישן לחדש' }
@@ -680,7 +680,7 @@ export function Payments() {
                             ))}
                         </div>
 
-                        <div className="hidden sm:flex p-1 bg-slate-500/5 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-slate-500/10 h-12">
+                        <div className="hidden sm:flex p-1 bg-background0/5 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-slate-500/10 h-12">
                             {[
                                 { id: 'cards', icon: <Layout className="w-4 h-4" />, label: t('cardsView') || 'Cards' },
                                 { id: 'table', icon: <Layout className="w-4 h-4 rotate-90" />, label: t('tableView') || 'Table' }
@@ -735,11 +735,11 @@ export function Payments() {
                         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                         className="overflow-visible"
                     >
-                        <Card glass className="relative z-50 rounded-[2rem] border shadow-minimal bg-slate-500/5 border-slate-500/10 overflow-visible">
+                        <Card glass className="relative z-50 rounded-[2rem] border shadow-minimal bg-background0/5 border-slate-500/10 overflow-visible">
                             <CardContent className="p-6">
                                 <div className="flex flex-col gap-6">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                                        <div className="space-y-2">
+                                        <div className="space-y-2 min-w-0">
                                             <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('timePeriod')}</label>
                                             <Select
                                                 value={periodFilter}
@@ -757,7 +757,7 @@ export function Payments() {
                                             />
                                         </div>
 
-                                        <div className="space-y-2">
+                                        <div className="space-y-2 min-w-0">
                                             <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('tenant')}</label>
                                             <MultiSelect
                                                 placeholder={t('allTenants')}
@@ -767,7 +767,7 @@ export function Payments() {
                                             />
                                         </div>
 
-                                        <div className="space-y-2">
+                                        <div className="space-y-2 min-w-0">
                                             <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('asset')}</label>
                                             <MultiSelect
                                                 placeholder={t('allAssets')}
@@ -777,7 +777,7 @@ export function Payments() {
                                             />
                                         </div>
 
-                                        <div className="space-y-2">
+                                        <div className="space-y-2 min-w-0">
                                             <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('method')}</label>
                                             <MultiSelect
                                                 placeholder={t('allMethods')}
@@ -792,7 +792,7 @@ export function Payments() {
                                             />
                                         </div>
 
-                                        <div className="space-y-2">
+                                        <div className="space-y-2 min-w-0">
                                             <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('status')} {t('contract')}</label>
                                             <MultiSelect
                                                 placeholder={t('all')}
@@ -810,7 +810,7 @@ export function Payments() {
 
                                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t border-slate-500/10">
                                         <div className="flex flex-wrap items-center gap-2">
-                                            <div className="flex items-center gap-2 bg-slate-500/5 px-4 py-2 rounded-xl border border-slate-500/10">
+                                            <div className="flex items-center gap-2 bg-background0/5 px-4 py-2 rounded-xl border border-slate-500/10">
                                                 <DatePicker
                                                     placeholder={t('from')}
                                                     value={filters.startDate ? new Date(filters.startDate) : undefined}
@@ -962,7 +962,7 @@ export function Payments() {
                                                     <span className="text-xs font-bold text-foreground truncate">{contract.name || t('unnamedTenant')}</span>
                                                     <span className="text-[10px] text-muted-foreground truncate">{contract.properties?.address}</span>
                                                 </div>
-                                                <div className="text-xs font-black text-orange-600 dark:text-orange-400 shrink-0">
+                                                <div className="text-xs font-black text-warning shrink-0">
                                                     ₪{contract.pending.toLocaleString()}
                                                 </div>
                                             </div>

@@ -13,7 +13,7 @@ export function FormLabel({ label, required, readOnly, className, children }: Fo
     return (
         <label className={cn("text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1", className)}>
             {label}
-            {required && !readOnly && <span className="text-red-500">*</span>}
+            {required && !readOnly && <span className="text-destructive">*</span>}
             {children}
         </label>
     );

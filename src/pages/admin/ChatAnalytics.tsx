@@ -187,7 +187,7 @@ export default function ChatAnalytics() {
         return (
             <div className="flex items-center justify-center h-96">
                 <div className="text-center">
-                    <AlertCircle className="w-16 h-16 mx-auto mb-4 text-red-500" />
+                    <AlertCircle className="w-16 h-16 mx-auto mb-4 text-destructive" />
                     <p className="text-red-600 font-bold">{error}</p>
                 </div>
             </div>
@@ -237,7 +237,7 @@ export default function ChatAnalytics() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
+                        <div className="p-3 bg-primary/5 rounded-xl border border-blue-100 dark:border-blue-800">
                             <MessageSquare className="w-6 h-6 text-blue-600" />
                         </div>
                         <div>
@@ -261,8 +261,8 @@ export default function ChatAnalytics() {
 
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-100 dark:border-purple-800">
-                            <Clock className="w-6 h-6 text-purple-600" />
+                        <div className="p-3 bg-primary/5 rounded-xl border border-primary-100 dark:border-primary-800">
+                            <Clock className="w-6 h-6 text-primary" />
                         </div>
                         <div>
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Avg Response Time</p>

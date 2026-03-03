@@ -48,7 +48,7 @@ export function GlobalActionFab() {
                                         setIsOpen(false);
                                         navigate('/payments', { state: { action: 'payment' } });
                                     }}
-                                    className="flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors group w-full text-start"
+                                    className="flex items-center gap-4 p-4 rounded-2xl hover:bg-background dark:hover:bg-neutral-800 transition-colors group w-full text-start"
                                 >
                                     <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform shadow-sm">
                                         <PaymentIcon className="w-6 h-6" />
@@ -64,9 +64,9 @@ export function GlobalActionFab() {
                                             onSuccess: () => navigate('/contracts')
                                         }, { isExpanded: true, title: t('addContract') });
                                     }}
-                                    className="flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors group w-full text-start"
+                                    className="flex items-center gap-4 p-4 rounded-2xl hover:bg-background dark:hover:bg-neutral-800 transition-colors group w-full text-start"
                                 >
-                                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform shadow-sm">
+                                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform shadow-sm">
                                         <ContractIcon className="w-6 h-6" />
                                     </div>
                                     <span className="text-sm font-black lowercase tracking-tight flex-1">{t('addContract')}</span>
@@ -78,7 +78,7 @@ export function GlobalActionFab() {
                                         setIsOpen(false);
                                         navigate('/properties', { state: { action: 'add' } });
                                     }}
-                                    className="flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors group w-full text-start"
+                                    className="flex items-center gap-4 p-4 rounded-2xl hover:bg-background dark:hover:bg-neutral-800 transition-colors group w-full text-start"
                                 >
                                     <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform shadow-sm">
                                         <AssetIcon className="w-6 h-6" />
@@ -92,9 +92,9 @@ export function GlobalActionFab() {
                                         setIsOpen(false);
                                         navigate('/properties', { state: { action: 'upload' } });
                                     }}
-                                    className="flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors group w-full text-start"
+                                    className="flex items-center gap-4 p-4 rounded-2xl hover:bg-background dark:hover:bg-neutral-800 transition-colors group w-full text-start"
                                 >
-                                    <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500 group-hover:scale-110 transition-transform shadow-sm">
+                                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform shadow-sm">
                                         <UploadIcon className="w-6 h-6" />
                                     </div>
                                     <span className="text-sm font-black lowercase tracking-tight flex-1">{t('uploadFile')}</span>

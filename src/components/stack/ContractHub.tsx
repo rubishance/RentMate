@@ -504,7 +504,7 @@ export function ContractHub({
 
   return (
     <div
-      className="flex flex-col bg-slate-50 dark:bg-black min-h-full"
+      className="flex flex-col bg-background dark:bg-black min-h-full"
       dir={lang === "he" ? "rtl" : "ltr"}
     >
       {/* Header Content */}
@@ -515,7 +515,7 @@ export function ContractHub({
               variant="outline"
               size="icon"
               onClick={handleBack}
-              className="bg-transparent border-white/5 hover:bg-slate-50 dark:hover:bg-neutral-800"
+              className="bg-transparent border-white/5 hover:bg-background dark:hover:bg-neutral-800"
             >
               <ArrowLeft
                 className={cn("w-4 h-4", lang === "he" ? "rotate-180" : "")}
@@ -555,7 +555,7 @@ export function ContractHub({
                     ? "bg-emerald-500"
                     : contract.status === "draft"
                       ? "bg-yellow-500"
-                      : "bg-slate-500",
+                      : "bg-background0",
                 )}
               />
               {t(contract.status)}
@@ -722,7 +722,7 @@ export function ContractHub({
                               "flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all duration-300",
                               isActive
                                 ? "bg-indigo-50/80 dark:bg-indigo-500/10 border-indigo-200 dark:border-indigo-500/30 text-indigo-700 dark:text-indigo-400 shadow-sm"
-                                : "bg-slate-50 dark:bg-neutral-800/50 border-transparent text-muted-foreground hover:bg-slate-100 dark:hover:bg-neutral-800",
+                                : "bg-background dark:bg-neutral-800/50 border-transparent text-muted-foreground hover:bg-muted/50 dark:hover:bg-neutral-800",
                             )}
                           >
                             {React.cloneElement(amenity.icon as any, {
@@ -762,7 +762,7 @@ export function ContractHub({
                       ? "bg-emerald-500"
                       : contract.status === "draft"
                         ? "bg-yellow-500"
-                        : "bg-slate-500",
+                        : "bg-background0",
                   )}
                 />
                 {t(contract.status)}
@@ -1022,7 +1022,7 @@ export function ContractHub({
                     {formData.option_periods.map((option: any, idx: number) => (
                       <Card
                         key={idx}
-                        className="bg-slate-50 dark:bg-neutral-900 border-none shadow-sm"
+                        className="bg-background dark:bg-neutral-900 border-none shadow-sm"
                       >
                         <CardContent className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
                           {!readOnly ? (
@@ -1034,7 +1034,7 @@ export function ContractHub({
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-8 w-8 text-red-500 hover:bg-red-500/10 rounded-full"
+                                  className="h-8 w-8 text-destructive hover:bg-red-500/10 rounded-full"
                                   onClick={() => {
                                     const newPeriods =
                                       formData.option_periods.filter(
@@ -1356,7 +1356,7 @@ export function ContractHub({
               <Card className="rounded-[2rem] border shadow-sm">
                 <CardContent className="p-6 space-y-4">
                   <h4 className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-2">
-                    <TrendingUp className="w-3 h-3 text-purple-500" />
+                    <TrendingUp className="w-3 h-3 text-primary" />
                     {t("linkage")}
                   </h4>
 
@@ -1521,7 +1521,7 @@ export function ContractHub({
                     {formData.rent_periods.map((step: any, idx: number) => (
                       <div
                         key={idx}
-                        className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-slate-50 dark:bg-neutral-900 rounded-xl border border-slate-100 dark:border-neutral-800 gap-4"
+                        className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-background dark:bg-neutral-900 rounded-xl border border-slate-100 dark:border-neutral-800 gap-4"
                       >
                         {!readOnly ? (
                           <div className="flex-1 flex flex-col md:flex-row gap-4 items-end">
@@ -1573,7 +1573,7 @@ export function ContractHub({
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-10 w-10 text-red-500 self-end shrink-0"
+                              className="h-10 w-10 text-destructive self-end shrink-0"
                               onClick={() => {
                                 const newPeriods = formData.rent_periods.filter(
                                   (_: any, i: number) => i !== idx,
@@ -1590,7 +1590,7 @@ export function ContractHub({
                         ) : (
                           <>
                             <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-bold text-sm">
+                              <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center text-secondary font-bold text-sm">
                                 {idx + 1}
                               </div>
                               <div>

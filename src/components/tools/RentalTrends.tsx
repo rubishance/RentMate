@@ -245,7 +245,7 @@ export function RentalTrends() {
                                         <span>{lang === 'he' ? 'שוכר חדש' : 'New Tenant'}</span>
                                         <span className="text-emerald-600">+{nationalStats.newContracts}%</span>
                                     </div>
-                                    <div className="h-1.5 bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+                                    <div className="h-1.5 bg-muted/50 dark:bg-neutral-800 rounded-full overflow-hidden">
                                         <div className="h-full bg-emerald-500 w-[46%]" />
                                     </div>
                                 </div>
@@ -254,7 +254,7 @@ export function RentalTrends() {
                                         <span>{lang === 'he' ? 'חידוש חוזה' : 'Renewal'}</span>
                                         <span className="text-brand-600">+{nationalStats.renewals}%</span>
                                     </div>
-                                    <div className="h-1.5 bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+                                    <div className="h-1.5 bg-muted/50 dark:bg-neutral-800 rounded-full overflow-hidden">
                                         <div className="h-full bg-brand-500 w-[30%]" />
                                     </div>
                                 </div>
@@ -304,7 +304,7 @@ export function RentalTrends() {
             </div>
 
             {/* Footnote */}
-            <div className="flex items-center gap-3 p-6 bg-slate-50 dark:bg-neutral-900/50 rounded-3xl border border-slate-100 dark:border-neutral-800">
+            <div className="flex items-center gap-3 p-6 bg-background dark:bg-neutral-900/50 rounded-3xl border border-slate-100 dark:border-neutral-800">
                 <Info className="w-5 h-5 text-muted-foreground opacity-40 shrink-0" />
                 <p className="text-[11px] font-medium text-muted-foreground leading-relaxed">
                     {lang === 'he'

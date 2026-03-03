@@ -34,10 +34,10 @@ export function TopBar() {
             <div className="flex items-center gap-3">
                 <button
                     onClick={() => navigate('/pricing')}
-                    className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-600/10 to-cyan-600/10 hover:from-blue-600/20 hover:to-cyan-600/20 border border-blue-200 dark:border-blue-900 transition-all group"
+                    className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-primary/10 to-cyan-600/10 hover:from-primary/20 hover:to-cyan-600/20 border border-blue-200 dark:border-blue-900 transition-all group"
                 >
-                    <Star className="w-3 h-3 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform" />
-                    <span className="text-xs font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-cyan-600">
+                    <Star className="w-3 h-3 text-primary group-hover:scale-110 transition-transform" />
+                    <span className="text-xs font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-cyan-600">
                         UPGRADE
                     </span>
                 </button>

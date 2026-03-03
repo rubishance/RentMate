@@ -254,7 +254,7 @@ export function MaintenanceRecords({ property, readOnly }: MaintenanceRecordsPro
                     className="w-full py-8 border-2 border-dashed border-border hover:border-orange-500/50 hover:bg-orange-50/50 dark:hover:bg-orange-900/10 h-auto flex flex-col gap-2 group"
                 >
                     <div className="p-2 bg-orange-100/50 dark:bg-orange-900/30 rounded-full group-hover:scale-110 transition-transform">
-                        <Plus className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                        <Plus className="w-5 h-5 text-warning" />
                     </div>
                     <span className="font-medium text-muted-foreground group-hover:text-foreground">{t('createMaintenanceFolder')}</span>
                 </Button>
@@ -342,7 +342,7 @@ export function MaintenanceRecords({ property, readOnly }: MaintenanceRecordsPro
                             />
                             <div className="w-full py-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl group-hover:border-orange-500 group-hover:bg-orange-50/30 dark:group-hover:bg-orange-900/10 transition-all flex flex-col items-center justify-center text-center gap-2">
                                 <div className="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-full group-hover:scale-110 transition-transform">
-                                    <Upload className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                                    <Upload className="w-6 h-6 text-warning" />
                                 </div>
                                 <div>
                                     <p className="text-sm font-medium text-foreground dark:text-white">{t('clickToUploadDrag')}</p>
@@ -358,7 +358,7 @@ export function MaintenanceRecords({ property, readOnly }: MaintenanceRecordsPro
                                     <div key={file.id} className="bg-white/60 dark:bg-gray-800/60 p-4 rounded-xl border border-border dark:border-gray-700 shadow-sm backdrop-blur-sm hover:shadow-md transition-all">
                                         <div className="flex justify-between items-start mb-3">
                                             <div className="flex items-center gap-2 overflow-hidden">
-                                                <div className="p-1.5 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-lg">
+                                                <div className="p-1.5 bg-warning/10 text-warning rounded-lg">
                                                     <Hammer className="w-4 h-4" />
                                                 </div>
                                                 <span className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">{file.file.name}</span>

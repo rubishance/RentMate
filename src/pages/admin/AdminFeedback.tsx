@@ -147,7 +147,7 @@ export default function AdminFeedback() {
                             <div className="flex-1 space-y-4">
                                 <div className="flex flex-wrap items-center gap-3">
                                     <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${item.type === 'bug' ? 'bg-red-50 text-red-700 border-red-100 dark:bg-red-900/20 dark:border-red-800' :
-                                        item.type === 'feature' ? 'bg-purple-50 text-purple-700 border-purple-100 dark:bg-purple-900/20 dark:border-purple-800' :
+                                        item.type === 'feature' ? 'bg-primary-50 text-primary-700 border-primary-100 dark:bg-primary-900/20 dark:border-primary-800' :
                                             'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-400'
                                         }`}>
                                         {item.type}

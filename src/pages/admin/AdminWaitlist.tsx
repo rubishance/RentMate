@@ -203,7 +203,7 @@ export default function AdminWaitlist() {
                                                     size="sm"
                                                     onClick={() => handleDelete(entry.id, entry.full_name)}
                                                     disabled={isDeleting === entry.id}
-                                                    className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-1.5 h-auto rounded-lg"
+                                                    className="text-destructive hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-1.5 h-auto rounded-lg"
                                                     title="Remove from waitlist"
                                                 >
                                                     {isDeleting === entry.id ? (

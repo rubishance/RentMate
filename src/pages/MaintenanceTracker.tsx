@@ -41,7 +41,7 @@ export function MaintenanceTracker() {
                 <div className="space-y-1 overflow-hidden">
                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-orange-500/5 dark:bg-orange-500/10 backdrop-blur-md rounded-full border border-orange-500/10 shadow-sm mb-1">
                         <Wrench className="w-3 h-3 text-orange-500" />
-                        <span className="text-[9px] font-black uppercase tracking-widest text-orange-600 dark:text-orange-400">
+                        <span className="text-[9px] font-black uppercase tracking-widest text-warning">
                             {t('maintenanceHub') || 'Maintenance Hub'}
                         </span>
                     </div>

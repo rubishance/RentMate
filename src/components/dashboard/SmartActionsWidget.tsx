@@ -51,8 +51,8 @@ export function SmartActionsWidget({ stats, loading }: SmartActionsWidgetProps) 
             <Card className="h-full flex items-center justify-center">
                 <CardContent className="w-full">
                     <div className="animate-pulse flex flex-col items-center gap-3 w-full">
-                        <div className="h-5 md:h-6 w-1/2 bg-slate-100 dark:bg-slate-800 rounded"></div>
-                        <div className="h-3 md:h-4 w-3/4 bg-slate-50 dark:bg-slate-900 rounded"></div>
+                        <div className="h-5 md:h-6 w-1/2 bg-muted rounded"></div>
+                        <div className="h-3 md:h-4 w-3/4 bg-background rounded"></div>
                     </div>
                 </CardContent>
             </Card>
@@ -89,7 +89,7 @@ export function SmartActionsWidget({ stats, loading }: SmartActionsWidgetProps) 
             <CardFooter className="relative z-10 pt-0">
                 <Button
                     onClick={topAction.onAction}
-                    className="w-full bg-white text-slate-900 hover:bg-slate-100 font-bold"
+                    className="w-full bg-white text-slate-900 hover:bg-muted/50 font-bold"
                     size="lg"
                 >
                     {topAction.actionLabel}

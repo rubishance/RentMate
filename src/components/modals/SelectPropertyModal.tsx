@@ -33,12 +33,12 @@ export function SelectPropertyModal({ isOpen, onClose, properties, onSelect }: S
                         >
                             {/* Header */}
                             <div className="flex items-center justify-between p-6 pb-4">
-                                <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                                <h2 className="text-xl font-black text-foreground uppercase tracking-tight">
                                     {t('chooseProperty')}
                                 </h2>
                                 <button
                                     onClick={onClose}
-                                    className="p-2 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded-full transition-colors text-slate-400"
+                                    className="p-2 hover:bg-muted/50 dark:hover:bg-neutral-800 rounded-full transition-colors text-slate-400"
                                 >
                                     <X className="w-5 h-5" />
                                 </button>
@@ -50,7 +50,7 @@ export function SelectPropertyModal({ isOpen, onClose, properties, onSelect }: S
                                     <button
                                         key={property.id}
                                         onClick={() => onSelect(property.id)}
-                                        className="w-full flex items-center gap-4 p-4 bg-slate-50 dark:bg-neutral-800/50 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-3xl border border-slate-100 dark:border-neutral-800/50 hover:border-indigo-500/30 transition-all group text-start"
+                                        className="w-full flex items-center gap-4 p-4 bg-background dark:bg-neutral-800/50 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-3xl border border-slate-100 dark:border-neutral-800/50 hover:border-indigo-500/30 transition-all group text-start"
                                     >
                                         <div className="w-12 h-12 rounded-2xl bg-white dark:bg-neutral-800 flex items-center justify-center text-slate-400 group-hover:text-indigo-500 transition-colors shadow-sm overflow-hidden">
                                             {property.image_url ? (
@@ -60,7 +60,7 @@ export function SelectPropertyModal({ isOpen, onClose, properties, onSelect }: S
                                             )}
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="font-bold text-slate-900 dark:text-white truncate">
+                                            <p className="font-bold text-foreground truncate">
                                                 {property.address}
                                             </p>
                                             <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">

@@ -175,15 +175,15 @@ export function DashboardStitchV3() {
     if (loading) {
         return (
             <div className="px-3 py-20 max-w-5xl mx-auto space-y-12">
-                <div className="h-8 w-48 bg-slate-100 animate-pulse rounded-2xl" />
-                <div className="h-96 w-full bg-slate-100 animate-pulse rounded-[3rem]" />
+                <div className="h-8 w-48 bg-muted/50 animate-pulse rounded-2xl" />
+                <div className="h-96 w-full bg-muted/50 animate-pulse rounded-[3rem]" />
             </div>
         );
     }
 
     // Stitch Design V3: Final Polish, Bionic Density, Micro-interactions
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-neutral-950 pb-40 space-y-4 animate-in fade-in slide-in-from-bottom-6 duration-700">
+        <div className="min-h-screen bg-background dark:bg-neutral-950 pb-40 space-y-4 animate-in fade-in slide-in-from-bottom-6 duration-700">
             {/* Hero Section - V3: Sticky, Blurred 2xl, integrated seamlessly */}
             <div className="sticky top-0 z-20 backdrop-blur-2xl bg-white/50 dark:bg-neutral-950/50 border-b border-white/20 dark:border-neutral-800/50 pt-2 pb-2 transition-all duration-300">
                 <RentyCommandCenter firstName={firstName} feedItems={feedItems} />

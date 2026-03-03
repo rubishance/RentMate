@@ -61,9 +61,9 @@
     --popover: 220 40% 12%;
     --popover-foreground: 210 20% 98%;
 
-    /* Lighter Navy for Dark Mode Primary */
-    --primary: 220 50% 50%;
-    --primary-foreground: 0 0% 100%;
+    /* Bright High-Contrast Blue for Dark Mode Primary (Stitch Optimized) */
+    --primary: 215 100% 70%;
+    --primary-foreground: 220 40% 10%;
 
     /* Sage Green remains clear accent */
     --secondary: 150 30% 45%;

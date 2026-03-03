@@ -48,7 +48,7 @@ export const Select: React.FC<SelectProps> = ({
                             "relative w-full cursor-pointer rounded-xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-white/10 py-3 pl-3 pr-10 text-left shadow-sm focus:outline-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary sm:text-sm transition-all duration-300 min-h-[44px]",
                             error ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive" : "hover:border-primary/50",
                             leftIcon ? "pl-10" : "pl-3",
-                            disabled && "opacity-50 cursor-not-allowed bg-slate-50 dark:bg-neutral-800"
+                            disabled && "opacity-50 cursor-not-allowed bg-background dark:bg-neutral-800"
                         )}
                     >
                         {leftIcon && (

@@ -62,10 +62,10 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
 
     // Correct Lucide icons mapping
     const utilities = [
-        { id: 'electric' as UtilityType, label: t('utilityElectric'), icon: Zap, color: 'text-yellow-500', bg: 'bg-yellow-100 dark:bg-yellow-900/30' },
+        { id: 'electric' as UtilityType, label: t('utilityElectric'), icon: Zap, color: 'text-yellow-500', bg: 'bg-warning/10' },
         { id: 'municipality' as UtilityType, label: t('utilityMunicipality'), icon: Landmark, color: 'text-muted-foreground', bg: 'bg-muted dark:bg-gray-700/50' },
-        { id: 'gas' as UtilityType, label: t('utilityGas'), icon: Flame, color: 'text-orange-500', bg: 'bg-orange-100 dark:bg-orange-900/30' },
-        { id: 'management' as UtilityType, label: t('utilityManagement'), icon: Building2, color: 'text-purple-500', bg: 'bg-purple-100 dark:bg-purple-900/30' },
+        { id: 'gas' as UtilityType, label: t('utilityGas'), icon: Flame, color: 'text-orange-500', bg: 'bg-warning/10' },
+        { id: 'management' as UtilityType, label: t('utilityManagement'), icon: Building2, color: 'text-primary', bg: 'bg-primary/10' },
         { id: 'water' as UtilityType, label: t('utilityWater'), icon: Droplets, color: 'text-primary', bg: 'bg-primary/10 dark:bg-blue-900/30' },
         { id: 'internet' as UtilityType, label: t('utilityInternet'), icon: Wifi, color: 'text-indigo-500', bg: 'bg-indigo-100 dark:bg-indigo-900/30' },
         { id: 'cable' as UtilityType, label: t('utilityCable'), icon: Tv, color: 'text-rose-500', bg: 'bg-rose-100 dark:bg-rose-900/30' },
@@ -280,7 +280,7 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                                             <Icon className="w-6 h-6" />
                                         </div>
                                         <div>
-                                            <h4 className="font-bold text-slate-900 dark:text-white">{util.label}</h4>
+                                            <h4 className="font-bold text-foreground">{util.label}</h4>
                                             <p className="text-xs text-slate-500">{t('clickToViewBills') || 'Click to view bills'}</p>
                                         </div>
                                     </div>
@@ -296,7 +296,7 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => setView('types')}
-                            className="p-2 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded-full transition-colors text-slate-500 group"
+                            className="p-2 hover:bg-muted/50 dark:hover:bg-neutral-800 rounded-full transition-colors text-slate-500 group"
                         >
                             <ChevronRight className="w-6 h-6 rotate-180" />
                         </button>
@@ -309,7 +309,7 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                                     })()}
                                 </div>
                             )}
-                            <h3 className="font-black text-xl text-slate-900 dark:text-white">
+                            <h3 className="font-black text-xl text-foreground">
                                 {utilities.find(u => u.id === activeUtility)?.label}
                             </h3>
                         </div>
@@ -340,7 +340,7 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
 
                             <div className="relative flex items-center justify-between">
                                 <div>
-                                    <h4 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-cyan-600 dark:from-blue-400 dark:to-cyan-400">
+                                    <h4 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-cyan-600 dark:from-primary dark:to-cyan-400">
                                         {t('newBillEntry')}
                                     </h4>
                                     <p className="text-sm text-muted-foreground dark:text-muted-foreground mt-1">
@@ -434,14 +434,14 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                                                         </div>
                                                         <span className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">{file.file.name}</span>
                                                     </div>
-                                                    <Button variant="ghost" size="sm" onClick={() => removeStagedFile(file.id)} className="text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 h-8 w-8 p-0">
+                                                    <Button variant="ghost" size="sm" onClick={() => removeStagedFile(file.id)} className="text-muted-foreground hover:text-destructive hover:bg-red-50 dark:hover:bg-red-900/20 h-8 w-8 p-0">
                                                         <X className="w-4 h-4" />
                                                     </Button>
                                                 </div>
 
                                                 {/* AI Badge */}
                                                 {file.isAnalyzing ? (
-                                                    <div className="mb-3 flex items-center gap-2 text-xs text-blue-500 animate-pulse">
+                                                    <div className="mb-3 flex items-center gap-2 text-xs text-primary animate-pulse">
                                                         <Loader2 className="w-3 h-3 animate-spin" />
                                                         Scanning bill...
                                                     </div>
@@ -453,7 +453,7 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                                                             <span className="font-mono opacity-70">({(file.aiData.confidence * 100).toFixed(0)}% conf)</span>
                                                         </div>
                                                         {file.isDuplicate && (
-                                                            <div className="flex items-center gap-2 text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1.5 rounded-lg border border-red-100 dark:border-red-900/30">
+                                                            <div className="flex items-center gap-2 text-xs text-destructive bg-red-50 dark:bg-red-900/20 px-2 py-1.5 rounded-lg border border-red-100 dark:border-red-900/30">
                                                                 <X className="w-3.5 h-3.5" />
                                                                 <span className="font-bold">Duplicate Detected!</span>
                                                                 <span>A bill with this number, vendor, and date already exists.</span>
@@ -547,7 +547,7 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                                     onClick={handleCreateAndUpload}
                                     disabled={uploading}
                                     isLoading={uploading}
-                                    className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-lg"
+                                    className="flex-1 bg-gradient-to-r from-primary to-cyan-600 hover:from-primary hover:to-cyan-700 text-white shadow-lg"
                                 >
                                     {!uploading && <Check className="w-4 h-4 mr-2" />}
                                     {t('saveBillEntry')}

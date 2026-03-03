@@ -232,7 +232,7 @@ export function PaymentDetailsModal({
                         <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block">
                           {t("paidAmount")}
                         </span>
-                        <div className="text-4xl font-black text-green-500 tracking-tighter">
+                        <div className="text-4xl font-black text-secondary tracking-tighter">
                           {formData.paid_amount.toLocaleString()} ש"ח
                         </div>
                       </div>
@@ -251,10 +251,10 @@ export function PaymentDetailsModal({
                           const isOverpaid = diff > 0;
                           return (
                             <div className={`p-4 rounded-xl flex items-center justify-between border ${isOverpaid ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20' : 'bg-rose-50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20'}`}>
-                              <span className={`text-xs font-bold uppercase tracking-widest ${isOverpaid ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                              <span className={`text-xs font-bold uppercase tracking-widest ${isOverpaid ? 'text-secondary' : 'text-rose-600 dark:text-rose-400'}`}>
                                 {t('diff')} {isOverpaid ? '(עודף)' : '(חסר)'}
                               </span>
-                              <span className={`text-lg font-black tracking-tight ${isOverpaid ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                              <span className={`text-lg font-black tracking-tight ${isOverpaid ? 'text-secondary' : 'text-rose-600 dark:text-rose-400'}`}>
                                 {isOverpaid ? '+' : ''}{diff.toLocaleString()} ש"ח
                               </span>
                             </div>
