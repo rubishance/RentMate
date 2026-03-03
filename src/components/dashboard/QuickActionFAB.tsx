@@ -94,7 +94,7 @@ export function QuickActionFAB() {
                     layout
                     onClick={() => setIsOpen(!isOpen)}
                     className={cn(
-                        "w-16 h-16 rounded-[1.5rem] flex items-center justify-center text-white shadow-[0_20px_50px_rgba(79,70,229,0.3)] transition-all duration-500",
+                        "hidden md:flex w-16 h-16 rounded-[1.5rem] items-center justify-center text-white shadow-[0_20px_50px_rgba(79,70,229,0.3)] transition-all duration-500",
                         isOpen
                             ? "bg-neutral-900 dark:bg-neutral-800 rotate-90 scale-90"
                             : "bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-600 hover:shadow-[0_20px_50px_rgba(79,70,229,0.5)] hover:-translate-y-1"
