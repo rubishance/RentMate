@@ -84,11 +84,12 @@ export function ComingSoon() {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [videoError, setVideoError] = useState(false);
     const [iframeLoaded, setIframeLoaded] = useState(false);
+    const [videoEnded, setVideoEnded] = useState(false);
+    const showImages = videoError || videoEnded;
 
     // Video Controls State
     const [isMuted, setIsMuted] = useState(true);
     const [isFullscreen, setIsFullscreen] = useState(false);
-    const [videoEnded, setVideoEnded] = useState(false);
     const playerRef = useRef<any>(null);
     const videoContainerRef = useRef<HTMLDivElement>(null);
 
@@ -132,13 +133,28 @@ export function ComingSoon() {
 
     // Auto-change image every 5 seconds (Only relevant when showing images)
     useEffect(() => {
-        if (!videoError && !videoEnded) return; // Don't run intervals if we don't need them
+        if (!showImages) return; // Don't run intervals if we don't need them
+
+        const totalImages = isRtl ? MOCKUP_IMAGES_HE.length : MOCKUP_IMAGES_EN.length;
 
         const interval = setInterval(() => {
-            setCurrentImageIndex((prev) => (prev + 1) % (isRtl ? MOCKUP_IMAGES_HE.length : MOCKUP_IMAGES_EN.length));
+            setCurrentImageIndex((prev) => {
+                const next = prev + 1;
+                // If we reach the end of the images and there's no video error, switch back to video
+                if (next >= totalImages && !videoError) {
+                    setTimeout(() => {
+                        setVideoEnded(false);
+                        if (playerRef.current) {
+                            playerRef.current.playVideo();
+                        }
+                    }, 0);
+                    return 0;
+                }
+                return next % totalImages;
+            });
         }, 5000);
         return () => clearInterval(interval);
-    }, [isRtl, videoError, videoEnded]);
+    }, [isRtl, showImages, videoError]);
 
     const toggleFullscreen = async () => {
         if (!document.fullscreenElement) {
@@ -159,8 +175,6 @@ export function ComingSoon() {
             }
         }
     };
-
-    const showImages = videoError || videoEnded;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type, checked } = e.target;
@@ -223,7 +237,7 @@ export function ComingSoon() {
             </motion.div>
 
             {/* Left Column - Content & Form */}
-            <div className="w-full md:w-1/2 md:h-full flex flex-col justify-start md:justify-center px-6 md:px-8 lg:px-12 py-4 md:py-0 relative z-10 overflow-y-auto md:overflow-hidden custom-scrollbar">
+            <div className="w-full md:w-1/2 md:h-full flex flex-col justify-start md:justify-center px-6 md:px-8 lg:px-12 py-4 md:py-0 relative z-10 overflow-y-auto custom-scrollbar">
 
                 {/* Main Content */}
                 <div className="max-w-md w-full mx-auto md:my-auto mt-6 md:my-0 z-10">
@@ -561,7 +575,10 @@ export function ComingSoon() {
                                     e.target.mute();
                                 }}
                                 onError={() => setVideoError(true)}
-                                onEnd={() => setVideoEnded(true)}
+                                onEnd={() => {
+                                    setVideoEnded(true);
+                                    setCurrentImageIndex(0); // Reset UI to first image when starting images
+                                }}
                             />
 
                             {/* Custom Controls Overlay */}
