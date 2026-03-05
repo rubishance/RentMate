@@ -21,6 +21,7 @@ RentMate uses a curated dual-theme setup via CSS variables mapped in `index.css`
 RentMate serves a diverse set of users; readability is paramount.
 *   **Base Readability Rule:** Default body copy must easily accommodate mature users. The absolute minimum is `text-sm`, but `text-base` is preferred for standard paragraph copy.
 *   **Avoid Thin Weights:** Do not use ultra-thin or overly condensed font styles. High-contrast typography is mandatory to assist with vision impairments.
+*   **High-Contrast Secondary Text:** When using muted colors (e.g., `--muted-foreground`), ensure the contrast ratio comfortably accommodates mature users (40+). For dark mode, muted text must be significantly legible and bright (e.g., Lightness > 80%, such as `hsl(215 20% 82%)`).
 *   **Bilingual Fonts:**
     *   *English (`dir="ltr"`):* `font-english` or `font-sans` (Inter/IBM Plex Sans).
     *   *Hebrew (`dir="rtl"`):* `font-hebrew` (Assistant) or `font-heading` (Outfit/Assistant combinations).

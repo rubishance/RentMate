@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, PieChart, ShieldCheck, Mail, ArrowRight, CheckCircle2, Calculator, Receipt, Sparkles, MessageCircle, Building2, AlertCircle, User, Phone, ArrowLeft, Globe, Instagram, Facebook, Twitter } from 'lucide-react';
+import { Home, PieChart, ShieldCheck, Mail, ArrowRight, CheckCircle2, Calculator, Receipt, Sparkles, MessageCircle, Building2, AlertCircle, User, Phone, ArrowLeft, Globe, Instagram, Facebook, Twitter, Volume2, VolumeX, Maximize, Minimize } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import YouTube from 'react-youtube';
 import { useTranslation } from '../hooks/useTranslation';
 import { useUserPreferences } from '../contexts/UserPreferencesContext';
 import { supabase } from '../lib/supabase';
@@ -81,6 +82,15 @@ export function ComingSoon() {
     });
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error' | 'duplicate'>('idle');
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [videoError, setVideoError] = useState(false);
+    const [iframeLoaded, setIframeLoaded] = useState(false);
+
+    // Video Controls State
+    const [isMuted, setIsMuted] = useState(true);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const [videoEnded, setVideoEnded] = useState(false);
+    const playerRef = useRef<any>(null);
+    const videoContainerRef = useRef<HTMLDivElement>(null);
 
     const buttonRef = useRef<HTMLButtonElement>(null);
     const [ripple, setRipple] = useState({ x: 0, y: 0, active: false, size: 0 });
@@ -101,13 +111,56 @@ export function ComingSoon() {
         setRipple(prev => ({ ...prev, active: false }));
     };
 
-    // Auto-change image every 5 seconds
+    // Fullscreen Event Listener
     useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsFullscreen(!!document.fullscreenElement);
+        };
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    }, []);
+
+    // Iframe loading fallback to carousel after 8 seconds
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (!iframeLoaded && !videoEnded) {
+                setVideoError(true);
+            }
+        }, 8000);
+        return () => clearTimeout(timer);
+    }, [iframeLoaded, videoEnded]);
+
+    // Auto-change image every 5 seconds (Only relevant when showing images)
+    useEffect(() => {
+        if (!videoError && !videoEnded) return; // Don't run intervals if we don't need them
+
         const interval = setInterval(() => {
             setCurrentImageIndex((prev) => (prev + 1) % (isRtl ? MOCKUP_IMAGES_HE.length : MOCKUP_IMAGES_EN.length));
         }, 5000);
         return () => clearInterval(interval);
-    }, []);
+    }, [isRtl, videoError, videoEnded]);
+
+    const toggleFullscreen = async () => {
+        if (!document.fullscreenElement) {
+            await videoContainerRef.current?.requestFullscreen();
+        } else {
+            await document.exitFullscreen();
+        }
+    };
+
+    const toggleMute = () => {
+        if (playerRef.current) {
+            if (isMuted) {
+                playerRef.current.unMute();
+                setIsMuted(false);
+            } else {
+                playerRef.current.mute();
+                setIsMuted(true);
+            }
+        }
+    };
+
+    const showImages = videoError || videoEnded;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type, checked } = e.target;
@@ -170,18 +223,17 @@ export function ComingSoon() {
             </motion.div>
 
             {/* Left Column - Content & Form */}
-            <div className="w-full md:w-1/2 md:h-full flex flex-col justify-start md:justify-center px-6 md:px-8 lg:px-12 py-4 md:py-2 relative z-10 overflow-y-auto md:overflow-hidden custom-scrollbar">
+            <div className="w-full md:w-1/2 md:h-full flex flex-col justify-start md:justify-center px-6 md:px-8 lg:px-12 py-4 md:py-0 relative z-10 overflow-y-auto md:overflow-hidden custom-scrollbar">
 
                 {/* Main Content */}
-                <div className="max-w-md w-full mx-auto md:my-auto mt-6 md:mt-0 z-10">
+                <div className="max-w-md w-full mx-auto md:my-auto mt-6 md:my-0 z-10">
                     <motion.div
                         initial={{ opacity: 0, x: -50 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true, amount: 0.1 }}
                         transition={{ duration: 0.6 }}
                     >
-                        {/* Mobile Badge Only - Now shown on Desktop too */}
-                        <div className="flex items-center gap-2 lg:gap-3 mb-1 lg:mb-2">
+                        <div className="flex items-center gap-2 lg:gap-3 mb-1">
                             <h1 className="text-4xl md:text-4xl lg:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-foreground to-muted-foreground tracking-tight leading-tight" style={{ textWrap: 'balance' }}>
                                 {t('coming_soon_title')}
                             </h1>
@@ -199,23 +251,11 @@ export function ComingSoon() {
                             </motion.div>
                         </div>
 
-                        {/* Inline Language Toggle */}
-                        <div className="flex md:justify-start justify-center mb-2 lg:mb-3">
-                            <button
-                                onClick={() => setLanguage(isRtl ? 'en' : 'he')}
-                                className="px-4 py-1.5 md:px-5 md:py-2 rounded-full border border-border bg-background/50 backdrop-blur-md text-sm font-semibold text-foreground hover:bg-accent hover:text-accent-foreground transition-all shadow-sm flex items-center gap-1.5"
-                                aria-label="Toggle Language"
-                            >
-                                <Globe className="w-3.5 h-3.5" />
-                                {t('language_toggle')}
-                            </button>
-                        </div>
-
                         <motion.p
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.1, duration: 0.5 }}
-                            className="text-base md:text-lg text-muted-foreground mb-2 lg:mb-3 leading-relaxed font-medium max-w-lg mx-auto md:mx-0"
+                            className="text-lg md:text-xl text-muted-foreground mb-3 leading-relaxed font-semibold max-w-lg mx-auto md:mx-0"
                         >
                             {t('coming_soon_subtitle')}
                         </motion.p>
@@ -232,7 +272,7 @@ export function ComingSoon() {
                                     transition: { staggerChildren: 0.1, delayChildren: 0.1 }
                                 }
                             }}
-                            className="space-y-1 mb-2 lg:mb-3"
+                            className="space-y-1 mb-2"
                         >
                             {features.map((feature, idx) => (
                                 <motion.li
@@ -243,16 +283,16 @@ export function ComingSoon() {
                                     }}
                                     className="flex items-center gap-3 group transition-all duration-300 hover:translate-x-1 cursor-default"
                                 >
-                                    <div className="flex-shrink-0 w-10 h-10 md:w-11 md:h-11 rounded-xl bg-card shadow-sm border border-border flex items-center justify-center text-primary group-hover:bg-primary-50 group-hover:border-primary-200 group-hover:text-primary dark:group-hover:bg-primary-900/40 group-hover:shadow-md group-hover:shadow-primary-500/10 transition-all duration-300">
-                                        <feature.icon className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
+                                    <div className="flex-shrink-0 w-8 h-8 md:w-9 md:h-9 rounded-xl bg-card shadow-sm border border-border flex items-center justify-center text-primary group-hover:bg-primary-50 group-hover:border-primary-200 group-hover:text-primary dark:group-hover:bg-primary-900/40 group-hover:shadow-md group-hover:shadow-primary-500/10 transition-all duration-300">
+                                        <feature.icon className="w-4 h-4 md:w-5 md:h-5 group-hover:scale-110 transition-transform duration-300" />
                                     </div>
-                                    <span className="text-sm md:text-base text-foreground font-semibold group-hover:text-foreground transition-colors">{feature.text}</span>
+                                    <span className="text-base md:text-lg text-foreground font-bold group-hover:text-foreground transition-colors">{feature.text}</span>
                                 </motion.li>
                             ))}
                         </motion.ul>
 
                         {/* Form Section */}
-                        <div className="bg-card/80 backdrop-blur-xl rounded-3xl p-3 md:p-4 shadow-2xl shadow-slate-200/50 dark:shadow-black/50 border border-border ring-1 ring-border/50">
+                        <div className="bg-card/80 backdrop-blur-xl rounded-3xl p-3 md:p-3.5 shadow-2xl shadow-slate-200/50 dark:shadow-black/50 border border-border ring-1 ring-border/50">
                             <AnimatePresence mode="wait">
                                 {status === 'success' ? (
                                     <motion.div
@@ -264,8 +304,8 @@ export function ComingSoon() {
                                         <div className="w-12 h-12 md:w-14 md:h-14 bg-secondary/20 text-secondary rounded-full flex items-center justify-center mb-2">
                                             <CheckCircle2 className="w-6 h-6 md:w-7 md:h-7" />
                                         </div>
-                                        <h3 className="text-lg md:text-xl font-bold text-foreground mb-1">{t('coming_soon_success')}</h3>
-                                        <p className="text-muted-foreground text-sm">{t('coming_soon_subtitle')}</p>
+                                        <h3 className="text-xl md:text-2xl font-black text-foreground mb-1">{t('coming_soon_success')}</h3>
+                                        <p className="text-muted-foreground text-base md:text-lg font-medium">{t('coming_soon_subtitle')}</p>
                                     </motion.div>
                                 ) : (
                                     <motion.form
@@ -275,29 +315,29 @@ export function ComingSoon() {
                                         viewport={{ once: true, amount: 0.1 }}
                                         transition={{ duration: 0.5 }}
                                         onSubmit={handleSubmit}
-                                        className="space-y-1.5"
+                                        className="space-y-1"
                                     >
                                         {/* Error Messages */}
                                         {status === 'error' && (
-                                            <div className="p-2 bg-destructive/10 text-destructive rounded-xl flex items-center gap-2 text-base">
+                                            <div className="p-2 bg-destructive/10 text-destructive rounded-xl flex items-center gap-2 text-lg font-medium">
                                                 <AlertCircle className="w-5 h-5" />
                                                 <span>{t('coming_soon_error')}</span>
                                             </div>
                                         )}
                                         {status === 'duplicate' && (
-                                            <div className="p-2 bg-primary/10 text-primary rounded-xl flex items-center gap-2 text-base">
+                                            <div className="p-2 bg-primary/10 text-primary rounded-xl flex items-center gap-2 text-lg font-medium">
                                                 <ShieldCheck className="w-5 h-5" />
                                                 <span>{t('coming_soon_already_registered')}</span>
                                             </div>
                                         )}
 
                                         <div>
-                                            <label htmlFor="fullName" className="block text-sm font-semibold text-foreground mb-1">
+                                            <span className="text-sm md:text-base font-semibold block mb-0.5 text-foreground">
                                                 {t('coming_soon_name_label')}
-                                            </label>
+                                            </span>
                                             <div className="relative group">
                                                 <div className={`absolute inset-y-0 ${isRtl ? 'right-0 pr-3' : 'left-0 pl-3'} flex items-center pointer-events-none`}>
-                                                    <User className="h-5 w-5 md:h-6 md:w-6 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                                                    <User className="h-5 w-5 md:h-5 md:w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                                                 </div>
                                                 <input
                                                     type="text"
@@ -306,18 +346,18 @@ export function ComingSoon() {
                                                     required
                                                     value={formData.fullName}
                                                     onChange={handleChange}
-                                                    className={`block w-full rounded-xl border-border bg-background/50 shadow-inner ${isRtl ? 'pr-10 md:pr-12' : 'pl-10 md:pl-12'} py-2.5 md:py-3 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-base transition-all`}
+                                                    className={`block w-full rounded-xl border-border bg-background/50 shadow-inner ${isRtl ? 'pr-10 md:pr-11' : 'pl-10 md:pl-11'} py-1.5 md:py-2 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-lg transition-all`}
                                                     aria-label={t('coming_soon_name_label')}
                                                 />
                                             </div>
                                         </div>
                                         <div>
-                                            <label htmlFor="email" className="block text-sm font-semibold text-foreground mb-1">
+                                            <span className="text-sm md:text-base font-semibold block mb-0.5 text-foreground mt-1">
                                                 {t('coming_soon_email_label')}
-                                            </label>
+                                            </span>
                                             <div className="relative group">
                                                 <div className={`absolute inset-y-0 ${isRtl ? 'right-0 pr-3' : 'left-0 pl-3'} flex items-center pointer-events-none`}>
-                                                    <Mail className="h-5 w-5 md:h-6 md:w-6 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                                                    <Mail className="h-5 w-5 md:h-5 md:w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                                                 </div>
                                                 <input
                                                     type="email"
@@ -326,19 +366,19 @@ export function ComingSoon() {
                                                     required
                                                     value={formData.email}
                                                     onChange={handleChange}
-                                                    className={`block w-full rounded-xl border-border bg-background/50 shadow-inner ${isRtl ? 'pr-10 md:pr-12' : 'pl-10 md:pl-12'} py-2.5 md:py-3 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-base transition-all`}
+                                                    className={`block w-full rounded-xl border-border bg-background/50 shadow-inner ${isRtl ? 'pr-10 md:pr-11' : 'pl-10 md:pl-11'} py-1.5 md:py-2 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-lg transition-all`}
                                                     aria-label={t('coming_soon_email_label')}
                                                     dir="ltr"
                                                 />
                                             </div>
                                         </div>
                                         <div>
-                                            <label htmlFor="phone" className="block text-sm font-semibold text-foreground mb-1">
+                                            <span className="text-sm md:text-base font-semibold block mb-0.5 text-foreground mt-1">
                                                 {t('coming_soon_phone_label')}
-                                            </label>
+                                            </span>
                                             <div className="relative group">
                                                 <div className={`absolute inset-y-0 ${isRtl ? 'right-0 pr-3' : 'left-0 pl-3'} flex items-center pointer-events-none`}>
-                                                    <Phone className="h-5 w-5 md:h-6 md:w-6 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                                                    <Phone className="h-5 w-5 md:h-5 md:w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                                                 </div>
                                                 <input
                                                     type="tel"
@@ -346,7 +386,7 @@ export function ComingSoon() {
                                                     name="phone"
                                                     value={formData.phone}
                                                     onChange={handleChange}
-                                                    className={`block w-full rounded-xl border-border bg-background/50 shadow-inner ${isRtl ? 'pr-10 md:pr-12' : 'pl-10 md:pl-12'} py-2.5 md:py-3 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-base transition-all`}
+                                                    className={`block w-full rounded-xl border-border bg-background/50 shadow-inner ${isRtl ? 'pr-10 md:pr-11' : 'pl-10 md:pl-11'} py-1.5 md:py-2 text-foreground focus:border-primary focus:ring-primary focus:bg-background focus:shadow-md text-lg transition-all`}
                                                     aria-label={t('coming_soon_phone_label')}
                                                     dir="ltr"
                                                 />
@@ -384,7 +424,7 @@ export function ComingSoon() {
                                             onPointerLeave={handlePointerLeave}
                                             type="submit"
                                             disabled={status === 'loading'}
-                                            className="group relative w-full flex items-center justify-center gap-2 bg-primary py-3 md:py-3.5 rounded-xl text-primary-foreground font-bold text-base md:text-lg mt-2 md:mt-3 shadow-md shadow-primary/20 overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_35px_-10px_hsl(var(--primary))] hover:brightness-110 active:scale-[0.98] disabled:opacity-70 disabled:pointer-events-none border border-primary/20"
+                                            className="group relative w-full flex items-center justify-center gap-2 bg-primary py-2 md:py-2.5 rounded-xl text-primary-foreground font-black text-lg mt-2 md:mt-2.5 shadow-md shadow-primary/20 overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_35px_-10px_hsl(var(--primary))] hover:brightness-110 active:scale-[0.98] disabled:opacity-70 disabled:pointer-events-none border border-primary/20"
                                         >
                                             {/* Ripple Effect */}
                                             <span
@@ -422,8 +462,8 @@ export function ComingSoon() {
                                             </div>
                                         </button>
 
-                                        <div className="flex items-center justify-center gap-1.5 mt-2 text-xs md:text-sm font-medium text-muted-foreground">
-                                            <ShieldCheck className="w-4 h-4 text-primary" />
+                                        <div className="flex items-center justify-center gap-1.5 mt-1 text-xs md:text-sm font-semibold text-muted-foreground">
+                                            <ShieldCheck className="w-3.5 h-3.5 text-primary" />
                                             <span>{isRtl ? 'רישום ומנוי ללא עלות ו/או הזנת פרטי אשראי' : 'Free registration and subscription, no credit card required'}</span>
                                         </div>
                                     </motion.form>
@@ -434,7 +474,7 @@ export function ComingSoon() {
                 </div>
 
                 {/* Desktop Footer (Hidden on Mobile) */}
-                <div className="hidden md:flex w-full mt-2 lg:mt-auto pt-2 md:pt-2 flex-col items-center justify-end pb-2 lg:pb-2 z-50">
+                <div className="hidden md:flex w-full mt-4 flex-col items-center justify-center pb-2 lg:pb-2 z-50">
                     <div className="flex items-center justify-center gap-4 mb-2 md:mb-1.5 text-muted-foreground">
                         <a href="https://instagram.com/RentMate_IL" target="_blank" rel="noopener noreferrer" className="p-1.5 hover:bg-accent hover:text-foreground rounded-full hover:text-foreground transition-colors" aria-label="Instagram">
                             <Instagram className="w-4 h-4 md:w-5 md:h-5" />
@@ -448,9 +488,14 @@ export function ComingSoon() {
                     </div>
 
                     <div className="flex flex-col items-center gap-1 md:gap-0.5">
-                        <a href="/accessibility" className="text-[10px] md:text-xs text-muted-foreground hover:text-primary transition-colors underline underline-offset-4">
-                            {isRtl ? 'הצהרת נגישות' : 'Accessibility Statement'}
-                        </a>
+                        <div className="flex flex-col items-center gap-1">
+                            <a href="/accessibility" className="text-[10px] md:text-xs text-muted-foreground hover:text-primary transition-colors underline underline-offset-4">
+                                {isRtl ? 'הצהרת נגישות' : 'Accessibility Statement'}
+                            </a>
+                            <p className="text-[9px] text-muted-foreground/60 max-w-md text-center leading-relaxed px-4">
+                                {t('coming_soon_ip_protection')}
+                            </p>
+                        </div>
                         {isRtl && (
                             <p className="text-[9px] md:text-[10px] text-muted-foreground/80 max-w-sm text-center leading-relaxed">
                                 * האתר והאפליקציה מנוסחים בלשון זכר מטעמי נוחות בלבד, אך מתייחסים ופונים לשני המינים כאחד.
@@ -475,59 +520,125 @@ export function ComingSoon() {
                 <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/10 filter blur-3xl rounded-full z-0 pointer-events-none" />
                 <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-secondary/10 filter blur-3xl rounded-full z-0 pointer-events-none" />
 
-                {/* Carousel */}
-                <div className="absolute top-4 left-4 right-4 bottom-32 md:bottom-20 lg:top-8 lg:left-8 lg:right-8 lg:bottom-4 px-4 md:px-16 flex flex-col justify-center items-center z-10 pt-4 md:pt-12">
-                    <AnimatePresence mode="wait">
+                {/* Teaser Video / Carousel Fallback */}
+                <div
+                    ref={videoContainerRef}
+                    className="absolute top-4 left-4 right-4 bottom-32 md:bottom-20 lg:top-8 lg:left-8 lg:right-8 lg:bottom-4 px-4 md:px-16 flex flex-col justify-center items-center z-10 pt-4 md:pt-12 bg-muted/10 md:bg-transparent"
+                >
+                    {!showImages ? (
                         <motion.div
-                            key={currentImageIndex}
-                            initial={{ opacity: 0, scale: 1.02, x: 50 }}
-                            animate={{ opacity: 1, scale: 1, x: 0 }}
-                            exit={{ opacity: 0, scale: 0.98, x: -50 }}
-                            transition={{ duration: 0.8, type: "spring" }}
-                            className="flex justify-center items-center h-full w-full max-w-full max-h-[300px] md:max-h-full relative"
+                            initial={{ opacity: 0, scale: 1.02 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.8 }}
+                            className="flex justify-center items-center w-full aspect-video max-w-full relative rounded-2xl overflow-hidden shadow-2xl border border-border/50 bg-black/5"
                         >
-                            <picture className="contents">
-                                <source
-                                    media="(min-width: 768px)"
-                                    srcSet={isRtl ? MOCKUP_IMAGES_HE[currentImageIndex] : MOCKUP_IMAGES_EN[currentImageIndex]}
-                                />
-                                <img
-                                    src={isRtl ? MOBILE_MOCKUP_IMAGES_HE[currentImageIndex] : MOBILE_MOCKUP_IMAGES_EN[currentImageIndex]}
-                                    alt="App Preview"
-                                    className="max-w-full max-h-[300px] md:max-h-full object-contain rounded-xl shadow-2xl border border-border/50"
-                                />
-                            </picture>
+                            {!iframeLoaded && (
+                                <div className="absolute inset-0 z-10 bg-muted/10 animate-pulse flex items-center justify-center">
+                                    <div className="w-12 h-12 md:w-16 md:h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                                </div>
+                            )}
+
+                            <YouTube
+                                videoId="wxmmGUIOsQw"
+                                opts={{
+                                    playerVars: {
+                                        autoplay: 1,
+                                        mute: 1, // Start muted for autoplay
+                                        controls: 0,
+                                        rel: 0,
+                                        playsinline: 1,
+                                        modestbranding: 1,
+                                        showinfo: 0,
+                                        fs: 0,
+                                        disablekb: 1,
+                                    }
+                                }}
+                                className={`w-full h-full absolute inset-0 transition-opacity duration-1000 ${iframeLoaded ? 'opacity-100' : 'opacity-0'}`}
+                                iframeClassName="w-full h-full pointer-events-none"
+                                onReady={(e) => {
+                                    setIframeLoaded(true);
+                                    playerRef.current = e.target;
+                                    e.target.mute();
+                                }}
+                                onError={() => setVideoError(true)}
+                                onEnd={() => setVideoEnded(true)}
+                            />
+
+                            {/* Custom Controls Overlay */}
+                            {iframeLoaded && (
+                                <div className="absolute bottom-4 right-4 flex items-center justify-center gap-2 z-20 pointer-events-auto">
+                                    <button
+                                        onClick={toggleMute}
+                                        className="p-2 md:p-3 bg-black/60 hover:bg-black/80 backdrop-blur-md rounded-full text-white transition-all shadow-lg border border-white/10 hover:scale-105 active:scale-95"
+                                        aria-label={isMuted ? "Unmute" : "Mute"}
+                                    >
+                                        {isMuted ? <VolumeX className="w-4 h-4 md:w-5 md:h-5 text-white/90" /> : <Volume2 className="w-4 h-4 md:w-5 md:h-5 text-white" />}
+                                    </button>
+                                    <button
+                                        onClick={toggleFullscreen}
+                                        className="p-2 md:p-3 bg-black/60 hover:bg-black/80 backdrop-blur-md rounded-full text-white transition-all shadow-lg border border-white/10 hover:scale-105 active:scale-95"
+                                        aria-label={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+                                    >
+                                        {isFullscreen ? <Minimize className="w-4 h-4 md:w-5 md:h-5 text-white" /> : <Maximize className="w-4 h-4 md:w-5 md:h-5 text-white/90" />}
+                                    </button>
+                                </div>
+                            )}
                         </motion.div>
-                    </AnimatePresence>
+                    ) : (
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={currentImageIndex}
+                                initial={{ opacity: 0, scale: 1.02, x: 50 }}
+                                animate={{ opacity: 1, scale: 1, x: 0 }}
+                                exit={{ opacity: 0, scale: 0.98, x: -50 }}
+                                transition={{ duration: 0.8, type: "spring" }}
+                                className="flex justify-center items-center h-full w-full max-w-full max-h-[300px] md:max-h-full relative"
+                            >
+                                <picture className="contents">
+                                    <source
+                                        media="(min-width: 768px)"
+                                        srcSet={isRtl ? MOCKUP_IMAGES_HE[currentImageIndex] : MOCKUP_IMAGES_EN[currentImageIndex]}
+                                    />
+                                    <img
+                                        src={isRtl ? MOBILE_MOCKUP_IMAGES_HE[currentImageIndex] : MOBILE_MOCKUP_IMAGES_EN[currentImageIndex]}
+                                        alt="App Preview"
+                                        className="max-w-full max-h-[300px] md:max-h-full object-contain rounded-xl shadow-2xl border border-border/50"
+                                    />
+                                </picture>
+                            </motion.div>
+                        </AnimatePresence>
+                    )}
                 </div>
 
                 {/* Overlay Graphic Element */}
-                <div className="absolute bottom-4 md:bottom-8 right-4 md:right-8 left-4 md:left-8 z-30 flex justify-center pointer-events-none">
-                    <AnimatePresence mode="wait">
-                        <motion.div
-                            key={`content-${currentImageIndex}`}
-                            initial={{ opacity: 0, x: 50 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -50 }}
-                            transition={{ duration: 0.4 }}
-                        >
-                            <GlassCard className="w-[300px] sm:w-[380px] h-auto min-h-[120px] md:h-[140px] flex flex-col justify-center p-4 md:p-6 border-white/20 bg-card/70 backdrop-blur-2xl text-foreground shadow-xl pointer-events-auto">
-                                <div className={`flex items-center gap-2 md:gap-3 mb-2 ${isRtl ? 'flex-row' : 'flex-row'}`} dir={isRtl ? 'rtl' : 'ltr'}>
-                                    <div className="p-1.5 md:p-2 bg-primary rounded-lg text-white">
-                                        {(() => {
-                                            const Icon = SLIDE_CONTENT[currentImageIndex].icon;
-                                            return <Icon className="w-4 h-4 md:w-5 md:h-5" />;
-                                        })()}
+                {showImages && (
+                    <div className="absolute bottom-4 md:bottom-8 right-4 md:right-8 left-4 md:left-8 z-30 flex justify-center pointer-events-none">
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={`content-${currentImageIndex}`}
+                                initial={{ opacity: 0, x: 50 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -50 }}
+                                transition={{ duration: 0.4 }}
+                            >
+                                <GlassCard className="w-[300px] sm:w-[380px] h-auto min-h-[120px] md:h-[140px] flex flex-col justify-center p-4 md:p-6 border-white/20 bg-card/70 backdrop-blur-2xl text-foreground shadow-xl pointer-events-auto">
+                                    <div className={`flex items-center gap-2 md:gap-3 mb-2 ${isRtl ? 'flex-row' : 'flex-row'}`} dir={isRtl ? 'rtl' : 'ltr'}>
+                                        <div className="p-1.5 md:p-2 bg-primary rounded-lg text-white">
+                                            {(() => {
+                                                const Icon = SLIDE_CONTENT[currentImageIndex].icon;
+                                                return <Icon className="w-4 h-4 md:w-5 md:h-5" />;
+                                            })()}
+                                        </div>
+                                        <h4 className="font-bold text-base md:text-lg">{SLIDE_CONTENT[currentImageIndex].title}</h4>
                                     </div>
-                                    <h4 className="font-bold text-sm md:text-base">{SLIDE_CONTENT[currentImageIndex].title}</h4>
-                                </div>
-                                <p className="text-xs md:text-sm text-foreground" dir={isRtl ? 'rtl' : 'ltr'}>
-                                    {SLIDE_CONTENT[currentImageIndex].desc}
-                                </p>
-                            </GlassCard>
-                        </motion.div>
-                    </AnimatePresence>
-                </div>
+                                    <p className="text-sm md:text-base font-medium text-foreground" dir={isRtl ? 'rtl' : 'ltr'}>
+                                        {SLIDE_CONTENT[currentImageIndex].desc}
+                                    </p>
+                                </GlassCard>
+                            </motion.div>
+                        </AnimatePresence>
+                    </div>
+                )}
             </motion.div>
 
             {/* Mobile Footer (Hidden on Desktop) */}
@@ -549,17 +660,38 @@ export function ComingSoon() {
                     </a>
                 </div>
 
-                <div className="flex flex-col items-center gap-3">
-                    <a href="/accessibility" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors underline underline-offset-4">
+                <div className="flex flex-col items-center gap-2">
+                    <a href="/accessibility" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors underline underline-offset-4 mb-1">
                         {isRtl ? 'הצהרת נגישות' : 'Accessibility Statement'}
                     </a>
+                    <p className="text-[10px] text-muted-foreground/60 px-6 max-w-sm text-center leading-relaxed">
+                        {t('coming_soon_ip_protection')}
+                    </p>
                     {isRtl && (
-                        <p className="text-[10px] text-muted-foreground/80 px-6 max-w-sm text-center leading-relaxed">
+                        <p className="text-[10px] text-muted-foreground/80 px-6 max-w-sm text-center leading-relaxed mt-2">
                             * האתר והאפליקציה מנוסחים בלשון זכר מטעמי נוחות בלבד, אך מתייחסים ופונים לשני המינים כאחד.
                         </p>
                     )}
                 </div>
             </motion.div>
+
+            {/* Fixed EN/HE Language Toggle (Positioned opposite to UserWay on Mobile) */}
+            <div className="fixed bottom-4 md:bottom-auto top-auto md:top-4 right-4 md:right-auto left-auto md:left-20 z-[99999]" dir="ltr">
+                <div className="flex items-center bg-card/80 backdrop-blur-xl border border-border rounded-full shadow-lg font-extrabold text-sm overflow-hidden p-[3px]">
+                    <button
+                        onClick={() => setLanguage('en')}
+                        className={`px-4 py-1.5 rounded-full transition-all duration-300 ${!isRtl ? 'bg-primary text-white shadow-md' : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'} focus:outline-none`}
+                    >
+                        EN
+                    </button>
+                    <button
+                        onClick={() => setLanguage('he')}
+                        className={`px-4 py-1.5 rounded-full transition-all duration-300 ${isRtl ? 'bg-primary text-white shadow-md' : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'} focus:outline-none`}
+                    >
+                        HE
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }

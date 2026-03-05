@@ -310,6 +310,7 @@ export type TranslationKeys =
     | 'coming_soon_success'
     | 'coming_soon_error'
     | 'coming_soon_already_registered'
+    | 'coming_soon_ip_protection'
     | 'language_toggle'
     | 'leaseEnds'
     | 'deleteAsset'
@@ -2248,6 +2249,7 @@ export const translations: Record<string, any> = {
         coming_soon_success: 'תודה על ההרשמה! נעדכן אותך בקרוב.',
         coming_soon_error: 'אירעה שגיאה. אנא נסו שוב מאוחר יותר.',
         coming_soon_already_registered: 'תודה רבה! כתובת המייל הזו כבר נמצאת ברשימה.',
+        coming_soon_ip_protection: 'המותג RentMate, הדמות \'רנטי\', התוכנה, אלגוריתמי ה-AI ועיצובי הממשק (UI) הם קניין רוחני מוגן. העתקה, שעתוק או שימוש בהם ללא אישור מראש ובכתב אסורים בהחלט.',
         coming_soon_slide_1_title: 'ניהול חוזים מתקדם',
         coming_soon_slide_1_desc: 'מעקב דינמי אחר תאריכי סיום, אופציות וכל פרטי החוזה.',
         coming_soon_slide_2_title: 'מחשבון הצמדה חכם',
@@ -2623,6 +2625,7 @@ export const translations: Record<string, any> = {
         coming_soon_success: 'Thanks for signing up! We will notify you soon.',
         coming_soon_error: 'An error occurred. Please try again later.',
         coming_soon_already_registered: 'Thank you! This email is already on our list.',
+        coming_soon_ip_protection: 'RentMate, Renty the Raccoon, the software, AI algorithms, and UI designs are protected intellectual property. Unauthorized reproduction or use is strictly prohibited.',
         coming_soon_slide_1_title: 'Advanced Contract Management',
         coming_soon_slide_1_desc: 'Dynamic tracking of end dates, options, and all contract details.',
         coming_soon_slide_2_title: 'Smart Indexation Calculator',

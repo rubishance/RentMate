@@ -57,8 +57,21 @@
     </footer>
   </div>
   <script type="module" src="/src/main.tsx"></script>
-  <!-- UserWay Accessibility Widget -->
-  <script src="https://cdn.userway.org/widget.js" data-account="w0F2i9hW4T"></script>
+  <!-- UserWay Accessibility Widget (Dynamic Positioning) -->
+  <script>
+    (function () {
+      var s = document.createElement("script");
+      s.setAttribute("data-account", "w0F2i9hW4T");
+      s.setAttribute("src", "https://cdn.userway.org/widget.js");
+
+      // If mobile, force position to 5 (Bottom Left)
+      if (window.innerWidth <= 768) {
+        s.setAttribute("data-position", "5");
+      }
+
+      document.body.appendChild(s);
+    })();
+  </script>
 </body>
 
 </html>
