@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, subMonths, addMonths, isBefore, isAfter, startOfDay, parseISO } from 'date-fns';
+import { he } from 'date-fns/locale';
 import { supabase } from '../lib/supabase';
 import { cn } from '../lib/utils';
 import type { Payment } from '../types/database';
@@ -349,7 +350,7 @@ export function Payments() {
                 <div className="flex items-center gap-4 md:gap-6 flex-1 min-w-0">
                     <div className={cn("w-14 h-14 md:w-16 md:h-16 rounded-2xl glass-premium flex flex-col items-center justify-center shrink-0 border border-white/10 group-hover:scale-105 transition-all duration-300", isActionNeeded ? "bg-rose-500/10 text-rose-600" : "")}>
                         <span className="text-2xl md:text-3xl font-black leading-none">{format(new Date(payment.due_date), 'dd')}</span>
-                        <span className="text-sm md:text-base font-black uppercase tracking-widest opacity-90 mt-0.5">{format(new Date(payment.due_date), 'MMM')}</span>
+                        <span className="text-sm md:text-base font-black uppercase tracking-widest opacity-90 mt-0.5">{format(new Date(payment.due_date), 'MMM', { locale: lang === 'he' ? he : undefined })}</span>
                     </div>
 
                     <div className="flex-1 min-w-0 space-y-1">
@@ -551,7 +552,7 @@ export function Payments() {
                     {showDivider && index !== 0 && (
                         <div className="flex items-center gap-4 py-6 px-2 opacity-60">
                             <div className="h-px flex-1 bg-border/50" />
-                            <span className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">{format(pDate, 'MMMM yyyy')}</span>
+                            <span className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">{format(pDate, 'MMMM yyyy', { locale: lang === 'he' ? he : undefined })}</span>
                             <div className="h-px flex-1 bg-border/50" />
                         </div>
                     )}
