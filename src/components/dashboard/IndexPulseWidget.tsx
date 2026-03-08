@@ -42,7 +42,7 @@ interface IndexPulseWidgetProps {
 const ALL_TYPES = ['cpi', 'housing'] as const;
 
 export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidgetProps) {
-    const { t } = useTranslation();
+    const { t, lang } = useTranslation();
     const navigate = useNavigate();
     const [pulses, setPulses] = useState<IndexPulse[]>([]);
     const [baseIndexes, setBaseIndexes] = useState<Record<string, number>>({});
@@ -254,8 +254,10 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
                                                     "flex items-center justify-end gap-1.5 text-base font-black px-2 py-1 rounded-md min-w-[80px]",
                                                     tracker.change > 0 ? "bg-rose-500/10 text-rose-600 dark:text-rose-400" : tracker.change < 0 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-slate-100 dark:bg-neutral-800 text-muted-foreground"
                                                 )}>
-                                                    {tracker.change > 0 ? <TrendingUp className="w-4 h-4" /> : tracker.change < 0 ? <TrendingDown className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
-                                                    {Math.abs(tracker.change).toFixed(2)}%
+                                                    <div className={cn(lang === 'he' && "-scale-x-100", "flex items-center justify-center")}>
+                                                        {tracker.change > 0 ? <TrendingUp className="w-4 h-4" /> : tracker.change < 0 ? <TrendingDown className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
+                                                    </div>
+                                                    <span dir="ltr">{tracker.change > 0 ? '+' : ''}{tracker.change.toFixed(2)}%</span>
                                                 </div>
                                             </div>
                                         ))}
