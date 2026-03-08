@@ -155,6 +155,7 @@ export function Dashboard() {
                 stats: finalStats,
                 storageCounts: summary?.storage_counts || storageCounts,
                 activeContracts: summary?.active_contracts || activeContracts,
+                feedItems: briefing,
                 counts: { properties: propertiesCount, contracts: contractsCount, tenants: totalTenants }
             }, { persist: true });
 
