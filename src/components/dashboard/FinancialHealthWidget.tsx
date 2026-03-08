@@ -95,7 +95,7 @@ export function FinancialHealthWidget({ stats }: FinancialHealthWidgetProps) {
                     <div className="grid grid-cols-2 gap-4 w-full md:w-auto mt-4 md:mt-0 bg-white/50 dark:bg-black/20 p-4 rounded-xl backdrop-blur-sm border border-black/5 dark:border-white/5">
                         <div className="space-y-1">
                             <span className="text-xs uppercase tracking-widest text-muted-foreground font-bold">
-                                {isRtl ? 'נאסף החודש' : 'Collected'}
+                                {isRtl ? 'שולם החודש' : 'Collected'}
                             </span>
                             <div className="flex items-center gap-1 text-secondary font-bold text-xl">
                                 <span>₪</span>
