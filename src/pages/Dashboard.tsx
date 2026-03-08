@@ -81,7 +81,7 @@ export function Dashboard() {
             setStats(cached.stats);
             setStorageCounts(cached.storageCounts);
             setActiveContracts(cached.activeContracts);
-            setFeedItems(cached.feedItems);
+            setFeedItems(cached.feedItems || []);
             setCounts(cached.counts || null);
             setIsRefetching(true); // Background update starts
             setLoading(false);

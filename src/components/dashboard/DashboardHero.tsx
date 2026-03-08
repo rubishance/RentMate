@@ -25,8 +25,7 @@ interface DashboardHeroProps {
 
 export function DashboardHero({ firstName, feedItems, showOnly }: DashboardHeroProps) {
     const { t, lang } = useTranslation();
-
-    const progressItems = feedItems;
+    const progressItems = feedItems || [];
 
 
     return (
