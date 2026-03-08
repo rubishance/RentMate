@@ -348,19 +348,19 @@ export function Payments() {
             <CardContent className="p-4 md:p-6 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4 md:gap-6 flex-1 min-w-0">
                     <div className={cn("w-14 h-14 md:w-16 md:h-16 rounded-2xl glass-premium flex flex-col items-center justify-center shrink-0 border border-white/10 group-hover:scale-105 transition-all duration-300", isActionNeeded ? "bg-rose-500/10 text-rose-600" : "")}>
-                        <span className="text-xl md:text-2xl font-black leading-none">{format(new Date(payment.due_date), 'dd')}</span>
-                        <span className="text-xs md:text-sm font-black uppercase tracking-widest opacity-90 mt-0.5">{format(new Date(payment.due_date), 'MMM')}</span>
+                        <span className="text-2xl md:text-3xl font-black leading-none">{format(new Date(payment.due_date), 'dd')}</span>
+                        <span className="text-sm md:text-base font-black uppercase tracking-widest opacity-90 mt-0.5">{format(new Date(payment.due_date), 'MMM')}</span>
                     </div>
 
                     <div className="flex-1 min-w-0 space-y-1">
                         <div className="flex items-center gap-3">
-                            <h3 className="text-lg md:text-xl font-black tracking-tight text-foreground truncate">
+                            <h3 className="text-xl md:text-2xl font-black tracking-tight text-foreground truncate">
                                 {Array.isArray(payment.contracts?.tenants)
                                     ? (payment.contracts.tenants[0]?.name || t('unnamedTenant'))
                                     : (payment.contracts?.tenants?.name || t('unnamedTenant'))}
                             </h3>
                             <span className={cn(
-                                "text-xs px-2.5 py-0.5 rounded-full uppercase font-black tracking-widest border shrink-0",
+                                "text-sm px-3 py-1 rounded-full uppercase font-black tracking-widest border shrink-0",
                                 payment.displayType === 'bill' ? 'bg-blue-500/10 text-primary border-primary/20' :
                                     payment.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
                                         payment.status === 'overdue' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' :
@@ -369,7 +369,7 @@ export function Payments() {
                                 {payment.displayType === 'bill' ? t('bills') : t(payment.status)}
                             </span>
                         </div>
-                        <p className="text-muted-foreground text-sm font-medium opacity-90 truncate">
+                        <p className="text-muted-foreground text-base font-medium opacity-90 truncate">
                             {payment.contracts?.properties?.address}, {payment.contracts?.properties?.city}
                         </p>
                     </div>
@@ -377,7 +377,7 @@ export function Payments() {
 
                 <div className="flex items-center gap-4 md:gap-8">
                     <div className="text-right hidden sm:block">
-                        <span className="text-sm font-black uppercase tracking-widest text-muted-foreground opacity-90 block">{payment.payment_method || '-'}</span>
+                        <span className="text-base font-black uppercase tracking-widest text-muted-foreground opacity-90 block">{payment.payment_method || '-'}</span>
                     </div>
                     <div className="text-right">
                         <div className="flex items-baseline gap-1 justify-end">
@@ -463,21 +463,21 @@ export function Payments() {
                             className="group hover:bg-white/50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer"
                         >
                             <td className="p-6">
-                                <div className="font-bold text-sm tracking-tight">{format(new Date(payment.due_date), 'dd/MM/yyyy')}</div>
+                                <div className="font-bold text-base tracking-tight">{format(new Date(payment.due_date), 'dd/MM/yyyy')}</div>
                             </td>
                             <td className="p-6">
-                                <span className="font-bold text-sm block truncate max-w-[150px]">
+                                <span className="font-bold text-base block truncate max-w-[150px]">
                                     {Array.isArray(payment.contracts?.tenants)
                                         ? (payment.contracts.tenants[0]?.name || t('unnamedTenant'))
                                         : (payment.contracts?.tenants?.name || t('unnamedTenant'))}
                                 </span>
                             </td>
-                            <td className="p-6 text-xs font-semibold text-muted-foreground max-w-[150px] truncate">
+                            <td className="p-6 text-sm font-semibold text-muted-foreground max-w-[150px] truncate">
                                 {payment.contracts?.properties?.address}
                             </td>
                             <td className="p-6">
                                 <span className={cn(
-                                    "text-[11px] px-2 py-0.5 rounded-full uppercase font-black tracking-widest border shrink-0 inline-block",
+                                    "text-xs px-2.5 py-1 rounded-full uppercase font-black tracking-widest border shrink-0 inline-block",
                                     payment.displayType === 'bill' ? 'bg-blue-500/10 text-primary border-primary/20' :
                                         payment.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
                                             payment.status === 'overdue' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' :
