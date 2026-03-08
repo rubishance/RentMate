@@ -550,7 +550,7 @@ export function Payments() {
             return (
                 <React.Fragment key={payment.id || index}>
                     {showDivider && index !== 0 && (
-                        <div className="flex items-center gap-4 py-6 px-2 opacity-60">
+                        <div className="flex items-center gap-4 py-3.5 px-2 opacity-60">
                             <div className="h-px flex-1 bg-border/50" />
                             <span className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">{format(pDate, 'MMMM yyyy', { locale: lang === 'he' ? he : undefined })}</span>
                             <div className="h-px flex-1 bg-border/50" />
