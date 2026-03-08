@@ -381,34 +381,34 @@ export function Payments() {
                         <span className="text-base font-black uppercase tracking-widest text-muted-foreground opacity-90 block">{payment.payment_method || '-'}</span>
                     </div>
                     <div className="text-right">
-                        <div className="flex items-baseline gap-1 justify-end">
-                            <span className={cn("text-sm md:text-base font-black opacity-40", isActionNeeded ? "text-rose-500" : "text-foreground")}>₪</span>
-                            <div className="flex flex-col items-end">
+                        <div className="flex flex-col items-end">
+                            <div className="flex items-baseline gap-1 justify-end">
+                                <span className={cn("text-sm md:text-base font-black opacity-40", isActionNeeded ? "text-rose-500" : "text-foreground")}>₪</span>
                                 <span className={cn("text-2xl md:text-3xl font-black tracking-tight", isActionNeeded ? "text-rose-600" : "text-foreground")}>
                                     {formatCurrency(payment.paid_amount || payment.amount)}
                                 </span>
-                                {(() => {
-                                    const expectedAmount = payment.displayType === 'rent' && indexedAmounts[payment.id] ? indexedAmounts[payment.id] : payment.amount;
-                                    const currentPaidAmount = payment.paid_amount || payment.amount;
-                                    const isPaid = payment.status === 'paid';
-                                    const diff = currentPaidAmount - expectedAmount!;
-
-                                    return (
-                                        <>
-                                            {payment.displayType === 'rent' && indexedAmounts[payment.id] && (
-                                                <span className="text-sm text-muted-foreground font-medium leading-none mt-1">
-                                                    {t('indexed')}: ₪{formatCurrency(indexedAmounts[payment.id]!)}
-                                                </span>
-                                            )}
-                                            {isPaid && Math.abs(diff) > 1 && (
-                                                <span className={cn("text-sm font-black leading-none mt-1", diff > 0 ? "text-emerald-500" : "text-rose-500")}>
-                                                    {t('diff')} {diff > 0 ? '(עודף)' : '(חסר)'}: {diff > 0 ? '+' : ''}{formatCurrency(diff)}
-                                                </span>
-                                            )}
-                                        </>
-                                    );
-                                })()}
                             </div>
+                            {(() => {
+                                const expectedAmount = payment.displayType === 'rent' && indexedAmounts[payment.id] ? indexedAmounts[payment.id] : payment.amount;
+                                const currentPaidAmount = payment.paid_amount || payment.amount;
+                                const isPaid = payment.status === 'paid';
+                                const diff = currentPaidAmount - expectedAmount!;
+
+                                return (
+                                    <>
+                                        {payment.displayType === 'rent' && indexedAmounts[payment.id] && (
+                                            <span className="text-sm text-muted-foreground font-medium leading-none mt-1">
+                                                {t('indexed')}: ₪{formatCurrency(indexedAmounts[payment.id]!)}
+                                            </span>
+                                        )}
+                                        {isPaid && Math.abs(diff) > 1 && (
+                                            <span className={cn("text-sm font-black leading-none mt-1", diff > 0 ? "text-emerald-500" : "text-rose-500")}>
+                                                {t('diff')} {diff > 0 ? '(עודף)' : '(חסר)'}: {diff > 0 ? '+' : ''}{formatCurrency(diff)}
+                                            </span>
+                                        )}
+                                    </>
+                                );
+                            })()}
                         </div>
                     </div>
 
