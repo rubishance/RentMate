@@ -83,7 +83,6 @@ export function Dashboard() {
             setActiveContracts(cached.activeContracts);
             setFeedItems(cached.feedItems);
             setCounts(cached.counts || null);
-            setLayout(cached.layout || layout);
             setIsRefetching(true); // Background update starts
             setLoading(false);
         }
@@ -156,9 +155,7 @@ export function Dashboard() {
                 stats: finalStats,
                 storageCounts: summary?.storage_counts || storageCounts,
                 activeContracts: summary?.active_contracts || activeContracts,
-                feedItems: briefing,
-                counts: { properties: propertiesCount, contracts: contractsCount, tenants: totalTenants },
-                layout
+                counts: { properties: propertiesCount, contracts: contractsCount, tenants: totalTenants }
             }, { persist: true });
 
             setFeedItems(briefing);
