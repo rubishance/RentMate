@@ -540,7 +540,7 @@ export function ContractHub({
           <div className="flex items-center gap-3">
             <div
               className={cn(
-                "hidden md:flex px-3 py-1.5 glass-premium dark:bg-white/5 rounded-full text-[10px] font-black uppercase tracking-widest items-center gap-2 border border-white/5 shadow-minimal",
+                "hidden md:flex px-3 py-1.5 glass-premium dark:bg-white/5 rounded-full text-xs font-black uppercase tracking-widest items-center gap-2 border border-white/5 shadow-minimal",
                 contract.status === "active"
                   ? "text-emerald-500"
                   : contract.status === "draft"
@@ -747,7 +747,7 @@ export function ContractHub({
             <div className="flex md:hidden flex-wrap items-center justify-center gap-2 mt-4">
               <div
                 className={cn(
-                  "px-3 py-1.5 glass-premium dark:bg-white/5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-white/5 shadow-minimal",
+                  "px-3 py-1.5 glass-premium dark:bg-white/5 rounded-full text-xs font-black uppercase tracking-widest flex items-center gap-2 border border-white/5 shadow-minimal",
                   contract.status === "active"
                     ? "text-emerald-500"
                     : contract.status === "draft"
@@ -772,7 +772,7 @@ export function ContractHub({
                   href={signedUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="px-3 py-1.5 glass-premium dark:bg-white/5 text-primary rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-white/10 transition-all border border-white/5 shadow-minimal"
+                  className="px-3 py-1.5 glass-premium dark:bg-white/5 text-primary rounded-full text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:bg-white/10 transition-all border border-white/5 shadow-minimal"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
                   {lang === "he" ? "צפייה בחוזה" : "View PDF"}
@@ -1052,7 +1052,7 @@ export function ContractHub({
 
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                  <label className="text-[10px] font-bold text-muted-foreground uppercase block">
+                                  <label className="text-xs font-bold text-muted-foreground uppercase block">
                                     {t("endDate")}
                                   </label>
                                   <DatePicker
@@ -1076,7 +1076,7 @@ export function ContractHub({
                                   />
                                 </div>
                                 <div className="space-y-1">
-                                  <label className="text-[10px] font-bold text-muted-foreground uppercase block">
+                                  <label className="text-xs font-bold text-muted-foreground uppercase block">
                                     {t("optionRent")}
                                   </label>
                                   <Input
@@ -1104,7 +1104,7 @@ export function ContractHub({
 
                               <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                  <label className="text-[10px] font-bold text-muted-foreground uppercase block">
+                                  <label className="text-xs font-bold text-muted-foreground uppercase block">
                                     {t("optionNoticeDays")}
                                   </label>
                                   <Input
@@ -1126,7 +1126,7 @@ export function ContractHub({
                                   />
                                 </div>
                                 <div className="space-y-1">
-                                  <label className="text-[10px] font-bold text-muted-foreground uppercase block">
+                                  <label className="text-xs font-bold text-muted-foreground uppercase block">
                                     {t("optionReminderDays")}
                                   </label>
                                   <Input
@@ -1193,7 +1193,7 @@ export function ContractHub({
                                 )}
                                 {option.noticeDays && (
                                   <div className="text-right">
-                                    <span className="text-[10px] text-muted-foreground block uppercase font-bold tracking-wider">
+                                    <span className="text-xs text-muted-foreground block uppercase font-bold tracking-wider">
                                       {t("optionNoticeDays")}
                                     </span>
                                     <span className="font-bold text-sm">
@@ -1203,7 +1203,7 @@ export function ContractHub({
                                 )}
                                 {option.reminderDays && (
                                   <div className="text-right">
-                                    <span className="text-[10px] text-muted-foreground block uppercase font-bold tracking-wider">
+                                    <span className="text-xs text-muted-foreground block uppercase font-bold tracking-wider">
                                       {t("optionReminderDays")}
                                     </span>
                                     <span className="font-bold text-sm text-brand-600 dark:text-brand-400">
@@ -1378,7 +1378,7 @@ export function ContractHub({
                     {formData.linkage_type !== "none" && (
                       <div className="space-y-4">
                         <div className="space-y-2">
-                          <label className="text-[10px] font-bold text-muted-foreground uppercase block mb-1">
+                          <label className="text-xs font-bold text-muted-foreground uppercase block mb-1">
                             {t("linkageMethod")}
                           </label>
                           <SegmentedControl
@@ -1404,7 +1404,7 @@ export function ContractHub({
 
                         <div className="flex justify-between items-center p-3 bg-secondary/10 rounded-xl">
                           <div className="flex-1">
-                            <label className="text-[10px] font-bold text-muted-foreground uppercase block mb-1">
+                            <label className="text-xs font-bold text-muted-foreground uppercase block mb-1">
                               {t("baseDate")}
                             </label>
                             <DatePicker
@@ -1426,7 +1426,7 @@ export function ContractHub({
                             />
                           </div>
                           <div className="flex-shrink-0 text-left min-w-[80px]">
-                            <label className="text-[10px] font-bold text-muted-foreground uppercase block mb-1">
+                            <label className="text-xs font-bold text-muted-foreground uppercase block mb-1">
                               {t("baseIndex")}
                             </label>
                             <div className="h-10 flex items-center justify-end text-sm text-muted-foreground">
@@ -1439,7 +1439,7 @@ export function ContractHub({
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1 block">
+                            <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">
                               {t("restrictions")}
                             </label>
                             <div className="flex items-center gap-2">
@@ -1462,12 +1462,12 @@ export function ContractHub({
                                 }
                               />
                             </div>
-                            <span className="text-[10px] font-medium text-muted-foreground block text-center mt-1">
+                            <span className="text-xs font-medium text-muted-foreground block text-center mt-1">
                               {t("ceilingLabel")}
                             </span>
                           </div>
                           <div>
-                            <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1 block opacity-0">
+                            <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block opacity-0">
                               {t("restrictions")}
                             </label>
                             <div className="flex h-10 w-full items-center justify-center">
@@ -1492,7 +1492,7 @@ export function ContractHub({
                                 disabled={readOnly}
                               />
                             </div>
-                            <span className="text-[10px] font-medium text-muted-foreground block text-center mt-1">
+                            <span className="text-xs font-medium text-muted-foreground block text-center mt-1">
                               {t("floorLabel")}
                             </span>
                           </div>
@@ -1526,7 +1526,7 @@ export function ContractHub({
                         {!readOnly ? (
                           <div className="flex-1 flex flex-col md:flex-row gap-4 items-end">
                             <div className="flex-1 w-full">
-                              <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1 block">
+                              <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">
                                 {t("stepDate")}
                               </label>
                               <DatePicker
@@ -1548,7 +1548,7 @@ export function ContractHub({
                               />
                             </div>
                             <div className="flex-1 w-full">
-                              <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1 block">
+                              <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">
                                 {t("newAmount")}
                               </label>
                               <Input

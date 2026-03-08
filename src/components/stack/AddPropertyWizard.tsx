@@ -249,7 +249,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                         {STEPS[currentStep].icon}
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40 leading-none mb-1">
+                        <span className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground opacity-70 leading-none mb-1">
                             {t('step')} {currentStep + 1} / {STEPS.length}
                         </span>
                         <span className="font-black text-xl tracking-tighter text-foreground leading-none lowercase">
@@ -284,7 +284,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                 <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground leading-tight lowercase">
                                     <bdi>{t(STEPS[currentStep].questionKey as any)}</bdi>
                                 </h2>
-                                <p className="text-muted-foreground text-lg font-medium opacity-40 max-w-md mx-auto">
+                                <p className="text-muted-foreground text-lg font-medium opacity-70 max-w-md mx-auto">
                                     {t('wizard_desc') || 'We help you categorize and manage your assets effectively.'}
                                 </p>
                             </div>
@@ -301,7 +301,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                             <motion.div variants={itemVariants} className="space-y-4">
                                                 <ValidatedField isValid={!!formData.property_type}>
                                                     <div className="p-6 rounded-[2rem] bg-white dark:bg-neutral-800/30 border border-slate-100 dark:border-neutral-700 mb-4">
-                                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block mb-4 text-center">
+                                                        <label className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block mb-4 text-center">
                                                             {t('selectCategory')}
                                                         </label>
                                                         <PropertyTypeSelect
@@ -368,7 +368,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                 <div className="col-span-1 md:col-span-2 space-y-6">
                                                     <div className="flex items-center justify-between px-2">
                                                         <div className="h-px flex-1 bg-muted/50 dark:bg-neutral-800" />
-                                                        <span className="mx-4 text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-50">
+                                                        <span className="mx-4 text-xs font-black uppercase tracking-[0.3em] text-muted-foreground opacity-80">
                                                             {t('amenities')}
                                                         </span>
                                                         <div className="h-px flex-1 bg-muted/50 dark:bg-neutral-800" />
@@ -428,7 +428,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                                 size="sm"
                                                                 variant="ghost"
                                                                 onClick={() => setUploadMode('upload')}
-                                                                className={cn("px-3 py-1 text-[10px] font-black uppercase h-7", uploadMode === 'upload' ? "bg-white dark:bg-neutral-700 text-primary shadow-sm hover:bg-white dark:hover:bg-neutral-700" : "text-muted-foreground hover:bg-transparent hover:text-foreground")}
+                                                                className={cn("px-3 py-1 text-xs font-black uppercase h-7", uploadMode === 'upload' ? "bg-white dark:bg-neutral-700 text-primary shadow-sm hover:bg-white dark:hover:bg-neutral-700" : "text-muted-foreground hover:bg-transparent hover:text-foreground")}
                                                             >
                                                                 {t('upload') || 'Upload'}
                                                             </Button>
@@ -439,7 +439,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                                     setUploadMode('url');
                                                                     handleGoogleMapsFetch();
                                                                 }}
-                                                                className={cn("px-3 py-1 text-[10px] font-black uppercase h-7", uploadMode === 'url' ? "bg-white dark:bg-neutral-700 text-primary shadow-sm hover:bg-white dark:hover:bg-neutral-700" : "text-muted-foreground hover:bg-transparent hover:text-foreground")}
+                                                                className={cn("px-3 py-1 text-xs font-black uppercase h-7", uploadMode === 'url' ? "bg-white dark:bg-neutral-700 text-primary shadow-sm hover:bg-white dark:hover:bg-neutral-700" : "text-muted-foreground hover:bg-transparent hover:text-foreground")}
                                                             >
                                                                 Google Maps
                                                             </Button>
@@ -449,7 +449,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                     {uploadMode === 'url' && isFetchingMap && (
                                                         <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-slate-200 dark:border-neutral-800 rounded-[2rem] bg-background/50 dark:bg-neutral-800/20">
                                                             <Loader2 className="w-8 h-8 text-primary animate-spin mb-4" />
-                                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">
+                                                            <span className="text-xs font-black uppercase tracking-widest text-muted-foreground animate-pulse">
                                                                 {t('fetchingStreetView')}
                                                             </span>
                                                         </div>
@@ -470,7 +470,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                                 ) : (
                                                                     <Upload className="w-8 h-8 text-slate-300 group-hover:text-primary transition-all" />
                                                                 )}
-                                                                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                                                                <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">
                                                                     {isUploading ? t('uploading_ellipsis') : t('clickToUploadPicture')}
                                                                 </span>
                                                             </div>

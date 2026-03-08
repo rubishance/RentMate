@@ -128,7 +128,7 @@ export function RentyCommandCenter({ firstName, feedItems, className }: RentyCom
                         className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/5 dark:bg-indigo-500/10 backdrop-blur-md rounded-full border border-indigo-500/10 shadow-sm mb-2"
                     >
                         <Sparkles className="w-3 h-3 text-indigo-500" />
-                        <span className="text-[9px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                        <span className="text-[11px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
                             {t('commandCenter')}
                         </span>
                     </motion.div>
@@ -278,7 +278,7 @@ export function RentyCommandCenter({ firstName, feedItems, className }: RentyCom
                                             )}>
                                                 {item.type === 'urgent' || item.type === 'warning' ? <AlertCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
                                             </div>
-                                            <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground opacity-60">{item.date}</span>
+                                            <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground opacity-90">{item.date}</span>
                                         </div>
 
                                         <h3 className="font-bold text-sm leading-tight mb-2 line-clamp-2 text-foreground">
@@ -289,7 +289,7 @@ export function RentyCommandCenter({ firstName, feedItems, className }: RentyCom
                                         </p>
                                     </div>
 
-                                    <div className="flex items-center gap-2 text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest group-hover:underline decoration-2 underline-offset-4 decoration-indigo-200">
+                                    <div className="flex items-center gap-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest group-hover:underline decoration-2 underline-offset-4 decoration-indigo-200">
                                         {t('rentySuggestsAction')}
                                         <ArrowRight className={cn("w-3 h-3 transition-transform group-hover:translate-x-1", isRtl && "rotate-180 group-hover:-translate-x-1")} />
                                     </div>

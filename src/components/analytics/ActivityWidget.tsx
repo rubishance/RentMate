@@ -127,7 +127,7 @@ export function ActivityWidget() {
                                     tick={{ fill: 'currentColor', fontSize: 10, fontWeight: 700 }}
                                     axisLine={false}
                                     tickLine={false}
-                                    className="text-muted-foreground opacity-60"
+                                    className="text-muted-foreground opacity-90"
                                     dy={10}
                                 />
                                 <Tooltip
@@ -156,7 +156,7 @@ export function ActivityWidget() {
                                     tick={{ fill: 'currentColor', fontSize: 10, fontWeight: 700 }}
                                     axisLine={false}
                                     tickLine={false}
-                                    className="text-muted-foreground opacity-60"
+                                    className="text-muted-foreground opacity-90"
                                     dy={10}
                                 />
                                 <Tooltip
@@ -187,7 +187,7 @@ export function ActivityWidget() {
                     {topPages.map((page, index) => (
                         <div key={index} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5">
                             <div className="flex items-center gap-3">
-                                <span className="w-6 h-6 flex items-center justify-center rounded-full bg-white/10 text-[10px] font-black text-muted-foreground">
+                                <span className="w-6 h-6 flex items-center justify-center rounded-full bg-white/10 text-xs font-black text-muted-foreground">
                                     {index + 1}
                                 </span>
                                 <span className="text-sm font-bold text-foreground font-mono">{page.path}</span>

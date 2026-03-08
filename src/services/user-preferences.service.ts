@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import type { UserPreferences, Language, Gender, Theme } from '../types/database';
+import type { UserPreferences, Language, Gender, Theme, AccessibilityPreferences } from '../types/database';
 
 const STORAGE_KEY = 'userPreferences';
 
@@ -12,6 +12,12 @@ const DEFAULT_PREFERENCES: UserPreferences = {
     seen_features: [],
     disclaimer_accepted: false,
     ai_data_consent: false,
+    accessibility: {
+        highContrast: false,
+        largeText: false,
+        reducedMotion: false,
+        dyslexiaFont: false,
+    },
 };
 
 /**
@@ -56,6 +62,7 @@ export const userPreferencesService = {
                     seen_features: parsed.seen_features || DEFAULT_PREFERENCES.seen_features,
                     disclaimer_accepted: parsed.disclaimer_accepted ?? DEFAULT_PREFERENCES.disclaimer_accepted,
                     ai_data_consent: parsed.ai_data_consent ?? DEFAULT_PREFERENCES.ai_data_consent,
+                    accessibility: parsed.accessibility || DEFAULT_PREFERENCES.accessibility,
                 };
             }
         } catch (error) {
@@ -132,6 +139,7 @@ export const userPreferencesService = {
                     seen_features: data.seen_features || [],
                     disclaimer_accepted: data.disclaimer_accepted ?? false,
                     ai_data_consent: data.ai_data_consent ?? false,
+                    accessibility: data.accessibility || DEFAULT_PREFERENCES.accessibility,
                 };
                 this.savePreferences(preferences); // Update local cache
                 return preferences;
@@ -272,6 +280,22 @@ export const userPreferencesService = {
         const updated: UserPreferences = {
             ...current,
             ai_data_consent: consent,
+        };
+        this.savePreferences(updated);
+        return updated;
+    },
+
+    /**
+     * Set accessibility preferences
+     */
+    setAccessibility(options: Partial<AccessibilityPreferences>): UserPreferences {
+        const current = this.getUserPreferences();
+        const updated: UserPreferences = {
+            ...current,
+            accessibility: {
+                ...(current.accessibility || DEFAULT_PREFERENCES.accessibility!),
+                ...options
+            },
         };
         this.savePreferences(updated);
         return updated;

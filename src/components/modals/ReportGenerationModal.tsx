@@ -68,13 +68,13 @@ export function ReportGenerationModal({ isOpen, onClose, propertyId }: ReportGen
                     <FileText className="w-8 h-8 text-indigo-500" />
                     <div>
                         <h4 className="text-sm font-black text-foreground">Professional Reporting</h4>
-                        <p className="text-[10px] font-medium text-muted-foreground">Comprehensive financial summary for property owners</p>
+                        <p className="text-xs font-medium text-muted-foreground">Comprehensive financial summary for property owners</p>
                     </div>
                 </div>
 
                 {!propertyId && (
                     <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">Select Property</label>
+                        <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-2">Select Property</label>
                         <select
                             value={selectedPropertyId}
                             onChange={(e) => setSelectedPropertyId(e.target.value)}
@@ -90,7 +90,7 @@ export function ReportGenerationModal({ isOpen, onClose, propertyId }: ReportGen
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">Start Date</label>
+                        <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-2">Start Date</label>
                         <DatePicker
                             value={dateRange.start ? parseISO(dateRange.start) : undefined}
                             onChange={(date) => setDateRange(prev => ({ ...prev, start: date ? format(date, 'yyyy-MM-dd') : '' }))}
@@ -98,7 +98,7 @@ export function ReportGenerationModal({ isOpen, onClose, propertyId }: ReportGen
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">End Date</label>
+                        <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-2">End Date</label>
                         <DatePicker
                             value={dateRange.end ? parseISO(dateRange.end) : undefined}
                             onChange={(date) => setDateRange(prev => ({ ...prev, end: date ? format(date, 'yyyy-MM-dd') : '' }))}
@@ -110,7 +110,7 @@ export function ReportGenerationModal({ isOpen, onClose, propertyId }: ReportGen
                 <button
                     onClick={handleGenerate}
                     disabled={generating || !selectedPropertyId}
-                    className="w-full h-16 bg-foreground text-background rounded-[1.5rem] font-black uppercase text-xs tracking-[0.2em] shadow-premium-dark hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                    className="w-full h-16 bg-foreground text-background rounded-[1.5rem] font-black uppercase text-xs tracking-[0.2em] shadow-premium-dark hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-80"
                 >
                     {generating ? (
                         <Loader2 className="w-5 h-5 animate-spin" />

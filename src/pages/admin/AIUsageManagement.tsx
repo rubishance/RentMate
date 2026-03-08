@@ -230,7 +230,7 @@ export default function AIUsageManagement() {
                             <MessageSquare className="w-6 h-6 text-blue-600" />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Total Messages</p>
+                            <p className="text-xs font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Total Messages</p>
                             <p className="text-2xl font-black text-gray-900 dark:text-white">{totalMessages.toLocaleString()}</p>
                         </div>
                     </div>
@@ -242,7 +242,7 @@ export default function AIUsageManagement() {
                             <TrendingUp className="w-6 h-6 text-emerald-600" />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Tokens Used</p>
+                            <p className="text-xs font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Tokens Used</p>
                             <p className="text-2xl font-black text-gray-900 dark:text-white">{(totalTokens / 1000).toFixed(1)}K</p>
                         </div>
                     </div>
@@ -254,7 +254,7 @@ export default function AIUsageManagement() {
                             <Users className="w-6 h-6 text-primary" />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Active Chatters</p>
+                            <p className="text-xs font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Active Chatters</p>
                             <p className="text-2xl font-black text-gray-900 dark:text-white">{activeUsers}</p>
                         </div>
                     </div>
@@ -266,7 +266,7 @@ export default function AIUsageManagement() {
                             <ArrowPathIcon className="w-6 h-6 text-amber-600" />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">WhatsApp Sent</p>
+                            <p className="text-xs font-black text-gray-400 uppercase tracking-widest leading-none mb-1">WhatsApp Sent</p>
                             <p className="text-2xl font-black text-gray-900 dark:text-white">{totalWhatsApp.toLocaleString()}</p>
                         </div>
                     </div>
@@ -284,11 +284,11 @@ export default function AIUsageManagement() {
                     <table className="w-full text-right" dir="rtl">
                         <thead>
                             <tr className="bg-gray-50 dark:bg-gray-900/30">
-                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Pricing Tier</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">AI Msg / Mo</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">AI Token / Mo</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">WhatsApp / Mo</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Est. AI Cost</th>
+                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Pricing Tier</th>
+                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-center">AI Msg / Mo</th>
+                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-center">AI Token / Mo</th>
+                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-center">WhatsApp / Mo</th>
+                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Est. AI Cost</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -301,7 +301,7 @@ export default function AIUsageManagement() {
                                 return (
                                     <tr key={limit.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                                         <td className="px-6 py-5">
-                                            <span className={`px-2.5 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg border ${getTierColor(limit.tier_name)}`}>
+                                            <span className={`px-2.5 py-1 text-xs font-black uppercase tracking-widest rounded-lg border ${getTierColor(limit.tier_name)}`}>
                                                 {limit.tier_name}
                                             </span>
                                         </td>
@@ -351,12 +351,12 @@ export default function AIUsageManagement() {
                     <table className="w-full text-right" dir="rtl">
                         <thead>
                             <tr className="bg-gray-50 dark:bg-gray-900/30">
-                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">User Context</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Tier</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">AI Activity</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">WhatsApp</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">AI Usage</th>
-                                <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Last Reset</th>
+                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">User Context</th>
+                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Tier</th>
+                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-center">AI Activity</th>
+                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-center">WhatsApp</th>
+                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">AI Usage</th>
+                                <th className="px-6 py-4 text-left text-xs font-black text-gray-400 uppercase tracking-widest">Last Reset</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -373,20 +373,20 @@ export default function AIUsageManagement() {
                                         <tr key={u.user_id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                                             <td className="px-6 py-5">
                                                 <div className="font-bold text-gray-900 dark:text-white text-sm">{u.user_email || 'Unknown User'}</div>
-                                                <div className="text-[10px] text-gray-400 font-mono tracking-tighter">{u.user_id.split('-')[0]}...</div>
+                                                <div className="text-xs text-gray-400 font-mono tracking-tighter">{u.user_id.split('-')[0]}...</div>
                                             </td>
                                             <td className="px-6 py-5">
-                                                <span className={`px-2 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg border ${getTierColor(u.subscription_tier || 'free')}`}>
+                                                <span className={`px-2 py-1 text-xs font-black uppercase tracking-widest rounded-lg border ${getTierColor(u.subscription_tier || 'free')}`}>
                                                     {u.subscription_tier || 'free'}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-5 text-center">
                                                 <div className="font-black text-gray-900 dark:text-white text-sm">{u.message_count} msgs</div>
-                                                <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{u.tokens_used.toLocaleString()} tokens</div>
+                                                <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">{u.tokens_used.toLocaleString()} tokens</div>
                                             </td>
                                             <td className="px-6 py-5 text-center">
                                                 <div className="font-black text-brand-600 dark:text-brand-400 text-sm">{u.whatsapp_messages || 0}</div>
-                                                <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">sent msgs</div>
+                                                <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">sent msgs</div>
                                             </td>
                                             <td className="px-6 py-5 w-48">
                                                 <div className="space-y-1.5">
@@ -397,7 +397,7 @@ export default function AIUsageManagement() {
                                                                 style={{ width: `${messagePercent}%` }}
                                                             />
                                                         </div>
-                                                        <span className="text-[10px] font-black text-gray-900 dark:text-white min-w-[3ch]">{messagePercent.toFixed(0)}%</span>
+                                                        <span className="text-xs font-black text-gray-900 dark:text-white min-w-[3ch]">{messagePercent.toFixed(0)}%</span>
                                                     </div>
                                                 </div>
                                             </td>

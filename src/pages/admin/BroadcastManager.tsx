@@ -169,7 +169,7 @@ export default function BroadcastManager() {
                         <button
                             onClick={handleSave}
                             disabled={saving}
-                            className="px-8 py-2.5 bg-emerald-600 text-white rounded-xl font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20 disabled:opacity-50 flex items-center gap-2"
+                            className="px-8 py-2.5 bg-emerald-600 text-white rounded-xl font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20 disabled:opacity-80 flex items-center gap-2"
                         >
                             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircleIcon className="w-4 h-4" />}
                             Publish Announcement
@@ -182,10 +182,10 @@ export default function BroadcastManager() {
                 <table className="w-full text-left">
                     <thead>
                         <tr className="bg-gray-50 dark:bg-gray-900/30">
-                            <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
-                            <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Announcement</th>
-                            <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Expiry</th>
-                            <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
+                            <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Status</th>
+                            <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Announcement</th>
+                            <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-center">Expiry</th>
+                            <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -196,7 +196,7 @@ export default function BroadcastManager() {
                                 <tr key={b.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                                     <td className="px-6 py-5">
                                         <span className={cn(
-                                            "px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest",
+                                            "px-2 py-0.5 rounded text-[11px] font-black uppercase tracking-widest",
                                             b.is_active ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-400"
                                         )}>
                                             {b.is_active ? 'Active' : 'Archived'}
@@ -213,7 +213,7 @@ export default function BroadcastManager() {
                                             <div className="text-sm font-bold text-gray-900 dark:text-white">{b.message}</div>
                                         </div>
                                         {b.target_link && (
-                                            <div className="mt-1 flex items-center gap-1 text-[10px] font-bold text-brand-600 uppercase">
+                                            <div className="mt-1 flex items-center gap-1 text-xs font-bold text-brand-600 uppercase">
                                                 <LinkIcon className="w-3 h-3" />
                                                 {b.target_link}
                                             </div>
@@ -225,12 +225,12 @@ export default function BroadcastManager() {
                                                 <div className="text-xs font-black text-gray-900 dark:text-white">
                                                     {new Date(b.expires_at).toLocaleDateString('he-IL')}
                                                 </div>
-                                                <div className="text-[10px] font-bold text-gray-400">
+                                                <div className="text-xs font-bold text-gray-400">
                                                     {new Date(b.expires_at).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className="text-[10px] font-black text-gray-300 uppercase">Perpetual</div>
+                                            <div className="text-xs font-black text-gray-300 uppercase">Perpetual</div>
                                         )}
                                     </td>
                                     <td className="px-6 py-5 text-right">

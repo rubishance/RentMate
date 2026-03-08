@@ -5,22 +5,36 @@ import { getLatestIndex, getIndexValue } from '../../services/index-data.service
 import { format, subMonths } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../../lib/utils';
-import { Activity, TrendingUp, TrendingDown, Minus, Clock, ArrowRight, Settings2, Check, X } from 'lucide-react';
+import { Activity, TrendingUp, TrendingDown, Minus, Clock, ArrowRight, Settings2, Check, X, Plus, Trash2 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../ui/Card';
 import { Button } from '../ui/Button';
+import { DatePicker } from '../ui/DatePicker';
+import { SegmentedControl } from '../ui/SegmentedControl';
+
+export interface TrackedIndex {
+    id: string;
+    type: 'cpi' | 'housing';
+    method: 'known' | 'base';
+    date: string;
+}
 
 interface IndexPulse {
     id: string;
+    trackedId: string;
     type: 'cpi' | 'housing';
     value: number;
+    baseValue: number;
     date: string;
     change: number;
+    configDate: string;
+    method: 'known' | 'base';
 }
 
 interface IndexPulseWidgetProps {
     settings?: {
-        displayedIndices?: string[]; // Array of types
-        baseDates?: Record<string, string>; // { [type]: 'YYYY-MM' }
+        trackedIndices?: TrackedIndex[];
+        displayedIndices?: string[]; // Legacy Support
+        baseDates?: Record<string, string>; // Legacy Support
     };
     onUpdateSettings: (settings: any) => void;
 }
@@ -35,64 +49,89 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
     const [isLoading, setIsLoading] = useState(true);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-    // Initial default date (last month)
-    const defaultDate = useMemo(() => format(subMonths(new Date(), 1), 'yyyy-MM'), []);
+    const defaultDate = useMemo(() => format(subMonths(new Date(), 1), 'yyyy-MM-dd'), []);
 
     // Local state for settings
-    const [localBaseDates, setLocalBaseDates] = useState<Record<string, string>>(
-        settings?.baseDates || ALL_TYPES.reduce((acc, type) => ({ ...acc, [type]: defaultDate }), {})
-    );
+    const [localIndices, setLocalIndices] = useState<TrackedIndex[]>(() => {
+        if (settings?.trackedIndices && settings.trackedIndices.length > 0) {
+            return settings.trackedIndices;
+        }
 
-    const displayedIndices = useMemo(() => {
-        return settings?.displayedIndices || ['cpi', 'housing'];
-    }, [settings?.displayedIndices]);
+        // Migrate old settings
+        if (settings?.displayedIndices) {
+            return settings.displayedIndices.map(type => ({
+                id: crypto.randomUUID(),
+                type: type as 'cpi' | 'housing',
+                method: 'base' as const,
+                date: settings.baseDates?.[type] ? format(new Date(settings.baseDates[type]), 'yyyy-MM-dd') : defaultDate
+            }));
+        }
+
+        // Default
+        return [
+            { id: crypto.randomUUID(), type: 'cpi', method: 'known', date: defaultDate },
+            { id: crypto.randomUUID(), type: 'housing', method: 'known', date: defaultDate }
+        ];
+    });
+
+    // Reset local state when settings change from outside (optional, but good practice)
+    useEffect(() => {
+        if (settings?.trackedIndices) {
+            setLocalIndices(settings.trackedIndices);
+        }
+    }, [settings?.trackedIndices]);
 
     useEffect(() => {
         let mounted = true;
 
         async function loadData() {
             try {
-                // 1. Load latest pulses
-                const pulseResults = await Promise.all(
-                    ALL_TYPES.map(async type => {
-                        const latest = await getLatestIndex(type);
+                const activeIndices = settings?.trackedIndices || localIndices;
+                if (!activeIndices || activeIndices.length === 0) {
+                    if (mounted) {
+                        setPulses([]);
+                        setIsLoading(false);
+                    }
+                    return;
+                }
+
+                const results = await Promise.all(
+                    activeIndices.map(async (tracked) => {
+                        const latest = await getLatestIndex(tracked.type);
                         if (!latest) return null;
+
+                        let effectiveBaseDate = tracked.date.slice(0, 7);
+                        if (tracked.method === 'known') {
+                            const d = new Date(tracked.date);
+                            if (d.getDate() <= 15) {
+                                d.setMonth(d.getMonth() - 1);
+                            }
+                            effectiveBaseDate = format(d, 'yyyy-MM');
+                        }
+
+                        const baseVal = await getIndexValue(tracked.type, effectiveBaseDate);
+
+                        let change = 0;
+                        if (baseVal) {
+                            change = ((latest.value - baseVal) / baseVal) * 100;
+                        }
+
                         return {
-                            id: `pulse-${type}`,
-                            type,
+                            id: `pulse-${tracked.id}`,
+                            trackedId: tracked.id,
+                            type: tracked.type,
                             value: latest.value,
+                            baseValue: baseVal || 0,
                             date: latest.date,
-                            change: 0
+                            change: change,
+                            configDate: tracked.date,
+                            method: tracked.method
                         } as IndexPulse;
                     })
                 );
 
-                // 2. Load base indexes based on per-type dates
-                const currentBaseDates = settings?.baseDates || localBaseDates;
-                const baseIndexResults: Record<string, number> = {};
-
-                await Promise.all(
-                    ALL_TYPES.map(async type => {
-                        const date = currentBaseDates[type];
-                        if (date) {
-                            const val = await getIndexValue(type, date);
-                            if (val) baseIndexResults[type] = val;
-                        }
-                    })
-                );
-
                 if (mounted) {
-                    setBaseIndexes(baseIndexResults);
-
-                    const processedPulses = (pulseResults.filter(Boolean) as IndexPulse[]).map(p => {
-                        const baseVal = baseIndexResults[p.type];
-                        if (baseVal) {
-                            p.change = ((p.value - baseVal) / baseVal) * 100;
-                        }
-                        return p;
-                    });
-
-                    setPulses(processedPulses);
+                    setPulses(results.filter(Boolean) as IndexPulse[]);
                     setIsLoading(false);
                 }
             } catch (error) {
@@ -103,22 +142,38 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
 
         loadData();
         return () => { mounted = false; };
-    }, [settings?.baseDates]);
+    }, [settings?.trackedIndices]);
 
-    const toggleIndex = (type: string) => {
-        const current = [...displayedIndices];
-        const index = current.indexOf(type);
-        if (index > -1) {
-            if (current.length > 1) current.splice(index, 1);
-        } else {
-            current.push(type);
-        }
-        onUpdateSettings({ ...settings, displayedIndices: current });
+    const addIndex = () => {
+        setLocalIndices(prev => [
+            ...prev,
+            { id: crypto.randomUUID(), type: 'cpi', method: 'known', date: defaultDate }
+        ]);
     };
 
-    const updateBaseDate = (type: string, date: string) => {
-        setLocalBaseDates(prev => ({ ...prev, [type]: date }));
+    const updateIndex = (id: string, updates: Partial<TrackedIndex>) => {
+        setLocalIndices(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i));
     };
+
+    const removeIndex = (id: string) => {
+        setLocalIndices(prev => prev.filter(i => i.id !== id));
+    };
+
+    const groupedPulses = useMemo(() => {
+        const groups: Record<string, { type: string, latestValue: number, latestDate: string, trackers: IndexPulse[] }> = {};
+        pulses.forEach(pulse => {
+            if (!groups[pulse.type]) {
+                groups[pulse.type] = {
+                    type: pulse.type,
+                    latestValue: pulse.value,
+                    latestDate: pulse.date,
+                    trackers: []
+                };
+            }
+            groups[pulse.type].trackers.push(pulse);
+        });
+        return Object.values(groups);
+    }, [pulses]);
 
     if (isLoading) {
         return (
@@ -130,8 +185,6 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
             </Card>
         );
     }
-
-    const visiblePulses = pulses.filter(p => displayedIndices.includes(p.type));
 
     return (
         <Card hoverEffect glass className="min-h-[300px] flex flex-col h-full group/widget relative overflow-hidden">
@@ -147,7 +200,7 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
                         <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                             <div className="flex items-center gap-2">
                                 <Activity className="w-4 h-4 text-emerald-500" />
-                                <CardTitle className="text-sm uppercase tracking-widest text-muted-foreground">{t('indexWatcherTitle')}</CardTitle>
+                                <CardTitle className="text-base uppercase tracking-widest text-muted-foreground">{t('indexWatcherTitle')}</CardTitle>
                             </div>
                             <Button
                                 variant="ghost"
@@ -160,71 +213,56 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
                         </CardHeader>
 
                         <CardContent className="space-y-4 flex-1 pt-4">
-                            {visiblePulses.map((pulse) => (
+                            {groupedPulses.map((group) => (
                                 <motion.div
-                                    key={pulse.id}
-                                    layoutId={pulse.id}
+                                    key={group.type}
+                                    layoutId={`group-${group.type}`}
                                     className="bg-background dark:bg-neutral-900/50 p-4 rounded-xl border border-slate-100 dark:border-white/5 hover:border-indigo-500/20 transition-all group/item"
                                 >
                                     <div className="flex items-center justify-between mb-2">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-white dark:bg-neutral-800 flex items-center justify-center font-bold text-[10px] text-muted-foreground border border-slate-100 dark:border-neutral-700">
-                                                {pulse.type.substring(0, 3).toUpperCase()}
-                                            </div>
-                                            <div className="flex flex-col">
-                                                <span className="text-sm font-bold text-foreground">{t(pulse.type) || pulse.type.toUpperCase()}</span>
-                                                <span className="text-[10px] text-muted-foreground flex items-center gap-1 font-mono">
-                                                    <Clock className="w-2.5 h-2.5" />
-                                                    {pulse.date}
-                                                </span>
-                                            </div>
+                                        <div className="flex flex-col gap-0.5">
+                                            <span className="text-lg font-bold text-foreground">{t(group.type as any) || group.type.toUpperCase()}</span>
+                                            <span className="text-base text-muted-foreground flex items-center gap-1.5 font-mono">
+                                                <Clock className="w-3.5 h-3.5" />
+                                                {group.latestDate}
+                                            </span>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-sm font-black text-foreground leading-none">
-                                                {pulse.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
+                                            <p className="text-3xl font-black text-foreground leading-none">
+                                                {group.latestValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
                                             </p>
-                                            <div className={cn(
-                                                "flex items-center justify-end gap-0.5 mt-1 text-[10px] font-black",
-                                                pulse.change > 0 ? "text-rose-500" : pulse.change < 0 ? "text-emerald-500" : "text-muted-foreground"
-                                            )}>
-                                                {pulse.change > 0 ? <TrendingUp className="w-3 h-3" /> : pulse.change < 0 ? <TrendingDown className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
-                                                {Math.abs(pulse.change).toFixed(2)}%
-                                            </div>
                                         </div>
                                     </div>
-                                    {settings?.baseDates?.[pulse.type] && (
-                                        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-200 dark:border-white/5 opacity-60 group-hover/item:opacity-100 transition-opacity">
-                                            <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground">
-                                                <span>{t('baseDate')}:</span>
-                                                <span className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded">
-                                                    {settings.baseDates[pulse.type]}
-                                                </span>
-                                            </div>
-                                            <span className="text-[10px] text-slate-300 dark:text-neutral-700">|</span>
-                                            <div className="text-[10px] font-bold text-muted-foreground flex items-center gap-1">
-                                                <span>{t('change')}:</span>
-                                                <span className={cn(
-                                                    pulse.change > 0 ? "text-rose-500" : pulse.change < 0 ? "text-emerald-500" : ""
+                                    <div className="space-y-3 mt-4 pt-4 border-t border-slate-200 dark:border-white/5 opacity-95 transition-opacity">
+                                        {group.trackers.map(tracker => (
+                                            <div key={tracker.id} className="flex items-center justify-between bg-white dark:bg-neutral-800/50 p-3 rounded-lg border border-slate-100 dark:border-white/5">
+                                                <div className="flex flex-col gap-0.5">
+                                                    <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+                                                        <span className="text-foreground font-bold">
+                                                            {format(new Date(tracker.configDate), 'dd/MM/yyyy')}
+                                                        </span>
+                                                        <span className="text-foreground font-normal text-xs opacity-80">({tracker.method === 'known' ? t('knownIndex') : t('determiningIndex')})</span>
+                                                    </div>
+                                                    {tracker.baseValue > 0 && (
+                                                        <span className="font-mono text-sm text-muted-foreground">
+                                                            {t('baseIndex')}: {tracker.baseValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                <div className={cn(
+                                                    "flex items-center justify-end gap-1.5 text-base font-black px-2 py-1 rounded-md min-w-[80px]",
+                                                    tracker.change > 0 ? "bg-rose-500/10 text-rose-600 dark:text-rose-400" : tracker.change < 0 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-slate-100 dark:bg-neutral-800 text-muted-foreground"
                                                 )}>
-                                                    {pulse.change > 0 ? '+' : ''}{pulse.change.toFixed(2)}%
-                                                </span>
+                                                    {tracker.change > 0 ? <TrendingUp className="w-4 h-4" /> : tracker.change < 0 ? <TrendingDown className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
+                                                    {Math.abs(tracker.change).toFixed(2)}%
+                                                </div>
                                             </div>
-                                        </div>
-                                    )}
+                                        ))}
+                                    </div>
                                 </motion.div>
                             ))}
                         </CardContent>
-
-                        <CardFooter className="pt-2">
-                            <Button
-                                variant="ghost"
-                                className="w-full justify-between text-[10px] uppercase tracking-widest font-bold text-muted-foreground hover:text-indigo-600"
-                                onClick={() => navigate('/calculator')}
-                            >
-                                {t('calculateLinkageAndMore')}
-                                <ArrowRight className="w-3 h-3 ml-2 transition-transform group-hover:translate-x-1" />
-                            </Button>
-                        </CardFooter>
                     </motion.div>
                 ) : (
                     <motion.div
@@ -250,49 +288,86 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
                         </CardHeader>
 
                         <CardContent className="flex-1 space-y-6 overflow-y-auto max-h-[400px] scrollbar-none pt-4">
-                            {/* Per-Index Base Dates */}
+                            {/* Per-Index Configuration */}
                             <div className="space-y-4">
-                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                                    {t('linkageCalculation')}
-                                </p>
-                                <div className="space-y-4">
-                                    {ALL_TYPES.map(type => (
-                                        <div key={type} className="bg-background dark:bg-white/5 p-3 rounded-xl border border-slate-100 dark:border-white/10 space-y-2">
-                                            <div className="flex items-center justify-between">
-                                                <label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">
-                                                    {t(type) || type.toUpperCase()} - {t('baseDate')}
-                                                </label>
-                                            </div>
-                                            <input
-                                                type="month"
-                                                value={localBaseDates[type] || defaultDate}
-                                                onChange={(e) => updateBaseDate(type, e.target.value)}
-                                                className="w-full bg-white dark:bg-neutral-900 border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-xs font-bold focus:border-indigo-500/50 outline-none transition-all"
-                                            />
-                                        </div>
-                                    ))}
+                                <div className="flex items-center justify-between">
+                                    <p className="text-xs font-black text-muted-foreground uppercase tracking-widest">
+                                        {t('trackedIndices') || 'TRACKED INDICES'}
+                                    </p>
                                 </div>
-                            </div>
 
-                            <div className="space-y-3">
-                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                                    {t('selectDisplayedIndices')}
-                                </p>
-                                {ALL_TYPES.map(type => (
-                                    <button
-                                        key={type}
-                                        onClick={() => toggleIndex(type)}
-                                        className={cn(
-                                            "w-full flex items-center justify-between p-3 rounded-xl border transition-all duration-300",
-                                            displayedIndices.includes(type)
-                                                ? "bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-500/10 dark:border-indigo-500/30 dark:text-indigo-400"
-                                                : "bg-background border-slate-100 text-muted-foreground hover:border-slate-200 dark:bg-white/5 dark:border-white/5 dark:hover:border-white/10"
-                                        )}
+                                <div className="space-y-3">
+                                    <AnimatePresence>
+                                        {localIndices.map((tracked) => (
+                                            <motion.div
+                                                key={tracked.id}
+                                                initial={{ opacity: 0, height: 0 }}
+                                                animate={{ opacity: 1, height: 'auto' }}
+                                                exit={{ opacity: 0, height: 0 }}
+                                                className="bg-background dark:bg-white/5 p-4 rounded-xl border border-slate-100 dark:border-white/10 space-y-4 relative"
+                                            >
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="absolute top-2 right-2 h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                                                    onClick={() => removeIndex(tracked.id)}
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </Button>
+
+                                                <div className="pr-8 space-y-4">
+                                                    {/* Type Select */}
+                                                    <div className="space-y-1.5">
+                                                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{t('indexType') || 'INDEX TYPE'}</label>
+                                                        <select
+                                                            value={tracked.type}
+                                                            onChange={(e) => updateIndex(tracked.id, { type: e.target.value as any })}
+                                                            className="w-full bg-white dark:bg-neutral-900 border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-xs font-bold outline-none"
+                                                        >
+                                                            {ALL_TYPES.map(tOption => (
+                                                                <option key={tOption} value={tOption}>{t(tOption) || tOption.toUpperCase()}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+
+                                                    {/* Method Control */}
+                                                    <div className="space-y-1.5">
+                                                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{t('linkageCalculationMethod') || 'CALCULATION METHOD'}</label>
+                                                        <SegmentedControl
+                                                            options={[
+                                                                { label: t('knownIndex') || 'Known Index', value: 'known' },
+                                                                { label: t('determiningIndex') || 'Base Index', value: 'base' }
+                                                            ]}
+                                                            value={tracked.method}
+                                                            onChange={(val) => updateIndex(tracked.id, { method: val as any })}
+                                                        />
+                                                    </div>
+
+                                                    {/* Date Picker */}
+                                                    <div className="space-y-1.5">
+                                                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{t('baseDate') || 'BASE DATE'}</label>
+                                                        <DatePicker
+                                                            value={tracked.date ? new Date(tracked.date) : new Date(defaultDate)}
+                                                            onChange={(date) => updateIndex(tracked.id, { date: date ? format(date, 'yyyy-MM-dd') : defaultDate })}
+                                                            className="w-full"
+                                                            variant="default"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        ))}
+                                    </AnimatePresence>
+
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={addIndex}
+                                        className="w-full border-dashed gap-2"
                                     >
-                                        <span className="text-xs font-bold uppercase tracking-wider">{t(type) || type.toUpperCase()}</span>
-                                        {displayedIndices.includes(type) && <Check className="w-4 h-4" />}
-                                    </button>
-                                ))}
+                                        <Plus className="w-4 h-4" />
+                                        {t('addTrackedIndex') || 'Add Tracked Index'}
+                                    </Button>
+                                </div>
                             </div>
                         </CardContent>
 
@@ -301,12 +376,12 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
                                 onClick={() => {
                                     onUpdateSettings({
                                         ...settings,
-                                        displayedIndices,
-                                        baseDates: localBaseDates
+                                        trackedIndices: localIndices
                                     });
                                     setIsSettingsOpen(false);
                                 }}
                                 className="w-full"
+                                noEffects
                             >
                                 {t('done')}
                             </Button>

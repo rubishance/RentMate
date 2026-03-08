@@ -118,7 +118,7 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                     <div className="space-y-1 overflow-hidden">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/5 dark:bg-indigo-500/10 backdrop-blur-md rounded-full border border-indigo-500/10 shadow-sm mb-2">
                             <CalcIcon className="w-3 h-3 text-indigo-500" />
-                            <span className="text-[9px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                            <span className="text-[11px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
                                 {t('smartCalculator')}
                             </span>
                         </div>

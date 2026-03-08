@@ -31,13 +31,13 @@ export function AutomationAnalytics({ stats }: { stats: AutomationStats }) {
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => navigate('/admin/automation')}
-                        className="text-[10px] font-black text-brand-600 uppercase tracking-widest hover:underline"
+                        className="text-xs font-black text-brand-600 uppercase tracking-widest hover:underline"
                     >
                         View Deep Logs
                     </button>
                     <div className="flex items-center gap-2">
                         <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Live Engine</span>
+                        <span className="text-xs font-black text-emerald-600 uppercase tracking-widest">Live Engine</span>
                     </div>
                 </div>
             </div>
@@ -48,55 +48,55 @@ export function AutomationAnalytics({ stats }: { stats: AutomationStats }) {
                     <div className="space-y-1">
                         <div className="flex items-center gap-2 text-gray-400">
                             <Sparkles className="w-4 h-4" />
-                            <span className="text-[10px] font-black uppercase tracking-widest">Total Decisions</span>
+                            <span className="text-xs font-black uppercase tracking-widest">Total Decisions</span>
                         </div>
                         <div className="text-2xl font-black text-gray-900 dark:text-white">
                             {stats.totalAutomatedActions.toLocaleString()}
                         </div>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase">Zero-Touch actions taken</p>
+                        <p className="text-xs text-gray-400 font-bold uppercase">Zero-Touch actions taken</p>
                     </div>
 
                     {/* AI Sentiment */}
                     <div className="space-y-1">
                         <div className="flex items-center gap-2 text-gray-400">
                             <Cpu className="w-4 h-4" />
-                            <span className="text-[10px] font-black uppercase tracking-widest">User Sentiment</span>
+                            <span className="text-xs font-black uppercase tracking-widest">User Sentiment</span>
                         </div>
                         <div className={`text-2xl font-black ${sentimentColor}`}>
                             {(stats.avgSentiment * 100).toFixed(1)}%
                         </div>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase">Avg. Inbound Mood Score</p>
+                        <p className="text-xs text-gray-400 font-bold uppercase">Avg. Inbound Mood Score</p>
                     </div>
 
                     {/* Stagnant Tickets */}
                     <div className="space-y-1">
                         <div className="flex items-center gap-2 text-gray-400">
                             <AlertCircle className="w-4 h-4 text-amber-500" />
-                            <span className="text-[10px] font-black uppercase tracking-widest">Stagnant Flow</span>
+                            <span className="text-xs font-black uppercase tracking-widest">Stagnant Flow</span>
                         </div>
                         <div className="text-2xl font-black text-gray-900 dark:text-white">
                             {stats.stagnantTickets}
                         </div>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase">Tickets {'>'} 24h old</p>
+                        <p className="text-xs text-gray-400 font-bold uppercase">Tickets {'>'} 24h old</p>
                     </div>
 
                     {/* Last Run */}
                     <div className="space-y-1">
                         <div className="flex items-center gap-2 text-gray-400">
                             <Clock className="w-4 h-4" />
-                            <span className="text-[10px] font-black uppercase tracking-widest">Heartbeat</span>
+                            <span className="text-xs font-black uppercase tracking-widest">Heartbeat</span>
                         </div>
                         <div className="text-sm font-black text-gray-900 dark:text-white mt-2">
                             {stats.lastAutomationRun ? new Date(stats.lastAutomationRun).toLocaleTimeString() : 'Never'}
                         </div>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase">Last Engine Sweep</p>
+                        <p className="text-xs text-gray-400 font-bold uppercase">Last Engine Sweep</p>
                     </div>
                 </div>
 
                 {/* Progress Bar / Visualization Placeholder */}
                 <div className="mt-8 pt-6 border-t border-slate-50 dark:border-slate-800">
                     <div className="flex justify-between items-end mb-2">
-                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Automation Efficiency</span>
+                        <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Automation Efficiency</span>
                         <span className="text-xs font-black text-brand-600">84%</span>
                     </div>
                     <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
@@ -105,11 +105,11 @@ export function AutomationAnalytics({ stats }: { stats: AutomationStats }) {
                     <div className="mt-4 flex gap-4">
                         <div className="flex items-center gap-1.5">
                             <div className="w-2 h-2 rounded-full bg-brand-600"></div>
-                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Auto-Resolved</span>
+                            <span className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Auto-Resolved</span>
                         </div>
                         <div className="flex items-center gap-1.5">
                             <div className="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600"></div>
-                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Manual Triage</span>
+                            <span className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Manual Triage</span>
                         </div>
                     </div>
                 </div>

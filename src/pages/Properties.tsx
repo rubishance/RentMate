@@ -273,7 +273,7 @@ export function Properties() {
                 <div className="space-y-1 overflow-hidden">
                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 dark:bg-primary/10 backdrop-blur-md rounded-full border border-primary/10 shadow-sm mb-1">
                         <Home className="w-3 h-3 text-primary" />
-                        <span className="text-[9px] font-black uppercase tracking-widest text-primary dark:text-primary">
+                        <span className="text-[11px] font-black uppercase tracking-widest text-primary dark:text-primary">
                             {t('myPortfolio')}
                         </span>
                     </div>
@@ -285,8 +285,7 @@ export function Properties() {
                 <div className="flex items-center gap-3">
                     <Button
                         onClick={handleAdd}
-                        variant="jewel"
-                        className="h-14 w-14 rounded-2xl p-0 shrink-0"
+                        className="h-14 w-14 rounded-2xl p-0 shrink-0 bg-primary text-primary-foreground shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all duration-300"
                         title={t('addProperty')}
                     >
                         <Plus className="w-6 h-6" />
@@ -301,14 +300,14 @@ export function Properties() {
                         <Home className="w-12 h-12 text-slate-200" />
                     </div>
                     <div className="text-center space-y-4">
-                        <h3 className="text-3xl font-black tracking-tighter text-foreground lowercase opacity-40">{t('noAssetsFound')}</h3>
+                        <h3 className="text-3xl font-black tracking-tighter text-foreground lowercase opacity-70">{t('noAssetsFound')}</h3>
                         <p className="text-muted-foreground font-medium text-center max-w-sm px-10 leading-relaxed mx-auto">
                             {t('addFirstPropertyDesc')}
                         </p>
                     </div>
                     <Button
                         onClick={handleAdd}
-                        className="mt-12 h-auto px-10 py-5 bg-foreground text-background rounded-full font-black uppercase text-[10px] tracking-widest hover:scale-105 active:scale-95 transition-all shadow-premium-dark hover:bg-foreground/90"
+                        className="mt-12 h-auto px-10 py-5 bg-foreground text-background rounded-full font-black uppercase text-xs tracking-widest hover:scale-105 active:scale-95 transition-all shadow-premium-dark hover:bg-foreground/90"
                     >
                         {t('createFirstAsset')}
                     </Button>
@@ -345,7 +344,7 @@ export function Properties() {
                                         {/* Status Badge */}
                                         <div className={`absolute top-5 ${lang === 'he' ? 'left-5' : 'right-5'} flex gap-3`}>
                                             <span className={cn(
-                                                "px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest backdrop-blur-md shadow-sm border transition-all duration-500",
+                                                "px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest backdrop-blur-md shadow-sm border transition-all duration-500",
                                                 activeContract
                                                     ? 'bg-emerald-500/90 text-white border-transparent'
                                                     : 'bg-white/90 text-slate-700 border-white/20'
@@ -357,18 +356,18 @@ export function Properties() {
                                         {/* Property Type Badge */}
                                         <div className={`absolute bottom-5 ${lang === 'he' ? 'right-5' : 'left-5'}`}>
                                             <div className="flex items-center gap-3 px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-full border border-white/20 shadow-lg">
-                                                <span className="text-[10px] font-bold uppercase tracking-widest text-white">
+                                                <span className="text-sm font-bold uppercase tracking-widest text-white">
                                                     {property.property_type ? t(property.property_type as string) : t('apartment')}
                                                 </span>
-                                                <PropertyIcon type={property.property_type} className="w-6 h-6 text-white" />
+                                                <PropertyIcon type={property.property_type} className="w-7 h-7 text-white" />
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Content */}
                                     <CardContent className="p-8 flex-1 flex flex-col space-y-6">
-                                        <div className="min-h-[3rem]">
-                                            <h3 className="text-xl font-bold tracking-tight text-foreground line-clamp-2 leading-tight group-hover:text-primary transition-colors max-w-full break-words">
+                                        <div className="min-h-[4rem]">
+                                            <h3 className="text-3xl font-black tracking-tight text-foreground line-clamp-2 leading-tight group-hover:text-primary transition-colors max-w-full break-words">
                                                 {[property.address, property.city].filter(Boolean).join(', ')}
                                             </h3>
                                         </div>
@@ -376,41 +375,40 @@ export function Properties() {
                                         {/* Detailed Specs Row */}
                                         <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 py-4 border-t border-border/50">
                                             {/* Rooms */}
-                                            <div className="flex flex-col items-center gap-1">
-                                                <BedDouble className="w-4 h-4 text-muted-foreground" />
-                                                <span className="text-xs font-bold">{property.rooms}</span>
+                                            <div className="flex flex-col items-center gap-2">
+                                                <BedDouble className="w-6 h-6 text-muted-foreground" />
+                                                <span className="text-base font-bold">{property.rooms}</span>
                                             </div>
                                             {/* SQM */}
-                                            <div className="flex flex-col items-center gap-1">
-                                                <Ruler className="w-4 h-4 text-muted-foreground" />
-                                                <span className="text-xs font-bold">{property.size_sqm}</span>
+                                            <div className="flex flex-col items-center gap-2">
+                                                <Ruler className="w-6 h-6 text-muted-foreground" />
+                                                <span className="text-base font-bold">{property.size_sqm}</span>
                                             </div>
                                             {/* Parking */}
-                                            <div className="flex flex-col items-center gap-1">
-                                                <Car className={cn("w-4 h-4", property.has_parking ? "text-primary" : "text-muted-foreground/30")} />
-                                                <span className="text-xs font-bold">{property.has_parking ? '✓' : '-'}</span>
+                                            <div className="flex flex-col items-center gap-2">
+                                                <Car className={cn("w-6 h-6", property.has_parking ? "text-primary" : "text-muted-foreground/30")} />
+                                                <span className="text-base font-bold">{property.has_parking ? '✓' : '-'}</span>
                                             </div>
                                             {/* Balcony */}
-                                            <div className="flex flex-col items-center gap-1">
-                                                <BalconyIcon className={cn("w-4 h-4", property.has_balcony ? "text-primary" : "text-muted-foreground/30")} />
-                                                <span className="text-xs font-bold">{property.has_balcony ? '✓' : '-'}</span>
+                                            <div className="flex flex-col items-center gap-2">
+                                                <BalconyIcon className={cn("w-6 h-6", property.has_balcony ? "text-primary" : "text-muted-foreground/30")} />
+                                                <span className="text-base font-bold">{property.has_balcony ? '✓' : '-'}</span>
                                             </div>
                                             {/* Safe Room */}
-                                            <div className="flex flex-col items-center gap-1">
-                                                <SafeRoomIcon className={cn("w-4 h-4", property.has_safe_room ? "text-primary" : "text-muted-foreground/30")} />
-                                                <span className="text-xs font-bold">{property.has_safe_room ? '✓' : '-'}</span>
+                                            <div className="flex flex-col items-center gap-2">
+                                                <SafeRoomIcon className={cn("w-6 h-6", property.has_safe_room ? "text-primary" : "text-muted-foreground/30")} />
+                                                <span className="text-base font-bold">{property.has_safe_room ? '✓' : '-'}</span>
                                             </div>
                                             {/* Storage */}
-                                            <div className="flex flex-col items-center gap-1">
-                                                <StorageIcon className={cn("w-4 h-4", property.has_storage ? "text-primary" : "text-muted-foreground/30")} />
-                                                <span className="text-xs font-bold">{property.has_storage ? '✓' : '-'}</span>
+                                            <div className="flex flex-col items-center gap-2">
+                                                <StorageIcon className={cn("w-6 h-6", property.has_storage ? "text-primary" : "text-muted-foreground/30")} />
+                                                <span className="text-base font-bold">{property.has_storage ? '✓' : '-'}</span>
                                             </div>
                                         </div>
 
-                                        {/* Rent & Contract Section */}
-                                        <div className="flex items-center justify-between pt-2 mt-auto">
-                                            <div onClick={(e) => e.stopPropagation()} className="space-y-0.5">
-                                                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground opacity-60">
+                                        <div className="flex items-end justify-between pt-2 mt-auto">
+                                            <div onClick={(e) => e.stopPropagation()} className="space-y-1">
+                                                <span className="text-base font-bold uppercase tracking-widest text-muted-foreground opacity-90">
                                                     {t('monthlyRentLabel')}
                                                 </span>
                                                 <div
@@ -421,7 +419,7 @@ export function Properties() {
                                                         }
                                                     }}
                                                     className={cn(
-                                                        "text-2xl font-black text-foreground tracking-tight",
+                                                        "text-4xl font-black text-foreground tracking-tight",
                                                         property.contracts?.some(c => c.status === 'active' && c.linkage_type && c.linkage_type !== 'none') && "cursor-pointer text-primary hover:underline decoration-2 underline-offset-4"
                                                     )}
                                                 >
@@ -430,16 +428,18 @@ export function Properties() {
                                             </div>
 
                                             {/* Contract Badge */}
-                                            {activeContract && (
-                                                <div className="flex flex-col items-end gap-1">
-                                                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground opacity-60">
-                                                        {t('leaseEnds')}
-                                                    </span>
-                                                    <span className="px-3 py-1 rounded-lg bg-secondary/50 text-xs font-bold text-foreground">
-                                                        {formatDate(activeContract.end_date)}
-                                                    </span>
-                                                </div>
-                                            )}
+                                            <div className="flex flex-col items-end gap-1 mb-1">
+                                                {activeContract && (
+                                                    <>
+                                                        <span className="text-base font-bold uppercase tracking-widest text-muted-foreground opacity-90">
+                                                            {t('leaseEnds')}
+                                                        </span>
+                                                        <span className="px-4 py-2 rounded-xl bg-secondary/10 text-base font-black text-foreground">
+                                                            {formatDate(activeContract.end_date)}
+                                                        </span>
+                                                    </>
+                                                )}
+                                            </div>
                                             <div className="flex items-center">
                                                 <Button
                                                     variant="ghost"

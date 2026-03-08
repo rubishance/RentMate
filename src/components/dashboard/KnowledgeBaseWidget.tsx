@@ -21,7 +21,7 @@ export function KnowledgeBaseWidget() {
             </div>
 
             <div className="relative z-10">
-                <div className="flex items-center gap-2 mb-6 text-gray-400 dark:text-gray-500 text-[10px] font-black uppercase tracking-widest leading-none">
+                <div className="flex items-center gap-2 mb-6 text-gray-400 dark:text-gray-500 text-xs font-black uppercase tracking-widest leading-none">
                     <BookOpen className="w-4 h-4" />
                     {t('knowledgeBase')}
                 </div>

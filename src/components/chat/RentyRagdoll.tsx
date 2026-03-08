@@ -47,10 +47,10 @@ export function RentyRagdoll() {
             </motion.div>
 
             {/* Tech Decoration */}
-            <div className="absolute top-8 left-8 text-[10px] font-mono text-primary/20 uppercase tracking-[0.3em]">
+            <div className="absolute top-8 left-8 text-xs font-mono text-primary/20 uppercase tracking-[0.3em]">
                 Droid Core // R-Series
             </div>
-            <div className="absolute bottom-8 right-8 text-[10px] font-mono text-destructive/20 uppercase tracking-[0.2em]">
+            <div className="absolute bottom-8 right-8 text-xs font-mono text-destructive/20 uppercase tracking-[0.2em]">
                 Status: Operational
             </div>
         </div>

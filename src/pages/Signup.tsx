@@ -220,7 +220,7 @@ const SignupFormView = ({
                 </Button>
                 <div className="relative">
                     <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
-                    <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground"><span className="bg-window px-3">{t('auth_or_continue')}</span></div>
+                    <div className="relative flex justify-center text-xs font-bold uppercase tracking-widest text-muted-foreground"><span className="bg-window px-3">{t('auth_or_continue')}</span></div>
                 </div>
             </div>
 

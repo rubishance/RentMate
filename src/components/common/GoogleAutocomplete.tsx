@@ -168,7 +168,7 @@ export function GoogleAutocomplete({
                                     <div className="text-sm font-black text-foreground mb-0.5">
                                         {item.structured_formatting?.main_text || item.description}
                                     </div>
-                                    <div className="text-[10px] font-bold text-muted-foreground truncate opacity-40 uppercase tracking-tight">
+                                    <div className="text-xs font-bold text-muted-foreground truncate opacity-70 uppercase tracking-tight">
                                         {item.structured_formatting?.secondary_text}
                                     </div>
                                 </div>

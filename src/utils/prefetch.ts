@@ -8,7 +8,7 @@
 export const prefetchRoutes = {
     dashboard: () => import('../pages/Dashboard'),
     properties: () => import('../pages/Properties'),
-    contracts: () => import('../pages/Contracts'),
+    // contracts: () => import('../pages/Contracts'), // File removed, logic moved to stack hub
     payments: () => import('../pages/Payments'),
     maintenance: () => import('../pages/MaintenanceTracker'),
     analytics: () => import('../pages/Analytics'),

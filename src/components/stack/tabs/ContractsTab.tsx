@@ -124,7 +124,7 @@ export function ContractsTab({ propertyId, onAddContract }: ContractsTabProps) {
                         <div className="text-xl font-black text-foreground">
                             ₪{contract.base_rent?.toLocaleString()}
                         </div>
-                        <div className="text-[10px] uppercase font-black tracking-widest text-muted-foreground">
+                        <div className="text-xs uppercase font-black tracking-widest text-muted-foreground">
                             {t('monthly')}
                         </div>
                     </div>
@@ -137,7 +137,7 @@ export function ContractsTab({ propertyId, onAddContract }: ContractsTabProps) {
                     </div>
                     <div className="flex items-center justify-end gap-2 text-xs font-medium text-muted-foreground">
                         <ClockIcon className="w-3.5 h-3.5 opacity-50" />
-                        {contract.payment_frequency}
+                        {t(contract.payment_frequency as any)}
                     </div>
                 </div>
             </button>
@@ -148,7 +148,7 @@ export function ContractsTab({ propertyId, onAddContract }: ContractsTabProps) {
         <div className="p-6 space-y-8">
             {activeContracts.length > 0 && (
                 <div className="space-y-4">
-                    <h3 className="text-[10px] font-black uppercase tracking-widest text-emerald-600 ml-1">
+                    <h3 className="text-xs font-black uppercase tracking-widest text-emerald-600 ml-1">
                         {t('active')}
                     </h3>
                     <div className="space-y-3">
@@ -159,7 +159,7 @@ export function ContractsTab({ propertyId, onAddContract }: ContractsTabProps) {
 
             {archivedContracts.length > 0 && (
                 <div className="space-y-4">
-                    <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
+                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">
                         {t('archived')}
                     </h3>
                     <div className="space-y-3">

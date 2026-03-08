@@ -119,7 +119,7 @@ export default function AdminFeedback() {
                     <button
                         key={status}
                         onClick={() => setFilterStatus(status)}
-                        className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filterStatus === status
+                        className={`px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${filterStatus === status
                             ? 'bg-white dark:bg-gray-800 text-brand-600 shadow-sm border border-gray-100 dark:border-gray-700'
                             : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                             }`}
@@ -146,16 +146,16 @@ export default function AdminFeedback() {
                             {/* Main Content */}
                             <div className="flex-1 space-y-4">
                                 <div className="flex flex-wrap items-center gap-3">
-                                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${item.type === 'bug' ? 'bg-red-50 text-red-700 border-red-100 dark:bg-red-900/20 dark:border-red-800' :
+                                    <span className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-widest border ${item.type === 'bug' ? 'bg-red-50 text-red-700 border-red-100 dark:bg-red-900/20 dark:border-red-800' :
                                         item.type === 'feature' ? 'bg-primary-50 text-primary-700 border-primary-100 dark:bg-primary-900/20 dark:border-primary-800' :
                                             'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-400'
                                         }`}>
                                         {item.type}
                                     </span>
                                     <span className="text-gray-300 dark:text-gray-600 font-light">|</span>
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{new Date(item.created_at).toLocaleString('he-IL')}</span>
+                                    <span className="text-xs font-black text-gray-400 uppercase tracking-widest">{new Date(item.created_at).toLocaleString('he-IL')}</span>
                                     <span className="text-gray-300 dark:text-gray-600 font-light">|</span>
-                                    <span className="text-[10px] font-mono text-gray-500 tracking-tighter bg-gray-50 dark:bg-gray-900 px-2 py-0.5 rounded border border-gray-100 dark:border-gray-700">
+                                    <span className="text-xs font-mono text-gray-500 tracking-tighter bg-gray-50 dark:bg-gray-900 px-2 py-0.5 rounded border border-gray-100 dark:border-gray-700">
                                         ID: {item.user_id ? item.user_id.split('-')[0] : 'ANON'}
                                     </span>
                                 </div>
@@ -168,7 +168,7 @@ export default function AdminFeedback() {
                                 {item.device_info && (
                                     <div className="inline-flex items-center gap-2 bg-gray-50 dark:bg-gray-900 rounded-xl px-4 py-2 border border-gray-100 dark:border-gray-700">
                                         <DevicePhoneMobileIcon className="w-4 h-4 text-brand-600" />
-                                        <div className="text-[10px] font-bold text-gray-500 uppercase tracking-tight">
+                                        <div className="text-xs font-bold text-gray-500 uppercase tracking-tight">
                                             {item.device_info.screen?.width}x{item.device_info.screen?.height} Resolution
                                             <span className="mx-2 text-gray-300">/</span>
                                             {((item.device_info.userAgent || '').match(/\(([^)]+)\)/) || [])[1] || 'Web Agent'}
@@ -180,7 +180,7 @@ export default function AdminFeedback() {
                             {/* Actions Column */}
                             <div className="flex flex-col gap-4 items-end shrink-0 md:min-w-[180px] border-t md:border-t-0 md:border-l border-gray-100 dark:border-gray-700 pt-4 md:pt-0 md:pl-6">
                                 <div className="w-full">
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Update Status</label>
+                                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Update Status</label>
                                     <select
                                         value={item.status}
                                         onChange={(e) => handleStatusUpdate(item.id, e.target.value)}
@@ -197,7 +197,7 @@ export default function AdminFeedback() {
                                         href={item.screenshot_url}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-brand-600 hover:text-brand-700 transition-colors bg-brand-50 dark:bg-brand-900/20 px-3 py-2 rounded-xl border border-brand-100 dark:border-brand-800"
+                                        className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-brand-600 hover:text-brand-700 transition-colors bg-brand-50 dark:bg-brand-900/20 px-3 py-2 rounded-xl border border-brand-100 dark:border-brand-800"
                                     >
                                         <PhotoIcon className="w-4 h-4" />
                                         Screenshot

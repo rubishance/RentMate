@@ -144,7 +144,7 @@ export function BulkCheckModal({ isOpen, onClose, onSuccess }: BulkCheckModalPro
                             className="space-y-6"
                         >
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">
+                                <label className="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">
                                     {t('contract')}
                                 </label>
                                 {fetchingContracts ? (
@@ -177,7 +177,7 @@ export function BulkCheckModal({ isOpen, onClose, onSuccess }: BulkCheckModalPro
                                     placeholder="0.00"
                                 />
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">
+                                    <label className="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">
                                         {t('firstDueDate')}
                                     </label>
                                     <DatePicker
@@ -234,7 +234,7 @@ export function BulkCheckModal({ isOpen, onClose, onSuccess }: BulkCheckModalPro
                                             </div>
                                             <div>
                                                 <div className="text-sm font-bold">{check.reference}</div>
-                                                <div className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">
+                                                <div className="text-xs text-muted-foreground uppercase font-black tracking-widest">
                                                     {format(parseISO(check.due_date), 'dd/MM/yyyy')}
                                                 </div>
                                             </div>

@@ -66,10 +66,11 @@ export type TranslationKeys =
     | 'reference'
     | 'referencePlaceholder'
     | 'dueDate'
-    | 'paidDate'
-    | 'selectContract'
-    | 'saveAndAddAnother'
-    | 'createAndClose'
+    | 'addNew'
+    | 'select_action_to_continue'
+    | 'addTrackedIndex'
+    | 'cpiAbbr'
+    | 'housingAbbr'
     | 'addPaymentTitle'
     | 'optional'
     | 'endOfForm'
@@ -206,6 +207,12 @@ export type TranslationKeys =
     | 'vsLastYear'
 
     // Missing Keys
+    | 'timePeriod'
+    | 'resetFilters'
+    | 'allTime'
+    | 'last3Months'
+    | 'last6Months'
+    | 'lastYear'
     | 'manualRate'
     | 'indexByDate'
     | 'byDate'
@@ -688,6 +695,17 @@ export type TranslationKeys =
     | 'female'
     | 'appVersion'
     | 'accessibilityStatement'
+    | 'accessibility_options'
+    | 'accessibility_subtitle'
+    | 'accessibility_large_text_title'
+    | 'accessibility_large_text_desc'
+    | 'accessibility_high_contrast_title'
+    | 'accessibility_high_contrast_desc'
+    | 'accessibility_reduced_motion_title'
+    | 'accessibility_reduced_motion_desc'
+    | 'accessibility_dyslexia_font_title'
+    | 'accessibility_dyslexia_font_desc'
+    | 'accessibility_law_note'
     | 'languageLocalization'
     | 'language'
     | 'genderForHebrew'
@@ -753,6 +771,7 @@ export type TranslationKeys =
     | 'utilitiesStorage'
     | 'maintenanceStorage'
     | 'documentsStorage'
+    | 'documents'
     | 'storageLimitReached'
     | 'storageLimitReachedDesc'
     | 'storageNearLimit'
@@ -776,6 +795,8 @@ export type TranslationKeys =
     | 'utilityGas'
     | 'utilityMunicipality'
     | 'utilityManagement'
+    | 'utilityMortgage'
+    | 'utilityOther'
     | 'totalBills'
     | 'unpaid'
     | 'uploadNewBill' | 'uploadNewBill_female'
@@ -1085,12 +1106,15 @@ export type TranslationKeys =
     | 'specialClausesPlaceholder'
     | 'guarantees'
     | 'guaranteesPlaceholder'
+    | 'dateRange'
     | 'noOptionsDefined';
 
 export const translations: Record<string, any> = {
     he: {
         // Common
         appName: 'RentMate',
+        addNew: 'רנטי, מה תרצה לעשות?',
+        select_action_to_continue: 'בחר פעולה מהירה להמשך',
         commandCenterUpdates: 'יש לי {count} עדכונים חדשים עבורך',
         commandCenterAllClear: 'הכל נראה מעולה. אין משימות פתוחות.',
         rentySuggestsAction: 'רנטי מציע לפעול',
@@ -1227,6 +1251,8 @@ export const translations: Record<string, any> = {
         financeBills: 'חשבונות',
         utilityInternet: 'אינטרנט',
         utilityCable: 'טלוויזיה בכבלים',
+        dateRange: 'טווח תאריכים',
+        sqm: 'מ"ר',
 
         // Auth & Navigation
         login: 'התחברות',
@@ -1323,7 +1349,7 @@ export const translations: Record<string, any> = {
         // Analytics
         analyticsTitle: 'אנליטיקה',
         analyticsSubtitle: 'סקירת ביצועי פורטפוליו',
-        totalRevenueLTM: 'הכנסה שנתית (LTM)',
+        totalRevenueLTM: 'הכנסה שנתית',
         avgRentPerProperty: 'שכירות דירה ממוצעת',
         revenueTrend: 'מגמות הכנסה',
         paymentStatus: 'סטטוס תשלומים',
@@ -1482,7 +1508,7 @@ export const translations: Record<string, any> = {
         linkageMethod: 'שיטת הצמדה',
         knownIndex: 'מדד ידוע',
         determiningIndex: 'מדד קובע',
-        inRespectOf: 'בגין חודש',
+        inRespectOf: 'מדד קובע',
         knownIndexHelp: 'לפי המדד האחרון שפורסם במועד התחשבנות',
         updateFrequency: 'תדירות עדכון',
         everyMonth: 'בכל חודש',
@@ -1506,6 +1532,7 @@ export const translations: Record<string, any> = {
         linkageCalculationMethod: 'שיטת חישוב הצמדה',
         advancedLinkageOptions: 'אפשרויות הצמדה מתקדמות',
         indexSubType: 'סוג מדד משני',
+        addTrackedIndex: 'הוסף מדד למעקב',
 
         // Property & Contract Wizards
         newContract: 'חוזה חדש',
@@ -1607,7 +1634,7 @@ export const translations: Record<string, any> = {
         linkageCategory: 'קטגוריית הצמדה',
         propertySpecs: 'מפרט נכס',
         leaseTerms: 'תנאי שכירות',
-        financials: 'פיננסיים',
+        financials: 'תשלומים',
         partiesInvolved: 'צדדים בחוזה',
         option: 'אופציה',
         periods: 'תקופות',
@@ -1697,6 +1724,17 @@ export const translations: Record<string, any> = {
         female: 'נקבה',
         appVersion: 'גרסת אפליקציה',
         accessibilityStatement: 'הצהרת נגישות',
+        accessibility_options: 'אפשרויות נגישות',
+        accessibility_subtitle: 'התאמה אישית של חווית השימוש',
+        accessibility_large_text_title: 'טקסט גדול',
+        accessibility_large_text_desc: 'מגדיל את גודל הטקסט בכל האפליקציה',
+        accessibility_high_contrast_title: 'ניגודיות גבוהה',
+        accessibility_high_contrast_desc: 'מגביר את הניגודיות בין טקסט לקרע',
+        accessibility_reduced_motion_title: 'הפחתת תנועה',
+        accessibility_reduced_motion_desc: 'ממזער אנימציות ומעברים למניעת סחרחורות',
+        accessibility_dyslexia_font_title: 'גופן מותאם לדיסלקציה',
+        accessibility_dyslexia_font_desc: 'משתמש בגופן מעוצב במיוחד לקריאות קלה',
+        accessibility_law_note: 'אפשרויות אלו מספקות תמיכת נגישות יעילה בהתאם לחוק שוויון זכויות לאנשים עם מוגבלויות.',
         languageLocalization: 'שפה והתאמה אישית',
         language: 'שפה',
         genderForHebrew: 'מגדר (להתאמת העברית)',
@@ -1706,6 +1744,8 @@ export const translations: Record<string, any> = {
         utilityGas: 'גז',
         utilityMunicipality: 'ארנונה',
         utilityManagement: 'ועד בית',
+        utilityMortgage: 'משכנתא',
+        utilityOther: 'אחר',
         totalBills: 'סה"כ חשבונות',
         unpaid: 'טרם שולם',
         uploadNewBill: 'העלה חשבון חדש',
@@ -1769,13 +1809,15 @@ export const translations: Record<string, any> = {
         deleteDocumentConfirmation: 'האם למחוק מסמך זה?',
         deleteDocumentConfirmation_female: 'האם למחוק מסמך זה?',
         checksStorage: 'צ׳קים',
-        mediaStorage: 'מדיה',
-        utilitiesStorage: 'חשבונות ומונים',
+        mediaStorage: 'תמונות וסירטונים',
+        utilitiesStorage: 'חשבונות',
         maintenanceStorage: 'תחזוקה ותיקונים',
         documentsStorage: 'מסמכים וחוזים',
+        documents: 'מסמכים',
         photosAndVideos: 'תמונות וסרטונים',
         mediaGalleryDesc: 'גלריית נכס ותיעוד ויזואלי',
         vacant: 'פנוי',
+        storageUsage: 'ניצול שטח אחסון',
         storageQuotaExceeded: 'חריגה ממכסת האחסון',
         storageLow: 'נפח אחסון נמוך',
         storageQuotaExceededDesc: 'שדרג את התוכנית להמשך העלאת קבצים',
@@ -1892,6 +1934,8 @@ export const translations: Record<string, any> = {
         shared_calc_not_found_desc: 'הקישור שברשותך אינו תקין או שהחישוב הוסר.',
         shared_calc_go_home: 'חזרה לדף הבית',
         shared_calc_official_reconciliation: 'התחשבנות רשמית מבית RentMate',
+        timePeriod: 'תקופת זמן',
+        resetFilters: 'איפוס סינונים',
         shared_calc_official_index: 'חישוב הצמדה למדד',
         shared_calc_updated_rent: 'שכירות מעודכנת',
         shared_calc_base_rent: 'שכירות בסיס',
@@ -2182,7 +2226,7 @@ export const translations: Record<string, any> = {
         linkedToIndex: 'צמוד למדד',
         linkedToDollar: 'צמוד לדולר',
         knownIndexLabel: 'לפי מדד ידוע',
-        respectOfLabel: 'בגין חודש',
+        respectOfLabel: 'מדד קובע',
         restrictions: 'מגבלות',
         ceilingLabel: 'תקרה',
         ceilingPlaceholder: 'תקרה %',
@@ -2225,42 +2269,27 @@ export const translations: Record<string, any> = {
         needsPaintingDesc: 'האם נדרשת צביעה בעת פינוי הנכס?',
         specialClausesPlaceholder: 'הכנס תנאים מיוחדים כאן...',
         guarantees: 'ביטחונות',
-        guaranteesPlaceholder: 'פירוט שטרות, צ\'ק ביטחון, ערבות בנקאית וכו\'',
-        noOptionsDefined: 'לא הוגדרו אפשרויות',
-        selectDisplayedIndices: 'בחירת מדדים להצגה',
+        indexWatcherDesc: 'עקוב אחרי מדדי מחירים לצרכן ושירותי דיור להצמדת חוזים מושכלת.',
+        baseRentWarning: 'יש להזין שכירות בסיס',
+        linkageCalculated: 'עדכון ההצמדה חושב',
+        indexPulseFailed: 'כישלון בעדכון המדדים',
         cpi: 'מדד המחירים לצרכן',
         housing: 'מדד שירותי דיור',
-        construction: 'מדד תשומות הבנייה',
+        cpiAbbr: 'מדד',
+        housingAbbr: 'דיור',
+
+        // Quick Actions: 'מדד תשומות הבנייה',
         usd: 'דולר ארה"ב',
         eur: 'אירו',
         unnamed: 'ללא שם',
         upcoming_payment: 'תשלום קרוב',
         contract_expiry: 'סיום חוזה',
-        overdue_payment: 'תשלום בפיגור',
-        coming_soon_title: 'הדור הבא של ניהול נכסים',
-        coming_soon_subtitle: 'אנחנו בונים את הפלטפורמה המתקדמת ביותר לניהול נכסים, חוזים ושוכרים. הצטרפו לרשימת ההמתנה וקבלו עדכון כשנעלה לאוויר!',
-        coming_soon_feature_1: 'אינטגרציות AI לחוזים חכמים',
-        coming_soon_feature_2: 'תזכורות והמלצות לייעול עבודה',
-        coming_soon_feature_3: 'לוח בקרה פיננסי אוטומטי',
-        coming_soon_name_label: 'שם מלא (חובה)',
-        coming_soon_email_label: 'דואר אלקטרוני (חובה)',
-        coming_soon_phone_label: 'טלפון (רשות)',
-        coming_soon_cta: 'הצטרפו לרשימת ההמתנה',
-        coming_soon_success: 'תודה על ההרשמה! נעדכן אותך בקרוב.',
-        coming_soon_error: 'אירעה שגיאה. אנא נסו שוב מאוחר יותר.',
-        coming_soon_already_registered: 'תודה רבה! כתובת המייל הזו כבר נמצאת ברשימה.',
-        coming_soon_ip_protection: 'המותג RentMate, הדמות \'רנטי\', התוכנה, אלגוריתמי ה-AI ועיצובי הממשק (UI) הם קניין רוחני מוגן. העתקה, שעתוק או שימוש בהם ללא אישור מראש ובכתב אסורים בהחלט.',
-        coming_soon_slide_1_title: 'ניהול חוזים מתקדם',
-        coming_soon_slide_1_desc: 'מעקב דינמי אחר תאריכי סיום, אופציות וכל פרטי החוזה.',
-        coming_soon_slide_2_title: 'מחשבון הצמדה חכם',
-        coming_soon_slide_2_desc: 'חישוב מדויק של שכר דירה צמוד למדד בלחיצת כפתור.',
-        coming_soon_slide_3_title: 'מעקב פיננסי אוטומטי',
-        coming_soon_slide_3_desc: 'שליטה מלאה בתשלומים, חובות, והכנסות מכל הנכסים יחד.',
-        coming_soon_slide_4_title: 'עוזר A.I. אישי',
-        coming_soon_slide_4_desc: 'ניתוח נתונים, הפקת תובנות וניהול אוטומטי של הנכסים בעזרת בינה מלאכותית.',
     },
     en: {
         appName: 'RentMate',
+        addNew: 'Renty, what would you like to do?',
+        select_action_to_continue: 'Select a quick action to continue',
+        addTrackedIndex: 'Add Tracked Index',
         commandCenterUpdates: 'I have {count} new updates for you.',
         commandCenterAllClear: 'Everything looks great. No pending tasks.',
         linkageMethod: 'Linkage Method',
@@ -2305,6 +2334,7 @@ export const translations: Record<string, any> = {
         errorTitle500: 'Something Went Wrong',
         errorDesc500: "An unexpected error occurred. Our technical team has been notified and is on it.",
         backToHome: 'Back to Home',
+        totalRevenueLTM: 'Total Revenue',
         reportToAdmin: 'Report to Admin',
         reporting: 'Reporting...',
         reportSuccess: 'Report sent successfully',
@@ -2395,6 +2425,12 @@ export const translations: Record<string, any> = {
         indexByDate: 'Index by Date',
         manualRate: 'Manual Rate',
         legalProtection: 'Legal Safe Suite',
+        timePeriod: 'Time Period',
+        resetFilters: 'Reset Filters',
+        allTime: 'All Time',
+        last3Months: 'Last 3 Months',
+        last6Months: 'Last 6 Months',
+        lastYear: 'Last Year',
         upgradeToUnlock: 'Upgrade to Unlock',
         needsPaintingQuery: 'Repainting required upon evacuation?',
         transfer: 'Bank Transfer',
@@ -2406,6 +2442,7 @@ export const translations: Record<string, any> = {
         contractReadySummary: 'Contract is Ready!',
         contractReadySummaryDesc: 'The contract for {address}, {city} is ready to be created.',
         saveContractFileQuery: 'Save contract file?',
+        storageUsage: 'Storage Usage',
         storageRentMateCloud: 'RentMate Cloud',
         storageRentMateCloudDesc: 'Secure storage & access from anywhere',
         storageThisDevice: 'This Device',
@@ -2451,6 +2488,8 @@ export const translations: Record<string, any> = {
         tellUsAboutProperty: 'Tell us about the property.',
         fetchingStreetView: 'Fetching Street View...',
         clickToUploadPicture: 'Click to upload picture',
+        dateRange: 'Date Range',
+        sqm: 'SQM',
         uploading_ellipsis: 'Uploading...',
         baseDateRequired: 'Base index date is required',
         summaryDetails: 'Summary Details',
@@ -2588,15 +2627,17 @@ export const translations: Record<string, any> = {
         safeRoom: 'Safe Room',
         error_missing_id: 'System Error: Missing Contract ID',
         baseIndex: 'Base Index',
-        needsPainting: 'Painting Required',
-        needsPaintingDesc: 'Is painting required upon vacating the property?',
-        specialClausesPlaceholder: 'Enter special clauses here...',
+        noIndexHistory: 'No historical index records to display yet',
+        noIndexHistoryDesc: 'Waiting for automatic monthly updates...',
+        cpiAbbr: 'CPI',
+        housingAbbr: 'HOU',
+
+        // Feature KeysPlaceholder: 'Enter special clauses here...',
         guarantees: 'Guarantees',
         guaranteesPlaceholder: 'Details of bills, security check, bank guarantee, etc.',
         noOptionsDefined: 'No options defined',
         auth_welcome_back: 'Welcome back!',
         auth_join: 'Join us',
-        auth_email: 'Email address',
         auth_password: 'Password',
         auth_forgot_password: 'Forgot password?',
         auth_sign_in: 'Sign in',

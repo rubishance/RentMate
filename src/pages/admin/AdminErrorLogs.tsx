@@ -132,7 +132,7 @@ const AdminErrorLogs = () => {
                             <div className="flex justify-between items-start gap-4">
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-3 mb-2 flex-wrap">
-                                        <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${log.is_resolved
+                                        <span className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-widest border ${log.is_resolved
                                             ? 'bg-secondary/10 text-secondary border-green-100 dark:bg-green-900/10 dark:text-green-400'
                                             : 'bg-destructive/10 text-destructive border-red-100 dark:bg-red-900/10 dark:text-red-400'
                                             }`}>
@@ -172,12 +172,12 @@ const AdminErrorLogs = () => {
                                     </div>
 
                                     <details className="group/details">
-                                        <summary className="text-[10px] font-black uppercase tracking-widest text-gray-400 cursor-pointer hover:text-gray-600 transition-colors flex items-center gap-1 list-none">
+                                        <summary className="text-xs font-black uppercase tracking-widest text-gray-400 cursor-pointer hover:text-gray-600 transition-colors flex items-center gap-1 list-none">
                                             <span className="group-open/details:rotate-90 transition-transform">▸</span>
                                             View Stack Trace
                                         </summary>
                                         <div className="mt-3 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-700/50 overflow-x-auto">
-                                            <pre className="text-[10px] text-gray-500 font-mono whitespace-pre-wrap leading-relaxed">
+                                            <pre className="text-xs text-gray-500 font-mono whitespace-pre-wrap leading-relaxed">
                                                 {log.stack || 'No stack trace provided'}
                                             </pre>
                                         </div>

@@ -208,7 +208,7 @@ export function RegeneratePaymentsModal({ isOpen, onClose, onSuccess }: Regenera
                                         <div className="min-w-0 flex-1 mr-4">
                                             <h4 className="font-bold truncate">{contract.properties?.address || 'Unknown Property'}</h4>
                                             <p className="text-xs text-muted-foreground">{contract.properties?.city}</p>
-                                            <div className="mt-1 flex gap-2 text-[10px] uppercase font-bold text-muted-foreground">
+                                            <div className="mt-1 flex gap-2 text-xs uppercase font-bold text-muted-foreground">
                                                 <span>{contract.start_date} - {contract.end_date}</span>
                                             </div>
                                         </div>

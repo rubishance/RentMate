@@ -41,7 +41,6 @@ const AdminLayout = () => {
         };
         getUser();
 
-        // Global Chat Listener
         const channel = supabase
             .channel('admin_global_notifications')
             .on(
@@ -78,8 +77,28 @@ const AdminLayout = () => {
             )
             .subscribe();
 
+        // Hide UserWay accessibility widget in Admin Console
+        const style = document.createElement('style');
+        style.id = 'hide-userway-admin';
+        style.innerHTML = `
+            div[class*="userway"], 
+            div[id*="userway"],
+            div[class*="uwy"],
+            div[id*="uwy"],
+            iframe[title*="accessibility"] {
+                display: none !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+                pointer-events: none !important;
+            }
+        `;
+        document.head.appendChild(style);
+
         return () => {
             supabase.removeChannel(channel);
+            // Re-enable UserWay when leaving Admin Console
+            const hideStyle = document.getElementById('hide-userway-admin');
+            if (hideStyle) hideStyle.remove();
         };
     }, []);
 
@@ -116,20 +135,20 @@ const AdminLayout = () => {
             )}
 
             {/* Sidebar */}
-            <div className={`fixed inset-y-0 right-0 z-50 w-64 bg-brand-navy dark:bg-brand-navy-dark transform transition-transform duration-300 ease-in-out md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'} border-l border-white/10`}>
-                <div className="flex h-16 items-center justify-between px-6 bg-brand-navy-dark border-b border-white/10">
-                    <h1 className="text-xl font-bold text-white tracking-tight">RentMate Admin</h1>
+            <div className={`fixed inset-y-0 right-0 z-50 w-64 bg-white dark:bg-gray-900 transform transition-transform duration-300 ease-in-out md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'} border-l border-gray-200 dark:border-gray-800`}>
+                <div className="flex h-16 items-center justify-between px-6 bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800">
+                    <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">RentMate Admin</h1>
                     <button
-                        className="text-white md:hidden hover:bg-white/10 p-1 rounded-lg"
+                        className="text-gray-500 dark:text-gray-400 md:hidden hover:bg-gray-100 dark:hover:bg-gray-800 p-1 rounded-lg"
                         onClick={() => setSidebarOpen(false)}
                     >
                         <XMarkIcon className="h-6 w-6" />
                     </button>
                 </div>
 
-                <div className="p-6 border-b border-white/5">
-                    <p className="text-[10px] uppercase tracking-wider font-bold text-gray-400">ADMINISTRATOR</p>
-                    <p className="font-semibold text-white truncate mt-1">{user?.email}</p>
+                <div className="p-6 border-b border-gray-100 dark:border-gray-800">
+                    <p className="text-xs uppercase tracking-wider font-bold text-gray-500 dark:text-gray-400">ADMINISTRATOR</p>
+                    <p className="font-semibold text-gray-900 dark:text-white truncate mt-1">{user?.email}</p>
                 </div>
 
                 <nav className="flex-1 space-y-1 px-3 py-6 h-[calc(100vh-180px)] overflow-y-auto hide-scrollbar">
@@ -141,12 +160,12 @@ const AdminLayout = () => {
                                 to={item.href}
                                 onClick={() => setSidebarOpen(false)}
                                 className={`${isActive
-                                    ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/20'
-                                    : 'text-gray-300 hover:bg-white/5 hover:text-white'
+                                    ? 'bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300'
+                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
                                     } group flex items-center rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-200`}
                             >
                                 <item.icon
-                                    className={`${isActive ? 'text-white' : 'text-gray-400 group-hover:text-blue-300'
+                                    className={`${isActive ? 'text-brand-600 dark:text-brand-400' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'
                                         } ml-3 h-5 w-5 flex-shrink-0 transition-colors`}
                                     aria-hidden="true"
                                 />
@@ -155,10 +174,10 @@ const AdminLayout = () => {
                         );
                     })}
                 </nav>
-                <div className="absolute bottom-0 w-full p-4 border-t border-white/5 bg-brand-navy/50 backdrop-blur-xl">
+                <div className="absolute bottom-0 w-full p-4 border-t border-gray-100 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl">
                     <Link
                         to="/dashboard"
-                        className="flex items-center justify-center w-full px-4 py-2.5 text-sm font-bold text-gray-400 hover:text-white rounded-xl hover:bg-white/5 transition-all group"
+                        className="flex items-center justify-center w-full px-4 py-2.5 text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all group"
                     >
                         <span className="ml-2 font-mono">←</span>
                         Back to App

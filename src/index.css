@@ -26,9 +26,9 @@
     --secondary: 150 30% 45%;
     --secondary-foreground: 0 0% 100%;
 
-    /* Muted Slate */
+    /* Muted Slate (Adjusted for better readability - Dark Blue Slate) */
     --muted: 210 20% 90%;
-    --muted-foreground: 215 16% 47%;
+    --muted-foreground: 215 40% 18%;
 
     /* Accent Slate */
     --accent: 210 20% 90%;
@@ -70,7 +70,7 @@
     --secondary-foreground: 0 0% 100%;
 
     --muted: 215 28% 17%;
-    --muted-foreground: 215 20% 82%;
+    --muted-foreground: 215 20% 75%;
 
     --accent: 215 28% 17%;
     --accent-foreground: 210 20% 98%;
@@ -363,4 +363,40 @@ a {
 
 .dark .rdp-dropdown:hover {
   @apply bg-white/5;
+}
+
+/* ========================================================= */
+/* Accessibility Overrides (Toggled via UserPreferences) */
+/* ========================================================= */
+
+html.large-text {
+  font-size: 18px !important;
+}
+
+html.high-contrast {
+  --muted-foreground: 220 40% 10%;
+  --border: 220 40% 10%;
+  --muted: 215 28% 85%;
+}
+
+html.dark.high-contrast {
+  --muted-foreground: 210 20% 98%;
+  --border: 210 20% 98%;
+  --muted: 215 28% 25%;
+}
+
+html.reduced-motion *,
+html.reduced-motion *::before,
+html.reduced-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+html.dyslexia-font body,
+html.dyslexia-font * {
+  font-family: 'Comic Sans MS', 'OpenDyslexic', Arial, sans-serif !important;
+  letter-spacing: 0.05em !important;
+  word-spacing: 0.1em !important;
 }

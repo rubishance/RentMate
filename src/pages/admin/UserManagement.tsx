@@ -343,7 +343,7 @@ const UserManagement = () => {
                         {Object.entries(columnFilters).map(([key, value]) => {
                             if (value === 'all' || value === '') return null;
                             return (
-                                <span key={key} className="px-2 py-1 bg-brand-50 text-brand-700 rounded-lg text-[10px] font-black uppercase border border-brand-100 flex items-center gap-1">
+                                <span key={key} className="px-2 py-1 bg-brand-50 text-brand-700 rounded-lg text-xs font-black uppercase border border-brand-100 flex items-center gap-1">
                                     {key}: {value}
                                     <button onClick={() => setColumnFilters({ ...columnFilters, [key]: key === 'name' ? '' : 'all' })}><XMarkIcon className="w-3 h-3" /></button>
                                 </span>
@@ -356,7 +356,7 @@ const UserManagement = () => {
                     variant="link"
                     size="sm"
                     onClick={() => setColumnFilters({ name: '', role: 'all', plan: 'all', status: 'all' })}
-                    className="text-[10px] font-black text-brand-600 uppercase tracking-widest hover:underline h-auto p-0"
+                    className="text-xs font-black text-brand-600 uppercase tracking-widest hover:underline h-auto p-0"
                 >
                     Clear All
                 </Button>
@@ -368,19 +368,19 @@ const UserManagement = () => {
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-right" dir="rtl">
                         <thead className="bg-gray-50 dark:bg-gray-900/50">
                             <tr>
-                                <th scope="col" className="py-4 pl-4 pr-6 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Name / Contact</th>
-                                <th scope="col" className="px-3 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Role / Plan</th>
-                                <th scope="col" className="px-3 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Assets Stats</th>
-                                <th scope="col" className="px-3 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Platform Usage</th>
-                                <th scope="col" className="px-3 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Last Activity</th>
-                                <th scope="col" className="px-3 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
+                                <th scope="col" className="py-4 pl-4 pr-6 text-right text-xs font-black text-gray-400 uppercase tracking-widest">Name / Contact</th>
+                                <th scope="col" className="px-3 py-4 text-right text-xs font-black text-gray-400 uppercase tracking-widest">Role / Plan</th>
+                                <th scope="col" className="px-3 py-4 text-right text-xs font-black text-gray-400 uppercase tracking-widest">Assets Stats</th>
+                                <th scope="col" className="px-3 py-4 text-right text-xs font-black text-gray-400 uppercase tracking-widest">Platform Usage</th>
+                                <th scope="col" className="px-3 py-4 text-right text-xs font-black text-gray-400 uppercase tracking-widest">Last Activity</th>
+                                <th scope="col" className="px-3 py-4 text-right text-xs font-black text-gray-400 uppercase tracking-widest">Status</th>
                                 <th scope="col" className="relative py-4 pr-3 pl-6"><span className="sr-only">Actions</span></th>
                             </tr>
                             <tr className="bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700">
                                 <th className="py-2 pr-6 pl-3">
                                     <Input
                                         placeholder="Filter Name..."
-                                        className="w-full text-[10px] h-8"
+                                        className="w-full text-xs h-8"
                                         value={columnFilters.name}
                                         onChange={(e) => setColumnFilters({ ...columnFilters, name: e.target.value })}
                                     />
@@ -388,7 +388,7 @@ const UserManagement = () => {
                                 <th className="px-3 py-2">
                                     <div className="flex items-center gap-2">
                                         <Select
-                                            className="h-7 text-[10px] min-w-[100px]"
+                                            className="h-7 text-xs min-w-[100px]"
                                             value={columnFilters.role}
                                             onChange={(val) => setColumnFilters({ ...columnFilters, role: val })}
                                             options={[
@@ -399,7 +399,7 @@ const UserManagement = () => {
                                             ]}
                                         />
                                         <Select
-                                            className="h-7 text-[10px] min-w-[100px]"
+                                            className="h-7 text-xs min-w-[100px]"
                                             value={columnFilters.plan}
                                             onChange={(val) => setColumnFilters({ ...columnFilters, plan: val })}
                                             options={[
@@ -416,7 +416,7 @@ const UserManagement = () => {
                                 <th className="px-3 py-2 opacity-30 select-none"></th>
                                 <th className="px-3 py-2">
                                     <Select
-                                        className="h-8 text-[10px]"
+                                        className="h-8 text-xs"
                                         value={columnFilters.status}
                                         onChange={(val) => setColumnFilters({ ...columnFilters, status: val })}
                                         options={[
@@ -452,49 +452,49 @@ const UserManagement = () => {
                                                         {user.full_name || 'No Name'}
                                                         {user.is_super_admin && <span className="text-[8px] bg-amber-100 text-amber-700 px-1 rounded font-black uppercase">SA</span>}
                                                     </div>
-                                                    <div className="text-[10px] font-medium text-gray-400 tracking-tight">{user.email}</div>
-                                                    {user.phone && <div className="text-[10px] font-bold text-brand-600 tracking-tight mt-0.5">{user.phone}</div>}
+                                                    <div className="text-xs font-medium text-gray-400 tracking-tight">{user.email}</div>
+                                                    {user.phone && <div className="text-xs font-bold text-brand-600 tracking-tight mt-0.5">{user.phone}</div>}
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="whitespace-nowrap px-3 py-5">
                                             <div className="flex flex-col gap-1">
-                                                <span className={`inline-flex w-fit rounded-lg px-2 py-0.5 text-[9px] font-black uppercase tracking-widest ${user.role === 'admin' ? 'bg-primary-50 text-primary-700 border border-primary-100 dark:bg-primary-900/20 dark:border-primary-800' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'}`}>
+                                                <span className={`inline-flex w-fit rounded-lg px-2 py-0.5 text-[11px] font-black uppercase tracking-widest ${user.role === 'admin' ? 'bg-primary-50 text-primary-700 border border-primary-100 dark:bg-primary-900/20 dark:border-primary-800' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'}`}>
                                                     {user.role}
                                                 </span>
-                                                <span className="text-[10px] font-bold text-primary uppercase tracking-widest">
+                                                <span className="text-xs font-bold text-primary uppercase tracking-widest">
                                                     {getPlanName(user)}
                                                 </span>
                                             </div>
                                         </td>
                                         <td className="whitespace-nowrap px-3 py-5 text-right">
-                                            <div className="flex flex-col gap-1 text-[10px] font-black uppercase">
+                                            <div className="flex flex-col gap-1 text-xs font-black uppercase">
                                                 <div className="text-gray-500 flex justify-between gap-4">ASSETS: <span className="text-gray-900 dark:text-white">{user.properties_count}</span></div>
                                                 <div className="text-gray-500 flex justify-between gap-4">LEASES: <span className="text-gray-900 dark:text-white">{user.contracts_count}</span></div>
                                                 <div className="text-gray-500 flex justify-between gap-4">TENANTS: <span className="text-gray-900 dark:text-white">{user.tenants_count}</span></div>
                                             </div>
                                         </td>
                                         <td className="whitespace-nowrap px-3 py-5 text-right">
-                                            <div className="flex flex-col gap-1 text-[10px] font-black uppercase">
+                                            <div className="flex flex-col gap-1 text-xs font-black uppercase">
                                                 <div className="text-gray-500 flex justify-between gap-4">STORAGE: <span className="text-emerald-600">{user.storage_usage_mb || 0} MB</span></div>
                                                 <div className="text-gray-500 flex justify-between gap-4">AI SESS: <span className="text-primary">{user.ai_sessions_count || 0}</span></div>
                                             </div>
                                         </td>
                                         <td className="whitespace-nowrap px-3 py-5">
-                                            <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                                            <div className="text-xs font-bold text-gray-500 uppercase tracking-widest">
                                                 {user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never'}
                                             </div>
                                             {user.last_login && (
-                                                <div className="text-[9px] text-gray-400 font-medium">
+                                                <div className="text-[11px] text-gray-400 font-medium">
                                                     {new Date(user.last_login).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                 </div>
                                             )}
                                         </td>
                                         <td className="whitespace-nowrap px-3 py-5">
                                             {user.subscription_status === 'active' ? (
-                                                <span className="inline-flex rounded-lg bg-emerald-50 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest text-emerald-700 border border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800">Active</span>
+                                                <span className="inline-flex rounded-lg bg-emerald-50 px-2.5 py-0.5 text-xs font-black uppercase tracking-widest text-emerald-700 border border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800">Active</span>
                                             ) : (
-                                                <span className="inline-flex rounded-lg bg-red-50 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest text-red-700 border border-red-100 dark:bg-red-900/20 dark:border-red-800">{user.subscription_status || 'Suspended'}</span>
+                                                <span className="inline-flex rounded-lg bg-red-50 px-2.5 py-0.5 text-xs font-black uppercase tracking-widest text-red-700 border border-red-100 dark:bg-red-900/20 dark:border-red-800">{user.subscription_status || 'Suspended'}</span>
                                             )}
                                         </td>
                                         <td className="whitespace-nowrap py-5 pl-6 pr-3 text-left">
@@ -572,7 +572,7 @@ const UserManagement = () => {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <Select
-                                        label={<span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Account Role</span>}
+                                        label={<span className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Account Role</span>}
                                         value={editRole}
                                         onChange={(val) => setEditRole(val)}
                                         options={[
@@ -585,7 +585,7 @@ const UserManagement = () => {
                                 </div>
                                 <div>
                                     <Select
-                                        label={<span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Account Status</span>}
+                                        label={<span className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Account Status</span>}
                                         value={editStatus}
                                         onChange={(val) => setEditStatus(val)}
                                         options={[
@@ -599,7 +599,7 @@ const UserManagement = () => {
 
                             <div>
                                 <Select
-                                    label={<span className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Subscription Plan</span>}
+                                    label={<span className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Subscription Plan</span>}
                                     value={editPlan}
                                     onChange={(val) => setEditPlan(val)}
                                     options={plans.map(p => ({
@@ -611,7 +611,7 @@ const UserManagement = () => {
                             </div>
 
                             <div className="bg-brand-50/30 dark:bg-brand-900/10 rounded-2xl p-6 border border-brand-100 dark:border-brand-800">
-                                <h4 className="text-[10px] font-black text-brand-600 dark:text-brand-400 uppercase tracking-widest mb-4">System Analytics</h4>
+                                <h4 className="text-xs font-black text-brand-600 dark:text-brand-400 uppercase tracking-widest mb-4">System Analytics</h4>
                                 <div className="grid grid-cols-2 gap-y-4 gap-x-8">
                                     <div className="flex justify-between items-center text-xs">
                                         <span className="font-bold text-gray-500 uppercase tracking-tighter">Total Assets</span>
@@ -637,7 +637,7 @@ const UserManagement = () => {
                             </div>
 
                             <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-700">
-                                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Danger Zone</h4>
+                                <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Danger Zone</h4>
                                 <div className="space-y-3">
                                     <Button
                                         variant="outline"
@@ -700,18 +700,18 @@ const UserManagement = () => {
                                 securityLogs.map((log) => (
                                     <div key={log.id} className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700 flex flex-col gap-2">
                                         <div className="flex items-center justify-between">
-                                            <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${log.severity === 'critical' ? 'bg-red-100 text-red-700' :
+                                            <span className={`px-2 py-0.5 rounded-lg text-xs font-black uppercase tracking-widest ${log.severity === 'critical' ? 'bg-red-100 text-red-700' :
                                                 log.severity === 'high' ? 'bg-orange-100 text-orange-700' :
                                                     'bg-blue-100 text-blue-700'
                                                 }`}>
                                                 {log.event_code}
                                             </span>
-                                            <span className="text-[10px] font-bold text-gray-400">{new Date(log.created_at).toLocaleString()}</span>
+                                            <span className="text-xs font-bold text-gray-400">{new Date(log.created_at).toLocaleString()}</span>
                                         </div>
                                         <div className="text-xs text-gray-600 dark:text-gray-400 font-medium whitespace-pre-wrap break-all">
                                             {JSON.stringify(log.details, null, 2)}
                                         </div>
-                                        <div className="flex items-center gap-4 mt-1 opacity-50 text-[9px] font-bold uppercase tracking-tighter">
+                                        <div className="flex items-center gap-4 mt-1 opacity-80 text-[11px] font-bold uppercase tracking-tighter">
                                             <span>IP: {log.ip_address || 'Unknown'}</span>
                                             <span>Severity: {log.severity}</span>
                                         </div>

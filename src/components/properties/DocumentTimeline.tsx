@@ -81,7 +81,7 @@ export function DocumentTimeline({ documents, onDocumentClick, loading }: Docume
                                 >
                                     {/* Icon / Date Sticker */}
                                     <div className="shrink-0 flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-background dark:bg-neutral-800 text-slate-400 group-hover:text-primary transition-colors">
-                                        <span className="text-[10px] font-bold uppercase leading-none mb-1">
+                                        <span className="text-xs font-bold uppercase leading-none mb-1">
                                             {doc.document_date ? format(parseISO(doc.document_date), 'MMM') : format(new Date(doc.created_at), 'MMM')}
                                         </span>
                                         <span className="text-base font-black leading-none italic">
@@ -107,7 +107,7 @@ export function DocumentTimeline({ documents, onDocumentClick, loading }: Docume
                                                 {doc.amount.toLocaleString()}
                                             </div>
                                         ) : (
-                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
+                                            <div className="text-xs font-bold text-slate-400 uppercase tracking-tighter">
                                                 {t('noAmount')}
                                             </div>
                                         )}

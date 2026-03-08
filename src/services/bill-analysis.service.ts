@@ -13,18 +13,18 @@ export class UsageLimitExceededError extends Error {
 }
 
 export interface ExtractedBillData {
-    category: 'water' | 'electric' | 'gas' | 'municipality' | 'management' | 'internet' | 'cable' | 'other';
+    category: 'water' | 'electric' | 'gas' | 'municipality' | 'management' | 'internet' | 'tv' | 'mortgage' | 'other';
     amount: number;
     date: string; // YYYY-MM-DD
     vendor: string;
     invoiceNumber?: string;
-    confidence: number;
-    currency: string;
     billingPeriodStart?: string;
     billingPeriodEnd?: string;
     summary?: string;
     propertyId?: string | null;
     propertyAddress?: string | null;
+    confidence?: number;
+    currency?: string;
 }
 
 export const BillAnalysisService = {
@@ -100,13 +100,13 @@ export const BillAnalysisService = {
                 date: data.date || new Date().toISOString().split('T')[0],
                 vendor: data.vendor || 'Unknown Vendor',
                 invoiceNumber: data.invoiceNumber || '',
-                confidence: data.confidence || 0.5,
-                currency: data.currency || 'ILS',
                 billingPeriodStart: data.billingPeriodStart,
                 billingPeriodEnd: data.billingPeriodEnd,
                 summary: data.summary,
                 propertyId: data.propertyId || null,
-                propertyAddress: data.propertyAddress || null
+                propertyAddress: data.propertyAddress || null,
+                confidence: data.confidence || 1,
+                currency: data.currency || '₪'
             };
 
         } catch (error: any) {

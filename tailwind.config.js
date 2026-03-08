@@ -20,6 +20,17 @@ module.exports = {
                 sans: ["Assistant", "Inter", "sans-serif"],
                 heading: ["Assistant", "Outfit", "sans-serif"],
             },
+            // Accessibility & Readability Typography Scale (30s-50s Demographic Focus)
+            fontSize: {
+                'xs': ['0.875rem', { lineHeight: '1.5' }], // 14px (Absolute floor for micro-text)
+                'sm': ['1rem', { lineHeight: '1.5' }],     // 16px (Minimum secondary body)
+                'base': ['1.125rem', { lineHeight: '1.5' }], // 18px (Primary readable body)
+                'lg': ['1.25rem', { lineHeight: '1.5' }],  // 20px 
+                'xl': ['1.5rem', { lineHeight: '1.4' }],   // 24px
+                '2xl': ['1.75rem', { lineHeight: '1.35' }], // 28px
+                '3xl': ['2.25rem', { lineHeight: '1.2' }],  // 36px
+                '4xl': ['3rem', { lineHeight: '1.1' }],     // 48px
+            },
             // Modern Real Estate Palette
             colors: {
                 canvas: {

@@ -136,7 +136,7 @@ export const RentalTrendWidget: React.FC = () => {
                                             <select
                                                 value={pinned.rooms}
                                                 onChange={(e) => updateCityRooms(index, Number(e.target.value))}
-                                                className="text-[10px] bg-transparent border-none p-0 font-semibold text-brand-600 dark:text-brand-400 cursor-pointer outline-none focus:ring-0"
+                                                className="text-xs bg-transparent border-none p-0 font-semibold text-brand-600 dark:text-brand-400 cursor-pointer outline-none focus:ring-0"
                                             >
                                                 {[2, 3, 4, 5].map(n => (
                                                     <option key={n} value={n} className="dark:bg-neutral-900">
@@ -151,7 +151,7 @@ export const RentalTrendWidget: React.FC = () => {
                                         {Math.abs(data.annualGrowth)}%
                                     </div>
                                 </div>
-                                <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-between text-[10px] text-gray-400">
+                                <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-between text-xs text-gray-400">
                                     <span>5Y: {data.historical['5Y']}%</span>
                                     <span>MoM: {data.monthOverMonth}%</span>
                                 </div>

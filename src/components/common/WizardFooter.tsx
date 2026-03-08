@@ -63,7 +63,7 @@ export function WizardFooter({
                     onClick={onNext}
                     disabled={!isValid || isSaving}
                     className={cn(
-                        "flex-1 md:w-44 h-14 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-minimal group",
+                        "flex-1 md:w-44 h-14 rounded-2xl text-xs font-black uppercase tracking-widest shadow-minimal group",
                         isLastStep
                             ? "bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20"
                             : "button-jewel text-white"

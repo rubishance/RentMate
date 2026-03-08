@@ -113,7 +113,7 @@ export function ActionMenu({ onView, onEdit, onDelete, onCalculate, onSnooze, al
                             {/* Simple Snooze Options (since complex nested menus are trickier in headless UI and might need more work) */}
                             {onSnooze && (
                                 <div className="border-t border-slate-50 dark:border-neutral-800 my-1 pt-1">
-                                    <div className="px-4 py-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40">
+                                    <div className="px-4 py-1.5 text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70">
                                         {t('snooze') || 'Snooze'}
                                     </div>
                                     {[1, 3, 7].map(days => (

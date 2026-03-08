@@ -9,6 +9,7 @@ import { QuickActionFAB } from '../components/dashboard/QuickActionFAB';
 import { DEFAULT_WIDGET_LAYOUT, WidgetConfig, DashboardData, WIDGET_REGISTRY } from '../components/dashboard/WidgetRegistry';
 import { FileSearch, Plus } from 'lucide-react';
 import { ReportGenerationModal } from '../components/modals/ReportGenerationModal';
+import { DashboardAddModal } from '../components/modals/DashboardAddModal';
 import { cn } from '../lib/utils';
 import { useSubscription } from '../hooks/useSubscription';
 import { BriefingService, FeedItem } from '../services/briefing.service';
@@ -39,6 +40,7 @@ export function Dashboard() {
     const [isRefetching, setIsRefetching] = useState(false);
 
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
     const [mountId] = useState(() => Math.random().toString(36).substring(7));
 
@@ -250,7 +252,7 @@ export function Dashboard() {
                         </div>
 
                         <Button
-                            onClick={() => window.dispatchEvent(new CustomEvent('TOGGLE_QUICK_ACTIONS'))}
+                            onClick={() => setIsAddModalOpen(true)}
                             className="h-14 w-14 rounded-2xl p-0 shrink-0 bg-primary text-primary-foreground shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all duration-300"
                             title={t('addNew')}
                         >
@@ -262,7 +264,7 @@ export function Dashboard() {
                         {/* Edit Mode Toggle & Status */}
                         <div className="hidden md:inline-flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-full border border-primary/10">
                             <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                            <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                                 {t('online')}
                             </span>
                         </div>
@@ -271,7 +273,7 @@ export function Dashboard() {
                             variant="ghost"
                             size="sm"
                             onClick={() => setIsReportModalOpen(true)}
-                            className="text-[10px] uppercase tracking-widest font-bold bg-white/50 dark:bg-black/20 backdrop-blur-md border border-white/20 hover:bg-white/80 transition-all flex-1 sm:flex-none"
+                            className="text-xs uppercase tracking-widest font-bold bg-white/50 dark:bg-black/20 backdrop-blur-md border border-white/20 hover:bg-white/80 transition-all flex-1 sm:flex-none"
                         >
                             <FileSearch className="w-3.5 h-3.5 mr-2" />
                             {t('generateReport')}
@@ -327,7 +329,10 @@ export function Dashboard() {
                 isOpen={isReportModalOpen}
                 onClose={() => setIsReportModalOpen(false)}
             />
-            <QuickActionFAB />
+            <DashboardAddModal
+                isOpen={isAddModalOpen}
+                onClose={() => setIsAddModalOpen(false)}
+            />
         </div>
     );
 }

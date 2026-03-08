@@ -104,7 +104,7 @@ export function InteractionLogger({ userId, onLogSuccess, onCancel }: Interactio
                                 }`}
                         >
                             <t.icon className="w-5 h-5" />
-                            <span className="text-[10px] font-black uppercase tracking-widest">{t.label}</span>
+                            <span className="text-xs font-black uppercase tracking-widest">{t.label}</span>
                         </button>
                     ))}
                 </div>
@@ -114,7 +114,7 @@ export function InteractionLogger({ userId, onLogSuccess, onCancel }: Interactio
                     {type === 'call' && (
                         <>
                             <div>
-                                <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Outcome</label>
+                                <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Outcome</label>
                                 <select
                                     value={callOutcome}
                                     onChange={(e) => setCallOutcome(e.target.value)}
@@ -127,7 +127,7 @@ export function InteractionLogger({ userId, onLogSuccess, onCancel }: Interactio
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Duration (min)</label>
+                                <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Duration (min)</label>
                                 <input
                                     type="number"
                                     value={callDuration}
@@ -141,7 +141,7 @@ export function InteractionLogger({ userId, onLogSuccess, onCancel }: Interactio
 
                     {type === 'email' && (
                         <div>
-                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Direction</label>
+                            <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Direction</label>
                             <select
                                 value={emailDirection}
                                 onChange={(e) => setEmailDirection(e.target.value)}
@@ -155,7 +155,7 @@ export function InteractionLogger({ userId, onLogSuccess, onCancel }: Interactio
 
                     {/* Common Fields */}
                     <div className={type === 'call' || type === 'email' ? "" : "col-span-2"}>
-                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">
+                        <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1.5">
                             {type === 'email' ? 'Subject' : 'Title (Optional)'}
                         </label>
                         <input
@@ -168,7 +168,7 @@ export function InteractionLogger({ userId, onLogSuccess, onCancel }: Interactio
                     </div>
 
                     <div className={type === 'call' ? "col-span-2" : ""}>
-                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Interaction Status</label>
+                        <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Interaction Status</label>
                         <select
                             value={status}
                             onChange={(e) => setStatus(e.target.value as any)}
@@ -182,7 +182,7 @@ export function InteractionLogger({ userId, onLogSuccess, onCancel }: Interactio
 
                     {type !== 'call' && (
                         <div>
-                            <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">External Link</label>
+                            <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1.5">External Link</label>
                             <input
                                 type="url"
                                 value={externalLink}
@@ -195,7 +195,7 @@ export function InteractionLogger({ userId, onLogSuccess, onCancel }: Interactio
                 </div>
 
                 <div>
-                    <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Notes / Content</label>
+                    <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Notes / Content</label>
                     <textarea
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
@@ -217,7 +217,7 @@ export function InteractionLogger({ userId, onLogSuccess, onCancel }: Interactio
                     <button
                         type="submit"
                         disabled={actionLoading}
-                        className="px-6 py-2 bg-brand-600 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-brand-700 transition-all disabled:opacity-50 shadow-lg shadow-brand-600/20 flex items-center gap-2"
+                        className="px-6 py-2 bg-brand-600 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-brand-700 transition-all disabled:opacity-80 shadow-lg shadow-brand-600/20 flex items-center gap-2"
                     >
                         {actionLoading && <Loader2 className="w-4 h-4 animate-spin" />}
                         Save Log

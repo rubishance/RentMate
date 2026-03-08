@@ -122,7 +122,7 @@ export default function WelcomeLandingStitch() {
                                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md"
                             >
                                 <Sparkles className="w-4 h-4 text-amber-400" />
-                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60">
+                                <span className="text-xs font-black uppercase tracking-[0.2em] text-white/60">
                                     הדור הבא של ניהול נדל״ן מבוסס AI
                                 </span>
                             </motion.div>
@@ -179,12 +179,12 @@ export default function WelcomeLandingStitch() {
                             >
                                 <div className="flex flex-col">
                                     <span className="text-2xl font-black tracking-tighter">1,200+</span>
-                                    <span className="text-[10px] uppercase tracking-widest font-bold">משתמשים פעילים</span>
+                                    <span className="text-xs uppercase tracking-widest font-bold">משתמשים פעילים</span>
                                 </div>
                                 <div className="w-px h-10 bg-white/10" />
                                 <div className="flex flex-col">
                                     <span className="text-2xl font-black tracking-tighter">₪45M</span>
-                                    <span className="text-[10px] uppercase tracking-widest font-bold">נוהלו במערכת</span>
+                                    <span className="text-xs uppercase tracking-widest font-bold">נוהלו במערכת</span>
                                 </div>
                             </motion.div>
                         </div>
@@ -214,7 +214,7 @@ export default function WelcomeLandingStitch() {
                                         <TrendingUp className="w-5 h-5 text-emerald-400" />
                                     </div>
                                     <div>
-                                        <div className="text-[10px] text-white/40 uppercase font-black">תשלום התקבל</div>
+                                        <div className="text-xs text-white/40 uppercase font-black">תשלום התקבל</div>
                                         <div className="text-sm font-black">₪5,400</div>
                                     </div>
                                 </div>
@@ -230,7 +230,7 @@ export default function WelcomeLandingStitch() {
                                         <Sparkles className="w-5 h-5 text-primary" />
                                     </div>
                                     <div>
-                                        <div className="text-[10px] text-white/40 uppercase font-black">AI מנתח חוזה...</div>
+                                        <div className="text-xs text-white/40 uppercase font-black">AI מנתח חוזה...</div>
                                         <div className="w-20 h-1.5 bg-white/10 rounded-full mt-1 overflow-hidden">
                                             <motion.div animate={{ x: [-80, 80] }} transition={{ repeat: Infinity, duration: 1.5 }} className="w-1/2 h-full bg-primary rounded-full" />
                                         </div>
@@ -264,7 +264,7 @@ export default function WelcomeLandingStitch() {
                                     )}>
                                         {feature.icon}
                                     </div>
-                                    <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-white/60 group-hover:text-white transition-colors">
+                                    <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-black uppercase tracking-widest text-white/60 group-hover:text-white transition-colors">
                                         {feature.tag}
                                     </span>
                                 </div>
@@ -329,13 +329,13 @@ export default function WelcomeLandingStitch() {
                             </span>
                         </div>
 
-                        <div className="flex gap-8 text-[10px] font-black uppercase tracking-widest text-white/40">
+                        <div className="flex gap-8 text-xs font-black uppercase tracking-widest text-white/40">
                             <a href="/legal/terms" className="hover:text-white transition-colors">תנאי שימוש</a>
                             <a href="/legal/privacy" className="hover:text-white transition-colors">פרטיות</a>
                             <a href="/contact" className="hover:text-white transition-colors">צור קשר</a>
                         </div>
 
-                        <div className="text-[10px] font-medium text-white/20 uppercase tracking-[0.3em]">
+                        <div className="text-xs font-medium text-white/20 uppercase tracking-[0.3em]">
                             © 2026 RentMate. All Rights Reserved.
                         </div>
                     </div>

@@ -197,7 +197,7 @@ export function DashboardStitchV1() {
                     {reportsEnabled && (
                         <button
                             onClick={() => setIsReportModalOpen(true)}
-                            className="flex items-center gap-2 px-5 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 hover:border-indigo-500/30 text-muted-foreground hover:text-indigo-600 transition-all shadow-sm hover:shadow-md"
+                            className="flex items-center gap-2 px-5 py-2.5 text-xs font-black uppercase tracking-widest rounded-xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 hover:border-indigo-500/30 text-muted-foreground hover:text-indigo-600 transition-all shadow-sm hover:shadow-md"
                         >
                             <FileSearch className="w-3.5 h-3.5" />
                             {lang === 'he' ? 'הפקת דוח' : 'Generate Report'}
@@ -207,7 +207,7 @@ export function DashboardStitchV1() {
                     <button
                         onClick={() => setIsEditingLayout(!isEditingLayout)}
                         className={cn(
-                            "flex items-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300",
+                            "flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300",
                             isEditingLayout
                                 ? "bg-primary text-primary-foreground shadow-lg scale-105"
                                 : "bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-muted-foreground hover:border-primary/30 hover:text-primary shadow-sm hover:shadow-md"

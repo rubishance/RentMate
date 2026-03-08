@@ -49,7 +49,6 @@ export function BottomDock() {
     const navItems = [
         { path: '/dashboard', label: labels['/dashboard'], icon: HomeIcon },
         { path: '/properties', label: labels['/properties'], icon: AssetsIcon },
-        { path: '/contracts', label: labels['/contracts'], icon: ContractsIcon },
         { path: '/payments', label: labels['/payments'], icon: PaymentsIcon },
         { path: '/tools', label: labels['/tools'], icon: ToolsIcon },
         ...(isAdmin ? [{ path: '/admin', label: labels['/admin'], icon: AdminIcon }] : []),
@@ -63,7 +62,10 @@ export function BottomDock() {
                 aria-label="Bottom Dock"
             >
                 {navItems.map((item) => {
-                    const isActive = location.pathname === item.path;
+                    const isActive = item.path === '/dashboard'
+                        ? location.pathname === item.path
+                        : location.pathname.startsWith(item.path);
+
                     const Icon = item.icon;
                     return (
                         <Link
@@ -78,7 +80,6 @@ export function BottomDock() {
                             onMouseEnter={() => {
                                 if (item.path === '/dashboard') prefetchRoutes.dashboard();
                                 if (item.path === '/properties') prefetchRoutes.properties();
-                                if (item.path === '/contracts') prefetchRoutes.contracts();
                                 if (item.path === '/payments') prefetchRoutes.payments();
                                 if (item.path === '/tools') prefetchRoutes.settings();
                                 if (item.path === '/admin') prefetchRoutes.adminDashboard();

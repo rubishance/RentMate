@@ -28,8 +28,14 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
     className,
     error
 }) => {
+    React.useEffect(() => {
+        if (options?.length === 1 && !selected?.includes(options[0].value)) {
+            onChange([...selected, options[0].value]);
+        }
+    }, [options, selected, onChange]);
+
     const selectedOptions = useMemo(() =>
-        options.filter(op => selected.includes(op.value)),
+        options?.filter(op => selected?.includes(op.value)) || [],
         [options, selected]);
 
     const handleRemove = (e: React.MouseEvent, valueToRemove: string) => {

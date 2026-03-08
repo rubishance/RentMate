@@ -41,7 +41,7 @@ export function MaintenanceTracker() {
                 <div className="space-y-1 overflow-hidden">
                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-orange-500/5 dark:bg-orange-500/10 backdrop-blur-md rounded-full border border-orange-500/10 shadow-sm mb-1">
                         <Wrench className="w-3 h-3 text-orange-500" />
-                        <span className="text-[9px] font-black uppercase tracking-widest text-warning">
+                        <span className="text-[11px] font-black uppercase tracking-widest text-warning">
                             {t('maintenanceHub') || 'Maintenance Hub'}
                         </span>
                     </div>
@@ -66,7 +66,7 @@ export function MaintenanceTracker() {
                 <GlassCard variant="deep" className="p-8 rounded-[3rem] flex flex-col justify-between min-h-[160px] group hover:shadow-jewel transition-all duration-700 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
                     <div className="flex items-center justify-between relative z-10">
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40 lowercase">{t('totalYTD') || 'Total Spend (YTD)'}</span>
+                        <span className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground opacity-70 lowercase">{t('totalYTD') || 'Total Spend (YTD)'}</span>
                         <div className="w-12 h-12 rounded-xl glass-premium flex items-center justify-center text-orange-500 border-white/5 shadow-minimal group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
                             <Wrench className="w-5 h-5" />
                         </div>
@@ -81,7 +81,7 @@ export function MaintenanceTracker() {
                 <GlassCard variant="deep" className="p-8 rounded-[3rem] flex flex-col justify-between min-h-[160px] group hover:shadow-jewel transition-all duration-700 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
                     <div className="flex items-center justify-between relative z-10">
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40 lowercase">{t('totalTickets') || 'Total Tickets'}</span>
+                        <span className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground opacity-70 lowercase">{t('totalTickets') || 'Total Tickets'}</span>
                         <div className="w-12 h-12 rounded-xl glass-premium flex items-center justify-center text-primary border-white/5 shadow-minimal group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
                             <Filter className="w-5 h-5" />
                         </div>
@@ -96,7 +96,7 @@ export function MaintenanceTracker() {
                 <GlassCard variant="deep" className="p-8 rounded-[3rem] flex flex-col justify-between min-h-[160px] group hover:shadow-jewel transition-all duration-700 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
                     <div className="flex items-center justify-between relative z-10">
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40 lowercase">{t('avgCost') || 'Avg. Ticket Cost'}</span>
+                        <span className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground opacity-70 lowercase">{t('avgCost') || 'Avg. Ticket Cost'}</span>
                         <div className="w-12 h-12 rounded-xl glass-premium flex items-center justify-center text-emerald-500 border-white/5 shadow-minimal group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
                             <ArrowUpRight className="w-5 h-5" />
                         </div>
@@ -112,7 +112,7 @@ export function MaintenanceTracker() {
             {/* Recent Activity List */}
             <div className="space-y-6">
                 <div className="">
-                    <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground opacity-40 lowercase">{t('recentActivity') || 'Recent Activity'}</h3>
+                    <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground opacity-70 lowercase">{t('recentActivity') || 'Recent Activity'}</h3>
                 </div>
 
                 <div className="glass-premium dark:bg-neutral-900/40 border-white/5 rounded-[3rem] shadow-minimal overflow-hidden">
@@ -126,8 +126,8 @@ export function MaintenanceTracker() {
                                 <Wrench className="w-10 h-10 text-muted-foreground opacity-20" />
                             </div>
                             <div>
-                                <h3 className="text-2xl font-black tracking-tighter text-foreground lowercase opacity-40">{t('noMaintenanceRecords') || 'No Maintenance Records'}</h3>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-30 mt-2">{t('noMaintenanceDesc') || 'Start logging expenses to track your property health.'}</p>
+                                <h3 className="text-2xl font-black tracking-tighter text-foreground lowercase opacity-70">{t('noMaintenanceRecords') || 'No Maintenance Records'}</h3>
+                                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-30 mt-2">{t('noMaintenanceDesc') || 'Start logging expenses to track your property health.'}</p>
                             </div>
                         </div>
                     ) : (
@@ -142,7 +142,7 @@ export function MaintenanceTracker() {
                                         </div>
                                         <div className="flex-1 min-w-0 space-y-1">
                                             <h4 className="text-base sm:text-lg font-black tracking-tight text-foreground lowercase truncate"><bdi>{doc.title || doc.description || 'Maintenance'}</bdi></h4>
-                                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40">
+                                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70">
                                                 <span className="flex items-center gap-1.5 shrink-0 truncate max-w-full">
                                                     <Building className="w-3 h-3" />
                                                     <bdi>{(doc as any).properties?.address || 'Unknown Property'}</bdi>
@@ -155,10 +155,10 @@ export function MaintenanceTracker() {
 
                                     <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 relative z-10 w-full sm:w-auto pl-[4rem] sm:pl-0">
                                         <div className="flex items-baseline gap-1.5 font-black text-foreground">
-                                            <span className="text-[10px] opacity-40">₪</span>
+                                            <span className="text-xs opacity-40">₪</span>
                                             <span className="text-xl sm:text-2xl tracking-tighter">{(doc.amount || 0).toLocaleString()}</span>
                                         </div>
-                                        <span className="text-[8px] font-black uppercase tracking-[2px] px-3 py-1 rounded-full glass-premium border-white/5 text-muted-foreground opacity-60">
+                                        <span className="text-[8px] font-black uppercase tracking-[2px] px-3 py-1 rounded-full glass-premium border-white/5 text-muted-foreground opacity-90">
                                             {doc.issue_type || 'General'}
                                         </span>
                                     </div>

@@ -223,7 +223,7 @@ export function SharedCalculation() {
 
                     {/* Footer / Disclaimer */}
                     <div className="bg-secondary/10 p-4 border-t border-border text-center">
-                        <p className="text-[10px] text-muted-foreground leading-relaxed max-w-xs mx-auto">
+                        <p className="text-xs text-muted-foreground leading-relaxed max-w-xs mx-auto">
                             {t('shared_calc_disclaimer')}
                         </p>
                     </div>

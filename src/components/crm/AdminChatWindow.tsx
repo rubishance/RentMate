@@ -114,7 +114,7 @@ export function AdminChatWindow({ userId, adminId, onClose }: AdminChatWindowPro
                 <div className="flex items-center gap-2">
                     <button
                         onClick={handleEndChat}
-                        className="text-[10px] font-bold bg-brand-700 hover:bg-brand-800 px-2 py-1 rounded transition-colors"
+                        className="text-xs font-bold bg-brand-700 hover:bg-brand-800 px-2 py-1 rounded transition-colors"
                     >
                         End Chat
                     </button>
@@ -148,7 +148,7 @@ export function AdminChatWindow({ userId, adminId, onClose }: AdminChatWindowPro
                                     }`}>
                                     {msg.content}
                                 </div>
-                                <span className="text-[9px] text-gray-400 mt-1 px-1">
+                                <span className="text-[11px] text-gray-400 mt-1 px-1">
                                     {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </span>
                             </div>

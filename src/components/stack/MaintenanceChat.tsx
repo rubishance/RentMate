@@ -40,7 +40,7 @@ export function MaintenanceChat({ ticketId: _ticketId, propertyAddress }: Mainte
                     <span className="text-xs text-muted-foreground">{propertyAddress || 'Ben Yehuda 14'}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <span className="px-3 py-1 bg-amber-100 text-amber-700 text-[10px] font-bold uppercase tracking-widest rounded-full">In Progress</span>
+                    <span className="px-3 py-1 bg-amber-100 text-amber-700 text-xs font-bold uppercase tracking-widest rounded-full">In Progress</span>
                 </div>
             </div>
 
@@ -50,7 +50,7 @@ export function MaintenanceChat({ ticketId: _ticketId, propertyAddress }: Mainte
                     <div key={msg.id} className={`flex flex-col ${msg.sender === 'me' ? 'items-end' : msg.sender === 'system' ? 'items-center' : 'items-start'}`}>
                         {/* System Message */}
                         {msg.sender === 'system' ? (
-                            <div className="bg-muted/50 dark:bg-neutral-800 px-4 py-2 rounded-full text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
+                            <div className="bg-muted/50 dark:bg-neutral-800 px-4 py-2 rounded-full text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
                                 {msg.text}
                             </div>
                         ) : (
@@ -63,7 +63,7 @@ export function MaintenanceChat({ ticketId: _ticketId, propertyAddress }: Mainte
                                     <div className="w-full h-32 bg-slate-200 dark:bg-neutral-700 rounded-lg mb-2 animate-pulse" />
                                 )}
                                 <p className="text-sm leading-relaxed font-medium">{msg.text}</p>
-                                <span className="text-[9px] opacity-50 block mt-2 font-mono uppercase">{msg.time}</span>
+                                <span className="text-[11px] opacity-80 block mt-2 font-mono uppercase">{msg.time}</span>
                             </div>
                         )}
                     </div>

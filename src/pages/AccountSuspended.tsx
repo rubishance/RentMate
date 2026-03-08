@@ -33,7 +33,7 @@ export default function AccountSuspended() {
                 <div className="pt-4 space-y-3">
                     <a
                         href="mailto:support@rentmate.co.il"
-                        className="w-full h-14 bg-foreground text-background font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-premium-dark"
+                        className="w-full h-14 bg-foreground text-background font-black text-xs uppercase tracking-[0.2em] rounded-2xl flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-premium-dark"
                     >
                         <Mail className="w-4 h-4" />
                         צור קשר עם התמיכה
@@ -41,14 +41,14 @@ export default function AccountSuspended() {
 
                     <button
                         onClick={handleLogout}
-                        className="w-full h-14 bg-muted/50 dark:bg-neutral-900 text-foreground font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl flex items-center justify-center gap-2 hover:bg-slate-200 dark:hover:bg-neutral-800 transition-all border border-slate-200 dark:border-neutral-800"
+                        className="w-full h-14 bg-muted/50 dark:bg-neutral-900 text-foreground font-black text-xs uppercase tracking-[0.2em] rounded-2xl flex items-center justify-center gap-2 hover:bg-slate-200 dark:hover:bg-neutral-800 transition-all border border-slate-200 dark:border-neutral-800"
                     >
                         <LogOut className="w-4 h-4" />
                         יציאה מהחשבון
                     </button>
                 </div>
 
-                <p className="text-[10px] text-muted-foreground uppercase tracking-widest pt-4 opacity-40">
+                <p className="text-xs text-muted-foreground uppercase tracking-widest pt-4 opacity-70">
                     RENTMATE SECURITY CENTER
                 </p>
             </div>

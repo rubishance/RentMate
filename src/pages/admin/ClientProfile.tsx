@@ -263,7 +263,7 @@ const ClientProfile = () => {
                     <button
                         onClick={handleExport}
                         disabled={isExporting}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-emerald-600/20 disabled:opacity-50"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-emerald-600/20 disabled:opacity-80"
                     >
                         {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Table className="w-4 h-4" />}
                         Export to Sheets
@@ -276,7 +276,7 @@ const ClientProfile = () => {
                 <div className="lg:col-span-1 space-y-6">
                     {/* Status Card */}
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
-                        <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Account Status</h3>
+                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Account Status</h3>
                         <div className="flex items-center justify-between mb-4">
                             <span className="text-sm font-bold text-gray-700 dark:text-gray-300">Plan</span>
                             {isEditingPlan ? (
@@ -301,7 +301,7 @@ const ClientProfile = () => {
                                     </span>
                                     <button
                                         onClick={() => { setNewPlanId(profile.plan_id || ''); setIsEditingPlan(true); }}
-                                        className="text-[10px] text-gray-400 hover:text-brand-600"
+                                        className="text-xs text-gray-400 hover:text-brand-600"
                                     >
                                         Edit
                                     </button>
@@ -321,7 +321,7 @@ const ClientProfile = () => {
 
                     {/* Financial Summary */}
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
-                        <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Financial Records</h3>
+                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Financial Records</h3>
                         <div className="space-y-4">
                             {invoices.length === 0 ? (
                                 <p className="text-xs text-gray-400 font-medium italic">No invoices found for this client.</p>
@@ -332,10 +332,10 @@ const ClientProfile = () => {
                                             <DocumentTextIcon className="w-5 h-5 text-gray-400" />
                                             <div>
                                                 <div className="text-xs font-bold text-gray-900 dark:text-white">₪{inv.amount}</div>
-                                                <div className="text-[10px] text-gray-500">{new Date(inv.issue_date).toLocaleDateString()}</div>
+                                                <div className="text-xs text-gray-500">{new Date(inv.issue_date).toLocaleDateString()}</div>
                                             </div>
                                         </div>
-                                        <span className={`text-[9px] font-black uppercase tracking-widest ${inv.status === 'paid' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                        <span className={`text-[11px] font-black uppercase tracking-widest ${inv.status === 'paid' ? 'text-emerald-600' : 'text-amber-600'}`}>
                                             {inv.status}
                                         </span>
                                     </div>
@@ -343,7 +343,7 @@ const ClientProfile = () => {
                             )}
                         </div>
                         {invoices.length > 5 && (
-                            <button className="w-full mt-4 text-[10px] font-black text-brand-600 uppercase tracking-widest hover:underline">
+                            <button className="w-full mt-4 text-xs font-black text-brand-600 uppercase tracking-widest hover:underline">
                                 View All Invoices
                             </button>
                         )}
@@ -354,7 +354,7 @@ const ClientProfile = () => {
                 <div className="lg:col-span-2 space-y-6">
                     <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
                         <div className="p-6 border-b border-gray-50 dark:border-gray-700 flex justify-between items-center">
-                            <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Interactive Timeline</h3>
+                            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Interactive Timeline</h3>
                             <button
                                 onClick={() => setIsAddingNote(true)}
                                 className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-brand-600/20"
@@ -381,7 +381,7 @@ const ClientProfile = () => {
                                 <button
                                     key={f}
                                     onClick={() => setFeedFilter(f as any)}
-                                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${feedFilter === f
+                                    className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${feedFilter === f
                                         ? 'bg-brand-50 text-brand-700 dark:bg-brand-900/20 dark:text-brand-400'
                                         : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
                                         }`}
@@ -413,13 +413,13 @@ const ClientProfile = () => {
                                                         <div className="text-sm font-bold text-foreground capitalize">
                                                             {event.event_name.replace(/_/g, ' ')}
                                                         </div>
-                                                        <div className="text-[10px] text-slate-400">
+                                                        <div className="text-xs text-slate-400">
                                                             {event.url} • {new Date(event.created_at).toLocaleString()}
                                                         </div>
                                                     </div>
                                                 </div>
                                                 {event.metadata && (
-                                                    <div className="text-[10px] text-indigo-500 font-bold bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded-md">
+                                                    <div className="text-xs text-indigo-500 font-bold bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded-md">
                                                         {JSON.stringify(event.metadata)}
                                                     </div>
                                                 )}
@@ -468,8 +468,8 @@ const ClientProfile = () => {
                             {selectedBotChat.metadata?.messages?.map((msg: { role: string; content: string; timestamp?: string }, idx: number) => (
                                 <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                                     <div className="mb-1 flex items-center gap-2">
-                                        <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">{msg.role}</span>
-                                        <span className="text-[9px] text-gray-300">{new Date(msg.timestamp || Date.now()).toLocaleTimeString()}</span>
+                                        <span className="text-[11px] font-black uppercase tracking-widest text-gray-400">{msg.role}</span>
+                                        <span className="text-[11px] text-gray-300">{new Date(msg.timestamp || Date.now()).toLocaleTimeString()}</span>
                                     </div>
                                     <div className={`p-4 rounded-2xl max-w-[85%] text-sm font-medium leading-relaxed ${msg.role === 'user'
                                         ? 'bg-brand-600 text-white rounded-tr-none'
@@ -481,7 +481,7 @@ const ClientProfile = () => {
                             ))}
                         </div>
                         <div className="p-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 text-center">
-                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">End of Automated Transcript</span>
+                            <span className="text-xs font-black text-gray-400 uppercase tracking-widest">End of Automated Transcript</span>
                         </div>
                     </div>
                 </div>

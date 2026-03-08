@@ -47,7 +47,7 @@ export function KnowledgeBase() {
                 <div className="max-w-7xl mx-auto px-4 md:px-8">
                     <button
                         onClick={() => navigate('/dashboard')}
-                        className="mb-12 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all group px-4 py-2 glass-premium dark:bg-neutral-900/60 rounded-full border-white/5 shadow-minimal w-fit lowercase font-black text-[10px] uppercase tracking-widest"
+                        className="mb-12 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all group px-4 py-2 glass-premium dark:bg-neutral-900/60 rounded-full border-white/5 shadow-minimal w-fit lowercase font-black text-xs uppercase tracking-widest"
                         dir={lang === 'he' ? 'rtl' : 'ltr'}
                     >
                         <ArrowLeft className={`w-3 h-3 transition-transform ${lang === 'he' ? 'rotate-180 group-hover:translate-x-1' : 'group-hover:-translate-x-1'}`} />
@@ -57,14 +57,14 @@ export function KnowledgeBase() {
                     <div className="space-y-4">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/5 dark:bg-indigo-500/10 backdrop-blur-md rounded-full border border-indigo-500/10 shadow-sm mb-2">
                             <Book className="w-3 h-3 text-indigo-500" />
-                            <span className="text-[9px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                            <span className="text-[11px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
                                 {t('knowledgeBaseTitle')}
                             </span>
                         </div>
                         <h1 className="h1-bionic">
                             {t('learnAndExplore')}
                         </h1>
-                        <p className="text-muted-foreground text-lg font-medium leading-relaxed max-w-2xl opacity-60">
+                        <p className="text-muted-foreground text-lg font-medium leading-relaxed max-w-2xl opacity-90">
                             {t('knowledgeBaseDesc')}
                         </p>
                     </div>
@@ -85,7 +85,7 @@ export function KnowledgeBase() {
                             <select
                                 value={selectedCategory}
                                 onChange={(e) => setSelectedCategory(e.target.value)}
-                                className="w-full md:w-64 px-8 py-5 glass-premium dark:bg-neutral-900/60 border-white/10 rounded-[2rem] text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/20 shadow-minimal transition-all appearance-none cursor-pointer font-black text-[10px] uppercase tracking-widest lowercase"
+                                className="w-full md:w-64 px-8 py-5 glass-premium dark:bg-neutral-900/60 border-white/10 rounded-[2rem] text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/20 shadow-minimal transition-all appearance-none cursor-pointer font-black text-xs uppercase tracking-widest lowercase"
                             >
                                 <option value="all">{t('all_categories')}</option>
                                 {categories.slice(1).map(cat => (
@@ -101,7 +101,7 @@ export function KnowledgeBase() {
             <div className="max-w-7xl mx-auto px-4 md:px-8 pb-32">
                 {filteredArticles.length === 0 ? (
                     <div className="text-center py-24 glass-premium dark:bg-neutral-900/40 border-white/5 rounded-[3rem] shadow-minimal">
-                        <p className="text-muted-foreground text-lg italic opacity-40 font-black tracking-tight">
+                        <p className="text-muted-foreground text-lg italic opacity-70 font-black tracking-tight">
                             {t('no_articles_found')}
                         </p>
                     </div>
@@ -116,11 +116,11 @@ export function KnowledgeBase() {
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 blur-[60px] rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-1000" />
 
                                 <div className="flex items-start justify-between mb-8 relative z-10">
-                                    <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-500/10 text-indigo-500 rounded-full text-[9px] font-black uppercase tracking-widest border border-indigo-500/20">
+                                    <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-500/10 text-indigo-500 rounded-full text-[11px] font-black uppercase tracking-widest border border-indigo-500/20">
                                         <Tag className="w-3 h-3" />
                                         {lang === 'he' ? article.category_he : article.category}
                                     </span>
-                                    <span className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-40">
+                                    <span className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-muted-foreground opacity-70">
                                         <Clock className="w-3 h-3" />
                                         {t('read_min', { min: article.readTime })}
                                     </span>
@@ -130,16 +130,16 @@ export function KnowledgeBase() {
                                     <h2 className="text-xl md:text-2xl font-black text-foreground tracking-tighter leading-tight group-hover:text-indigo-500 transition-colors lowercase">
                                         {lang === 'he' ? article.title_he : article.title_en}
                                     </h2>
-                                    <p className="text-muted-foreground text-sm font-medium leading-relaxed opacity-60 line-clamp-3">
+                                    <p className="text-muted-foreground text-sm font-medium leading-relaxed opacity-90 line-clamp-3">
                                         {lang === 'he' ? article.description_he : article.description_en}
                                     </p>
                                 </div>
 
                                 <div className="flex items-center justify-between pt-6 border-t border-white/5 relative z-10">
-                                    <span className="text-[10px] font-black text-muted-foreground opacity-30 uppercase tracking-widest">
+                                    <span className="text-xs font-black text-muted-foreground opacity-30 uppercase tracking-widest">
                                         {new Date(article.date).toLocaleDateString(lang === 'he' ? 'he-IL' : 'en-US')}
                                     </span>
-                                    <span className="button-jewel px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest text-white shadow-sm group-hover:scale-105 transition-all">
+                                    <span className="button-jewel px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest text-white shadow-sm group-hover:scale-105 transition-all">
                                         {t('read_more')}
                                     </span>
                                 </div>

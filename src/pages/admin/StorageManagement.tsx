@@ -166,7 +166,7 @@ export function StorageManagement() {
                             <CircleStackIcon className="w-6 h-6 text-brand-600" />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Total Managed</p>
+                            <p className="text-xs font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Total Managed</p>
                             <p className="text-2xl font-black text-gray-900 dark:text-white">{formatBytes(totalStorageManaged)}</p>
                         </div>
                     </div>
@@ -177,7 +177,7 @@ export function StorageManagement() {
                             <ExclamationTriangleIcon className="w-6 h-6 text-orange-600" />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Over 80% Quota</p>
+                            <p className="text-xs font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Over 80% Quota</p>
                             <p className="text-2xl font-black text-gray-900 dark:text-white">{highUsageUsers} Users</p>
                         </div>
                     </div>
@@ -188,7 +188,7 @@ export function StorageManagement() {
                             <UsersIcon className="w-6 h-6 text-emerald-600" />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Active Accounts</p>
+                            <p className="text-xs font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Active Accounts</p>
                             <p className="text-2xl font-black text-gray-900 dark:text-white">{stats.length}</p>
                         </div>
                     </div>
@@ -234,10 +234,10 @@ export function StorageManagement() {
                     <table className="w-full text-right" dir="rtl">
                         <thead>
                             <tr className="bg-gray-50 dark:bg-gray-900/50">
-                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">User / ID</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Plan</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Storage Usage</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Allocation</th>
+                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">User / ID</th>
+                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Plan</th>
+                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Storage Usage</th>
+                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Allocation</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -245,10 +245,10 @@ export function StorageManagement() {
                                 <tr key={item.user_id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                                     <td className="px-6 py-5">
                                         <div className="font-bold text-gray-900 dark:text-white text-sm">{item.email}</div>
-                                        <div className="text-[10px] text-gray-400 font-mono tracking-tighter mt-0.5">{item.user_id}</div>
+                                        <div className="text-xs text-gray-400 font-mono tracking-tighter mt-0.5">{item.user_id}</div>
                                     </td>
                                     <td className="px-6 py-5">
-                                        <span className={`px-2.5 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg border ${item.plan_name === 'pro' ? 'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:border-blue-800' :
+                                        <span className={`px-2.5 py-1 text-xs font-black uppercase tracking-widest rounded-lg border ${item.plan_name === 'pro' ? 'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:border-blue-800' :
                                             item.plan_name === 'enterprise' ? 'bg-primary-50 text-primary-700 border-primary-100 dark:bg-primary-900/20 dark:border-primary-800' :
                                                 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400'
                                             }`}>
@@ -257,7 +257,7 @@ export function StorageManagement() {
                                     </td>
                                     <td className="px-6 py-5">
                                         <div className="font-black text-gray-900 dark:text-white text-sm">{formatBytes(item.total_bytes)}</div>
-                                        <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                        <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                                             {item.file_count} Files
                                         </div>
                                     </td>
@@ -277,7 +277,7 @@ export function StorageManagement() {
                                                     {item.usage_percent.toFixed(0)}%
                                                 </span>
                                             </div>
-                                            <div className="flex justify-between text-[9px] font-bold text-gray-400 uppercase tracking-tighter">
+                                            <div className="flex justify-between text-[11px] font-bold text-gray-400 uppercase tracking-tighter">
                                                 <span>Limit: {item.max_storage_mb === -1 ? '∞' : `${item.max_storage_mb}MB`}</span>
                                             </div>
                                         </div>

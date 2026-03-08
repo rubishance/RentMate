@@ -661,7 +661,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                         </div>
                                         <div className="grid grid-cols-2 gap-2">
                                             <div className="relative">
-                                                <label className="text-[10px] text-muted-foreground mb-1 block">End Date</label>
+                                                <label className="text-xs text-muted-foreground mb-1 block">End Date</label>
                                                 <Controller
                                                     control={control}
                                                     name={`optionPeriods.${idx}.endDate`}
@@ -705,7 +705,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                         </div>
                                         <div className="grid grid-cols-2 gap-2">
                                             <div className="relative">
-                                                <label className="text-[10px] text-muted-foreground mb-1 block">{t('optionNoticeDays')}</label>
+                                                <label className="text-xs text-muted-foreground mb-1 block">{t('optionNoticeDays')}</label>
                                                 <Input
                                                     type="number"
                                                     disabled={readOnly}
@@ -714,7 +714,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                 />
                                             </div>
                                             <div className="relative">
-                                                <label className="text-[10px] text-muted-foreground mb-1 block">{t('optionReminderDays')}</label>
+                                                <label className="text-xs text-muted-foreground mb-1 block">{t('optionReminderDays')}</label>
                                                 <Input
                                                     type="number"
                                                     disabled={readOnly}

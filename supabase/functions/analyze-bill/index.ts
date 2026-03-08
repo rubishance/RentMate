@@ -62,20 +62,19 @@ serve(async (req) => {
             1. Extract bill details (amount, date, vendor, etc.).
             2. Attempt to match the address on the bill to one of the properties provided above.
                * NOTE: If only ONE property is listed above, it is ALMOST CERTAINLY the correct property. Use its ID even if the address match is not exact.
+               * NOTE: If the address on the bill DOES NOT clearly match any of the provided property addresses, set propertyId and propertyAddress to null. Do not force a match if it is incorrect.
             
             FIELDS TO EXTRACT:
-            - category: Strictly one of ['water', 'electric', 'gas', 'municipality', 'management', 'internet', 'cable', 'other'].
+            - category: Strictly one of ['water', 'electric', 'gas', 'municipality', 'management', 'internet', 'tv', 'mortgage', 'other'].
             - amount: The total sum to be paid for the current period (numeric).
             - date: Billing/Invoice date (YYYY-MM-DD).
             - vendor: Service provider name.
             - invoiceNumber: The invoice or bill number (string).
-            - currency: usually '₪' or 'ILS'.
             - billingPeriodStart: Service start date (YYYY-MM-DD).
             - billingPeriodEnd: Service end date (YYYY-MM-DD).
             - summary: One sentence description of the bill contents.
             - propertyId: The ID of the matched property from the provided list, or null if no match found.
             - propertyAddress: The address of the matched property, or null if no match found.
-            - confidence: 0.0 to 1.0 (Overall confidence including property match accuracy).
             
             Return ONLY the JSON object.
         `;

@@ -390,10 +390,10 @@ export default function SystemSettings() {
                         <table className="w-full text-right" dir="rtl">
                             <thead>
                                 <tr className="bg-gray-50 dark:bg-gray-900/30">
-                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Enabled</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Trigger Rule</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Days Offset</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Message Template</th>
+                                    <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-right">Enabled</th>
+                                    <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-right">Trigger Rule</th>
+                                    <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-center">Days Offset</th>
+                                    <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Message Template</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-gray-700 text-right">
@@ -409,7 +409,7 @@ export default function SystemSettings() {
                                         </td>
                                         <td className="px-6 py-5">
                                             <div className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">{rule.name}</div>
-                                            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{rule.description}</div>
+                                            <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-0.5">{rule.description}</div>
                                         </td>
                                         <td className="px-6 py-5 text-center">
                                             <input
@@ -438,9 +438,9 @@ export default function SystemSettings() {
             {/* General Settings Tab */}
             {activeTab === 'general' && (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {settings.filter(s => !s.key.startsWith('auto_') && !s.key.startsWith('voice_')).map((setting) => (
+                    {settings.filter(s => !s.key.startsWith('auto_') && !s.key.startsWith('voice_') && s.key !== 'chatbot_system_prompt').map((setting) => (
                         <div key={setting.key} className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Technical Key: {setting.key}</div>
+                            <div className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Technical Key: {setting.key}</div>
                             <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight mb-2">{setting.key.replace(/_/g, ' ')}</h3>
                             <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-6 leading-relaxed flex-1">{setting.description}</p>
 
@@ -454,7 +454,7 @@ export default function SystemSettings() {
                                             : 'bg-gray-50 dark:bg-gray-900/50 border-gray-100 dark:border-gray-700 text-gray-400'
                                             }`}
                                     >
-                                        <span className="text-[10px] font-black uppercase tracking-widest">{setting.value ? 'Active' : 'Disabled'}</span>
+                                        <span className="text-xs font-black uppercase tracking-widest">{setting.value ? 'Active' : 'Disabled'}</span>
                                         {setting.value ? <ToggleRight className="w-8 h-8" /> : <ToggleLeft className="w-8 h-8" />}
                                     </button>
                                 ) : typeof setting.value === 'number' ? (
@@ -525,7 +525,7 @@ export default function SystemSettings() {
                                         : 'bg-gray-50 dark:bg-gray-900/50 border-gray-100 dark:border-gray-700 text-gray-400'
                                         }`}
                                 >
-                                    <span className="text-[10px] font-black uppercase tracking-widest">{setting.value ? 'Active' : 'Disabled'}</span>
+                                    <span className="text-xs font-black uppercase tracking-widest">{setting.value ? 'Active' : 'Disabled'}</span>
                                     {setting.value ? <ToggleRight className="w-8 h-8" /> : <ToggleLeft className="w-8 h-8" />}
                                 </button>
                             </div>
@@ -540,7 +540,7 @@ export default function SystemSettings() {
                         <div className="grid gap-6 md:grid-cols-2">
                             {settings.filter(s => s.key.startsWith('voice_')).map((setting) => (
                                 <div key={setting.key} className="space-y-3">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 px-1">{setting.key.replace(/_/g, ' ')}</label>
+                                    <label className="text-xs font-black uppercase tracking-widest text-gray-400 px-1">{setting.key.replace(/_/g, ' ')}</label>
                                     {typeof setting.value === 'boolean' ? (
                                         <button
                                             onClick={() => handleSettingChange(setting.key, !setting.value)}
@@ -708,7 +708,7 @@ export default function SystemSettings() {
                                                 placeholder="e.g. admin@rentmate.co.il"
                                                 className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-700 rounded-2xl text-gray-900 dark:text-white font-bold text-sm focus:border-brand-500 outline-none transition-all"
                                             />
-                                            <p className="text-[10px] font-bold text-gray-500 mt-1 uppercase tracking-tight">
+                                            <p className="text-xs font-bold text-gray-500 mt-1 uppercase tracking-tight">
                                                 The daily report and system alerts will be sent to this address.
                                             </p>
                                         </div>
@@ -740,7 +740,7 @@ export default function SystemSettings() {
                                         onChange={(e) => handleSettingChange(setting.key, e.target.value)}
                                         className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-700 rounded-2xl text-gray-900 dark:text-white font-bold text-sm focus:border-brand-500 outline-none transition-all"
                                     />
-                                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-tight px-1">{setting.description}</p>
+                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-tight px-1">{setting.description}</p>
                                 </div>
                             ))}
                         </div>
@@ -765,7 +765,7 @@ export default function SystemSettings() {
                                         onChange={(e) => handleSettingChange(setting.key, e.target.value)}
                                         className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-700 rounded-2xl text-gray-900 dark:text-white font-bold text-sm focus:border-brand-500 outline-none transition-all"
                                     />
-                                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-tight px-1">{setting.description}</p>
+                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-tight px-1">{setting.description}</p>
                                 </div>
                             ))}
                         </div>

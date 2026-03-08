@@ -169,7 +169,7 @@ export default function SupportChat() {
                                         Click to view...
                                     </p>
                                     {conv.unread_count > 0 && (
-                                        <span className="bg-green-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                                        <span className="bg-green-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
                                             {conv.unread_count}
                                         </span>
                                     )}
@@ -273,7 +273,7 @@ export default function SupportChat() {
                                                 {(msg.content as any).text || JSON.stringify(msg.content)}
                                             </p>
                                             <div className="flex items-center justify-end gap-1 mt-1 opacity-60">
-                                                <span className="text-[10px]">
+                                                <span className="text-xs">
                                                     {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                 </span>
                                                 {isMe && (
@@ -319,7 +319,7 @@ export default function SupportChat() {
                                 </button>
                             </div>
                             <div className="text-center mt-2">
-                                <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">
+                                <span className="text-xs text-slate-400 uppercase tracking-widest font-bold">
                                     WhatsApp Business • Secure End-to-End
                                 </span>
                             </div>

@@ -81,7 +81,7 @@ export function StorageStatsWidget({ counts, loading }: StorageStatsWidgetProps)
                     <CardTitle className="text-sm uppercase tracking-widest text-muted-foreground">{t('financeBills')}</CardTitle>
                 </div>
                 <div className="px-2.5 py-1 bg-muted rounded-md border border-border">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                    <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                         {totalFiles} {t('items')}
                     </span>
                 </div>
@@ -109,16 +109,7 @@ export function StorageStatsWidget({ counts, loading }: StorageStatsWidgetProps)
                 </div>
             </CardContent>
 
-            <CardFooter className="pt-2">
-                <Button
-                    variant="ghost"
-                    className="w-full justify-between text-[10px] uppercase tracking-widest font-bold text-muted-foreground hover:text-primary"
-                    onClick={() => navigate('/settings')}
-                >
-                    {t('manageStorage')}
-                    <ChevronRight className="w-3 h-3 ml-2 group-hover/widget:translate-x-1 transition-transform" />
-                </Button>
-            </CardFooter>
+
         </Card>
     );
 }

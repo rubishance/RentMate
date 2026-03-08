@@ -73,14 +73,14 @@ export function ActiveChatsWidget() {
                                         {chat.user?.full_name || 'Anonymous User'}
                                     </span>
                                 </div>
-                                <span className="text-[10px] bg-white dark:bg-gray-800 px-2 py-0.5 rounded border border-gray-200 dark:border-gray-700 text-gray-500 flex items-center gap-1">
+                                <span className="text-xs bg-white dark:bg-gray-800 px-2 py-0.5 rounded border border-gray-200 dark:border-gray-700 text-gray-500 flex items-center gap-1">
                                     <Clock className="w-3 h-3" />
                                     {new Date(chat.last_message_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </span>
                             </div>
                             <button
                                 onClick={() => navigate(`/admin/client/${chat.user_id}`)}
-                                className="w-full mt-2 flex items-center justify-center gap-1 text-[10px] font-black uppercase tracking-widest text-brand-600 hover:text-brand-700 bg-white dark:bg-gray-800 py-2 rounded-lg border border-transparent hover:border-brand-200 transition-all"
+                                className="w-full mt-2 flex items-center justify-center gap-1 text-xs font-black uppercase tracking-widest text-brand-600 hover:text-brand-700 bg-white dark:bg-gray-800 py-2 rounded-lg border border-transparent hover:border-brand-200 transition-all"
                             >
                                 Open Chat <ArrowRight className="w-3 h-3" />
                             </button>

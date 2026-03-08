@@ -97,7 +97,7 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete }: Do
                                 {/* Key Stats */}
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="p-4 bg-background dark:bg-neutral-800/50 rounded-2xl border border-slate-100 dark:border-neutral-800">
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
                                             <Calendar className="w-3 h-3" /> {t('date')}
                                         </p>
                                         <p className="text-sm font-black text-foreground">
@@ -105,7 +105,7 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete }: Do
                                         </p>
                                     </div>
                                     <div className="p-4 bg-background dark:bg-neutral-800/50 rounded-2xl border border-slate-100 dark:border-neutral-800">
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
                                             <DollarSign className="w-3 h-3" /> {t('amount')}
                                         </p>
                                         <p className="text-sm font-black text-foreground">
@@ -116,7 +116,7 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete }: Do
 
                                 {/* Details Grid */}
                                 <div className="space-y-4">
-                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">
+                                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">
                                         {t('additionalMetadata')}
                                     </h3>
                                     <div className="bg-background/50 dark:bg-neutral-800/30 rounded-2xl border border-slate-100 dark:border-neutral-800 divide-y divide-slate-100 dark:divide-neutral-800">
@@ -173,7 +173,7 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete }: Do
                                 {/* Description */}
                                 {document.description && (
                                     <div className="space-y-2">
-                                        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">
+                                        <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">
                                             {t('note')}
                                         </h3>
                                         <div className="p-4 bg-yellow-50/50 dark:bg-yellow-900/10 border border-yellow-100/50 dark:border-yellow-900/20 rounded-2xl text-sm leading-relaxed text-slate-700 dark:text-neutral-300">
@@ -183,7 +183,7 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete }: Do
                                 )}
 
                                 {/* System Info */}
-                                <div className="flex items-center justify-between px-1 text-[10px] font-medium text-slate-400">
+                                <div className="flex items-center justify-between px-1 text-xs font-medium text-slate-400">
                                     <span>{t('addedOn', { date: formattedCreated })}</span>
                                     <span>{document.file_size ? `${(document.file_size / 1024).toFixed(1)} KB` : ''}</span>
                                 </div>

@@ -92,7 +92,7 @@ export function BionicWelcomeOverlay({ firstName }: BionicWelcomeOverlayProps) {
                                         <RentyMascot size={96} showBackground={false} className="relative z-10 drop-shadow-2xl" />
                                     </div>
                                     <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 px-3 py-1 bg-white dark:bg-neutral-900 rounded-full shadow-lg border border-indigo-100 dark:border-indigo-900/50 z-20">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
+                                        <span className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
                                             Renty AI
                                         </span>
                                     </div>

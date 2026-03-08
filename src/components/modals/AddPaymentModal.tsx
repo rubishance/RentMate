@@ -284,7 +284,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
         >
             <form onSubmit={handleSubmit((v) => onFormSubmit(v, true))} className="space-y-6">
                 <div className="space-y-4">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">
+                    <label className="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">
                         {t('contracts')}
                         {errors.contract_id && <span className="text-destructive ml-2">({t(errors.contract_id.message as any)})</span>}
                     </label>
@@ -314,7 +314,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                 {/* Manual Selection List Trigger (Always visible if payments exist) */}
                 {pendingPayments.length > 0 && !isMatchConfirmed && (
                     <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">
+                        <label className="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">
                             {t('linkToExpectedPayment')}
                         </label>
                         <div className="max-h-40 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
@@ -339,7 +339,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                                             <span className="font-bold">₪{p.amount.toLocaleString()}</span>
                                         </div>
                                         {isBestMatch && (
-                                            <span className="px-2 py-0.5 bg-brand-100 dark:bg-brand-900 text-brand-700 dark:text-brand-300 text-[9px] font-black uppercase tracking-wider rounded-full">
+                                            <span className="px-2 py-0.5 bg-brand-100 dark:bg-brand-900 text-brand-700 dark:text-brand-300 text-[11px] font-black uppercase tracking-wider rounded-full">
                                                 {t('bestMatch')}
                                             </span>
                                         )}
@@ -366,7 +366,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                                 <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
                                     {t('linkedToPaymentOf')} ₪{matchedPayment.amount}
                                 </span>
-                                <span className="text-[10px] text-emerald-600/80">
+                                <span className="text-xs text-emerald-600/80">
                                     {t('dueDate')}: {format(parseISO(matchedPayment.due_date), 'dd/MM/yyyy')}
                                 </span>
                             </div>
@@ -395,7 +395,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">
+                        <label className="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">
                             {t('dueDate')}
                             {errors.due_date && <span className="text-destructive ml-2">*</span>}
                         </label>
@@ -413,7 +413,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                 </div>
 
                 <div className="space-y-4">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">{t('method')}</label>
+                    <label className="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">{t('method')}</label>
                     <div className="grid grid-cols-3 gap-2">
                         {[
                             { label: 'transfer', value: 'transfer' },
@@ -428,7 +428,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                                 type="button"
                                 onClick={() => setValue('payment_method', method.value)}
                                 className={cn(
-                                    "py-3 px-2 rounded-2xl text-[10px] font-black uppercase tracking-tighter transition-all border-2",
+                                    "py-3 px-2 rounded-2xl text-xs font-black uppercase tracking-tighter transition-all border-2",
                                     watch('payment_method') === method.value
                                         ? 'bg-black dark:bg-white border-black dark:border-white text-white dark:text-black shadow-lg'
                                         : 'bg-window border-black/5 dark:border-white/5 text-gray-400 hover:border-black/20 dark:hover:border-white/20'
@@ -461,7 +461,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                 </div>
 
                 {sessionStats.count > 0 && (
-                    <div className="pt-4 text-[10px] font-black uppercase tracking-widest text-center text-primary animate-in fade-in slide-in-from-bottom-2">
+                    <div className="pt-4 text-xs font-black uppercase tracking-widest text-center text-primary animate-in fade-in slide-in-from-bottom-2">
                         {t('sessionAdded')}: {sessionStats.count} ({t('total')}: ₪{sessionStats.total.toLocaleString()})
                     </div>
                 )}

@@ -46,13 +46,13 @@ export default function MaintenancePage() {
                 <div className="pt-8">
                     <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-neutral-800 rounded-full">
                         <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></div>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">
+                        <span className="text-xs font-black uppercase tracking-widest text-gray-500">
                             Our team is working on it
                         </span>
                     </div>
                 </div>
 
-                <div className="mt-12 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                <div className="mt-12 text-xs font-bold text-gray-400 uppercase tracking-widest">
                     &copy; {new Date().getFullYear()} RentMate Infrastructure
                 </div>
             </div>

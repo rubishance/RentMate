@@ -4,9 +4,6 @@ import { NotificationCenter } from '../common/NotificationCenter';
 import { SettingsIcon } from '../icons/NavIcons';
 import { ThemeToggle } from '../common/ThemeToggle';
 import { LanguageToggle } from '../common/LanguageToggle';
-import logoIconOnly from '../../assets/rentmate-icon-only.png';
-import logoIconDark from '../../assets/rentmate-icon-only-dark.png';
-import { HeaderActionMenu } from './HeaderActionMenu';
 import { useTranslation } from '../../hooks/useTranslation';
 
 interface StreamHeaderProps {
@@ -31,30 +28,18 @@ export function StreamHeader({ title, hideControls }: StreamHeaderProps) {
             {/* Left: Logo or Title */}
             {/* Left: Logo or Title */}
             <div className="flex items-center gap-4">
-                {!hideControls && <HeaderActionMenu />}
-                <Link
-                    to="/dashboard"
-                    className="flex items-center gap-3 group cursor-pointer"
-                    onClick={() => console.log('[StreamHeader] [NAV] Logo clicked')}
-                >
-                    <div className="w-8 h-8 button-jewel rounded-lg flex items-center justify-center group-hover:rotate-12 transition-transform duration-500">
-                        <img
-                            src={effectiveTheme === 'dark' ? logoIconDark : logoIconOnly}
-                            alt="RentMate"
-                            className="w-5 h-5 invert dark:invert-0"
-                        />
-                    </div>
+                <div className="flex items-center gap-3">
                     <div className="flex flex-col justify-center">
                         <span className="text-xl md:text-2xl font-black tracking-tighter text-foreground whitespace-nowrap lowercase leading-none">
                             {title || 'RentMate'}
                         </span>
                         {!title && (
-                            <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground opacity-60 mt-0.5">
+                            <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground opacity-90 mt-0.5">
                                 {getGreeting()}
                             </span>
                         )}
                     </div>
-                </Link>
+                </div>
             </div>
 
             {/* Right: Actions */}

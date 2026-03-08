@@ -148,7 +148,7 @@ export function ResetPassword() {
                                 <div>
                                     <div className="mt-4 p-4 bg-muted/30 rounded-xl border border-border/50 space-y-3">
                                         <div className="flex justify-between items-center mb-1">
-                                            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t('passwordStrength')}</span>
+                                            <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{t('passwordStrength')}</span>
                                             <StrengthLabel newPassword={newPassword} t={t} />
                                         </div>
 
@@ -196,7 +196,7 @@ const StrengthLabel = ({ newPassword, t }: any) => {
     const label = strength <= 2 ? t('passwordWeak') : strength <= 4 ? t('passwordMedium') : t('passwordStrong');
 
     return (
-        <span className={cn("text-[10px] font-bold uppercase tracking-widest", colorClass)}>
+        <span className={cn("text-xs font-bold uppercase tracking-widest", colorClass)}>
             {label}
         </span>
     );
@@ -242,7 +242,7 @@ const RequirementsList = ({ newPassword, t }: any) => {
                         req.met ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" : "bg-muted-foreground/30"
                     )} />
                     <span className={cn(
-                        "text-[10px] font-bold uppercase tracking-wider transition-colors",
+                        "text-xs font-bold uppercase tracking-wider transition-colors",
                         req.met ? "text-foreground" : "text-muted-foreground"
                     )}>
                         {req.label}

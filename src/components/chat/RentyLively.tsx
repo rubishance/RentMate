@@ -193,7 +193,7 @@ export function RentyLively({ className = "w-full h-auto max-w-[450px]" }: Renty
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 10 }}
-                className="absolute top-10 left-1/2 -translate-x-1/2 bg-white dark:bg-neutral-800 px-4 py-2 rounded-2xl shadow-xl border border-gold/20 text-[10px] font-black uppercase tracking-widest text-gold whitespace-nowrap pointer-events-none"
+                className="absolute top-10 left-1/2 -translate-x-1/2 bg-white dark:bg-neutral-800 px-4 py-2 rounded-2xl shadow-xl border border-gold/20 text-xs font-black uppercase tracking-widest text-gold whitespace-nowrap pointer-events-none"
             >
                 Direct AI-Link Active
             </motion.div>

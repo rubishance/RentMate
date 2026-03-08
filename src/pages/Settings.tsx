@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
-import { User, Bell, Shield, ChevronRight, Mail, Send, Check, LogOut, MessageCircle } from 'lucide-react';
+import { User, Bell, Shield, ChevronRight, Mail, Send, Check, LogOut, MessageCircle, Accessibility } from 'lucide-react';
 import { useUserPreferences } from '../contexts/UserPreferencesContext';
 import type { Language, Gender } from '../types/database';
 import { EditProfileModal, NotificationsSettingsModal } from '../components/modals/EditProfileModal';
 import { useTranslation } from '../hooks/useTranslation';
 import { PrivacySecurityModal } from '../components/modals/PrivacySecurityModal';
+import { AccessibilitySettingsModal } from '../components/modals/AccessibilitySettingsModal';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeToggle } from '../components/common/ThemeToggle';
@@ -28,6 +29,7 @@ export function Settings() {
     const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
     const [isPrivacySecurityOpen, setIsPrivacySecurityOpen] = useState(false);
+    const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false);
     const [contactMessage, setContactMessage] = useState('');
     const [isSendingMessage, setIsSendingMessage] = useState(false);
     const [messageSent, setMessageSent] = useState(false);
@@ -105,7 +107,7 @@ export function Settings() {
             <div className="space-y-1">
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 dark:bg-primary/10 backdrop-blur-md rounded-full border border-primary/10 shadow-sm mb-1">
                     <User className="w-3 h-3 text-primary" />
-                    <span className="text-[9px] font-black uppercase tracking-widest text-primary dark:text-primary">
+                    <span className="text-[11px] font-black uppercase tracking-widest text-primary dark:text-primary">
                         {t('preferencesAndAccount')}
                     </span>
                 </div>
@@ -126,7 +128,7 @@ export function Settings() {
                 </div>
                 <div className="flex-1 space-y-1 md:space-y-2">
                     <h3 className="font-black text-lg md:text-3xl tracking-tighter text-foreground lowercase leading-none">{userData.full_name || 'rentmate user'}</h3>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-40">{userData.email}</p>
+                    <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground opacity-70">{userData.email}</p>
                 </div>
                 <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl glass-premium border-white/10 flex items-center justify-center text-muted-foreground/30 group-hover:bg-foreground group-hover:text-background group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-minimal">
                     <ChevronRight className="w-5 h-5 md:w-7 md:h-7" />
@@ -137,13 +139,13 @@ export function Settings() {
             {isAdmin && (
                 <div
                     onClick={() => window.location.href = '/admin'}
-                    className="button-jewel rounded-[3rem] p-10 shadow-jewel cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all group overflow-hidden relative"
+                    className="bg-primary rounded-[3rem] p-10 shadow-jewel cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all group overflow-hidden relative"
                 >
                     <div className="absolute top-0 right-0 w-48 h-48 bg-white/20 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl group-hover:scale-125 transition-transform duration-500" />
                     <div className="flex items-center justify-between relative z-10 text-white">
                         <div className="space-y-2 text-center md:text-left rtl:md:text-right w-full md:w-auto">
                             <h3 className="font-black text-xl md:text-2xl tracking-tighter uppercase mb-1">{t('settings_admin_dashboard')}</h3>
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-60">{t('settings_admin_desc')}</p>
+                            <p className="text-xs font-black uppercase tracking-[0.3em] opacity-90">{t('settings_admin_desc')}</p>
                         </div>
                         <Shield className="w-12 h-12 opacity-30 group-hover:rotate-12 transition-transform duration-500 hidden md:block" />
                     </div>
@@ -155,7 +157,7 @@ export function Settings() {
                 {settingsSections.map((section) => (
                     <div key={section.title} className="space-y-8">
                         <div className="px-4">
-                            <span className="text-[10px] font-black text-muted-foreground uppercase opacity-40 tracking-[0.5em] block mb-2">{section.title}</span>
+                            <span className="text-xs font-black text-muted-foreground uppercase opacity-70 tracking-[0.5em] block mb-2">{section.title}</span>
                         </div>
                         <div className="glass-premium dark:bg-neutral-900/40 border-white/5 rounded-[3rem] overflow-hidden shadow-minimal divide-y divide-white/5">
                             {section.items.map((item) => {
@@ -171,7 +173,7 @@ export function Settings() {
                                         </div>
                                         <div className="flex-1 space-y-2">
                                             <div className="font-black text-lg md:text-xl tracking-tighter text-foreground lowercase">{item.label}</div>
-                                            <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-40">{item.description}</div>
+                                            <div className="text-[11px] font-black uppercase tracking-widest text-muted-foreground opacity-70">{item.description}</div>
                                         </div>
                                         <ChevronRight className="w-6 h-6 text-muted-foreground/20 group-hover:text-primary group-hover:translate-x-2 transition-all duration-500" />
                                     </button>
@@ -185,7 +187,7 @@ export function Settings() {
             {/* App Appearance Section (New) */}
             <div className="space-y-6">
                 <div className="px-4">
-                    <span className="text-[10px] font-black text-muted-foreground uppercase opacity-40 tracking-[0.5em] block mb-2">{t('appearance')}</span>
+                    <span className="text-xs font-black text-muted-foreground uppercase opacity-70 tracking-[0.5em] block mb-2">{t('appearance')}</span>
                 </div>
                 <div className="glass-premium dark:bg-neutral-900/40 border-white/5 rounded-[3rem] p-10 shadow-minimal space-y-10">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -195,7 +197,7 @@ export function Settings() {
                             </div>
                             <div>
                                 <div className="font-black text-lg md:text-xl tracking-tighter text-foreground lowercase">{t('theme')}</div>
-                                <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-40">{t('chooseTheme')}</div>
+                                <div className="text-[11px] font-black uppercase tracking-widest text-muted-foreground opacity-70">{t('chooseTheme')}</div>
                             </div>
                         </div>
                         <ThemeToggle className="w-full md:w-auto" />
@@ -206,14 +208,34 @@ export function Settings() {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <div className="flex items-center gap-6">
                             <div className="w-14 h-14 rounded-2xl glass-premium border-white/10 flex items-center justify-center">
-                                <div className="text-[10px] font-black opacity-60">EN/עב</div>
+                                <div className="text-xs font-black opacity-60">EN/עב</div>
                             </div>
                             <div>
                                 <div className="font-black text-lg md:text-xl tracking-tighter text-foreground lowercase">{t('language')}</div>
-                                <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-40">{t('chooseLanguage')}</div>
+                                <div className="text-[11px] font-black uppercase tracking-widest text-muted-foreground opacity-70">{t('chooseLanguage')}</div>
                             </div>
                         </div>
                         <LanguageToggle className="w-full md:w-auto justify-center" />
+                    </div>
+
+                    <div className="h-[1px] bg-white/5" />
+
+                    <div
+                        className="flex flex-col md:flex-row md:items-center justify-between gap-6 cursor-pointer group"
+                        onClick={() => setIsAccessibilityOpen(true)}
+                    >
+                        <div className="flex items-center gap-6">
+                            <div className="w-14 h-14 rounded-2xl glass-premium border-white/10 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                                <Accessibility className="w-7 h-7 text-foreground opacity-60 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                            <div>
+                                <div className="font-black text-lg md:text-xl tracking-tighter text-foreground lowercase">{t('accessibility_options') || 'Accessibility Options'}</div>
+                                <div className="text-[11px] font-black uppercase tracking-widest text-muted-foreground opacity-70">{t('accessibility_subtitle') || 'Customize your experience'}</div>
+                            </div>
+                        </div>
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-muted-foreground/30 group-hover:bg-foreground group-hover:text-background transition-all duration-300">
+                            <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -221,7 +243,7 @@ export function Settings() {
             {/* Support Section */}
             <div className="space-y-6">
                 <div className="px-4">
-                    <span className="text-[10px] font-black text-muted-foreground uppercase opacity-40 tracking-[0.5em] block mb-2">{t('support')}</span>
+                    <span className="text-xs font-black text-muted-foreground uppercase opacity-70 tracking-[0.5em] block mb-2">{t('support')}</span>
                 </div>
                 <div className="bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[3rem] overflow-hidden shadow-minimal">
                     <button
@@ -233,7 +255,7 @@ export function Settings() {
                         </div>
                         <div className="flex-1 space-y-2">
                             <div className="font-black text-xl tracking-tighter text-foreground lowercase">{t('contactSupport')}</div>
-                            <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-40">
+                            <div className="text-[11px] font-black uppercase tracking-widest text-muted-foreground opacity-70">
                                 {t('contactSupportDesc')}
                             </div>
                         </div>
@@ -258,7 +280,7 @@ export function Settings() {
                                         value={contactMessage}
                                         onChange={(e) => setContactMessage(e.target.value)}
                                         placeholder={t('typeMessageHere')}
-                                        className="w-full min-h-[200px] p-10 bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[2.5rem] resize-none outline-none font-medium placeholder:font-black placeholder:uppercase placeholder:text-[10px] placeholder:tracking-widest transition-all focus:border-primary/20 shadow-minimal"
+                                        className="w-full min-h-[200px] p-10 bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[2.5rem] resize-none outline-none font-medium placeholder:font-black placeholder:uppercase placeholder:text-xs placeholder:tracking-widest transition-all focus:border-primary/20 shadow-minimal"
                                         disabled={isSendingMessage}
                                     />
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -270,7 +292,7 @@ export function Settings() {
                                                 <MessageCircle className="w-6 h-6" />
                                             </div>
                                             <div className="text-left rtl:text-right">
-                                                <div className="text-[10px] font-black uppercase tracking-widest text-secondary">{t('whatsapp_support_title') || 'WhatsApp'}</div>
+                                                <div className="text-xs font-black uppercase tracking-widest text-secondary">{t('whatsapp_support_title') || 'WhatsApp'}</div>
                                                 <div className="font-bold text-foreground">{t('whatsapp_support_desc') || 'Fast Response'}</div>
                                             </div>
                                         </button>
@@ -283,7 +305,7 @@ export function Settings() {
                                                 <Mail className="w-6 h-6" />
                                             </div>
                                             <div className="text-left rtl:text-right">
-                                                <div className="text-[10px] font-black uppercase tracking-widest text-primary">{t('email_support_title') || 'Email'}</div>
+                                                <div className="text-xs font-black uppercase tracking-widest text-primary">{t('email_support_title') || 'Email'}</div>
                                                 <div className="font-bold text-foreground">support@rentmate.co.il</div>
                                             </div>
                                         </button>
@@ -327,10 +349,9 @@ export function Settings() {
                 </button>
 
                 <div className="text-center space-y-8">
-                    <div className="text-[10px] font-black uppercase tracking-[0.8em] text-muted-foreground opacity-20">{t('appVersion')}</div>
                     <button
                         onClick={() => navigate('/accessibility')}
-                        className="text-[10px] font-black uppercase tracking-[0.3em] text-primary hover:text-foreground transition-all px-8 py-3 bg-primary/5 rounded-full hover:bg-primary/10"
+                        className="text-xs font-black uppercase tracking-[0.3em] text-primary hover:text-foreground transition-all px-8 py-3 bg-primary/5 rounded-full hover:bg-primary/10"
                     >
                         {t('accessibilityStatement')}
                     </button>
@@ -358,6 +379,11 @@ export function Settings() {
             <PrivacySecurityModal
                 isOpen={isPrivacySecurityOpen}
                 onClose={() => setIsPrivacySecurityOpen(false)}
+            />
+
+            <AccessibilitySettingsModal
+                isOpen={isAccessibilityOpen}
+                onClose={() => setIsAccessibilityOpen(false)}
             />
 
             <ConfirmActionModal

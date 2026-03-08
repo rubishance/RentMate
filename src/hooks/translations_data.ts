@@ -10,9 +10,13 @@ export type TranslationKeys =
     | 'edit'
     | 'delete'
     | 'add'
+    | 'addNew'
     | 'search'
     | 'actions'
     | 'addItem'
+    | 'select_action_to_continue'
+    | 'newContract'
+    | 'logPayment'
     | 'expectedBaseRent'
     | 'actualPayments'
     | 'totalBase'
@@ -113,6 +117,7 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         edit: 'ערוך',
         delete: 'מחק',
         add: 'הוסף',
+        addNew: 'הוסף חדש',
         search: 'חיפוש...',
         actions: 'פעולות',
 
@@ -145,6 +150,9 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         date: 'תאריך',
 
         addItem: 'הוסף פריט',
+        select_action_to_continue: 'בחר פעולה להמשך',
+        newContract: 'חוזה חדש',
+        logPayment: 'הוסף תשלום',
         expectedBaseRent: 'חיובים לפי החוזה',
         actualPayments: 'תשלומים בפועל',
         totalBase: 'סה"כ בסיס',
@@ -210,6 +218,7 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         edit: 'Edit',
         delete: 'Delete',
         add: 'Add',
+        addNew: 'Add New',
         search: 'Search...',
         actions: 'Actions',
 
@@ -242,6 +251,9 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         date: 'Date',
 
         addItem: 'Add Item',
+        select_action_to_continue: 'Select an action to continue',
+        newContract: 'New Contract',
+        logPayment: 'Log Payment',
         expectedBaseRent: 'Expected Charges',
         actualPayments: 'Actual Payments',
         totalBase: 'Total Base',

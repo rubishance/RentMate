@@ -106,18 +106,19 @@ export function StandardCalculator({ initialValues, shouldAutoCalculate }: Stand
                         className="h-20 text-3xl font-black rounded-[2rem]"
                     />
                     <div className="space-y-4">
-                        <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground block ml-1">{t('linkageType')}</label>
-                        <select
+                        <label className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground block ml-1">{t('linkageType')}</label>
+                        <SegmentedControl
+                            options={[
+                                { label: t('linkedToCpi'), value: 'cpi' },
+                                { label: t('linkedToHousing'), value: 'housing' }
+                            ]}
                             value={linkageType}
-                            onChange={(e) => setLinkageType(e.target.value as any)}
-                            className="w-full h-20 px-8 bg-background dark:bg-neutral-800/50 border-2 border-transparent focus:bg-white dark:focus:bg-neutral-800 focus:border-black dark:focus:border-white rounded-[2rem] font-black text-xl text-foreground transition-all outline-none appearance-none"
-                        >
-                            <option value="cpi">{t('linkedToCpi')}</option>
-                            <option value="housing">{t('linkedToHousing')}</option>
-                        </select>
+                            onChange={(val) => setLinkageType(val as any)}
+                            className="h-20 rounded-[2rem] bg-background dark:bg-neutral-800/50 p-2 w-full"
+                        />
                     </div>
                     <div className="space-y-4">
-                        <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground block ml-1">{t('baseDate')}</label>
+                        <label className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground block ml-1">{t('baseDate')}</label>
                         <DatePicker
                             value={baseDate ? parseISO(baseDate) : undefined}
                             onChange={(date) => setBaseDate(date ? format(date, 'yyyy-MM-dd') : '')}
@@ -125,7 +126,7 @@ export function StandardCalculator({ initialValues, shouldAutoCalculate }: Stand
                         />
                     </div>
                     <div className="space-y-4">
-                        <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground block ml-1">{t('targetDate')}</label>
+                        <label className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground block ml-1">{t('targetDate')}</label>
                         <DatePicker
                             value={targetDate ? parseISO(targetDate) : undefined}
                             onChange={(date) => setTargetDate(date ? format(date, 'yyyy-MM-dd') : '')}
@@ -138,7 +139,7 @@ export function StandardCalculator({ initialValues, shouldAutoCalculate }: Stand
                 <div className="flex flex-col gap-6">
                     <button
                         onClick={() => setShowAdvanced(!showAdvanced)}
-                        className="flex items-center gap-2 self-start text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-all px-2"
+                        className="flex items-center gap-2 self-start text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-all px-2"
                     >
                         {showAdvanced ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                         {t('advancedOptions')}
@@ -185,7 +186,7 @@ export function StandardCalculator({ initialValues, shouldAutoCalculate }: Stand
                             <hr className="border-slate-100 dark:border-neutral-800 my-6" />
 
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block ml-1">{t('linkageCalculationMethod')}</label>
+                                <label className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block ml-1">{t('linkageCalculationMethod')}</label>
                                 <SegmentedControl
                                     options={[
                                         { label: t('knownIndex'), value: 'known' },
@@ -200,7 +201,7 @@ export function StandardCalculator({ initialValues, shouldAutoCalculate }: Stand
 
                             <div className="space-y-6">
                                 <div className="flex justify-between items-center">
-                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block ml-1">{t('manualIndexEntries')}</label>
+                                    <label className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block ml-1">{t('manualIndexEntries')}</label>
                                     <Switch
                                         checked={useManualIndex}
                                         onChange={setUseManualIndex}
@@ -243,29 +244,29 @@ export function StandardCalculator({ initialValues, shouldAutoCalculate }: Stand
 
             {result && (
                 <section className="bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[3rem] p-10 md:p-14 shadow-premium space-y-10 animate-in zoom-in-95 duration-700">
-                    <h3 className="font-black text-[10px] uppercase tracking-[0.4em] text-muted-foreground text-center">{t('results')}</h3>
+                    <h3 className="font-black text-xs uppercase tracking-[0.4em] text-muted-foreground text-center">{t('results')}</h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="bg-background dark:bg-neutral-800/50 p-10 rounded-[2.5rem] text-center space-y-2 border border-slate-100 dark:border-neutral-800">
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block">{t('newRent')}</span>
+                            <span className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">{t('newRent')}</span>
                             <span className="text-5xl font-black text-foreground">₪{result.newRent.toLocaleString()}</span>
                         </div>
                         <div className="bg-background dark:bg-neutral-800/50 p-10 rounded-[2.5rem] text-center space-y-2 border border-slate-100 dark:border-neutral-800">
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block">{t('linkageCoefficient')}</span>
+                            <span className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">{t('linkageCoefficient')}</span>
                             <span className="text-5xl font-black text-foreground">{result.linkageCoefficient.toFixed(2)}%</span>
                         </div>
                         <div className="bg-background dark:bg-neutral-800/50 p-8 rounded-[2rem] flex justify-between items-center px-10">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('change')}</span>
+                            <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">{t('change')}</span>
                             <span className="text-2xl font-black text-foreground">+₪{Math.round(result.absoluteChange).toLocaleString()}</span>
                         </div>
                         <div className="bg-background dark:bg-neutral-800/50 p-8 rounded-[2rem] flex justify-between items-center px-10">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('percentage')}</span>
+                            <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">{t('percentage')}</span>
                             <span className="text-2xl font-black text-foreground">{result.percentageChange.toFixed(2)}%</span>
                         </div>
                     </div>
 
                     <div className="bg-foreground dark:bg-white p-8 rounded-[2rem] text-background dark:text-foreground">
-                        <p className="font-black text-[10px] uppercase tracking-[0.2em] opacity-40 mb-3">{t('formula')}</p>
+                        <p className="font-black text-xs uppercase tracking-[0.2em] opacity-70 mb-3">{t('formula')}</p>
                         <p className="text-lg font-bold leading-relaxed">{result.formula}</p>
                     </div>
 

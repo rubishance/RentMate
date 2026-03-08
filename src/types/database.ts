@@ -290,6 +290,13 @@ export type Language = 'he' | 'en';
 export type Gender = 'male' | 'female' | 'unspecified';
 export type Theme = 'light' | 'dark' | 'system';
 
+export interface AccessibilityPreferences {
+    highContrast: boolean;
+    largeText: boolean;
+    reducedMotion: boolean;
+    dyslexiaFont: boolean;
+}
+
 export interface UserPreferences {
     language: Language;
     gender: Gender | null; // null when language is not Hebrew
@@ -299,6 +306,7 @@ export interface UserPreferences {
     has_seen_welcome_v1?: boolean;
     seen_features?: string[];
     disclaimer_accepted?: boolean;
+    accessibility?: AccessibilityPreferences;
 }
 
 // ============================================

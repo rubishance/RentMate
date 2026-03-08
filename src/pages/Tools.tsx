@@ -17,14 +17,14 @@ export function Tools() {
             <div className="space-y-4 px-4 md:px-0">
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 dark:bg-primary/10 backdrop-blur-md rounded-full border border-primary/10 shadow-sm mb-2">
                     <TrendingUp className="w-3 h-3 text-primary" />
-                    <span className="text-[9px] font-black uppercase tracking-widest text-primary dark:text-primary">
+                    <span className="text-[11px] font-black uppercase tracking-widest text-primary dark:text-primary">
                         {lang === 'he' ? 'מרכז הכלים' : 'Tools Hub'}
                     </span>
                 </div>
                 <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground leading-tight lowercase">
                     {lang === 'he' ? 'כלים חכמים' : 'Smart Tools'}
                 </h1>
-                <p className="text-muted-foreground text-lg font-medium leading-relaxed max-w-2xl opacity-60">
+                <p className="text-muted-foreground text-lg font-medium leading-relaxed max-w-2xl opacity-90">
                     {lang === 'he' ? 'מחשבון, אנליטיקה ומגמות שוק - הכל במקום אחד' : 'Calculator, Analytics & Market Trends - all in one place'}
                 </p>
             </div>

@@ -72,7 +72,7 @@ export function SmartActionsWidget({ stats, loading }: SmartActionsWidgetProps) 
             </div>
 
             <CardHeader className="relative z-10 pb-0">
-                <div className="flex items-center gap-2 bg-white/10 w-fit px-2.5 py-1 md:px-3 md:py-1.5 rounded-full text-[9px] md:text-[10px] font-bold uppercase tracking-widest backdrop-blur-md border border-white/10 mb-4">
+                <div className="flex items-center gap-2 bg-white/10 w-fit px-2.5 py-1 md:px-3 md:py-1.5 rounded-full text-[11px] md:text-xs font-bold uppercase tracking-widest backdrop-blur-md border border-white/10 mb-4">
                     <Sparkles className="w-2.5 md:w-3 h-2.5 md:h-3 text-emerald-400" />
                     {t('smartRecommendation')}
                 </div>

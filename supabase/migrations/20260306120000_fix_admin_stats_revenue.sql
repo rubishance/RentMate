@@ -1,4 +1,4 @@
--- Update get_admin_stats to include top 10 cities by property count
+-- Update get_admin_stats to sum subscription revenues instead of all raw rent payments
 CREATE OR REPLACE FUNCTION public.get_admin_stats()
 RETURNS JSON
 LANGUAGE plpgsql
@@ -31,6 +31,7 @@ BEGIN
     SELECT COUNT(*) INTO total_users_count FROM user_profiles WHERE deleted_at IS NULL;
     SELECT COUNT(*) INTO total_contracts_count FROM contracts;
     
+    -- Fix: Sum active MRR instead of all raw tenants' payments
     SELECT COALESCE(SUM(sp.price_monthly), 0) INTO total_revenue_amount 
     FROM user_profiles up 
     JOIN subscription_plans sp ON up.plan_id = sp.id 

@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import type { UserPreferences, Language, Gender, Theme } from '../types/database';
+import type { UserPreferences, Language, Gender, Theme, AccessibilityPreferences } from '../types/database';
 import { userPreferencesService } from '../services/user-preferences.service';
 
 interface UserPreferencesContextType {
@@ -13,6 +13,7 @@ interface UserPreferencesContextType {
     isLoading: boolean;
     refreshPreferences: () => Promise<void>;
     setAiDataConsent: (consent: boolean) => void;
+    setAccessibility: (options: Partial<AccessibilityPreferences>) => void;
 }
 
 const UserPreferencesContext = createContext<UserPreferencesContextType | undefined>(undefined);
@@ -92,11 +93,28 @@ export function UserPreferencesProvider({ children }: UserPreferencesProviderPro
         setPreferences(updated);
     };
 
+    const handleSetAccessibility = (options: Partial<AccessibilityPreferences>) => {
+        const updated = userPreferencesService.setAccessibility(options);
+        setPreferences(updated);
+    };
+
     // Sync language with DOM
     useEffect(() => {
         document.documentElement.dir = preferences.language === 'he' ? 'rtl' : 'ltr';
         document.documentElement.lang = preferences.language;
     }, [preferences.language]);
+
+    // Sync accessibility with DOM
+    useEffect(() => {
+        const options = preferences.accessibility;
+        if (!options) return;
+
+        const html = document.documentElement;
+        html.classList.toggle('high-contrast', options.highContrast);
+        html.classList.toggle('large-text', options.largeText);
+        html.classList.toggle('reduced-motion', options.reducedMotion);
+        html.classList.toggle('dyslexia-font', options.dyslexiaFont);
+    }, [preferences.accessibility]);
 
     // Sync theme with DOM using View Transitions API for smooth animation
     useEffect(() => {
@@ -154,6 +172,7 @@ export function UserPreferencesProvider({ children }: UserPreferencesProviderPro
                 isLoading,
                 refreshPreferences,
                 setAiDataConsent: handleSetAiDataConsent,
+                setAccessibility: handleSetAccessibility,
             }}
         >
             {children}

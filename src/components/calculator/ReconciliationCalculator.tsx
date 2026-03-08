@@ -314,7 +314,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
         <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Contract Loading */}
             <div className="bg-background dark:bg-neutral-800/30 p-8 rounded-[2.5rem] border border-slate-100/50 dark:border-neutral-800/50">
-                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-4 block ml-1">
+                <label className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground mb-4 block ml-1">
                     {t('loadFromContract')}
                 </label>
                 <select
@@ -338,7 +338,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                         {/* Expected Base Rent */}
                         <div className="space-y-6">
                             <div className="flex justify-between items-center px-1">
-                                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground block">{t('expectedBaseRent')}</label>
+                                <label className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground block">{t('expectedBaseRent')}</label>
                                 <button
                                     onClick={() => {
                                         if (expectedHistory.length === 0 && periodStart && periodEnd) {
@@ -364,13 +364,13 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                                             if (confirm('Clear expected payment list?')) setExpectedHistory([]);
                                         }
                                     }}
-                                    className="text-[10px] font-black uppercase tracking-widest text-primary hover:opacity-80 transition-opacity"
+                                    className="text-xs font-black uppercase tracking-widest text-primary hover:opacity-80 transition-opacity"
                                 >
                                     {expectedHistory.length > 0 ? t('clearList') : t('generateList')}
                                 </button>
                             </div>
                             <div className="border border-slate-100 dark:border-neutral-800 rounded-[2rem] overflow-hidden bg-background/50 dark:bg-neutral-800/30">
-                                <div className="bg-white dark:bg-neutral-900/50 p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground grid grid-cols-12 gap-4 px-6 border-b border-slate-100 dark:border-neutral-800">
+                                <div className="bg-white dark:bg-neutral-900/50 p-4 text-xs font-black uppercase tracking-widest text-muted-foreground grid grid-cols-12 gap-4 px-6 border-b border-slate-100 dark:border-neutral-800">
                                     <span className="col-span-7">{t('date')}</span>
                                     <span className="col-span-4 text-center">{t('amount')}</span>
                                     <span className="col-span-1"></span>
@@ -439,7 +439,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                                 </div>
                                 <div className="bg-white dark:bg-neutral-900/50 p-6 border-t border-slate-100 dark:border-neutral-800 flex justify-end items-center">
                                     <div className="flex flex-col items-end">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">{t('totalExpected')}</span>
+                                        <span className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-1">{t('totalExpected')}</span>
                                         <span className="text-2xl font-black text-foreground">₪{expectedHistory.reduce((sum, p) => sum + p.amount, 0).toLocaleString()}</span>
                                     </div>
                                 </div>
@@ -448,9 +448,9 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
 
                         {/* Actual Payments */}
                         <div className="space-y-6">
-                            <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground block ml-1">{t('actualPayments')}</label>
+                            <label className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground block ml-1">{t('actualPayments')}</label>
                             <div className="border border-slate-100 dark:border-neutral-800 rounded-[2rem] overflow-hidden bg-background/50 dark:bg-neutral-800/30">
-                                <div className="bg-white dark:bg-neutral-900/50 p-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground grid grid-cols-12 gap-4 px-6 border-b border-slate-100 dark:border-neutral-800">
+                                <div className="bg-white dark:bg-neutral-900/50 p-4 text-xs font-black uppercase tracking-widest text-muted-foreground grid grid-cols-12 gap-4 px-6 border-b border-slate-100 dark:border-neutral-800">
                                     <span className="col-span-7">{t('date')}</span>
                                     <span className="col-span-4 text-center">{t('amount')}</span>
                                     <span className="col-span-1"></span>
@@ -520,7 +520,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                                 </div>
                                 <div className="bg-white dark:bg-neutral-900/50 p-6 border-t border-slate-100 dark:border-neutral-800 flex justify-end items-center">
                                     <div className="flex flex-col items-end">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">{t('totalActual')}</span>
+                                        <span className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-1">{t('totalActual')}</span>
                                         <span className="text-2xl font-black text-foreground">₪{paymentHistory.reduce((sum, p) => sum + p.amount, 0).toLocaleString()}</span>
                                     </div>
                                 </div>
@@ -531,7 +531,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                     {/* Right Column: Configuration */}
                     <div className="order-1 xl:order-2 space-y-10">
                         <div className="space-y-4">
-                            <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground block ml-1">{t('linkageType')}</label>
+                            <label className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground block ml-1">{t('linkageType')}</label>
                             <SegmentedControl
                                 options={[
                                     { label: t('linkedToCpi'), value: 'cpi' },
@@ -547,15 +547,15 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                             {selectedContract ? (
                                 <div className="flex flex-col gap-2 p-5 bg-background dark:bg-neutral-800/30 border border-slate-100 dark:border-neutral-800 rounded-[1.5rem] shadow-minimal">
                                     <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-neutral-700/50">
-                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{t('baseIndexDate')}</span>
+                                        <span className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">{t('baseIndexDate')}</span>
                                         <span className="font-black text-sm text-foreground bg-white dark:bg-neutral-800 px-3 py-1 rounded-full shadow-minimal">{contractStartDate ? format(parseISO(contractStartDate), 'MM/yyyy') : '-'}</span>
                                     </div>
                                     <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-neutral-700/50 hover:bg-transparent">
-                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{t('periodStart')}</span>
+                                        <span className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">{t('periodStart')}</span>
                                         <span className="font-black text-sm text-foreground bg-white dark:bg-neutral-800 px-3 py-1 rounded-full shadow-minimal">{periodStart ? format(parseISO(periodStart), 'MM/yyyy') : '-'}</span>
                                     </div>
                                     <div className="flex items-center justify-between pt-1 hover:bg-transparent">
-                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{t('periodEnd')}</span>
+                                        <span className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">{t('periodEnd')}</span>
                                         <span className="font-black text-sm text-foreground bg-white dark:bg-neutral-800 px-3 py-1 rounded-full shadow-minimal">{periodEnd ? format(parseISO(periodEnd), 'MM/yyyy') : '-'}</span>
                                     </div>
                                 </div>
@@ -585,7 +585,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
 
                         <div className="space-y-8 pt-8 border-t border-slate-100 dark:border-neutral-800">
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block ml-1">{t('linkageCalculationMethod')}</label>
+                                <label className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block ml-1">{t('linkageCalculationMethod')}</label>
                                 <SegmentedControl
                                     options={[
                                         { label: t('knownIndex'), value: 'known' },
@@ -597,7 +597,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                             </div>
 
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block ml-1">{t('updateFrequency')}</label>
+                                <label className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block ml-1">{t('updateFrequency')}</label>
                                 <SegmentedControl
                                     options={[
                                         { label: t('everyMonth'), value: 'monthly' },
@@ -613,7 +613,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
 
                             <div className="grid grid-cols-5 gap-4 md:gap-6">
                                 <div className="col-span-3 space-y-4">
-                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block ml-1">{t('linkageFloor')}</label>
+                                    <label className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block ml-1">{t('linkageFloor')}</label>
                                     <div className="flex items-center justify-between gap-4 h-14 bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[1.25rem]">
                                         <SegmentedControl
                                             options={[
@@ -656,10 +656,10 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
             {
                 result && (
                     <section className="bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[3rem] p-10 md:p-14 shadow-premium space-y-10 animate-in zoom-in-95 duration-700">
-                        <h3 className="font-black text-[10px] uppercase tracking-[0.4em] text-muted-foreground text-center">{t('paymentReconciliationResults')}</h3>
+                        <h3 className="font-black text-xs uppercase tracking-[0.4em] text-muted-foreground text-center">{t('paymentReconciliationResults')}</h3>
 
                         <div className="bg-red-50 dark:bg-red-950/20 p-12 rounded-[2.5rem] border border-red-100 dark:border-red-900/30 text-center space-y-3">
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-red-400 block">{t('totalBackPayOwed')}</span>
+                            <span className="text-xs font-black uppercase tracking-[0.2em] text-red-400 block">{t('totalBackPayOwed')}</span>
                             <span className="text-6xl font-black text-destructive">₪{result.totalBackPayOwed.toLocaleString()}</span>
                             <p className="text-xs font-bold text-red-300 dark:text-red-800 uppercase tracking-widest pt-2">
                                 {result.totalMonths} {t('months')} {t('totalBase').toLowerCase()}
@@ -669,7 +669,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                         <div className="space-y-6">
                             <button
                                 onClick={() => setShowBreakdown(!showBreakdown)}
-                                className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-all px-2"
+                                className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-all px-2"
                             >
                                 {showBreakdown ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                                 {t('monthlyBreakdown')}
@@ -685,10 +685,10 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                                         <table className="w-full text-sm">
                                             <thead>
                                                 <tr className="bg-background dark:bg-neutral-800/80 border-b border-slate-100 dark:border-neutral-800">
-                                                    <th className="p-6 text-start text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('month')}</th>
-                                                    <th className="p-6 text-end text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('shouldPay')}</th>
-                                                    <th className="p-6 text-end text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('paid')}</th>
-                                                    <th className="p-6 text-end text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('gap')}</th>
+                                                    <th className="p-6 text-start text-xs font-black uppercase tracking-widest text-muted-foreground">{t('month')}</th>
+                                                    <th className="p-6 text-end text-xs font-black uppercase tracking-widest text-muted-foreground">{t('shouldPay')}</th>
+                                                    <th className="p-6 text-end text-xs font-black uppercase tracking-widest text-muted-foreground">{t('paid')}</th>
+                                                    <th className="p-6 text-end text-xs font-black uppercase tracking-widest text-muted-foreground">{t('gap')}</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-slate-50 dark:divide-neutral-800">

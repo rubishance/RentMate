@@ -203,7 +203,7 @@ export function IndexCalculator() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {/* Index Type */}
                 <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">{t('linkageType')}</label>
+                    <label className="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">{t('linkageType')}</label>
                     <select
                         value={indexType}
                         onChange={(e) => setIndexType(e.target.value as any)}
@@ -220,7 +220,7 @@ export function IndexCalculator() {
                 {/* Linkage Sub Type */}
                 {(indexType === 'cpi' || indexType === 'housing' || indexType === 'construction') && (
                     <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">{t('linkageCalculationMethod')}</label>
+                        <label className="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">{t('linkageCalculationMethod')}</label>
                         <SegmentedControl
                             options={[
                                 { label: t('knownIndex'), value: 'known' },
@@ -234,7 +234,7 @@ export function IndexCalculator() {
 
                 {/* Base Date */}
                 <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">{t('baseDate')}</label>
+                    <label className="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">{t('baseDate')}</label>
                     <div className="relative group">
                         <DatePicker
                             variant="compact"
@@ -242,18 +242,18 @@ export function IndexCalculator() {
                             onChange={(date) => setBaseDate(date ? format(date, 'yyyy-MM-dd') : '')}
                         />
                         {baseIndexValue !== null ? (
-                            <span className="absolute right-12 top-1/2 -translate-y-1/2 text-[10px] font-black bg-black dark:bg-white text-white dark:text-black px-2 py-1 rounded-full shadow-sm z-10">
+                            <span className="absolute right-12 top-1/2 -translate-y-1/2 text-xs font-black bg-black dark:bg-white text-white dark:text-black px-2 py-1 rounded-full shadow-sm z-10">
                                 {baseIndexValue.toFixed(1)}
                             </span>
                         ) : (
-                            !loading && <span className="absolute right-12 top-1/2 -translate-y-1/2 text-[10px] font-black text-destructive z-10">N/A</span>
+                            !loading && <span className="absolute right-12 top-1/2 -translate-y-1/2 text-xs font-black text-destructive z-10">N/A</span>
                         )}
                     </div>
                 </div>
 
                 {/* Current Date */}
                 <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">{t('paymentDate')}</label>
+                    <label className="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">{t('paymentDate')}</label>
                     <div className="relative group">
                         <DatePicker
                             variant="compact"
@@ -261,11 +261,11 @@ export function IndexCalculator() {
                             onChange={(date) => setCurrentDate(date ? format(date, 'yyyy-MM-dd') : '')}
                         />
                         {currentIndexValue !== null ? (
-                            <span className="absolute right-12 top-1/2 -translate-y-1/2 text-[10px] font-black bg-black dark:bg-white text-white dark:text-black px-2 py-1 rounded-full shadow-sm z-10">
+                            <span className="absolute right-12 top-1/2 -translate-y-1/2 text-xs font-black bg-black dark:bg-white text-white dark:text-black px-2 py-1 rounded-full shadow-sm z-10">
                                 {currentIndexValue.toFixed(1)}
                             </span>
                         ) : (
-                            !loading && <span className="absolute right-12 top-1/2 -translate-y-1/2 text-[10px] font-black text-destructive z-10">N/A</span>
+                            !loading && <span className="absolute right-12 top-1/2 -translate-y-1/2 text-xs font-black text-destructive z-10">N/A</span>
                         )}
                     </div>
                 </div>
@@ -290,7 +290,7 @@ export function IndexCalculator() {
                 {/* Floor Switch */}
                 <div className="flex flex-col justify-end gap-3 pb-2 px-2">
                     <div className="flex items-center justify-between gap-4">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-black dark:text-white">{t('floorIndex')}</span>
+                        <span className="text-xs font-black uppercase tracking-widest text-black dark:text-white">{t('floorIndex')}</span>
                         <Switch
                             checked={isFloorChecked}
                             onChange={setIsFloorChecked}
@@ -305,7 +305,7 @@ export function IndexCalculator() {
 
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <span className="font-black uppercase text-[10px] tracking-widest">{t('change')}:</span>
+                            <span className="font-black uppercase text-xs tracking-widest">{t('change')}:</span>
                             <span className={`font-bold ${calculatedResult.percentageChange >= 0 ? 'text-destructive' : 'text-emerald-500'}`}>
                                 {calculatedResult.percentageChange > 0 ? '+' : ''}{calculatedResult.percentageChange.toFixed(2)}%
                             </span>

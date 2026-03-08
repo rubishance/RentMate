@@ -73,7 +73,6 @@ export function Payments() {
         startDate: '',
         endDate: '',
         paymentMethods: [] as string[],
-        types: [] as string[],
         contractStatus: ['active'] as string[]
     });
 
@@ -133,32 +132,7 @@ export function Payments() {
                     displayType: 'rent'
                 }));
 
-                const { data: bills } = await supabase
-                    .from('property_documents')
-                    .select('*, properties(id, address, city)')
-                    .eq('user_id', user.id)
-                    .eq('paid', true)
-                    .not('amount', 'is', null)
-                    .ilike('category', 'utility_%');
-
-                let allItems = [...rentPayments];
-                if (bills) {
-                    const billPayments = bills.map(b => ({
-                        ...b,
-                        id: b.id,
-                        amount: b.amount,
-                        due_date: b.document_date || b.created_at,
-                        status: 'paid',
-                        payment_method: 'transfer',
-                        displayType: 'bill',
-                        contracts: {
-                            properties: b.properties,
-                            tenants: { name: b.vendor_name || t('bills') }
-                        }
-                    }));
-                    allItems = [...allItems, ...billPayments];
-                }
-
+                const allItems = [...rentPayments];
                 allItems.sort((a, b) => new Date(b.due_date).getTime() - new Date(a.due_date).getTime());
 
                 setPayments(allItems);
@@ -259,8 +233,6 @@ export function Payments() {
         if (displayMode === 'expected' && p.status !== 'pending' && p.status !== 'overdue') return false;
         if (displayMode === 'actual' && p.status !== 'paid') return false;
 
-        if (filters.types.length > 0 && !filters.types.includes(p.displayType)) return false;
-
         if (filters.contractStatus && filters.contractStatus.length > 0) {
             if (p.contracts && !filters.contractStatus.includes(p.contracts.status)) return false;
         }
@@ -337,7 +309,6 @@ export function Payments() {
             startDate: '',
             endDate: '',
             paymentMethods: [],
-            types: [],
             contractStatus: ['active']
         });
         setPeriodFilter('all');
@@ -376,20 +347,20 @@ export function Payments() {
         >
             <CardContent className="p-4 md:p-6 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4 md:gap-6 flex-1 min-w-0">
-                    <div className={cn("w-12 h-12 md:w-14 md:h-14 rounded-2xl glass-premium flex flex-col items-center justify-center shrink-0 border border-white/10 group-hover:scale-105 transition-all duration-300", isActionNeeded ? "bg-rose-500/10 text-rose-600" : "")}>
-                        <span className="text-lg md:text-xl font-black leading-none">{format(new Date(payment.due_date), 'dd')}</span>
-                        <span className="text-[9px] font-black uppercase tracking-widest opacity-60 mt-0.5">{format(new Date(payment.due_date), 'MMM')}</span>
+                    <div className={cn("w-14 h-14 md:w-16 md:h-16 rounded-2xl glass-premium flex flex-col items-center justify-center shrink-0 border border-white/10 group-hover:scale-105 transition-all duration-300", isActionNeeded ? "bg-rose-500/10 text-rose-600" : "")}>
+                        <span className="text-xl md:text-2xl font-black leading-none">{format(new Date(payment.due_date), 'dd')}</span>
+                        <span className="text-xs md:text-sm font-black uppercase tracking-widest opacity-90 mt-0.5">{format(new Date(payment.due_date), 'MMM')}</span>
                     </div>
 
                     <div className="flex-1 min-w-0 space-y-1">
-                        <div className="flex items-center gap-2">
-                            <h3 className="text-base md:text-lg font-black tracking-tight text-foreground truncate">
+                        <div className="flex items-center gap-3">
+                            <h3 className="text-lg md:text-xl font-black tracking-tight text-foreground truncate">
                                 {Array.isArray(payment.contracts?.tenants)
                                     ? (payment.contracts.tenants[0]?.name || t('unnamedTenant'))
                                     : (payment.contracts?.tenants?.name || t('unnamedTenant'))}
                             </h3>
                             <span className={cn(
-                                "text-[9px] px-2 py-0.5 rounded-full uppercase font-black tracking-widest border shrink-0",
+                                "text-xs px-2.5 py-0.5 rounded-full uppercase font-black tracking-widest border shrink-0",
                                 payment.displayType === 'bill' ? 'bg-blue-500/10 text-primary border-primary/20' :
                                     payment.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
                                         payment.status === 'overdue' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' :
@@ -398,7 +369,7 @@ export function Payments() {
                                 {payment.displayType === 'bill' ? t('bills') : t(payment.status)}
                             </span>
                         </div>
-                        <p className="text-muted-foreground text-xs font-medium opacity-60 truncate">
+                        <p className="text-muted-foreground text-sm font-medium opacity-90 truncate">
                             {payment.contracts?.properties?.address}, {payment.contracts?.properties?.city}
                         </p>
                     </div>
@@ -406,13 +377,13 @@ export function Payments() {
 
                 <div className="flex items-center gap-4 md:gap-8">
                     <div className="text-right hidden sm:block">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60 block">{payment.payment_method || '-'}</span>
+                        <span className="text-sm font-black uppercase tracking-widest text-muted-foreground opacity-90 block">{payment.payment_method || '-'}</span>
                     </div>
                     <div className="text-right">
                         <div className="flex items-baseline gap-1 justify-end">
-                            <span className={cn("text-[10px] font-black opacity-40", isActionNeeded ? "text-rose-500" : "text-foreground")}>₪</span>
+                            <span className={cn("text-sm md:text-base font-black opacity-40", isActionNeeded ? "text-rose-500" : "text-foreground")}>₪</span>
                             <div className="flex flex-col items-end">
-                                <span className={cn("text-lg md:text-2xl font-black tracking-tight", isActionNeeded ? "text-rose-600" : "text-foreground")}>
+                                <span className={cn("text-2xl md:text-3xl font-black tracking-tight", isActionNeeded ? "text-rose-600" : "text-foreground")}>
                                     {formatCurrency(payment.paid_amount || payment.amount)}
                                 </span>
                                 {(() => {
@@ -424,12 +395,12 @@ export function Payments() {
                                     return (
                                         <>
                                             {payment.displayType === 'rent' && indexedAmounts[payment.id] && (
-                                                <span className="text-[10px] text-muted-foreground font-medium leading-none mt-1">
+                                                <span className="text-sm text-muted-foreground font-medium leading-none mt-1">
                                                     {t('indexed')}: ₪{formatCurrency(indexedAmounts[payment.id]!)}
                                                 </span>
                                             )}
                                             {isPaid && Math.abs(diff) > 1 && (
-                                                <span className={cn("text-[10px] font-black leading-none mt-1", diff > 0 ? "text-emerald-500" : "text-rose-500")}>
+                                                <span className={cn("text-sm font-black leading-none mt-1", diff > 0 ? "text-emerald-500" : "text-rose-500")}>
                                                     {t('diff')} {diff > 0 ? '(עודף)' : '(חסר)'}: {diff > 0 ? '+' : ''}{formatCurrency(diff)}
                                                 </span>
                                             )}
@@ -469,7 +440,7 @@ export function Payments() {
         <div className="overflow-x-auto glass-premium rounded-[2.5rem] border border-white/5 shadow-sm bg-white/30 dark:bg-neutral-900/30">
             <table className="w-full text-left border-collapse min-w-[600px]">
                 <thead>
-                    <tr className="border-b border-black/5 dark:border-white/5 bg-background0/5 text-[10px] uppercase font-black tracking-widest text-muted-foreground">
+                    <tr className="border-b border-black/5 dark:border-white/5 bg-background0/5 text-xs uppercase font-black tracking-widest text-muted-foreground">
                         <th className={cn("p-6", lang === 'he' ? "rounded-tr-[2.5rem]" : "rounded-tl-[2.5rem]")}>{t('date') || 'Date'}</th>
                         <th className="p-6">{t('tenant') || 'Tenant'}</th>
                         <th className="p-6">{t('asset') || 'Asset'}</th>
@@ -506,7 +477,7 @@ export function Payments() {
                             </td>
                             <td className="p-6">
                                 <span className={cn(
-                                    "text-[9px] px-2 py-0.5 rounded-full uppercase font-black tracking-widest border shrink-0 inline-block",
+                                    "text-[11px] px-2 py-0.5 rounded-full uppercase font-black tracking-widest border shrink-0 inline-block",
                                     payment.displayType === 'bill' ? 'bg-blue-500/10 text-primary border-primary/20' :
                                         payment.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
                                             payment.status === 'overdue' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' :
@@ -515,7 +486,7 @@ export function Payments() {
                                     {payment.displayType === 'bill' ? t('bills') : t(payment.status)}
                                 </span>
                             </td>
-                            <td className="p-6 text-[10px] font-black uppercase tracking-widest opacity-60">
+                            <td className="p-6 text-xs font-black uppercase tracking-widest opacity-90">
                                 {payment.payment_method || '-'}
                             </td>
                             <td className={cn("p-6 font-black text-base flex items-center gap-4", lang === 'he' ? "flex-row-reverse" : "justify-end")}>
@@ -544,12 +515,12 @@ export function Payments() {
                                         return (
                                             <>
                                                 {payment.displayType === 'rent' && indexedAmounts[payment.id] && (
-                                                    <span className="text-[10px] text-muted-foreground font-medium leading-none mt-1">
+                                                    <span className="text-xs text-muted-foreground font-medium leading-none mt-1">
                                                         {t('indexed')}: ₪{formatCurrency(indexedAmounts[payment.id]!)}
                                                     </span>
                                                 )}
                                                 {isPaid && Math.abs(diff) > 1 && (
-                                                    <span className={cn("text-[10px] font-black leading-none mt-1", diff > 0 ? "text-emerald-500" : "text-rose-500")}>
+                                                    <span className={cn("text-xs font-black leading-none mt-1", diff > 0 ? "text-emerald-500" : "text-rose-500")}>
                                                         {t('diff')} {diff > 0 ? '(עודף)' : '(חסר)'}: {diff > 0 ? '+' : ''}{formatCurrency(diff)}
                                                     </span>
                                                 )}
@@ -580,7 +551,7 @@ export function Payments() {
                     {showDivider && index !== 0 && (
                         <div className="flex items-center gap-4 py-6 px-2 opacity-60">
                             <div className="h-px flex-1 bg-border/50" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{format(pDate, 'MMMM yyyy')}</span>
+                            <span className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">{format(pDate, 'MMMM yyyy')}</span>
                             <div className="h-px flex-1 bg-border/50" />
                         </div>
                     )}
@@ -618,7 +589,7 @@ export function Payments() {
                     <div className="space-y-1 overflow-hidden">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 dark:bg-primary/10 backdrop-blur-md rounded-full border border-primary/10 shadow-sm mb-1">
                             <CalendarCheck className="w-3 h-3 text-primary" />
-                            <span className="text-[9px] font-black uppercase tracking-widest text-primary dark:text-primary">
+                            <span className="text-[11px] font-black uppercase tracking-widest text-primary dark:text-primary">
                                 {t('financialOverview')}
                             </span>
                         </div>
@@ -629,8 +600,7 @@ export function Payments() {
 
                     <Button
                         onClick={() => setIsAddModalOpen(true)}
-                        variant="jewel"
-                        className="h-14 w-14 rounded-2xl p-0 flex items-center justify-center shadow-jewel shrink-0"
+                        className="h-14 w-14 rounded-2xl p-0 shrink-0 bg-primary text-primary-foreground shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center"
                         title={t('addPayment')}
                     >
                         <Plus className="w-7 h-7" />
@@ -650,7 +620,7 @@ export function Payments() {
                                 className={cn(
                                     "flex-1 sm:flex-none px-4 sm:px-6 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 snap-center whitespace-nowrap",
                                     displayMode === tab.id
-                                        ? "bg-white dark:bg-neutral-800 text-primary shadow-sm border border-slate-200 dark:border-white/10"
+                                        ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
                                         : "text-muted-foreground hover:text-foreground"
                                 )}
                             >
@@ -671,7 +641,7 @@ export function Payments() {
                                     className={cn(
                                         "px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300",
                                         sortOrder === tab.id
-                                            ? "bg-white dark:bg-neutral-800 text-primary shadow-sm border border-slate-200 dark:border-white/10"
+                                            ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
                                             : "text-muted-foreground hover:text-foreground"
                                     )}
                                 >
@@ -691,7 +661,7 @@ export function Payments() {
                                     className={cn(
                                         "px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 flex items-center justify-center min-w-[3rem]",
                                         viewStyle === tab.id
-                                            ? "bg-white dark:bg-neutral-800 text-primary shadow-sm border border-slate-200 dark:border-white/10"
+                                            ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
                                             : "text-muted-foreground hover:text-foreground"
                                     )}
                                     title={tab.label}
@@ -701,17 +671,28 @@ export function Payments() {
                             ))}
                         </div>
 
-                        <Button
-                            variant="secondary"
-                            onClick={() => setShowFilters(!showFilters)}
-                            className={cn(
-                                "h-12 px-6 rounded-2xl flex items-center justify-center gap-2 transition-all duration-300 flex-1 sm:flex-none",
-                                showFilters ? "bg-indigo-500 text-white shadow-jewel border-primary/50" : "bg-white/50 dark:bg-neutral-800/50 hover:bg-white dark:hover:bg-neutral-800 text-primary dark:text-primary"
+                        <div className="relative flex-1 sm:flex-none">
+                            <Button
+                                variant="primary"
+                                noEffects
+                                onClick={() => setShowFilters(!showFilters)}
+                                className="h-12 px-6 rounded-2xl flex items-center justify-center gap-2 w-full font-bold shadow-none"
+                            >
+                                <Filter className="w-5 h-5" />
+                                <span>{t('filters') || 'Filters'}</span>
+                            </Button>
+                            {(periodFilter !== 'all' || filters.tenantIds.length > 0 || filters.propertyIds.length > 0 || filters.paymentMethods.length > 0 || filters.startDate || filters.endDate || !filters.contractStatus.includes('active') || filters.contractStatus.length !== 1) && (
+                                <div className="absolute top-[calc(100%+0.5rem)] left-0 w-full flex justify-center z-10">
+                                    <button
+                                        onClick={resetFilters}
+                                        className="text-[10px] font-black uppercase tracking-widest text-primary hover:opacity-80 flex items-center gap-1.5 transition-opacity whitespace-nowrap bg-background0/80 backdrop-blur-md px-2 py-1 rounded-lg border border-primary/10 shadow-sm"
+                                    >
+                                        <RotateCcw className="w-3 h-3" />
+                                        {t('resetFilters') || 'Reset'}
+                                    </button>
+                                </div>
                             )}
-                        >
-                            <Filter className={cn("w-5 h-5", showFilters ? "text-white" : "text-primary")} />
-                            <span className={cn("text-sm font-bold", showFilters ? "text-white" : "text-primary dark:text-primary")}>{t('filters') || 'Filters'}</span>
-                        </Button>
+                        </div>
 
                         <Button
                             variant="secondary"
@@ -738,9 +719,12 @@ export function Payments() {
                         <Card glass className="relative z-50 rounded-[2rem] border shadow-minimal bg-background0/5 border-slate-500/10 overflow-visible">
                             <CardContent className="p-6">
                                 <div className="flex flex-col gap-6">
+                                    <div className="flex justify-between items-center -mb-2">
+                                        <h3 className="text-sm font-black uppercase tracking-widest text-foreground">{t('filters') || 'Filters'}</h3>
+                                    </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                                         <div className="space-y-2 min-w-0">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('timePeriod')}</label>
+                                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70 block px-2">{t('timePeriod')}</label>
                                             <Select
                                                 value={periodFilter}
                                                 onChange={(v: any) => setPeriodFilter(v)}
@@ -758,7 +742,7 @@ export function Payments() {
                                         </div>
 
                                         <div className="space-y-2 min-w-0">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('tenant')}</label>
+                                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70 block px-2">{t('tenant')}</label>
                                             <MultiSelect
                                                 placeholder={t('allTenants')}
                                                 options={uniqueTenants.map((t: any) => ({ value: t.id, label: t.name }))}
@@ -768,7 +752,7 @@ export function Payments() {
                                         </div>
 
                                         <div className="space-y-2 min-w-0">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('asset')}</label>
+                                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70 block px-2">{t('asset')}</label>
                                             <MultiSelect
                                                 placeholder={t('allAssets')}
                                                 options={uniqueProperties.map((p: any) => ({ value: p.id, label: p.address }))}
@@ -778,14 +762,16 @@ export function Payments() {
                                         </div>
 
                                         <div className="space-y-2 min-w-0">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('method')}</label>
+                                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70 block px-2">{t('method')}</label>
                                             <MultiSelect
                                                 placeholder={t('allMethods')}
                                                 options={[
                                                     { value: 'transfer', label: t('transfer') },
                                                     { value: 'checks', label: t('check') },
                                                     { value: 'cash', label: t('cash') },
-                                                    { value: 'bit', label: t('bit') || 'Bit' }
+                                                    { value: 'bit', label: t('bit') || 'Bit' },
+                                                    { value: 'paybox', label: t('paybox') || 'Paybox' },
+                                                    { value: 'other', label: t('other') || 'Other' }
                                                 ]}
                                                 selected={filters.paymentMethods}
                                                 onChange={(vals) => setFilters(prev => ({ ...prev, paymentMethods: vals }))}
@@ -793,7 +779,7 @@ export function Payments() {
                                         </div>
 
                                         <div className="space-y-2 min-w-0">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('status')} {t('contract')}</label>
+                                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70 block px-2">{t('status')} {t('contract')}</label>
                                             <MultiSelect
                                                 placeholder={t('all')}
                                                 options={[
@@ -808,9 +794,9 @@ export function Payments() {
                                         </div>
                                     </div>
 
-                                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t border-slate-500/10">
-                                        <div className="flex flex-wrap items-center gap-2">
-                                            <div className="flex items-center gap-2 bg-background0/5 px-4 py-2 rounded-xl border border-slate-500/10">
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t border-slate-500/10 w-full">
+                                        <div className="flex-1 w-full min-w-0">
+                                            <div className="flex items-center gap-2 bg-background0/5 px-4 py-2 rounded-xl border border-slate-500/10 w-full">
                                                 <DatePicker
                                                     placeholder={t('from')}
                                                     value={filters.startDate ? new Date(filters.startDate) : undefined}
@@ -818,9 +804,9 @@ export function Payments() {
                                                         ...prev,
                                                         startDate: date ? format(date, 'yyyy-MM-dd') : ''
                                                     }))}
-                                                    className="bg-transparent border-0 h-auto p-0 w-24 text-xs font-bold"
+                                                    className="bg-transparent border-0 h-auto p-0 flex-1 w-full min-w-0 text-xs font-bold"
                                                 />
-                                                <span className="text-muted-foreground text-[10px]">—</span>
+                                                <span className="text-muted-foreground text-xs shrink-0">—</span>
                                                 <DatePicker
                                                     placeholder={t('to')}
                                                     value={filters.endDate ? new Date(filters.endDate) : undefined}
@@ -828,32 +814,10 @@ export function Payments() {
                                                         ...prev,
                                                         endDate: date ? format(date, 'yyyy-MM-dd') : ''
                                                     }))}
-                                                    className="bg-transparent border-0 h-auto p-0 w-24 text-xs font-bold"
+                                                    className="bg-transparent border-0 h-auto p-0 flex-1 w-full min-w-0 text-xs font-bold"
                                                 />
                                             </div>
-
-                                            <Select
-                                                value={filters.types.length === 1 ? filters.types[0] : 'all'}
-                                                onChange={(v: any) => setFilters(prev => ({ ...prev, types: v === 'all' ? [] : [v] }))}
-                                                options={[
-                                                    { value: 'all', label: t('allTypes') },
-                                                    { value: 'rent', label: t('rent') },
-                                                    { value: 'bills', label: t('bills') }
-                                                ]}
-                                                className="w-32"
-                                            />
                                         </div>
-
-                                        {(periodFilter !== 'all' || filters.tenantIds.length > 0 || filters.propertyIds.length > 0 || filters.paymentMethods.length > 0 || filters.startDate || filters.endDate || filters.types.length > 0 || !filters.contractStatus.includes('active') || filters.contractStatus.length !== 1) && (
-                                            <Button
-                                                variant="ghost"
-                                                onClick={resetFilters}
-                                                className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-primary"
-                                            >
-                                                <RotateCcw className="w-3 h-3 mr-2" />
-                                                {t('resetFilters') || 'Reset'}
-                                            </Button>
-                                        )}
                                     </div>
                                 </div>
                             </CardContent>
@@ -866,7 +830,7 @@ export function Payments() {
             {(periodFilter !== 'all' || filters.tenantIds.length > 0 || filters.propertyIds.length > 0) && (
                 <div className="flex flex-wrap gap-2">
                     {periodFilter !== 'all' && (
-                        <div className="px-4 py-2 bg-brand-50 dark:bg-brand-900/20 text-brand-600 rounded-full text-[10px] font-black uppercase flex items-center gap-2 border border-brand-100 dark:border-brand-900/30">
+                        <div className="px-4 py-2 bg-brand-50 dark:bg-brand-900/20 text-brand-600 rounded-full text-xs font-black uppercase flex items-center gap-2 border border-brand-100 dark:border-brand-900/30">
                             {periodFilter === '3m' ? t('last3Months') :
                                 periodFilter === '6m' ? t('last6Months') :
                                     periodFilter === '1y' ? t('lastYear') :
@@ -890,13 +854,13 @@ export function Payments() {
                                 <CalendarCheck className="w-8 h-8 text-primary" />
                             </div>
                             <div>
-                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60 mb-1 block">{t('monthlyExpected')}</span>
+                                <span className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground opacity-90 mb-1 block">{t('monthlyExpected')}</span>
                                 <div className="flex items-baseline gap-1">
                                     <span className="text-sm font-black text-foreground opacity-40">₪</span>
                                     <span className="text-4xl font-black text-foreground tracking-tighter">{stats.monthlyExpected.toLocaleString()}</span>
                                 </div>
                                 {stats.monthlyIndexSum > 0 && (
-                                    <div className="mt-2 inline-flex items-center gap-2 px-2 py-1 bg-emerald-500/10 text-emerald-500 rounded-full border border-emerald-500/20 text-[9px] font-bold uppercase tracking-wide">
+                                    <div className="mt-2 inline-flex items-center gap-2 px-2 py-1 bg-emerald-500/10 text-emerald-500 rounded-full border border-emerald-500/20 text-[11px] font-bold uppercase tracking-wide">
                                         <ArrowUpRight className="w-3 h-3" />
                                         + ₪{stats.monthlyIndexSum.toLocaleString()} {t('indexSum')}
                                     </div>
@@ -907,7 +871,7 @@ export function Payments() {
                         {/* Per-contract Breakdown */}
                         {Object.values(stats.contractBreakdown).filter(c => c.isRent && c.monthlyExpected > 0).length > 1 && (
                             <div className="w-full md:w-auto md:min-w-[40%] bg-primary/5 rounded-2xl p-4 border border-primary/10">
-                                <div className="text-[10px] font-black uppercase tracking-widest text-primary/60 mb-3">{t('contractBreakdown') || 'Breakdown'}</div>
+                                <div className="text-xs font-black uppercase tracking-widest text-primary/60 mb-3">{t('contractBreakdown') || 'Breakdown'}</div>
                                 <div className="space-y-2">
                                     {Object.values(stats.contractBreakdown)
                                         .filter(c => c.isRent && c.monthlyExpected > 0)
@@ -915,7 +879,7 @@ export function Payments() {
                                             <div key={contract.id} className="flex items-center justify-between gap-4">
                                                 <div className="flex flex-col min-w-0">
                                                     <span className="text-xs font-bold text-foreground truncate">{contract.name || t('unnamedTenant')}</span>
-                                                    <span className="text-[10px] text-muted-foreground truncate">{contract.properties?.address}</span>
+                                                    <span className="text-xs text-muted-foreground truncate">{contract.properties?.address}</span>
                                                 </div>
                                                 <div className="text-xs font-black text-primary dark:text-primary shrink-0">
                                                     ₪{contract.monthlyExpected.toLocaleString()}
@@ -935,13 +899,13 @@ export function Payments() {
                                 <Clock className="w-8 h-8 text-orange-500" />
                             </div>
                             <div>
-                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-500/60 mb-1 block">{t('pending')}</span>
+                                <span className="text-xs font-black uppercase tracking-[0.2em] text-orange-500/60 mb-1 block">{t('pending')}</span>
                                 <div className="flex items-baseline gap-1">
                                     <span className="text-sm font-black text-orange-500 opacity-40">₪</span>
                                     <span className="text-4xl font-black text-orange-500 tracking-tighter">{stats.pending.toLocaleString()}</span>
                                 </div>
                                 {stats.partialDebt > 1 && (
-                                    <div className="mt-2 inline-flex items-center gap-2 px-2 py-1 bg-rose-500/10 text-rose-500 rounded-full border border-rose-500/20 text-[9px] font-bold uppercase tracking-wide">
+                                    <div className="mt-2 inline-flex items-center gap-2 px-2 py-1 bg-rose-500/10 text-rose-500 rounded-full border border-rose-500/20 text-[11px] font-bold uppercase tracking-wide">
                                         <ArrowUpRight className="w-3 h-3" />
                                         + ₪{Math.round(stats.partialDebt).toLocaleString()} {t('remainingDebt')} = ₪{Math.round(stats.pending + stats.partialDebt).toLocaleString()}
                                     </div>
@@ -952,7 +916,7 @@ export function Payments() {
                         {/* Per-contract Breakdown */}
                         {Object.values(stats.contractBreakdown).filter(c => c.isRent && c.pending > 0).length > 1 && (
                             <div className="w-full md:w-auto md:min-w-[40%] bg-orange-500/5 rounded-2xl p-4 border border-orange-500/10">
-                                <div className="text-[10px] font-black uppercase tracking-widest text-orange-500/60 mb-3">{t('contractBreakdown') || 'Breakdown'}</div>
+                                <div className="text-xs font-black uppercase tracking-widest text-orange-500/60 mb-3">{t('contractBreakdown') || 'Breakdown'}</div>
                                 <div className="space-y-2">
                                     {Object.values(stats.contractBreakdown)
                                         .filter(c => c.isRent && c.pending > 0)
@@ -960,7 +924,7 @@ export function Payments() {
                                             <div key={contract.id} className="flex items-center justify-between gap-4">
                                                 <div className="flex flex-col min-w-0">
                                                     <span className="text-xs font-bold text-foreground truncate">{contract.name || t('unnamedTenant')}</span>
-                                                    <span className="text-[10px] text-muted-foreground truncate">{contract.properties?.address}</span>
+                                                    <span className="text-xs text-muted-foreground truncate">{contract.properties?.address}</span>
                                                 </div>
                                                 <div className="text-xs font-black text-warning shrink-0">
                                                     ₪{contract.pending.toLocaleString()}
@@ -984,7 +948,7 @@ export function Payments() {
                             <AlertCircle className="w-10 h-10 text-muted-foreground/20" />
                         </div>
                         <div className="space-y-2">
-                            <h3 className="text-2xl font-black tracking-tighter text-foreground lowercase opacity-40">{t('noPaymentsFound')}</h3>
+                            <h3 className="text-2xl font-black tracking-tighter text-foreground lowercase opacity-70">{t('noPaymentsFound')}</h3>
                         </div>
                         <Button
                             onClick={() => setIsAddModalOpen(true)}

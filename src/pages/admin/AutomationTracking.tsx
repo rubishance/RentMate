@@ -103,7 +103,7 @@ export default function AutomationTracking() {
                     <button
                         key={f}
                         onClick={() => setFilter(f)}
-                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${filter === f
+                        className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest border transition-all ${filter === f
                             ? 'bg-brand-600 text-white border-brand-600 shadow-md shadow-brand-500/20'
                             : 'bg-white dark:bg-gray-800 text-gray-400 border-border hover:border-brand-500'
                             }`}
@@ -129,7 +129,7 @@ export default function AutomationTracking() {
             <div className="bg-white dark:bg-gray-800 border border-border/50 rounded-2xl shadow-minimal overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
-                        <thead className="bg-background/50 dark:bg-slate-900/50 text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-border/50">
+                        <thead className="bg-background/50 dark:bg-slate-900/50 text-xs font-black text-gray-400 uppercase tracking-widest border-b border-border/50">
                             <tr>
                                 <th className="px-6 py-4">Autopilot Action</th>
                                 <th className="px-6 py-4">Target User</th>
@@ -155,7 +155,7 @@ export default function AutomationTracking() {
                                                 <span className="font-bold text-gray-900 dark:text-white text-sm">
                                                     {log.action_taken}
                                                 </span>
-                                                <span className="text-[10px] text-gray-400 font-medium uppercase tracking-tight">
+                                                <span className="text-xs text-gray-400 font-medium uppercase tracking-tight">
                                                     Entity: {log.entity_id?.split('-')[0]}...
                                                 </span>
                                             </div>
@@ -169,14 +169,14 @@ export default function AutomationTracking() {
                                                     <span className="text-sm font-bold text-gray-700 dark:text-gray-200">
                                                         {log.user_profiles?.full_name || 'System / Guest'}
                                                     </span>
-                                                    <span className="text-[10px] text-gray-400 font-medium lowercase">
+                                                    <span className="text-xs text-gray-400 font-medium lowercase">
                                                         {log.user_profiles?.email || 'noreply@rentmate.co.il'}
                                                     </span>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-5">
-                                            <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${log.status === 'success'
+                                            <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest ${log.status === 'success'
                                                 ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800'
                                                 : log.status === 'failed'
                                                     ? 'bg-rose-50 text-rose-600 border border-rose-100 dark:bg-rose-900/20 dark:border-rose-800'
@@ -192,7 +192,7 @@ export default function AutomationTracking() {
                                                     <Calendar className="w-3 h-3" />
                                                     {new Date(log.created_at).toLocaleDateString()}
                                                 </div>
-                                                <span className="text-[10px] font-medium text-gray-400 uppercase">
+                                                <span className="text-xs font-medium text-gray-400 uppercase">
                                                     {new Date(log.created_at).toLocaleTimeString()}
                                                 </span>
                                             </div>

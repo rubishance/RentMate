@@ -53,7 +53,6 @@ export function Sidebar() {
     const navItems = [
         { path: '/dashboard', label: labels.dashboard, icon: LayoutDashboard },
         { path: '/properties', label: labels.properties, icon: Building2 },
-        { path: '/contracts', label: labels.contracts, icon: FileText },
         { path: '/payments', label: labels.payments, icon: Wallet },
         { path: '/tools', label: labels.tools, icon: Wrench },
     ];

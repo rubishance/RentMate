@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Home, PieChart, ShieldCheck, Mail, ArrowRight, CheckCircle2, Calculator, Receipt, Sparkles, MessageCircle, Building2, AlertCircle, User, Phone, ArrowLeft, Globe, Instagram, Facebook, Twitter, Volume2, VolumeX, Maximize, Minimize } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import YouTube from 'react-youtube';
 import { useTranslation } from '../hooks/useTranslation';
 import { useUserPreferences } from '../contexts/UserPreferencesContext';
@@ -48,7 +49,16 @@ const MOBILE_MOCKUP_IMAGES_EN = [
 export function ComingSoon() {
     const { t, lang } = useTranslation();
     const { setLanguage } = useUserPreferences();
+    const { user, isLoading: authLoading } = useAuth();
+    const navigate = useNavigate();
     const isRtl = lang === 'he';
+
+    // Redirect authenticated users to the dashboard
+    useEffect(() => {
+        if (!authLoading && user) {
+            navigate('/dashboard', { replace: true });
+        }
+    }, [user, authLoading, navigate]);
 
     const SLIDE_CONTENT = React.useMemo(() => [
         {
@@ -503,15 +513,15 @@ export function ComingSoon() {
 
                     <div className="flex flex-col items-center gap-1 md:gap-0.5">
                         <div className="flex flex-col items-center gap-1">
-                            <a href="/accessibility" className="text-[10px] md:text-xs text-muted-foreground hover:text-primary transition-colors underline underline-offset-4">
+                            <a href="/accessibility" className="text-xs md:text-xs text-muted-foreground hover:text-primary transition-colors underline underline-offset-4">
                                 {isRtl ? 'הצהרת נגישות' : 'Accessibility Statement'}
                             </a>
-                            <p className="text-[9px] text-muted-foreground/60 max-w-md text-center leading-relaxed px-4">
+                            <p className="text-[11px] text-muted-foreground/60 max-w-md text-center leading-relaxed px-4">
                                 {t('coming_soon_ip_protection')}
                             </p>
                         </div>
                         {isRtl && (
-                            <p className="text-[9px] md:text-[10px] text-muted-foreground/80 max-w-sm text-center leading-relaxed">
+                            <p className="text-[11px] md:text-xs text-muted-foreground/80 max-w-sm text-center leading-relaxed">
                                 * האתר והאפליקציה מנוסחים בלשון זכר מטעמי נוחות בלבד, אך מתייחסים ופונים לשני המינים כאחד.
                             </p>
                         )}
@@ -681,11 +691,11 @@ export function ComingSoon() {
                     <a href="/accessibility" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors underline underline-offset-4 mb-1">
                         {isRtl ? 'הצהרת נגישות' : 'Accessibility Statement'}
                     </a>
-                    <p className="text-[10px] text-muted-foreground/60 px-6 max-w-sm text-center leading-relaxed">
+                    <p className="text-xs text-muted-foreground/60 px-6 max-w-sm text-center leading-relaxed">
                         {t('coming_soon_ip_protection')}
                     </p>
                     {isRtl && (
-                        <p className="text-[10px] text-muted-foreground/80 px-6 max-w-sm text-center leading-relaxed mt-2">
+                        <p className="text-xs text-muted-foreground/80 px-6 max-w-sm text-center leading-relaxed mt-2">
                             * האתר והאפליקציה מנוסחים בלשון זכר מטעמי נוחות בלבד, אך מתייחסים ופונים לשני המינים כאחד.
                         </p>
                     )}

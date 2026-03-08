@@ -52,7 +52,7 @@ export function SnapshotTab({ property, isEditing, onPropertyChange }: SnapshotT
                         {/* Parking */}
                         {(isEditing || property.has_parking) ? (
                             <div className="p-4 bg-background dark:bg-neutral-900 rounded-xl flex flex-col gap-2">
-                                <div className="text-[10px] text-muted-foreground uppercase tracking-widest">{t('parking')}</div>
+                                <div className="text-xs text-muted-foreground uppercase tracking-widest">{t('parking')}</div>
                                 <label className="flex items-center gap-3 cursor-pointer group">
                                     <input
                                         type="checkbox"
@@ -69,7 +69,7 @@ export function SnapshotTab({ property, isEditing, onPropertyChange }: SnapshotT
                         {/* Balcony */}
                         {(isEditing || property.has_balcony) ? (
                             <div className="p-4 bg-background dark:bg-neutral-900 rounded-xl flex flex-col gap-2">
-                                <div className="text-[10px] text-muted-foreground uppercase tracking-widest">{t('balcony')}</div>
+                                <div className="text-xs text-muted-foreground uppercase tracking-widest">{t('balcony')}</div>
                                 <label className="flex items-center gap-3 cursor-pointer group">
                                     <input
                                         type="checkbox"
@@ -86,7 +86,7 @@ export function SnapshotTab({ property, isEditing, onPropertyChange }: SnapshotT
                         {/* Safe Room (Mamad) */}
                         {(isEditing || property.has_safe_room) ? (
                             <div className="p-4 bg-background dark:bg-neutral-900 rounded-xl flex flex-col gap-2">
-                                <div className="text-[10px] text-muted-foreground uppercase tracking-widest">{t('safeRoom')}</div>
+                                <div className="text-xs text-muted-foreground uppercase tracking-widest">{t('safeRoom')}</div>
                                 <label className="flex items-center gap-3 cursor-pointer group">
                                     <input
                                         type="checkbox"
@@ -103,7 +103,7 @@ export function SnapshotTab({ property, isEditing, onPropertyChange }: SnapshotT
                         {/* Storage */}
                         {(isEditing || property.has_storage) ? (
                             <div className="p-4 bg-background dark:bg-neutral-900 rounded-xl flex flex-col gap-2">
-                                <div className="text-[10px] text-muted-foreground uppercase tracking-widest">{t('storage')}</div>
+                                <div className="text-xs text-muted-foreground uppercase tracking-widest">{t('storage')}</div>
                                 <label className="flex items-center gap-3 cursor-pointer group">
                                     <input
                                         type="checkbox"

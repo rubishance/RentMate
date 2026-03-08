@@ -70,7 +70,7 @@ export function SmartActionsRow() {
                                 {action.label}
                             </span>
                             {action.subLabel && (
-                                <span className="text-[10px] uppercase tracking-wider font-medium text-muted-foreground">
+                                <span className="text-xs uppercase tracking-wider font-medium text-muted-foreground">
                                     {action.subLabel}
                                 </span>
                             )}

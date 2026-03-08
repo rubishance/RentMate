@@ -25,6 +25,8 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
     size = 'md',
     disabled = false,
 }) => {
+    const uniqueId = React.useId();
+
     return (
         <div className={cn(
             "relative flex p-1 bg-muted/50 rounded-xl overflow-hidden border border-border/50",
@@ -39,7 +41,7 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
                         disabled={disabled}
                         className={cn(
                             "relative flex-1 flex items-center justify-center gap-2 z-10 transition-colors duration-200",
-                            size === 'sm' ? "px-3 py-1.5 text-[10px]" : "px-4 py-2.5 text-xs",
+                            size === 'sm' ? "px-3 py-1.5 text-xs" : "px-4 py-2.5 text-xs",
                             "font-bold uppercase tracking-wide whitespace-nowrap",
                             isActive ? "text-white" : "text-muted-foreground hover:text-foreground/80",
                             disabled && "opacity-50 pointer-events-none cursor-not-allowed"
@@ -50,9 +52,9 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
 
                         {isActive && (
                             <motion.div
-                                layoutId="segmented-control-active"
+                                layoutId={`segmented-control-active-${uniqueId}`}
                                 className="absolute inset-0 bg-primary rounded-lg shadow-minimal -z-10"
-                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                transition={{ type: "spring", stiffness: 500, damping: 30, duration: 0.2 }}
                             />
                         )}
                     </button>

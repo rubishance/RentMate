@@ -797,7 +797,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                         className="fixed top-24 left-6 z-50 glass-premium dark:bg-neutral-800/60 shadow-lg border border-white/5 p-3 rounded-full flex items-center gap-3 hover:scale-105 transition-all text-primary"
                     >
                         {isContractViewerOpen ? <ChevronDown className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
-                        <span className="text-[10px] font-black uppercase tracking-widest pr-1 text-foreground">{t('hideContract')}</span>
+                        <span className="text-xs font-black uppercase tracking-widest pr-1 text-foreground">{t('hideContract')}</span>
                     </motion.button>
                 )}
             </AnimatePresence>
@@ -828,7 +828,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                 <ArrowLeft className={cn("w-4 h-4", lang === 'he' ? 'rotate-180' : '')} />
                             </button>
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40 mb-1">
+                                <span className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground opacity-70 mb-1">
                                     {t('step')} {step} / {STEPS.length}
                                 </span>
                                 <h1 className="font-black text-xl tracking-tighter text-foreground leading-none lowercase">
@@ -1297,7 +1297,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                     <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar pb-6">
                                                         {/* Property & Infrastructure */}
                                                         <div className="bg-secondary/10 p-5 rounded-3xl space-y-3">
-                                                            <h4 className="font-black text-brand-500 flex items-center gap-2 border-b border-border/50 pb-3 mb-3 uppercase tracking-wider text-[10px]">
+                                                            <h4 className="font-black text-brand-500 flex items-center gap-2 border-b border-border/50 pb-3 mb-3 uppercase tracking-wider text-xs">
                                                                 <Building className="w-4 h-4" /> {t('infrastructure')}
                                                             </h4>
                                                             <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm font-bold">
@@ -1320,10 +1320,10 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
 
                                                                 <span className="text-muted-foreground">{t('features')}</span>
                                                                 <div className="flex flex-wrap justify-end gap-2">
-                                                                    {formData.hasParking && <span className="bg-brand-500/10 text-brand-600 px-2 py-0.5 rounded text-[10px] uppercase font-bold">{t('hasParking')}</span>}
-                                                                    {formData.hasStorage && <span className="bg-brand-500/10 text-brand-600 px-2 py-0.5 rounded text-[10px] uppercase font-bold">{t('hasStorage')}</span>}
-                                                                    {formData.hasBalcony && <span className="bg-brand-500/10 text-brand-600 px-2 py-0.5 rounded text-[10px] uppercase font-bold">{t('hasBalcony')}</span>}
-                                                                    {formData.hasSafeRoom && <span className="bg-brand-500/10 text-brand-600 px-2 py-0.5 rounded text-[10px] uppercase font-bold">{t('hasSafeRoom')}</span>}
+                                                                    {formData.hasParking && <span className="bg-brand-500/10 text-brand-600 px-2 py-0.5 rounded text-xs uppercase font-bold">{t('hasParking')}</span>}
+                                                                    {formData.hasStorage && <span className="bg-brand-500/10 text-brand-600 px-2 py-0.5 rounded text-xs uppercase font-bold">{t('hasStorage')}</span>}
+                                                                    {formData.hasBalcony && <span className="bg-brand-500/10 text-brand-600 px-2 py-0.5 rounded text-xs uppercase font-bold">{t('hasBalcony')}</span>}
+                                                                    {formData.hasSafeRoom && <span className="bg-brand-500/10 text-brand-600 px-2 py-0.5 rounded text-xs uppercase font-bold">{t('hasSafeRoom')}</span>}
                                                                     {!formData.hasParking && !formData.hasStorage && !formData.hasBalcony && !formData.hasSafeRoom && '-'}
                                                                 </div>
                                                             </div>
@@ -1331,7 +1331,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
 
                                                         {/* Parties Involed */}
                                                         <div className="bg-secondary/10 p-5 rounded-3xl space-y-3">
-                                                            <h4 className="font-black text-brand-500 flex items-center gap-2 border-b border-border/50 pb-3 mb-3 uppercase tracking-wider text-[10px]">
+                                                            <h4 className="font-black text-brand-500 flex items-center gap-2 border-b border-border/50 pb-3 mb-3 uppercase tracking-wider text-xs">
                                                                 <User className="w-4 h-4" /> {t('parties')}
                                                             </h4>
                                                             <div className="space-y-4">
@@ -1365,7 +1365,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
 
                                                         {/* Timeline */}
                                                         <div className="bg-secondary/10 p-5 rounded-3xl space-y-3">
-                                                            <h4 className="font-black text-brand-500 flex items-center gap-2 border-b border-border/50 pb-3 mb-3 uppercase tracking-wider text-[10px]">
+                                                            <h4 className="font-black text-brand-500 flex items-center gap-2 border-b border-border/50 pb-3 mb-3 uppercase tracking-wider text-xs">
                                                                 <Calendar className="w-4 h-4" /> {t('timeline')}
                                                             </h4>
                                                             <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm font-bold">
@@ -1387,7 +1387,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                                                 <div key={i} className="text-[11px] font-normal flex flex-col gap-0.5">
                                                                                     <div>{t('until')} {format(parseISO(p.endDate), 'dd/MM/yyyy')}{p.rentAmount ? ` | ${p.rentAmount}₪` : ''}</div>
                                                                                     {(p.noticeDays || p.reminderDays) && (
-                                                                                        <div className="text-[10px] text-muted-foreground">
+                                                                                        <div className="text-xs text-muted-foreground">
                                                                                             {p.noticeDays ? `${t('optionNoticeDays')}: ${p.noticeDays}` : ''}
                                                                                             {p.noticeDays && p.reminderDays ? ' | ' : ''}
                                                                                             {p.reminderDays ? `${t('optionReminderDays')}: ${p.reminderDays}` : ''}
@@ -1403,7 +1403,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
 
                                                         {/* Financials & Linkage */}
                                                         <div className="bg-secondary/10 p-5 rounded-3xl space-y-3">
-                                                            <h4 className="font-black text-brand-500 flex items-center gap-2 border-b border-border/50 pb-3 mb-3 uppercase tracking-wider text-[10px]">
+                                                            <h4 className="font-black text-brand-500 flex items-center gap-2 border-b border-border/50 pb-3 mb-3 uppercase tracking-wider text-xs">
                                                                 <SettingsIcon className="w-4 h-4" /> {t('financials')}
                                                             </h4>
                                                             <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm font-bold">
@@ -1434,7 +1434,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
 
                                                                 {formData.hasLinkage && (
                                                                     <>
-                                                                        <span className="text-brand-500 pt-2 col-span-2 border-t border-border/30 mt-1 uppercase text-[9px]">{t('linkage')}</span>
+                                                                        <span className="text-brand-500 pt-2 col-span-2 border-t border-border/30 mt-1 uppercase text-[11px]">{t('linkage')}</span>
                                                                         <span className="text-muted-foreground">{t('indexOption')}</span>
                                                                         <span className="text-right">{t(`linkedTo${formData.linkageType.charAt(0).toUpperCase() + formData.linkageType.slice(1)}` as any)}</span>
                                                                         <span className="text-muted-foreground">{t('baseDate')}</span>
@@ -1458,7 +1458,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                         {/* Security */}
                                                         {(formData.securityDeposit || formData.guarantees || formData.guarantorsInfo) && (
                                                             <div className="bg-secondary/10 p-5 rounded-3xl space-y-3">
-                                                                <h4 className="font-black text-brand-500 flex items-center gap-2 border-b border-border/50 pb-3 mb-3 uppercase tracking-wider text-[10px]">
+                                                                <h4 className="font-black text-brand-500 flex items-center gap-2 border-b border-border/50 pb-3 mb-3 uppercase tracking-wider text-xs">
                                                                     <Shield className="w-4 h-4" /> {t('securityAndAppendices')}
                                                                 </h4>
                                                                 <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm font-bold">
@@ -1489,14 +1489,14 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                         {/* Additional Details */}
                                                         {(formData.specialClauses || formData.needsPainting) && (
                                                             <div className="bg-secondary/10 p-5 rounded-3xl space-y-3">
-                                                                <h4 className="font-black text-brand-500 flex items-center gap-2 border-b border-border/50 pb-3 mb-3 uppercase tracking-wider text-[10px]">
+                                                                <h4 className="font-black text-brand-500 flex items-center gap-2 border-b border-border/50 pb-3 mb-3 uppercase tracking-wider text-xs">
                                                                     <FileText className="w-4 h-4" /> {t('additionalDetails')}
                                                                 </h4>
                                                                 <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm font-bold">
                                                                     {formData.needsPainting && (
                                                                         <>
                                                                             <span className="text-muted-foreground">{t('paintingIncluded')}</span>
-                                                                            <span className="text-right text-green-600 uppercase text-[10px]">{t('yes')}</span>
+                                                                            <span className="text-right text-green-600 uppercase text-xs">{t('yes')}</span>
                                                                         </>
                                                                     )}
 

@@ -102,14 +102,14 @@ export default function Contact() {
                 <div className="space-y-4 px-4 md:px-0">
                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/5 dark:bg-indigo-500/10 backdrop-blur-md rounded-full border border-indigo-500/10 shadow-sm mb-2">
                         <MessageCircle className="w-3 h-3 text-indigo-500" />
-                        <span className="text-[9px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                        <span className="text-[11px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
                             {t('contactTitle') || 'Support Hub'}
                         </span>
                     </div>
                     <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground leading-tight lowercase">
                         {isRtl ? 'צור קשר עם התמיכה' : 'Contact Support'}
                     </h1>
-                    <p className="text-muted-foreground text-lg font-medium leading-relaxed max-w-2xl opacity-60">
+                    <p className="text-muted-foreground text-lg font-medium leading-relaxed max-w-2xl opacity-90">
                         {isRtl ? 'אנחנו כאן כדי לעזור לכם להצליח בכל שלב בניהול הנכסים שלכם.' : "We're here to help you succeed at every step of your property management journey."}
                     </p>
                 </div>
@@ -126,7 +126,7 @@ export default function Contact() {
                                 </div>
                                 <div className="space-y-1">
                                     <h3 className="text-2xl font-black tracking-tighter text-foreground lowercase">{isRtl ? 'שלח הודעת WhatsApp' : 'Send WhatsApp Message'}</h3>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40">{isRtl ? 'הדרך המהירה ביותר לקבל מענה' : 'Fastest way to get a response'}</p>
+                                    <p className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70">{isRtl ? 'הדרך המהירה ביותר לקבל מענה' : 'Fastest way to get a response'}</p>
                                 </div>
                             </div>
 
@@ -154,7 +154,7 @@ export default function Contact() {
                                             className={`absolute top-1 left-0 w-5 h-5 rounded-full shadow-sm transition-colors duration-500 ${includeScreenshot ? 'bg-emerald-500' : 'bg-white/20'}`}
                                         />
                                     </div>
-                                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 group-hover:opacity-100 transition-all">
+                                    <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70 group-hover:opacity-100 transition-all">
                                         <Camera className="w-4 h-4" />
                                         {isRtl ? 'צרף צילום מסך אוטומטי' : 'Attach auto-screenshot'}
                                     </div>
@@ -164,7 +164,7 @@ export default function Contact() {
                                     id="contact-actions"
                                     onClick={handleWhatsAppContact}
                                     disabled={loading}
-                                    className="h-14 px-12 button-jewel font-black text-xs uppercase tracking-[0.2em] rounded-[1.5rem] hover:scale-105 active:scale-95 transition-all shadow-jewel flex items-center justify-center gap-4 group disabled:opacity-50"
+                                    className="h-14 px-12 button-jewel font-black text-xs uppercase tracking-[0.2em] rounded-[1.5rem] hover:scale-105 active:scale-95 transition-all shadow-jewel flex items-center justify-center gap-4 group disabled:opacity-80"
                                 >
                                     {loading ? (
                                         <Loader2 className="w-5 h-5 animate-spin" />
@@ -181,7 +181,7 @@ export default function Contact() {
                                 <motion.div
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className="p-6 glass-premium dark:bg-indigo-500/10 border border-indigo-500/20 rounded-[2rem] flex items-center gap-4 text-indigo-400 font-black text-[10px] uppercase tracking-widest relative z-10"
+                                    className="p-6 glass-premium dark:bg-indigo-500/10 border border-indigo-500/20 rounded-[2rem] flex items-center gap-4 text-indigo-400 font-black text-xs uppercase tracking-widest relative z-10"
                                 >
                                     <CheckCircle2 className="w-5 h-5 shrink-0" />
                                     {isRtl
@@ -199,7 +199,7 @@ export default function Contact() {
                                     <Mail className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <div className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-40 mb-1">{isRtl ? 'אימייל' : 'Email'}</div>
+                                    <div className="text-[11px] font-black text-muted-foreground uppercase tracking-widest opacity-70 mb-1">{isRtl ? 'אימייל' : 'Email'}</div>
                                     <div className="font-black text-foreground tracking-tight lowercase">{contactInfo.email}</div>
                                 </div>
                             </div>
@@ -211,7 +211,7 @@ export default function Contact() {
                                     <Phone className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <div className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-40 mb-1">{isRtl ? 'טלפון' : 'Phone'}</div>
+                                    <div className="text-[11px] font-black text-muted-foreground uppercase tracking-widest opacity-70 mb-1">{isRtl ? 'טלפון' : 'Phone'}</div>
                                     <div className="font-black text-foreground tracking-tight lowercase">{contactInfo.phone}</div>
                                 </div>
                             </div>
@@ -221,7 +221,7 @@ export default function Contact() {
                     {/* Sidebar Info */}
                     <div className="space-y-8">
                         <div className="p-8 glass-premium dark:bg-neutral-900/60 border-white/10 rounded-[3rem] shadow-minimal space-y-8">
-                            <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground opacity-40 lowercase pb-4 border-b border-white/5">{isRtl ? 'זמינות ותמיכה' : 'Availability & Support'}</h4>
+                            <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground opacity-70 lowercase pb-4 border-b border-white/5">{isRtl ? 'זמינות ותמיכה' : 'Availability & Support'}</h4>
 
                             <div className="space-y-8">
                                 <div className="flex items-start gap-4">
@@ -230,7 +230,7 @@ export default function Contact() {
                                     </div>
                                     <div className="space-y-1">
                                         <p className="font-black text-foreground tracking-tight lowercase">{isRtl ? 'שעות פעילות' : 'Support Hours'}</p>
-                                        <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 space-y-1">
+                                        <div className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70 space-y-1">
                                             <p>{isRtl ? 'א-ה: 09:00 - 18:00' : 'Sun-Thu: 09:00 - 18:00'}</p>
                                             <p>{isRtl ? 'ו\': 09:00 - 13:00' : 'Fri: 09:00 - 13:00'}</p>
                                         </div>
@@ -243,7 +243,7 @@ export default function Contact() {
                                     </div>
                                     <div className="space-y-1">
                                         <p className="font-black text-foreground tracking-tight lowercase">{isRtl ? 'תמיכה בחינם' : 'Free Support'}</p>
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40">{isRtl ? 'זמין לכלל המשתמשים בכל שלב' : 'Available to all users at any stage'}</p>
+                                        <p className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70">{isRtl ? 'זמין לכלל המשתמשים בכל שלב' : 'Available to all users at any stage'}</p>
                                     </div>
                                 </div>
                             </div>
@@ -257,7 +257,7 @@ export default function Contact() {
                                 <p className="text-indigo-100 text-sm font-medium leading-relaxed opacity-80">{isRtl ? 'ה-AI שלנו זמין 24/7 לכל שאלה בנוגע למערכת' : 'Our AI is available 24/7 for any system-related questions'}</p>
                                 <button
                                     onClick={() => window.dispatchEvent(new CustomEvent('OPEN_CHAT'))}
-                                    className="w-full h-12 bg-white text-indigo-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-white/90 transition-all flex items-center justify-center gap-3 active:scale-95"
+                                    className="w-full h-12 bg-white text-indigo-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white/90 transition-all flex items-center justify-center gap-3 active:scale-95"
                                 >
                                     {isRtl ? 'דבר עם רנטי' : 'Talk with Renty'}
                                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />

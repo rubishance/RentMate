@@ -296,7 +296,7 @@ export default function SupportTickets() {
                     { label: 'Total', count: tickets.length, color: 'text-gray-600' }
                 ].map((stat, i) => (
                     <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{stat.label}</p>
+                        <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{stat.label}</p>
                         <p className={`text-3xl font-black ${stat.color}`}>{stat.count}</p>
                     </div>
                 ))}
@@ -320,7 +320,7 @@ export default function SupportTickets() {
                             key={status}
                             onClick={() => setFilterStatus(status)}
                             className={cn(
-                                "px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
+                                "px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap",
                                 filterStatus === status
                                     ? 'bg-white dark:bg-gray-800 text-brand-600 shadow-sm'
                                     : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
@@ -372,7 +372,7 @@ export default function SupportTickets() {
                                     </div>
 
                                     {analysis?.ai_summary && (
-                                        <p className="text-[10px] font-black uppercase text-brand-600 tracking-widest mb-2 flex items-center gap-1">
+                                        <p className="text-xs font-black uppercase text-brand-600 tracking-widest mb-2 flex items-center gap-1">
                                             <Sparkles className="w-3 h-3" />
                                             AI: {analysis.ai_summary}
                                         </p>
@@ -383,7 +383,7 @@ export default function SupportTickets() {
                                         <span className={cn("px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest border", getStatusColor(ticket.status))}>
                                             {ticket.status.replace('_', ' ')}
                                         </span>
-                                        <span className="text-[9px] font-black text-gray-400 tracking-widest uppercase">{new Date(ticket.created_at).toLocaleDateString()}</span>
+                                        <span className="text-[11px] font-black text-gray-400 tracking-widest uppercase">{new Date(ticket.created_at).toLocaleDateString()}</span>
                                     </div>
                                 </div>
                             );
@@ -416,17 +416,17 @@ export default function SupportTickets() {
                                         <div className="flex items-center gap-3">
                                             <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tighter leading-none">{selectedTicket.title}</h2>
                                             {selectedTicket.ticket_analysis?.[0] && (
-                                                <div className="flex items-center gap-1.5 px-3 py-1 bg-brand-50 text-brand-600 rounded-full border border-brand-100 text-[9px] font-black uppercase tracking-widest">
+                                                <div className="flex items-center gap-1.5 px-3 py-1 bg-brand-50 text-brand-600 rounded-full border border-brand-100 text-[11px] font-black uppercase tracking-widest">
                                                     <Sparkles className="w-3 h-3" />
                                                     AI Analyzed
                                                 </div>
                                             )}
                                         </div>
                                         <div className="flex flex-wrap items-center gap-3">
-                                            <span className={cn("px-3 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest border", getPriorityColor(selectedTicket.priority))}>
+                                            <span className={cn("px-3 py-1 rounded-xl text-[11px] font-black uppercase tracking-widest border", getPriorityColor(selectedTicket.priority))}>
                                                 {selectedTicket.priority}
                                             </span>
-                                            <span className={cn("px-3 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest border", getStatusColor(selectedTicket.status))}>
+                                            <span className={cn("px-3 py-1 rounded-xl text-[11px] font-black uppercase tracking-widest border", getStatusColor(selectedTicket.status))}>
                                                 {selectedTicket.status.replace('_', ' ')}
                                             </span>
                                         </div>
@@ -435,7 +435,7 @@ export default function SupportTickets() {
                                         {!selectedTicket.assigned_to && (
                                             <button
                                                 onClick={() => handleAssignToMe(selectedTicket.id)}
-                                                className="px-4 py-2 bg-brand-600 text-white rounded-[1.2rem] text-[10px] font-black uppercase tracking-widest hover:bg-brand-700 transition-colors shadow-lg shadow-brand-600/20"
+                                                className="px-4 py-2 bg-brand-600 text-white rounded-[1.2rem] text-xs font-black uppercase tracking-widest hover:bg-brand-700 transition-colors shadow-lg shadow-brand-600/20"
                                             >
                                                 Assign to Me
                                             </button>
@@ -443,7 +443,7 @@ export default function SupportTickets() {
                                         <select
                                             value={selectedTicket.status}
                                             onChange={(e) => handleUpdateStatus(selectedTicket.id, e.target.value)}
-                                            className="px-4 py-2 bg-background dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[1.2rem] text-[10px] font-black uppercase tracking-widest focus:ring-2 focus:ring-brand-500/20 outline-none cursor-pointer"
+                                            className="px-4 py-2 bg-background dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[1.2rem] text-xs font-black uppercase tracking-widest focus:ring-2 focus:ring-brand-500/20 outline-none cursor-pointer"
                                         >
                                             <option value="open">Open</option>
                                             <option value="in_progress">In Progress</option>
@@ -458,7 +458,7 @@ export default function SupportTickets() {
                                     "{selectedTicket.description}"
                                 </blockquote>
 
-                                <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                <div className="flex items-center gap-6 text-xs font-black uppercase tracking-widest text-gray-400">
                                     <div className="flex items-center gap-2">
                                         <div className="w-6 h-6 rounded-lg bg-muted/50 dark:bg-neutral-800 flex items-center justify-center">
                                             <User className="w-3 h-3" />
@@ -480,23 +480,23 @@ export default function SupportTickets() {
                                 {selectedTicket.ticket_analysis?.[0] && (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="p-6 bg-white dark:bg-neutral-900 rounded-[2rem] border border-slate-100 dark:border-neutral-800 shadow-minimal space-y-3">
-                                            <h4 className="text-[10px] font-black uppercase tracking-[0.25em] text-brand-600 flex items-center gap-2">
+                                            <h4 className="text-xs font-black uppercase tracking-[0.25em] text-brand-600 flex items-center gap-2">
                                                 <Sparkles className="w-3.5 h-3.5" />
                                                 Insight Details
                                             </h4>
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div className="space-y-1">
-                                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Sentiment</p>
+                                                    <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Sentiment</p>
                                                     <p className="text-xl font-black">{(selectedTicket.ticket_analysis?.[0]?.sentiment_score ?? 0) > 0 ? 'Positive' : 'Fustrated'}</p>
                                                 </div>
                                                 <div className="space-y-1">
-                                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Category</p>
+                                                    <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Category</p>
                                                     <p className="text-xl font-black capitalize">{selectedTicket.ticket_analysis?.[0]?.category || 'N/A'}</p>
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="p-6 bg-white dark:bg-neutral-900 rounded-[2rem] border border-slate-100 dark:border-neutral-800 shadow-minimal space-y-3">
-                                            <h4 className="text-[10px] font-black uppercase tracking-[0.25em] text-brand-600 flex items-center gap-2">
+                                            <h4 className="text-xs font-black uppercase tracking-[0.25em] text-brand-600 flex items-center gap-2">
                                                 <Activity className="w-3.5 h-3.5" />
                                                 Intelligence Loop
                                             </h4>
@@ -516,11 +516,11 @@ export default function SupportTickets() {
                                         <div className="relative z-10 flex flex-col gap-6">
                                             <div className="flex items-center justify-between">
                                                 <div className="space-y-1">
-                                                    <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-600 flex items-center gap-2">
+                                                    <h4 className="text-xs font-black uppercase tracking-[0.3em] text-brand-600 flex items-center gap-2">
                                                         <SparklesIcon className="w-4 h-4" />
                                                         Autopilot Draft
                                                     </h4>
-                                                    <p className="text-[10px] font-bold text-gray-400 lowercase">this reply was crafted specifically for this user context</p>
+                                                    <p className="text-xs font-bold text-gray-400 lowercase">this reply was crafted specifically for this user context</p>
                                                 </div>
                                                 <div className="px-2 py-1 bg-white/50 dark:bg-black/50 backdrop-blur-md rounded-lg text-[8px] font-black text-brand-600 uppercase tracking-widest border border-brand-100">
                                                     Optimized
@@ -535,7 +535,7 @@ export default function SupportTickets() {
                                             <button
                                                 onClick={handleApproveDraft}
                                                 disabled={submitting}
-                                                className="w-full h-14 bg-foreground text-background rounded-full font-black text-[10px] uppercase tracking-[0.4em] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 shadow-premium-dark"
+                                                className="w-full h-14 bg-foreground text-background rounded-full font-black text-xs uppercase tracking-[0.4em] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 shadow-premium-dark"
                                             >
                                                 {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircleIcon className="w-5 h-5" />}
                                                 Approve & Send Intelligent Reply
@@ -548,7 +548,7 @@ export default function SupportTickets() {
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-4 px-2">
                                         <div className="h-px flex-1 bg-muted/50 dark:border-neutral-800" />
-                                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Communication History</span>
+                                        <span className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Communication History</span>
                                         <div className="h-px flex-1 bg-muted/50 dark:border-neutral-800" />
                                     </div>
                                     {comments.map((comment) => (
@@ -558,11 +558,11 @@ export default function SupportTickets() {
                                                 : 'bg-background dark:bg-neutral-800/50 mr-12 border-transparent'
                                         )}>
                                             <div className="flex items-center justify-between mb-3">
-                                                <span className="text-[10px] font-black text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
+                                                <span className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
                                                     <div className={cn("w-1.5 h-1.5 rounded-full", comment.is_admin ? "bg-brand-500" : "bg-slate-400")} />
                                                     {comment.is_admin ? 'RentMate Team' : comment.user?.full_name || 'Client'}
                                                 </span>
-                                                <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <span className="text-[11px] font-black text-gray-400 uppercase tracking-widest leading-none opacity-0 group-hover:opacity-100 transition-opacity">
                                                     {new Date(comment.created_at).toLocaleString()}
                                                 </span>
                                             </div>
@@ -571,7 +571,7 @@ export default function SupportTickets() {
                                     ))}
                                     {comments.length === 0 && (
                                         <div className="p-10 text-center opacity-40">
-                                            <p className="text-[10px] font-black uppercase tracking-widest">No previous correspondence</p>
+                                            <p className="text-xs font-black uppercase tracking-widest">No previous correspondence</p>
                                         </div>
                                     )}
                                 </div>
@@ -586,7 +586,7 @@ export default function SupportTickets() {
                                         onChange={(e) => setNewComment(e.target.value)}
                                         onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
                                         placeholder="Add to follow-up..."
-                                        className="flex-1 px-6 py-4 bg-background dark:bg-neutral-800 border-none rounded-2xl text-[10px] font-bold tracking-widest focus:ring-2 focus:ring-brand-500/20 outline-none placeholder:uppercase placeholder:text-[9px]"
+                                        className="flex-1 px-6 py-4 bg-background dark:bg-neutral-800 border-none rounded-2xl text-xs font-bold tracking-widest focus:ring-2 focus:ring-brand-500/20 outline-none placeholder:uppercase placeholder:text-[11px]"
                                     />
                                     <button
                                         onClick={handleAddComment}

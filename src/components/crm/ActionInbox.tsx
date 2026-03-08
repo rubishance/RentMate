@@ -142,7 +142,7 @@ export function ActionInbox() {
                     <SparklesIcon className="w-5 h-5 text-brand-600" />
                     <h3 className="text-sm font-black uppercase tracking-widest text-gray-900 dark:text-white">AI Action Inbox</h3>
                 </div>
-                <span className="px-2 py-0.5 bg-brand-100 text-brand-600 rounded text-[10px] font-black">{actions.length} PENDING</span>
+                <span className="px-2 py-0.5 bg-brand-100 text-brand-600 rounded text-xs font-black">{actions.length} PENDING</span>
             </div>
 
             <div className="divide-y divide-slate-50 dark:divide-slate-800">
@@ -181,7 +181,7 @@ export function ActionInbox() {
                                                 </span>
                                             )}
                                         </div>
-                                        <span className="text-[10px] font-black text-gray-400 flex items-center gap-1 uppercase">
+                                        <span className="text-xs font-black text-gray-400 flex items-center gap-1 uppercase">
                                             <CalendarIcon className="w-3 h-3" />
                                             {new Date(action.updatedAt).toLocaleDateString()}
                                         </span>
@@ -196,7 +196,7 @@ export function ActionInbox() {
                                                 className="w-full bg-transparent border-none focus:ring-0 text-xs font-semibold text-gray-700 dark:text-gray-300 italic resize-none p-0"
                                                 rows={3}
                                             />
-                                            <div className="mt-2 text-[9px] font-black text-gray-400 uppercase tracking-widest text-right">
+                                            <div className="mt-2 text-[11px] font-black text-gray-400 uppercase tracking-widest text-right">
                                                 AI Draft - Editable
                                             </div>
                                         </div>
@@ -205,12 +205,12 @@ export function ActionInbox() {
                                     <div className="flex items-center gap-3">
                                         <button
                                             onClick={() => handleApprove(action)}
-                                            className="px-4 py-2 bg-brand-600 text-white text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-brand-700 transition-all flex items-center gap-2"
+                                            className="px-4 py-2 bg-brand-600 text-white text-xs font-black uppercase tracking-widest rounded-lg hover:bg-brand-700 transition-all flex items-center gap-2"
                                         >
                                             <CheckCircleIcon className="w-4 h-4" />
                                             Approve & Send
                                         </button>
-                                        <button className="px-4 py-2 bg-white dark:bg-gray-800 text-gray-500 text-[10px] font-black uppercase tracking-widest border border-border rounded-lg hover:bg-gray-50 transition-all flex items-center gap-2">
+                                        <button className="px-4 py-2 bg-white dark:bg-gray-800 text-gray-500 text-xs font-black uppercase tracking-widest border border-border rounded-lg hover:bg-gray-50 transition-all flex items-center gap-2">
                                             <XCircleIcon className="w-4 h-4" />
                                             Dismiss
                                         </button>

@@ -55,7 +55,7 @@ export function HeaderActionMenu() {
                                 onClick={() => {
                                     setIsOpen(false);
                                     push('contract_wizard', {
-                                        onSuccess: () => navigate('/contracts')
+                                        onSuccess: () => navigate('/properties')
                                     }, { isExpanded: true, title: t('addContract') });
                                 }}
                                 className="flex items-center gap-3 p-3 rounded-xl hover:bg-background dark:hover:bg-neutral-800 transition-colors group w-full text-start"

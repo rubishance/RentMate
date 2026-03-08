@@ -68,7 +68,7 @@ export default function AuditLogs() {
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <div className="hidden sm:block px-4 py-2 bg-gray-100 dark:bg-gray-900 rounded-xl text-[10px] font-black text-gray-400 uppercase tracking-widest border border-gray-200 dark:border-gray-700">
+                    <div className="hidden sm:block px-4 py-2 bg-gray-100 dark:bg-gray-900 rounded-xl text-xs font-black text-gray-400 uppercase tracking-widest border border-gray-200 dark:border-gray-700">
                         Top 200 Events
                     </div>
                     <button
@@ -107,7 +107,7 @@ export default function AuditLogs() {
             <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
-                        <thead className="bg-gray-50 dark:bg-gray-900/50 text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 dark:border-gray-700">
+                        <thead className="bg-gray-50 dark:bg-gray-900/50 text-xs font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 dark:border-gray-700">
                             <tr>
                                 <th className="px-6 py-4">Security Action</th>
                                 <th className="px-6 py-4 text-center">User Context</th>
@@ -137,14 +137,14 @@ export default function AuditLogs() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-center">
-                                            <div className="inline-flex items-center px-2 py-1 bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-mono text-gray-500 dark:text-gray-400">
+                                            <div className="inline-flex items-center px-2 py-1 bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-mono text-gray-500 dark:text-gray-400">
                                                 {log.user_id ? log.user_id.split('-')[0] + '...' : 'SYSTEM'}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="max-w-md truncate text-xs font-medium text-gray-500 dark:text-gray-400 group relative">
                                                 {JSON.stringify(log.details)}
-                                                <div className="hidden group-hover:block absolute z-10 bottom-full left-0 bg-gray-900 text-white p-2 rounded text-[10px] font-mono whitespace-normal max-w-lg break-all shadow-xl">
+                                                <div className="hidden group-hover:block absolute z-10 bottom-full left-0 bg-gray-900 text-white p-2 rounded text-xs font-mono whitespace-normal max-w-lg break-all shadow-xl">
                                                     {JSON.stringify(log.details, null, 2)}
                                                 </div>
                                             </div>

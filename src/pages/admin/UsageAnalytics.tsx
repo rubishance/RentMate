@@ -270,11 +270,11 @@ export default function UsageAnalytics() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-background dark:bg-neutral-800/20">
-                                <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Rank</th>
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">User Email</th>
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Activity Level</th>
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Total Events</th>
-                                <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Actions</th>
+                                <th className="px-8 py-4 text-xs font-black uppercase tracking-widest text-slate-400">Rank</th>
+                                <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-slate-400">User Email</th>
+                                <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-slate-400">Activity Level</th>
+                                <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-slate-400">Total Events</th>
+                                <th className="px-8 py-4 text-xs font-black uppercase tracking-widest text-slate-400 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -282,7 +282,7 @@ export default function UsageAnalytics() {
                                 <tr key={user.user_id} className="group hover:bg-background/50 dark:hover:bg-neutral-800/20 transition-colors border-b border-slate-50 dark:border-neutral-800 last:border-0">
                                     <td className="px-8 py-4">
                                         <div className={cn(
-                                            "w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black",
+                                            "w-6 h-6 rounded-full flex items-center justify-center text-xs font-black",
                                             idx === 0 ? "bg-amber-100 text-amber-600 shadow-sm" :
                                                 idx === 1 ? "bg-muted/50 text-slate-600" :
                                                     idx === 2 ? "bg-orange-50 text-orange-600" : "text-slate-400"
@@ -306,7 +306,7 @@ export default function UsageAnalytics() {
                                                     style={{ width: `${(user.event_count / (stats?.top_users[0]?.event_count || 1)) * 100}%` }}
                                                 />
                                             </div>
-                                            <span className="text-[10px] font-black text-indigo-500">
+                                            <span className="text-xs font-black text-indigo-500">
                                                 {Math.round((user.event_count / (stats?.top_users[0]?.event_count || 1)) * 100)}%
                                             </span>
                                         </div>
@@ -342,11 +342,11 @@ function MetricCard({ title, value, icon, trend, color }: { title: string, value
                 <div className={cn("p-2.5 rounded-2xl", colorClasses[color])}>
                     {icon}
                 </div>
-                <div className="text-[10px] font-black uppercase tracking-widest text-emerald-500 flex items-center gap-1">
+                <div className="text-xs font-black uppercase tracking-widest text-emerald-500 flex items-center gap-1">
                     {trend}
                 </div>
             </div>
-            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none mb-2">{title}</h4>
+            <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 leading-none mb-2">{title}</h4>
             <div className="text-3xl font-black text-foreground tracking-tighter">
                 {value}
             </div>

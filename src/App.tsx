@@ -1,5 +1,5 @@
-import { Suspense, lazy } from 'react';
-import { createBrowserRouter, RouterProvider, Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Suspense, lazy, useEffect } from 'react';
+import { createBrowserRouter, RouterProvider, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { UserPreferencesProvider } from './contexts/UserPreferencesContext';
 import { NotificationsProvider } from './contexts/NotificationsContext';
@@ -32,7 +32,6 @@ import { Calculator } from './pages/Calculator';
 import { Analytics } from './pages/Analytics';
 const MaintenanceTracker = lazy(() => import('./pages/MaintenanceTracker').then(module => ({ default: module.MaintenanceTracker })));
 const ContractDetails = lazy(() => import('./pages/ContractDetails'));
-const Contracts = lazy(() => import('./pages/Contracts'));
 const SharedCalculation = lazy(() => import('./pages/SharedCalculation').then(module => ({ default: module.SharedCalculation })));
 const Settings = lazy(() => import('./pages/Settings').then(module => ({ default: module.Settings })));
 const Tools = lazy(() => import('./pages/Tools').then(module => ({ default: module.Tools })));
@@ -90,7 +89,15 @@ import { StackContainer } from './components/layout/StackContainer';
 // Root Layout to provide router context to global widgets
 const RootLayout = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { activeLayer } = useStack();
+
+  // Watch for Supabase Auth Password Recovery redirect loops to the landing page
+  useEffect(() => {
+    if (location.hash && location.hash.includes('type=recovery')) {
+      navigate('/reset-password' + location.hash, { replace: true });
+    }
+  }, [location.hash, navigate]);
 
   const isWizard =
     location.pathname.includes('/new') ||
@@ -102,7 +109,8 @@ const RootLayout = () => {
     activeLayer?.type === 'wizard';
 
   const hideChatPaths = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/accessibility', '/legal/privacy', '/legal/terms'];
-  const shouldHideChat = hideChatPaths.includes(location.pathname) || isWizard;
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  const shouldHideChat = hideChatPaths.includes(location.pathname) || isWizard || isAdminRoute;
 
   return (
     <>
@@ -238,10 +246,6 @@ const router = createBrowserRouter([
               {
                 path: "/maintenance",
                 element: <MaintenanceTracker />,
-              },
-              {
-                path: "/contracts",
-                element: <Contracts />,
               },
               {
                 path: "/assets",

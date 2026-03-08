@@ -78,9 +78,9 @@ export function DatePicker({
                 >
                     <div className={cn("flex items-center", variant === 'default' ? "gap-3" : "gap-2")}>
                         <div className={cn(
-                            "rounded-lg transition-colors",
-                            variant === 'default' ? "p-2" : "p-1.5",
-                            value ? "bg-primary/10 text-primary" : "bg-secondary text-muted-foreground group-hover:bg-white"
+                            "rounded-lg transition-colors flex items-center justify-center shrink-0",
+                            variant === 'default' ? "w-10 h-10" : "w-8 h-8",
+                            "bg-primary/10 text-primary group-hover:bg-primary/20"
                         )}>
                             <CalendarIcon className={variant === 'default' ? "w-5 h-5" : "w-4 h-4"} />
                         </div>

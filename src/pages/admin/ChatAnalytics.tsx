@@ -215,7 +215,7 @@ export default function ChatAnalytics() {
                             <button
                                 key={range}
                                 onClick={() => setTimeRange(range)}
-                                className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${timeRange === range
+                                className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${timeRange === range
                                     ? 'bg-white dark:bg-gray-800 text-brand-600 shadow-sm'
                                     : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                                     }`}
@@ -241,7 +241,7 @@ export default function ChatAnalytics() {
                             <MessageSquare className="w-6 h-6 text-blue-600" />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Conversations</p>
+                            <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Total Conversations</p>
                             <p className="text-3xl font-black text-gray-900 dark:text-white">{analytics.total_conversations}</p>
                         </div>
                     </div>
@@ -253,7 +253,7 @@ export default function ChatAnalytics() {
                             <TrendingUp className="w-6 h-6 text-green-600" />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Avg Messages/Chat</p>
+                            <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Avg Messages/Chat</p>
                             <p className="text-3xl font-black text-gray-900 dark:text-white">{analytics.avg_messages_per_conversation}</p>
                         </div>
                     </div>
@@ -265,7 +265,7 @@ export default function ChatAnalytics() {
                             <Clock className="w-6 h-6 text-primary" />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Avg Response Time</p>
+                            <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Avg Response Time</p>
                             <p className="text-3xl font-black text-gray-900 dark:text-white">{analytics.avg_response_time_seconds}s</p>
                         </div>
                     </div>
@@ -277,7 +277,7 @@ export default function ChatAnalytics() {
                             <Zap className="w-6 h-6 text-amber-600" />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Escalation Rate</p>
+                            <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Escalation Rate</p>
                             <p className="text-3xl font-black text-gray-900 dark:text-white">{analytics.escalation_rate}%</p>
                         </div>
                     </div>

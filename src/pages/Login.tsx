@@ -181,7 +181,7 @@ export function Login() {
 
                                 <div className="relative">
                                     <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
-                                    <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground"><span className="bg-window px-3">{t('auth_or_continue')}</span></div>
+                                    <div className="relative flex justify-center text-xs font-bold uppercase tracking-widest text-muted-foreground"><span className="bg-window px-3">{t('auth_or_continue')}</span></div>
                                 </div>
                             </div>
                         )}
@@ -241,7 +241,7 @@ export function Login() {
                         {isSupabaseConfigured && (
                             <div className="flex items-center justify-center gap-2 opacity-50 grayscale hover:opacity-100 transition-opacity">
                                 <Shield className="w-4 h-4" />
-                                <span className="text-[10px] font-bold uppercase tracking-widest">256-bit AES Encryption • SSL Secure</span>
+                                <span className="text-xs font-bold uppercase tracking-widest">256-bit AES Encryption • SSL Secure</span>
                             </div>
                         )}
 

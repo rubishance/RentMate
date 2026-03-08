@@ -117,7 +117,7 @@ export function WelcomeLanding() {
                                     setActiveTab(tab as any);
                                 }}
                                 className={cn(
-                                    "px-6 py-2.5 text-[10px] font-black uppercase tracking-[0.2em] rounded-full transition-all duration-500",
+                                    "px-6 py-2.5 text-xs font-black uppercase tracking-[0.2em] rounded-full transition-all duration-500",
                                     activeTab === tab
                                         ? "bg-white dark:bg-neutral-800 text-foreground shadow-premium"
                                         : "text-muted-foreground hover:text-foreground"
@@ -139,7 +139,7 @@ export function WelcomeLanding() {
                         </div>
                         <Button
                             onClick={() => navigate('/login')}
-                            className="hidden md:flex h-12 px-8 text-[10px] font-black uppercase tracking-[0.2em] rounded-full shadow-premium-dark"
+                            className="hidden md:flex h-12 px-8 text-xs font-black uppercase tracking-[0.2em] rounded-full shadow-premium-dark"
                         >
                             {isRtl ? 'כניסה' : 'Sign In'}
                         </Button>
@@ -207,11 +207,11 @@ export function WelcomeLanding() {
                                 className="border-t border-slate-100 dark:border-neutral-900 pt-10 space-y-8"
                             >
                                 <div className="flex items-center justify-between px-4">
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{isRtl ? 'מראה' : 'Appearance'}</span>
+                                    <span className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">{isRtl ? 'מראה' : 'Appearance'}</span>
                                     <ThemeToggle />
                                 </div>
                                 <div className="flex items-center justify-between px-4">
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{isRtl ? 'שפה' : 'Language'}</span>
+                                    <span className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">{isRtl ? 'שפה' : 'Language'}</span>
                                     <LanguageToggle />
                                 </div>
 
@@ -253,7 +253,7 @@ export function WelcomeLanding() {
                                         >
                                             <div className="inline-flex items-center gap-3 px-4 py-2 bg-background dark:bg-neutral-900 rounded-full border border-slate-100 dark:border-neutral-800 shadow-minimal">
                                                 <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
+                                                <span className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground">
                                                     {isRtl ? 'בינה מלאכותית בשירות הנדל״ן' : 'AI Powered Real Estate'}
                                                 </span>
                                             </div>
@@ -336,7 +336,7 @@ export function WelcomeLanding() {
                                                     <f.icon className="w-7 h-7" />
                                                 </div>
                                                 <h3 className="text-xl font-black tracking-tighter mb-4 text-foreground lowercase">{f.title}</h3>
-                                                <p className="text-muted-foreground leading-relaxed text-sm opacity-60">
+                                                <p className="text-muted-foreground leading-relaxed text-sm opacity-90">
                                                     {f.desc}
                                                 </p>
                                             </motion.div>
@@ -354,7 +354,7 @@ export function WelcomeLanding() {
                                     {/* Feature 2: Local Expertise (SEO) - Reverse Layout */}
                                     <div className="flex flex-col lg:flex-row items-center gap-16">
                                         <div className="lg:w-1/2 space-y-8">
-                                            <div className="inline-flex px-4 py-2 rounded-full glass-premium dark:bg-white/5 border border-black/5 dark:border-white/10 text-[10px] font-black uppercase tracking-widest text-primary shadow-jewel">
+                                            <div className="inline-flex px-4 py-2 rounded-full glass-premium dark:bg-white/5 border border-black/5 dark:border-white/10 text-xs font-black uppercase tracking-widest text-primary shadow-jewel">
                                                 {isRtl ? 'דאטה מקומי' : 'Local Data'}
                                             </div>
                                             <h2 className="text-4xl lg:text-5xl font-black tracking-tighter text-foreground">
@@ -393,7 +393,7 @@ export function WelcomeLanding() {
                                         <h2 className="text-5xl lg:text-7xl font-black tracking-tighter text-foreground lowercase">
                                             {isRtl ? 'הכל תחת שליטה.' : 'Absolute Control.'}
                                         </h2>
-                                        <p className="text-xl text-muted-foreground max-w-2xl mx-auto opacity-60">
+                                        <p className="text-xl text-muted-foreground max-w-2xl mx-auto opacity-90">
                                             {isRtl ? 'ממשק אחד חכם לניהול הנכס, הדיירים והחוזים במינימום קליקים.' : 'One smart interface for property, tenant, and contract management with minimum effort.'}
                                         </p>
                                     </div>
@@ -442,7 +442,7 @@ export function WelcomeLanding() {
             <footer className="py-24 border-t border-slate-100 dark:border-neutral-900 bg-white dark:bg-black text-center px-8 relative z-10">
                 <div className="max-w-7xl mx-auto space-y-16">
                     <div className="space-y-6">
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.5em] opacity-40">
+                        <p className="text-xs font-black text-muted-foreground uppercase tracking-[0.5em] opacity-70">
                             {isRtl ? 'מאובטח בטכנולוגיית ענן מובילה' : 'Built with Premium Enterprise Stack'}
                         </p>
                         <div className="flex flex-wrap justify-center gap-12 opacity-30 invert dark:invert-0 grayscale hover:grayscale-0 transition-all duration-1000">
@@ -453,27 +453,27 @@ export function WelcomeLanding() {
                     </div>
 
                     <div className="pt-16 border-t border-slate-50 dark:border-neutral-900 flex flex-col md:flex-row items-center justify-between gap-8">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">
+                        <span className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-90">
                             © 2025 RentMate. Intelligently Minimal.
                         </span>
                         <div className="flex gap-10">
                             <a
                                 href="/legal/privacy"
                                 onClick={(e) => { e.preventDefault(); navigate('/legal/privacy'); }}
-                                className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+                                className="text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
                             >
                                 {isRtl ? 'פרטיות' : 'Privacy'}
                             </a>
                             <a
                                 href="/legal/terms"
                                 onClick={(e) => { e.preventDefault(); navigate('/legal/terms'); }}
-                                className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+                                className="text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
                             >
                                 {isRtl ? 'תנאים' : 'Terms'}
                             </a>
                             <button
                                 onClick={() => navigate('/contact')}
-                                className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+                                className="text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
                             >
                                 {isRtl ? 'תמיכה' : 'Support'}
                             </button>

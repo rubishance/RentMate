@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useEffect } from 'react';
 import { Listbox, Transition } from '@headlessui/react';
 import { Check, ChevronDown } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -34,7 +34,13 @@ export const Select: React.FC<SelectProps> = ({
     className,
     disabled
 }) => {
-    const selectedOption = options.find(op => op.value === value);
+    useEffect(() => {
+        if (options?.length === 1 && value !== options[0].value) {
+            onChange(options[0].value);
+        }
+    }, [options, value, onChange]);
+
+    const selectedOption = options?.find(op => op.value === value);
 
     return (
         <div className={cn("space-y-2 w-full", className)}>

@@ -80,19 +80,19 @@ export function RentalTrends() {
             {(selectedRegions.length > 0 || propertyType !== 'apartment' || rooms !== 3 || duration !== '1Y' || hasMamah) && (
                 <div className="flex flex-wrap gap-2">
                     {selectedRegions.map(reg => (
-                        <div key={reg} className="px-3 py-1.5 bg-brand-50 dark:bg-brand-900/20 text-brand-600 rounded-full text-[9px] font-black uppercase flex items-center gap-2 border border-brand-100 dark:border-brand-900/30">
+                        <div key={reg} className="px-3 py-1.5 bg-brand-50 dark:bg-brand-900/20 text-brand-600 rounded-full text-[11px] font-black uppercase flex items-center gap-2 border border-brand-100 dark:border-brand-900/30">
                             {reg}
                             <X className="w-3 h-3 cursor-pointer" onClick={() => toggleRegion(reg)} />
                         </div>
                     ))}
                     {propertyType !== 'apartment' && (
-                        <div className="px-3 py-1.5 bg-brand-50 dark:bg-brand-900/20 text-brand-600 rounded-full text-[9px] font-black uppercase flex items-center gap-2 border border-brand-100 dark:border-brand-900/30">
+                        <div className="px-3 py-1.5 bg-brand-50 dark:bg-brand-900/20 text-brand-600 rounded-full text-[11px] font-black uppercase flex items-center gap-2 border border-brand-100 dark:border-brand-900/30">
                             {t(propertyType as any)}
                             <X className="w-3 h-3 cursor-pointer" onClick={() => setPropertyType('apartment')} />
                         </div>
                     )}
                     {hasMamah && (
-                        <div className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-full text-[9px] font-black uppercase flex items-center gap-2 border border-emerald-100 dark:border-emerald-900/30">
+                        <div className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-full text-[11px] font-black uppercase flex items-center gap-2 border border-emerald-100 dark:border-emerald-900/30">
                             {t('includeMamahPremium')}
                             <X className="w-3 h-3 cursor-pointer" onClick={() => setHasMamah(false)} />
                         </div>
@@ -110,7 +110,7 @@ export function RentalTrends() {
                 <div className="space-y-10">
                     {/* Region Selection */}
                     <div className="space-y-4">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">
+                        <label className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70 block px-2">
                             {lang === 'he' ? 'אזורי השוואה' : 'Regions'}
                         </label>
                         <div className="flex flex-wrap gap-2">
@@ -119,7 +119,7 @@ export function RentalTrends() {
                                     key={reg}
                                     onClick={() => toggleRegion(reg)}
                                     variant={selectedRegions.includes(reg) ? 'primary' : 'outline'}
-                                    className="rounded-2xl text-[10px] font-black uppercase tracking-widest px-4 py-3 h-auto"
+                                    className="rounded-2xl text-xs font-black uppercase tracking-widest px-4 py-3 h-auto"
                                 >
                                     {reg}
                                 </Button>
@@ -128,7 +128,7 @@ export function RentalTrends() {
                     </div>
 
                     <div className="space-y-4">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('propertyType')}</label>
+                        <label className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70 block px-2">{t('propertyType')}</label>
                         <Select
                             value={propertyType}
                             onChange={(value) => setPropertyType(value)}
@@ -141,14 +141,14 @@ export function RentalTrends() {
                     </div>
 
                     <div className="space-y-4">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('rooms')}</label>
+                        <label className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70 block px-2">{t('rooms')}</label>
                         <div className="grid grid-cols-4 gap-2">
                             {[2, 3, 4, 5].map(r => (
                                 <Button
                                     key={r}
                                     onClick={() => setRooms(r)}
                                     variant={rooms === r ? 'primary' : 'outline'}
-                                    className="h-12 rounded-xl font-black text-[10px]"
+                                    className="h-12 rounded-xl font-black text-xs"
                                 >
                                     {r}
                                 </Button>
@@ -157,14 +157,14 @@ export function RentalTrends() {
                     </div>
 
                     <div className="space-y-4">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40 block px-2">{t('comparisonDuration')}</label>
+                        <label className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70 block px-2">{t('comparisonDuration')}</label>
                         <div className="flex gap-2">
                             {(['1Y', '2Y', '5Y'] as const).map(d => (
                                 <Button
                                     key={d}
                                     onClick={() => setDuration(d)}
                                     variant={duration === d ? 'primary' : 'outline'}
-                                    className="flex-1 h-12 rounded-xl font-black text-[10px] uppercase tracking-widest"
+                                    className="flex-1 h-12 rounded-xl font-black text-xs uppercase tracking-widest"
                                 >
                                     {d}
                                 </Button>
@@ -175,7 +175,7 @@ export function RentalTrends() {
                     <div className="p-6 bg-brand-50/50 dark:bg-brand-900/10 rounded-[2rem] border border-brand-100 dark:border-brand-900/20">
                         <div className="flex items-center justify-between cursor-pointer group" onClick={() => setHasMamah(!hasMamah)}>
                             <div className="space-y-1">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-foreground flex items-center gap-2">
+                                <span className="text-xs font-black uppercase tracking-widest text-foreground flex items-center gap-2">
                                     <ShieldCheck className="w-4 h-4 text-brand-600" />
                                     {t('includeMamahPremium')}
                                 </span>
@@ -199,7 +199,7 @@ export function RentalTrends() {
                     </div>
                     <div className="relative z-10 space-y-6">
                         <div className="space-y-1">
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60">
+                            <span className="text-xs font-black uppercase tracking-[0.2em] text-white/60">
                                 {lang === 'he' ? 'שכירות שוק ממוצעת' : 'Avg Market Rent'}
                             </span>
                             <div className="text-6xl font-black tracking-tighter">
@@ -208,7 +208,7 @@ export function RentalTrends() {
                         </div>
                         <div className="flex items-center gap-6">
                             <div className="space-y-1">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-white/60">
+                                <span className="text-xs font-black uppercase tracking-widest text-white/60">
                                     {lang === 'he' ? `צמיחה ל-${duration}` : `${duration} Growth`}
                                 </span>
                                 <div className="text-2xl font-black flex items-center gap-1">
@@ -218,7 +218,7 @@ export function RentalTrends() {
                             </div>
                             <div className="w-[1px] h-10 bg-white/20" />
                             <div className="space-y-1">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-white/60">
+                                <span className="text-xs font-black uppercase tracking-widest text-white/60">
                                     {lang === 'he' ? 'בסיס' : 'Basis'}
                                 </span>
                                 <div className="text-2xl font-black lowercase text-white">
@@ -273,7 +273,7 @@ export function RentalTrends() {
                                 </div>
                                 <div>
                                     <div className="text-2xl font-black text-emerald-600">+{nationalStats.safetyPremium}%</div>
-                                    <p className="text-[10px] text-muted-foreground leading-tight font-semibold">
+                                    <p className="text-xs text-muted-foreground leading-tight font-semibold">
                                         {lang === 'he' ? 'פרמיית שכירות על יחידות עם ממ"ד ב-2025' : 'Rent premium for units with safe rooms in 2025'}
                                     </p>
                                 </div>
@@ -295,7 +295,7 @@ export function RentalTrends() {
                                     )}
                                 </p>
                             </div>
-                            <div className="px-4 py-2 bg-amber-50 dark:bg-amber-900/40 rounded-2xl text-[10px] font-black text-amber-600 uppercase border border-amber-500/30 shrink-0">
+                            <div className="px-4 py-2 bg-amber-50 dark:bg-amber-900/40 rounded-2xl text-xs font-black text-amber-600 uppercase border border-amber-500/30 shrink-0">
                                 {lang === 'he' ? 'פער אסטרטגי' : 'Strategic Gap'}
                             </div>
                         </div>
@@ -305,7 +305,7 @@ export function RentalTrends() {
 
             {/* Footnote */}
             <div className="flex items-center gap-3 p-6 bg-background dark:bg-neutral-900/50 rounded-3xl border border-slate-100 dark:border-neutral-800">
-                <Info className="w-5 h-5 text-muted-foreground opacity-40 shrink-0" />
+                <Info className="w-5 h-5 text-muted-foreground opacity-70 shrink-0" />
                 <p className="text-[11px] font-medium text-muted-foreground leading-relaxed">
                     {lang === 'he'
                         ? 'הנתונים מבוססים על מדדי הלמ"ס (שירותי דיור בבעלות) וסקירות שוק לשנת 2025. הניתוח לוקח בחשבון התאמות גודל, סוג נכס ומרכיבי מיגון.'

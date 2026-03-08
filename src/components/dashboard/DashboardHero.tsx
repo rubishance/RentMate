@@ -34,7 +34,7 @@ export function DashboardHero({ firstName, feedItems, showOnly }: DashboardHeroP
             {(!showOnly || showOnly === 'welcome') && (
                 /* Zen Welcome */
                 <div className="flex flex-col space-y-1">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.4em]">
+                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-[0.4em]">
                         {getTimeBasedGreeting(t)}
                     </span>
                     <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground lowercase">
@@ -76,7 +76,7 @@ export function DashboardHero({ firstName, feedItems, showOnly }: DashboardHeroP
                                             )}>
                                                 {item.type === 'urgent' || item.type === 'warning' ? <AlertCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
                                             </div>
-                                            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-60 font-mono">{item.date}</span>
+                                            <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground opacity-90 font-mono">{item.date}</span>
                                         </div>
 
                                         <h3 className="font-bold text-base leading-tight mb-2 line-clamp-2 text-foreground">
@@ -87,7 +87,7 @@ export function DashboardHero({ firstName, feedItems, showOnly }: DashboardHeroP
                                         </p>
                                     </div>
 
-                                    <div className="flex items-center gap-2 mt-4 text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">
+                                    <div className="flex items-center gap-2 mt-4 text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">
                                         {t('rentySuggestsAction')}
                                         <ArrowRight className={cn("w-3 h-3", lang === 'he' && "rotate-180")} />
                                     </div>

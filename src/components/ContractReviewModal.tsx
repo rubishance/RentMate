@@ -116,7 +116,7 @@ export function ContractReviewModal({ extractedFields, contractFileUrl, onConfir
                                                     <span className="font-semibold text-gray-800 dark:text-gray-200">
                                                         {FIELD_TRANSLATIONS[field.fieldName] || field.fieldName}
                                                     </span>
-                                                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${getConfidenceColor(field.confidence)}`}>
+                                                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getConfidenceColor(field.confidence)}`}>
                                                         {field.confidence === 'high' && 'ביטחון גבוה'}
                                                         {field.confidence === 'medium' && 'ביטחון בינוני'}
                                                         {field.confidence === 'low' && 'ביטחון נמוך'}

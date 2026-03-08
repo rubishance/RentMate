@@ -215,7 +215,7 @@ export default function Pricing() {
                                 >
                                     {tier.badgeText && (
                                         <div className="absolute -top-4 inset-x-0 flex justify-center">
-                                            <span className="bg-gradient-to-r from-primary to-cyan-500 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg uppercase tracking-widest">
+                                            <span className="bg-gradient-to-r from-primary to-cyan-500 text-white text-xs font-black px-3 py-1 rounded-full shadow-lg uppercase tracking-widest">
                                                 {tier.badgeText}
                                             </span>
                                         </div>

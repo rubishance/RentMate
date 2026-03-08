@@ -212,7 +212,7 @@ const PlanManagement = () => {
 
     const renderPriceField = (label: string, field: string) => (
         <div>
-            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{label}</label>
+            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{label}</label>
             <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₪</span>
                 <input
@@ -227,7 +227,7 @@ const PlanManagement = () => {
 
     const renderLimitField = (label: string, field: string, suffix: string = '') => (
         <div>
-            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{label}</label>
+            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{label}</label>
             <div className="relative">
                 <input
                     type="number"
@@ -236,7 +236,7 @@ const PlanManagement = () => {
                     className="block w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-brand-500 focus:ring-brand-500 font-bold text-gray-900 dark:text-white sm:text-sm"
                 />
                 {suffix && (
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 uppercase">{suffix}</span>
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-black text-gray-400 uppercase">{suffix}</span>
                 )}
             </div>
         </div>
@@ -284,7 +284,7 @@ const PlanManagement = () => {
 
         return (
             <div className="sticky top-8">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 text-center">Live Preview (Mobile/Desktop Card)</p>
+                <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 text-center">Live Preview (Mobile/Desktop Card)</p>
                 <div className="max-w-sm mx-auto">
                     <GlassCard
                         className={`p-8 relative flex flex-col ${plan.id === 'mate' ? 'border-primary/50 ring-4 ring-primary/10' : ''} ${BG_MAP[baseId] || 'bg-card'}`}
@@ -394,13 +394,13 @@ const PlanManagement = () => {
                         <div className="p-8 space-y-12">
                             {/* Marketing Section */}
                             <section>
-                                <h3 className="text-[10px] font-black text-brand-600 uppercase tracking-[0.2em] mb-6 flex items-center gap-4">
+                                <h3 className="text-xs font-black text-brand-600 uppercase tracking-[0.2em] mb-6 flex items-center gap-4">
                                     Marketing & Content
                                     <div className="h-px bg-brand-100 dark:bg-brand-900/30 flex-1"></div>
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="md:col-span-2">
-                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Internal Name</label>
+                                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Internal Name</label>
                                         <input
                                             type="text"
                                             value={editForm.name || ''}
@@ -410,7 +410,7 @@ const PlanManagement = () => {
                                         />
                                     </div>
                                     <div className="md:col-span-2">
-                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Marketing Description</label>
+                                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Marketing Description</label>
                                         <textarea
                                             rows={2}
                                             value={editForm.description || ''}
@@ -420,7 +420,7 @@ const PlanManagement = () => {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Badge Text</label>
+                                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Badge Text</label>
                                         <input
                                             type="text"
                                             value={editForm.badge_text || ''}
@@ -430,7 +430,7 @@ const PlanManagement = () => {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Button CTA</label>
+                                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Button CTA</label>
                                         <input
                                             type="text"
                                             value={editForm.cta_text || ''}
@@ -444,7 +444,7 @@ const PlanManagement = () => {
 
                             {/* Economics Section */}
                             <section>
-                                <h3 className="text-[10px] font-black text-brand-600 uppercase tracking-[0.2em] mb-6 flex items-center gap-4">
+                                <h3 className="text-xs font-black text-brand-600 uppercase tracking-[0.2em] mb-6 flex items-center gap-4">
                                     Economics & Position
                                     <div className="h-px bg-brand-100 dark:bg-brand-900/30 flex-1"></div>
                                 </h3>
@@ -457,7 +457,7 @@ const PlanManagement = () => {
 
                             {/* Limits & Quotas */}
                             <section>
-                                <h3 className="text-[10px] font-black text-brand-600 uppercase tracking-[0.2em] mb-6 flex items-center gap-4">
+                                <h3 className="text-xs font-black text-brand-600 uppercase tracking-[0.2em] mb-6 flex items-center gap-4">
                                     Quotas & Feature Set
                                     <div className="h-px bg-brand-100 dark:bg-brand-900/30 flex-1"></div>
                                 </h3>
@@ -533,10 +533,10 @@ const PlanManagement = () => {
                                         <span className="text-4xl font-black text-gray-900 dark:text-white">₪{plan.price_monthly}</span>
                                         <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">/ Month</span>
                                     </div>
-                                    <div className="text-[10px] font-black text-brand-600 mt-1 uppercase tracking-widest">
+                                    <div className="text-xs font-black text-brand-600 mt-1 uppercase tracking-widest">
                                         ₪{plan.price_yearly} Yearly Billing
                                     </div>
-                                    <div className={`mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${plan.is_active
+                                    <div className={`mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-black uppercase tracking-widest ${plan.is_active
                                         ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 dark:bg-emerald-900/20'
                                         : 'bg-amber-50 text-amber-600 border border-amber-100 dark:bg-amber-900/20'
                                         }`}>
@@ -565,26 +565,26 @@ const PlanManagement = () => {
                             <div className="flex-1 space-y-4">
                                 <div className="grid grid-cols-2 gap-3 mb-6">
                                     <div className="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-gray-700">
-                                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Assets</div>
+                                        <div className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Assets</div>
                                         <div className="text-sm font-black text-gray-900 dark:text-white">{plan.max_properties === -1 ? 'Unlimited' : plan.max_properties}</div>
                                     </div>
                                     <div className="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-gray-700">
-                                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Cloud</div>
+                                        <div className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Cloud</div>
                                         <div className="text-sm font-black text-gray-900 dark:text-white">{plan.max_storage_mb === -1 ? 'Unlimited' : `${(plan.max_storage_mb / 1024).toFixed(1)}GB`}</div>
                                     </div>
                                     <div className="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-gray-700">
-                                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">AI Help</div>
+                                        <div className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">AI Help</div>
                                         <div className="text-sm font-black text-gray-900 dark:text-white">{plan.max_sessions} SESS</div>
                                     </div>
                                     <div className="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-gray-700">
-                                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">WhatsApp</div>
+                                        <div className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">WhatsApp</div>
                                         <div className="text-sm font-black text-gray-900 dark:text-white">{plan.max_whatsapp_messages === -1 ? '∞' : plan.max_whatsapp_messages} MSG</div>
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
                                     {Object.entries(plan.features || {}).map(([key, value]) => value ? (
-                                        <div key={key} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-600">
+                                        <div key={key} className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-emerald-600">
                                             <CheckCircleIcon className="w-4 h-4" />
                                             {key.replace('_', ' ')}
                                         </div>
@@ -593,8 +593,8 @@ const PlanManagement = () => {
                             </div>
 
                             <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-900/30 -mx-8 -mb-8 px-8 py-6 rounded-b-3xl">
-                                <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Plan Integrity</div>
-                                <div className="text-[10px] font-mono font-bold text-gray-500">ID: {plan.id.slice(0, 8)}</div>
+                                <div className="text-xs font-black text-gray-400 uppercase tracking-widest">Plan Integrity</div>
+                                <div className="text-xs font-mono font-bold text-gray-500">ID: {plan.id.slice(0, 8)}</div>
                             </div>
                         </div>
                     ))

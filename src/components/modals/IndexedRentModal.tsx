@@ -100,7 +100,7 @@ export function IndexedRentModal({ isOpen, onClose, contract }: IndexedRentModal
                             <p className="font-mono text-gray-700 dark:text-gray-300">
                                 {contract?.base_index_value?.toFixed(2) || 'N/A'}
                             </p>
-                            <p className="text-[10px] text-muted-foreground">
+                            <p className="text-xs text-muted-foreground">
                                 {contract?.base_index_date || '-'}
                             </p>
                         </div>

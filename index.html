@@ -60,14 +60,12 @@
   <!-- UserWay Accessibility Widget (Dynamic Positioning) -->
   <script>
     (function () {
+      // Do not load the widget on mobile devices to prevent UI overlap
+      if (window.innerWidth <= 768) return;
+
       var s = document.createElement("script");
       s.setAttribute("data-account", "w0F2i9hW4T");
       s.setAttribute("src", "https://cdn.userway.org/widget.js");
-
-      // If mobile, force position to 5 (Bottom Left)
-      if (window.innerWidth <= 768) {
-        s.setAttribute("data-position", "5");
-      }
 
       document.body.appendChild(s);
     })();

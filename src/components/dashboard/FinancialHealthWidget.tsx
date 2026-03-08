@@ -94,7 +94,7 @@ export function FinancialHealthWidget({ stats }: FinancialHealthWidgetProps) {
                     {/* Financial Stats (Stacked for Mobile) */}
                     <div className="grid grid-cols-2 gap-4 w-full md:w-auto mt-4 md:mt-0 bg-white/50 dark:bg-black/20 p-4 rounded-xl backdrop-blur-sm border border-black/5 dark:border-white/5">
                         <div className="space-y-1">
-                            <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
+                            <span className="text-xs uppercase tracking-widest text-muted-foreground font-bold">
                                 {isRtl ? 'נאסף החודש' : 'Collected'}
                             </span>
                             <div className="flex items-center gap-1 text-secondary font-bold text-xl">
@@ -103,7 +103,7 @@ export function FinancialHealthWidget({ stats }: FinancialHealthWidgetProps) {
                             </div>
                         </div>
                         <div className="space-y-1 border-s border-black/10 dark:border-white/10 ps-4">
-                            <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
+                            <span className="text-xs uppercase tracking-widest text-muted-foreground font-bold">
                                 {isRtl ? 'צפי חודשי' : 'Forecast'}
                             </span>
                             <div className="flex items-center gap-1 text-foreground font-bold text-xl opacity-80">

@@ -105,7 +105,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                     <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block ml-1">{lang === 'he' ? 'שם פרטי' : 'First Name'}</label>
+                                <label className="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block ml-1">{lang === 'he' ? 'שם פרטי' : 'First Name'}</label>
                                 <input
                                     type="text"
                                     value={firstName}
@@ -119,7 +119,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block ml-1">{lang === 'he' ? 'שם משפחה' : 'Last Name'}</label>
+                                <label className="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block ml-1">{lang === 'he' ? 'שם משפחה' : 'Last Name'}</label>
                                 <input
                                     type="text"
                                     value={lastName}
@@ -135,7 +135,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block ml-1">{lang === 'he' ? 'טלפון' : 'Phone'}</label>
+                            <label className="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block ml-1">{lang === 'he' ? 'טלפון' : 'Phone'}</label>
                             <input
                                 type="tel"
                                 value={phone}

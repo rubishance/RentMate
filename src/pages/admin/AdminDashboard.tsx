@@ -186,7 +186,7 @@ const AdminDashboard = () => {
                             </div>
                             <div className="ml-5 w-0 flex-1">
                                 <dl>
-                                    <dt className="truncate text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{item.name}</dt>
+                                    <dt className="truncate text-xs font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{item.name}</dt>
                                     <dd className="text-2xl font-black text-gray-900 dark:text-white leading-tight">{item.value}</dd>
                                 </dl>
                             </div>

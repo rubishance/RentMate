@@ -280,7 +280,7 @@ export function PropertyHub({
       if (
         window.confirm(
           t("unsavedChangesWarning") ||
-            "You have unsaved changes. Are you sure you want to exit without saving?",
+          "You have unsaved changes. Are you sure you want to exit without saving?",
         )
       ) {
         navigate(-1);
@@ -295,7 +295,7 @@ export function PropertyHub({
       if (
         window.confirm(
           t("unsavedChangesWarning") ||
-            "You have unsaved changes. Are you sure you want to exit without saving?",
+          "You have unsaved changes. Are you sure you want to exit without saving?",
         )
       ) {
         setIsEditing(false);
@@ -432,408 +432,389 @@ export function PropertyHub({
 
   return (
     <div className="flex flex-col h-full bg-background dark:bg-black">
-      {/* 1. Header & Cover */}
-      <div className="relative shrink-0">
-        <div className="h-48 bg-slate-200 dark:bg-neutral-800 relative overflow-hidden">
+      {/* 1. Compact Header (No Image) */}
+      <div className="relative shrink-0 pt-4 md:pt-6 px-3 md:px-6 z-10 pb-4">
+        <div className="flex justify-between items-start gap-3 md:gap-4">
+          {/* Back Button */}
           <Button
             onClick={handleBack}
             variant="ghost"
-            className="absolute top-6 left-6 z-20 w-10 h-10 glass-premium dark:bg-neutral-800/40 rounded-xl flex items-center justify-center text-white hover:bg-white/20 border border-white/10 group p-0"
+            className="w-10 h-10 md:w-12 md:h-12 bg-white/50 dark:bg-neutral-800/40 rounded-[1rem] md:rounded-[1.2rem] border border-slate-200 dark:border-white/5 text-foreground hover:bg-white dark:hover:bg-neutral-800 shadow-sm transition-all flex items-center justify-center shrink-0 p-0 group mt-1"
           >
             <ArrowLeft
               className={cn(
-                "w-4 h-4 group-hover:-translate-x-1 transition-transform",
+                "w-4 h-4 md:w-5 md:h-5 group-hover:-translate-x-1 transition-transform",
                 lang === "he" ? "rotate-180 group-hover:translate-x-1" : "",
               )}
             />
           </Button>
-          <img
-            src={
-              signedImageUrl || getPropertyPlaceholder(property.property_type)
-            }
-            alt={property.address}
-            className="w-full h-full object-cover opacity-80"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              const placeholder = getPropertyPlaceholder(
-                property.property_type,
-              );
-              if (target.src !== placeholder) {
-                target.src = placeholder;
-              }
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-50 dark:from-black via-transparent to-transparent/60" />
-        </div>
 
-        <div className="px-3 md:px-6 -mt-12 relative z-10 space-y-4">
-          <div className="flex justify-between items-start">
-            <div className="flex-1">
-              {/* Status Badge */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 backdrop-blur-3xl rounded-full border border-white/10 text-[9px] font-black uppercase tracking-widest mb-2 shadow-xl">
-                {(() => {
-                  const today = new Date().toISOString().split("T")[0];
-                  const hasActiveContract = (property as any).contracts?.some(
-                    (c: any) =>
-                      c.status === "active" &&
-                      c.start_date <= today &&
-                      (!c.end_date || c.end_date >= today),
-                  );
-                  const currentStatus = hasActiveContract
-                    ? "Occupied"
-                    : property.status;
-                  const isOccupied = currentStatus === "Occupied";
+          <div className="flex-1 min-w-0">
+            {/* Status Badge */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 backdrop-blur-3xl rounded-full border border-white/10 text-[11px] font-black uppercase tracking-widest mb-2 shadow-xl">
+              {(() => {
+                const today = new Date().toISOString().split("T")[0];
+                const hasActiveContract = (property as any).contracts?.some(
+                  (c: any) =>
+                    c.status === "active" &&
+                    c.start_date <= today &&
+                    (!c.end_date || c.end_date >= today),
+                );
+                const currentStatus = hasActiveContract
+                  ? "Occupied"
+                  : property.status;
+                const isOccupied = currentStatus === "Occupied";
 
-                  return (
-                    <>
-                      <div
-                        className={cn(
-                          "w-1.5 h-1.5 rounded-full shadow-[0_0_5px_rgba(var(--status-color),0.5)]",
-                          isOccupied ? "bg-emerald-500" : "bg-amber-500",
-                        )}
-                      />
-                      {t((currentStatus?.toLowerCase() || "vacant") as any)}
-                    </>
-                  );
-                })()}
+                return (
+                  <>
+                    <div
+                      className={cn(
+                        "w-1.5 h-1.5 rounded-full shadow-[0_0_5px_rgba(var(--status-color),0.5)]",
+                        isOccupied ? "bg-emerald-500" : "bg-amber-500",
+                      )}
+                    />
+                    {t((currentStatus?.toLowerCase() || "vacant") as any)}
+                  </>
+                );
+              })()}
+            </div>
+
+            {/* Market Trend Badge */}
+            {marketTrend && (
+              <div
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-3 py-1 ml-2 backdrop-blur-md rounded-full border text-xs font-black uppercase tracking-widest mb-2 transition-all",
+                  marketTrend.annualGrowth > 0
+                    ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600"
+                    : "bg-red-500/10 border-red-500/20 text-red-600",
+                )}
+              >
+                {marketTrend.annualGrowth > 0 ? (
+                  <TrendingUp className="w-3 h-3" />
+                ) : (
+                  <TrendingDown className="w-3 h-3" />
+                )}
+                {marketTrend.annualGrowth > 0 ? "+" : ""}
+                {marketTrend.annualGrowth}%
+                {lang === "he" ? 'שכירות בעיר (למ"ס)' : "Market Rent (CBS)"}
               </div>
+            )}
 
-              {/* Market Trend Badge */}
-              {marketTrend && (
-                <div
-                  className={cn(
-                    "inline-flex items-center gap-1.5 px-3 py-1 ml-2 backdrop-blur-md rounded-full border text-[10px] font-black uppercase tracking-widest mb-2 transition-all",
-                    marketTrend.annualGrowth > 0
-                      ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600"
-                      : "bg-red-500/10 border-red-500/20 text-red-600",
-                  )}
-                >
-                  {marketTrend.annualGrowth > 0 ? (
-                    <TrendingUp className="w-3 h-3" />
-                  ) : (
-                    <TrendingDown className="w-3 h-3" />
-                  )}
-                  {marketTrend.annualGrowth > 0 ? "+" : ""}
-                  {marketTrend.annualGrowth}%
-                  {lang === "he" ? 'שכירות בעיר (למ"ס)' : "Market Rent (CBS)"}
+            {isEditing ? (
+              <div className="space-y-6 bg-white/5 dark:bg-neutral-900/60 p-4 md:p-6 rounded-[2rem] border border-white/10 backdrop-blur-3xl shadow-xl">
+                <div className="p-4 rounded-[1.5rem] bg-background dark:bg-neutral-800/30 border border-slate-100 dark:border-neutral-700">
+                  <label className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block mb-3 text-center">
+                    {t("selectCategory") || t("propertyType")}
+                  </label>
+                  <PropertyTypeSelect
+                    value={editedProperty.property_type || "apartment"}
+                    onChange={(val) =>
+                      setEditedProperty((prev) => ({
+                        ...prev,
+                        property_type: val,
+                      }))
+                    }
+                  />
                 </div>
-              )}
 
-              {isEditing ? (
-                <div className="space-y-6 bg-white/5 dark:bg-neutral-900/60 p-4 md:p-6 rounded-[2rem] border border-white/10 backdrop-blur-3xl shadow-xl">
-                  <div className="p-4 rounded-[1.5rem] bg-background dark:bg-neutral-800/30 border border-slate-100 dark:border-neutral-700">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block mb-3 text-center">
-                      {t("selectCategory") || t("propertyType")}
+                <div className="p-4 rounded-2xl bg-background dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700 focus-within:ring-2 ring-primary/20 transition-all">
+                  <GoogleAutocomplete
+                    label={t("city")}
+                    value={editedProperty.city || ""}
+                    onChange={(val) =>
+                      setEditedProperty((prev) => ({ ...prev, city: val }))
+                    }
+                    type="cities"
+                  />
+                </div>
+
+                <div className="p-4 rounded-2xl bg-background dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700 focus-within:ring-2 ring-primary/20 transition-all">
+                  <GoogleAutocomplete
+                    label={t("address")}
+                    value={editedProperty.address || ""}
+                    onChange={(val) =>
+                      setEditedProperty((prev) => ({ ...prev, address: val }))
+                    }
+                    type="address"
+                    biasCity={editedProperty.city}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 rounded-[1.5rem] bg-background dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
+                    <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">
+                      {t("rooms")}
                     </label>
-                    <PropertyTypeSelect
-                      value={editedProperty.property_type || "apartment"}
-                      onChange={(val) =>
+                    <Input
+                      type="number"
+                      step="0.5"
+                      className="bg-transparent font-black text-2xl text-foreground w-full border-none shadow-none focus-visible:ring-0 p-0 h-auto placeholder:text-muted-foreground/50"
+                      value={editedProperty.rooms ?? ""}
+                      placeholder="0"
+                      onChange={(e) =>
                         setEditedProperty((prev) => ({
                           ...prev,
-                          property_type: val,
+                          rooms: parseFloat(e.target.value) || 0,
                         }))
                       }
                     />
                   </div>
-
-                  <div className="p-4 rounded-2xl bg-background dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700 focus-within:ring-2 ring-primary/20 transition-all">
-                    <GoogleAutocomplete
-                      label={t("city")}
-                      value={editedProperty.city || ""}
-                      onChange={(val) =>
-                        setEditedProperty((prev) => ({ ...prev, city: val }))
+                  <div className="p-4 rounded-[1.5rem] bg-background dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
+                    <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">
+                      {t("sqm")}
+                    </label>
+                    <Input
+                      type="number"
+                      className="bg-transparent font-black text-2xl text-foreground w-full border-none shadow-none focus-visible:ring-0 p-0 h-auto placeholder:text-muted-foreground/50"
+                      value={editedProperty.size_sqm ?? ""}
+                      placeholder="0"
+                      onChange={(e) =>
+                        setEditedProperty((prev) => ({
+                          ...prev,
+                          size_sqm: parseFloat(e.target.value) || 0,
+                        }))
                       }
-                      type="cities"
                     />
-                  </div>
-
-                  <div className="p-4 rounded-2xl bg-background dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700 focus-within:ring-2 ring-primary/20 transition-all">
-                    <GoogleAutocomplete
-                      label={t("address")}
-                      value={editedProperty.address || ""}
-                      onChange={(val) =>
-                        setEditedProperty((prev) => ({ ...prev, address: val }))
-                      }
-                      type="address"
-                      biasCity={editedProperty.city}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 rounded-[1.5rem] bg-background dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
-                      <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">
-                        {t("rooms")}
-                      </label>
-                      <Input
-                        type="number"
-                        step="0.5"
-                        className="bg-transparent font-black text-2xl text-foreground w-full border-none shadow-none focus-visible:ring-0 p-0 h-auto placeholder:text-muted-foreground/50"
-                        value={editedProperty.rooms ?? ""}
-                        placeholder="0"
-                        onChange={(e) =>
-                          setEditedProperty((prev) => ({
-                            ...prev,
-                            rooms: parseFloat(e.target.value) || 0,
-                          }))
-                        }
-                      />
-                    </div>
-                    <div className="p-4 rounded-[1.5rem] bg-background dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
-                      <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">
-                        {t("sqm")}
-                      </label>
-                      <Input
-                        type="number"
-                        className="bg-transparent font-black text-2xl text-foreground w-full border-none shadow-none focus-visible:ring-0 p-0 h-auto placeholder:text-muted-foreground/50"
-                        value={editedProperty.size_sqm ?? ""}
-                        placeholder="0"
-                        onChange={(e) =>
-                          setEditedProperty((prev) => ({
-                            ...prev,
-                            size_sqm: parseFloat(e.target.value) || 0,
-                          }))
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between px-2">
-                      <div className="h-px flex-1 bg-muted/50 dark:bg-neutral-800" />
-                      <span className="mx-4 text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-50">
-                        {t("amenities")}
-                      </span>
-                      <div className="h-px flex-1 bg-muted/50 dark:bg-neutral-800" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      {[
-                        {
-                          key: "has_balcony",
-                          label: t("balcony"),
-                          icon: <Wind className="w-5 h-5" />,
-                        },
-                        {
-                          key: "has_safe_room",
-                          label: t("safeRoom"),
-                          icon: <ShieldCheck className="w-5 h-5" />,
-                        },
-                        {
-                          key: "has_parking",
-                          label: t("parking"),
-                          icon: <Car className="w-5 h-5" />,
-                        },
-                        {
-                          key: "has_storage",
-                          label: t("storage"),
-                          icon: <Package className="w-5 h-5" />,
-                        },
-                      ].map((feat) => {
-                        const isActive =
-                          !!editedProperty[feat.key as keyof Property];
-                        return (
-                          <button
-                            key={feat.key}
-                            type="button"
-                            onClick={() =>
-                              setEditedProperty((prev) => ({
-                                ...prev,
-                                [feat.key]: !isActive,
-                              }))
-                            }
-                            className={cn(
-                              "flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border transition-all duration-300 group relative overflow-hidden",
-                              isActive
-                                ? "bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-600/20 scale-[1.02] z-10"
-                                : "bg-background dark:bg-neutral-800/50 border-transparent text-muted-foreground hover:bg-muted/50 hover:scale-[1.01]",
-                            )}
-                          >
-                            <div
-                              className={cn(
-                                "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300",
-                                isActive
-                                  ? "bg-white/20 text-white"
-                                  : "bg-white dark:bg-neutral-800 text-indigo-600 shadow-sm",
-                              )}
-                            >
-                              {React.cloneElement(feat.icon as any, {
-                                className: "w-4 h-4",
-                              })}
-                            </div>
-                            <span
-                              className={cn(
-                                "font-bold text-[11px] transition-colors py-0.5",
-                                isActive
-                                  ? "text-white"
-                                  : "text-muted-foreground",
-                              )}
-                            >
-                              {feat.label}
-                            </span>
-                            {isActive && (
-                              <div className="absolute top-1.5 right-1.5 w-3.5 h-3.5 rounded-full bg-white flex items-center justify-center animate-in zoom-in duration-300">
-                                <Check className="w-2 h-2 text-indigo-600 stroke-[4px]" />
-                              </div>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div className="pt-4 space-y-4 border-t border-slate-100 dark:border-neutral-800">
-                    <div className="flex items-center justify-between">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                        {t("propertyImage")}
-                      </label>
-                      <div className="flex p-1 bg-muted/50 dark:bg-neutral-800 rounded-xl">
-                        <Button
-                          onClick={() => setUploadMode("upload")}
-                          variant="ghost"
-                          size="sm"
-                          className={cn(
-                            "px-3 py-1 text-[10px] font-black uppercase h-7",
-                            uploadMode === "upload"
-                              ? "bg-white dark:bg-neutral-700 text-primary shadow-sm hover:bg-white dark:hover:bg-neutral-700"
-                              : "text-muted-foreground hover:bg-transparent hover:text-foreground",
-                          )}
-                        >
-                          {t("upload") || "Upload"}
-                        </Button>
-                        <Button
-                          onClick={() => {
-                            setUploadMode("url");
-                            handleGoogleMapsFetch();
-                          }}
-                          variant="ghost"
-                          size="sm"
-                          className={cn(
-                            "px-3 py-1 text-[10px] font-black uppercase h-7",
-                            uploadMode === "url"
-                              ? "bg-white dark:bg-neutral-700 text-primary shadow-sm hover:bg-white dark:hover:bg-neutral-700"
-                              : "text-muted-foreground hover:bg-transparent hover:text-foreground",
-                          )}
-                        >
-                          Google Maps
-                        </Button>
-                      </div>
-                    </div>
-
-                    {uploadMode === "url" && isFetchingMap && (
-                      <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-200 dark:border-neutral-800 rounded-2xl bg-background/50 dark:bg-neutral-800/20 h-24">
-                        <Loader2 className="w-5 h-5 text-primary animate-spin mb-1" />
-                        <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">
-                          {t("fetchingStreetView") || "Fetching..."}
-                        </span>
-                      </div>
-                    )}
-
-                    {uploadMode === "upload" && (
-                      <div className="relative border-2 border-dashed border-slate-200 dark:border-neutral-800 rounded-2xl p-6 hover:bg-background dark:hover:bg-neutral-800/50 transition-all text-center group cursor-pointer h-24 flex items-center justify-center">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          disabled={isUploading}
-                          onChange={handleFileUpload}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        />
-                        <div className="flex flex-col items-center gap-1">
-                          {isUploading ? (
-                            <Loader2 className="w-5 h-5 text-primary animate-spin" />
-                          ) : (
-                            <Upload className="w-5 h-5 text-slate-300 group-hover:text-primary transition-all" />
-                          )}
-                          <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
-                            {isUploading
-                              ? t("uploading_ellipsis") || "Uploading..."
-                              : t("clickToUploadPicture") || "Click to upload"}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-
-                    <AnimatePresence>
-                      {editedProperty.image_url && (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.9 }}
-                          className="relative w-full h-32 rounded-2xl overflow-hidden border border-slate-100 dark:border-neutral-800 shadow-md group"
-                        >
-                          <img
-                            src={
-                              signedImageUrl ||
-                              getPropertyPlaceholder(
-                                editedProperty.property_type,
-                              )
-                            }
-                            alt="Preview"
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              const placeholder = getPropertyPlaceholder(
-                                editedProperty.property_type,
-                              );
-                              if (target.src !== placeholder) {
-                                target.src = placeholder;
-                              }
-                            }}
-                          />
-                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
-                            <Button
-                              onClick={() =>
-                                setEditedProperty((p) => ({
-                                  ...p,
-                                  image_url: "",
-                                }))
-                              }
-                              variant="destructive"
-                              size="icon"
-                              className="p-2 rounded-full hover:bg-destructive shadow-xl w-10 h-10"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                    {imageError && (
-                      <p className="text-[10px] text-destructive font-bold">
-                        {imageError}
-                      </p>
-                    )}
                   </div>
                 </div>
-              ) : (
-                <div className="flex flex-col gap-1">
-                  <div className="flex flex-col md:flex-row md:items-end gap-2 md:gap-4">
-                    <h1 className="text-3xl font-black tracking-tighter text-foreground leading-none">
-                      {property.address}
-                    </h1>
-                    {/* Snapshot Info - Inline with Address on Desktop, Below on Mobile */}
-                    <div className="flex items-center gap-3 text-sm font-bold text-muted-foreground bg-white/50 dark:bg-neutral-900/50 px-3 py-1 rounded-lg border border-slate-100 dark:border-neutral-800 backdrop-blur-sm self-start md:self-auto md:mb-1">
-                      {property.rooms ? (
-                        <div className="flex items-center gap-1.5">
-                          <span>{property.rooms}</span>
-                          <span className="text-[10px] uppercase tracking-wider opacity-70">
-                            {t("rooms")}
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between px-2">
+                    <div className="h-px flex-1 bg-muted/50 dark:bg-neutral-800" />
+                    <span className="mx-4 text-xs font-black uppercase tracking-[0.3em] text-muted-foreground opacity-80">
+                      {t("amenities")}
+                    </span>
+                    <div className="h-px flex-1 bg-muted/50 dark:bg-neutral-800" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      {
+                        key: "has_balcony",
+                        label: t("balcony"),
+                        icon: <Wind className="w-5 h-5" />,
+                      },
+                      {
+                        key: "has_safe_room",
+                        label: t("safeRoom"),
+                        icon: <ShieldCheck className="w-5 h-5" />,
+                      },
+                      {
+                        key: "has_parking",
+                        label: t("parking"),
+                        icon: <Car className="w-5 h-5" />,
+                      },
+                      {
+                        key: "has_storage",
+                        label: t("storage"),
+                        icon: <Package className="w-5 h-5" />,
+                      },
+                    ].map((feat) => {
+                      const isActive =
+                        !!editedProperty[feat.key as keyof Property];
+                      return (
+                        <button
+                          key={feat.key}
+                          type="button"
+                          onClick={() =>
+                            setEditedProperty((prev) => ({
+                              ...prev,
+                              [feat.key]: !isActive,
+                            }))
+                          }
+                          className={cn(
+                            "flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border transition-all duration-300 group relative overflow-hidden",
+                            isActive
+                              ? "bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-600/20 scale-[1.02] z-10"
+                              : "bg-background dark:bg-neutral-800/50 border-transparent text-muted-foreground hover:bg-muted/50 hover:scale-[1.01]",
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300",
+                              isActive
+                                ? "bg-white/20 text-white"
+                                : "bg-white dark:bg-neutral-800 text-indigo-600 shadow-sm",
+                            )}
+                          >
+                            {React.cloneElement(feat.icon as any, {
+                              className: "w-4 h-4",
+                            })}
+                          </div>
+                          <span
+                            className={cn(
+                              "font-bold text-[11px] transition-colors py-0.5",
+                              isActive
+                                ? "text-white"
+                                : "text-muted-foreground",
+                            )}
+                          >
+                            {feat.label}
                           </span>
+                          {isActive && (
+                            <div className="absolute top-1.5 right-1.5 w-3.5 h-3.5 rounded-full bg-white flex items-center justify-center animate-in zoom-in duration-300">
+                              <Check className="w-2 h-2 text-indigo-600 stroke-[4px]" />
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="pt-4 space-y-4 border-t border-slate-100 dark:border-neutral-800">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+                      {t("propertyImage")}
+                    </label>
+                    <div className="flex p-1 bg-muted/50 dark:bg-neutral-800 rounded-xl">
+                      <Button
+                        onClick={() => setUploadMode("upload")}
+                        variant="ghost"
+                        size="sm"
+                        className={cn(
+                          "px-3 py-1 text-xs font-black uppercase h-7",
+                          uploadMode === "upload"
+                            ? "bg-white dark:bg-neutral-700 text-primary shadow-sm hover:bg-white dark:hover:bg-neutral-700"
+                            : "text-muted-foreground hover:bg-transparent hover:text-foreground",
+                        )}
+                      >
+                        {t("upload") || "Upload"}
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setUploadMode("url");
+                          handleGoogleMapsFetch();
+                        }}
+                        variant="ghost"
+                        size="sm"
+                        className={cn(
+                          "px-3 py-1 text-xs font-black uppercase h-7",
+                          uploadMode === "url"
+                            ? "bg-white dark:bg-neutral-700 text-primary shadow-sm hover:bg-white dark:hover:bg-neutral-700"
+                            : "text-muted-foreground hover:bg-transparent hover:text-foreground",
+                        )}
+                      >
+                        Google Maps
+                      </Button>
+                    </div>
+                  </div>
+
+                  {uploadMode === "url" && isFetchingMap && (
+                    <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-200 dark:border-neutral-800 rounded-2xl bg-background/50 dark:bg-neutral-800/20 h-24">
+                      <Loader2 className="w-5 h-5 text-primary animate-spin mb-1" />
+                      <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">
+                        {t("fetchingStreetView") || "Fetching..."}
+                      </span>
+                    </div>
+                  )}
+
+                  {uploadMode === "upload" && (
+                    <div className="relative border-2 border-dashed border-slate-200 dark:border-neutral-800 rounded-2xl p-6 hover:bg-background dark:hover:bg-neutral-800/50 transition-all text-center group cursor-pointer h-24 flex items-center justify-center">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        disabled={isUploading}
+                        onChange={handleFileUpload}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      />
+                      <div className="flex flex-col items-center gap-1">
+                        {isUploading ? (
+                          <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                        ) : (
+                          <Upload className="w-5 h-5 text-slate-300 group-hover:text-primary transition-all" />
+                        )}
+                        <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                          {isUploading
+                            ? t("uploading_ellipsis") || "Uploading..."
+                            : t("clickToUploadPicture") || "Click to upload"}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  <AnimatePresence>
+                    {editedProperty.image_url && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        className="relative w-full h-32 rounded-2xl overflow-hidden border border-slate-100 dark:border-neutral-800 shadow-md group"
+                      >
+                        <img
+                          src={
+                            signedImageUrl ||
+                            getPropertyPlaceholder(
+                              editedProperty.property_type,
+                            )
+                          }
+                          alt="Preview"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            const placeholder = getPropertyPlaceholder(
+                              editedProperty.property_type,
+                            );
+                            if (target.src !== placeholder) {
+                              target.src = placeholder;
+                            }
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
+                          <Button
+                            onClick={() =>
+                              setEditedProperty((p) => ({
+                                ...p,
+                                image_url: "",
+                              }))
+                            }
+                            variant="destructive"
+                            size="icon"
+                            className="p-2 rounded-full hover:bg-destructive shadow-xl w-10 h-10"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         </div>
-                      ) : null}
-                      {property.rooms && property.size_sqm ? (
-                        <div className="w-[1px] h-3 bg-current opacity-20" />
-                      ) : null}
-                      {property.size_sqm ? (
-                        <div className="flex items-center gap-1.5">
-                          <span>{property.size_sqm}</span>
-                          <span className="text-[10px] uppercase tracking-wider opacity-70">
-                            {t("sqm")}
-                          </span>
-                        </div>
-                      ) : null}
-                      {(property.has_parking ||
-                        property.has_storage ||
-                        property.has_balcony ||
-                        property.has_safe_room) && (
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  {imageError && (
+                    <p className="text-xs text-destructive font-bold">
+                      {imageError}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1">
+                <div className="flex flex-col md:flex-row md:items-end gap-2 md:gap-4">
+                  <h1 className="text-3xl font-black tracking-tighter text-foreground leading-none">
+                    {property.address}
+                  </h1>
+                  {/* Snapshot Info - Inline with Address on Desktop, Below on Mobile */}
+                  <div className="flex items-center gap-3 text-sm font-bold text-muted-foreground bg-white/50 dark:bg-neutral-900/50 px-3 py-1 rounded-lg border border-slate-100 dark:border-neutral-800 backdrop-blur-sm self-start md:self-auto md:mb-1">
+                    {property.rooms ? (
+                      <div className="flex items-center gap-1.5">
+                        <span>{property.rooms}</span>
+                        <span className="text-xs uppercase tracking-wider opacity-70">
+                          {t("rooms")}
+                        </span>
+                      </div>
+                    ) : null}
+                    {property.rooms && property.size_sqm ? (
+                      <div className="w-[1px] h-3 bg-current opacity-20" />
+                    ) : null}
+                    {property.size_sqm ? (
+                      <div className="flex items-center gap-1.5">
+                        <span>{property.size_sqm}</span>
+                        <span className="text-xs uppercase tracking-wider opacity-70">
+                          {t("sqm")}
+                        </span>
+                      </div>
+                    ) : null}
+                    {(property.has_parking ||
+                      property.has_storage ||
+                      property.has_balcony ||
+                      property.has_safe_room) && (
                         <>
                           {(property.rooms || property.size_sqm) && (
                             <div className="w-[1px] h-3 bg-current opacity-20" />
@@ -854,162 +835,161 @@ export function PropertyHub({
                           </div>
                         </>
                       )}
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-muted-foreground font-medium">
-                      {property.city}
-                    </p>
-                    {activeContract?.option_periods &&
-                      activeContract.option_periods.length > 0 && (
-                        <>
-                          <div className="w-1 h-1 rounded-full bg-slate-300 mx-1" />
-                          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
-                            <Calendar className="w-3 h-3 text-emerald-500" />
-                            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-tight">
-                              {lang === "he" ? "כולל אופציה" : "Incl. Option"}:{" "}
-                              {activeContract.option_periods[0].length}{" "}
-                              {activeContract.option_periods[0].unit === "years"
-                                ? lang === "he"
-                                  ? "שנים"
-                                  : "yrs"
-                                : lang === "he"
-                                  ? "חודשים"
-                                  : "mos"}
-                            </span>
-                          </div>
-                        </>
-                      )}
                   </div>
                 </div>
-              )}
-            </div>
-
-            {/* More Menu */}
-            <div className="relative">
-              {isEditing ? (
-                <div className="flex flex-col gap-2">
-                  <Button
-                    onClick={handleSave}
-                    disabled={isDeleting}
-                    className="w-12 h-12 button-jewel text-white rounded-[1.2rem] shadow-jewel hover:scale-105 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center shrink-0 p-0"
-                  >
-                    <CheckIcon className="w-5 h-5" />
-                  </Button>
-                  <Button
-                    onClick={handleCancel}
-                    variant="ghost"
-                    className="w-12 h-12 glass-premium dark:bg-neutral-800/40 rounded-[1.2rem] border border-white/5 text-foreground hover:bg-white/10 transition-all flex items-center justify-center shrink-0 p-0"
-                  >
-                    <PlusIcon className="w-5 h-5 rotate-45" />
-                  </Button>
-                </div>
-              ) : (
-                <Menu as="div" className="relative inline-block text-left">
-                  <MenuButton className="w-12 h-12 glass-premium dark:bg-neutral-800/40 rounded-[1.2rem] border border-white/5 text-foreground hover:bg-white/10 transition-all focus:outline-none flex items-center justify-center">
-                    <MoreVertical className="w-5 h-5" />
-                  </MenuButton>
-                  <Portal>
-                    <Transition
-                      as={Fragment}
-                      enter="transition ease-out duration-100"
-                      enterFrom="transform opacity-0 scale-95"
-                      enterTo="transform opacity-100 scale-100"
-                      leave="transition ease-in duration-75"
-                      leaveFrom="transform opacity-100 scale-100"
-                      leaveTo="transform opacity-0 scale-95"
-                    >
-                      <MenuItems
-                        anchor={{
-                          to: lang === "he" ? "bottom start" : "bottom end",
-                          gap: 8,
-                        }}
-                        className={cn(
-                          "z-[100] min-w-[200px] bg-window rounded-[2rem] shadow-2xl border border-slate-100 dark:border-neutral-800 p-2 focus:outline-none font-sans",
-                          "animate-in fade-in zoom-in-95 duration-100",
-                        )}
-                      >
-                        <div className="py-1">
-                          <MenuItem>
-                            {({ focus }) => (
-                              <Button
-                                onClick={() => setIsAddPaymentModalOpen(true)}
-                                variant="ghost"
-                                className={cn(
-                                  "w-full flex items-center justify-start gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all h-auto",
-                                  focus
-                                    ? "bg-background dark:bg-neutral-800 text-foreground"
-                                    : "text-muted-foreground",
-                                )}
-                              >
-                                <DollarSign className="w-4 h-4 text-brand-500" />
-                                {lang === "he" ? "הוספת תשלום" : "Add Payment"}
-                              </Button>
-                            )}
-                          </MenuItem>
-
-                          <div className="h-[1px] bg-background dark:bg-neutral-800 my-2 mx-4" />
-
-                          <MenuItem>
-                            {({ focus }) => (
-                              <Button
-                                onClick={handleAddContract}
-                                variant="ghost"
-                                className={cn(
-                                  "w-full flex items-center justify-start gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all h-auto",
-                                  focus
-                                    ? "bg-background dark:bg-neutral-800 text-foreground"
-                                    : "text-muted-foreground",
-                                )}
-                              >
-                                <FilePlus className="w-4 h-4 text-emerald-500" />
-                                {lang === "he" ? "הוספת חוזה" : "Add Contract"}
-                              </Button>
-                            )}
-                          </MenuItem>
-
-                          <MenuItem>
-                            {({ focus }) => (
-                              <Button
-                                onClick={handleEdit}
-                                variant="ghost"
-                                className={cn(
-                                  "w-full flex items-center justify-start gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all h-auto",
-                                  focus
-                                    ? "bg-background dark:bg-neutral-800 text-foreground"
-                                    : "text-muted-foreground",
-                                )}
-                              >
-                                <Edit2 className="w-4 h-4 text-brand-500" />
-                                {t("edit")}
-                              </Button>
-                            )}
-                          </MenuItem>
-
-                          <MenuItem>
-                            {({ focus }) => (
-                              <Button
-                                onClick={handleDeleteClick}
-                                variant="ghost"
-                                className={cn(
-                                  "w-full flex items-center justify-start gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all h-auto",
-                                  focus
-                                    ? "bg-red-50 dark:bg-red-900/20 text-red-600"
-                                    : "text-destructive",
-                                )}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                                {t("delete")}
-                              </Button>
-                            )}
-                          </MenuItem>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-muted-foreground font-medium">
+                    {property.city}
+                  </p>
+                  {activeContract?.option_periods &&
+                    activeContract.option_periods.length > 0 && (
+                      <>
+                        <div className="w-1 h-1 rounded-full bg-slate-300 mx-1" />
+                        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+                          <Calendar className="w-3 h-3 text-emerald-500" />
+                          <span className="text-xs font-bold text-emerald-600 uppercase tracking-tight">
+                            {lang === "he" ? "כולל אופציה" : "Incl. Option"}:{" "}
+                            {activeContract.option_periods[0].length}{" "}
+                            {activeContract.option_periods[0].unit === "years"
+                              ? lang === "he"
+                                ? "שנים"
+                                : "yrs"
+                              : lang === "he"
+                                ? "חודשים"
+                                : "mos"}
+                          </span>
                         </div>
-                      </MenuItems>
-                    </Transition>
-                  </Portal>
-                </Menu>
-              )}
-            </div>
+                      </>
+                    )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* More Menu */}
+          <div className="relative">
+            {isEditing ? (
+              <div className="flex flex-col gap-2">
+                <Button
+                  onClick={handleSave}
+                  disabled={isDeleting}
+                  className="w-12 h-12 button-jewel text-white rounded-[1.2rem] shadow-jewel hover:scale-105 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center shrink-0 p-0"
+                >
+                  <CheckIcon className="w-5 h-5" />
+                </Button>
+                <Button
+                  onClick={handleCancel}
+                  variant="ghost"
+                  className="w-12 h-12 glass-premium dark:bg-neutral-800/40 rounded-[1.2rem] border border-white/5 text-foreground hover:bg-white/10 transition-all flex items-center justify-center shrink-0 p-0"
+                >
+                  <PlusIcon className="w-5 h-5 rotate-45" />
+                </Button>
+              </div>
+            ) : (
+              <Menu as="div" className="relative inline-block text-left">
+                <MenuButton className="w-12 h-12 glass-premium dark:bg-neutral-800/40 rounded-[1.2rem] border border-white/5 text-foreground hover:bg-white/10 transition-all focus:outline-none flex items-center justify-center">
+                  <MoreVertical className="w-5 h-5" />
+                </MenuButton>
+                <Portal>
+                  <Transition
+                    as={Fragment}
+                    enter="transition ease-out duration-100"
+                    enterFrom="transform opacity-0 scale-95"
+                    enterTo="transform opacity-100 scale-100"
+                    leave="transition ease-in duration-75"
+                    leaveFrom="transform opacity-100 scale-100"
+                    leaveTo="transform opacity-0 scale-95"
+                  >
+                    <MenuItems
+                      anchor={{
+                        to: lang === "he" ? "bottom start" : "bottom end",
+                        gap: 8,
+                      }}
+                      className={cn(
+                        "z-[100] min-w-[200px] bg-window rounded-[2rem] shadow-2xl border border-slate-100 dark:border-neutral-800 p-2 focus:outline-none font-sans",
+                        "animate-in fade-in zoom-in-95 duration-100",
+                      )}
+                    >
+                      <div className="py-1">
+                        <MenuItem>
+                          {({ focus }) => (
+                            <Button
+                              onClick={() => setIsAddPaymentModalOpen(true)}
+                              variant="ghost"
+                              leftIcon={<span className="font-sans font-bold flex items-center justify-center text-brand-500 text-base leading-none w-4 h-4">₪</span>}
+                              className={cn(
+                                "w-full justify-start gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all h-auto",
+                                focus
+                                  ? "bg-background dark:bg-neutral-800 text-foreground"
+                                  : "text-muted-foreground",
+                              )}
+                            >
+                              {lang === "he" ? "הוספת תשלום" : "Add Payment"}
+                            </Button>
+                          )}
+                        </MenuItem>
+
+                        <div className="h-[1px] bg-background dark:bg-neutral-800 my-2 mx-4" />
+
+                        <MenuItem>
+                          {({ focus }) => (
+                            <Button
+                              onClick={handleAddContract}
+                              variant="ghost"
+                              leftIcon={<FilePlus className="w-4 h-4 text-emerald-500" />}
+                              className={cn(
+                                "w-full justify-start gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all h-auto",
+                                focus
+                                  ? "bg-background dark:bg-neutral-800 text-foreground"
+                                  : "text-muted-foreground",
+                              )}
+                            >
+                              {lang === "he" ? "הוספת חוזה" : "Add Contract"}
+                            </Button>
+                          )}
+                        </MenuItem>
+
+                        <MenuItem>
+                          {({ focus }) => (
+                            <Button
+                              onClick={handleEdit}
+                              variant="ghost"
+                              leftIcon={<Edit2 className="w-4 h-4 text-brand-500" />}
+                              className={cn(
+                                "w-full justify-start gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all h-auto",
+                                focus
+                                  ? "bg-background dark:bg-neutral-800 text-foreground"
+                                  : "text-muted-foreground",
+                              )}
+                            >
+                              {t("edit")}
+                            </Button>
+                          )}
+                        </MenuItem>
+
+                        <MenuItem>
+                          {({ focus }) => (
+                            <Button
+                              onClick={handleDeleteClick}
+                              variant="ghost"
+                              leftIcon={<Trash2 className="w-4 h-4" />}
+                              className={cn(
+                                "w-full justify-start gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all h-auto",
+                                focus
+                                  ? "bg-red-50 dark:bg-red-900/20 text-red-600"
+                                  : "text-destructive",
+                              )}
+                            >
+                              {t("delete")}
+                            </Button>
+                          )}
+                        </MenuItem>
+                      </div>
+                    </MenuItems>
+                  </Transition>
+                </Portal>
+              </Menu>
+            )}
           </div>
         </div>
       </div>
@@ -1037,7 +1017,7 @@ export function PropertyHub({
                     isActive ? "scale-110" : "group-hover:scale-110",
                   )}
                 />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em]">
+                <span className="text-xs font-black uppercase tracking-[0.2em]">
                   {tab.label}
                 </span>
                 {isActive && (
@@ -1110,6 +1090,6 @@ export function PropertyHub({
           )?.id,
         }}
       />
-    </div>
+    </div >
   );
 }

@@ -93,7 +93,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                                 className="flex items-center gap-2 px-3"
                             >
                                 <div className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_10px_#34d399]" />
-                                <span className="text-[9px] font-black text-white uppercase tracking-tighter">SCANNING</span>
+                                <span className="text-[11px] font-black text-white uppercase tracking-tighter">SCANNING</span>
                             </motion.div>
                         )}
                         {step === 'USER_VOICE' && (
@@ -122,7 +122,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                         {/* APP HEADER */}
                         <div className={`flex justify-between items-center mb-8 transition-all duration-500 ${step !== 'DASHBOARD' ? 'opacity-10 blur-md translate-y-2' : 'opacity-100 translate-y-0'}`}>
                             <div className="space-y-1">
-                                <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground font-black">
+                                <div className="text-xs uppercase tracking-[0.3em] text-muted-foreground font-black">
                                     {isRtl ? 'בוקר טוב, ישראל' : 'MORNING, ISRAEL'}
                                 </div>
                                 <div className="text-3xl font-black text-foreground tracking-tight flex items-center gap-2">
@@ -139,7 +139,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                         <div className={`space-y-6 transition-all duration-700 ${step !== 'DASHBOARD' ? 'opacity-10 blur-xl scale-90 translate-y-10' : 'opacity-100 scale-100 translate-y-0'}`}>
                             <div className="bg-white/10 backdrop-blur-xl p-8 rounded-[3rem] shadow-2xl border border-white/10">
                                 <div className="flex justify-between items-center mb-4">
-                                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">{isRtl ? 'הכנסה חודשית' : 'MONTHLY REVENUE'}</span>
+                                    <span className="text-xs font-black text-muted-foreground uppercase tracking-[0.2em]">{isRtl ? 'הכנסה חודשית' : 'MONTHLY REVENUE'}</span>
                                     <TrendingUp className="w-5 h-5 text-emerald-400" />
                                 </div>
                                 <div className="text-5xl font-black text-foreground tracking-tighter leading-none mb-6">₪15,200</div>
@@ -175,7 +175,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                                     </div>
                                 </div>
                                 <div className="min-w-0">
-                                    <div className="text-[9px] font-black text-white/60 uppercase tracking-widest leading-none mb-1">AI ASSISTANT</div>
+                                    <div className="text-[11px] font-black text-white/60 uppercase tracking-widest leading-none mb-1">AI ASSISTANT</div>
                                     <div className="text-[13px] font-bold text-white truncate">Ask Renty Ready</div>
                                 </div>
                                 <motion.div
@@ -213,7 +213,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                                     <AnimatePresence>
                                         {(step === 'RENTY_GREET' || step === 'USER_VOICE') && (
                                             <motion.div
-                                                className="absolute top-[-60px] left-1/2 -translate-x-1/2 w-[85%] bg-neutral-900 dark:bg-white text-white dark:text-black p-4 rounded-2xl text-[10px] font-bold shadow-2xl border border-white/10 z-20 text-center"
+                                                className="absolute top-[-60px] left-1/2 -translate-x-1/2 w-[85%] bg-neutral-900 dark:bg-white text-white dark:text-black p-4 rounded-2xl text-xs font-bold shadow-2xl border border-white/10 z-20 text-center"
                                                 initial={{ scale: 0, opacity: 0 }}
                                                 animate={{ scale: 1, opacity: 1 }}
                                                 exit={{ scale: 0, opacity: 0 }}
@@ -233,12 +233,12 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                                                 exit={{ scale: 0, opacity: 0 }}
                                             >
                                                 {step === 'USER_VOICE' ? (
-                                                    <div className="text-[9px] font-black tracking-widest uppercase flex items-center justify-center gap-2">
+                                                    <div className="text-[11px] font-black tracking-widest uppercase flex items-center justify-center gap-2">
                                                         <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
                                                         {isRtl ? 'מקליט...' : 'LISTENING...'}
                                                     </div>
                                                 ) : (
-                                                    <div className="text-[9px] font-black truncate">{isRtl ? 'מתייק חשבון...' : 'Filing Bill...'}</div>
+                                                    <div className="text-[11px] font-black truncate">{isRtl ? 'מתייק חשבון...' : 'Filing Bill...'}</div>
                                                 )}
                                             </motion.div>
                                         )}
@@ -259,7 +259,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                                 >
                                     <div className="flex justify-between items-center mb-8">
                                         <div>
-                                            <div className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">{isRtl ? 'חברת החשמל' : 'IEC ISRAEL'}</div>
+                                            <div className="text-xs font-black text-primary uppercase tracking-widest mb-1">{isRtl ? 'חברת החשמל' : 'IEC ISRAEL'}</div>
                                             <div className="text-3xl font-black dark:text-white tracking-tighter">₪324.50</div>
                                         </div>
                                         <Zap className="w-8 h-8 text-secondary drop-shadow-[0_0_10px_rgba(69,147,103,0.5)]" />
@@ -268,7 +268,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                                         <div className="h-2.5 w-full bg-neutral-100 dark:bg-neutral-800 rounded-full" />
                                         <div className="h-2.5 w-1/2 bg-neutral-100 dark:bg-neutral-800 rounded-full" />
                                     </div>
-                                    <div className="flex justify-between items-center text-[10px] font-black text-neutral-400 tracking-tighter">
+                                    <div className="flex justify-between items-center text-xs font-black text-neutral-400 tracking-tighter">
                                         <span className="bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-lg">15/01/2026</span>
                                         <span className="text-destructive">{isRtl ? 'ממתין לתשלום' : 'PENDING'}</span>
                                     </div>
@@ -312,7 +312,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                                         transition={{ delay: 0.2 }}
                                     >
                                         <div className="text-secondary font-black text-2xl mb-2 tracking-tighter">{isRtl ? 'הקובץ תויק!' : 'SUCCESSFULLY FILED'}</div>
-                                        <div className="text-white/40 text-[10px] uppercase font-bold tracking-[0.2em]">
+                                        <div className="text-white/40 text-xs uppercase font-bold tracking-[0.2em]">
                                             {isRtl ? 'תיקיית חשבונות חשמל 2026' : 'ELECTRICITY BILLS 2026'}
                                         </div>
                                     </motion.div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Upload, Loader2, FileText, Check, X, DollarSign, ChevronRight, Plus, Droplets, Zap, Flame, Building2, Landmark, Wifi, Tv, Sparkles } from 'lucide-react';
+import { Upload, Loader2, FileText, Check, X, DollarSign, ChevronRight, Plus, Droplets, Zap, Flame, Building2, Landmark, Wifi, Tv, Sparkles, Home as HomeIcon, Eye } from 'lucide-react';
 import type { Property, PropertyDocument, DocumentCategory } from '../../types/database';
 import { propertyDocumentsService } from '../../services/property-documents.service';
 import { format, parseISO } from 'date-fns';
@@ -11,6 +11,7 @@ import { BillAnalysisService, ExtractedBillData } from '../../services/bill-anal
 
 import UpgradeRequestModal from '../modals/UpgradeRequestModal';
 import { useSubscription } from '../../hooks/useSubscription';
+import { useDataCache } from '../../contexts/DataCacheContext';
 import { DocumentTimeline } from './DocumentTimeline';
 import { DocumentDetailsModal } from '../modals/DocumentDetailsModal';
 import { DatePicker } from '../ui/DatePicker';
@@ -30,6 +31,8 @@ type UtilityType = 'water' | 'electric' | 'gas' | 'municipality' | 'management' 
 export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerProps) {
     const { t } = useTranslation();
     const { hasFeature } = useSubscription();
+    const { get } = useDataCache();
+    const allProperties = get<Property[]>('properties_list') || [property];
     const [activeUtility, setActiveUtility] = useState<UtilityType>('electric');
     const [documents, setDocuments] = useState<PropertyDocument[]>([]);
     const [loading, setLoading] = useState(true);
@@ -55,10 +58,13 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
         isDuplicate?: boolean;
         duplicateDoc?: PropertyDocument;
         aiData?: ExtractedBillData;
+        targetPropertyId?: string;
+        targetCategory?: UtilityType;
     }>>([]);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const [selectedDocument, setSelectedDocument] = useState<PropertyDocument | null>(null);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+    const [previewImage, setPreviewImage] = useState<string | null>(null);
 
     // Correct Lucide icons mapping
     const utilities = [
@@ -68,7 +74,9 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
         { id: 'management' as UtilityType, label: t('utilityManagement'), icon: Building2, color: 'text-primary', bg: 'bg-primary/10' },
         { id: 'water' as UtilityType, label: t('utilityWater'), icon: Droplets, color: 'text-primary', bg: 'bg-primary/10 dark:bg-blue-900/30' },
         { id: 'internet' as UtilityType, label: t('utilityInternet'), icon: Wifi, color: 'text-indigo-500', bg: 'bg-indigo-100 dark:bg-indigo-900/30' },
-        { id: 'cable' as UtilityType, label: t('utilityCable'), icon: Tv, color: 'text-rose-500', bg: 'bg-rose-100 dark:bg-rose-900/30' },
+        { id: 'tv' as UtilityType, label: t('utilityCable', { defaultValue: 'TV / Cable' }), icon: Tv, color: 'text-rose-500', bg: 'bg-rose-100 dark:bg-rose-900/30' },
+        { id: 'mortgage' as UtilityType, label: t('utilityMortgage', { defaultValue: 'Mortgage' }), icon: HomeIcon, color: 'text-emerald-500', bg: 'bg-emerald-100 dark:bg-emerald-900/30' },
+        { id: 'other' as UtilityType, label: t('utilityOther', { defaultValue: 'Other' }), icon: FileText, color: 'text-gray-500', bg: 'bg-gray-100 dark:bg-gray-800/30' },
     ];
 
 
@@ -128,6 +136,7 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                 invoiceNumber: '',
                 periodStart: '',
                 periodEnd: '',
+                targetCategory: activeUtility,
                 isAnalyzing: true // Start analyzing immediately
             }));
 
@@ -139,7 +148,7 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                     // Only analyze images for now (PDF support requires more complex handling or specific Gemini setup)
                     // But our service handles File, so let's try.
                     if (fileObj.file.type.startsWith('image/') || fileObj.file.type === 'application/pdf') {
-                        const result = await BillAnalysisService.analyzeBill(fileObj.file, [{ id: property.id, address: property.address }]);
+                        const result = await BillAnalysisService.analyzeBill(fileObj.file, allProperties.map(p => ({ id: p.id, address: p.address || '' })));
 
                         // Check for duplicate
                         const duplicate = await propertyDocumentsService.checkDuplicateBill(
@@ -165,17 +174,17 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                                 isAnalyzing: false,
                                 isDuplicate: !!duplicate,
                                 duplicateDoc: duplicate as PropertyDocument,
-                                aiData: result
+                                aiData: result,
+                                targetPropertyId: allProperties.length === 1 ? allProperties[0].id : (result.propertyId || ''),
+                                targetCategory: result.category as UtilityType || activeUtility
                             };
                         }));
 
-                        // If high confidence, update the Folder Date too if it's the first file
-                        if (result.confidence > 0.8 && newFiles.length === 1) {
-                            setNewFolderDate(result.date);
-                            // Also try to switch tab if it matches a known utility
-                            if (utilities.some(u => u.id === result.category) && result.category !== activeUtility) {
-                                setActiveUtility(result.category as UtilityType);
-                            }
+                        // If high confidence, update the Folder Date too if it's the first file (fallback to checking category if applicable)
+                        setNewFolderDate(result.date);
+                        // Also try to switch tab if it matches a known utility
+                        if (utilities.some(u => u.id === result.category) && result.category !== activeUtility) {
+                            setActiveUtility(result.category as UtilityType);
                         }
                     } else {
                         setStagedFiles(prev => prev.map(f => f.id === fileObj.id ? { ...f, isAnalyzing: false } : f));
@@ -196,44 +205,116 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
         setStagedFiles(prev => prev.filter(f => f.id !== id));
     };
 
+    const handleApproveBill = async () => {
+        if (stagedFiles.length === 0) return;
+        setUploading(true);
+        const currentFile = stagedFiles[0];
+        const category = `utility_${activeUtility}`;
+
+        try {
+            const pId = currentFile.targetPropertyId || property.id;
+            const catId = currentFile.targetCategory ? `utility_${currentFile.targetCategory}` : category;
+            const folderName = newFolderName.trim() || t('newBillEntry', { defaultValue: 'New Bill' });
+
+            const folder = await propertyDocumentsService.createFolder({
+                property_id: pId,
+                category: catId as DocumentCategory,
+                name: folderName,
+                folder_date: newFolderDate || format(new Date(), 'yyyy-MM-dd'),
+                description: newFolderNote
+            });
+
+            let fileToUpload = currentFile.file;
+            if (CompressionService.isImage(fileToUpload)) {
+                try {
+                    fileToUpload = await CompressionService.compressImage(fileToUpload);
+                } catch (e) {
+                    console.warn('Compression failed, using original', e);
+                }
+            }
+
+            await propertyDocumentsService.uploadDocument(fileToUpload, {
+                propertyId: pId,
+                category: catId as DocumentCategory,
+                folderId: folder.id,
+                amount: currentFile.amount ? parseFloat(currentFile.amount) : undefined,
+                documentDate: currentFile.date,
+                title: currentFile.file.name,
+                description: currentFile.note,
+                vendorName: currentFile.vendorName,
+                invoiceNumber: currentFile.invoiceNumber,
+                periodStart: currentFile.periodStart,
+                periodEnd: currentFile.periodEnd
+            });
+
+            // Remove the processed file
+            setStagedFiles(prev => prev.slice(1));
+
+            // If it was the last file, close the form and reset folder details
+            if (stagedFiles.length === 1) {
+                setNewFolderName('');
+                setNewFolderDate(format(new Date(), 'yyyy-MM-dd'));
+                setNewFolderNote('');
+                setShowUploadForm(false);
+            }
+        } catch (error) {
+            console.error('Failed to upload billed entry:', error);
+        } finally {
+            setUploading(false);
+        }
+    };
+
     const handleCreateAndUpload = async () => {
         setUploading(true);
         try {
             const category = `utility_${activeUtility}`;
             const folderName = newFolderName.trim() || t('newBillEntry', { defaultValue: 'New Bill' });
 
-            const folder = await propertyDocumentsService.createFolder({
-                property_id: property.id,
-                category,
-                name: folderName,
-                folder_date: newFolderDate || format(new Date(), 'yyyy-MM-dd'),
-                description: newFolderNote
-            });
-
             if (stagedFiles.length > 0) {
-                const uploadPromises = stagedFiles.map(async (stagedFile) => {
-                    let fileToUpload = stagedFile.file;
-                    if (CompressionService.isImage(fileToUpload)) {
-                        try {
-                            fileToUpload = await CompressionService.compressImage(fileToUpload);
-                        } catch (e) {
-                            console.warn('Compression failed, using original', e);
-                        }
-                    }
+                // Group staging files by targetPropertyId AND targetCategory to create folders internally
+                const filesByGroup = stagedFiles.reduce((acc, file) => {
+                    const pId = file.targetPropertyId || property.id;
+                    const catId = file.targetCategory ? `utility_${file.targetCategory}` : category;
+                    const groupKey = `${pId}_${catId}`;
 
-                    return propertyDocumentsService.uploadDocument(fileToUpload, {
-                        propertyId: property.id,
-                        category: category as DocumentCategory,
-                        folderId: folder.id,
-                        amount: stagedFile.amount ? parseFloat(stagedFile.amount) : undefined,
-                        documentDate: stagedFile.date,
-                        title: stagedFile.file.name,
-                        description: stagedFile.note,
-                        vendorName: stagedFile.vendorName,
-                        invoiceNumber: stagedFile.invoiceNumber,
-                        periodStart: stagedFile.periodStart,
-                        periodEnd: stagedFile.periodEnd
+                    if (!acc[groupKey]) acc[groupKey] = { pId, catId, files: [] };
+                    acc[groupKey].files.push(file);
+                    return acc;
+                }, {} as Record<string, { pId: string, catId: string, files: typeof stagedFiles }>);
+
+                const uploadPromises = Object.values(filesByGroup).map(async ({ pId, catId, files }) => {
+                    const folder = await propertyDocumentsService.createFolder({
+                        property_id: pId,
+                        category: catId as DocumentCategory,
+                        name: folderName,
+                        folder_date: newFolderDate || format(new Date(), 'yyyy-MM-dd'),
+                        description: newFolderNote
                     });
+
+                    return Promise.all(files.map(async (stagedFile) => {
+                        let fileToUpload = stagedFile.file;
+                        if (CompressionService.isImage(fileToUpload)) {
+                            try {
+                                fileToUpload = await CompressionService.compressImage(fileToUpload);
+                            } catch (e) {
+                                console.warn('Compression failed, using original', e);
+                            }
+                        }
+
+                        return propertyDocumentsService.uploadDocument(fileToUpload, {
+                            propertyId: pId,
+                            category: catId as DocumentCategory,
+                            folderId: folder.id,
+                            amount: stagedFile.amount ? parseFloat(stagedFile.amount) : undefined,
+                            documentDate: stagedFile.date,
+                            title: stagedFile.file.name,
+                            description: stagedFile.note,
+                            vendorName: stagedFile.vendorName,
+                            invoiceNumber: stagedFile.invoiceNumber,
+                            periodStart: stagedFile.periodStart,
+                            periodEnd: stagedFile.periodEnd
+                        });
+                    }));
                 });
                 await Promise.all(uploadPromises);
             }
@@ -422,115 +503,162 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                                     </div>
                                 </div>
 
-                                {/* Staged Files List */}
+                                {/* Staged Files Step-by-Step Approval */}
                                 {stagedFiles.length > 0 && (
                                     <div className="space-y-3">
-                                        {stagedFiles.map((file) => (
-                                            <div key={file.id} className="bg-white/60 dark:bg-gray-800/60 p-4 rounded-xl border border-border dark:border-gray-700 shadow-sm backdrop-blur-sm hover:shadow-md transition-all">
-                                                <div className="flex justify-between items-start mb-3">
-                                                    <div className="flex items-center gap-2 overflow-hidden">
-                                                        <div className="p-1.5 bg-primary/10 dark:bg-blue-900/30 text-primary dark:text-blue-400 rounded-lg">
-                                                            <FileText className="w-4 h-4" />
-                                                        </div>
-                                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">{file.file.name}</span>
-                                                    </div>
-                                                    <Button variant="ghost" size="sm" onClick={() => removeStagedFile(file.id)} className="text-muted-foreground hover:text-destructive hover:bg-red-50 dark:hover:bg-red-900/20 h-8 w-8 p-0">
-                                                        <X className="w-4 h-4" />
-                                                    </Button>
-                                                </div>
+                                        {(() => {
+                                            const file = stagedFiles[0];
+                                            return (
+                                                <div key={file.id} className="bg-white/60 dark:bg-gray-800/60 p-4 rounded-xl border border-border dark:border-gray-700 shadow-sm backdrop-blur-sm transition-all relative">
 
-                                                {/* AI Badge */}
-                                                {file.isAnalyzing ? (
-                                                    <div className="mb-3 flex items-center gap-2 text-xs text-primary animate-pulse">
-                                                        <Loader2 className="w-3 h-3 animate-spin" />
-                                                        Scanning bill...
-                                                    </div>
-                                                ) : file.aiData ? (
-                                                    <div className="mb-3 space-y-2">
-                                                        <div className="flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded-lg w-fit">
-                                                            <Sparkles className="w-3 h-3" />
-                                                            <span>Auto-filled by Gemini</span>
-                                                            <span className="font-mono opacity-70">({(file.aiData.confidence * 100).toFixed(0)}% conf)</span>
+                                                    {stagedFiles.length > 1 && (
+                                                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full shadow-md z-10 flex items-center gap-1">
+                                                            {t('bill', { defaultValue: 'Bill' })} 1 / {stagedFiles.length}
                                                         </div>
-                                                        {file.isDuplicate && (
-                                                            <div className="flex items-center gap-2 text-xs text-destructive bg-red-50 dark:bg-red-900/20 px-2 py-1.5 rounded-lg border border-red-100 dark:border-red-900/30">
-                                                                <X className="w-3.5 h-3.5" />
-                                                                <span className="font-bold">Duplicate Detected!</span>
-                                                                <span>A bill with this number, vendor, and date already exists.</span>
+                                                    )}
+
+                                                    <div className="flex justify-between items-start mb-3 mt-2">
+                                                        <div className="flex items-center gap-2 overflow-hidden flex-1">
+                                                            <div className="p-1.5 bg-primary/10 dark:bg-blue-900/30 text-primary dark:text-blue-400 rounded-lg shrink-0">
+                                                                <FileText className="w-4 h-4" />
                                                             </div>
-                                                        )}
+                                                            <span className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">{file.file.name}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2 shrink-0">
+                                                            {(file.file.type.startsWith('image/') || file.file.type === 'application/pdf') && (
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    className="h-8 gap-1 border-primary/20 text-primary hover:bg-primary/10"
+                                                                    onClick={() => setPreviewImage(file.file.type.startsWith('image/') ? URL.createObjectURL(file.file) : null)}
+                                                                >
+                                                                    <Eye className="w-4 h-4" />
+                                                                    <span className="hidden sm:inline">{t('viewBillImage', { defaultValue: 'View Image' })}</span>
+                                                                </Button>
+                                                            )}
+                                                            <Button variant="ghost" size="sm" onClick={() => removeStagedFile(file.id)} className="text-muted-foreground hover:text-destructive hover:bg-red-50 dark:hover:bg-red-900/20 h-8 w-8 p-0" title={t('skipOrDelete', { defaultValue: 'Skip' })}>
+                                                                <X className="w-4 h-4" />
+                                                            </Button>
+                                                        </div>
                                                     </div>
-                                                ) : null}
 
-                                                <div className="grid grid-cols-2 gap-3 mb-3">
-                                                    <div className="col-span-2 space-y-1">
-                                                        <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">{t('vendorName')}</label>
-                                                        <Input
-                                                            value={file.vendorName}
-                                                            onChange={(e) => updateStagedFile(file.id, 'vendorName', e.target.value)}
-                                                            placeholder={t('eg_electric_corp')}
-                                                            className="h-8 text-xs bg-white/50 dark:bg-foreground/50"
-                                                        />
-                                                    </div>
-                                                    <div className="col-span-1 space-y-1">
-                                                        <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">Invoice Number</label>
-                                                        <Input
-                                                            value={file.invoiceNumber}
-                                                            onChange={(e) => updateStagedFile(file.id, 'invoiceNumber', e.target.value)}
-                                                            placeholder="e.g. 12345678"
-                                                            className="h-8 text-xs bg-white/50 dark:bg-foreground/50"
-                                                        />
-                                                    </div>
-                                                    <div className="space-y-1">
-                                                        <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">{t('amount')}</label>
-                                                        <div className="relative">
+                                                    {/* AI Badge */}
+                                                    {file.isAnalyzing ? (
+                                                        <div className="mb-3 flex items-center gap-2 text-xs text-primary animate-pulse">
+                                                            <Loader2 className="w-3 h-3 animate-spin" />
+                                                            Scanning bill...
+                                                        </div>
+                                                    ) : file.aiData ? (
+                                                        <div className="mb-3 space-y-2">
+                                                            <div className="flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded-lg w-fit">
+                                                                <Sparkles className="w-3 h-3" />
+                                                                <span>Auto-filled by Gemini</span>
+                                                            </div>
+                                                            {file.isDuplicate && (
+                                                                <div className="flex items-center gap-2 text-xs text-destructive bg-red-50 dark:bg-red-900/20 px-2 py-1.5 rounded-lg border border-red-100 dark:border-red-900/30">
+                                                                    <X className="w-3.5 h-3.5" />
+                                                                    <span className="font-bold">Duplicate Detected!</span>
+                                                                    <span>A bill with this number, vendor, and date already exists.</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ) : null}
+
+                                                    <div className="grid grid-cols-2 gap-3 mb-3">
+                                                        <div className="col-span-1 space-y-1">
+                                                            <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">Asset Match</label>
+                                                            <select
+                                                                value={file.targetPropertyId || ''}
+                                                                onChange={(e) => updateStagedFile(file.id, 'targetPropertyId', e.target.value)}
+                                                                className={cn("w-full h-8 px-2 text-xs rounded-md border", !file.targetPropertyId ? "border-red-500 bg-red-50 dark:bg-red-900/20" : "bg-white/50 dark:bg-foreground/50 border-input")}
+                                                            >
+                                                                <option value="" disabled>Select Asset...</option>
+                                                                {allProperties.map(p => (
+                                                                    <option key={p.id} value={p.id}>{p.address}</option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+                                                        <div className="col-span-1 space-y-1">
+                                                            <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">Bill Type</label>
+                                                            <select
+                                                                value={file.targetCategory || activeUtility}
+                                                                onChange={(e) => updateStagedFile(file.id, 'targetCategory', e.target.value)}
+                                                                className={cn("w-full h-8 px-2 text-xs rounded-md border bg-white/50 dark:bg-foreground/50 border-input")}
+                                                            >
+                                                                {utilities.map(u => (
+                                                                    <option key={u.id} value={u.id}>{u.label}</option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+                                                        <div className="col-span-2 space-y-1">
+                                                            <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">{t('vendorName')}</label>
                                                             <Input
-                                                                type="number"
-                                                                value={file.amount}
-                                                                onChange={(e) => updateStagedFile(file.id, 'amount', e.target.value)}
-                                                                placeholder="0.00"
-                                                                leftIcon={<DollarSign className="w-3 h-3 text-muted-foreground" />}
+                                                                value={file.vendorName}
+                                                                onChange={(e) => updateStagedFile(file.id, 'vendorName', e.target.value)}
+                                                                placeholder={t('eg_electric_corp')}
                                                                 className="h-8 text-xs bg-white/50 dark:bg-foreground/50"
                                                             />
                                                         </div>
+                                                        <div className="col-span-1 space-y-1">
+                                                            <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">Invoice Number</label>
+                                                            <Input
+                                                                value={file.invoiceNumber}
+                                                                onChange={(e) => updateStagedFile(file.id, 'invoiceNumber', e.target.value)}
+                                                                placeholder="e.g. 12345678"
+                                                                className="h-8 text-xs bg-white/50 dark:bg-foreground/50"
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                            <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">{t('amount')}</label>
+                                                            <div className="relative">
+                                                                <Input
+                                                                    type="number"
+                                                                    value={file.amount}
+                                                                    onChange={(e) => updateStagedFile(file.id, 'amount', e.target.value)}
+                                                                    placeholder="0.00"
+                                                                    leftIcon={<DollarSign className="w-3 h-3 text-muted-foreground" />}
+                                                                    className="h-8 text-xs bg-white/50 dark:bg-foreground/50"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                            <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">{t('date')}</label>
+                                                            <DatePicker
+                                                                value={file.date ? parseISO(file.date) : undefined}
+                                                                onChange={(date) => updateStagedFile(file.id, 'date', date ? format(date, 'yyyy-MM-dd') : '')}
+                                                                className="w-full"
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                            <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">{t('periodStart')}</label>
+                                                            <DatePicker
+                                                                value={file.periodStart ? parseISO(file.periodStart) : undefined}
+                                                                onChange={(date) => updateStagedFile(file.id, 'periodStart', date ? format(date, 'yyyy-MM-dd') : '')}
+                                                                className="w-full"
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                            <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">{t('periodEnd')}</label>
+                                                            <DatePicker
+                                                                value={file.periodEnd ? parseISO(file.periodEnd) : undefined}
+                                                                onChange={(date) => updateStagedFile(file.id, 'periodEnd', date ? format(date, 'yyyy-MM-dd') : '')}
+                                                                className="w-full"
+                                                            />
+                                                        </div>
                                                     </div>
-                                                    <div className="space-y-1">
-                                                        <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">{t('date')}</label>
-                                                        <DatePicker
-                                                            value={file.date ? parseISO(file.date) : undefined}
-                                                            onChange={(date) => updateStagedFile(file.id, 'date', date ? format(date, 'yyyy-MM-dd') : '')}
-                                                            className="w-full"
-                                                        />
-                                                    </div>
-                                                    <div className="space-y-1">
-                                                        <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">{t('periodStart')}</label>
-                                                        <DatePicker
-                                                            value={file.periodStart ? parseISO(file.periodStart) : undefined}
-                                                            onChange={(date) => updateStagedFile(file.id, 'periodStart', date ? format(date, 'yyyy-MM-dd') : '')}
-                                                            className="w-full"
-                                                        />
-                                                    </div>
-                                                    <div className="space-y-1">
-                                                        <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">{t('periodEnd')}</label>
-                                                        <DatePicker
-                                                            value={file.periodEnd ? parseISO(file.periodEnd) : undefined}
-                                                            onChange={(date) => updateStagedFile(file.id, 'periodEnd', date ? format(date, 'yyyy-MM-dd') : '')}
-                                                            className="w-full"
-                                                        />
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">{t('note')}</label>
+                                                    <div>
+                                                        <label className="text-xs font-medium text-muted-foreground dark:text-muted-foreground ml-1">{t('note')}</label>
 
-                                                    <Input
-                                                        value={file.note}
-                                                        onChange={(e) => updateStagedFile(file.id, 'note', e.target.value)}
-                                                        placeholder={t('optionalFolderNote')}
-                                                        className="h-8 text-xs bg-white/50 dark:bg-foreground/50"
-                                                    />
+                                                        <Input
+                                                            value={file.note}
+                                                            onChange={(e) => updateStagedFile(file.id, 'note', e.target.value)}
+                                                            placeholder={t('optionalFolderNote')}
+                                                            className="h-8 text-xs bg-white/50 dark:bg-foreground/50"
+                                                        />
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })()}
                                     </div>
                                 )}
                             </div>
@@ -538,20 +666,28 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                             <div className="flex gap-3 pt-4 border-t border-border dark:border-gray-700/50">
                                 <Button
                                     variant="ghost"
-                                    onClick={() => setShowUploadForm(false)}
+                                    onClick={() => {
+                                        setStagedFiles([]);
+                                        setShowUploadForm(false);
+                                    }}
                                     className="text-muted-foreground dark:text-gray-300"
                                 >
                                     {t('cancel')}
                                 </Button>
-                                <Button
-                                    onClick={handleCreateAndUpload}
-                                    disabled={uploading}
-                                    isLoading={uploading}
-                                    className="flex-1 bg-gradient-to-r from-primary to-cyan-600 hover:from-primary hover:to-cyan-700 text-white shadow-lg"
-                                >
-                                    {!uploading && <Check className="w-4 h-4 mr-2" />}
-                                    {t('saveBillEntry')}
-                                </Button>
+                                {stagedFiles.length > 0 && (
+                                    <Button
+                                        onClick={handleApproveBill}
+                                        disabled={uploading}
+                                        isLoading={uploading}
+                                        className="flex-1 bg-gradient-to-r from-primary to-cyan-600 hover:from-primary hover:to-cyan-700 text-white shadow-lg"
+                                    >
+                                        {!uploading && <Check className="w-4 h-4 mr-2" />}
+                                        {stagedFiles.length > 1
+                                            ? t('approveAndNext', { defaultValue: 'Approve & Next' })
+                                            : t('approveAndFinish', { defaultValue: 'Approve & Save' })
+                                        }
+                                    </Button>
+                                )}
                             </div>
                         </div>
                     )}
@@ -580,6 +716,23 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                         isOpen={showUpgradeModal}
                         onClose={() => setShowUpgradeModal(false)}
                         source="bill_scan_limit"
+                    />
+                </div>
+            )}
+
+            {previewImage && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 sm:p-8">
+                    <button
+                        onClick={() => setPreviewImage(null)}
+                        className="absolute top-4 right-4 p-3 text-white bg-white/10 hover:bg-white/20 rounded-full transition-colors z-[101]"
+                        title={t('close')}
+                    >
+                        <X className="w-6 h-6" />
+                    </button>
+                    <img
+                        src={previewImage}
+                        alt="Bill Preview"
+                        className="max-w-full max-h-full object-contain pointer-events-none"
                     />
                 </div>
             )}

@@ -7,6 +7,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive' | 'link' | 'jewel' | 'aurora';
     size?: 'sm' | 'default' | 'lg' | 'icon';
     isLoading?: boolean;
+    noEffects?: boolean;
     leftIcon?: React.ReactNode;
     rightIcon?: React.ReactNode;
 }
@@ -16,6 +17,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({
     variant = 'primary',
     size = 'default',
     isLoading = false,
+    noEffects = false,
     disabled,
     leftIcon,
     rightIcon,
@@ -65,7 +67,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({
 
     const baseStyles = 'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:scale-[1.02] disabled:hover:scale-100 disabled:active:scale-100';
 
-    const isSolid = ['primary', 'secondary', 'destructive', 'aurora', 'jewel'].includes(variant);
+    const isSolid = !noEffects && ['primary', 'secondary', 'destructive', 'aurora'].includes(variant);
 
     const getSweepColor = () => {
         switch (variant) {

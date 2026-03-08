@@ -130,7 +130,7 @@ export function ChatWidget() {
                 // Pass properties list to AI for context matching
                 analysisResults = await BillAnalysisService.analyzeBill(file, properties);
 
-                if (analysisResults && analysisResults.confidence > 0.6) {
+                if (analysisResults && (analysisResults.confidence ?? 1) > 0.6) {
                     setScannedBill({
                         ...analysisResults,
                         fileName: file.name,
@@ -138,7 +138,7 @@ export function ChatWidget() {
                     });
 
                     // Auto-select property if confidence is high and we have a match
-                    if (analysisResults?.propertyId && analysisResults?.confidence > 0.8) {
+                    if (analysisResults?.propertyId && (analysisResults.confidence ?? 1) > 0.8) {
                         const matchedProp = properties.find(p => p.id === analysisResults?.propertyId);
                         if (matchedProp) {
                             setSelectedPropertyId(matchedProp.id);
@@ -449,11 +449,11 @@ export function ChatWidget() {
                                                 </div>
                                             </div>
 
-                                            {scannedBill.propertyId && selectedPropertyId === scannedBill.propertyId && scannedBill.confidence > 0.8 ? (
+                                            {(scannedBill.propertyId && selectedPropertyId === scannedBill.propertyId && (scannedBill.confidence ?? 1) > 0.8) ? (
                                                 <div className="bg-emerald-100/50 dark:bg-emerald-900/30 p-3 rounded-xl border border-emerald-200 dark:border-emerald-500/30 mb-2">
                                                     <div className="flex justify-between items-start">
                                                         <div>
-                                                            <p className="text-[10px] font-bold uppercase tracking-widest text-secondary mb-1">
+                                                            <p className="text-xs font-bold uppercase tracking-widest text-secondary mb-1">
                                                                 {isRtl ? 'זוהה אוטומטית' : 'Auto-Detected'}
                                                             </p>
                                                             <p className="text-sm font-bold text-emerald-900 dark:text-emerald-100 line-clamp-1">
@@ -470,8 +470,8 @@ export function ChatWidget() {
                                                 </div>
                                             ) : (
                                                 <div className="space-y-2">
-                                                    <label className="text-[10px] font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400">
-                                                        {scannedBill.confidence < 0.8
+                                                    <label className="text-xs font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400">
+                                                        {(scannedBill.confidence ?? 1) < 0.8
                                                             ? (isRtl ? 'לא הצלחתי לזהות את הנכס. אנא בחר:' : 'Could not identify property. Please select:')
                                                             : t('associateWithProperty')
                                                         }
@@ -581,38 +581,45 @@ export function ChatWidget() {
 
                 {/* FAB - Horizontal Bar */}
                 {!isOpen && (
-                    <motion.button
-                        onClick={toggleChat}
-                        whileHover={{ scale: 1.01 }}
-                        whileTap={{ scale: 0.99 }}
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="flex items-center bg-white/80 dark:bg-black/80 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-full shadow-lg p-1.5 px-4 w-full group transition-all overflow-hidden"
-                        dir="ltr"
-                    >
-                        <div className="flex items-center gap-3 shrink-0">
-                            <div className="flex items-center justify-center w-8 h-8 bg-indigo-500 rounded-full shadow-sm text-white shrink-0">
-                                <MessageCircle className="w-5 h-5" />
-                            </div>
-                            <div className="p-1.5 bg-gray-100 dark:bg-white/5 rounded-full shrink-0">
-                                <Paperclip className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-                            </div>
-                            <Mic className="w-4 h-4 text-gray-400 shrink-0" />
-                        </div>
+                    <div className="relative w-full max-w-[500px] group">
+                        {/* Ambient Background Glow (from Dashboard) */}
+                        <div className="absolute top-[-50px] left-1/2 -translate-x-1/2 w-[150%] h-[150px] bg-gradient-to-b from-indigo-500/20 via-violet-500/10 to-transparent blur-3xl -z-10 pointer-events-none" />
 
-                        <div className="flex-1 px-4 text-right min-w-0" dir="rtl">
-                            <p className="text-gray-400 dark:text-gray-500 text-sm truncate font-medium">
-                                {isRtl ? 'איך אוכל לעזור לך לנהל את הנכסים היום?' : 'How can I help you manage your properties today?'}
-                            </p>
-                        </div>
+                        <div className="absolute inset-0 rounded-[1.5rem] bg-gradient-to-r from-indigo-500 to-violet-500 blur opacity-20 group-hover:opacity-30 transition-opacity duration-300 pointer-events-none" />
 
-                        <div className="flex items-center gap-2 shrink-0">
-                            <div className="w-8 h-8 flex items-center justify-center overflow-hidden shrink-0">
-                                <RentyMascot size={24} showBackground={false} />
+                        <motion.button
+                            onClick={toggleChat}
+                            whileHover={{ scale: 1.01 }}
+                            whileTap={{ scale: 0.99 }}
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="relative glass-premium rounded-[1.5rem] shadow-minimal flex items-center p-1.5 pr-1.5 w-full overflow-hidden transition-all duration-500 border-white/10 group-hover:border-indigo-500/30 ring-1 ring-white/20"
+                            dir="ltr"
+                        >
+                            <div className="pl-4 pr-3 text-indigo-500 transition-colors">
+                                <MessageCircle className="w-6 h-6" />
                             </div>
-                        </div>
-                    </motion.button>
+
+                            <div className="flex-1 relative" dir="rtl">
+                                <p className="text-muted-foreground/50 text-sm font-medium text-right truncate pl-2">
+                                    {isRtl ? 'איך אוכל לעזור לך לנהל את הנכסים היום?' : 'How can I help you manage your properties today?'}
+                                </p>
+                            </div>
+
+                            <div className="mx-1 w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-background transition-all">
+                                <Mic className="w-5 h-5 cursor-pointer" />
+                            </div>
+
+                            <div className="mx-1 w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-background transition-all shadow-sm">
+                                <Paperclip className="w-5 h-5 cursor-pointer" />
+                            </div>
+
+                            <div className="ml-2 w-10 h-10 rounded-full flex items-center justify-center transition-all shrink-0">
+                                <RentyMascot size={32} showBackground={false} />
+                            </div>
+                        </motion.button>
+                    </div>
                 )}
 
                 {/* AI-Triggered Modals */}

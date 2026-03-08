@@ -18,10 +18,13 @@ RentMate uses a curated dual-theme setup via CSS variables mapped in `index.css`
 *   **The "Purple Ban":** Strict exclusion of any violet or purple colors anywhere in the UI.
 
 ## 2. Typography & Readability
-RentMate serves a diverse set of users; readability is paramount.
-*   **Base Readability Rule:** Default body copy must easily accommodate mature users. The absolute minimum is `text-sm`, but `text-base` is preferred for standard paragraph copy.
-*   **Avoid Thin Weights:** Do not use ultra-thin or overly condensed font styles. High-contrast typography is mandatory to assist with vision impairments.
-*   **High-Contrast Secondary Text:** When using muted colors (e.g., `--muted-foreground`), ensure the contrast ratio comfortably accommodates mature users (40+). For dark mode, muted text must be significantly legible and bright (e.g., Lightness > 80%, such as `hsl(215 20% 82%)`).
+RentMate serves users primarily in their 30s-50s (experiencing early presbyopia). Readability is absolutely paramount.
+*   **Base Readability Rule (The 16px Baseline):** Default body copy must be perfectly legible without squinting. The absolute minimum for readable body text is `text-sm` (which is configured to render at 16px), but `text-base` (18px) is preferred.
+*   **Absolute Minimum Font Size:** Never use extremely small fonts. The absolute smallest font size permitted for technical labels or ultra-secondary metadata is `text-xs` (configured to render at 14px). Do not use manual font overrides like `text-[9px]` or `text-[12px]`.
+*   **Line-Height:** Maintain slightly relaxed line-heights (1.4x - 1.6x the font size) to prevent text blocks from merging into dense illegible blobs.
+*   **Avoid Thin Weights:** Do not use ultra-thin or overly condensed font styles. High-contrast typography with substantial weight (Medium/500 or SemiBold/600) is preferred for primary strings.
+*   **High-Contrast Text:** When using muted colors (e.g., `text-muted-foreground`), ensure the contrast ratio comfortably accommodates mature users (aim for WCAG 4.5:1). For dark mode, muted text must be bright (e.g., Lightness > 80%).
+*   **Minimum Opacity:** Do not excessively lower opacity for text classes (e.g., avoid `opacity-40` or `opacity-50`). If an element needs to be de-emphasized, use a minimum of `opacity-70` or `opacity-80`.
 *   **Bilingual Fonts:**
     *   *English (`dir="ltr"`):* `font-english` or `font-sans` (Inter/IBM Plex Sans).
     *   *Hebrew (`dir="rtl"`):* `font-hebrew` (Assistant) or `font-heading` (Outfit/Assistant combinations).
