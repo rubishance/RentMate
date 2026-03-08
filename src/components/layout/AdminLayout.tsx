@@ -14,7 +14,10 @@ import {
     ChatBubbleLeftRightIcon,
     CircleStackIcon,
     ChatBubbleBottomCenterTextIcon,
-    MegaphoneIcon
+    MegaphoneIcon,
+    ChartBarIcon,
+    CpuChipIcon,
+    ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 
 import { supabase } from '../../lib/supabase';
@@ -120,7 +123,10 @@ const AdminLayout = () => {
         { name: 'Plans', href: '/admin/plans', icon: TagIcon },
         { name: 'Invoices', href: '/admin/invoices', icon: DocumentTextIcon },
         { name: 'Audit Logs', href: '/admin/audit-logs', icon: ClipboardDocumentListIcon },
+        { name: 'Error Logs', href: '/admin/errors', icon: ExclamationTriangleIcon },
+        { name: 'Usage Analytics', href: '/admin/usage', icon: ChartBarIcon },
         { name: 'AI Usage', href: '/admin/ai-usage', icon: ChatBubbleBottomCenterTextIcon },
+        { name: 'Automation Rules', href: '/admin/automation', icon: CpuChipIcon },
         { name: 'System Settings', href: '/admin/settings', icon: Cog6ToothIcon },
     ];
 
