@@ -156,7 +156,7 @@ export function Analytics({ embedMode = false }: { embedMode?: boolean }) {
                     <div className="space-y-1">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/5 dark:bg-indigo-500/10 backdrop-blur-md rounded-full border border-indigo-500/10 shadow-sm mb-2">
                             <BarChart2 className="w-3 h-3 text-indigo-500" />
-                            <span className="text-[11px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                            <span className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
                                 {t('performanceTracking')}
                             </span>
                         </div>
@@ -182,11 +182,11 @@ export function Analytics({ embedMode = false }: { embedMode?: boolean }) {
                                 <m.icon className={cn("w-6 h-6", m.color)} />
                             </div>
                             {m.trend && (
-                                <span className="text-[11px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full">{m.trend}</span>
+                                <span className="text-xs font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full">{m.trend}</span>
                             )}
                         </div>
                         <div>
-                            <span className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-70 block mb-2 lowercase">{m.label}</span>
+                            <span className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground opacity-70 block mb-2 lowercase">{m.label}</span>
                             <h3 className="text-4xl font-black text-foreground tracking-tighter lowercase leading-none">
                                 {m.isCurrency && '₪'}
                                 {m.value.toLocaleString()}
@@ -202,12 +202,12 @@ export function Analytics({ embedMode = false }: { embedMode?: boolean }) {
                 <div className="glass-premium dark:bg-neutral-900/40 border-white/5 rounded-[3rem] p-12 shadow-minimal hover:shadow-jewel transition-all duration-700 space-y-12 overflow-hidden relative">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
 
-                    <div className="flex items-center justify-between relative z-10">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between relative z-10 gap-4">
                         <div>
-                            <span className="text-[11px] font-black uppercase tracking-[0.3em] text-indigo-500 mb-2 block lowercase">{t('performance')}</span>
+                            <span className="text-xs font-black uppercase tracking-[0.2em] text-indigo-500 mb-2 block lowercase">{t('performance')}</span>
                             <h3 className="text-3xl font-black text-foreground tracking-tighter lowercase">{t('revenueTrend')}</h3>
                         </div>
-                        <select className="glass-premium dark:bg-neutral-800/50 text-[11px] font-black uppercase tracking-widest text-muted-foreground border-white/5 outline-none cursor-pointer px-4 py-2 rounded-full shadow-minimal appearance-none">
+                        <select className="glass-premium dark:bg-neutral-800/50 text-xs font-black uppercase tracking-widest text-muted-foreground border-white/5 outline-none cursor-pointer px-4 py-2 rounded-full shadow-minimal appearance-none">
                             <option>{t('last12Months')}</option>
                         </select>
                     </div>
@@ -225,14 +225,14 @@ export function Analytics({ embedMode = false }: { embedMode?: boolean }) {
                                     dataKey="name"
                                     axisLine={false}
                                     tickLine={false}
-                                    tick={{ fill: 'currentColor', fontSize: 10, fontWeight: 900 }}
+                                    tick={{ fill: 'currentColor', fontSize: 13, fontWeight: 900 }}
                                     className="text-muted-foreground opacity-70 lowercase"
                                     dy={10}
                                 />
                                 <YAxis
                                     axisLine={false}
                                     tickLine={false}
-                                    tick={{ fill: 'currentColor', fontSize: 10, fontWeight: 900 }}
+                                    tick={{ fill: 'currentColor', fontSize: 13, fontWeight: 900 }}
                                     className="text-muted-foreground opacity-70 lowercase"
                                     tickFormatter={(value) => `₪${value / 1000}k`}
                                 />
@@ -261,7 +261,7 @@ export function Analytics({ embedMode = false }: { embedMode?: boolean }) {
 
                     <div className="flex items-center justify-between relative z-10">
                         <div>
-                            <span className="text-[11px] font-black uppercase tracking-[0.3em] text-amber-500 mb-2 block lowercase">{t('collection')}</span>
+                            <span className="text-xs font-black uppercase tracking-[0.2em] text-amber-500 mb-2 block lowercase">{t('collection')}</span>
                             <h3 className="text-3xl font-black text-foreground tracking-tighter lowercase">{t('paymentStatus')}</h3>
                         </div>
                     </div>
@@ -283,8 +283,8 @@ export function Analytics({ embedMode = false }: { embedMode?: boolean }) {
                                     ))}
                                 </Pie>
                                 <Tooltip
-                                    contentStyle={{ borderRadius: '2rem', border: '1px solid rgba(255,255,255,0.05)', boxShadow: '0 20px 50px -10px rgb(0 0 0 / 0.1)', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(20px)' }}
-                                    itemStyle={{ color: '#fff', fontSize: '12px', fontWeight: 900, textTransform: 'lowercase' }}
+                                    contentStyle={{ borderRadius: '1.5rem', border: '1px solid rgba(255,255,255,0.05)', boxShadow: '0 20px 50px -10px rgb(0 0 0 / 0.1)', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(20px)' }}
+                                    itemStyle={{ color: '#fff', fontSize: '14px', fontWeight: 900, textTransform: 'lowercase' }}
                                 />
                             </PieChart>
                         </ResponsiveContainer>
@@ -292,7 +292,7 @@ export function Analytics({ embedMode = false }: { embedMode?: boolean }) {
                             <span className="text-5xl font-black text-foreground tracking-tighter leading-none">
                                 {paymentStatusData.reduce((acc, curr) => acc + curr.value, 0)}
                             </span>
-                            <span className="text-[11px] font-black uppercase tracking-[2px] text-muted-foreground opacity-70 mt-2">{t('totalUnits')}</span>
+                            <span className="text-xs font-black uppercase tracking-[1px] text-muted-foreground opacity-70 mt-3">{t('totalUnits')}</span>
                         </div>
                     </div>
                     {/* Legend Custom */}

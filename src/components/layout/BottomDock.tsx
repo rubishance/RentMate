@@ -96,7 +96,7 @@ export function BottomDock() {
                             <Icon className={cn("w-5 h-5 transition-all duration-300", isActive && "scale-110")} />
                             <span
                                 className={cn(
-                                    "text-[8px] font-black uppercase tracking-[0.1em] whitespace-nowrap",
+                                    "text-xs font-black uppercase tracking-tight whitespace-nowrap",
                                     isActive ? "opacity-100" : "opacity-60"
                                 )}
                             >
