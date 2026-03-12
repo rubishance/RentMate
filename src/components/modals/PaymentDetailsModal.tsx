@@ -127,7 +127,7 @@ export function PaymentDetailsModal({
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-window rounded-[2.5rem] shadow-2xl w-full max-w-lg pointer-events-auto overflow-hidden flex flex-col max-h-[90vh] border border-gray-100 dark:border-neutral-800"
+              className="bg-window rounded-[2.5rem] shadow-2xl w-full max-w-lg pointer-events-auto overflow-hidden flex flex-col max-h-[90vh] border border-border dark:border-neutral-800"
             >
               {/* Header */}
               <div className="p-6 border-b border-gray-50 dark:border-neutral-800 flex items-center justify-between bg-gray-50/50 dark:bg-neutral-800/10">
@@ -138,7 +138,7 @@ export function PaymentDetailsModal({
                 </div>
                 <button
                   onClick={onClose}
-                  className="p-3 hover:bg-white dark:hover:bg-neutral-800 rounded-2xl transition-all text-gray-400 hover:text-black dark:hover:text-white shadow-sm border border-transparent hover:border-gray-100 dark:hover:border-neutral-700"
+                  className="p-3 hover:bg-white dark:hover:bg-neutral-800 rounded-2xl transition-all text-muted-foreground hover:text-black dark:hover:text-white shadow-sm border border-transparent hover:border-border dark:hover:border-neutral-700"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -147,8 +147,8 @@ export function PaymentDetailsModal({
               <div className="flex-1 overflow-y-auto p-8 space-y-8">
                 {/* Property and Tenant Info */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-gray-50 dark:bg-neutral-800 rounded-2xl border border-gray-100 dark:border-neutral-800">
-                    <span className="text-xs font-black uppercase tracking-widest text-gray-400 mb-1 block">
+                  <div className="p-4 bg-secondary dark:bg-neutral-800 rounded-2xl border border-border dark:border-neutral-800">
+                    <span className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-1 block">
                       {t("asset")}
                     </span>
                     <span className="text-sm font-bold text-black dark:text-white line-clamp-1">
@@ -156,8 +156,8 @@ export function PaymentDetailsModal({
                         t("unknown")}
                     </span>
                   </div>
-                  <div className="p-4 bg-gray-50 dark:bg-neutral-800 rounded-2xl border border-gray-100 dark:border-neutral-800">
-                    <span className="text-xs font-black uppercase tracking-widest text-gray-400 mb-1 block">
+                  <div className="p-4 bg-secondary dark:bg-neutral-800 rounded-2xl border border-border dark:border-neutral-800">
+                    <span className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-1 block">
                       {t("tenant")}
                     </span>
                     <span className="text-sm font-bold text-black dark:text-white line-clamp-1">
@@ -173,7 +173,7 @@ export function PaymentDetailsModal({
                 {/* Status Badge and Simple Info */}
                 <div className="flex items-center justify-between">
                   <div className="flex flex-col">
-                    <span className="text-xs font-black uppercase tracking-widest text-gray-400 mb-1">
+                    <span className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-1">
                       {t("status")}
                     </span>
                     {editMode ? (
@@ -186,7 +186,7 @@ export function PaymentDetailsModal({
                             }
                             className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest border transition-all ${formData.status === s
                                 ? "bg-black dark:bg-white text-white dark:text-black border-black dark:border-white shadow-lg"
-                                : "bg-window text-gray-400 border-gray-100 dark:border-neutral-800"
+                                : "bg-window text-muted-foreground border-border dark:border-neutral-800"
                               }`}
                           >
                             {t(s)}
@@ -207,7 +207,7 @@ export function PaymentDetailsModal({
                     )}
                   </div>
                   <div className="text-right">
-                    <span className="text-xs font-black uppercase tracking-widest text-gray-400 mb-1 block">
+                    <span className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-1 block">
                       {t("dueDate")}
                     </span>
                     <span className="font-bold text-black dark:text-white">
@@ -217,10 +217,10 @@ export function PaymentDetailsModal({
                 </div>
 
                 {/* Amount Section */}
-                <div className="p-6 bg-gray-50 dark:bg-neutral-800/50 rounded-[2rem] border border-gray-100 dark:border-neutral-800">
+                <div className="p-6 bg-secondary dark:bg-neutral-800/50 rounded-[2rem] border border-border dark:border-neutral-800">
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex-1">
-                      <span className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2 block">
+                      <span className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-2 block">
                         {t("amount")}
                       </span>
                       <div className="text-4xl font-black text-black dark:text-white tracking-tighter">
@@ -228,8 +228,8 @@ export function PaymentDetailsModal({
                       </div>
                     </div>
                     {payment.status === "paid" && !editMode && (
-                      <div className="text-right flex-1 border-l border-gray-200 dark:border-neutral-700 pl-6">
-                        <span className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2 block">
+                      <div className="text-right flex-1 border-l border-border dark:border-neutral-700 pl-6">
+                        <span className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-2 block">
                           {t("paidAmount")}
                         </span>
                         <div className="text-4xl font-black text-secondary tracking-tighter">
@@ -240,7 +240,7 @@ export function PaymentDetailsModal({
                   </div>
                   {/* Difference Display */}
                   {payment && (
-                    <div className="mt-4 border-t border-gray-200 dark:border-neutral-700 pt-4">
+                    <div className="mt-4 border-t border-border dark:border-neutral-700 pt-4">
                       {(() => {
                         const expectedAmount = indexedAmount ?? payment.amount;
                         const currentPaidAmount = editMode ? formData.paid_amount : (payment.paid_amount || payment.amount);
@@ -271,11 +271,11 @@ export function PaymentDetailsModal({
                     {formData.status === "paid" && (
                       <div className="space-y-4">
                         <div className="space-y-2">
-                          <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">
+                          <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">
                             {t("paidAmount")}
                           </label>
                           <div className="relative">
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-black text-sm">
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-black text-sm">
                               ש"ח
                             </span>
                             <input
@@ -287,12 +287,12 @@ export function PaymentDetailsModal({
                                   paid_amount: Number(e.target.value),
                                 }))
                               }
-                              className="w-full pl-12 pr-4 py-4 bg-window border border-gray-100 dark:border-neutral-800 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-black dark:focus:ring-white outline-none"
+                              className="w-full pl-12 pr-4 py-4 bg-window border border-border dark:border-neutral-800 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-black dark:focus:ring-white outline-none"
                             />
                           </div>
                         </div>
                         <div className="space-y-2">
-                          <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">
+                          <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">
                             {t("paidDate")}
                           </label>
                           <DatePicker
@@ -316,7 +316,7 @@ export function PaymentDetailsModal({
                     )}
 
                     <div className="space-y-2">
-                      <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">
+                      <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">
                         {t("method")}
                       </label>
                       <select
@@ -327,7 +327,7 @@ export function PaymentDetailsModal({
                             payment_method: e.target.value,
                           }))
                         }
-                        className="w-full p-4 bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 rounded-2xl text-sm font-bold outline-none"
+                        className="w-full p-4 bg-white dark:bg-neutral-900 border border-border dark:border-neutral-800 rounded-2xl text-sm font-bold outline-none"
                       >
                         <option value="transfer">{t("transfer")}</option>
                         <option value="checks">{t("check")}</option>
@@ -339,7 +339,7 @@ export function PaymentDetailsModal({
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">
+                      <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">
                         {t("reference")}
                       </label>
                       <input
@@ -352,7 +352,7 @@ export function PaymentDetailsModal({
                             reference: e.target.value,
                           }))
                         }
-                        className="w-full p-4 bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 rounded-2xl text-sm font-bold outline-none"
+                        className="w-full p-4 bg-white dark:bg-neutral-900 border border-border dark:border-neutral-800 rounded-2xl text-sm font-bold outline-none"
                       />
                     </div>
                   </div>
@@ -360,8 +360,8 @@ export function PaymentDetailsModal({
 
                 {!editMode && (
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 rounded-2xl">
-                      <span className="text-xs font-black uppercase tracking-widest text-gray-400 mb-1 block">
+                    <div className="p-4 bg-white dark:bg-neutral-900 border border-border dark:border-neutral-800 rounded-2xl">
+                      <span className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-1 block">
                         {t("method")}
                       </span>
                       <span className="text-sm font-bold text-black dark:text-white capitalize">
@@ -369,8 +369,8 @@ export function PaymentDetailsModal({
                       </span>
                     </div>
                     {payment.paid_date && (
-                      <div className="p-4 bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 rounded-2xl">
-                        <span className="text-xs font-black uppercase tracking-widest text-gray-400 mb-1 block">
+                      <div className="p-4 bg-white dark:bg-neutral-900 border border-border dark:border-neutral-800 rounded-2xl">
+                        <span className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-1 block">
                           {t("paidDate")}
                         </span>
                         <span className="text-sm font-bold text-black dark:text-white">
@@ -379,8 +379,8 @@ export function PaymentDetailsModal({
                       </div>
                     )}
                     {payment.reference && (
-                      <div className="p-4 bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 rounded-2xl col-span-2">
-                        <span className="text-xs font-black uppercase tracking-widest text-gray-400 mb-1 block">
+                      <div className="p-4 bg-white dark:bg-neutral-900 border border-border dark:border-neutral-800 rounded-2xl col-span-2">
+                        <span className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-1 block">
                           {t("reference")}
                         </span>
                         <span className="text-sm font-bold text-black dark:text-white">
@@ -398,7 +398,7 @@ export function PaymentDetailsModal({
                   <>
                     <button
                       onClick={() => setEditMode(false)}
-                      className="flex-1 py-4 px-6 bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 text-gray-500 font-black uppercase text-xs tracking-widest rounded-2xl hover:bg-gray-50 transition-all active:scale-95"
+                      className="flex-1 py-4 px-6 bg-white dark:bg-neutral-900 border border-border dark:border-neutral-800 text-muted-foreground font-black uppercase text-xs tracking-widest rounded-2xl hover:bg-secondary transition-all active:scale-95"
                     >
                       {t("cancel")}
                     </button>

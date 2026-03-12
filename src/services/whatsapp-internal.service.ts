@@ -8,19 +8,12 @@ export const WhatsAppInternalService = {
     getConversations: async () => {
         const { data, error } = await supabase
             .from('whatsapp_conversations')
-            .select(`
-                *,
-                user_profiles!whatsapp_conversations_user_id_fkey (
-                    full_name,
-                    email
-                )
-            `)
+            .select(`*`)
             .order('last_message_at', { ascending: false });
 
         if (error) {
             console.error('Error fetching conversations:', error);
-            // Fallback for dev/offline mode (Mock Data)
-            return MOCK_CONVERSATIONS;
+            return []; // Replaced mock fallback with empty array to expose real error
         }
         return data;
     },
@@ -43,18 +36,29 @@ export const WhatsAppInternalService = {
     },
 
     /**
+     * Mark conversation as read
+     */
+    markAsRead: async (conversationId: string) => {
+        await supabase
+            .from('whatsapp_conversations')
+            .update({ unread_count: 0 })
+            .eq('id', conversationId);
+    },
+
+    /**
      * Send a message (as Admin)
      */
-    sendMessage: async (conversationId: string, content: string) => {
-        // 0. Check and Log Usage
-        // Fetch the user_id for this conversation to attribute usage
+    sendMessage: async (conversationId: string, content: string, replyToMessageId?: string, file?: File) => {
+        // Fetch the target phone number for the conversation
         const { data: conv } = await supabase
             .from('whatsapp_conversations')
-            .select('user_id')
+            .select('phone_number, user_id')
             .eq('id', conversationId)
             .single();
 
-        if (conv?.user_id) {
+        if (!conv) throw new Error("Conversation not found");
+
+        if (conv.user_id) {
             const { data: usage, error: usageError } = await supabase.rpc('check_and_log_whatsapp_usage', {
                 p_user_id: conv.user_id,
                 p_conversation_id: conversationId
@@ -71,31 +75,78 @@ export const WhatsAppInternalService = {
             }
         }
 
-        // 1. Insert message
-        const { data, error } = await supabase
-            .from('whatsapp_messages')
-            .insert({
-                conversation_id: conversationId,
-                direction: 'outbound',
-                type: 'text',
-                content: { text: content },
-                status: 'read' // Auto-read for admin messages
-            })
-            .select()
-            .single();
+        // Call the Edge Function to send the message securely
+        const { data: session } = await supabase.auth.getSession();
 
-        if (error) throw error;
+        if (!session.session?.access_token) {
+            throw new Error("User session is not strictly defined or missing access token.");
+        }
 
-        // 2. Update conversation timestamp
-        await supabase
-            .from('whatsapp_conversations')
-            .update({
-                last_message_at: new Date().toISOString(),
-                status: 'active'
-            })
-            .eq('id', conversationId);
+        const bodyPayload: any = {
+            toMobile: conv.phone_number,
+            textBody: content,
+            conversationId: conversationId
+        };
 
-        return data;
+        if (replyToMessageId) {
+            bodyPayload.replyToMessageId = replyToMessageId;
+        }
+
+        if (file) {
+            if (!session.session?.user?.id) throw new Error("No user id");
+
+            const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+            const path = `${session.session.user.id}/whatsapp-media/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('secure_documents')
+                .upload(path, file);
+
+            if (uploadError) {
+                console.error("Upload error:", uploadError);
+                throw new Error("Failed to upload the attached file.");
+            }
+
+            const { data: signedUrlData, error: signError } = await supabase.storage
+                .from('secure_documents')
+                .createSignedUrl(path, 3600);
+
+            if (signError || !signedUrlData?.signedUrl) {
+                 console.error("Sign error:", signError);
+                 throw new Error("Failed to generate secure URL for file.");
+            }
+
+            bodyPayload.media = {
+                 url: signedUrlData.signedUrl,
+                 type: file.type.startsWith('image/') ? 'image' : 'document',
+                 filename: file.name
+            };
+        }
+
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-whatsapp-outbound`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${session.session.access_token}`,
+                'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(bodyPayload)
+        });
+
+        const textResponse = await response.text();
+        let result = {};
+        try {
+            result = JSON.parse(textResponse);
+        } catch {
+            result = { raw: textResponse };
+        }
+
+        if (!response.ok) {
+            const errPayload = result as any;
+            throw new Error(errPayload.error || errPayload.message || errPayload.raw || "Failed to send message via Edge Function");
+        }
+
+        return result;
     },
 
     /**

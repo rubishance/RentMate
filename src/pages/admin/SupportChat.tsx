@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Send, Paperclip, Search, MoreVertical,
     Bot, User as UserIcon, Check, CheckCheck,
-    RefreshCw, Zap
+    RefreshCw, Zap, Reply, X, Loader2
 } from 'lucide-react';
 import { WhatsAppInternalService } from '../../services/whatsapp-internal.service';
 import { WhatsAppConversation, WhatsAppMessage } from '../../types/database';
@@ -15,6 +15,11 @@ export default function SupportChat() {
     const [inputText, setInputText] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [replyingTo, setReplyingTo] = useState<{ id: string, text: string, whatsappId: string } | null>(null);
+    const [attachment, setAttachment] = useState<File | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
+    
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Dev Tools State
     const [showDevTools, setShowDevTools] = useState(false);
@@ -52,30 +57,64 @@ export default function SupportChat() {
     const loadMessages = async (id: string) => {
         const data = await WhatsAppInternalService.getMessages(id);
         if (data) setMessages(data);
+
+        // Mark as read when messages are loaded
+        await WhatsAppInternalService.markAsRead(id);
+        await loadConversations(); // Refresh sidebar to remove badge
+    };
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Size check (16MB max)
+        if (file.size > 16 * 1024 * 1024) {
+            setError('File is too large. Max size is 16MB.');
+            return;
+        }
+
+        setAttachment(file);
     };
 
     const handleSend = async () => {
-        if (!inputText.trim() || !selectedId) return;
+        if ((!inputText.trim() && !attachment) || !selectedId) return;
 
         const originalText = inputText;
+        const currentReply = replyingTo;
+        const currentAttachment = attachment;
+        
         setInputText(''); // Optimistic clear
+        setReplyingTo(null);
+        setAttachment(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
 
         try {
+            if (currentAttachment) setIsUploading(true);
+
             // Optimistic update
             const tempMsg: any = {
                 id: 'temp-' + Date.now(),
-                content: { text: originalText },
+                content: { 
+                    text: originalText, 
+                    media: currentAttachment ? { filename: currentAttachment.name } : undefined 
+                },
                 direction: 'outbound',
                 status: 'sent',
                 created_at: new Date().toISOString()
             };
             setMessages(prev => [...prev, tempMsg]);
 
-            await WhatsAppInternalService.sendMessage(selectedId, originalText);
+            await WhatsAppInternalService.sendMessage(selectedId, originalText, currentReply?.whatsappId, currentAttachment || undefined);
+            
+            if (currentAttachment) setIsUploading(false);
+
             await loadMessages(selectedId); // Refresh for real ID
         } catch (err: any) {
+            if (currentAttachment) setIsUploading(false);
             console.error('Failed to send', err);
             setInputText(originalText); // Revert
+            setReplyingTo(currentReply);
+            setAttachment(currentAttachment);
             setMessages(prev => prev.filter(m => !String(m.id).startsWith('temp-'))); // Remove optimistic msg
 
             if (err.code === 'LIMIT_EXCEEDED') {
@@ -261,16 +300,37 @@ export default function SupportChat() {
                                 return (
                                     <div
                                         key={msg.id}
-                                        className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'}`}
+                                        className={`flex w-full group ${isMe ? 'justify-end' : 'justify-start'}`}
                                     >
+                                        {!isMe && (
+                                            <button
+                                                onClick={() => setReplyingTo({ id: msg.id, text: (msg.content as any).text, whatsappId: (msg.metadata as any)?.whatsapp_id })}
+                                                className="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-slate-400 hover:text-primary mr-1 flex items-center justify-center self-center disabled:opacity-0"
+                                                disabled={!(msg.metadata as any)?.whatsapp_id}
+                                                title="Reply"
+                                            >
+                                                <Reply className="w-5 h-5 -scale-x-100" />
+                                            </button>
+                                        )}
                                         <div
                                             className={`max-w-[70%] rounded-lg px-4 py-2 shadow-sm relative ${isMe
                                                 ? 'bg-[#d9fdd3] dark:bg-[#005c4b] text-foreground rounded-tr-none'
                                                 : 'bg-card text-foreground rounded-tl-none'
                                                 }`}
                                         >
+                                            {/* Media Rendering for Outbound */}
+                                            {(msg.content as any).media && (
+                                                <div className="mb-2 w-full p-2 bg-black/10 dark:bg-black/20 rounded border border-black/5 dark:border-white/10 flex items-center gap-2">
+                                                    <Paperclip className="w-4 h-4 opacity-70 shrink-0" />
+                                                    <span className="text-xs truncate font-medium max-w-[150px]">
+                                                        {(msg.content as any).media.filename || 'Attachment'}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            
                                             <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                                                {(msg.content as any).text || JSON.stringify(msg.content)}
+                                                {(msg.content as any).text || ''}
+                                                {!(msg.content as any).text && !(msg.content as any).media && JSON.stringify(msg.content)}
                                             </p>
                                             <div className="flex items-center justify-end gap-1 mt-1 opacity-60">
                                                 <span className="text-xs">
@@ -281,6 +341,16 @@ export default function SupportChat() {
                                                 )}
                                             </div>
                                         </div>
+                                        {isMe && (
+                                            <button
+                                                onClick={() => setReplyingTo({ id: msg.id, text: (msg.content as any).text, whatsappId: (msg.metadata as any)?.whatsapp_id })}
+                                                className="opacity-0 group-hover:opacity-100 transition-opacity p-2 text-slate-400 hover:text-primary ml-1 flex items-center justify-center self-center disabled:opacity-0"
+                                                disabled={!(msg.metadata as any)?.whatsapp_id}
+                                                title="Reply"
+                                            >
+                                                <Reply className="w-5 h-5" />
+                                            </button>
+                                        )}
                                     </div>
                                 )
                             })}
@@ -288,11 +358,66 @@ export default function SupportChat() {
                         </div>
 
                         {/* Input Area */}
-                        <div className="p-4 bg-muted border-t border-border z-10 pb-6 md:pb-4">
-                            <div className="max-w-4xl mx-auto flex items-end gap-2">
-                                <button className="p-3 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
-                                    <Paperclip className="w-6 h-6" />
+                        <div className="p-4 bg-muted border-t border-border z-10 pb-6 md:pb-4 relative">
+                            <AnimatePresence>
+                                {attachment && (
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                                        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                                        className="absolute bottom-[calc(100%-8px)] left-4 right-4 bg-background/95 backdrop-blur shadow-[0_-4px_15px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_15px_rgba(0,0,0,0.3)] rounded-t-xl border border-b-0 border-border px-4 py-3 flex items-center justify-between z-20"
+                                    >
+                                        <div className="flex items-center gap-3 overflow-hidden">
+                                            <div className="w-10 h-10 rounded bg-primary/10 flex items-center justify-center shrink-0">
+                                                {attachment.type.startsWith('image/') ? (
+                                                    <img src={URL.createObjectURL(attachment)} alt="Preview" className="w-full h-full object-cover rounded opacity-80" />
+                                                ) : (
+                                                    <Paperclip className="w-5 h-5 text-primary" />
+                                                )}
+                                            </div>
+                                            <div className="flex flex-col min-w-0 pr-2">
+                                                <p className="text-xs font-bold text-foreground truncate">{attachment.name}</p>
+                                                <p className="text-xs text-muted-foreground">{(attachment.size / 1024 / 1024).toFixed(2)} MB</p>
+                                            </div>
+                                        </div>
+                                        <button onClick={() => setAttachment(null)} className="ml-2 p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full text-slate-500 transition-colors" disabled={isUploading}>
+                                            <X className="w-5 h-5" />
+                                        </button>
+                                    </motion.div>
+                                )}
+                                {replyingTo && !attachment && (
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                                        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                                        className="absolute bottom-[calc(100%-8px)] left-4 right-4 bg-background/95 backdrop-blur shadow-[0_-4px_15px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_15px_rgba(0,0,0,0.3)] rounded-t-xl border border-b-0 border-border px-4 py-3 flex items-start justify-between z-20"
+                                    >
+                                        <div className="flex-1 overflow-hidden border-l-4 border-l-primary pl-3 bg-muted/40 rounded-r-lg py-1 pr-2">
+                                            <p className="text-xs font-bold text-primary mb-0.5">Replying to message</p>
+                                            <p className="text-sm text-foreground/80 truncate">{replyingTo.text}</p>
+                                        </div>
+                                        <button onClick={() => setReplyingTo(null)} className="ml-2 p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full text-slate-500 transition-colors">
+                                            <X className="w-5 h-5" />
+                                        </button>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                            <div className="max-w-4xl mx-auto flex items-end gap-2 relative z-30">
+                                <button
+                                    type="button" 
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={isUploading}
+                                    className="p-3 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 disabled:opacity-50 transition-colors"
+                                >
+                                    {isUploading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Paperclip className="w-6 h-6" />}
                                 </button>
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    className="hidden"
+                                    onChange={handleFileSelect}
+                                    accept=".pdf,image/*"
+                                />
 
                                 <div className="flex-1 bg-card rounded-2xl border border-border px-4 py-3 flex items-center shadow-sm focus-within:ring-2 focus-within:ring-primary/50">
                                     <textarea
@@ -312,10 +437,10 @@ export default function SupportChat() {
 
                                 <button
                                     onClick={handleSend}
-                                    disabled={!inputText.trim()}
+                                    disabled={(!inputText.trim() && !attachment) || isUploading}
                                     className="p-3 bg-green-500 hover:bg-secondary text-white rounded-full shadow-lg disabled:opacity-50 disabled:shadow-none transition-all transform active:scale-95"
                                 >
-                                    <Send className="w-5 h-5 ml-0.5" />
+                                    {isUploading ? <Loader2 className="w-5 h-5 ml-0.5 animate-spin" /> : <Send className="w-5 h-5 ml-0.5" />}
                                 </button>
                             </div>
                             <div className="text-center mt-2">

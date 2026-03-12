@@ -118,7 +118,17 @@ serve(async (req) => {
                 <p><strong>Device:</strong> ${JSON.stringify(record.device_info || {})}</p>
                 ${record.screenshot_url ? `<p><strong>Screenshot:</strong> <a href="${record.screenshot_url}">View Image</a></p>` : ''}
             `;
-            htmlBody = wrapInTemplate(`משוב חדש: ${record.type}`, message, "http://localhost:5173/admin/feedback", "צפה במשוב במערכת");
+            htmlBody = wrapInTemplate(`משוב חדש: ${record.type}`, message, "https://app.rentmate.co.il/admin/feedback", "צפה במשוב במערכת");
+        } else if (payload.table === 'support_tickets') {
+            subject = `New Support Ticket: ${record.category?.toUpperCase() || 'GENERAL'} 🎫`;
+            const message = `
+                <p><strong>Title:</strong> ${record.title || 'N/A'}</p>
+                <p><strong>Category:</strong> ${record.category || 'N/A'}</p>
+                <p><strong>Priority:</strong> <span style="color: ${record.priority === 'urgent' ? 'red' : record.priority === 'high' ? 'orange' : 'inherit'}">${record.priority?.toUpperCase() || 'NORMAL'}</span></p>
+                <p><strong>Description:</strong> ${record.description || 'N/A'}</p>
+                <p><strong>User ID:</strong> ${record.user_id || 'Anonymous'}</p>
+            `;
+            htmlBody = wrapInTemplate("כרטיס תמיכה חדש", message, `https://app.rentmate.co.il/admin/tickets?id=${record.id}`, "צפה בכרטיס");
         } else if (payload.table === 'error_logs') {
             subject = "System Error Reported ⚠️";
             const message = `

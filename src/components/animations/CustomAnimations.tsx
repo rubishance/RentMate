@@ -400,7 +400,7 @@ export const AnimationShowcase = () => {
             <StaggerContainer>
                 {[1, 2, 3].map((i) => (
                     <StaggerItem key={i}>
-                        <div className="p-4 bg-gray-100 rounded mb-2">
+                        <div className="p-4 bg-muted rounded mb-2">
                             Item {i}
                         </div>
                     </StaggerItem>

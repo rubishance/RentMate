@@ -66,7 +66,7 @@ const PlanManagement = () => {
         max_file_size_mb: 5,
         features: {
             export_data: false,
-            ai_analysis: false,
+            ai_assistant: false,
             priority_support: false,
             custom_reports: false
         },
@@ -212,14 +212,14 @@ const PlanManagement = () => {
 
     const renderPriceField = (label: string, field: string) => (
         <div>
-            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{label}</label>
+            <label className="block text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">{label}</label>
             <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₪</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-bold">₪</span>
                 <input
                     type="number"
                     value={editForm[field as keyof SubscriptionPlan] as number}
                     onChange={e => handleChange(field as keyof SubscriptionPlan, e.target.value)}
-                    className="pl-8 block w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-brand-500 focus:ring-brand-500 font-bold text-gray-900 dark:text-white sm:text-sm"
+                    className="pl-8 block w-full rounded-xl border-border dark:border-gray-700 dark:bg-foreground shadow-sm focus:border-brand-500 focus:ring-brand-500 font-bold text-foreground dark:text-white sm:text-sm"
                 />
             </div>
         </div>
@@ -227,16 +227,16 @@ const PlanManagement = () => {
 
     const renderLimitField = (label: string, field: string, suffix: string = '') => (
         <div>
-            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{label}</label>
+            <label className="block text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">{label}</label>
             <div className="relative">
                 <input
                     type="number"
                     value={editForm[field as keyof SubscriptionPlan] as number}
                     onChange={e => handleChange(field as keyof SubscriptionPlan, e.target.value)}
-                    className="block w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-brand-500 focus:ring-brand-500 font-bold text-gray-900 dark:text-white sm:text-sm"
+                    className="block w-full rounded-xl border-border dark:border-gray-700 dark:bg-foreground shadow-sm focus:border-brand-500 focus:ring-brand-500 font-bold text-foreground dark:text-white sm:text-sm"
                 />
                 {suffix && (
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-black text-gray-400 uppercase">{suffix}</span>
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-black text-muted-foreground uppercase">{suffix}</span>
                 )}
             </div>
         </div>
@@ -249,10 +249,10 @@ const PlanManagement = () => {
                 onClick={() => toggleFeature(featureKey)}
                 className={`flex items-center justify-between p-3 rounded-xl border-2 transition-all ${isActive
                     ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/20'
-                    : 'border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50'
+                    : 'border-border dark:border-gray-700 bg-secondary dark:bg-foreground/50'
                     }`}
             >
-                <span className={`text-xs font-black uppercase tracking-tight ${isActive ? 'text-brand-700 dark:text-brand-400' : 'text-gray-400'}`}>
+                <span className={`text-xs font-black uppercase tracking-tight ${isActive ? 'text-brand-700 dark:text-brand-400' : 'text-muted-foreground'}`}>
                     {label}
                 </span>
                 {isActive ? (
@@ -278,13 +278,13 @@ const PlanManagement = () => {
 
         const ICON_MAP: Record<string, any> = { 'solo': Star, 'mate': Zap, 'master': Shield, 'unlimited': Lock };
         const COLOR_MAP: Record<string, string> = { 'solo': 'text-slate-500', 'mate': 'text-primary', 'master': 'text-amber-500', 'unlimited': 'text-primary' };
-        const BG_MAP: Record<string, string> = { 'solo': 'bg-background/50', 'mate': 'bg-blue-50/50 dark:bg-blue-900/20', 'master': 'bg-amber-50/50 dark:bg-amber-900/20', 'unlimited': 'bg-primary-50/50 dark:bg-primary-900/20' };
+        const BG_MAP: Record<string, string> = { 'solo': 'bg-background/50', 'mate': 'bg-primary/10/50 dark:bg-blue-900/20', 'master': 'bg-amber-50/50 dark:bg-amber-900/20', 'unlimited': 'bg-primary-50/50 dark:bg-primary-900/20' };
 
         const Icon = ICON_MAP[baseId] || Star;
 
         return (
             <div className="sticky top-8">
-                <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 text-center">Live Preview (Mobile/Desktop Card)</p>
+                <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-4 text-center">Live Preview (Mobile/Desktop Card)</p>
                 <div className="max-w-sm mx-auto">
                     <GlassCard
                         className={`p-8 relative flex flex-col ${plan.id === 'mate' ? 'border-primary/50 ring-4 ring-primary/10' : ''} ${BG_MAP[baseId] || 'bg-card'}`}
@@ -348,11 +348,11 @@ const PlanManagement = () => {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+                    <h1 className="text-3xl font-extrabold text-foreground dark:text-white tracking-tight flex items-center gap-2">
                         <TagIcon className="w-8 h-8 text-brand-600" />
                         Plan Management <span className="text-xs bg-brand-100 text-brand-600 px-2 py-1 rounded-md ml-2 uppercase tracking-widest">v2.0</span>
                     </h1>
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mt-1">
+                    <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground mt-1">
                         Configure pricing, marketing content, and resource limits.
                     </p>
                 </div>
@@ -367,7 +367,7 @@ const PlanManagement = () => {
                     </button>
                     <button
                         onClick={fetchPlans}
-                        className="p-2.5 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm"
+                        className="p-2.5 text-muted-foreground hover:text-foreground dark:text-muted-foreground dark:hover:text-white transition-colors bg-white dark:bg-gray-800 rounded-xl border border-border dark:border-gray-700 shadow-sm"
                         title="Refresh Plans"
                     >
                         <ArrowPathIcon className="w-5 h-5" />
@@ -379,14 +379,14 @@ const PlanManagement = () => {
             {(isCreating || editingId) && (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-in fade-in slide-in-from-top-4 duration-500">
                     {/* Left: Editor Form */}
-                    <div className="lg:col-span-8 bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-xl overflow-hidden">
-                        <div className="p-6 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/10 flex justify-between items-center">
+                    <div className="lg:col-span-8 bg-white dark:bg-gray-800 rounded-3xl border border-border dark:border-gray-700 shadow-xl overflow-hidden">
+                        <div className="p-6 border-b border-border dark:border-gray-700 bg-gray-50/50 dark:bg-foreground/10 flex justify-between items-center">
                             <div>
-                                <h2 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">
+                                <h2 className="text-xl font-black text-foreground dark:text-white uppercase tracking-tight">
                                     {isCreating ? '📦 New Tier' : '✏️ Edit Tier'}
                                 </h2>
                             </div>
-                            <button onClick={handleCancel} className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors">
+                            <button onClick={handleCancel} className="p-2 text-muted-foreground hover:text-muted-foreground dark:hover:text-white transition-colors">
                                 <XCircleIcon className="w-6 h-6" />
                             </button>
                         </div>
@@ -400,42 +400,42 @@ const PlanManagement = () => {
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="md:col-span-2">
-                                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Internal Name</label>
+                                        <label className="block text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">Internal Name</label>
                                         <input
                                             type="text"
                                             value={editForm.name || ''}
                                             onChange={e => handleChange('name', e.target.value)}
-                                            className="block w-full rounded-2xl border-gray-100 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-brand-500 focus:ring-brand-500 font-bold text-gray-900 dark:text-white"
+                                            className="block w-full rounded-2xl border-border dark:border-gray-700 dark:bg-foreground shadow-sm focus:border-brand-500 focus:ring-brand-500 font-bold text-foreground dark:text-white"
                                             placeholder="e.g. ULTIMATE"
                                         />
                                     </div>
                                     <div className="md:col-span-2">
-                                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Marketing Description</label>
+                                        <label className="block text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">Marketing Description</label>
                                         <textarea
                                             rows={2}
                                             value={editForm.description || ''}
                                             onChange={e => handleChange('description', e.target.value)}
-                                            className="block w-full rounded-2xl border-gray-100 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-brand-500 focus:ring-brand-500 font-medium text-gray-800 dark:text-gray-200"
+                                            className="block w-full rounded-2xl border-border dark:border-gray-700 dark:bg-foreground shadow-sm focus:border-brand-500 focus:ring-brand-500 font-medium text-gray-800 dark:text-gray-200"
                                             placeholder="Catchy value proposition..."
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Badge Text</label>
+                                        <label className="block text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">Badge Text</label>
                                         <input
                                             type="text"
                                             value={editForm.badge_text || ''}
                                             onChange={e => handleChange('badge_text', e.target.value)}
-                                            className="block w-full rounded-2xl border-gray-100 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-brand-500 focus:ring-brand-500 font-bold text-gray-900 dark:text-white"
+                                            className="block w-full rounded-2xl border-border dark:border-gray-700 dark:bg-foreground shadow-sm focus:border-brand-500 focus:ring-brand-500 font-bold text-foreground dark:text-white"
                                             placeholder="e.g. MOST POPULAR"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Button CTA</label>
+                                        <label className="block text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">Button CTA</label>
                                         <input
                                             type="text"
                                             value={editForm.cta_text || ''}
                                             onChange={e => handleChange('cta_text', e.target.value)}
-                                            className="block w-full rounded-2xl border-gray-100 dark:border-gray-700 dark:bg-gray-900 shadow-sm focus:border-brand-500 focus:ring-brand-500 font-bold text-gray-900 dark:text-white"
+                                            className="block w-full rounded-2xl border-border dark:border-gray-700 dark:bg-foreground shadow-sm focus:border-brand-500 focus:ring-brand-500 font-bold text-foreground dark:text-white"
                                             placeholder="Default: Start Free Trial"
                                         />
                                     </div>
@@ -468,7 +468,7 @@ const PlanManagement = () => {
                                     {renderLimitField('WhatsApp msgs', 'max_whatsapp_messages')}
                                 </div>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    <FeatureToggle featureKey="ai_analysis" label="AI Analysis" />
+                                    <FeatureToggle featureKey="ai_assistant" label="ניתוח AI" />
                                     <FeatureToggle featureKey="export_data" label="Data Export" />
                                     <FeatureToggle featureKey="custom_reports" label="Reports" />
                                     <FeatureToggle featureKey="priority_support" label="Priority" />
@@ -481,13 +481,13 @@ const PlanManagement = () => {
                                     <div className={`w-12 h-6 rounded-full p-1 transition-colors ${editForm.is_active ? 'bg-brand-600' : 'bg-gray-300'}`} onClick={() => handleChange('is_active', !editForm.is_active)}>
                                         <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${editForm.is_active ? 'translate-x-6' : 'translate-x-0'}`} />
                                     </div>
-                                    <span className="text-xs font-black uppercase tracking-widest text-gray-500 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                                    <span className="text-xs font-black uppercase tracking-widest text-muted-foreground group-hover:text-foreground dark:group-hover:text-white transition-colors">
                                         {editForm.is_active ? 'Active' : 'Paused (Hidden from users)'}
                                     </span>
                                 </label>
 
                                 <div className="flex gap-4">
-                                    <button onClick={handleCancel} className="text-xs font-black text-gray-400 uppercase tracking-widest hover:text-gray-600">Cancel</button>
+                                    <button onClick={handleCancel} className="text-xs font-black text-muted-foreground uppercase tracking-widest hover:text-muted-foreground">Cancel</button>
                                     <button
                                         onClick={handleSave}
                                         disabled={saving}
@@ -511,9 +511,9 @@ const PlanManagement = () => {
             {/* Plans List */}
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                 {plans.length === 0 ? (
-                    <div className="lg:col-span-3 py-20 bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 text-center">
+                    <div className="lg:col-span-3 py-20 bg-white dark:bg-gray-800 rounded-3xl border border-border dark:border-gray-700 text-center">
                         <TagIcon className="w-16 h-16 mx-auto mb-4 text-gray-100 dark:text-gray-700" />
-                        <p className="font-black text-gray-400 uppercase tracking-widest">No subscription plans defined yet.</p>
+                        <p className="font-black text-muted-foreground uppercase tracking-widest">No subscription plans defined yet.</p>
                     </div>
                 ) : (
                     plans.map((plan) => (
@@ -523,15 +523,15 @@ const PlanManagement = () => {
                                 relative flex flex-col rounded-3xl border-2 p-8 transition-all duration-300
                                 ${editingId === plan.id
                                     ? 'bg-brand-50/20 dark:bg-brand-900/10 border-brand-500 shadow-2xl opacity-50 scale-95 pointer-events-none'
-                                    : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 hover:border-brand-200 dark:hover:border-brand-900 hover:shadow-xl'}
+                                    : 'bg-white dark:bg-gray-800 border-border dark:border-gray-700 hover:border-brand-200 dark:hover:border-brand-900 hover:shadow-xl'}
                             `}
                         >
                             <div className="flex justify-between items-start mb-6">
                                 <div>
-                                    <h3 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">{plan.name}</h3>
+                                    <h3 className="text-2xl font-black text-foreground dark:text-white tracking-tight">{plan.name}</h3>
                                     <div className="mt-2 flex items-baseline gap-1">
-                                        <span className="text-4xl font-black text-gray-900 dark:text-white">₪{plan.price_monthly}</span>
-                                        <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">/ Month</span>
+                                        <span className="text-4xl font-black text-foreground dark:text-white">₪{plan.price_monthly}</span>
+                                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">/ Month</span>
                                     </div>
                                     <div className="text-xs font-black text-brand-600 mt-1 uppercase tracking-widest">
                                         ₪{plan.price_yearly} Yearly Billing
@@ -547,14 +547,14 @@ const PlanManagement = () => {
                                 <div className="flex gap-2">
                                     <button
                                         onClick={() => handleEdit(plan)}
-                                        className="p-3 text-gray-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 rounded-2xl border border-gray-100 dark:border-gray-700 transition-all"
+                                        className="p-3 text-muted-foreground hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 rounded-2xl border border-border dark:border-gray-700 transition-all"
                                         title="Edit Plan"
                                     >
                                         <PencilSquareIcon className="w-5 h-5" />
                                     </button>
                                     <button
                                         onClick={() => handleDelete(plan.id, plan.name)}
-                                        className="p-3 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl border border-gray-100 dark:border-gray-700 transition-all"
+                                        className="p-3 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl border border-border dark:border-gray-700 transition-all"
                                         title="Delete Plan"
                                     >
                                         <TrashIcon className="w-5 h-5" />
@@ -564,21 +564,21 @@ const PlanManagement = () => {
 
                             <div className="flex-1 space-y-4">
                                 <div className="grid grid-cols-2 gap-3 mb-6">
-                                    <div className="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-gray-700">
-                                        <div className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Assets</div>
-                                        <div className="text-sm font-black text-gray-900 dark:text-white">{plan.max_properties === -1 ? 'Unlimited' : plan.max_properties}</div>
+                                    <div className="p-3 bg-secondary dark:bg-foreground/50 rounded-2xl border border-border dark:border-gray-700">
+                                        <div className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">Assets</div>
+                                        <div className="text-sm font-black text-foreground dark:text-white">{plan.max_properties === -1 ? 'Unlimited' : plan.max_properties}</div>
                                     </div>
-                                    <div className="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-gray-700">
-                                        <div className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Cloud</div>
-                                        <div className="text-sm font-black text-gray-900 dark:text-white">{plan.max_storage_mb === -1 ? 'Unlimited' : `${(plan.max_storage_mb / 1024).toFixed(1)}GB`}</div>
+                                    <div className="p-3 bg-secondary dark:bg-foreground/50 rounded-2xl border border-border dark:border-gray-700">
+                                        <div className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">Cloud</div>
+                                        <div className="text-sm font-black text-foreground dark:text-white">{plan.max_storage_mb === -1 ? 'Unlimited' : `${(plan.max_storage_mb / 1024).toFixed(1)}GB`}</div>
                                     </div>
-                                    <div className="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-gray-700">
-                                        <div className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">AI Help</div>
-                                        <div className="text-sm font-black text-gray-900 dark:text-white">{plan.max_sessions} SESS</div>
+                                    <div className="p-3 bg-secondary dark:bg-foreground/50 rounded-2xl border border-border dark:border-gray-700">
+                                        <div className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">AI Help</div>
+                                        <div className="text-sm font-black text-foreground dark:text-white">{plan.max_sessions} SESS</div>
                                     </div>
-                                    <div className="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-gray-700">
-                                        <div className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">WhatsApp</div>
-                                        <div className="text-sm font-black text-gray-900 dark:text-white">{plan.max_whatsapp_messages === -1 ? '∞' : plan.max_whatsapp_messages} MSG</div>
+                                    <div className="p-3 bg-secondary dark:bg-foreground/50 rounded-2xl border border-border dark:border-gray-700">
+                                        <div className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">WhatsApp</div>
+                                        <div className="text-sm font-black text-foreground dark:text-white">{plan.max_whatsapp_messages === -1 ? '∞' : plan.max_whatsapp_messages} MSG</div>
                                     </div>
                                 </div>
 
@@ -592,9 +592,9 @@ const PlanManagement = () => {
                                 </div>
                             </div>
 
-                            <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-900/30 -mx-8 -mb-8 px-8 py-6 rounded-b-3xl">
-                                <div className="text-xs font-black text-gray-400 uppercase tracking-widest">Plan Integrity</div>
-                                <div className="text-xs font-mono font-bold text-gray-500">ID: {plan.id.slice(0, 8)}</div>
+                            <div className="mt-8 pt-6 border-t border-border dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-foreground/30 -mx-8 -mb-8 px-8 py-6 rounded-b-3xl">
+                                <div className="text-xs font-black text-muted-foreground uppercase tracking-widest">Plan Integrity</div>
+                                <div className="text-xs font-mono font-bold text-muted-foreground">ID: {plan.id.slice(0, 8)}</div>
                             </div>
                         </div>
                     ))

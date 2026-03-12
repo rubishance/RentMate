@@ -12,6 +12,7 @@ interface EditProfileModalProps {
     initialData: {
         full_name: string;
         phone: string;
+        phone_verified?: boolean;
     };
 }
 
@@ -23,6 +24,12 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
     const [isLoading, setIsLoading] = useState(false);
     const [isReadOnly, setIsReadOnly] = useState(true);
 
+    const [isPhoneVerified, setIsPhoneVerified] = useState(initialData.phone_verified || false);
+    const [showOtpInput, setShowOtpInput] = useState(false);
+    const [otp, setOtp] = useState('');
+    const [isSendingOtp, setIsSendingOtp] = useState(false);
+    const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+
     useScrollLock(isOpen);
 
     useEffect(() => {
@@ -31,9 +38,62 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
             setFirstName(parts[0] || '');
             setLastName(parts.slice(1).join(' ') || '');
             setPhone(initialData.phone || '');
+            setIsPhoneVerified(initialData.phone_verified || false);
+            setShowOtpInput(false);
+            setOtp('');
             setIsReadOnly(true); // Always start in view mode
         }
     }, [isOpen, initialData]);
+
+    const handleSendOtp = async () => {
+        if (!phone.trim()) {
+            alert(lang === 'he' ? 'אנא הזן מספר טלפון קודם' : 'Please enter a phone number first');
+            return;
+        }
+        setIsSendingOtp(true);
+        try {
+            const { error } = await supabase.functions.invoke('send-whatsapp-otp', {
+                body: { phone: phone.trim() }
+            });
+
+            if (error) throw error;
+
+            setShowOtpInput(true);
+            alert(lang === 'he' ? 'קוד בן 6 ספרות נשלח ל-WhatsApp שלך' : 'A 6-digit code has been sent to your WhatsApp');
+        } catch (error) {
+            console.error('Error sending OTP:', error);
+            alert(lang === 'he' ? 'שגיאה בשליחת קוד. בדוק את המספר שלך ונסה שוב.' : 'Error sending code. Check your number and try again.');
+        } finally {
+            setIsSendingOtp(false);
+        }
+    };
+
+    const handleVerifyOtp = async () => {
+        if (!otp.trim() || otp.length !== 6) {
+            alert(lang === 'he' ? 'אנא הזן קוד חוקי בן 6 ספרות' : 'Please enter a valid 6-digit code');
+            return;
+        }
+        setIsVerifyingOtp(true);
+        try {
+            const { data, error } = await supabase.functions.invoke('verify-whatsapp-otp', {
+                body: { phone: phone.trim(), token: otp.trim() }
+            });
+
+            if (error) throw error;
+
+            if (data?.verified) {
+                setIsPhoneVerified(true);
+                setShowOtpInput(false);
+                alert(lang === 'he' ? 'הטלפון אומת בהצלחה!' : 'Phone verified successfully!');
+                onSuccess(); // refresh parent
+            }
+        } catch (error) {
+            console.error('Error verifying OTP:', error);
+            alert(lang === 'he' ? 'קוד שגוי או פג תוקף.' : 'Incorrect or expired code.');
+        } finally {
+            setIsVerifyingOtp(false);
+        }
+    };
 
     const handleSave = async () => {
         if (!firstName.trim() || !lastName.trim()) {
@@ -53,11 +113,17 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
             if (!user) throw new Error('No user found');
 
             const fullName = `${firstName.trim()} ${lastName.trim()}`;
+
+            // If phone changed, mark as unverified
+            const phoneChanged = phone.trim() !== (initialData.phone || '').trim();
+            const newVerificationStatus = phoneChanged ? false : isPhoneVerified;
+
             const updates = {
                 id: user.id,
                 email: user.email,
                 full_name: fullName,
                 phone: phone.trim(),
+                phone_verified: newVerificationStatus,
                 updated_at: new Date().toISOString(),
             };
 
@@ -105,7 +171,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                     <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <label className="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block ml-1">{lang === 'he' ? 'שם פרטי' : 'First Name'}</label>
+                                <label className="text-xs font-black uppercase tracking-widest text-muted-foreground dark:text-muted-foreground block ml-1">{lang === 'he' ? 'שם פרטי' : 'First Name'}</label>
                                 <input
                                     type="text"
                                     value={firstName}
@@ -119,7 +185,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block ml-1">{lang === 'he' ? 'שם משפחה' : 'Last Name'}</label>
+                                <label className="text-xs font-black uppercase tracking-widest text-muted-foreground dark:text-muted-foreground block ml-1">{lang === 'he' ? 'שם משפחה' : 'Last Name'}</label>
                                 <input
                                     type="text"
                                     value={lastName}
@@ -135,18 +201,70 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 block ml-1">{lang === 'he' ? 'טלפון' : 'Phone'}</label>
-                            <input
-                                type="tel"
-                                value={phone}
-                                onChange={(e) => setPhone(e.target.value)}
-                                readOnly={isReadOnly}
-                                placeholder="050-0000000"
-                                className={`w-full p-3 border rounded-xl outline-none transition-all ${isReadOnly
-                                    ? 'bg-muted border-border cursor-default'
-                                    : 'bg-secondary border-border focus:ring-2 focus:ring-indigo-500'
-                                    }`}
-                            />
+                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground dark:text-muted-foreground block ml-1 flex items-center justify-between">
+                                <span>{lang === 'he' ? 'טלפון' : 'Phone'}</span>
+                                {isPhoneVerified && !isReadOnly && phone.trim() === initialData.phone?.trim() && (
+                                    <span className="text-green-500 flex items-center gap-1 bg-green-500/10 px-2 rounded-full text-[10px]">
+                                        ✓ {lang === 'he' ? 'מאומת (WhatsApp)' : 'Verified (WhatsApp)'}
+                                    </span>
+                                )}
+                                {!isPhoneVerified && !isReadOnly && phone.trim() && (
+                                    <span className="text-amber-500 flex items-center gap-1 bg-amber-500/10 px-2 rounded-full text-[10px]">
+                                        ! {lang === 'he' ? 'לא מאומת' : 'Unverified'}
+                                    </span>
+                                )}
+                            </label>
+
+                            <div className="flex gap-2">
+                                <input
+                                    type="tel"
+                                    value={phone}
+                                    onChange={(e) => {
+                                        setPhone(e.target.value);
+                                        setIsPhoneVerified(false);
+                                        setShowOtpInput(false);
+                                    }}
+                                    readOnly={isReadOnly}
+                                    placeholder="0500000000 (include country code like +972...)"
+                                    className={`w-full p-3 border rounded-xl outline-none transition-all ${isReadOnly
+                                        ? 'bg-muted border-border cursor-default'
+                                        : 'bg-secondary border-border focus:ring-2 focus:ring-indigo-500'
+                                        }`}
+                                />
+                                {!isReadOnly && !isPhoneVerified && phone.trim() && !showOtpInput && (
+                                    <button
+                                        onClick={handleSendOtp}
+                                        disabled={isSendingOtp || isLoading}
+                                        className="px-4 bg-primary text-white rounded-xl font-bold text-xs uppercase hover:bg-primary/90 transition-all flex items-center justify-center min-w-[100px]"
+                                    >
+                                        {isSendingOtp ? <Loader2 className="w-4 h-4 animate-spin" /> : (lang === 'he' ? 'שלח קוד' : 'Verify')}
+                                    </button>
+                                )}
+                            </div>
+
+                            {showOtpInput && !isReadOnly && (
+                                <div className="mt-3 p-4 bg-primary/5 rounded-xl border border-primary/20 space-y-3 animate-in fade-in slide-in-from-top-2">
+                                    <label className="text-xs font-black text-primary block">{lang === 'he' ? 'קוד אימות (WhatsApp)' : 'Verification Code (WhatsApp)'}</label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            maxLength={6}
+                                            value={otp}
+                                            onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                                            placeholder="123456"
+                                            className="w-full p-3 border border-primary/30 rounded-xl outline-none tracking-widest text-center font-black focus:ring-2 focus:ring-primary/50 bg-background"
+                                        />
+                                        <button
+                                            onClick={handleVerifyOtp}
+                                            disabled={isVerifyingOtp || otp.length !== 6}
+                                            className="px-6 bg-primary text-white rounded-xl font-bold text-xs uppercase hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center justify-center min-w-[100px]"
+                                        >
+                                            {isVerifyingOtp ? <Loader2 className="w-4 h-4 animate-spin" /> : (lang === 'he' ? 'אמת' : 'Confirm')}
+                                        </button>
+                                    </div>
+                                    <p className="text-[10px] text-muted-foreground">{lang === 'he' ? 'הכנס את הקוד שקיבלת ל-WhatsApp. אם לא קיבלת, ודא שהוספת קידומת בינלאומית, למשל +972' : 'Enter the code sent to your WhatsApp. Make sure your number includes country code e.g. +1 or +972.'}</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

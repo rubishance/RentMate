@@ -71,11 +71,11 @@ export function TimelineWidget({ contracts, loading }: TimelineWidgetProps) {
 
     if (loading) {
         return (
-            <div className="bg-white dark:bg-neutral-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-neutral-800 h-full flex items-center justify-center">
+            <div className="bg-white dark:bg-neutral-900 rounded-[2.5rem] p-8 shadow-sm border border-border dark:border-neutral-800 h-full flex items-center justify-center">
                 <div className="animate-pulse flex flex-col items-center gap-3 w-full">
-                    <div className="h-4 w-1/3 bg-gray-100 dark:bg-neutral-800 rounded self-start"></div>
-                    <div className="h-20 w-full bg-gray-50 dark:bg-neutral-800/50 rounded-[2rem]"></div>
-                    <div className="h-20 w-full bg-gray-50 dark:bg-neutral-800/50 rounded-[2rem]"></div>
+                    <div className="h-4 w-1/3 bg-muted dark:bg-neutral-800 rounded self-start"></div>
+                    <div className="h-20 w-full bg-secondary dark:bg-neutral-800/50 rounded-[2rem]"></div>
+                    <div className="h-20 w-full bg-secondary dark:bg-neutral-800/50 rounded-[2rem]"></div>
                 </div>
             </div>
         );
@@ -83,13 +83,13 @@ export function TimelineWidget({ contracts, loading }: TimelineWidgetProps) {
 
     if (timelineItems.length === 0) {
         return (
-            <div className="bg-white dark:bg-neutral-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-neutral-800 h-full flex flex-col items-center justify-center text-center min-h-[300px] space-y-6">
-                <div className="w-16 h-16 bg-gray-50 dark:bg-neutral-800 rounded-2xl flex items-center justify-center">
+            <div className="bg-white dark:bg-neutral-900 rounded-[2.5rem] p-8 shadow-sm border border-border dark:border-neutral-800 h-full flex flex-col items-center justify-center text-center min-h-[300px] space-y-6">
+                <div className="w-16 h-16 bg-secondary dark:bg-neutral-800 rounded-2xl flex items-center justify-center">
                     <Calendar className="w-8 h-8 text-black dark:text-white" />
                 </div>
                 <div className="space-y-2">
                     <h3 className="text-xl font-bold text-black dark:text-white">{t('noActiveContracts')}</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 max-w-[200px]">{t('addContractDesc')}</p>
+                    <p className="text-sm text-muted-foreground dark:text-muted-foreground max-w-[200px]">{t('addContractDesc')}</p>
                 </div>
                 <button
                     onClick={() => push('contract_wizard', {}, { isExpanded: true, title: t('addContract') })}
@@ -102,9 +102,9 @@ export function TimelineWidget({ contracts, loading }: TimelineWidgetProps) {
     }
 
     return (
-        <div className="bg-white dark:bg-neutral-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-neutral-800">
+        <div className="bg-white dark:bg-neutral-900 rounded-[2.5rem] p-8 shadow-sm border border-border dark:border-neutral-800">
             <div className="flex items-center justify-between mb-8">
-                <h3 className="font-black text-xs uppercase tracking-widest text-gray-400 dark:text-gray-500 flex items-center gap-2">
+                <h3 className="font-black text-xs uppercase tracking-widest text-muted-foreground dark:text-muted-foreground flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
                     {t('leaseTimeline')}
                 </h3>
@@ -116,7 +116,7 @@ export function TimelineWidget({ contracts, loading }: TimelineWidgetProps) {
                         <div className="flex justify-between items-start mb-3">
                             <div>
                                 <h4 className="font-bold text-black dark:text-white group-hover:underline cursor-pointer" onClick={() => navigate((item as any).properties?.id ? `/properties/${(item as any).properties.id}` : '/properties')}>{item.address}</h4>
-                                <p className="text-xs font-medium text-gray-400 dark:text-gray-500 mt-1">
+                                <p className="text-xs font-medium text-muted-foreground dark:text-muted-foreground mt-1">
                                     {item.daysLeft > 0
                                         ? t('daysLeft', { count: item.daysLeft })
                                         : t('contractEnded')}
@@ -125,7 +125,7 @@ export function TimelineWidget({ contracts, loading }: TimelineWidgetProps) {
                             <div className={`px-3 py-1 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5
                                 ${item.status === 'critical' ? 'bg-destructive/10 text-destructive dark:bg-red-900/20 dark:text-red-400 border border-red-100 dark:border-red-900/40' :
                                     item.status === 'warning' ? 'bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400 border border-orange-100 dark:border-orange-900/40' :
-                                        'bg-gray-50 text-black dark:bg-neutral-800 dark:text-white border border-gray-100 dark:border-neutral-700'}`}
+                                        'bg-secondary text-black dark:bg-neutral-800 dark:text-white border border-border dark:border-neutral-700'}`}
                             >
                                 <Clock className="w-3 h-3" />
                                 {item.displayEndDate}
@@ -133,7 +133,7 @@ export function TimelineWidget({ contracts, loading }: TimelineWidgetProps) {
                         </div>
 
                         {/* Progress Bar */}
-                        <div className="h-1.5 w-full bg-gray-50 dark:bg-neutral-800 rounded-full overflow-hidden relative">
+                        <div className="h-1.5 w-full bg-secondary dark:bg-neutral-800 rounded-full overflow-hidden relative">
                             <div
                                 className={`h-full rounded-full transition-all duration-1000 ease-out relative
                                     ${item.status === 'critical' ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.4)]' :

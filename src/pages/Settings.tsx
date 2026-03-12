@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import { User, Bell, Shield, ChevronRight, Mail, Send, Check, LogOut, MessageCircle, Accessibility } from 'lucide-react';
 import { useUserPreferences } from '../contexts/UserPreferencesContext';
-import type { Language, Gender } from '../types/database';
+
 import { EditProfileModal, NotificationsSettingsModal } from '../components/modals/EditProfileModal';
 import { useTranslation } from '../hooks/useTranslation';
 import { PrivacySecurityModal } from '../components/modals/PrivacySecurityModal';
@@ -20,10 +20,11 @@ export function Settings() {
     const navigate = useNavigate();
     const [isAdmin, setIsAdmin] = useState(false);
 
-    const [userData, setUserData] = useState<{ full_name: string | null; email: string | null; phone: string | null }>({
+    const [userData, setUserData] = useState<{ full_name: string | null; email: string | null; phone: string | null; phone_verified: boolean }>({
         full_name: '',
         email: '',
-        phone: ''
+        phone: '',
+        phone_verified: false
     });
 
     const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
@@ -48,7 +49,7 @@ export function Settings() {
 
             const { data } = await supabase
                 .from('user_profiles')
-                .select('full_name, role, phone')
+                .select('full_name, role, phone, phone_verified')
                 .eq('id', user.id)
                 .single();
 
@@ -60,7 +61,8 @@ export function Settings() {
             setUserData({
                 full_name: name || t('user_generic'),
                 email: email || '',
-                phone: data?.phone || ''
+                phone: data?.phone || '',
+                phone_verified: data?.phone_verified || false
             });
         }
     };
@@ -299,9 +301,9 @@ export function Settings() {
 
                                         <button
                                             onClick={() => window.location.href = 'mailto:support@rentmate.co.il'}
-                                            className="p-6 bg-blue-500/10 dark:bg-blue-500/5 border border-primary/20 rounded-[2rem] flex items-center gap-4 hover:bg-blue-500/20 transition-all group"
+                                            className="p-6 bg-primary/10 dark:bg-primary/5 border border-primary/20 rounded-[2rem] flex items-center gap-4 hover:bg-primary/20 transition-all group"
                                         >
-                                            <div className="w-12 h-12 rounded-xl bg-blue-500 text-white flex items-center justify-center group-hover:scale-110 transition-transform">
+                                            <div className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center group-hover:scale-110 transition-transform">
                                                 <Mail className="w-6 h-6" />
                                             </div>
                                             <div className="text-left rtl:text-right">
@@ -367,7 +369,8 @@ export function Settings() {
                 }}
                 initialData={{
                     full_name: userData.full_name || '',
-                    phone: userData.phone || ''
+                    phone: userData.phone || '',
+                    phone_verified: userData.phone_verified || false
                 }}
             />
 

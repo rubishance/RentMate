@@ -39,10 +39,10 @@ export const Unsubscribe = () => {
     }, [token, type, lang]);
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+        <div className="min-h-screen bg-secondary flex flex-col items-center justify-center p-4">
             <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center space-y-6">
                 <div className="flex justify-center">
-                    <div className={`p-4 rounded-full ${status === 'loading' ? 'bg-blue-50 text-primary' :
+                    <div className={`p-4 rounded-full ${status === 'loading' ? 'bg-primary/10 text-primary' :
                             status === 'success' ? 'bg-green-50 text-secondary' :
                                 'bg-red-50 text-destructive'
                         }`}>
@@ -53,12 +53,12 @@ export const Unsubscribe = () => {
                 </div>
 
                 <div className="space-y-2">
-                    <h1 className="text-2xl font-bold text-gray-900">
+                    <h1 className="text-2xl font-bold text-foreground">
                         {status === 'loading' && (lang === 'he' ? 'מעבד בקשה...' : 'Processing...')}
                         {status === 'success' && (lang === 'he' ? 'הוסרת בהצלחה' : 'Unsubscribed Successfully')}
                         {status === 'error' && (lang === 'he' ? 'שגיאה' : 'Error')}
                     </h1>
-                    <p className="text-gray-500">
+                    <p className="text-muted-foreground">
                         {status === 'loading' && (lang === 'he' ? 'אנא המתן בזמן שאנו מעדכנים את ההעדפות שלך' : 'Please wait while we update your preferences')}
                         {status === 'success' && (lang === 'he' ? 'הוסרת מרשימת התפוצה. לא תקבל יותר הודעות מסוג זה.' : 'You have been removed from this mailing list.')}
                         {status === 'error' && message}
@@ -66,7 +66,7 @@ export const Unsubscribe = () => {
                 </div>
 
                 <div className="pt-4 border-t">
-                    <Link to="/" className="inline-flex items-center justify-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900">
+                    <Link to="/" className="inline-flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground">
                         <Mail className="w-4 h-4" />
                         {lang === 'he' ? 'חזרה לדף הבית' : 'Return to Home'}
                     </Link>

@@ -32,7 +32,7 @@ export function CookieConsent() {
                 >
                     <div className="bg-slate-900/95 text-white/90 backdrop-blur-md p-5 rounded-2xl shadow-2xl border border-white/10 flex flex-col gap-4">
                         <div className="flex items-start gap-4">
-                            <div className="p-2 bg-blue-500/20 rounded-lg text-primary mt-1">
+                            <div className="p-2 bg-primary/20 rounded-lg text-primary mt-1">
                                 <Cookie className="w-6 h-6" />
                             </div>
                             <div className="flex-1">

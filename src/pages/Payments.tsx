@@ -362,7 +362,7 @@ export function Payments() {
                             </h3>
                             <span className={cn(
                                 "text-sm px-3 py-1 rounded-full uppercase font-black tracking-widest border shrink-0",
-                                payment.displayType === 'bill' ? 'bg-blue-500/10 text-primary border-primary/20' :
+                                payment.displayType === 'bill' ? 'bg-primary/10 text-primary border-primary/20' :
                                     payment.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
                                         payment.status === 'overdue' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' :
                                             'bg-amber-500/10 text-amber-500 border-amber-500/20'
@@ -479,7 +479,7 @@ export function Payments() {
                             <td className="p-6">
                                 <span className={cn(
                                     "text-xs px-2.5 py-1 rounded-full uppercase font-black tracking-widest border shrink-0 inline-block",
-                                    payment.displayType === 'bill' ? 'bg-blue-500/10 text-primary border-primary/20' :
+                                    payment.displayType === 'bill' ? 'bg-primary/10 text-primary border-primary/20' :
                                         payment.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
                                             payment.status === 'overdue' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' :
                                                 'bg-amber-500/10 text-amber-500 border-amber-500/20'

@@ -170,7 +170,7 @@ export function ChecksManager({ property, readOnly }: ChecksManagerProps) {
                 <div className="relative overflow-hidden bg-white/80 dark:bg-foreground/80 backdrop-blur-xl p-6 rounded-2xl border border-white/20 dark:border-gray-700/50 space-y-6 shadow-2xl animate-in fade-in zoom-in-95 duration-300">
                     <div className="flex items-center justify-between mb-4">
                         <h4 className="text-lg font-bold">{t('uploadChecks')}</h4>
-                        <button onClick={() => setShowUploadForm(false)} className="p-1 hover:bg-gray-100 rounded-full"><X className="w-5 h-5" /></button>
+                        <button onClick={() => setShowUploadForm(false)} className="p-1 hover:bg-muted rounded-full"><X className="w-5 h-5" /></button>
                     </div>
 
                     <div className="group relative mb-6">

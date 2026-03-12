@@ -26,10 +26,36 @@ serve(async (req) => {
             throw new Error(`Failed to parse request JSON: ${e.message}`)
         }
 
-        const { images } = payload
+        const { images, storagePaths } = payload
 
-        if (!images || !Array.isArray(images) || images.length === 0) {
-            throw new Error(`No images provided. Received payload keys: ${Object.keys(payload)}. Images value: ${JSON.stringify(images)}. Full payload: ${JSON.stringify(payload)}`)
+        if ((!images || images.length === 0) && (!storagePaths || storagePaths.length === 0)) {
+            throw new Error(`No images or storagePaths provided. Received payload keys: ${Object.keys(payload)}`)
+        }
+
+        // Handle direct storage URLs if provided to skip Base64 overhead
+        let imageUrlsToAnalyze: string[] = [];
+
+        if (images && images.length > 0) {
+            imageUrlsToAnalyze = [...images];
+        }
+
+        if (storagePaths && storagePaths.length > 0) {
+            const supabaseUrl = Deno.env.get('SUPABASE_URL');
+            const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+            const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
+
+            for (const path of storagePaths) {
+                const { data, error } = await supabase.storage.from('temp_scans').createSignedUrl(path, 600); // 10 minutes
+                if (error) {
+                    console.error('Error creating signed URL for', path, error);
+                } else if (data?.signedUrl) {
+                    imageUrlsToAnalyze.push(data.signedUrl);
+                }
+            }
+        }
+
+        if (imageUrlsToAnalyze.length === 0) {
+            throw new Error('Failed to resolve any images for analysis.');
         }
 
         // Call AI Engine
@@ -154,7 +180,7 @@ Ensure all field names match exactly as listed above.`
                                 type: 'text',
                                 text: 'Extract data from this rental contract. Return only the JSON object, no additional text.'
                             },
-                            ...images.map((imageUrl: string) => ({
+                            ...imageUrlsToAnalyze.map((imageUrl: string) => ({
                                 type: 'image_url',
                                 image_url: { url: imageUrl }
                             }))
@@ -213,7 +239,7 @@ Ensure all field names match exactly as listed above.`
             // Remove markdown code blocks if present
             const cleanContent = content.replace(/```json\n?|\n?```/g, '').trim()
             extractedData = JSON.parse(cleanContent)
-        } catch (parseError) {
+        } catch (_parseError) {
             throw new Error(`Failed to parse AI response: ${content}`)
         }
 

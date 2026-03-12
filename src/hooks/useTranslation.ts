@@ -1018,6 +1018,10 @@ export type TranslationKeys =
     | 'accountSuspendedSuccess'
     | 'errorSuspendingAccount'
     | 'suspendConfirmation'
+    | 'aiAnalysisTitle'
+    | 'aiAnalysisDesc'
+    | 'aiAnalysisRequiredFor'
+    | 'aiAnalysisDisclaimer'
     | 'conciergeTitle' | 'conciergeDesc' | 'conciergeStart' | 'conciergeLater' | 'conciergeAiExtraction' | 'conciergeLinkageMonitoring'
     // Market Intelligence & Cities
     | 'marketIntelligence'
@@ -1298,7 +1302,7 @@ export const translations: Record<string, any> = {
         configureAlerts_female: 'הגדרת התראות',
         controlData: 'שליטה במידע שלך',
         controlData_female: 'שליטה במידע שלך',
-        agreeToTerms: 'אני מסכים ל- {terms} ול{privacy}',
+        agreeToTerms: 'אני מסכים ל- {terms} ול{privacy}, כולל הסכמה מפורשת לעיבוד נתונים על ידי מערכות בינה מלאכותית (AI).',
         marketingConsent: 'אני מאשר קבלת עדכונים ותכנים שיווקיים',
         legalDocs: 'מסמכים משפטיים',
         privacyPolicy: 'מדיניות פרטיות',
@@ -1729,7 +1733,7 @@ export const translations: Record<string, any> = {
         accessibility_large_text_title: 'טקסט גדול',
         accessibility_large_text_desc: 'מגדיל את גודל הטקסט בכל האפליקציה',
         accessibility_high_contrast_title: 'ניגודיות גבוהה',
-        accessibility_high_contrast_desc: 'מגביר את הניגודיות בין טקסט לקרע',
+        accessibility_high_contrast_desc: 'מגביר את הניגודיות בין טקסט לרקע',
         accessibility_reduced_motion_title: 'הפחתת תנועה',
         accessibility_reduced_motion_desc: 'ממזער אנימציות ומעברים למניעת סחרחורות',
         accessibility_dyslexia_font_title: 'גופן מותאם לדיסלקציה',
@@ -1986,6 +1990,10 @@ export const translations: Record<string, any> = {
         autoFilledByGemini: 'מולא אוטומטית על ידי Renty',
         privacySecurityTitle: 'פרטיות ואבטחה',
         privacySecuritySubtitle: 'נהל את החשבון המאובטח שלך',
+        aiAnalysisTitle: 'אישור ניתוח נתונים ב-AI',
+        aiAnalysisDesc: 'אפשר למנוע הבינה המלאכותית שלנו לגשת לחוזים, לתשלומים ולפרטי הדיירים שלך כדי להפיק תובנות פיננסיות והתראות חכמות.',
+        aiAnalysisRequiredFor: 'נדרש עבור פיצ׳רים כמו "כמה כסף עשיתי?"',
+        aiAnalysisDisclaimer: 'הנתונים מעובדים בצורה מאובטחת באמצעות OpenAI ולא משמשים לאימון מודלים. התובנות מופקות בזמן אמת רק עבור הבקשות שלך.',
         changePassword: 'שינוי סיסמה',
         changePasswordBtn: 'עדכן סיסמה',
         deleteAccount: 'מחיקת חשבון',
@@ -2650,6 +2658,7 @@ export const translations: Record<string, any> = {
         auth_confirmation_sent: 'We sent a confirmation email to {email}',
         auth_invalid_credentials: 'Invalid login credentials',
         auth_email_not_confirmed: 'Email not confirmed yet',
+        agreeToTerms: 'I agree to the {terms} and {privacy}, including explicit consent for data processing by Artificial Intelligence (AI).',
         noTenantsFound: 'No tenants found',
         upcoming_payment: 'Upcoming Payment',
 

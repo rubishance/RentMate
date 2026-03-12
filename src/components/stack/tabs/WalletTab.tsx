@@ -322,7 +322,7 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
                                                 </h3>
                                                 <span className={cn(
                                                     "text-[11px] px-2 py-0.5 rounded-full uppercase font-black tracking-widest border shrink-0",
-                                                    item.displayType === 'bill' ? 'bg-blue-500/10 text-primary border-primary/20' :
+                                                    item.displayType === 'bill' ? 'bg-primary/10 text-primary border-primary/20' :
                                                         isPaid ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
                                                             item.status === 'overdue' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' :
                                                                 'bg-amber-500/10 text-amber-500 border-amber-500/20'

@@ -78,21 +78,21 @@ const AdminErrorLogs = () => {
         <div className="p-6 space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-3">
+                    <h1 className="text-2xl font-black text-foreground dark:text-white flex items-center gap-3">
                         <BugAntIcon className="w-8 h-8 text-destructive" />
                         System Error Logs
                     </h1>
-                    <p className="text-gray-500 text-sm mt-1">Monitor and manage application-wide errors and user reports.</p>
+                    <p className="text-muted-foreground text-sm mt-1">Monitor and manage application-wide errors and user reports.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div className="flex bg-muted dark:bg-gray-800 p-1 rounded-xl border border-border dark:border-gray-700">
                         {(['all', 'open', 'resolved'] as const).map((f) => (
                             <button
                                 key={f}
                                 onClick={() => setFilter(f)}
                                 className={`px-4 py-2 text-xs font-black uppercase tracking-widest rounded-lg transition-all ${filter === f
-                                    ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-minimal'
-                                    : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                                    ? 'bg-white dark:bg-gray-700 text-foreground dark:text-white shadow-minimal'
+                                    : 'text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300'
                                     }`}
                             >
                                 {f}
@@ -101,23 +101,23 @@ const AdminErrorLogs = () => {
                     </div>
                     <button
                         onClick={fetchLogs}
-                        className="p-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
+                        className="p-2.5 bg-white dark:bg-gray-800 border border-border dark:border-gray-700 rounded-xl hover:bg-secondary dark:hover:bg-gray-700 transition-all"
                     >
-                        <ArrowPathIcon className={`w-5 h-5 text-gray-500 ${loading ? 'animate-spin' : ''}`} />
+                        <ArrowPathIcon className={`w-5 h-5 text-muted-foreground ${loading ? 'animate-spin' : ''}`} />
                     </button>
                 </div>
             </div>
 
             {loading && logs.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-gray-800/50 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700">
+                <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-gray-800/50 rounded-2xl border border-dashed border-border dark:border-gray-700">
                     <ArrowPathIcon className="w-10 h-10 text-brand-500 animate-spin mb-4" />
-                    <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">Loading Errors...</p>
+                    <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">Loading Errors...</p>
                 </div>
             ) : logs.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-gray-800/50 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 text-center">
+                <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-gray-800/50 rounded-2xl border border-dashed border-border dark:border-gray-700 text-center">
                     <CheckCircleIcon className="w-12 h-12 text-secondary mb-4" />
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">Clean Slate!</h3>
-                    <p className="text-gray-500 text-sm max-w-xs mx-auto">No system errors found in this category. Your application is running smoothly.</p>
+                    <h3 className="text-lg font-bold text-foreground dark:text-white">Clean Slate!</h3>
+                    <p className="text-muted-foreground text-sm max-w-xs mx-auto">No system errors found in this category. Your application is running smoothly.</p>
                 </div>
             ) : (
                 <div className="grid gap-4">
@@ -138,7 +138,7 @@ const AdminErrorLogs = () => {
                                             }`}>
                                             {log.is_resolved ? 'Resolved' : 'Open'}
                                         </span>
-                                        <span className="flex items-center gap-1.5 text-xs text-gray-400 font-medium">
+                                        <span className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
                                             <ClockIcon className="w-4 h-4" />
                                             {format(new Date(log.created_at), 'dd/MM HH:mm:ss')}
                                         </span>
@@ -148,13 +148,13 @@ const AdminErrorLogs = () => {
                                         </span>
                                     </div>
 
-                                    <h3 className="text-base font-black text-gray-900 dark:text-white mb-2 truncate group">
+                                    <h3 className="text-base font-black text-foreground dark:text-white mb-2 truncate group">
                                         <span className="text-destructive mr-2 group-hover:animate-pulse">●</span>
                                         {log.message}
                                     </h3>
 
-                                    <div className="flex items-center gap-4 text-xs text-gray-500 mb-4">
-                                        <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-700/50 px-2 py-1 rounded-md">
+                                    <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4">
+                                        <div className="flex items-center gap-1.5 bg-secondary dark:bg-gray-700/50 px-2 py-1 rounded-md">
                                             <FunnelIcon className="w-3.5 h-3.5" />
                                             <span className="font-mono">{log.route}</span>
                                         </div>
@@ -172,12 +172,12 @@ const AdminErrorLogs = () => {
                                     </div>
 
                                     <details className="group/details">
-                                        <summary className="text-xs font-black uppercase tracking-widest text-gray-400 cursor-pointer hover:text-gray-600 transition-colors flex items-center gap-1 list-none">
+                                        <summary className="text-xs font-black uppercase tracking-widest text-muted-foreground cursor-pointer hover:text-muted-foreground transition-colors flex items-center gap-1 list-none">
                                             <span className="group-open/details:rotate-90 transition-transform">▸</span>
                                             View Stack Trace
                                         </summary>
-                                        <div className="mt-3 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-700/50 overflow-x-auto">
-                                            <pre className="text-xs text-gray-500 font-mono whitespace-pre-wrap leading-relaxed">
+                                        <div className="mt-3 p-4 bg-secondary dark:bg-foreground/50 rounded-xl border border-border dark:border-gray-700/50 overflow-x-auto">
+                                            <pre className="text-xs text-muted-foreground font-mono whitespace-pre-wrap leading-relaxed">
                                                 {log.stack || 'No stack trace provided'}
                                             </pre>
                                         </div>
@@ -188,7 +188,7 @@ const AdminErrorLogs = () => {
                                     <button
                                         onClick={() => toggleResolve(log.id, log.is_resolved)}
                                         className={`p-2.5 rounded-xl border transition-all ${log.is_resolved
-                                            ? 'bg-gray-50 text-gray-400 border-gray-100 hover:bg-red-50 hover:text-destructive hover:border-red-100'
+                                            ? 'bg-secondary text-muted-foreground border-border hover:bg-red-50 hover:text-destructive hover:border-red-100'
                                             : 'bg-secondary/10 text-secondary border-green-100 hover:bg-green-100 hover:shadow-minimal'
                                             }`}
                                         title={log.is_resolved ? 'Reopen' : 'Resolve'}

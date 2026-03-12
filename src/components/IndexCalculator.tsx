@@ -203,11 +203,11 @@ export function IndexCalculator() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {/* Index Type */}
                 <div className="space-y-2">
-                    <label className="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">{t('linkageType')}</label>
+                    <label className="text-xs font-black uppercase tracking-widest text-muted-foreground dark:text-muted-foreground ml-1">{t('linkageType')}</label>
                     <select
                         value={indexType}
                         onChange={(e) => setIndexType(e.target.value as any)}
-                        className="w-full px-4 py-3 bg-gray-50 dark:bg-neutral-800 border-2 border-transparent focus:border-black dark:focus:border-white rounded-[1.25rem] text-sm font-bold outline-none appearance-none transition-all"
+                        className="w-full px-4 py-3 bg-secondary dark:bg-neutral-800 border-2 border-transparent focus:border-black dark:focus:border-white rounded-[1.25rem] text-sm font-bold outline-none appearance-none transition-all"
                     >
                         <option value="cpi">{t('cpi')}</option>
                         <option value="housing">{t('housingServices')}</option>
@@ -220,7 +220,7 @@ export function IndexCalculator() {
                 {/* Linkage Sub Type */}
                 {(indexType === 'cpi' || indexType === 'housing' || indexType === 'construction') && (
                     <div className="space-y-2">
-                        <label className="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">{t('linkageCalculationMethod')}</label>
+                        <label className="text-xs font-black uppercase tracking-widest text-muted-foreground dark:text-muted-foreground ml-1">{t('linkageCalculationMethod')}</label>
                         <SegmentedControl
                             options={[
                                 { label: t('knownIndex'), value: 'known' },
@@ -234,7 +234,7 @@ export function IndexCalculator() {
 
                 {/* Base Date */}
                 <div className="space-y-2">
-                    <label className="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">{t('baseDate')}</label>
+                    <label className="text-xs font-black uppercase tracking-widest text-muted-foreground dark:text-muted-foreground ml-1">{t('baseDate')}</label>
                     <div className="relative group">
                         <DatePicker
                             variant="compact"
@@ -253,7 +253,7 @@ export function IndexCalculator() {
 
                 {/* Current Date */}
                 <div className="space-y-2">
-                    <label className="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">{t('paymentDate')}</label>
+                    <label className="text-xs font-black uppercase tracking-widest text-muted-foreground dark:text-muted-foreground ml-1">{t('paymentDate')}</label>
                     <div className="relative group">
                         <DatePicker
                             variant="compact"

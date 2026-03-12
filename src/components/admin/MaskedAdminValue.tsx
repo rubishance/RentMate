@@ -70,7 +70,7 @@ export const MaskedAdminValue = ({ value, label, userId, className = '', maskTyp
             <button
                 onClick={handleReveal}
                 disabled={isLogging}
-                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-gray-400 hover:text-brand-600"
+                className="p-1 hover:bg-muted dark:hover:bg-gray-800 rounded-lg transition-colors text-muted-foreground hover:text-brand-600"
                 title={isRevealed ? 'Hide' : `Reveal ${label} (Will be logged)`}
             >
                 {isRevealed ? (

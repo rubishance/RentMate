@@ -38,7 +38,7 @@ export default function AccessibilityStatement() {
         <div className="relative min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 overflow-hidden font-hebrew" dir={isRtl ? 'rtl' : 'ltr'}>
             {/* Decorative Background Elements */}
             <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-primary-100/50 via-slate-100/10 to-transparent dark:from-primary-900/10 dark:via-slate-900/10 dark:to-transparent z-0 pointer-events-none" />
-            <div className="absolute top-0 left-0 w-full h-96 bg-blue-500/5 dark:bg-primary/5 filter blur-3xl z-0 pointer-events-none" />
+            <div className="absolute top-0 left-0 w-full h-96 bg-primary/5 dark:bg-primary/5 filter blur-3xl z-0 pointer-events-none" />
             <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-teal-500/10 dark:bg-teal-600/5 filter blur-3xl rounded-full z-0 pointer-events-none" />
 
             <div className="relative z-10 pb-20 pt-8">

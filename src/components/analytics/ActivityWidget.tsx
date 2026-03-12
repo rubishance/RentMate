@@ -97,7 +97,7 @@ export function ActivityWidget() {
     return (
         <div className="space-y-8">
             <div className="flex items-center gap-4 mb-6">
-                <div className="p-3 bg-blue-500/10 rounded-xl">
+                <div className="p-3 bg-primary/10 rounded-xl">
                     <Users className="w-6 h-6 text-primary" />
                 </div>
                 <div>

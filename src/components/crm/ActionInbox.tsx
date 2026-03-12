@@ -133,14 +133,14 @@ export function ActionInbox() {
         setActions(prev => prev.map(a => a.id === id ? { ...a, draftContent: newContent } : a));
     };
 
-    if (loading) return <div className="animate-pulse h-40 bg-gray-50 dark:bg-gray-800/50 rounded-2xl" />;
+    if (loading) return <div className="animate-pulse h-40 bg-secondary dark:bg-gray-800/50 rounded-2xl" />;
 
     return (
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border/50 shadow-minimal overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-50 dark:border-slate-800 bg-background/50 dark:bg-slate-900/50 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <SparklesIcon className="w-5 h-5 text-brand-600" />
-                    <h3 className="text-sm font-black uppercase tracking-widest text-gray-900 dark:text-white">AI Action Inbox</h3>
+                    <h3 className="text-sm font-black uppercase tracking-widest text-foreground dark:text-white">AI Action Inbox</h3>
                 </div>
                 <span className="px-2 py-0.5 bg-brand-100 text-brand-600 rounded text-xs font-black">{actions.length} PENDING</span>
             </div>
@@ -149,7 +149,7 @@ export function ActionInbox() {
                 {actions.length === 0 ? (
                     <div className="p-10 text-center">
                         <CheckCircleIcon className="w-10 h-10 text-emerald-400 mx-auto mb-3" />
-                        <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Inbox Zero. Autopilot is running smoothly.</p>
+                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Inbox Zero. Autopilot is running smoothly.</p>
                     </div>
                 ) : (
                     actions.map(action => (
@@ -164,14 +164,14 @@ export function ActionInbox() {
                                 <div className="flex-1">
                                     <div className="flex justify-between items-start mb-1">
                                         <div className="flex items-center gap-2">
-                                            <h4 className="text-sm font-black text-gray-900 dark:text-white">{action.title}</h4>
+                                            <h4 className="text-sm font-black text-foreground dark:text-white">{action.title}</h4>
                                             {action.metadata.is_lead && (
                                                 <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[8px] font-black uppercase tracking-widest">
                                                     LEAD
                                                 </span>
                                             )}
                                             {action.type === 'sales_lead' && (
-                                                <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[8px] font-black uppercase tracking-widest">
+                                                <span className="px-1.5 py-0.5 bg-primary/10 text-blue-700 rounded text-[8px] font-black uppercase tracking-widest">
                                                     SALE
                                                 </span>
                                             )}
@@ -181,22 +181,22 @@ export function ActionInbox() {
                                                 </span>
                                             )}
                                         </div>
-                                        <span className="text-xs font-black text-gray-400 flex items-center gap-1 uppercase">
+                                        <span className="text-xs font-black text-muted-foreground flex items-center gap-1 uppercase">
                                             <CalendarIcon className="w-3 h-3" />
                                             {new Date(action.updatedAt).toLocaleDateString()}
                                         </span>
                                     </div>
-                                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-4">{action.description}</p>
+                                    <p className="text-xs font-medium text-muted-foreground dark:text-muted-foreground mb-4">{action.description}</p>
 
                                     {action.draftContent && (
-                                        <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800 mb-4">
+                                        <div className="bg-secondary dark:bg-foreground/50 p-4 rounded-xl border border-border dark:border-gray-800 mb-4">
                                             <textarea
                                                 value={action.draftContent}
                                                 onChange={(e) => handleUpdateDraft(action.id, e.target.value)}
                                                 className="w-full bg-transparent border-none focus:ring-0 text-xs font-semibold text-gray-700 dark:text-gray-300 italic resize-none p-0"
                                                 rows={3}
                                             />
-                                            <div className="mt-2 text-[11px] font-black text-gray-400 uppercase tracking-widest text-right">
+                                            <div className="mt-2 text-[11px] font-black text-muted-foreground uppercase tracking-widest text-right">
                                                 AI Draft - Editable
                                             </div>
                                         </div>
@@ -210,11 +210,11 @@ export function ActionInbox() {
                                             <CheckCircleIcon className="w-4 h-4" />
                                             Approve & Send
                                         </button>
-                                        <button className="px-4 py-2 bg-white dark:bg-gray-800 text-gray-500 text-xs font-black uppercase tracking-widest border border-border rounded-lg hover:bg-gray-50 transition-all flex items-center gap-2">
+                                        <button className="px-4 py-2 bg-white dark:bg-gray-800 text-muted-foreground text-xs font-black uppercase tracking-widest border border-border rounded-lg hover:bg-secondary transition-all flex items-center gap-2">
                                             <XCircleIcon className="w-4 h-4" />
                                             Dismiss
                                         </button>
-                                        <button className="ml-auto text-gray-400 group-hover:text-brand-600 transition-all">
+                                        <button className="ml-auto text-muted-foreground group-hover:text-brand-600 transition-all">
                                             <ArrowRightIcon className="w-4 h-4" />
                                         </button>
                                     </div>

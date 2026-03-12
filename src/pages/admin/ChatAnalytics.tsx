@@ -201,23 +201,23 @@ export default function ChatAnalytics() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+                    <h1 className="text-3xl font-extrabold text-foreground dark:text-white tracking-tight flex items-center gap-2">
                         <BarChart3 className="w-8 h-8 text-brand-600" />
                         Chat Analytics
                     </h1>
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mt-1">
+                    <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground mt-1">
                         Insights into chatbot performance, common questions, and user behavior.
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <div className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div className="flex gap-1 p-1 bg-muted dark:bg-foreground rounded-xl border border-border dark:border-gray-700">
                         {(['7d', '30d', '90d'] as const).map((range) => (
                             <button
                                 key={range}
                                 onClick={() => setTimeRange(range)}
                                 className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${timeRange === range
                                     ? 'bg-white dark:bg-gray-800 text-brand-600 shadow-sm'
-                                    : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                                    : 'text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300'
                                     }`}
                             >
                                 {range}
@@ -226,7 +226,7 @@ export default function ChatAnalytics() {
                     </div>
                     <button
                         onClick={fetchAnalytics}
-                        className="p-2.5 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm"
+                        className="p-2.5 text-muted-foreground hover:text-foreground dark:text-muted-foreground dark:hover:text-white transition-colors bg-white dark:bg-gray-800 rounded-xl border border-border dark:border-gray-700 shadow-sm"
                     >
                         <ArrowPathIcon className="w-6 h-6" />
                     </button>
@@ -235,50 +235,50 @@ export default function ChatAnalytics() {
 
             {/* Key Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-primary/5 rounded-xl border border-blue-100 dark:border-blue-800">
-                            <MessageSquare className="w-6 h-6 text-blue-600" />
+                            <MessageSquare className="w-6 h-6 text-primary" />
                         </div>
                         <div>
-                            <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Total Conversations</p>
-                            <p className="text-3xl font-black text-gray-900 dark:text-white">{analytics.total_conversations}</p>
+                            <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">Total Conversations</p>
+                            <p className="text-3xl font-black text-foreground dark:text-white">{analytics.total_conversations}</p>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-800">
                             <TrendingUp className="w-6 h-6 text-green-600" />
                         </div>
                         <div>
-                            <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Avg Messages/Chat</p>
-                            <p className="text-3xl font-black text-gray-900 dark:text-white">{analytics.avg_messages_per_conversation}</p>
+                            <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">Avg Messages/Chat</p>
+                            <p className="text-3xl font-black text-foreground dark:text-white">{analytics.avg_messages_per_conversation}</p>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-primary/5 rounded-xl border border-primary-100 dark:border-primary-800">
                             <Clock className="w-6 h-6 text-primary" />
                         </div>
                         <div>
-                            <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Avg Response Time</p>
-                            <p className="text-3xl font-black text-gray-900 dark:text-white">{analytics.avg_response_time_seconds}s</p>
+                            <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">Avg Response Time</p>
+                            <p className="text-3xl font-black text-foreground dark:text-white">{analytics.avg_response_time_seconds}s</p>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-100 dark:border-amber-800">
                             <Zap className="w-6 h-6 text-amber-600" />
                         </div>
                         <div>
-                            <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Escalation Rate</p>
-                            <p className="text-3xl font-black text-gray-900 dark:text-white">{analytics.escalation_rate}%</p>
+                            <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">Escalation Rate</p>
+                            <p className="text-3xl font-black text-foreground dark:text-white">{analytics.escalation_rate}%</p>
                         </div>
                     </div>
                 </div>
@@ -287,8 +287,8 @@ export default function ChatAnalytics() {
             {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Daily Trend */}
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                    <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight mb-6">Daily Conversation Trend</h3>
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
+                    <h3 className="text-sm font-black text-foreground dark:text-white uppercase tracking-tight mb-6">Daily Conversation Trend</h3>
                     <ResponsiveContainer width="100%" height={300}>
                         <LineChart data={analytics.daily_trend}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -301,8 +301,8 @@ export default function ChatAnalytics() {
                 </div>
 
                 {/* Hourly Distribution */}
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                    <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight mb-6">Hourly Activity Distribution</h3>
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
+                    <h3 className="text-sm font-black text-foreground dark:text-white uppercase tracking-tight mb-6">Hourly Activity Distribution</h3>
                     <ResponsiveContainer width="100%" height={300}>
                         <BarChart data={analytics.hourly_distribution}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -316,8 +316,8 @@ export default function ChatAnalytics() {
 
                 {/* Category Breakdown */}
                 {analytics.category_breakdown.length > 0 && (
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                        <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight mb-6">Escalation Categories</h3>
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
+                        <h3 className="text-sm font-black text-foreground dark:text-white uppercase tracking-tight mb-6">Escalation Categories</h3>
                         <ResponsiveContainer width="100%" height={300}>
                             <PieChart>
                                 <Pie
@@ -344,11 +344,11 @@ export default function ChatAnalytics() {
                 )}
 
                 {/* Common Questions */}
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                    <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight mb-6">Top 10 Questions</h3>
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
+                    <h3 className="text-sm font-black text-foreground dark:text-white uppercase tracking-tight mb-6">Top 10 Questions</h3>
                     <div className="space-y-3 max-h-[300px] overflow-y-auto">
                         {analytics.common_questions.map((q, i) => (
-                            <div key={i} className="flex items-center justify-between gap-4 p-3 bg-gray-50 dark:bg-gray-900 rounded-xl">
+                            <div key={i} className="flex items-center justify-between gap-4 p-3 bg-secondary dark:bg-foreground rounded-xl">
                                 <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1">{q.question}</span>
                                 <span className="px-2 py-1 bg-brand-100 dark:bg-brand-900/20 text-brand-700 dark:text-brand-400 rounded-lg text-xs font-bold shrink-0">
                                     {q.count}x

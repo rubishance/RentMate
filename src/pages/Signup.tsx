@@ -76,11 +76,7 @@ export function Signup() {
             return;
         }
 
-        if (!phone.trim()) {
-            setError(isRtl ? 'יש למלא מספר טלפון' : 'Phone number is required');
-            setLoading(false);
-            return;
-        }
+
 
         const passwordRequirements = {
             length: password.length >= 8,
@@ -131,10 +127,10 @@ export function Signup() {
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate('/')}
-                className="absolute top-4 left-4 sm:top-8 sm:left-8 z-50 rounded-full bg-gray-100 dark:bg-neutral-900 hover:bg-gray-200 dark:hover:bg-neutral-800"
+                className="absolute top-4 left-4 sm:top-8 sm:left-8 z-50 rounded-full bg-muted dark:bg-neutral-900 hover:bg-gray-200 dark:hover:bg-neutral-800"
                 title={isRtl ? 'חזרה לדף הבית' : 'Back to home'}
             >
-                <ArrowRight className={cn("w-5 h-5 text-gray-600 dark:text-gray-400", !isRtl && "rotate-180")} />
+                <ArrowRight className={cn("w-5 h-5 text-muted-foreground dark:text-muted-foreground", !isRtl && "rotate-180")} />
             </Button>
             <div className="absolute top-4 left-14 sm:top-8 sm:left-20 z-50 hidden sm:block">
                 <LanguageToggle />
@@ -179,12 +175,12 @@ export function Signup() {
 
 const ConfirmationView = ({ email, onBack, isRtl, t }: any) => (
     <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center space-y-6 sm:space-y-8 py-2 sm:py-4">
-        <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-50 dark:bg-neutral-800 text-black dark:text-white rounded-full flex items-center justify-center mx-auto ring-8 ring-gray-100 dark:ring-white/5">
+        <div className="w-16 h-16 sm:w-20 sm:h-20 bg-secondary dark:bg-neutral-800 text-black dark:text-white rounded-full flex items-center justify-center mx-auto ring-8 ring-gray-100 dark:ring-white/5">
             <Mail className="w-8 h-8 sm:w-10 sm:h-10" />
         </div>
         <div className="space-y-2 sm:space-y-3">
             <h2 className="text-2xl sm:text-3xl font-bold text-black dark:text-white">{t('auth_check_inbox')}</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+            <p className="text-sm text-muted-foreground dark:text-muted-foreground leading-relaxed">
                 {t('auth_confirmation_sent').replace('{email}', email)}
             </p>
         </div>
@@ -240,11 +236,10 @@ const SignupFormView = ({
                 </div>
                 <div>
                     <label className="block text-sm font-semibold text-foreground mb-1">
-                        {t('phone')}
+                        {t('phone')} {isRtl ? '(רשות)' : '(Optional)'}
                     </label>
                     <Input
                         type="tel"
-                        required
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         placeholder="050-0000000"

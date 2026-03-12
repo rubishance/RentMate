@@ -10,7 +10,7 @@ interface PrivacySecurityModalProps {
 }
 
 export function PrivacySecurityModal({ isOpen, onClose }: PrivacySecurityModalProps) {
-    const { t } = useTranslation();
+    const { t, lang } = useTranslation();
     const [isChangingPassword, setIsChangingPassword] = useState(false);
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -128,14 +128,13 @@ export function PrivacySecurityModal({ isOpen, onClose }: PrivacySecurityModalPr
                         <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex items-start justify-between gap-4">
                             <div>
                                 <h4 className="font-medium text-primary-900 dark:text-primary-100 mb-1">
-                                    Allow AI Analysis
+                                    {t('aiAnalysisTitle')}
                                 </h4>
                                 <p className="text-sm text-primary">
-                                    Allow RentMate AI to access your contracts, payments, and tenant data to provide financial insights and smart alerts.
-                                    <span className='block mt-1 font-semibold'>This is required for features like "How much did I earn?"</span>
+                                    {t('aiAnalysisDesc')}
+                                    <span className='block mt-1 font-semibold'>{t('aiAnalysisRequiredFor')}</span>
                                     <span className='block mt-2 text-xs opacity-80 italic'>
-                                        Data is processed securely via OpenAI and is NOT used for model training.
-                                        Insights are generated in real-time for your specific request.
+                                        {t('aiAnalysisDisclaimer')}
                                     </span>
                                 </p>
                             </div>
@@ -147,7 +146,9 @@ export function PrivacySecurityModal({ isOpen, onClose }: PrivacySecurityModalPr
                                     }`}
                             >
                                 <span
-                                    className={`${aiConsent ? 'translate-x-6' : 'translate-x-1'
+                                    className={`${aiConsent
+                                        ? (lang === 'he' ? '-translate-x-6' : 'translate-x-6')
+                                        : (lang === 'he' ? '-translate-x-1' : 'translate-x-1')
                                         } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
                                 />
                             </button>

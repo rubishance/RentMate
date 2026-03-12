@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import type { User } from '@supabase/supabase-js';
-import { Send, Paperclip, X, Loader2, MessageCircle, Mic, MicOff } from 'lucide-react';
+import { Send, Paperclip, X, Loader2, MessageCircle, Mic, MicOff, Menu, Smartphone, Bug, Headphones, ChevronRight, ChevronLeft, Volume2, VolumeX } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ActionCard } from '../dashboard/ActionCard';
 import { supabase } from '../../lib/supabase';
@@ -11,6 +11,7 @@ import { useUserPreferences } from '../../contexts/UserPreferencesContext';
 import { useStack } from '../../contexts/StackContext';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useDataCache } from '../../contexts/DataCacheContext';
+import { useToast } from '../../hooks/useToast';
 import { BillAnalysisService, ExtractedBillData } from '../../services/bill-analysis.service';
 import { propertyDocumentsService } from '../../services/property-documents.service';
 import type { DocumentCategory } from '../../types/database';
@@ -39,7 +40,7 @@ export function ChatWidget() {
     const { t } = useTranslation();
     const { preferences } = useUserPreferences();
     const isRtl = preferences.language === 'he';
-    const { isOpen, toggleChat, openChat, isLoading, messages: botMessages, sendMessage: sendBotMessage, uiAction, clearUiAction, activateAiMode } = useChatBot();
+    const { isOpen, toggleChat, openChat, isLoading, messages: botMessages, sendMessage: sendBotMessage, injectLocalMessage, uiAction, clearUiAction, activateAiMode, isTtsEnabled, toggleTts } = useChatBot();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -52,10 +53,20 @@ export function ChatWidget() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isUploading, setIsUploading] = useState(false);
     const { isListening, transcript, startListening, stopListening, hasSupport: hasVoiceSupport } = useSpeechRecognition(isRtl ? 'he-IL' : 'en-US');
+    const { success, error: showError } = useToast();
+
+    // Track isOpen state in a ref for background callbacks
+    const isOpenRef = useRef(isOpen);
+    useEffect(() => {
+        isOpenRef.current = isOpen;
+    }, [isOpen]);
 
     // Modal States
     const [activeModal, setActiveModal] = useState<string | null>(null);
     const [modalData, setModalData] = useState<ModalData | null>(null);
+    
+    // Support Menu State
+    const [activeMenuView, setActiveMenuView] = useState<'none' | 'main' | 'navigation' | 'tech_support'>('none');
 
     const [user, setUser] = useState<User | null>(null);
     const [inputText, setInputText] = useState('');
@@ -123,47 +134,63 @@ export function ChatWidget() {
 
             if (uploadError) throw uploadError;
 
-            // Trigger AI Bill Analysis
+            // Trigger AI Bill Analysis (Background task)
             setAnalyzingBill(true);
-            let analysisResults: ExtractedBillData | null = null;
-            try {
-                // Pass properties list to AI for context matching
-                analysisResults = await BillAnalysisService.analyzeBill(file, properties);
-
-                if (analysisResults && (analysisResults.confidence ?? 1) > 0.6) {
-                    setScannedBill({
-                        ...analysisResults,
-                        fileName: file.name,
-                        file: file
-                    });
-
-                    // Auto-select property if confidence is high and we have a match
-                    if (analysisResults?.propertyId && (analysisResults.confidence ?? 1) > 0.8) {
-                        const matchedProp = properties.find(p => p.id === analysisResults?.propertyId);
-                        if (matchedProp) {
-                            setSelectedPropertyId(matchedProp.id);
-                        }
-                    }
-                }
-            } catch (err) {
-                console.error('Bill analysis failed:', err);
-            } finally {
-                setAnalyzingBill(false);
-            }
-
-            // Send message with file info AND analysis results
-            // This allows Renty to see the results before responding
-            await sendBotMessage(`Uploaded file: ${file.name}`, { name: file.name, path }, analysisResults);
-
+            setIsUploading(false); // File uploaded, allow new inputs while AI thinks
             if (fileInputRef.current) fileInputRef.current.value = '';
+
+            const runAnalysis = async () => {
+                let analysisResults: ExtractedBillData | null = null;
+                try {
+                    // Pass properties list to AI for context matching
+                    analysisResults = await BillAnalysisService.analyzeBill(file, properties);
+
+                    if (analysisResults && (analysisResults.confidence ?? 1) > 0.6) {
+                        setScannedBill({
+                            ...analysisResults,
+                            fileName: file.name,
+                            file: file
+                        });
+
+                        // Auto-select property if confidence is high and we have a match
+                        if (analysisResults?.propertyId && (analysisResults.confidence ?? 1) > 0.8) {
+                            const matchedProp = properties.find(p => p.id === analysisResults?.propertyId);
+                            if (matchedProp) {
+                                setSelectedPropertyId(matchedProp.id);
+                            }
+                        }
+
+                        // Notify user if chat is closed
+                        if (!isOpenRef.current) {
+                            success(isRtl ? 'ניתוח החשבונית הסתיים. פתח את הצ׳אט לצפייה בתוצאות.' : 'Bill analysis complete. Open chat to view results.');
+                        }
+                    } else if (!isOpenRef.current) {
+                        showError(isRtl ? 'ניסיון ניתוח החשבונית נכשל. פתח את הצ׳אט וננסה שוב.' : 'Bill analysis failed. Open chat to try again.');
+                    }
+                } catch (err) {
+                    console.error('Bill analysis failed:', err);
+                    if (!isOpenRef.current) {
+                        showError(isRtl ? 'שגיאה בניתוח החשבונית.' : 'Error analyzing bill.');
+                    }
+                } finally {
+                    setAnalyzingBill(false);
+                }
+
+                // Send message with file info AND analysis results
+                // This allows Renty to see the results before responding
+                await sendBotMessage(`Uploaded file: ${file.name}`, { name: file.name, path }, analysisResults);
+            };
+
+            // Fire and forget: do not await it here so the UI unblocks
+            runAnalysis();
+
         } catch (err: unknown) {
             console.error('Upload error:', err);
-            const message = err instanceof Error ? err.message : 'Unknown error';
-            alert(`Failed to upload file: ${message}`);
-        } finally {
             setIsUploading(false);
+            const message = err instanceof Error ? err.message : 'Unknown error';
+            showError(`Failed to upload file: ${message}`);
         }
-    }, [properties, sendBotMessage]);
+    }, [properties, sendBotMessage, success, showError, isRtl]);
 
     // Handle Global Chat Events
     useEffect(() => {
@@ -328,6 +355,15 @@ export function ChatWidget() {
 
     const activeMessages = botMessages;
 
+    // Support Menu Handlers
+    const handleMenuClick = (userQuestionHe: string, userQuestionEn: string, botAnswerHe: string, botAnswerEn: string) => {
+        const userQ = isRtl ? userQuestionHe : userQuestionEn;
+        const botA = isRtl ? botAnswerHe : botAnswerEn;
+        injectLocalMessage(userQ, botA);
+        setActiveMenuView('none');
+        setTimeout(scrollToBottom, 100);
+    };
+
     if (isAuthPage) return null;
 
     return (
@@ -347,17 +383,17 @@ export function ChatWidget() {
                             initial={{ opacity: 0, y: -20, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                            className="w-full max-w-[400px] h-[540px] bg-white/90 dark:bg-black/80 backdrop-blur-xl border border-gray-200 dark:border-white/20 rounded-2xl shadow-2xl flex flex-col overflow-hidden origin-top"
+                            className="w-full max-w-[400px] h-[540px] bg-white/90 dark:bg-black/80 backdrop-blur-xl border border-border dark:border-white/20 rounded-2xl shadow-2xl flex flex-col overflow-hidden origin-top"
                         >
                             {/* Header */}
-                            <div className="p-4 border-b border-gray-200 dark:border-white/10 flex justify-between items-center cursor-move transition-colors bg-white dark:bg-black text-gray-900 dark:text-white">
+                            <div className="p-4 border-b border-border dark:border-white/10 flex justify-between items-center cursor-move transition-colors bg-white dark:bg-black text-foreground dark:text-white">
                                 <div className="flex items-center space-x-3 rtl:space-x-reverse">
                                     <div className="p-1.5 flex items-center justify-center overflow-hidden w-9 h-9">
                                         <RentyMascot size={28} showBackground={false} />
                                     </div>
                                     <div>
-                                        <h3 className="font-semibold text-gray-900 dark:text-white">Renty - תמיכה חכמה</h3>
-                                        <p className="text-xs text-gray-400">{isRtl ? 'העוזר האישי שלך' : 'Your Personal Assistant'}</p>
+                                        <h3 className="font-semibold text-foreground dark:text-white">Renty - תמיכה חכמה</h3>
+                                        <p className="text-xs text-muted-foreground">{isRtl ? 'העוזר האישי שלך' : 'Your Personal Assistant'}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-1">
@@ -365,13 +401,107 @@ export function ChatWidget() {
                                         onClick={toggleChat}
                                         className="p-1 hover:bg-white/10 rounded-full transition-colors"
                                     >
-                                        <X className="w-5 h-5 text-gray-400" />
+                                        <X className="w-5 h-5 text-muted-foreground" />
                                     </button>
                                 </div>
                             </div>
 
-                            {/* CONTENT AREA: Messages only */}
-                            <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-white/10 scrollbar-track-transparent bg-gray-50 dark:bg-white/5">
+                            {/* CONTENT AREA: Messages or Menu */}
+                            <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-white/10 scrollbar-track-transparent bg-secondary dark:bg-white/5 relative">
+                                
+                                {/* Support Menu Overlay */}
+                                <AnimatePresence>
+                                    {activeMenuView !== 'none' && (
+                                        <motion.div 
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: 10 }}
+                                            className="absolute inset-x-0 bottom-0 bg-white dark:bg-black border-t border-border dark:border-white/10 p-4 z-20 rounded-t-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_-10px_40px_rgba(0,0,0,0.5)]"
+                                        >
+                                            <div className="flex justify-between items-center mb-4">
+                                                <h3 className="font-bold text-foreground dark:text-white flex items-center gap-2">
+                                                    {activeMenuView !== 'main' && (
+                                                        <button 
+                                                            onClick={() => setActiveMenuView('main')}
+                                                            className="p-1 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg transition-colors"
+                                                        >
+                                                            {isRtl ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+                                                        </button>
+                                                    )}
+                                                    {isRtl ? 'תמיכה ושירות' : 'Support & Service'}
+                                                </h3>
+                                                <button onClick={() => setActiveMenuView('none')} className="p-1 text-muted-foreground hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg transition-colors">
+                                                    <X className="w-5 h-5" />
+                                                </button>
+                                            </div>
+
+                                            {/* Main Menu */}
+                                            {activeMenuView === 'main' && (
+                                                <div className="space-y-2">
+                                                    <button onClick={() => setActiveMenuView('navigation')} className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-neutral-900 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-xl border border-gray-100 dark:border-neutral-800 transition-colors">
+                                                        <span className="flex items-center gap-3 text-sm font-medium text-foreground dark:text-white"><Smartphone className="w-4 h-4 text-brand-500" /> {isRtl ? 'מדריך לאפליקציה' : 'App Guide'}</span>
+                                                        {isRtl ? <ChevronLeft className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
+                                                    </button>
+                                                    <button onClick={() => setActiveMenuView('tech_support')} className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-neutral-900 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-xl border border-gray-100 dark:border-neutral-800 transition-colors">
+                                                        <span className="flex items-center gap-3 text-sm font-medium text-foreground dark:text-white"><Bug className="w-4 h-4 text-orange-500" /> {isRtl ? 'דיווח על תקלה' : 'Report an Issue'}</span>
+                                                        {isRtl ? <ChevronLeft className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
+                                                    </button>
+                                                    <button onClick={() => window.open('mailto:support@rentmate.co.il', '_blank')} className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-neutral-900 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-xl border border-gray-100 dark:border-neutral-800 transition-colors">
+                                                        <span className="flex items-center gap-3 text-sm font-medium text-foreground dark:text-white"><Headphones className="w-4 h-4 text-blue-500" /> {isRtl ? 'צור קשר עם נציג' : 'Contact Support Agent'}</span>
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {/* App Guide Sub-Menu */}
+                                            {activeMenuView === 'navigation' && (
+                                                <div className="space-y-2">
+                                                    <button onClick={() => handleMenuClick(
+                                                        'איך מוסיפים נכס?', 'How do I add a property?',
+                                                        'כדי להוסיף נכס, לחץ על הכפתור "הוסף נכס" במסך לוח הבקרה, או הקלד "הוסף נכס" כאן בצ׳אט ואני אפתח עבורך את הטופס מיד!',
+                                                        'To add a property, click the "Add Property" button on the Dashboard, or just type "add a property" here in the chat and I will open the form for you!'
+                                                    )} className="w-full text-start p-3 bg-gray-50 dark:bg-neutral-900 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-xl text-sm font-medium transition-colors border border-transparent">
+                                                        {isRtl ? 'איך מוסיפים נכס?' : 'How do I add a property?'}
+                                                    </button>
+                                                    <button onClick={() => handleMenuClick(
+                                                        'איך מתעדים תשלום שכירות?', 'How do I record a rent payment?',
+                                                        'כדי לתעד תשלום, היכנס ללשונית "חוזים", לחץ על החוזה הרלוונטי ושם תוכל להוסיף תשלום. אפשר גם פשוט לבקש ממני להוסיף תשלום!',
+                                                        'To record a payment, go to the "Contracts" tab, click the relevant contract, and add a payment there. You can also just ask me to record a payment!'
+                                                    )} className="w-full text-start p-3 bg-gray-50 dark:bg-neutral-900 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-xl text-sm font-medium transition-colors border border-transparent">
+                                                        {isRtl ? 'איך מתעדים תשלום שכירות?' : 'How do I record a rent payment?'}
+                                                    </button>
+                                                    <button onClick={() => handleMenuClick(
+                                                        'איך סורקים חשבון חשמל/מים?', 'How do I scan a utility bill?',
+                                                        'פשוט לחץ על האייקון של "אטב הניירות" (📎) פה למטה בתיבת הצ׳אט, ותעלה צילום של החשבונית או קובץ PDF. אני אקרא אותו ואצרף לנכס המתאים.',
+                                                        'Simply click the "Paperclip" icon (📎) below in the chat box and upload a photo of the bill or a PDF. I will read it and attach it to the correct property.'
+                                                    )} className="w-full text-start p-3 bg-gray-50 dark:bg-neutral-900 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-xl text-sm font-medium transition-colors border border-transparent">
+                                                        {isRtl ? 'איך סורקים חשבון חשמל/מים?' : 'How do I scan a utility bill?'}
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {/* Tech Support Sub-Menu */}
+                                            {activeMenuView === 'tech_support' && (
+                                                <div className="space-y-2">
+                                                    <button onClick={() => handleMenuClick(
+                                                        'האפליקציה נתקעת או איטית', 'The app is freezing or slow',
+                                                        'מצטער לשמוע. נסה לרענן את העמוד, לנקות קאש (Cache) בדפדפן, או להתנתק ולהתחבר מחדש. אם זה לא עוזר, אנא שלח הודעה ל-support@rentmate.co.il',
+                                                        'Sorry to hear that. Try refreshing the page, clearing your browser cache, or logging out and back in. If it persists, please email support@rentmate.co.il'
+                                                    )} className="w-full text-start p-3 bg-gray-50 dark:bg-neutral-900 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-xl text-sm font-medium transition-colors border border-transparent">
+                                                        {isRtl ? 'האפליקציה נתקעת או איטית' : 'The app is freezing or slow'}
+                                                    </button>
+                                                    <button onClick={() => handleMenuClick(
+                                                        'אני לא רואה נכס שהוספתי', 'I cannot see a property I added',
+                                                        'וודא שאתה מחובר לחשבון הנכון. לעיתים לוקח כמה שניות לרענן את הרשימה (נסה לרענן את העמוד). אם עדיין חסר, צור קשר עם התמיכה.',
+                                                        'Make sure you are logged into the correct account. Sometimes it takes a few seconds to refresh (try reloading the page). If it is still missing, contact support.'
+                                                    )} className="w-full text-start p-3 bg-gray-50 dark:bg-neutral-900 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-xl text-sm font-medium transition-colors border border-transparent">
+                                                        {isRtl ? 'אני לא רואה נכס שהוספתי' : 'I cannot see a property I added'}
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+
                                 {activeMessages.map((msg, idx) => {
                                     const isUser = msg.role === 'user';
 
@@ -383,7 +513,7 @@ export function ChatWidget() {
                                             <div
                                                 className={`max-w-[80%] p-3 rounded-2xl text-sm shadow-sm ${isUser
                                                     ? "bg-black dark:bg-white text-white dark:text-black rounded-br-none border border-gray-700 dark:border-white/10"
-                                                    : "bg-white dark:bg-neutral-800 text-black dark:text-white rounded-bl-none border border-gray-200 dark:border-white/20"
+                                                    : "bg-white dark:bg-neutral-800 text-black dark:text-white rounded-bl-none border border-border dark:border-white/20"
                                                     }`}
                                                 dir="auto"
                                             >
@@ -403,8 +533,8 @@ export function ChatWidget() {
                                 })}
                                 {isListening && (
                                     <div className="flex justify-start">
-                                        <div className="bg-white dark:bg-white/10 border border-gray-200 dark:border-white/5 p-3 rounded-2xl rounded-bl-none">
-                                            <div className="flex items-center space-x-2 text-gray-900 dark:text-white">
+                                        <div className="bg-white dark:bg-white/10 border border-border dark:border-white/5 p-3 rounded-2xl rounded-bl-none">
+                                            <div className="flex items-center space-x-2 text-foreground dark:text-white">
                                                 <Mic className="w-4 h-4 animate-pulse text-brand-500" />
                                                 <span className="text-sm">מקשיב...</span>
                                             </div>
@@ -413,7 +543,7 @@ export function ChatWidget() {
                                 )}
                                 {isLoading && (
                                     <div className="flex justify-start">
-                                        <div className="bg-white dark:bg-white/10 border border-gray-200 dark:border-white/5 p-3 rounded-2xl rounded-bl-none">
+                                        <div className="bg-white dark:bg-white/10 border border-border dark:border-white/5 p-3 rounded-2xl rounded-bl-none">
                                             <div className="flex space-x-2">
                                                 <div className="w-2 h-2 bg-gray-400 dark:bg-white rounded-full animate-bounce" />
                                                 <div className="w-2 h-2 bg-gray-400 dark:bg-white rounded-full animate-bounce delay-100" />
@@ -492,7 +622,7 @@ export function ChatWidget() {
                                             <div className="flex gap-2">
                                                 <button
                                                     onClick={() => setScannedBill(null)}
-                                                    className="flex-1 py-2 text-xs font-bold text-gray-500 hover:text-gray-700 transition-colors"
+                                                    className="flex-1 py-2 text-xs font-bold text-muted-foreground hover:text-gray-700 transition-colors"
                                                 >
                                                     {t('cancel')}
                                                 </button>
@@ -512,12 +642,12 @@ export function ChatWidget() {
                             </div>
 
                             {/* Input */}
-                            <form onSubmit={handleSubmit} className="px-5 py-4 bg-gray-50 dark:bg-black border-t border-gray-200 dark:border-white/10">
+                            <form onSubmit={handleSubmit} className="px-5 py-4 bg-secondary dark:bg-black border-t border-border dark:border-white/10">
                                 <div className="flex items-center gap-3">
                                     <button
                                         type="submit"
                                         disabled={isLoading}
-                                        className="p-2 bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-200 rounded-xl transition-colors disabled:opacity-50 shrink-0"
+                                        className="p-2 bg-foreground dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-200 rounded-xl transition-colors disabled:opacity-50 shrink-0"
                                         aria-label="שלח הודעה"
                                     >
                                         <Send className="w-5 h-5 text-white dark:text-black" />
@@ -527,7 +657,7 @@ export function ChatWidget() {
                                         onClick={toggleVoiceInput}
                                         className={`p-2 rounded-xl transition-colors shrink-0 ${isListening
                                             ? 'bg-destructive hover:bg-red-500'
-                                            : 'bg-white dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 border border-gray-200 dark:border-transparent'
+                                            : 'bg-white dark:bg-white/10 hover:bg-muted dark:hover:bg-white/20 border border-border dark:border-transparent'
                                             } `}
                                         aria-label={isListening ? 'עצור הקלטה' : 'התחל הקלטה'}
                                     >
@@ -539,9 +669,29 @@ export function ChatWidget() {
                                     </button>
                                     <button
                                         type="button"
+                                        onClick={toggleTts}
+                                        className={`p-2 rounded-xl transition-colors shrink-0 ${isTtsEnabled 
+                                            ? 'bg-brand-100 text-brand-600 dark:bg-brand-900/40 dark:text-brand-400' 
+                                            : 'bg-white dark:bg-white/10 hover:bg-muted dark:hover:bg-white/20 border border-border dark:border-transparent text-gray-700 dark:text-white'}`}
+                                        title={isRtl ? 'הקראה קולית' : 'Voice Output'}
+                                    >
+                                        {isTtsEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5 opacity-50" />}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setActiveMenuView(prev => prev === 'none' ? 'main' : 'none')}
+                                        className={`p-2 rounded-xl transition-colors shrink-0 ${activeMenuView !== 'none' 
+                                            ? 'bg-brand-100 text-brand-600 dark:bg-brand-900/40 dark:text-brand-400' 
+                                            : 'bg-white dark:bg-white/10 hover:bg-muted dark:hover:bg-white/20 border border-border dark:border-transparent text-gray-700 dark:text-white'}`}
+                                        aria-label="תפריט תמיכה"
+                                    >
+                                        <Menu className="w-5 h-5" />
+                                    </button>
+                                    <button
+                                        type="button"
                                         onClick={() => fileInputRef.current?.click()}
                                         disabled={isUploading || isLoading || !user}
-                                        className="p-2 bg-white dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/20 border border-gray-200 dark:border-transparent rounded-xl transition-colors shrink-0 disabled:opacity-20"
+                                        className="p-2 bg-white dark:bg-white/10 hover:bg-muted dark:hover:bg-white/20 border border-border dark:border-transparent rounded-xl transition-colors shrink-0 disabled:opacity-20"
                                         aria-label="צרף קובץ"
                                     >
                                         {isUploading ? (
@@ -570,7 +720,7 @@ export function ChatWidget() {
                                                     : (isRtl ? "שאל שאלה או דבר..." : "Ask or tell me something...")
                                             }
                                             dir="auto"
-                                            className="w-full bg-white dark:bg-white/10 border border-gray-200 dark:border-white/20 rounded-xl px-3 py-2 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:focus:ring-white/30 text-sm"
+                                            className="w-full bg-white dark:bg-white/10 border border-border dark:border-white/20 rounded-xl px-3 py-2 text-foreground dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:focus:ring-white/30 text-sm"
                                         />
                                     </div>
                                 </div>

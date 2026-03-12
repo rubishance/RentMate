@@ -151,7 +151,7 @@ const AdminDashboard = () => {
         { name: 'Total Contracts', value: stats.totalContracts, icon: FileText, color: 'text-primary', bg: 'bg-primary-50' },
         { name: 'Total Revenue', value: stats.totalRevenue ? `₪${stats.totalRevenue.toLocaleString()}` : '₪0', icon: Wallet, color: 'text-emerald-600', bg: 'bg-emerald-50' },
         { name: 'Active Users', value: stats.activeUsers, icon: Activity, color: 'text-orange-600', bg: 'bg-orange-50' },
-        { name: 'AI Usage Cost', value: stats.totalAiCost ? `$${stats.totalAiCost.toFixed(2)}` : '$0.00', icon: Cpu, color: 'text-blue-600', bg: 'bg-blue-50' },
+        { name: 'AI Usage Cost', value: stats.totalAiCost ? `$${stats.totalAiCost.toFixed(2)}` : '$0.00', icon: Cpu, color: 'text-primary', bg: 'bg-primary/10' },
         { name: 'Autopilot Decisions', value: stats.totalAutomatedActions, icon: Sparkles, color: 'text-amber-600', bg: 'bg-amber-50' },
     ];
 
@@ -179,15 +179,15 @@ const AdminDashboard = () => {
             {/* Stats Grid */}
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {statCards.map((item) => (
-                    <div key={item.name} className="relative overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all transform hover:-translate-y-1">
+                    <div key={item.name} className="relative overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 shadow-sm border border-border dark:border-gray-700 hover:shadow-lg transition-all transform hover:-translate-y-1">
                         <div className="flex items-center">
                             <div className={`rounded-xl p-3 ${item.bg} border border-brand-100 dark:border-brand-800`}>
                                 <item.icon className={`h-6 w-6 ${item.color}`} />
                             </div>
                             <div className="ml-5 w-0 flex-1">
                                 <dl>
-                                    <dt className="truncate text-xs font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{item.name}</dt>
-                                    <dd className="text-2xl font-black text-gray-900 dark:text-white leading-tight">{item.value}</dd>
+                                    <dt className="truncate text-xs font-black text-muted-foreground uppercase tracking-widest leading-none mb-1">{item.name}</dt>
+                                    <dd className="text-2xl font-black text-foreground dark:text-white leading-tight">{item.value}</dd>
                                 </dl>
                             </div>
                         </div>
@@ -212,7 +212,7 @@ const AdminDashboard = () => {
             <div className="bg-white dark:bg-gray-800 shadow-sm rounded-xl border border-border dark:border-gray-700 p-6">
                 <div className="flex items-center gap-2 mb-6">
                     <Activity className="w-5 h-5 text-brand-600" />
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">Top 10 Cities By Properties</h3>
+                    <h3 className="text-lg font-bold text-foreground dark:text-white">Top 10 Cities By Properties</h3>
                 </div>
                 <div className="h-80 w-full">
                     <ResponsiveContainer width="100%" height="100%">
@@ -351,43 +351,43 @@ const AdminDashboard = () => {
                 </div>
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead className="bg-gray-50 dark:bg-gray-900/50">
+                        <thead className="bg-secondary dark:bg-foreground/50">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Message</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Cost</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Sync</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">User</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Last Message</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Cost</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Last Sync</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             {recentAiConvs.length === 0 ? (
                                 <tr>
-                                    <td colSpan={4} className="px-6 py-10 text-center text-sm text-gray-500">No AI conversations logged yet.</td>
+                                    <td colSpan={4} className="px-6 py-10 text-center text-sm text-muted-foreground">No AI conversations logged yet.</td>
                                 </tr>
                             ) : (
                                 recentAiConvs.map((conv) => (
-                                    <tr key={conv.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                    <tr key={conv.id} className="hover:bg-secondary dark:hover:bg-gray-700/30 transition-colors">
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center">
                                                 <div className="ml-0">
-                                                    <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                                    <div className="text-sm font-medium text-foreground dark:text-white">
                                                         {conv.user_profiles?.full_name || 'Anonymous User'}
                                                     </div>
-                                                    <div className="text-xs text-gray-500">{conv.user_profiles?.email || 'No email'}</div>
+                                                    <div className="text-xs text-muted-foreground">{conv.user_profiles?.email || 'No email'}</div>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="text-sm text-gray-900 dark:text-gray-300 max-w-sm truncate">
+                                            <div className="text-sm text-foreground dark:text-gray-300 max-w-sm truncate">
                                                 {conv.messages[conv.messages.length - 1]?.content || 'No messages'}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-primary/10 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
                                                 ${conv.total_cost_usd?.toFixed(3)}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-500">
+                                        <td className="px-6 py-4 whitespace-nowrap text-xs text-muted-foreground">
                                             {new Date(conv.updated_at).toLocaleString()}
                                         </td>
                                     </tr>

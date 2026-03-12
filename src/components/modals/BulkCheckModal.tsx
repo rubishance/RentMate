@@ -144,18 +144,18 @@ export function BulkCheckModal({ isOpen, onClose, onSuccess }: BulkCheckModalPro
                             className="space-y-6"
                         >
                             <div className="space-y-4">
-                                <label className="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">
+                                <label className="text-xs font-black uppercase tracking-widest text-muted-foreground dark:text-muted-foreground ml-1">
                                     {t('contract')}
                                 </label>
                                 {fetchingContracts ? (
-                                    <div className="h-12 bg-gray-50 dark:bg-neutral-800 rounded-2xl animate-pulse" />
+                                    <div className="h-12 bg-secondary dark:bg-neutral-800 rounded-2xl animate-pulse" />
                                 ) : (
                                     <div className="relative">
-                                        <FileText className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
+                                        <FileText className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
                                         <select
                                             value={formData.contractId}
                                             onChange={(e) => setFormData({ ...formData, contractId: e.target.value })}
-                                            className="w-full pl-12 pr-4 py-4 bg-gray-50 dark:bg-neutral-800 border-2 border-transparent focus:border-black dark:focus:border-white rounded-[1.25rem] text-sm font-bold outline-none appearance-none transition-all"
+                                            className="w-full pl-12 pr-4 py-4 bg-secondary dark:bg-neutral-800 border-2 border-transparent focus:border-black dark:focus:border-white rounded-[1.25rem] text-sm font-bold outline-none appearance-none transition-all"
                                         >
                                             <option value="">{t('selectContract')}</option>
                                             {contracts.map(c => (
@@ -177,7 +177,7 @@ export function BulkCheckModal({ isOpen, onClose, onSuccess }: BulkCheckModalPro
                                     placeholder="0.00"
                                 />
                                 <div className="space-y-2">
-                                    <label className="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">
+                                    <label className="text-xs font-black uppercase tracking-widest text-muted-foreground dark:text-muted-foreground ml-1">
                                         {t('firstDueDate')}
                                     </label>
                                     <DatePicker
@@ -226,7 +226,7 @@ export function BulkCheckModal({ isOpen, onClose, onSuccess }: BulkCheckModalPro
                                 {generatedChecks.map((check, idx) => (
                                     <div
                                         key={idx}
-                                        className="p-4 bg-gray-50 dark:bg-neutral-800 rounded-2xl border border-gray-100 dark:border-neutral-700 flex items-center justify-between group"
+                                        className="p-4 bg-secondary dark:bg-neutral-800 rounded-2xl border border-border dark:border-neutral-700 flex items-center justify-between group"
                                     >
                                         <div className="flex items-center gap-4">
                                             <div className="w-10 h-10 rounded-xl bg-white dark:bg-neutral-700 flex items-center justify-center font-black text-xs">

@@ -86,7 +86,7 @@ export function DashboardAddModal({ isOpen, onClose }: DashboardAddModalProps) {
                                     onClick={() => handleAction('contract')}
                                     className="group relative overflow-hidden flex items-center gap-4 p-5 rounded-2xl border border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 hover:shadow-xl transition-all duration-300 text-left"
                                 >
-                                    <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                                    <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                                         <FileText className="w-6 h-6" />
                                     </div>
                                     <div className="flex-1 min-w-0">

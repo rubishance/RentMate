@@ -9,7 +9,7 @@ export function CPICalculatorPage() {
     const { effectiveTheme } = useUserPreferences();
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20">
+        <div className="min-h-screen bg-secondary dark:bg-foreground pb-20">
             <SEO
                 title="מחשבון שכר דירה | חישוב הצמדה למדד בקליק (חינם) - RentMate"
                 description="מחשבון הצמדה למדד (CPI) לשכר דירה. חישוב מהיר ומדויק של עליית המדד והשפעתה על חוזה השכירות. מבוסס על נתוני הלמ&quot;ס המעודכנים."
@@ -17,7 +17,7 @@ export function CPICalculatorPage() {
             />
 
             {/* Header */}
-            <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <header className="bg-white dark:bg-gray-800 border-b border-border dark:border-gray-700">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <Link to="/" className="flex items-center gap-2">
@@ -26,7 +26,7 @@ export function CPICalculatorPage() {
                                 alt="RentMate"
                                 className="w-8 h-8"
                             />
-                            <span className="font-black text-xl tracking-tight hidden sm:block text-gray-900 dark:text-white">RentMate</span>
+                            <span className="font-black text-xl tracking-tight hidden sm:block text-foreground dark:text-white">RentMate</span>
                         </Link>
                     </div>
                     <div className="flex items-center gap-4">
@@ -45,47 +45,47 @@ export function CPICalculatorPage() {
 
                 {/* Hero Section */}
                 <div className="text-center mb-12 space-y-4">
-                    <h1 className="text-4xl font-black tracking-tight text-gray-900 dark:text-white sm:text-5xl">
+                    <h1 className="text-4xl font-black tracking-tight text-foreground dark:text-white sm:text-5xl">
                         מחשבון הצמדה למדד
                     </h1>
-                    <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                    <p className="text-xl text-muted-foreground dark:text-gray-300 max-w-2xl mx-auto">
                         בדקו בחינם ובקלות כמה עלה המדד ואיך זה משפיע על שכר הדירה שלכם.
                     </p>
                 </div>
 
                 {/* Calculator Card */}
-                <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 p-1 sm:p-2 mb-16">
+                <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-border dark:border-gray-700 p-1 sm:p-2 mb-16">
                     <IndexCalculator />
                 </div>
 
                 {/* Value Props / SEO Content */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-                    <div className="p-6 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                    <div className="p-6 bg-white dark:bg-gray-800 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
                         <div className="w-10 h-10 bg-brand-100 dark:bg-brand-900/30 rounded-full flex items-center justify-center mb-4">
                             <CheckCircle2 className="w-5 h-5 text-brand-600" />
                         </div>
                         <h3 className="font-bold text-lg mb-2">נתונים רשמיים</h3>
-                        <p className="text-gray-500 text-sm">המחשבון מתעדכן אוטומטית מול נתוני הלמ"ס (הלשכה המרכזית לסטטיסטיקה) ומבטיח דיוק מרבי.</p>
+                        <p className="text-muted-foreground text-sm">המחשבון מתעדכן אוטומטית מול נתוני הלמ"ס (הלשכה המרכזית לסטטיסטיקה) ומבטיח דיוק מרבי.</p>
                     </div>
-                    <div className="p-6 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                    <div className="p-6 bg-white dark:bg-gray-800 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
                         <div className="w-10 h-10 bg-brand-100 dark:bg-brand-900/30 rounded-full flex items-center justify-center mb-4">
                             <CheckCircle2 className="w-5 h-5 text-brand-600" />
                         </div>
                         <h3 className="font-bold text-lg mb-2">כל המדדים</h3>
-                        <p className="text-gray-500 text-sm">תמיכה במדד המחירים לצרכן, תשומות הבנייה, מחירי דיור, וגם שערי מט"ח (דולר/יורו).</p>
+                        <p className="text-muted-foreground text-sm">תמיכה במדד המחירים לצרכן, תשומות הבנייה, מחירי דיור, וגם שערי מט"ח (דולר/יורו).</p>
                     </div>
-                    <div className="p-6 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                    <div className="p-6 bg-white dark:bg-gray-800 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
                         <div className="w-10 h-10 bg-brand-100 dark:bg-brand-900/30 rounded-full flex items-center justify-center mb-4">
                             <CheckCircle2 className="w-5 h-5 text-brand-600" />
                         </div>
                         <h3 className="font-bold text-lg mb-2">חינם לתמיד</h3>
-                        <p className="text-gray-500 text-sm">השימוש במחשבון הוא חינמי לחלוטין. רוצים לשמור את החישובים? הירשמו ל-RentMate בקליק.</p>
+                        <p className="text-muted-foreground text-sm">השימוש במחשבון הוא חינמי לחלוטין. רוצים לשמור את החישובים? הירשמו ל-RentMate בקליק.</p>
                     </div>
                 </div>
 
                 {/* Recommended Guides Section */}
                 <div className="mb-16">
-                    <h2 className="text-2xl font-black mb-8 text-center text-gray-900 dark:text-white">מדריכים מומלצים</h2>
+                    <h2 className="text-2xl font-black mb-8 text-center text-foreground dark:text-white">מדריכים מומלצים</h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {[
                             {
@@ -107,12 +107,12 @@ export function CPICalculatorPage() {
                             <Link
                                 key={i}
                                 to={`/blog/${guide.slug}`}
-                                className="group p-6 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md hover:border-brand-500 transition-all duration-300"
+                                className="group p-6 bg-white dark:bg-gray-800 rounded-2xl border border-border dark:border-gray-700 shadow-sm hover:shadow-md hover:border-brand-500 transition-all duration-300"
                             >
-                                <h4 className="font-bold text-gray-900 dark:text-white group-hover:text-brand-600 transition-colors mb-2">
+                                <h4 className="font-bold text-foreground dark:text-white group-hover:text-brand-600 transition-colors mb-2">
                                     {guide.title}
                                 </h4>
-                                <p className="text-gray-500 text-xs leading-relaxed">
+                                <p className="text-muted-foreground text-xs leading-relaxed">
                                     {guide.desc}
                                 </p>
                             </Link>
@@ -129,7 +129,7 @@ export function CPICalculatorPage() {
                             קבלו התראות אוטומטיות על עליית המדד, חידוש חוזה, וסיום תקופת אופציה.
                         </p>
                         <Link to="/signup" className="inline-block">
-                            <Button size="lg" className="bg-white text-brand-600 hover:bg-gray-100 border-none font-black px-8 h-12 text-lg">
+                            <Button size="lg" className="bg-white text-brand-600 hover:bg-muted border-none font-black px-8 h-12 text-lg">
                                 התחילו בחינם
                             </Button>
                         </Link>
@@ -138,7 +138,7 @@ export function CPICalculatorPage() {
 
             </main>
 
-            <footer className="max-w-7xl mx-auto px-4 py-8 text-center text-gray-400 text-sm">
+            <footer className="max-w-7xl mx-auto px-4 py-8 text-center text-muted-foreground text-sm">
                 © {new Date().getFullYear()} RentMate. All rights reserved.
             </footer>
         </div>

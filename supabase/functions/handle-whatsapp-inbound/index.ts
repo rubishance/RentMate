@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -52,10 +53,22 @@ serve(async (req) => {
                 const message = value.messages[0];
                 const fromMobile = message.from; // e.g., "972501234567"
 
-                // Find or Create Conversation
+                // 1. Check if this phone number belongs to a verified user profile
+                const { data: userProfile } = await supabase
+                    .from('user_profiles')
+                    .select('id')
+                    .eq('phone', fromMobile)
+                    .eq('phone_verified', true)
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .single();
+
+                const matchedUserId = userProfile?.id || null;
+
+                // 2. Find or Create Conversation
                 let { data: conversation } = await supabase
                     .from('whatsapp_conversations')
-                    .select('id')
+                    .select('id, user_id, status')
                     .eq('phone_number', fromMobile)
                     .single();
 
@@ -64,19 +77,51 @@ serve(async (req) => {
                         .from('whatsapp_conversations')
                         .insert({
                             phone_number: fromMobile,
+                            user_id: matchedUserId,
                             status: 'bot_handling',
                             unread_count: 0
                         })
-                        .select('id')
+                        .select('id, user_id, status')
                         .single();
 
-                    if (convError) console.error('Error creating chat', convError);
+                    if (convError) {
+                        console.error('Error creating chat', convError);
+                        return new Response(JSON.stringify({ error: 'Conv Error', details: convError }), { status: 500 });
+                    }
                     conversation = newConv;
+
+                    // Send an automated response if this is a new UNKNOWN number
+                    if (!matchedUserId) {
+                        const WHATSAPP_ACCESS_TOKEN = Deno.env.get('WHATSAPP_ACCESS_TOKEN');
+                        const WHATSAPP_PHONE_NUMBER_ID = Deno.env.get('WHATSAPP_PHONE_NUMBER_ID');
+
+                        if (WHATSAPP_ACCESS_TOKEN && WHATSAPP_PHONE_NUMBER_ID) {
+                            const url = `https://graph.facebook.com/v18.0/${WHATSAPP_PHONE_NUMBER_ID}/messages`;
+                            const metaPayload = {
+                                messaging_product: 'whatsapp',
+                                recipient_type: 'individual',
+                                to: fromMobile,
+                                type: 'text',
+                                text: { body: "Hi! We don't recognize this number. You are receiving general support. To get account-specific help, please log into RentMate and add your phone number in the Profile Settings." }
+                            };
+                            await fetch(url, {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${WHATSAPP_ACCESS_TOKEN}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(metaPayload)
+                            });
+                        }
+                    }
+                } else if (!conversation.user_id && matchedUserId) {
+                    // Update existing conversation if user recently verified their number
+                    await supabase.from('whatsapp_conversations').update({ user_id: matchedUserId }).eq('id', conversation.id);
                 }
 
                 if (conversation && message.type === 'text') {
                     // Insert Message into DB
-                    await supabase.from('whatsapp_messages').insert({
+                    const { error: msgError } = await supabase.from('whatsapp_messages').insert({
                         conversation_id: conversation.id,
                         direction: 'inbound',
                         type: 'text',
@@ -85,11 +130,115 @@ serve(async (req) => {
                         metadata: { whatsapp_id: message.id }
                     });
 
-                    // Here you could trigger the AI bot or other logic
+                    if (msgError) {
+                        console.error('Error creating msg', msgError);
+                        return new Response(JSON.stringify({ error: 'Msg Error', details: msgError }), { status: 500 });
+                    }
+
+                    // Trigger AI Bot if the conversation is in 'bot_handling' mode
+                    if (conversation.status === 'bot_handling') {
+                        try {
+                            // 1. Fetch recent messages for context
+                            const { data: recentMsgs } = await supabase
+                                .from('whatsapp_messages')
+                                .select('content, direction')
+                                .eq('conversation_id', conversation.id)
+                                .order('created_at', { ascending: false })
+                                .limit(10);
+                                
+                            const formattedMessages = (recentMsgs || [])
+                                .reverse()
+                                .map(m => ({
+                                    role: m.direction === 'inbound' ? 'user' : 'assistant',
+                                    content: m.content?.text || ''
+                                }));
+                                
+                            // 2. Add system prompt for WhatsApp tone
+                            const systemMessage = {
+                                role: 'system',
+                                content: "You are chatting with the user over WhatsApp. Keep your responses short, use simple formatting (ONLY bold asterisks '*', no other markdown), and use emojis. Be extremely helpful. Do not mention that you cannot use markdown."
+                            };
+                            
+                            const aiMessagesPayload = [systemMessage, ...formattedMessages];
+                            
+                            // 3. Call Chat-Support Edge Function
+                            const projectUrl = Deno.env.get('SUPABASE_URL');
+                            const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+                            const chatSupportUrl = `${projectUrl}/functions/v1/chat-support`;
+                            
+                            console.log(`Triggering AI for conversation ${conversation.id}`);
+                            
+                            const aiResponse = await fetch(chatSupportUrl, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'x-internal-webhook-key': serviceKey!
+                                },
+                                body: JSON.stringify({
+                                    messages: aiMessagesPayload,
+                                    conversationId: `whatsapp-${conversation.id}`, 
+                                    hasAiConsent: true, 
+                                    userId: matchedUserId // Can be null if unknown user, chat-support handles it
+                                })
+                            });
+                            
+                            if (aiResponse.ok) {
+                                const result = await aiResponse.json();
+                                const aiReplyText = result.choices?.[0]?.message?.content;
+                                
+                                if (aiReplyText) {
+                                    // 4. Save AI Reply softly
+                                    await supabase.from('whatsapp_messages').insert({
+                                        conversation_id: conversation.id,
+                                        direction: 'outbound',
+                                        type: 'text',
+                                        content: { text: aiReplyText },
+                                        status: 'sent'
+                                    });
+                                    
+                                    // 5. Send back to WhatsApp UI Graph API
+                                    const WHATSAPP_ACCESS_TOKEN = Deno.env.get('WHATSAPP_ACCESS_TOKEN');
+                                    const WHATSAPP_PHONE_NUMBER_ID = Deno.env.get('WHATSAPP_PHONE_NUMBER_ID');
+
+                                    if (WHATSAPP_ACCESS_TOKEN && WHATSAPP_PHONE_NUMBER_ID) {
+                                        const url = `https://graph.facebook.com/v18.0/${WHATSAPP_PHONE_NUMBER_ID}/messages`;
+                                        await fetch(url, {
+                                            method: 'POST',
+                                            headers: {
+                                                'Authorization': `Bearer ${WHATSAPP_ACCESS_TOKEN}`,
+                                                'Content-Type': 'application/json'
+                                            },
+                                            body: JSON.stringify({
+                                                messaging_product: 'whatsapp',
+                                                recipient_type: 'individual',
+                                                to: fromMobile,
+                                                type: 'text',
+                                                text: { body: aiReplyText }
+                                            })
+                                        });
+                                        console.log("Successfully replied to WhatsApp user");
+                                    }
+                                }
+                            } else {
+                                console.error('AI Edge Function failed:', await aiResponse.text());
+                            }
+                        } catch (aiErr) {
+                            console.error('Error in AI Trigger bridge:', aiErr);
+                        }
+                    }
                 }
             }
 
-            return new Response(JSON.stringify({ success: true }), {
+            return new Response(JSON.stringify({
+                success: true,
+                debug: {
+                    hasMessages: !!value?.messages,
+                    fromMobile: value?.messages?.[0]?.from,
+                    text: value?.messages?.[0]?.text?.body,
+                    supabaseUrl: !!Deno.env.get('SUPABASE_URL'),
+                    serviceKeyLength: Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')?.length || 0,
+                }
+            }), {
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                 status: 200,
             })

@@ -47,7 +47,7 @@ const COLOR_MAP: Record<string, string> = {
 
 const BG_MAP: Record<string, string> = {
     'solo': 'bg-background/50',
-    'mate': 'bg-blue-50/50 dark:bg-blue-900/20',
+    'mate': 'bg-primary/10/50 dark:bg-blue-900/20',
     'master': 'bg-amber-50/50 dark:bg-amber-900/20',
     'unlimited': 'bg-primary-50/50 dark:bg-primary-900/20'
 };
@@ -116,7 +116,7 @@ export default function Pricing() {
                     cta: isRtl ? 'שדרג ל-Starter' : 'Upgrade to Starter',
                     popular: true,
                     color: 'text-primary',
-                    bg: 'bg-blue-50/50 dark:bg-blue-900/20'
+                    bg: 'bg-primary/10/50 dark:bg-blue-900/20'
                 },
                 {
                     id: 'pro', // Pro
@@ -189,7 +189,7 @@ export default function Pricing() {
                         >
                             <motion.div
                                 animate={{ x: billingCycle === 'monthly' ? (isRtl ? 24 : 0) : (isRtl ? 0 : 24) }}
-                                className="w-6 h-6 bg-white dark:bg-blue-500 rounded-full shadow-sm"
+                                className="w-6 h-6 bg-white dark:bg-primary rounded-full shadow-sm"
                             />
                         </button>
                         <span className={`text-sm font-medium ${billingCycle === 'yearly' ? 'text-foreground' : 'text-slate-500'}`}>

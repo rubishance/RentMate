@@ -130,18 +130,26 @@ export const userPreferencesService = {
             if (error && error.code !== 'PGRST116') throw error; // PGRST116 is not found
 
             if (data) {
+                const localPrefs = this.getUserPreferences();
                 const preferences: UserPreferences = {
                     language: data.language,
                     gender: data.gender,
-                    theme: 'system', // Use system default as theme isn't in DB yet (per schema)
+                    theme: localPrefs.theme || 'system', // Theme is local only in DB schema currently
                     pinned_cities: data.pinned_cities || [],
                     has_seen_welcome_v1: data.has_seen_welcome_v1 ?? false,
                     seen_features: data.seen_features || [],
                     disclaimer_accepted: data.disclaimer_accepted ?? false,
                     ai_data_consent: data.ai_data_consent ?? false,
-                    accessibility: data.accessibility || DEFAULT_PREFERENCES.accessibility,
+                    accessibility: localPrefs.accessibility || DEFAULT_PREFERENCES.accessibility,
                 };
-                this.savePreferences(preferences); // Update local cache
+
+                // Only save to local storage to cache the remote fetch, do NOT trigger an immediate upsert back to Supabase
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
+                } catch (e) {
+                    console.error('Failed to save remote preferences locally', e);
+                }
+
                 return preferences;
             }
         } catch (error) {

@@ -104,7 +104,7 @@ export function AdminChatWindow({ userId, adminId, onClose }: AdminChatWindowPro
     };
 
     return (
-        <div className="fixed bottom-4 right-4 z-50 w-96 h-[500px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300">
+        <div className="fixed bottom-4 right-4 z-50 w-96 h-[500px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-border dark:border-gray-700 flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300">
             {/* Header */}
             <div className="p-4 bg-brand-600 flex items-center justify-between text-white">
                 <div className="flex items-center gap-2">
@@ -125,7 +125,7 @@ export function AdminChatWindow({ userId, adminId, onClose }: AdminChatWindowPro
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900/50">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-secondary dark:bg-foreground/50">
                 {loading ? (
                     <div className="h-full flex items-center justify-center">
                         <Loader2 className="w-8 h-8 animate-spin text-brand-600" />
@@ -133,7 +133,7 @@ export function AdminChatWindow({ userId, adminId, onClose }: AdminChatWindowPro
                 ) : (
                     <>
                         {messages.length === 0 && (
-                            <p className="text-center text-xs text-gray-400 font-medium italic mt-10">
+                            <p className="text-center text-xs text-muted-foreground font-medium italic mt-10">
                                 This is the start of the live conversation.
                             </p>
                         )}
@@ -144,11 +144,11 @@ export function AdminChatWindow({ userId, adminId, onClose }: AdminChatWindowPro
                             >
                                 <div className={`max-w-[85%] p-3 rounded-2xl text-sm font-medium ${msg.role === 'admin'
                                         ? 'bg-brand-600 text-white rounded-tr-none'
-                                        : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 rounded-tl-none shadow-sm'
+                                        : 'bg-white dark:bg-gray-800 border border-border dark:border-gray-700 text-foreground dark:text-gray-100 rounded-tl-none shadow-sm'
                                     }`}>
                                     {msg.content}
                                 </div>
-                                <span className="text-[11px] text-gray-400 mt-1 px-1">
+                                <span className="text-[11px] text-muted-foreground mt-1 px-1">
                                     {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </span>
                             </div>
@@ -159,14 +159,14 @@ export function AdminChatWindow({ userId, adminId, onClose }: AdminChatWindowPro
             </div>
 
             {/* Input Area */}
-            <form onSubmit={handleSend} className="p-3 border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800">
+            <form onSubmit={handleSend} className="p-3 border-t border-border dark:border-gray-700 bg-white dark:bg-gray-800">
                 <div className="relative">
                     <input
                         type="text"
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         placeholder="Type a message..."
-                        className="w-full pl-4 pr-12 py-3 bg-gray-100 dark:bg-gray-900 border border-transparent focus:border-brand-500 rounded-xl text-sm outline-none transition-all"
+                        className="w-full pl-4 pr-12 py-3 bg-muted dark:bg-foreground border border-transparent focus:border-brand-500 rounded-xl text-sm outline-none transition-all"
                         disabled={loading || sending}
                     />
                     <button

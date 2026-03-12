@@ -113,6 +113,7 @@ const AdminLayout = () => {
         ] : []),
 
         { name: 'Dashboard', href: '/admin', icon: Squares2X2Icon },
+        { name: 'System Settings', href: '/admin/settings', icon: Cog6ToothIcon },
         { name: 'Waitlist', href: '/admin/waitlist', icon: UsersIcon },
         { name: 'WhatsApp Support', href: '/admin/chat', icon: ChatBubbleLeftRightIcon },
         { name: 'Notifications', href: '/admin/notifications', icon: BellIcon },
@@ -127,11 +128,10 @@ const AdminLayout = () => {
         { name: 'Usage Analytics', href: '/admin/usage', icon: ChartBarIcon },
         { name: 'AI Usage', href: '/admin/ai-usage', icon: ChatBubbleBottomCenterTextIcon },
         { name: 'Automation Rules', href: '/admin/automation', icon: CpuChipIcon },
-        { name: 'System Settings', href: '/admin/settings', icon: Cog6ToothIcon },
     ];
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-foreground font-['Heebo']" dir="rtl">
+        <div className="min-h-screen bg-secondary dark:bg-foreground text-foreground font-['Heebo']" dir="rtl">
             {/* Mobile sidebar backdrop */}
             {sidebarOpen && (
                 <div
@@ -141,20 +141,20 @@ const AdminLayout = () => {
             )}
 
             {/* Sidebar */}
-            <div className={`fixed inset-y-0 right-0 z-50 w-64 bg-white dark:bg-gray-900 transform transition-transform duration-300 ease-in-out md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'} border-l border-gray-200 dark:border-gray-800`}>
-                <div className="flex h-16 items-center justify-between px-6 bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800">
-                    <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">RentMate Admin</h1>
+            <div className={`fixed inset-y-0 right-0 z-50 w-64 bg-white dark:bg-foreground transform transition-transform duration-300 ease-in-out md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'} border-l border-border dark:border-gray-800`}>
+                <div className="flex h-16 items-center justify-between px-6 bg-secondary dark:bg-gray-950 border-b border-border dark:border-gray-800">
+                    <h1 className="text-xl font-bold text-foreground dark:text-white tracking-tight">RentMate Admin</h1>
                     <button
-                        className="text-gray-500 dark:text-gray-400 md:hidden hover:bg-gray-100 dark:hover:bg-gray-800 p-1 rounded-lg"
+                        className="text-muted-foreground dark:text-muted-foreground md:hidden hover:bg-muted dark:hover:bg-gray-800 p-1 rounded-lg"
                         onClick={() => setSidebarOpen(false)}
                     >
                         <XMarkIcon className="h-6 w-6" />
                     </button>
                 </div>
 
-                <div className="p-6 border-b border-gray-100 dark:border-gray-800">
-                    <p className="text-xs uppercase tracking-wider font-bold text-gray-500 dark:text-gray-400">ADMINISTRATOR</p>
-                    <p className="font-semibold text-gray-900 dark:text-white truncate mt-1">{user?.email}</p>
+                <div className="p-6 border-b border-border dark:border-gray-800">
+                    <p className="text-xs uppercase tracking-wider font-bold text-muted-foreground dark:text-muted-foreground">ADMINISTRATOR</p>
+                    <p className="font-semibold text-foreground dark:text-white truncate mt-1">{user?.email}</p>
                 </div>
 
                 <nav className="flex-1 space-y-1 px-3 py-6 h-[calc(100vh-180px)] overflow-y-auto hide-scrollbar">
@@ -167,11 +167,11 @@ const AdminLayout = () => {
                                 onClick={() => setSidebarOpen(false)}
                                 className={`${isActive
                                     ? 'bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300'
-                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
+                                    : 'text-muted-foreground dark:text-muted-foreground hover:bg-secondary dark:hover:bg-gray-800 hover:text-foreground dark:hover:text-white'
                                     } group flex items-center rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-200`}
                             >
                                 <item.icon
-                                    className={`${isActive ? 'text-brand-600 dark:text-brand-400' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'
+                                    className={`${isActive ? 'text-brand-600 dark:text-brand-400' : 'text-muted-foreground group-hover:text-muted-foreground dark:group-hover:text-gray-300'
                                         } ml-3 h-5 w-5 flex-shrink-0 transition-colors`}
                                     aria-hidden="true"
                                 />
@@ -180,10 +180,10 @@ const AdminLayout = () => {
                         );
                     })}
                 </nav>
-                <div className="absolute bottom-0 w-full p-4 border-t border-gray-100 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl">
+                <div className="absolute bottom-0 w-full p-4 border-t border-border dark:border-gray-800 bg-white/80 dark:bg-foreground/80 backdrop-blur-xl">
                     <Link
                         to="/dashboard"
-                        className="flex items-center justify-center w-full px-4 py-2.5 text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all group"
+                        className="flex items-center justify-center w-full px-4 py-2.5 text-sm font-bold text-muted-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-white rounded-xl hover:bg-secondary dark:hover:bg-gray-800 transition-all group"
                     >
                         <span className="ml-2 font-mono">←</span>
                         Back to App
@@ -196,14 +196,14 @@ const AdminLayout = () => {
                 <div className="sticky top-0 z-10 flex h-16 flex-shrink-0 bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700 md:hidden">
                     <button
                         type="button"
-                        className="px-4 text-gray-500 hover:text-brand-600 focus:outline-none md:hidden"
+                        className="px-4 text-muted-foreground hover:text-brand-600 focus:outline-none md:hidden"
                         onClick={() => setSidebarOpen(true)}
                     >
                         <span className="sr-only">Open sidebar</span>
                         <Bars3Icon className="h-6 w-6" aria-hidden="true" />
                     </button>
                     <div className="flex items-center justify-center flex-1">
-                        <h1 className="text-lg font-bold text-gray-900 dark:text-white">Admin Console</h1>
+                        <h1 className="text-lg font-bold text-foreground dark:text-white">Admin Console</h1>
                     </div>
                 </div>
 
@@ -220,8 +220,8 @@ const AdminLayout = () => {
                             <ChatBubbleLeftRightIcon className="w-6 h-6 text-brand-600" />
                         </div>
                         <div className="flex-1">
-                            <h4 className="font-black text-gray-900 dark:text-white uppercase tracking-tight text-sm">New Live Chat Request</h4>
-                            <p className="text-xs text-gray-500 mt-1 mb-2">
+                            <h4 className="font-black text-foreground dark:text-white uppercase tracking-tight text-sm">New Live Chat Request</h4>
+                            <p className="text-xs text-muted-foreground mt-1 mb-2">
                                 <strong>{notification.userName}</strong> wants to speak with a human.
                             </p>
                             <div className="flex gap-2">
@@ -234,13 +234,13 @@ const AdminLayout = () => {
                                 </Link>
                                 <button
                                     onClick={() => setNotification(null)}
-                                    className="text-gray-400 hover:text-gray-600 text-xs font-bold px-3 py-1.5 uppercase tracking-wider"
+                                    className="text-muted-foreground hover:text-muted-foreground text-xs font-bold px-3 py-1.5 uppercase tracking-wider"
                                 >
                                     Dismiss
                                 </button>
                             </div>
                         </div>
-                        <button onClick={() => setNotification(null)} className="text-gray-400 hover:text-gray-600">
+                        <button onClick={() => setNotification(null)} className="text-muted-foreground hover:text-muted-foreground">
                             <XMarkIcon className="w-5 h-5" />
                         </button>
                     </div>

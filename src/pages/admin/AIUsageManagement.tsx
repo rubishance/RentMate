@@ -159,8 +159,8 @@ export default function AIUsageManagement() {
         switch (tier?.toLowerCase()) {
             case 'pro': return 'bg-primary-50 text-primary-700 border-primary-100 dark:bg-primary-900/20 dark:border-primary-800';
             case 'business': return 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/20 dark:border-amber-800';
-            case 'basic': return 'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:border-blue-800';
-            default: return 'bg-gray-50 text-gray-700 border-gray-100 dark:bg-gray-900/40 dark:border-gray-700 dark:text-gray-400';
+            case 'basic': return 'bg-primary/10 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:border-blue-800';
+            default: return 'bg-secondary text-gray-700 border-border dark:bg-foreground/40 dark:border-gray-700 dark:text-muted-foreground';
         }
     };
 
@@ -187,18 +187,18 @@ export default function AIUsageManagement() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+                    <h1 className="text-3xl font-extrabold text-foreground dark:text-white tracking-tight flex items-center gap-2">
                         <TrendingUp className="w-8 h-8 text-brand-600" />
                         AI Usage Dashboard
                     </h1>
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mt-1">
+                    <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground mt-1">
                         Monitor and control AI chatbot resource consumption across subscription tiers.
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button
                         onClick={fetchData}
-                        className="p-2.5 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm"
+                        className="p-2.5 text-muted-foreground hover:text-foreground dark:text-muted-foreground dark:hover:text-white transition-colors bg-white dark:bg-gray-800 rounded-xl border border-border dark:border-gray-700 shadow-sm"
                     >
                         <ArrowPathIcon className="w-6 h-6" />
                     </button>
@@ -224,71 +224,71 @@ export default function AIUsageManagement() {
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-primary/5 rounded-xl border border-blue-100 dark:border-blue-800">
-                            <MessageSquare className="w-6 h-6 text-blue-600" />
+                            <MessageSquare className="w-6 h-6 text-primary" />
                         </div>
                         <div>
-                            <p className="text-xs font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Total Messages</p>
-                            <p className="text-2xl font-black text-gray-900 dark:text-white">{totalMessages.toLocaleString()}</p>
+                            <p className="text-xs font-black text-muted-foreground uppercase tracking-widest leading-none mb-1">Total Messages</p>
+                            <p className="text-2xl font-black text-foreground dark:text-white">{totalMessages.toLocaleString()}</p>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-800">
                             <TrendingUp className="w-6 h-6 text-emerald-600" />
                         </div>
                         <div>
-                            <p className="text-xs font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Tokens Used</p>
-                            <p className="text-2xl font-black text-gray-900 dark:text-white">{(totalTokens / 1000).toFixed(1)}K</p>
+                            <p className="text-xs font-black text-muted-foreground uppercase tracking-widest leading-none mb-1">Tokens Used</p>
+                            <p className="text-2xl font-black text-foreground dark:text-white">{(totalTokens / 1000).toFixed(1)}K</p>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-primary/5 rounded-xl border border-primary-100 dark:border-primary-800">
                             <Users className="w-6 h-6 text-primary" />
                         </div>
                         <div>
-                            <p className="text-xs font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Active Chatters</p>
-                            <p className="text-2xl font-black text-gray-900 dark:text-white">{activeUsers}</p>
+                            <p className="text-xs font-black text-muted-foreground uppercase tracking-widest leading-none mb-1">Active Chatters</p>
+                            <p className="text-2xl font-black text-foreground dark:text-white">{activeUsers}</p>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm transition-all hover:shadow-md">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm transition-all hover:shadow-md">
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-100 dark:border-amber-800">
                             <ArrowPathIcon className="w-6 h-6 text-amber-600" />
                         </div>
                         <div>
-                            <p className="text-xs font-black text-gray-400 uppercase tracking-widest leading-none mb-1">WhatsApp Sent</p>
-                            <p className="text-2xl font-black text-gray-900 dark:text-white">{totalWhatsApp.toLocaleString()}</p>
+                            <p className="text-xs font-black text-muted-foreground uppercase tracking-widest leading-none mb-1">WhatsApp Sent</p>
+                            <p className="text-2xl font-black text-foreground dark:text-white">{totalWhatsApp.toLocaleString()}</p>
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Tier Configuration Table */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-                <div className="p-5 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
-                    <h2 className="text-base font-black text-gray-900 dark:text-white uppercase tracking-tight">Subscription Tier Quotas</h2>
-                    <p className="text-xs font-medium text-gray-500 mt-1">Adjust limits per user tier. Use -1 for unlimited access.</p>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border dark:border-gray-700 shadow-sm overflow-hidden">
+                <div className="p-5 border-b border-border dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+                    <h2 className="text-base font-black text-foreground dark:text-white uppercase tracking-tight">Subscription Tier Quotas</h2>
+                    <p className="text-xs font-medium text-muted-foreground mt-1">Adjust limits per user tier. Use -1 for unlimited access.</p>
                 </div>
 
                 <div className="overflow-x-auto">
                     <table className="w-full text-right" dir="rtl">
                         <thead>
-                            <tr className="bg-gray-50 dark:bg-gray-900/30">
-                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Pricing Tier</th>
-                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-center">AI Msg / Mo</th>
-                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-center">AI Token / Mo</th>
-                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-center">WhatsApp / Mo</th>
-                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Est. AI Cost</th>
+                            <tr className="bg-secondary dark:bg-foreground/30">
+                                <th className="px-6 py-4 text-xs font-black text-muted-foreground uppercase tracking-widest">Pricing Tier</th>
+                                <th className="px-6 py-4 text-xs font-black text-muted-foreground uppercase tracking-widest text-center">AI Msg / Mo</th>
+                                <th className="px-6 py-4 text-xs font-black text-muted-foreground uppercase tracking-widest text-center">AI Token / Mo</th>
+                                <th className="px-6 py-4 text-xs font-black text-muted-foreground uppercase tracking-widest text-center">WhatsApp / Mo</th>
+                                <th className="px-6 py-4 text-xs font-black text-muted-foreground uppercase tracking-widest">Est. AI Cost</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
@@ -299,7 +299,7 @@ export default function AIUsageManagement() {
                                     : `$${((edited.monthly_token_limit / 1000000) * 0.15).toFixed(2)}`;
 
                                 return (
-                                    <tr key={limit.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                    <tr key={limit.id} className="hover:bg-secondary dark:hover:bg-gray-700/30 transition-colors">
                                         <td className="px-6 py-5">
                                             <span className={`px-2.5 py-1 text-xs font-black uppercase tracking-widest rounded-lg border ${getTierColor(limit.tier_name)}`}>
                                                 {limit.tier_name}
@@ -310,7 +310,7 @@ export default function AIUsageManagement() {
                                                 type="number"
                                                 value={edited.monthly_message_limit}
                                                 onChange={(e) => handleLimitChange(limit.id, 'monthly_message_limit', e.target.value)}
-                                                className="w-24 px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-center font-black text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500/20"
+                                                className="w-24 px-3 py-2 bg-white dark:bg-foreground border border-border dark:border-gray-700 rounded-xl text-center font-black text-sm text-foreground dark:text-white focus:ring-2 focus:ring-brand-500/20"
                                             />
                                         </td>
                                         <td className="px-6 py-5 text-center">
@@ -318,7 +318,7 @@ export default function AIUsageManagement() {
                                                 type="number"
                                                 value={edited.monthly_token_limit}
                                                 onChange={(e) => handleLimitChange(limit.id, 'monthly_token_limit', e.target.value)}
-                                                className="w-24 px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-center font-black text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500/20"
+                                                className="w-24 px-3 py-2 bg-white dark:bg-foreground border border-border dark:border-gray-700 rounded-xl text-center font-black text-sm text-foreground dark:text-white focus:ring-2 focus:ring-brand-500/20"
                                             />
                                         </td>
                                         <td className="px-6 py-5 text-center">
@@ -326,10 +326,10 @@ export default function AIUsageManagement() {
                                                 type="number"
                                                 value={edited.monthly_whatsapp_limit}
                                                 onChange={(e) => handleLimitChange(limit.id, 'monthly_whatsapp_limit', e.target.value)}
-                                                className="w-24 px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-center font-black text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500/20"
+                                                className="w-24 px-3 py-2 bg-white dark:bg-foreground border border-border dark:border-gray-700 rounded-xl text-center font-black text-sm text-foreground dark:text-white focus:ring-2 focus:ring-brand-500/20"
                                             />
                                         </td>
-                                        <td className="px-6 py-5 text-sm font-bold text-gray-600 dark:text-gray-400">
+                                        <td className="px-6 py-5 text-sm font-bold text-muted-foreground dark:text-muted-foreground">
                                             {estimatedCost}
                                         </td>
                                     </tr>
@@ -341,28 +341,28 @@ export default function AIUsageManagement() {
             </div>
 
             {/* Individual User Usage */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-                <div className="p-5 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
-                    <h2 className="text-base font-black text-gray-900 dark:text-white uppercase tracking-tight">Active Usage Tracking</h2>
-                    <p className="text-xs font-medium text-gray-500 mt-1">Real-time statistics for the top 50 active AI chatters.</p>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border dark:border-gray-700 shadow-sm overflow-hidden">
+                <div className="p-5 border-b border-border dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+                    <h2 className="text-base font-black text-foreground dark:text-white uppercase tracking-tight">Active Usage Tracking</h2>
+                    <p className="text-xs font-medium text-muted-foreground mt-1">Real-time statistics for the top 50 active AI chatters.</p>
                 </div>
 
                 <div className="overflow-x-auto">
                     <table className="w-full text-right" dir="rtl">
                         <thead>
-                            <tr className="bg-gray-50 dark:bg-gray-900/30">
-                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">User Context</th>
-                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Tier</th>
-                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-center">AI Activity</th>
-                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-center">WhatsApp</th>
-                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">AI Usage</th>
-                                <th className="px-6 py-4 text-left text-xs font-black text-gray-400 uppercase tracking-widest">Last Reset</th>
+                            <tr className="bg-secondary dark:bg-foreground/30">
+                                <th className="px-6 py-4 text-xs font-black text-muted-foreground uppercase tracking-widest">User Context</th>
+                                <th className="px-6 py-4 text-xs font-black text-muted-foreground uppercase tracking-widest">Tier</th>
+                                <th className="px-6 py-4 text-xs font-black text-muted-foreground uppercase tracking-widest text-center">AI Activity</th>
+                                <th className="px-6 py-4 text-xs font-black text-muted-foreground uppercase tracking-widest text-center">WhatsApp</th>
+                                <th className="px-6 py-4 text-xs font-black text-muted-foreground uppercase tracking-widest">AI Usage</th>
+                                <th className="px-6 py-4 text-left text-xs font-black text-muted-foreground uppercase tracking-widest">Last Reset</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                             {usage.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="py-20 text-center font-bold text-gray-400 uppercase tracking-widest">No active AI usage data found.</td>
+                                    <td colSpan={5} className="py-20 text-center font-bold text-muted-foreground uppercase tracking-widest">No active AI usage data found.</td>
                                 </tr>
                             ) : (
                                 usage.map((u) => {
@@ -370,10 +370,10 @@ export default function AIUsageManagement() {
                                     const messagePercent = tierLimit ? getUsagePercentage(u.message_count, tierLimit.monthly_message_limit) : 0;
 
                                     return (
-                                        <tr key={u.user_id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                        <tr key={u.user_id} className="hover:bg-secondary dark:hover:bg-gray-700/30 transition-colors">
                                             <td className="px-6 py-5">
-                                                <div className="font-bold text-gray-900 dark:text-white text-sm">{u.user_email || 'Unknown User'}</div>
-                                                <div className="text-xs text-gray-400 font-mono tracking-tighter">{u.user_id.split('-')[0]}...</div>
+                                                <div className="font-bold text-foreground dark:text-white text-sm">{u.user_email || 'Unknown User'}</div>
+                                                <div className="text-xs text-muted-foreground font-mono tracking-tighter">{u.user_id.split('-')[0]}...</div>
                                             </td>
                                             <td className="px-6 py-5">
                                                 <span className={`px-2 py-1 text-xs font-black uppercase tracking-widest rounded-lg border ${getTierColor(u.subscription_tier || 'free')}`}>
@@ -381,27 +381,27 @@ export default function AIUsageManagement() {
                                                 </span>
                                             </td>
                                             <td className="px-6 py-5 text-center">
-                                                <div className="font-black text-gray-900 dark:text-white text-sm">{u.message_count} msgs</div>
-                                                <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">{u.tokens_used.toLocaleString()} tokens</div>
+                                                <div className="font-black text-foreground dark:text-white text-sm">{u.message_count} msgs</div>
+                                                <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{u.tokens_used.toLocaleString()} tokens</div>
                                             </td>
                                             <td className="px-6 py-5 text-center">
                                                 <div className="font-black text-brand-600 dark:text-brand-400 text-sm">{u.whatsapp_messages || 0}</div>
-                                                <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">sent msgs</div>
+                                                <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">sent msgs</div>
                                             </td>
                                             <td className="px-6 py-5 w-48">
                                                 <div className="space-y-1.5">
                                                     <div className="flex items-center justify-between gap-3">
-                                                        <div className="flex-1 h-2.5 bg-gray-100 dark:bg-gray-900 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700">
+                                                        <div className="flex-1 h-2.5 bg-muted dark:bg-foreground rounded-full overflow-hidden border border-border dark:border-gray-700">
                                                             <div
                                                                 className={`h-full rounded-full transition-all duration-500 ${messagePercent > 90 ? 'bg-destructive' : messagePercent > 70 ? 'bg-orange-500' : 'bg-brand-600'}`}
                                                                 style={{ width: `${messagePercent}%` }}
                                                             />
                                                         </div>
-                                                        <span className="text-xs font-black text-gray-900 dark:text-white min-w-[3ch]">{messagePercent.toFixed(0)}%</span>
+                                                        <span className="text-xs font-black text-foreground dark:text-white min-w-[3ch]">{messagePercent.toFixed(0)}%</span>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-5 text-left text-xs font-bold text-gray-400 whitespace-nowrap">
+                                            <td className="px-6 py-5 text-left text-xs font-bold text-muted-foreground whitespace-nowrap">
                                                 {new Date(u.last_reset_at).toLocaleDateString()}
                                             </td>
                                         </tr>

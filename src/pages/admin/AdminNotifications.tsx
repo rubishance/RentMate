@@ -155,18 +155,18 @@ const AdminNotifications = () => {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+                    <h1 className="text-3xl font-extrabold text-foreground dark:text-white tracking-tight flex items-center gap-2">
                         <BellIcon className="w-8 h-8 text-brand-600" />
                         Notification Center
                     </h1>
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mt-1">
+                    <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground mt-1">
                         Respond to system alerts, manual upgrade requests, and administrative actions.
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button
                         onClick={fetchNotifications}
-                        className="p-2.5 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm"
+                        className="p-2.5 text-muted-foreground hover:text-foreground dark:text-muted-foreground dark:hover:text-white transition-colors bg-white dark:bg-gray-800 rounded-xl border border-border dark:border-gray-700 shadow-sm"
                     >
                         <ArrowPathIcon className="w-6 h-6" />
                     </button>
@@ -181,21 +181,21 @@ const AdminNotifications = () => {
             )}
 
             {notifications.length === 0 ? (
-                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-20 text-center shadow-sm">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border dark:border-gray-700 p-20 text-center shadow-sm">
                     <CheckCircleIcon className="w-16 h-16 mx-auto mb-4 text-emerald-100 dark:text-emerald-900/20" />
-                    <h3 className="text-base font-black text-gray-900 dark:text-white uppercase tracking-widest">Inbox Zero</h3>
-                    <p className="text-xs font-medium text-gray-400 mt-1">Everything is up to date. Check back later for new requests.</p>
+                    <h3 className="text-base font-black text-foreground dark:text-white uppercase tracking-widest">Inbox Zero</h3>
+                    <p className="text-xs font-medium text-muted-foreground mt-1">Everything is up to date. Check back later for new requests.</p>
                 </div>
             ) : (
-                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-                    <div className="p-5 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
-                        <h2 className="text-base font-black text-gray-900 dark:text-white uppercase tracking-tight">Active Alerts</h2>
-                        <p className="text-xs font-medium text-gray-500 mt-1">Real-time status of system-generated notifications.</p>
+                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border dark:border-gray-700 shadow-sm overflow-hidden">
+                    <div className="p-5 border-b border-border dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+                        <h2 className="text-base font-black text-foreground dark:text-white uppercase tracking-tight">Active Alerts</h2>
+                        <p className="text-xs font-medium text-muted-foreground mt-1">Real-time status of system-generated notifications.</p>
                     </div>
 
                     <ul role="list" className="divide-y divide-gray-100 dark:divide-gray-700">
                         {notifications.map((n) => (
-                            <li key={n.id} className={`p-6 transition-colors ${n.status === 'pending' ? 'bg-white dark:bg-gray-800' : 'bg-gray-50/20 dark:bg-gray-900/20 opacity-60'}`}>
+                            <li key={n.id} className={`p-6 transition-colors ${n.status === 'pending' ? 'bg-white dark:bg-gray-800' : 'bg-gray-50/20 dark:bg-foreground/20 opacity-60'}`}>
                                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                                     <div className="flex-1 flex gap-4">
                                         <div className={`p-3 rounded-2xl border shrink-0 ${n.type === 'upgrade_request' ? 'bg-primary-50 text-primary border-primary-100 dark:bg-primary-900/20 dark:border-primary-800' :
@@ -205,23 +205,23 @@ const AdminNotifications = () => {
                                         </div>
                                         <div className="min-w-0">
                                             <div className="flex flex-wrap items-center gap-2 mb-1">
-                                                <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">
+                                                <h3 className="text-sm font-black text-foreground dark:text-white uppercase tracking-tight">
                                                     {n.type === 'upgrade_request' ? 'Plan Upgrade Request' : n.type.replace('_', ' ').toUpperCase()}
                                                 </h3>
                                                 <span className={`px-2 py-0.5 rounded-lg text-[11px] font-black uppercase tracking-widest border ${n.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:border-amber-800' :
                                                     n.status === 'resolved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800' :
-                                                        'bg-gray-50 text-gray-400 border-gray-100 dark:bg-gray-900 dark:border-gray-700'
+                                                        'bg-secondary text-muted-foreground border-border dark:bg-foreground dark:border-gray-700'
                                                     }`}>
                                                     {n.status}
                                                 </span>
                                             </div>
                                             <div className="space-y-1">
-                                                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                                                <p className="text-xs font-bold text-muted-foreground dark:text-muted-foreground flex items-center gap-2">
                                                     <EnvelopeIcon className="w-4 h-4" />
                                                     {n.user?.email || 'Unknown Source'}
                                                 </p>
                                                 {n.content?.requested_plan && (
-                                                    <div className="inline-flex items-center gap-2 px-2 py-1 bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-lg text-xs font-black text-gray-500 uppercase tracking-widest mt-2">
+                                                    <div className="inline-flex items-center gap-2 px-2 py-1 bg-secondary dark:bg-foreground border border-border dark:border-gray-700 rounded-lg text-xs font-black text-muted-foreground uppercase tracking-widest mt-2">
                                                         <UserPlusIcon className="w-3.5 h-3.5 text-brand-600" />
                                                         Route: <span className="text-brand-600">{n.content.requested_plan}</span>
                                                     </div>
@@ -232,8 +232,8 @@ const AdminNotifications = () => {
 
                                     <div className="flex items-center gap-3 self-end md:self-center">
                                         <div className="text-right mr-4 hidden md:block">
-                                            <div className="text-xs font-black text-gray-400 uppercase tracking-widest">Received</div>
-                                            <div className="text-[11px] font-bold text-gray-900 dark:text-white">
+                                            <div className="text-xs font-black text-muted-foreground uppercase tracking-widest">Received</div>
+                                            <div className="text-[11px] font-bold text-foreground dark:text-white">
                                                 {new Date(n.created_at).toLocaleString('he-IL', { dateStyle: 'short', timeStyle: 'short' })}
                                             </div>
                                         </div>
@@ -242,7 +242,7 @@ const AdminNotifications = () => {
                                                 <button
                                                     onClick={() => handleDismiss(n.id)}
                                                     disabled={!!processingId}
-                                                    className="p-3 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl border border-gray-200 dark:border-gray-700 transition-all"
+                                                    className="p-3 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl border border-border dark:border-gray-700 transition-all"
                                                     title="Dismiss Request"
                                                 >
                                                     <XCircleIcon className="w-6 h-6" />
@@ -257,7 +257,7 @@ const AdminNotifications = () => {
                                                 </button>
                                             </div>
                                         ) : (
-                                            <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-gray-900 text-gray-400 rounded-xl border border-gray-100 dark:border-gray-700 text-xs font-black uppercase tracking-widest">
+                                            <div className="flex items-center gap-2 px-4 py-2 bg-secondary dark:bg-foreground text-muted-foreground rounded-xl border border-border dark:border-gray-700 text-xs font-black uppercase tracking-widest">
                                                 <CheckCircleIcon className="w-4 h-4 text-emerald-500" />
                                                 Process Complete
                                             </div>

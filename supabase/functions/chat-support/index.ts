@@ -12,8 +12,7 @@ const corsHeaders = {
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-import { detectLanguage, getKnowledgeBase } from "./knowledge.ts";
-
+// Import removed: knowledge.ts is obsolete, using pgvector now
 // Define available functions for OpenAI
 const FUNCTION_TOOLS = [
     {
@@ -62,7 +61,11 @@ const FUNCTION_TOOLS = [
         type: "function",
         function: {
             name: "list_properties",
-            description: "List all properties owned by the user. (Read-only)"
+            description: "List all properties owned by the user. (Read-only)",
+            parameters: {
+                type: "object",
+                properties: {}
+            }
         }
     },
     {
@@ -277,12 +280,54 @@ const FUNCTION_TOOLS = [
                 required: ["table", "filter_column", "filter_value"]
             }
         }
+    },
+    {
+        type: "function",
+        function: {
+            name: "present_options",
+            description: "Present the user with a set of clickable options (buttons) instead of just regular text. Use this when you want to guide the user to select one of several clear actions or paths. (Hebrew: הצג אפשרויות בחירה).",
+            parameters: {
+                type: "object",
+                properties: {
+                    title: { type: "string", description: "The main question or instruction for the user." },
+                    description: { type: "string", description: "Optional supplementary text explaining the choices." },
+                    options: {
+                        type: "array",
+                        description: "The list of buttons to display.",
+                        items: {
+                            type: "object",
+                            properties: {
+                                label: { type: "string", description: "The button text shown to the user." },
+                                value: { type: "string", description: "The exact text that will be sent back to you when the user clicks this button." },
+                                variant: { type: "string", enum: ["default", "outline", "destructive"], description: "Visual style of the button." }
+                            },
+                            required: ["label", "value"]
+                        }
+                    }
+                },
+                required: ["title", "options"]
+            }
+        }
     }
 ];
 
+// Function groupings for Intent Routing
+const toolCategories: Record<string, string[]> = {
+    contracts: ["search_contracts", "check_expiring_contracts"],
+    documents: ["list_folders", "create_folder", "organize_document"],
+    maintenance: ["prepare_add_maintenance", "search_maintenance_records", "log_maintenance_expense"],
+    payments: ["get_financial_summary", "prepare_add_payment"],
+    properties: ["list_properties", "prepare_add_property"],
+    tenants: ["get_tenant_details", "prepare_add_tenant", "prepare_add_contract"],
+    utilities: ["calculate_rent_linkage"],
+    support: ["trigger_human_support", "generate_whatsapp_message"],
+    debug: ["debug_entity"],
+    general_knowledge: []
+};
+
 // Function implementations
-// Function implementations
-async function checkConsent(userId: string, supabase: any) {
+async function checkConsent(userId: string, supabase: any, clientConsent?: boolean) {
+    if (clientConsent === true) return true;
     console.log(`Checking AI consent for user: ${userId}`);
 
     // EXCEPTION: Admins and Super Admins bypass the consent check for diagnostic/support purposes
@@ -310,11 +355,11 @@ async function checkConsent(userId: string, supabase: any) {
     return hasConsent;
 }
 
-async function searchContracts(query: string, userId: string) {
+async function searchContracts(query: string, userId: string, hasAiConsent?: boolean) {
     try {
         const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-        const hasConsent = await checkConsent(userId, supabase);
+        const hasConsent = await checkConsent(userId, supabase, hasAiConsent);
         if (!hasConsent) {
             return { success: false, message: "AI access to personal data is disabled. Please enable 'AI Data Access' in Settings > Privacy." };
         }
@@ -362,10 +407,10 @@ async function searchContracts(query: string, userId: string) {
     }
 }
 
-async function getFinancialSummary(period: string, userId: string, currency: string = 'ILS') {
+async function getFinancialSummary(period: string, userId: string, currency: string = 'ILS', hasAiConsent?: boolean) {
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-    const hasConsent = await checkConsent(userId, supabase);
+    const hasConsent = await checkConsent(userId, supabase, hasAiConsent);
     if (!hasConsent) {
         return { success: false, message: "AI access to personal data is disabled. Please enable 'AI Data Access' in Settings > Privacy." };
     }
@@ -424,10 +469,10 @@ async function getFinancialSummary(period: string, userId: string, currency: str
     };
 }
 
-async function checkExpiringContracts(daysThreshold: number, userId: string) {
+async function checkExpiringContracts(daysThreshold: number, userId: string, hasAiConsent?: boolean) {
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-    const hasConsent = await checkConsent(userId, supabase);
+    const hasConsent = await checkConsent(userId, supabase, hasAiConsent);
     if (!hasConsent) {
         return { success: false, message: "AI access to personal data is disabled. Please enable 'AI Data Access' in Settings > Privacy." };
     }
@@ -466,10 +511,10 @@ async function checkExpiringContracts(daysThreshold: number, userId: string) {
     };
 }
 
-async function getTenantDetails(nameOrEmail: string, userId: string) {
+async function getTenantDetails(nameOrEmail: string, userId: string, hasAiConsent?: boolean) {
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-    const hasConsent = await checkConsent(userId, supabase);
+    const hasConsent = await checkConsent(userId, supabase, hasAiConsent);
     if (!hasConsent) {
         return { success: false, message: "AI access to personal data is disabled. Please enable 'AI Data Access' in Settings > Privacy." };
     }
@@ -504,27 +549,32 @@ async function getTenantDetails(nameOrEmail: string, userId: string) {
     };
 }
 
-async function listProperties(userId: string) {
+async function listProperties(userId: string, hasAiConsent?: boolean) {
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-    const hasConsent = await checkConsent(userId, supabase);
+    const hasConsent = await checkConsent(userId, supabase, hasAiConsent);
     if (!hasConsent) {
         return { success: false, message: "AI access to personal data is disabled. Please enable 'AI Data Access' in Settings > Privacy." };
     }
 
     const { data, error } = await supabase
         .from('properties')
-        .select('id, address, title')
+        .select('id, address')
         .eq('user_id', userId);
 
-    if (error) return { success: false, message: error.message };
+    if (error) return { success: false, message: "Database Error: " + error.message };
+
+    if (data && data.length === 0) {
+        return { success: true, message: "The user has 0 properties in their account. Tell the user exactly: 'You do not have any properties saved in your account yet. Please add a property first before organizing documents.'", properties: [] };
+    }
+
     return { success: true, properties: data };
 }
 
-async function listFolders(propertyId: string, userId: string) {
+async function listFolders(propertyId: string, userId: string, hasAiConsent?: boolean) {
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-    const hasConsent = await checkConsent(userId, supabase);
+    const hasConsent = await checkConsent(userId, supabase, hasAiConsent);
     if (!hasConsent) {
         return { success: false, message: "AI access to personal data is disabled. Please enable 'AI Data Access' in Settings > Privacy." };
     }
@@ -558,18 +608,20 @@ async function createFolder(propertyId: string, name: string, category: string, 
     return { success: true, folder: data };
 }
 
-async function organizeDocument(args: any, userId: string) {
+async function organizeDocument(args: any, userId: string, hasAiConsent?: boolean) {
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
     const { property_id, folder_id, storage_path, file_name, category } = args;
 
-    const hasConsent = await checkConsent(userId, supabase);
+    const hasConsent = await checkConsent(userId, supabase, hasAiConsent);
     if (!hasConsent) {
         return { success: false, message: "AI access to personal data is disabled. Please enable 'AI Data Access' in Settings > Privacy." };
     }
 
     // Validation
-    const { data: prop } = await supabase.from('properties').select('id').eq('id', property_id).eq('user_id', userId).single();
-    if (!prop) return { success: false, message: "Property not found or access denied." };
+    if (!property_id) return { success: false, message: "Missing required parameter: property_id. You must ask the user which property this document is for or use list_properties to find the correct ID." };
+
+    const { data: prop, error: propError } = await supabase.from('properties').select('id').eq('id', property_id).eq('user_id', userId).single();
+    if (!prop) return { success: false, message: `Tool Error: Could not find property with ID '${property_id}' belonging to this user.` };
 
     const { data, error } = await supabase
         .from('property_documents')
@@ -673,12 +725,12 @@ async function searchMaintenanceRecords(args: any, userId: string) {
 
     let dbQuery = supabase
         .from('property_documents')
-        .select('*, property:properties(address, title)')
+        .select('*, property:properties(address)')
         .eq('user_id', userId)
         .eq('category', 'maintenance');
 
     if (property_id) dbQuery = dbQuery.eq('property_id', property_id);
-    if (query) dbQuery = dbQuery.or(`description.ilike.%${query}%,vendor_name.ilike.%${query}%,issue_type.ilike.%${query}%,title.ilike.%${query}%`);
+    if (query) dbQuery = dbQuery.or(`description.ilike.%${query}%,vendor_name.ilike.%${query}%,issue_type.ilike.%${query}%`);
 
     const { data, error } = await dbQuery.order('document_date', { ascending: false }).limit(10);
 
@@ -686,11 +738,11 @@ async function searchMaintenanceRecords(args: any, userId: string) {
 
     const results = data.map(r => ({
         date: r.document_date,
-        description: r.description || r.title,
+        description: r.description,
         amount: r.amount,
         vendor: r.vendor_name,
         issue: r.issue_type,
-        property: r.property?.title || r.property?.address
+        property: r.property?.address
     }));
 
     // Log Security Audit
@@ -742,7 +794,7 @@ async function logMaintenanceExpense(args: any, userId: string) {
     };
 }
 
-async function debugEntity(args: any, userId: string) {
+async function debugEntity(args: any, userId: string, hasAiConsent?: boolean) {
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
     const { table, filter_column, filter_value } = args;
 
@@ -810,12 +862,13 @@ serve(async (req) => {
             console.log(`[PERF] ${step}: ${duration.toFixed(2)}ms`);
             if (userId) {
                 const sb = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
-                await sb.from('debug_logs').insert({
+                const { error } = await sb.from('debug_logs').insert({
                     function_name: 'chat-support:perf',
                     level: 'info',
                     message: `Step: ${step}`,
                     details: { ...details, duration, userId }
-                }).catch(e => console.error("Logging failed", e));
+                });
+                if (error) console.error("Logging failed", error);
             }
         };
 
@@ -836,7 +889,7 @@ serve(async (req) => {
             });
         }
 
-        const { messages, conversationId } = body;
+        const { messages, conversationId, hasAiConsent, userId: bodyUserId } = body;
         const userContent = messages[messages.length - 1]?.content || '';
 
         // --- PING TEST (Moved Early) ---
@@ -855,14 +908,28 @@ serve(async (req) => {
             );
         }
 
-        const authHeader = req.headers.get("authorization");
-        console.log("Auth header present:", !!authHeader);
+        if (userContent.toLowerCase() === 'debug consent') {
+            return new Response(
+                JSON.stringify({
+                    choices: [{ message: { role: "assistant", content: `DEBUG: hasAiConsent received as: ${hasAiConsent}` } }]
+                }),
+                { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+        }
 
-        // Extract user ID from JWT
+        const internalKey = req.headers.get("x-internal-webhook-key");
+        const isInternalCall = internalKey && internalKey === SUPABASE_SERVICE_ROLE_KEY;
+        const authHeader = req.headers.get("authorization");
+        console.log("Auth header present:", !!authHeader, "Internal call:", isInternalCall);
+
+        // Extract user ID from JWT or internal request
         let userId = null;
         const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-        if (authHeader) {
+        if (isInternalCall && bodyUserId) {
+            userId = bodyUserId;
+            console.log("Extracted userId from internal webhook:", userId);
+        } else if (authHeader) {
             const token = authHeader.replace("Bearer ", "");
             const { data: { user }, error: authError } = await supabase.auth.getUser(token);
             if (authError) {
@@ -872,7 +939,7 @@ serve(async (req) => {
             console.log("Extracted userId from token:", userId);
             await logPerf("auth_extraction", Date.now() - startTime);
         } else {
-            console.log("No authorization header provided.");
+            console.log("No authorization header or internal key provided.");
         }
 
         // Check usage limits (if user is authenticated)
@@ -904,9 +971,52 @@ serve(async (req) => {
             await logPerf("usage_check", Date.now() - startTime);
         }
 
-        // Detect user language and load appropriate knowledge base
-        const userLanguage = detectLanguage(userContent);
-        const knowledgeBase = getKnowledgeBase(userLanguage);
+        // Detect user language
+        const userLanguage = userContent.match(/[\u0590-\u05FF]/) ? 'he' : 'en';
+        
+        // Fetch vector embeddings for the user query to build dynamic knowledge base
+        let knowledgeBase = "";
+        try {
+            const embedStartTime = Date.now();
+            const embedRes = await fetch("https://api.openai.com/v1/embeddings", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${OPENAI_API_KEY}`,
+                },
+                body: JSON.stringify({
+                    input: userContent.replace(/\n/g, ' '),
+                    model: "text-embedding-3-small",
+                }),
+            });
+            const embedData = await embedRes.json();
+            
+            if (embedData.data && embedData.data[0]) {
+                const queryEmbedding = embedData.data[0].embedding;
+                await logPerf("query_embedding", Date.now() - embedStartTime);
+                
+                const searchStartTime = Date.now();
+                // Query Supabase for matching knowledge
+                const { data: matchedDocs, error: matchError } = await supabase.rpc('match_knowledge', {
+                    query_embedding: queryEmbedding,
+                    match_threshold: 0.25,
+                    match_count: 5
+                });
+                
+                if (matchError) {
+                    console.error("Supabase match_knowledge error:", matchError);
+                } else if (matchedDocs && matchedDocs.length > 0) {
+                    // Filter by language if metadata has it, or just use top matches
+                    const langDocs = matchedDocs.filter((d: any) => d.metadata?.language === userLanguage || !d.metadata?.language);
+                    const finalDocs = langDocs.length > 0 ? langDocs : matchedDocs;
+                    
+                    knowledgeBase = finalDocs.map((d: any) => `[Source: ${d.metadata?.source || 'Documentation'}]:\n${d.content}`).join("\n\n---\n\n");
+                }
+                await logPerf("vector_search", Date.now() - searchStartTime, { matches: matchedDocs?.length || 0 });
+            }
+        } catch (e) {
+            console.error("Vector Search Error:", e);
+        }
 
         // Define system prompt based on authentication status
         let systemPrompt = "";
@@ -916,13 +1026,16 @@ serve(async (req) => {
             systemPrompt = `You are a helper for property owners using "RentMate". 
                 
 ROLE & TONE:
-- Professional, helpful, and use CLEAR, SIMPLE language.
-- Avoid technical jargon; explain complex property management terms simply.
+- Be extremely kind, empathetic, and polite in all your responses.
+- Professional, helpful, and use CLEAR, SIMPLE language. Avoid technical jargon; explain complex terms simply.
 - Be concise, direct, and natural. Focus on high readability.
-- **FORMATTING**: Use bullet points and bold text to highlight key info. Break long paragraphs into short, digestible chunks.
+- **FORMATTING**: Use bullet points and bold text to highlight key info. Break long paragraphs into short chunks.
 - Expert in RentMate app features and property management.
 - LANGUAGE: Respond in the SAME language the user writes in (Hebrew or English).
-- **CRITICAL - NO ADVICE**: You are strictly prohibited from giving legal, tax, or financial advice. YOU ARE NOT A LAWYER OR ADVISOR.
+- **CRITICAL - STRICT SCOPE (APP SUPPORT ONLY)**: Your sole purpose is to help the user navigate and use the RentMate software. You must ONLY answer questions about how to use the app, perform actions in the app, or retrieve the user's data from the app. 
+- **STRICT NO-GO ZONES**: You are FORBIDDEN from answering general real estate questions, market data questions (e.g., "what is the average rent in Tel Aviv?"), investment questions, or general knowledge questions. If asked about these topics, you MUST politely refuse and state: "I am an app support assistant and can only help you with using the RentMate platform and managing your saved properties here."
+- **CRITICAL - NO ADVICE**: You are strictly prohibited from giving legal, tax, or financial advice.
+- **CRITICAL - NO HALLUCINATIONS**: Do not hallucinate or make up information. Base all your answers STRICTLY on the provided tools and knowledge base. If you don't know the answer, politely state that you do not know.
 - **PRIVACY & PERMISSIONS**: 
   - You have access to the user's properties, contracts, and tenants ONLY through the provided tools.
   - If a tool returns an error saying "AI access to personal data is disabled", inform the user that they must enable "AI Data Access" in **Settings > Privacy** to proceed.
@@ -955,11 +1068,15 @@ ROLE:
 - Your ONLY goal is to explain what RentMate does and encourage them to sign up.
 - **RESTRICTION**: You cannot see any user data, properties, or contracts.
 - **RESTRICTION**: If asked about specific data or to perform actions (like adding a property), politely explain that they need to Sign Up/Login first to use these features.
+- **CRITICAL - STRICT SCOPE (SALES & SUPPORT ONLY)**: Your sole purpose is to explain the features of the RentMate app and encourage the user to sign up. 
+- **STRICT NO-GO ZONES**: You are FORBIDDEN from answering general real estate questions, market data questions (e.g., "what is the average rent?"), or general knowledge questions. If asked about these topics, you MUST politely refuse and state: "I am the RentMate app assistant. I can only answer questions about how our software can help you manage your properties."
 
 TONE:
 - Welcoming, premium, and encouraging.
+- Be extremely kind, empathetic, and polite in all your responses.
 - Use CLEAR, PLAIN language (Hebrew or English). Avoid being overly formal or robotic.
 - Match user's language choice.
+- **CRITICAL - NO HALLUCINATIONS**: Do not hallucinate or make up information. Base all your answers STRICTLY on the provided knowledge base. If you don't know the answer, politely state that you do not know.
 
 KEY SELLING POINTS (Use when relevant):
 - AI Contract Scanning: Extract data from PDFs automatically.
@@ -979,12 +1096,89 @@ ${knowledgeBase}`;
             },
             ...messages.map((msg: any) => ({
                 role: msg.role,
-                content: msg.content
+                content: msg.hiddenContext ? `${msg.content}\n\n${msg.hiddenContext}` : msg.content
             }))
         ];
 
-        // Only provide tools if user is authenticated
-        const activeTools = userId ? FUNCTION_TOOLS : [];
+        // INTENT ROUTING PASS
+        let activeTools: any[] = [];
+
+        if (userId) {
+            const routingStartTime = Date.now();
+            try {
+                // We use Gemini Flash for blazing fast intent classification
+                const routerApiKey = GEMINI_API_KEY || OPENAI_API_KEY; // Prefer Gemini for speed/cost if available
+                const routerModel = GEMINI_API_KEY ? "gemini-1.5-flash" : "gpt-4o-mini";
+                const routerUrl = GEMINI_API_KEY
+                    ? `https://generativelanguage.googleapis.com/v1beta/models/${routerModel}:generateContent?key=${routerApiKey}`
+                    : "https://api.openai.com/v1/chat/completions";
+
+                const routerPrompt = `You are a fast intent classifier for a property management app. 
+Based on the user's latest message: "${Math.max(0, userContent.length) > 500 ? userContent.substring(0, 500) + '...' : userContent}", 
+which feature category are they trying to access? 
+
+Options: [contracts, documents, maintenance, payments, properties, tenants, utilities, support, debug, general_knowledge]. 
+If unsure or if they are just asking a general question, output "general_knowledge".
+Return ONLY the exact category name as a raw string without quotes or punctuation.`;
+
+                let intentCategory = "general_knowledge";
+
+                if (GEMINI_API_KEY) {
+                    const routingRes = await fetch(routerUrl, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: routerPrompt }] }],
+                            generationConfig: { maxOutputTokens: 10, temperature: 0.1 }
+                        }),
+                        signal: AbortSignal.timeout(5000)
+                    });
+                    if (routingRes.ok) {
+                        const routingData = await routingRes.json();
+                        intentCategory = routingData.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toLowerCase() || "general_knowledge";
+                    }
+                } else {
+                    const routingRes = await fetch(routerUrl, {
+                        method: "POST",
+                        headers: {
+                            "Authorization": `Bearer ${routerApiKey}`,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            model: routerModel,
+                            messages: [{ role: "user", content: routerPrompt }],
+                            max_tokens: 10,
+                            temperature: 0.1
+                        }),
+                        signal: AbortSignal.timeout(5000)
+                    });
+                    if (routingRes.ok) {
+                        const routingData = await routingRes.json();
+                        intentCategory = routingData.choices?.[0]?.message?.content?.trim().toLowerCase() || "general_knowledge";
+                    }
+                }
+
+                // Clean up string just in case LLM added punctuation
+                intentCategory = intentCategory.replace(/[^a-z_]/g, '');
+
+                // Validate category exists, fallback to all tools if completely broken, otherwise use specialized subset
+                if (toolCategories[intentCategory]) {
+                    const allowedNames = toolCategories[intentCategory];
+                    // Always inject core context tools if the user is using a functional feature
+                    const coreTools = allowedNames.length > 0 ? ["list_properties", "search_contracts"] : [];
+                    const allAllowed = [...allowedNames, ...coreTools];
+                    activeTools = FUNCTION_TOOLS.filter(t => allAllowed.includes(t.function.name));
+                    console.log(`Intent Router selected category: ${intentCategory} with ${activeTools.length} tools.`);
+                } else {
+                    console.log(`Intent Router returned unknown category: ${intentCategory}. Falling back to general_knowledge (0 tools).`);
+                }
+
+            } catch (routeErr) {
+                console.error("Intent routing failed, falling back to full toolset:", routeErr);
+                activeTools = FUNCTION_TOOLS; // Fallback to safe mode (all tools) if router breaks
+            }
+            await logPerf("intent_router_pass", Date.now() - routingStartTime, { count: activeTools.length });
+        }
 
         // Initial API call with function tools
         let apiUrl = "https://api.openai.com/v1/chat/completions";
@@ -1058,15 +1252,15 @@ ${knowledgeBase}`;
                 functionResult = { success: false, message: "User not authenticated. Please log in to use this feature." };
             } else {
                 if (functionName === "search_contracts") {
-                    functionResult = await searchContracts(functionArgs.query, userId);
+                    functionResult = await searchContracts(functionArgs.query, userId, hasAiConsent);
                 } else if (functionName === "get_financial_summary") {
-                    functionResult = await getFinancialSummary(functionArgs.period, userId, functionArgs.currency);
+                    functionResult = await getFinancialSummary(functionArgs.period, userId, functionArgs.currency, hasAiConsent);
                 } else if (functionName === "get_tenant_details") {
-                    functionResult = await getTenantDetails(functionArgs.name_or_email, userId);
+                    functionResult = await getTenantDetails(functionArgs.name_or_email, userId, hasAiConsent);
                 } else if (functionName === "list_properties") {
-                    functionResult = await listProperties(userId);
+                    functionResult = await listProperties(userId, hasAiConsent);
                 } else if (functionName === "list_folders") {
-                    functionResult = await listFolders(functionArgs.property_id, userId);
+                    functionResult = await listFolders(functionArgs.property_id, userId, hasAiConsent);
                 } else if (functionName === "trigger_human_support") {
                     // ESCALATE TO HUMAN
                     return new Response(
@@ -1120,14 +1314,22 @@ ${knowledgeBase}`;
                         data: functionArgs
                     };
                 } else if (functionName === "organize_document") {
-                    functionResult = await organizeDocument(functionArgs, userId);
+                    functionResult = await organizeDocument(functionArgs, userId, hasAiConsent);
                 } else if (functionName === "calculate_rent_linkage") {
-                    functionResult = await calculateRentLinkage(functionArgs, userId);
+                    functionResult = await calculateRentLinkage(functionArgs, userId, hasAiConsent);
                 } else if (functionName === "debug_entity") {
-                    functionResult = await debugEntity(functionArgs, userId);
+                    functionResult = await debugEntity(functionArgs, userId, hasAiConsent);
+                } else if (functionName === "present_options") {
+                    // Send options directly to UI Action property block to intercept later
+                    functionResult = {
+                        success: true,
+                        ui_action: "PRESENT_OPTIONS",
+                        data: functionArgs
+                    };
                 } else {
+                    functionResult = { success: false, message: `Tool Error: Unknown function '${functionName}'.` };
                 }
-                const functionName = toolCall.function.name;
+
                 await logPerf(`tool_execution_${functionName}`, Date.now() - toolStartTime);
             }
 
@@ -1178,32 +1380,36 @@ ${knowledgeBase}`;
 
         const aiMessage = result.choices?.[0]?.message?.content || "I'm sorry, I couldn't generate a response.";
 
-        // Persist conversation to DB if authenticated
+        // Persist conversation to Storage if authenticated
         let savedConvId = conversationId;
         if (userId) {
             try {
-                // If no conversationId exists, we create one (the RPC handles this via generate_uuid default if we pass null, 
-                // but let's be explicit and generate one in the hook or handle it here).
-                // Actually the RPC 'append_ai_messages' requires p_conversation_id.
-                // If it's the first message, conversationId from client might be null.
+                // Generate a conversation ID if one isn't provided
                 const conversation_id = conversationId || crypto.randomUUID();
+                savedConvId = conversation_id;
 
-                const messagesToSave = [
-                    { ...messages[messages.length - 1], timestamp: new Date().toISOString() },
+                // Create the complete transcript to save
+                // The messages array passed in contains the history, and we append the new AI response
+                const fullConversation = [
+                    ...messages.map((m: any) => ({ ...m, timestamp: m.timestamp || new Date().toISOString() })),
                     { role: 'assistant', content: aiMessage, timestamp: new Date().toISOString() }
                 ];
 
-                const { data: convData, error: convError } = await supabase.rpc('append_ai_messages', {
-                    p_conversation_id: conversation_id,
-                    p_new_messages: JSON.stringify(messagesToSave),
-                    p_user_id: userId, // Pass explicitly since Service Role is used
-                    p_cost_usd: totalTurnCost
-                });
+                const filePath = `${userId}/${conversation_id}.json`;
 
-                if (convError) console.error("Error persisting conversation:", convError);
-                else savedConvId = convData;
+                // Upload or overwrite the JSON file in the chat-archives bucket
+                const { error: storageError } = await supabase.storage
+                    .from('chat-archives')
+                    .upload(filePath, JSON.stringify(fullConversation), {
+                        contentType: 'application/json',
+                        upsert: true // Overwrite the existing file on every turn
+                    });
+
+                if (storageError) {
+                    console.error("Error persisting conversation to storage:", storageError);
+                }
             } catch (saveError) {
-                console.error("Failed to persist conversation chain:", saveError);
+                console.error("Failed to persist conversation chain to storage:", saveError);
             }
         }
 
@@ -1211,7 +1417,19 @@ ${knowledgeBase}`;
         const toolOutputs = openaiMessages.filter(m => m.role === 'tool').map(m => {
             try { return JSON.parse(m.content); } catch (e) { return null; }
         });
-        const uiAction = toolOutputs.find(o => o && o.ui_action);
+        const uiAction = toolOutputs.find(o => o && o.ui_action && o.ui_action !== "PRESENT_OPTIONS");
+        const actionOptions = toolOutputs.find(o => o && o.ui_action === "PRESENT_OPTIONS");
+
+        // Format message with options if present
+        let msgOutput = { role: "assistant", content: aiMessage };
+        if (actionOptions && actionOptions.data) {
+            msgOutput = {
+                role: "assistant",
+                content: aiMessage,
+                type: "action",
+                actionData: actionOptions.data
+            };
+        }
 
         const totalDuration = Date.now() - startTime;
         await logPerf("total_request_duration", totalDuration);
@@ -1219,7 +1437,7 @@ ${knowledgeBase}`;
         return new Response(
             JSON.stringify({
                 choices: [{
-                    message: { role: "assistant", content: aiMessage }
+                    message: msgOutput
                 }],
                 conversationId: savedConvId,
                 uiAction: uiAction ? {

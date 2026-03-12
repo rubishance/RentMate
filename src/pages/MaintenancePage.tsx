@@ -35,24 +35,24 @@ export default function MaintenancePage() {
                 </motion.div>
 
                 <div className="space-y-4">
-                    <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tighter uppercase">
+                    <h1 className="text-4xl font-black text-foreground dark:text-white tracking-tighter uppercase">
                         Scheduled <span className="text-brand-600">Maintenance</span>
                     </h1>
-                    <p className="text-gray-500 dark:text-gray-400 font-medium leading-relaxed">
+                    <p className="text-muted-foreground dark:text-muted-foreground font-medium leading-relaxed">
                         {message}
                     </p>
                 </div>
 
                 <div className="pt-8">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-neutral-800 rounded-full">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted dark:bg-neutral-800 rounded-full">
                         <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></div>
-                        <span className="text-xs font-black uppercase tracking-widest text-gray-500">
+                        <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">
                             Our team is working on it
                         </span>
                     </div>
                 </div>
 
-                <div className="mt-12 text-xs font-bold text-gray-400 uppercase tracking-widest">
+                <div className="mt-12 text-xs font-bold text-muted-foreground uppercase tracking-widest">
                     &copy; {new Date().getFullYear()} RentMate Infrastructure
                 </div>
             </div>

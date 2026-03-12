@@ -59,21 +59,21 @@ export default function AuditLogs() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+                    <h1 className="text-3xl font-extrabold text-foreground dark:text-white tracking-tight flex items-center gap-2">
                         <ShieldCheckIcon className="w-8 h-8 text-brand-600" />
                         Audit Logs
                     </h1>
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mt-1">
+                    <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground mt-1">
                         Track system-wide security events, authentication attempts, and administrative actions.
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <div className="hidden sm:block px-4 py-2 bg-gray-100 dark:bg-gray-900 rounded-xl text-xs font-black text-gray-400 uppercase tracking-widest border border-gray-200 dark:border-gray-700">
+                    <div className="hidden sm:block px-4 py-2 bg-muted dark:bg-foreground rounded-xl text-xs font-black text-muted-foreground uppercase tracking-widest border border-border dark:border-gray-700">
                         Top 200 Events
                     </div>
                     <button
                         onClick={fetchLogs}
-                        className="p-2.5 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm"
+                        className="p-2.5 text-muted-foreground hover:text-foreground dark:text-muted-foreground dark:hover:text-white transition-colors bg-white dark:bg-gray-800 rounded-xl border border-border dark:border-gray-700 shadow-sm"
                         title="Refresh Logs"
                     >
                         <ArrowPathIcon className="w-6 h-6" />
@@ -93,21 +93,21 @@ export default function AuditLogs() {
 
             {/* Search */}
             <div className="relative">
-                <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400" />
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 text-muted-foreground" />
                 <input
                     type="text"
                     placeholder="Search logs by action, user ID or specific details..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all shadow-sm text-gray-900 dark:text-white"
+                    className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-foreground border border-border dark:border-gray-700 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all shadow-sm text-foreground dark:text-white"
                 />
             </div>
 
             {/* Logs Table */}
-            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 border border-border dark:border-gray-700 rounded-2xl shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
-                        <thead className="bg-gray-50 dark:bg-gray-900/50 text-xs font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 dark:border-gray-700">
+                        <thead className="bg-secondary dark:bg-foreground/50 text-xs font-black text-muted-foreground uppercase tracking-widest border-b border-border dark:border-gray-700">
                             <tr>
                                 <th className="px-6 py-4">Security Action</th>
                                 <th className="px-6 py-4 text-center">User Context</th>
@@ -118,13 +118,13 @@ export default function AuditLogs() {
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                             {filteredLogs.length === 0 ? (
                                 <tr>
-                                    <td colSpan={4} className="px-6 py-20 text-center font-bold text-gray-400 uppercase tracking-widest">
+                                    <td colSpan={4} className="px-6 py-20 text-center font-bold text-muted-foreground uppercase tracking-widest">
                                         No matching security logs found.
                                     </td>
                                 </tr>
                             ) : (
                                 filteredLogs.map((log) => (
-                                    <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                    <tr key={log.id} className="hover:bg-secondary dark:hover:bg-gray-700/50 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className={`p-1.5 rounded-lg border ${log.action.includes('DELETE') ? 'bg-destructive/10 text-destructive border-red-100 dark:bg-red-900/20 dark:border-red-800' :
@@ -133,23 +133,23 @@ export default function AuditLogs() {
                                                     }`}>
                                                     <Bars3CenterLeftIcon className="w-4 h-4" />
                                                 </div>
-                                                <span className="font-black text-gray-900 dark:text-white uppercase tracking-tight">{log.action}</span>
+                                                <span className="font-black text-foreground dark:text-white uppercase tracking-tight">{log.action}</span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-center">
-                                            <div className="inline-flex items-center px-2 py-1 bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-mono text-gray-500 dark:text-gray-400">
+                                            <div className="inline-flex items-center px-2 py-1 bg-muted dark:bg-foreground border border-border dark:border-gray-700 rounded-lg text-xs font-mono text-muted-foreground dark:text-muted-foreground">
                                                 {log.user_id ? log.user_id.split('-')[0] + '...' : 'SYSTEM'}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="max-w-md truncate text-xs font-medium text-gray-500 dark:text-gray-400 group relative">
+                                            <div className="max-w-md truncate text-xs font-medium text-muted-foreground dark:text-muted-foreground group relative">
                                                 {JSON.stringify(log.details)}
-                                                <div className="hidden group-hover:block absolute z-10 bottom-full left-0 bg-gray-900 text-white p-2 rounded text-xs font-mono whitespace-normal max-w-lg break-all shadow-xl">
+                                                <div className="hidden group-hover:block absolute z-10 bottom-full left-0 bg-foreground text-white p-2 rounded text-xs font-mono whitespace-normal max-w-lg break-all shadow-xl">
                                                     {JSON.stringify(log.details, null, 2)}
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-right text-xs font-bold text-gray-400 whitespace-nowrap">
+                                        <td className="px-6 py-4 text-right text-xs font-bold text-muted-foreground whitespace-nowrap">
                                             {new Date(log.created_at).toLocaleString('he-IL', {
                                                 year: 'numeric',
                                                 month: '2-digit',

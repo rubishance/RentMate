@@ -284,19 +284,19 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
         >
             <form onSubmit={handleSubmit((v) => onFormSubmit(v, true))} className="space-y-6">
                 <div className="space-y-4">
-                    <label className="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">
+                    <label className="text-xs font-black uppercase tracking-widest text-muted-foreground dark:text-muted-foreground ml-1">
                         {t('contracts')}
                         {errors.contract_id && <span className="text-destructive ml-2">({t(errors.contract_id.message as any)})</span>}
                     </label>
                     {fetchingContracts ? (
-                        <div className="h-12 bg-gray-50 dark:bg-neutral-800 rounded-2xl animate-pulse" />
+                        <div className="h-12 bg-secondary dark:bg-neutral-800 rounded-2xl animate-pulse" />
                     ) : (
                         <div className="relative group">
-                            <FileText className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
+                            <FileText className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
                             <select
                                 {...register('contract_id')}
                                 className={cn(
-                                    "w-full pl-12 pr-4 py-4 bg-gray-50 dark:bg-neutral-800 border-2 border-transparent focus:border-black dark:focus:border-white rounded-[1.25rem] text-sm font-bold outline-none appearance-none transition-all",
+                                    "w-full pl-12 pr-4 py-4 bg-secondary dark:bg-neutral-800 border-2 border-transparent focus:border-black dark:focus:border-white rounded-[1.25rem] text-sm font-bold outline-none appearance-none transition-all",
                                     errors.contract_id && "border-red-500/50 bg-red-50/10"
                                 )}
                             >
@@ -314,7 +314,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                 {/* Manual Selection List Trigger (Always visible if payments exist) */}
                 {pendingPayments.length > 0 && !isMatchConfirmed && (
                     <div className="space-y-2">
-                        <label className="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">
+                        <label className="text-xs font-black uppercase tracking-widest text-muted-foreground dark:text-muted-foreground ml-1">
                             {t('linkToExpectedPayment')}
                         </label>
                         <div className="max-h-40 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
@@ -329,13 +329,13 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                                             "w-full text-left p-3 rounded-xl border text-xs flex items-center justify-between transition-all",
                                             isBestMatch
                                                 ? "bg-brand-50 border-brand-200 dark:bg-brand-900/20 dark:border-brand-800 ring-1 ring-brand-500"
-                                                : "bg-window border-gray-100 dark:border-neutral-800 hover:border-gray-300 dark:hover:border-neutral-700"
+                                                : "bg-window border-border dark:border-neutral-800 hover:border-gray-300 dark:hover:border-neutral-700"
                                         )}
                                     >
                                         <div className="flex items-center gap-2">
                                             <div className={cn("w-2 h-2 rounded-full", isBestMatch ? "bg-brand-500" : "bg-gray-300")} />
                                             <span className="font-bold">{format(parseISO(p.due_date), 'dd/MM/yyyy')}</span>
-                                            <span className="text-gray-500">-</span>
+                                            <span className="text-muted-foreground">-</span>
                                             <span className="font-bold">₪{p.amount.toLocaleString()}</span>
                                         </div>
                                         {isBestMatch && (
@@ -395,7 +395,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">
+                        <label className="text-xs font-black uppercase tracking-widest text-muted-foreground dark:text-muted-foreground ml-1">
                             {t('dueDate')}
                             {errors.due_date && <span className="text-destructive ml-2">*</span>}
                         </label>
@@ -413,7 +413,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                 </div>
 
                 <div className="space-y-4">
-                    <label className="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">{t('method')}</label>
+                    <label className="text-xs font-black uppercase tracking-widest text-muted-foreground dark:text-muted-foreground ml-1">{t('method')}</label>
                     <div className="grid grid-cols-3 gap-2">
                         {[
                             { label: 'transfer', value: 'transfer' },
@@ -431,7 +431,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                                     "py-3 px-2 rounded-2xl text-xs font-black uppercase tracking-tighter transition-all border-2",
                                     watch('payment_method') === method.value
                                         ? 'bg-black dark:bg-white border-black dark:border-white text-white dark:text-black shadow-lg'
-                                        : 'bg-window border-black/5 dark:border-white/5 text-gray-400 hover:border-black/20 dark:hover:border-white/20'
+                                        : 'bg-window border-black/5 dark:border-white/5 text-muted-foreground hover:border-black/20 dark:hover:border-white/20'
                                 )}
                             >
                                 {t(method.label)}
@@ -440,7 +440,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                     </div>
                 </div>
 
-                <div className="p-8 border-t border-black/5 dark:border-white/5 bg-gray-50 dark:bg-neutral-900/50 flex gap-4 -mx-6 -mb-6 mt-6">
+                <div className="p-8 border-t border-black/5 dark:border-white/5 bg-secondary dark:bg-neutral-900/50 flex gap-4 -mx-6 -mb-6 mt-6">
                     <Button
                         variant="outline"
                         onClick={handleSubmit((v) => onFormSubmit(v, false))}

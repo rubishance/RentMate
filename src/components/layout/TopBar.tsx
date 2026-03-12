@@ -45,7 +45,7 @@ export function TopBar() {
                 {/* Right: Theme Toggle */}
                 <button
                     onClick={() => setTheme(effectiveTheme === 'dark' ? 'light' : 'dark')}
-                    className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
+                    className="p-2 rounded-full hover:bg-muted dark:hover:bg-neutral-800 transition-colors"
                     title={`Switch to ${effectiveTheme === 'dark' ? 'Light' : 'Dark'} Mode`}
                 >
                     {effectiveTheme === 'dark' ? (

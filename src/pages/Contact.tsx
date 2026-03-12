@@ -15,13 +15,16 @@ export default function Contact() {
     const { preferences } = useUserPreferences();
 
     const [contactInfo, setContactInfo] = useState({
-        whatsapp: '972503602000',
+        whatsapp: '972559419550',
         email: 'support@rentmate.co.il',
         phone: '+972-50-360-2000'
     });
 
+    const [isPhoneVerified, setIsPhoneVerified] = useState<boolean | null>(null);
+
     useEffect(() => {
-        async function fetchContactInfo() {
+        async function fetchData() {
+            // Fetch global settings
             const { data: settings } = await supabase
                 .from('system_settings')
                 .select('key, value')
@@ -35,11 +38,25 @@ export default function Contact() {
                 setContactInfo({
                     email: email || 'support@rentmate.co.il',
                     phone: phone || '+972-50-360-2000',
-                    whatsapp: whatsapp || '972503602000'
+                    whatsapp: whatsapp || '972559419550'
                 });
             }
+
+            // Fetch user verification status
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { data: profile } = await supabase
+                    .from('user_profiles')
+                    .select('phone_verified')
+                    .eq('id', user.id)
+                    .single();
+
+                if (profile) {
+                    setIsPhoneVerified(profile.phone_verified);
+                }
+            }
         }
-        fetchContactInfo();
+        fetchData();
     }, []);
 
     const [loading, setLoading] = useState(false);
@@ -137,6 +154,19 @@ export default function Contact() {
                                     placeholder={isRtl ? 'במה אפשר לעזור?' : 'How can we help?'}
                                     className="w-full h-40 p-8 glass-premium dark:bg-neutral-900/40 border-white/5 rounded-[3rem] text-foreground placeholder:text-muted-foreground/20 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 shadow-minimal transition-all resize-none text-lg font-medium"
                                 />
+                                {isPhoneVerified === false && (
+                                    <div className="mt-4 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-sm flex items-start gap-3">
+                                        <ShieldCheck className="w-5 h-5 shrink-0 mt-0.5" />
+                                        <p>
+                                            <span className="font-bold block mb-1">
+                                                {isRtl ? 'שים לב: מספר הטלפון שלך לא מאומת' : 'Note: Your phone number is unverified'}
+                                            </span>
+                                            {isRtl
+                                                ? 'תקבל תמיכה כללית בלבד. כדי לקבל תמיכה אישית הקשורה לחשבון שלך, אנא אמת את מספר הטלפון שלך בהגדרות הפרופיל קודם.'
+                                                : 'You will receive general support only. To get personalized account assistance, please verify your phone number in Profile Settings first.'}
+                                        </p>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">

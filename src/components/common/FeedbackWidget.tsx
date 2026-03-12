@@ -152,7 +152,7 @@ export function FeedbackWidget() {
                             value={message}
                             onChange={(e) => setMessage(e.target.value)}
                             placeholder="Describe the issue or idea..."
-                            className="w-full h-24 resize-none p-3 text-sm rounded-xl border border-border dark:border-gray-700 bg-secondary dark:bg-gray-900 focus:ring-2 focus:ring-black/10 outline-none transition-all text-foreground"
+                            className="w-full h-24 resize-none p-3 text-sm rounded-xl border border-border dark:border-gray-700 bg-secondary dark:bg-foreground focus:ring-2 focus:ring-black/10 outline-none transition-all text-foreground"
                         />
 
                         {/* Manual File Upload */}

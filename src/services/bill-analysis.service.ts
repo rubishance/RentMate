@@ -59,19 +59,29 @@ export const BillAnalysisService = {
         const fileArray = Array.isArray(files) ? files : [files];
 
         try {
-            // 1. Convert Files to Base64 (Edge Functions handle JSON payloads)
-            const images = await Promise.all(fileArray.map(async (file) => {
-                return new Promise<string>((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result as string);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(file);
-                });
-            }));
+            // 1. Upload files directly to Supabase Storage
+            const storagePaths: string[] = [];
 
-            // 2. Invoke Edge Function
+            for (let i = 0; i < fileArray.length; i++) {
+                const file = fileArray[i];
+                const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}_${file.name}`;
+
+                const { data: uploadData, error: uploadError } = await supabase.storage
+                    .from('temp_scans')
+                    .upload(fileName, file, { upsert: false });
+
+                if (uploadError) {
+                    throw new Error(`Failed to upload file to temporary storage: ${uploadError.message}`);
+                }
+
+                if (uploadData?.path) {
+                    storagePaths.push(uploadData.path);
+                }
+            }
+
+            // 2. Invoke Edge Function with storage paths
             const { data, error } = await supabase.functions.invoke('analyze-bill', {
-                body: { images, properties }
+                body: { images: [], storagePaths, properties }
             });
 
             if (error) {

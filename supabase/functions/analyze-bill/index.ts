@@ -27,9 +27,27 @@ serve(async (req) => {
         if (authError || !user) throw new Error('Unauthorized');
 
         // 3. Request Data
-        const { images, properties = [] } = await req.json();
-        if (!images || !Array.isArray(images) || images.length === 0) {
-            throw new Error('No images provided for analysis');
+        const { images, storagePaths, properties = [] } = await req.json();
+
+        let imageUrlsToAnalyze: string[] = [];
+
+        if (images && images.length > 0) {
+            imageUrlsToAnalyze = [...images];
+        }
+
+        if (storagePaths && storagePaths.length > 0) {
+            for (const path of storagePaths) {
+                const { data, error } = await supabase.storage.from('temp_scans').createSignedUrl(path, 600); // 10 minutes
+                if (error) {
+                    console.error('Error creating signed URL for', path, error);
+                } else if (data?.signedUrl) {
+                    imageUrlsToAnalyze.push(data.signedUrl);
+                }
+            }
+        }
+
+        if (imageUrlsToAnalyze.length === 0) {
+            throw new Error('No images or storage paths provided for analysis');
         }
 
         // 4. Usage Limit Check
@@ -86,12 +104,25 @@ serve(async (req) => {
             contents: [{
                 parts: [
                     { text: prompt },
-                    ...images.map(img => ({
-                        inlineData: {
-                            data: img.split(',')[1] || img,
-                            mimeType: "image/jpeg" // Default or sniff from prefix
+                    ...imageUrlsToAnalyze.map((img: string) => {
+                        if (img.startsWith('http')) {
+                            // It's a signed URL
+                            return {
+                                fileData: {
+                                    fileUri: img,
+                                    mimeType: "image/jpeg"
+                                }
+                            }
+                        } else {
+                            // It's a base64 string
+                            return {
+                                inlineData: {
+                                    data: img.split(',')[1] || img,
+                                    mimeType: "image/jpeg"
+                                }
+                            }
                         }
-                    }))
+                    })
                 ]
             }],
             generationConfig: {

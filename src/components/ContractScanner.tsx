@@ -81,29 +81,31 @@ export function ContractScanner({ onScanComplete, onCancel, mode = 'modal', skip
 
             setProgress('מעלה קבצים לענן המאובטח...');
 
-            // 1. Convert images to Base64 to avoid OpenAI timeouts downloading from Storage
             const { supabase } = await import('../lib/supabase');
-            const imageUrls: string[] = [];
+            const storagePaths: string[] = [];
 
             for (let i = 0; i < redactedImages.length; i++) {
                 const file = redactedImages[i];
+                const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}_${file.name}`;
 
-                // Convert to Base64
-                const base64 = await new Promise<string>((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result as string);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(file);
-                });
+                const { data, error: uploadError } = await supabase.storage
+                    .from('temp_scans')
+                    .upload(fileName, file, { upsert: false });
 
-                imageUrls.push(base64);
+                if (uploadError) {
+                    throw new Error(`Failed to upload file to temporary storage: ${uploadError.message}`);
+                }
+
+                if (data?.path) {
+                    storagePaths.push(data.path);
+                }
             }
 
             setProgress('מנתח חוזה באמצעות AI...');
 
-            // 2. Call Supabase Edge Function
+            // 2. Call Supabase Edge Function with storagePaths
             const { data, error } = await supabase.functions.invoke('analyze-contract', {
-                body: { images: imageUrls }
+                body: { images: [], storagePaths }
             });
 
             if (error) {
@@ -318,8 +320,8 @@ export function ContractScanner({ onScanComplete, onCancel, mode = 'modal', skip
                             <CheckCircle2 className="w-8 h-8 text-emerald-600" />
                         </motion.div>
                     ) : (
-                        <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-100">
-                            <Upload className="w-8 h-8 text-blue-600" />
+                        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-100">
+                            <Upload className="w-8 h-8 text-primary" />
                         </div>
                     )}
 

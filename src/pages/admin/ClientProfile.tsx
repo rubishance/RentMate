@@ -218,7 +218,7 @@ const ClientProfile = () => {
     if (error || !data) return (
         <div className="p-8 text-center">
             <ExclamationCircleIcon className="w-12 h-12 text-destructive mx-auto mb-4" />
-            <p className="text-gray-900 dark:text-white font-bold">{error || 'Client not found'}</p>
+            <p className="text-foreground dark:text-white font-bold">{error || 'Client not found'}</p>
             <button onClick={() => navigate('/admin/users')} className="mt-4 text-brand-600 font-bold hover:underline">
                 Back to User Management
             </button>
@@ -239,15 +239,15 @@ const ClientProfile = () => {
             <div className="flex items-center gap-4">
                 <button
                     onClick={() => navigate('/admin/users')}
-                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
+                    className="p-2 hover:bg-muted dark:hover:bg-gray-800 rounded-xl transition-colors"
                 >
-                    <ArrowLeftIcon className="w-6 h-6 text-gray-500" />
+                    <ArrowLeftIcon className="w-6 h-6 text-muted-foreground" />
                 </button>
                 <div>
-                    <h1 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+                    <h1 className="text-2xl font-black text-foreground dark:text-white tracking-tight flex items-center gap-2">
                         Client Hub: <MaskedAdminValue value={profile.full_name || 'Unnamed Client'} label="Profile Name" userId={id} />
                     </h1>
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                         <MaskedAdminValue value={profile.email} label="Profile Email" userId={id} maskType="email" /> • Joined {new Date(profile.created_at).toLocaleDateString()}
                     </p>
                 </div>
@@ -275,8 +275,8 @@ const ClientProfile = () => {
                 {/* Dashboard Stats & Info */}
                 <div className="lg:col-span-1 space-y-6">
                     {/* Status Card */}
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
-                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Account Status</h3>
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
+                        <h3 className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-4">Account Status</h3>
                         <div className="flex items-center justify-between mb-4">
                             <span className="text-sm font-bold text-gray-700 dark:text-gray-300">Plan</span>
                             {isEditingPlan ? (
@@ -292,7 +292,7 @@ const ClientProfile = () => {
                                         ))}
                                     </select>
                                     <button onClick={handleUpdatePlan} className="text-xs text-brand-600 font-bold hover:underline">Save</button>
-                                    <button onClick={() => setIsEditingPlan(false)} className="text-xs text-gray-400 hover:text-gray-600">Cancel</button>
+                                    <button onClick={() => setIsEditingPlan(false)} className="text-xs text-muted-foreground hover:text-muted-foreground">Cancel</button>
                                 </div>
                             ) : (
                                 <div className="flex items-center gap-2">
@@ -301,7 +301,7 @@ const ClientProfile = () => {
                                     </span>
                                     <button
                                         onClick={() => { setNewPlanId(profile.plan_id || ''); setIsEditingPlan(true); }}
-                                        className="text-xs text-gray-400 hover:text-brand-600"
+                                        className="text-xs text-muted-foreground hover:text-brand-600"
                                     >
                                         Edit
                                     </button>
@@ -320,19 +320,19 @@ const ClientProfile = () => {
                     </div>
 
                     {/* Financial Summary */}
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
-                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Financial Records</h3>
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
+                        <h3 className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-4">Financial Records</h3>
                         <div className="space-y-4">
                             {invoices.length === 0 ? (
-                                <p className="text-xs text-gray-400 font-medium italic">No invoices found for this client.</p>
+                                <p className="text-xs text-muted-foreground font-medium italic">No invoices found for this client.</p>
                             ) : (
                                 invoices.slice(0, 5).map((inv: Invoice) => (
-                                    <div key={inv.id} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800">
+                                    <div key={inv.id} className="flex items-center justify-between p-3 rounded-xl bg-secondary dark:bg-foreground/50 border border-border dark:border-gray-800">
                                         <div className="flex items-center gap-3">
-                                            <DocumentTextIcon className="w-5 h-5 text-gray-400" />
+                                            <DocumentTextIcon className="w-5 h-5 text-muted-foreground" />
                                             <div>
-                                                <div className="text-xs font-bold text-gray-900 dark:text-white">₪{inv.amount}</div>
-                                                <div className="text-xs text-gray-500">{new Date(inv.issue_date).toLocaleDateString()}</div>
+                                                <div className="text-xs font-bold text-foreground dark:text-white">₪{inv.amount}</div>
+                                                <div className="text-xs text-muted-foreground">{new Date(inv.issue_date).toLocaleDateString()}</div>
                                             </div>
                                         </div>
                                         <span className={`text-[11px] font-black uppercase tracking-widest ${inv.status === 'paid' ? 'text-emerald-600' : 'text-amber-600'}`}>
@@ -352,9 +352,9 @@ const ClientProfile = () => {
 
                 {/* Communication & Notes (CRM) */}
                 <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border dark:border-gray-700 shadow-sm overflow-hidden">
                         <div className="p-6 border-b border-gray-50 dark:border-gray-700 flex justify-between items-center">
-                            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Interactive Timeline</h3>
+                            <h3 className="text-xs font-black text-muted-foreground uppercase tracking-widest">Interactive Timeline</h3>
                             <button
                                 onClick={() => setIsAddingNote(true)}
                                 className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-brand-600/20"
@@ -366,7 +366,7 @@ const ClientProfile = () => {
 
                         {/* Add Note Form */}
                         {isAddingNote && (
-                            <div className="border-b border-gray-100 dark:border-gray-700 bg-brand-50/30 dark:bg-brand-900/10">
+                            <div className="border-b border-border dark:border-gray-700 bg-brand-50/30 dark:bg-brand-900/10">
                                 <InteractionLogger
                                     userId={id!}
                                     onLogSuccess={handleLogSuccess}
@@ -383,7 +383,7 @@ const ClientProfile = () => {
                                     onClick={() => setFeedFilter(f as any)}
                                     className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${feedFilter === f
                                         ? 'bg-brand-50 text-brand-700 dark:bg-brand-900/20 dark:text-brand-400'
-                                        : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                                        : 'text-muted-foreground hover:text-muted-foreground dark:hover:text-gray-300'
                                         }`}
                                 >
                                     {f === 'all' ? 'All Activity' :
@@ -399,7 +399,7 @@ const ClientProfile = () => {
                                 usageEvents.length === 0 ? (
                                     <div className="text-center py-12">
                                         <Activity className="w-12 h-12 text-gray-200 dark:text-gray-700 mx-auto mb-4" />
-                                        <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">No usage history recorded</p>
+                                        <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">No usage history recorded</p>
                                     </div>
                                 ) : (
                                     <div className="space-y-4">
@@ -430,7 +430,7 @@ const ClientProfile = () => {
                             ) : filteredInteractions.length === 0 ? (
                                 <div className="text-center py-12">
                                     <ChatBubbleLeftEllipsisIcon className="w-12 h-12 text-gray-200 dark:text-gray-700 mx-auto mb-4" />
-                                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">No activity found</p>
+                                    <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">No activity found</p>
                                 </div>
                             ) : (
                                 filteredInteractions.map((interaction) => (
@@ -451,15 +451,15 @@ const ClientProfile = () => {
             {/* AI Transcript Modal */}
             {selectedBotChat && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-gray-900 w-full max-w-2xl max-h-[80vh] rounded-3xl overflow-hidden flex flex-col shadow-2xl border border-gray-100 dark:border-gray-800">
+                    <div className="bg-white dark:bg-foreground w-full max-w-2xl max-h-[80vh] rounded-3xl overflow-hidden flex flex-col shadow-2xl border border-border dark:border-gray-800">
                         <div className="p-6 border-b border-gray-50 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
                             <div>
-                                <h3 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight">AI Conversation Transcript</h3>
-                                <p className="text-xs font-bold text-gray-500">System context and logs</p>
+                                <h3 className="text-lg font-black text-foreground dark:text-white uppercase tracking-tight">AI Conversation Transcript</h3>
+                                <p className="text-xs font-bold text-muted-foreground">System context and logs</p>
                             </div>
                             <button
                                 onClick={() => setSelectedBotChat(null)}
-                                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl text-gray-400"
+                                className="p-2 hover:bg-muted dark:hover:bg-gray-700 rounded-xl text-muted-foreground"
                             >
                                 <PlusIcon className="w-6 h-6 rotate-45" />
                             </button>
@@ -468,20 +468,20 @@ const ClientProfile = () => {
                             {selectedBotChat.metadata?.messages?.map((msg: { role: string; content: string; timestamp?: string }, idx: number) => (
                                 <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                                     <div className="mb-1 flex items-center gap-2">
-                                        <span className="text-[11px] font-black uppercase tracking-widest text-gray-400">{msg.role}</span>
+                                        <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">{msg.role}</span>
                                         <span className="text-[11px] text-gray-300">{new Date(msg.timestamp || Date.now()).toLocaleTimeString()}</span>
                                     </div>
                                     <div className={`p-4 rounded-2xl max-w-[85%] text-sm font-medium leading-relaxed ${msg.role === 'user'
                                         ? 'bg-brand-600 text-white rounded-tr-none'
-                                        : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-gray-700 rounded-tl-none shadow-sm'
+                                        : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-border dark:border-gray-700 rounded-tl-none shadow-sm'
                                         }`}>
                                         {msg.content}
                                     </div>
                                 </div>
                             ))}
                         </div>
-                        <div className="p-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 text-center">
-                            <span className="text-xs font-black text-gray-400 uppercase tracking-widest">End of Automated Transcript</span>
+                        <div className="p-4 bg-secondary dark:bg-gray-800 border-t border-border dark:border-gray-700 text-center">
+                            <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">End of Automated Transcript</span>
                         </div>
                     </div>
                 </div>

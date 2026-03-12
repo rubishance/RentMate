@@ -86,9 +86,9 @@ export function ArticleViewer() {
 
     if (!content) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="min-h-screen flex items-center justify-center bg-secondary">
                 <div className="text-center">
-                    <h1 className="text-2xl font-bold text-gray-900 mb-4">
+                    <h1 className="text-2xl font-bold text-foreground mb-4">
                         {t('article_not_found')}
                     </h1>
                     <button
@@ -120,11 +120,11 @@ export function ArticleViewer() {
     return (
         <div className="min-h-screen bg-white">
             {/* Navigation Bar */}
-            <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100">
+            <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-border">
                 <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
                     <button
                         onClick={() => navigate('/knowledge-base')}
-                        className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors text-sm font-medium"
+                        className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors text-sm font-medium"
                     >
                         {lang === 'he' ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
                         {t('back_to_knowledge_base')}
@@ -145,13 +145,13 @@ export function ArticleViewer() {
                 </div>
 
                 {/* Footer info */}
-                <div className="mt-16 pt-8 border-t border-gray-100">
+                <div className="mt-16 pt-8 border-t border-border">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                         <div>
-                            <p className="text-sm text-gray-500 mb-1">
+                            <p className="text-sm text-muted-foreground mb-1">
                                 {t('last_updated')}
                             </p>
-                            <p className="font-medium text-gray-900">
+                            <p className="font-medium text-foreground">
                                 {new Date('2026-01-19').toLocaleDateString(lang === 'he' ? 'he-IL' : 'en-US')}
                             </p>
                         </div>
@@ -172,10 +172,10 @@ export function ArticleViewer() {
 
                     <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-start">
                         <div className="space-y-2">
-                            <h3 className="text-xl font-bold text-gray-900">
+                            <h3 className="text-xl font-bold text-foreground">
                                 {getSmartCTATitle(metadata?.category || '', t)}
                             </h3>
-                            <p className="text-gray-600 max-w-lg">
+                            <p className="text-muted-foreground max-w-lg">
                                 {getSmartCTADesc(metadata?.category || '', t)}
                             </p>
                         </div>

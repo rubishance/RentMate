@@ -14,14 +14,14 @@ export function KnowledgeBaseWidget() {
     };
 
     return (
-        <div className="bg-white dark:bg-neutral-900 rounded-[2.5rem] p-8 shadow-sm border border-gray-100 dark:border-neutral-800 text-black dark:text-white relative overflow-hidden flex flex-col justify-between h-full group">
+        <div className="bg-white dark:bg-neutral-900 rounded-[2.5rem] p-8 shadow-sm border border-border dark:border-neutral-800 text-black dark:text-white relative overflow-hidden flex flex-col justify-between h-full group">
             {/* Background Icon */}
             <div className="absolute -bottom-8 -right-8 text-black/5 dark:text-white/5 transform rotate-[-15deg] group-hover:scale-110 transition-transform">
                 <BookOpen className="w-48 h-48" />
             </div>
 
             <div className="relative z-10">
-                <div className="flex items-center gap-2 mb-6 text-gray-400 dark:text-gray-500 text-xs font-black uppercase tracking-widest leading-none">
+                <div className="flex items-center gap-2 mb-6 text-muted-foreground dark:text-muted-foreground text-xs font-black uppercase tracking-widest leading-none">
                     <BookOpen className="w-4 h-4" />
                     {t('knowledgeBase')}
                 </div>
@@ -29,14 +29,14 @@ export function KnowledgeBaseWidget() {
                 <h3 className="text-xl font-black mb-3 leading-tight tracking-tight">
                     {featuredArticle.title}
                 </h3>
-                <p className="text-gray-500 dark:text-gray-400 text-sm line-clamp-3 font-medium leading-relaxed">
+                <p className="text-muted-foreground dark:text-muted-foreground text-sm line-clamp-3 font-medium leading-relaxed">
                     {featuredArticle.desc}
                 </p>
             </div>
 
             <button
                 onClick={() => navigate(`/knowledge-base/${featuredArticle.slug}`)}
-                className="relative z-10 mt-8 w-full py-4 bg-gray-50 dark:bg-neutral-800 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-2xl text-sm font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-2 border border-gray-100 dark:border-neutral-700 shadow-sm"
+                className="relative z-10 mt-8 w-full py-4 bg-secondary dark:bg-neutral-800 hover:bg-muted dark:hover:bg-neutral-700 rounded-2xl text-sm font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-2 border border-border dark:border-neutral-700 shadow-sm"
             >
                 {t('readArticle')} <ExternalLink className="w-4 h-4" />
             </button>

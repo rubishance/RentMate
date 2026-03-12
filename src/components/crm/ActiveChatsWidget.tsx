@@ -41,16 +41,16 @@ export function ActiveChatsWidget() {
         }
     };
 
-    if (loading) return <div className="animate-pulse h-48 bg-gray-100 rounded-2xl"></div>;
+    if (loading) return <div className="animate-pulse h-48 bg-muted rounded-2xl"></div>;
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm h-full flex flex-col">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-border dark:border-gray-700 shadow-sm h-full flex flex-col">
             <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-2">
                     <div className="p-2 bg-brand-100 dark:bg-brand-900/30 rounded-lg">
                         <MessageCircle className="w-5 h-5 text-brand-600 dark:text-brand-400" />
                     </div>
-                    <h3 className="font-black text-gray-900 dark:text-white uppercase tracking-tight">Active Support Chats</h3>
+                    <h3 className="font-black text-foreground dark:text-white uppercase tracking-tight">Active Support Chats</h3>
                 </div>
                 <span className="bg-brand-600 text-white text-xs font-bold px-2 py-1 rounded-md">
                     {chats.length}
@@ -59,21 +59,21 @@ export function ActiveChatsWidget() {
 
             <div className="flex-1 overflow-y-auto space-y-3 pr-2 scrollbar-thin">
                 {chats.length === 0 ? (
-                    <div className="text-center py-10 text-gray-400">
+                    <div className="text-center py-10 text-muted-foreground">
                         <p className="text-sm font-medium">No active chats right now.</p>
                         <p className="text-xs">Great job cleaning the queue! 🎉</p>
                     </div>
                 ) : (
                     chats.map(chat => (
-                        <div key={chat.id} className="group p-3 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-brand-300 transition-all">
+                        <div key={chat.id} className="group p-3 bg-secondary dark:bg-foreground/50 rounded-xl border border-border dark:border-gray-800 hover:border-brand-300 transition-all">
                             <div className="flex justify-between items-start mb-2">
                                 <div className="flex items-center gap-2">
-                                    <User className="w-3 h-3 text-gray-400" />
-                                    <span className="text-sm font-bold text-gray-900 dark:text-white">
+                                    <User className="w-3 h-3 text-muted-foreground" />
+                                    <span className="text-sm font-bold text-foreground dark:text-white">
                                         {chat.user?.full_name || 'Anonymous User'}
                                     </span>
                                 </div>
-                                <span className="text-xs bg-white dark:bg-gray-800 px-2 py-0.5 rounded border border-gray-200 dark:border-gray-700 text-gray-500 flex items-center gap-1">
+                                <span className="text-xs bg-white dark:bg-gray-800 px-2 py-0.5 rounded border border-border dark:border-gray-700 text-muted-foreground flex items-center gap-1">
                                     <Clock className="w-3 h-3" />
                                     {new Date(chat.last_message_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </span>

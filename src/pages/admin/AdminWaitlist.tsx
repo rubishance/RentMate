@@ -104,26 +104,26 @@ export default function AdminWaitlist() {
     return (
         <div className="space-y-6 max-w-7xl mx-auto" dir="ltr">
             {/* Header & Stats */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-border dark:border-gray-700">
                 <div className="flex items-center gap-4">
                     <div className="bg-brand-100 dark:bg-brand-900/30 p-3 rounded-xl border border-brand-200 dark:border-brand-800/50">
                         <Users className="w-6 h-6 text-brand-600 dark:text-brand-400" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white leading-tight">Waitlist Users</h1>
-                        <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">{entries.length} Total Signups</p>
+                        <h1 className="text-2xl font-bold text-foreground dark:text-white leading-tight">Waitlist Users</h1>
+                        <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{entries.length} Total Signups</p>
                     </div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row w-full md:w-auto gap-3">
                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <input
                             type="text"
                             placeholder="Search names or emails..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full sm:w-64 pl-9 pr-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 transition-shadow"
+                            className="w-full sm:w-64 pl-9 pr-4 py-2 bg-secondary dark:bg-foreground border border-border dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 transition-shadow"
                         />
                     </div>
                     <Button
@@ -138,34 +138,34 @@ export default function AdminWaitlist() {
             </div>
 
             {/* Data Table */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-border dark:border-gray-700 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-gray-50/50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700">
-                                <th className="py-4 px-6 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest whitespace-nowrap">User Name</th>
-                                <th className="py-4 px-6 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest whitespace-nowrap">Contact Info</th>
-                                <th className="py-4 px-6 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest whitespace-nowrap hidden md:table-cell">Signup Date</th>
-                                <th className="py-4 px-6 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest whitespace-nowrap text-right">Actions</th>
+                            <tr className="bg-gray-50/50 dark:bg-foreground/50 border-b border-border dark:border-gray-700">
+                                <th className="py-4 px-6 text-xs font-bold text-muted-foreground dark:text-muted-foreground uppercase tracking-widest whitespace-nowrap">User Name</th>
+                                <th className="py-4 px-6 text-xs font-bold text-muted-foreground dark:text-muted-foreground uppercase tracking-widest whitespace-nowrap">Contact Info</th>
+                                <th className="py-4 px-6 text-xs font-bold text-muted-foreground dark:text-muted-foreground uppercase tracking-widest whitespace-nowrap hidden md:table-cell">Signup Date</th>
+                                <th className="py-4 px-6 text-xs font-bold text-muted-foreground dark:text-muted-foreground uppercase tracking-widest whitespace-nowrap text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                             {filteredEntries.length === 0 ? (
                                 <tr>
-                                    <td colSpan={4} className="py-12 text-center text-gray-500">
+                                    <td colSpan={4} className="py-12 text-center text-muted-foreground">
                                         {searchQuery ? 'No users match your search.' : 'The waitlist is currently empty.'}
                                     </td>
                                 </tr>
                             ) : (
                                 filteredEntries.map((entry) => (
-                                    <tr key={entry.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                    <tr key={entry.id} className="hover:bg-secondary dark:hover:bg-gray-700/30 transition-colors">
                                         {/* Name */}
                                         <td className="py-4 px-6 align-top">
                                             <div className="flex items-center gap-3">
                                                 <div className="flex-shrink-0 w-10 h-10 rounded-full bg-brand-50 border border-brand-100 dark:bg-brand-900/30 dark:border-brand-800 flex items-center justify-center text-brand-600 font-bold uppercase">
                                                     {entry.full_name.charAt(0)}
                                                 </div>
-                                                <div className="font-semibold text-gray-900 dark:text-white capitalize truncate max-w-[150px] md:max-w-xs">
+                                                <div className="font-semibold text-foreground dark:text-white capitalize truncate max-w-[150px] md:max-w-xs">
                                                     {entry.full_name}
                                                 </div>
                                             </div>
@@ -174,12 +174,12 @@ export default function AdminWaitlist() {
                                         {/* Contact */}
                                         <td className="py-4 px-6 align-top">
                                             <div className="space-y-1.5 flex flex-col justify-center h-10">
-                                                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                                                <div className="flex items-center gap-2 text-sm text-muted-foreground dark:text-gray-300">
                                                     <Mail className="w-3.5 h-3.5 opacity-70" />
                                                     <a href={`mailto:${entry.email}`} className="hover:text-brand-600 hover:underline truncate max-w-[150px] md:max-w-xs">{entry.email}</a>
                                                 </div>
                                                 {entry.phone && (
-                                                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                                         <Phone className="w-3.5 h-3.5 opacity-70" />
                                                         <a href={`tel:${entry.phone}`} className="hover:text-brand-600 truncate">{entry.phone}</a>
                                                     </div>
@@ -189,7 +189,7 @@ export default function AdminWaitlist() {
 
                                         {/* Date */}
                                         <td className="py-4 px-6 align-top hidden md:table-cell">
-                                            <div className="flex items-center gap-2 text-sm text-gray-500 h-10">
+                                            <div className="flex items-center gap-2 text-sm text-muted-foreground h-10">
                                                 <Clock className="w-3.5 h-3.5 opacity-70" />
                                                 <span>{new Date(entry.created_at).toLocaleString()}</span>
                                             </div>

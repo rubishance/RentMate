@@ -60,7 +60,7 @@ export function HeaderActionMenu() {
                                 }}
                                 className="flex items-center gap-3 p-3 rounded-xl hover:bg-background dark:hover:bg-neutral-800 transition-colors group w-full text-start"
                             >
-                                <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform shadow-sm">
+                                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform shadow-sm">
                                     <ContractIcon className="w-4 h-4" />
                                 </div>
                                 <span className="text-xs font-black lowercase tracking-tight flex-1">{t('addContract')}</span>

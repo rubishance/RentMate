@@ -41,7 +41,7 @@ export const ScannerUtils = {
 
         for (let i = 1; i <= pdf.numPages; i++) {
             const page = await pdf.getPage(i);
-            const viewport = page.getViewport({ scale: 2.0 }); // High quality for OCR/Redaction
+            const viewport = page.getViewport({ scale: 1.5 }); // Optimized quality for OCR/Redaction
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
 
@@ -54,7 +54,7 @@ export const ScannerUtils = {
 
 
             const blob = await new Promise<Blob | null>(resolve =>
-                canvas.toBlob(resolve, 'image/jpeg', 0.8)
+                canvas.toBlob(resolve, 'image/jpeg', 0.7)
             );
 
             if (blob) {

@@ -82,18 +82,18 @@ export default function AdminInvoices() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+                    <h1 className="text-3xl font-extrabold text-foreground dark:text-white tracking-tight flex items-center gap-2">
                         <FileText className="w-8 h-8 text-brand-600" />
                         Billing & Invoices
                     </h1>
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mt-1">
+                    <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground mt-1">
                         Monitor revenue, view system-generated invoices, and manage payment statuses.
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button
                         onClick={fetchInvoices}
-                        className="p-2.5 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm"
+                        className="p-2.5 text-muted-foreground hover:text-foreground dark:text-muted-foreground dark:hover:text-white transition-colors bg-white dark:bg-gray-800 rounded-xl border border-border dark:border-gray-700 shadow-sm"
                     >
                         <ArrowPathIcon className="w-6 h-6" />
                     </button>
@@ -115,14 +115,14 @@ export default function AdminInvoices() {
             )}
 
             {/* Filters */}
-            <div className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-900 rounded-2xl w-fit border border-gray-200 dark:border-gray-700">
+            <div className="flex gap-1 p-1 bg-muted dark:bg-foreground rounded-2xl w-fit border border-border dark:border-gray-700">
                 {(['all', 'paid', 'pending', 'void'] as const).map((status) => (
                     <button
                         key={status}
                         onClick={() => setFilterStatus(status)}
                         className={`px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${filterStatus === status
-                            ? 'bg-white dark:bg-gray-800 text-brand-600 shadow-sm border border-gray-100 dark:border-gray-700'
-                            : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                            ? 'bg-white dark:bg-gray-800 text-brand-600 shadow-sm border border-border dark:border-gray-700'
+                            : 'text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300'
                             }`}
                     >
                         {status}
@@ -131,10 +131,10 @@ export default function AdminInvoices() {
             </div>
 
             {/* Invoices List */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-                <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
-                    <h2 className="text-base font-black text-gray-900 dark:text-white uppercase tracking-tight">Financial Records</h2>
-                    <div className="flex items-center gap-2 text-xs font-black text-gray-400 uppercase tracking-widest">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border dark:border-gray-700 shadow-sm overflow-hidden">
+                <div className="p-5 border-b border-border dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-800/50">
+                    <h2 className="text-base font-black text-foreground dark:text-white uppercase tracking-tight">Financial Records</h2>
+                    <div className="flex items-center gap-2 text-xs font-black text-muted-foreground uppercase tracking-widest">
                         <FunnelIcon className="w-4 h-4" />
                         Showing {filteredInvoices.length} entries
                     </div>
@@ -143,24 +143,24 @@ export default function AdminInvoices() {
                 <div className="overflow-x-auto">
                     <table className="w-full text-right" dir="rtl">
                         <thead>
-                            <tr className="bg-gray-50 dark:bg-gray-900/30">
-                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-right">Invoice Number</th>
-                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-center">Amount</th>
-                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-center">Status</th>
-                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-left">Issue Date</th>
-                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Actions</th>
+                            <tr className="bg-secondary dark:bg-foreground/30">
+                                <th className="px-6 py-4 text-xs font-black text-muted-foreground uppercase tracking-widest text-right">Invoice Number</th>
+                                <th className="px-6 py-4 text-xs font-black text-muted-foreground uppercase tracking-widest text-center">Amount</th>
+                                <th className="px-6 py-4 text-xs font-black text-muted-foreground uppercase tracking-widest text-center">Status</th>
+                                <th className="px-6 py-4 text-xs font-black text-muted-foreground uppercase tracking-widest text-left">Issue Date</th>
+                                <th className="px-6 py-4 text-xs font-black text-muted-foreground uppercase tracking-widest">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                             {filteredInvoices.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="py-20 text-center font-bold text-gray-400 uppercase tracking-widest">
+                                    <td colSpan={5} className="py-20 text-center font-bold text-muted-foreground uppercase tracking-widest">
                                         No financial records matching your criteria.
                                     </td>
                                 </tr>
                             ) : (
                                 filteredInvoices.map((invoice) => (
-                                    <tr key={invoice.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                    <tr key={invoice.id} className="hover:bg-secondary dark:hover:bg-gray-700/30 transition-colors">
                                         <td className="px-6 py-5">
                                             <div className="flex items-center gap-3">
                                                 <div className={`p-2 rounded-xl border ${invoice.status === 'paid' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800' :
@@ -169,27 +169,27 @@ export default function AdminInvoices() {
                                                     <FileText className="w-5 h-5" />
                                                 </div>
                                                 <div>
-                                                    <div className="font-bold text-gray-900 dark:text-white text-sm">INV-{invoice.id.substring(0, 8).toUpperCase()}</div>
-                                                    <div className="text-xs text-gray-400 font-mono tracking-tighter">REF: {invoice.id}</div>
+                                                    <div className="font-bold text-foreground dark:text-white text-sm">INV-{invoice.id.substring(0, 8).toUpperCase()}</div>
+                                                    <div className="text-xs text-muted-foreground font-mono tracking-tighter">REF: {invoice.id}</div>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-5 text-center">
-                                            <div className="font-black text-gray-900 dark:text-white text-sm">
+                                            <div className="font-black text-foreground dark:text-white text-sm">
                                                 {invoice.currency === 'ILS' ? '₪' : invoice.currency} {invoice.amount.toLocaleString()}
                                             </div>
-                                            <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">Sub-Total</div>
+                                            <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Sub-Total</div>
                                         </td>
                                         <td className="px-6 py-5 text-center">
                                             <span className={`px-2.5 py-1 text-xs font-black uppercase tracking-widest rounded-lg border ${invoice.status === 'paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800' :
                                                 invoice.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/20 dark:border-amber-800' :
-                                                    'bg-gray-50 text-gray-400 border-gray-200 dark:bg-gray-900 dark:border-gray-700'
+                                                    'bg-secondary text-muted-foreground border-border dark:bg-foreground dark:border-gray-700'
                                                 }`}>
                                                 {invoice.status}
                                             </span>
                                         </td>
                                         <td className="px-6 py-5 text-left">
-                                            <div className="flex items-center justify-end gap-1.5 font-bold text-gray-500 dark:text-gray-400 text-xs">
+                                            <div className="flex items-center justify-end gap-1.5 font-bold text-muted-foreground dark:text-muted-foreground text-xs">
                                                 <Clock className="w-3.5 h-3.5" />
                                                 {new Date(invoice.issue_date).toLocaleDateString('he-IL')}
                                             </div>
@@ -198,7 +198,7 @@ export default function AdminInvoices() {
                                             <div className="flex items-center justify-end gap-1">
                                                 <button
                                                     onClick={() => handleDownload(invoice.id)}
-                                                    className="p-2 text-gray-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 rounded-xl transition-all"
+                                                    className="p-2 text-muted-foreground hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 rounded-xl transition-all"
                                                     title="View PDF"
                                                 >
                                                     <Download className="w-5 h-5" />
@@ -206,7 +206,7 @@ export default function AdminInvoices() {
                                                 {invoice.status === 'pending' && (
                                                     <button
                                                         onClick={() => handleMarkPaid(invoice.id)}
-                                                        className="p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-xl transition-all"
+                                                        className="p-2 text-muted-foreground hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-xl transition-all"
                                                         title="Mark as Paid"
                                                     >
                                                         <CheckCircle className="w-5 h-5" />

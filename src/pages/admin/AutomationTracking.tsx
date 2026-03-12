@@ -76,21 +76,21 @@ export default function AutomationTracking() {
                         onClick={() => navigate('/admin')}
                         className="p-2 hover:bg-muted/50 dark:hover:bg-slate-800 rounded-xl transition-colors"
                     >
-                        <ArrowLeft className="w-6 h-6 text-gray-500" />
+                        <ArrowLeft className="w-6 h-6 text-muted-foreground" />
                     </button>
                     <div>
-                        <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
+                        <h1 className="text-3xl font-extrabold text-foreground dark:text-white tracking-tight flex items-center gap-2">
                             <Sparkles className="w-8 h-8 text-brand-600" />
                             Automation Tracking
                         </h1>
-                        <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mt-1">
+                        <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground mt-1">
                             Review every decision made by the RentMate Autopilot engine.
                         </p>
                     </div>
                 </div>
                 <button
                     onClick={fetchLogs}
-                    className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-border rounded-xl text-xs font-black uppercase tracking-widest text-gray-600 dark:text-gray-300 hover:bg-background transition-all shadow-sm"
+                    className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-border rounded-xl text-xs font-black uppercase tracking-widest text-muted-foreground dark:text-gray-300 hover:bg-background transition-all shadow-sm"
                 >
                     <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                     Refresh
@@ -105,7 +105,7 @@ export default function AutomationTracking() {
                         onClick={() => setFilter(f)}
                         className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest border transition-all ${filter === f
                             ? 'bg-brand-600 text-white border-brand-600 shadow-md shadow-brand-500/20'
-                            : 'bg-white dark:bg-gray-800 text-gray-400 border-border hover:border-brand-500'
+                            : 'bg-white dark:bg-gray-800 text-muted-foreground border-border hover:border-brand-500'
                             }`}
                     >
                         {f}
@@ -115,13 +115,13 @@ export default function AutomationTracking() {
 
             {/* Search */}
             <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
                     type="text"
                     placeholder="Search by action, user name or email..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 bg-white dark:bg-gray-900 border border-border rounded-2xl text-sm font-medium focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all shadow-sm text-gray-900 dark:text-white"
+                    className="w-full pl-12 pr-4 py-4 bg-white dark:bg-foreground border border-border rounded-2xl text-sm font-medium focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all shadow-sm text-foreground dark:text-white"
                 />
             </div>
 
@@ -129,7 +129,7 @@ export default function AutomationTracking() {
             <div className="bg-white dark:bg-gray-800 border border-border/50 rounded-2xl shadow-minimal overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
-                        <thead className="bg-background/50 dark:bg-slate-900/50 text-xs font-black text-gray-400 uppercase tracking-widest border-b border-border/50">
+                        <thead className="bg-background/50 dark:bg-slate-900/50 text-xs font-black text-muted-foreground uppercase tracking-widest border-b border-border/50">
                             <tr>
                                 <th className="px-6 py-4">Autopilot Action</th>
                                 <th className="px-6 py-4">Target User</th>
@@ -152,10 +152,10 @@ export default function AutomationTracking() {
                                     <tr key={log.id} className="hover:bg-background/50 dark:hover:bg-slate-900/40 transition-colors group">
                                         <td className="px-6 py-5">
                                             <div className="flex flex-col gap-1">
-                                                <span className="font-bold text-gray-900 dark:text-white text-sm">
+                                                <span className="font-bold text-foreground dark:text-white text-sm">
                                                     {log.action_taken}
                                                 </span>
-                                                <span className="text-xs text-gray-400 font-medium uppercase tracking-tight">
+                                                <span className="text-xs text-muted-foreground font-medium uppercase tracking-tight">
                                                     Entity: {log.entity_id?.split('-')[0]}...
                                                 </span>
                                             </div>
@@ -169,7 +169,7 @@ export default function AutomationTracking() {
                                                     <span className="text-sm font-bold text-gray-700 dark:text-gray-200">
                                                         {log.user_profiles?.full_name || 'System / Guest'}
                                                     </span>
-                                                    <span className="text-xs text-gray-400 font-medium lowercase">
+                                                    <span className="text-xs text-muted-foreground font-medium lowercase">
                                                         {log.user_profiles?.email || 'noreply@rentmate.co.il'}
                                                     </span>
                                                 </div>
@@ -188,11 +188,11 @@ export default function AutomationTracking() {
                                         </td>
                                         <td className="px-6 py-5 text-right">
                                             <div className="flex flex-col items-end gap-1">
-                                                <div className="flex items-center gap-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">
+                                                <div className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground dark:text-muted-foreground">
                                                     <Calendar className="w-3 h-3" />
                                                     {new Date(log.created_at).toLocaleDateString()}
                                                 </div>
-                                                <span className="text-xs font-medium text-gray-400 uppercase">
+                                                <span className="text-xs font-medium text-muted-foreground uppercase">
                                                     {new Date(log.created_at).toLocaleTimeString()}
                                                 </span>
                                             </div>

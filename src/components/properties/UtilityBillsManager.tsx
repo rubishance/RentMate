@@ -76,7 +76,7 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
         { id: 'internet' as UtilityType, label: t('utilityInternet'), icon: Wifi, color: 'text-indigo-500', bg: 'bg-indigo-100 dark:bg-indigo-900/30' },
         { id: 'tv' as UtilityType, label: t('utilityCable', { defaultValue: 'TV / Cable' }), icon: Tv, color: 'text-rose-500', bg: 'bg-rose-100 dark:bg-rose-900/30' },
         { id: 'mortgage' as UtilityType, label: t('utilityMortgage', { defaultValue: 'Mortgage' }), icon: HomeIcon, color: 'text-emerald-500', bg: 'bg-emerald-100 dark:bg-emerald-900/30' },
-        { id: 'other' as UtilityType, label: t('utilityOther', { defaultValue: 'Other' }), icon: FileText, color: 'text-gray-500', bg: 'bg-gray-100 dark:bg-gray-800/30' },
+        { id: 'other' as UtilityType, label: t('utilityOther', { defaultValue: 'Other' }), icon: FileText, color: 'text-muted-foreground', bg: 'bg-muted dark:bg-gray-800/30' },
     ];
 
 

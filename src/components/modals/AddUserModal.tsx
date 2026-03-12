@@ -1,23 +1,32 @@
 import { useState } from 'react';
 import { X, User, Mail, Shield, Loader2, Send } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Select } from '../ui/Select';
 import { useScrollLock } from '../../hooks/useScrollLock';
 
+interface SubscriptionPlan {
+    id: string;
+    name: string;
+}
+
 interface AddUserModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess: () => void;
+    plans: SubscriptionPlan[];
 }
 
-export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) {
+export function AddUserModal({ isOpen, onClose, onSuccess, plans }: AddUserModalProps) {
     useScrollLock(isOpen);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
-        role: 'user'
+        password: '',
+        role: 'user',
+        planId: 'free'
     });
 
     if (!isOpen) return null;
@@ -26,20 +35,31 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
         e.preventDefault();
         setLoading(true);
 
-        // Simulation of invite process
+        // Invoke Edge Function
         try {
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            // In a real app with Supabase, this would call a Supabase Edge Function:
-            // await supabase.functions.invoke('invite-user', { body: formData });
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) throw new Error('No active session. Please log in again.');
 
-            console.log('User Invited:', formData);
-            alert(`Invitation sent to ${formData.email} (Simulation)\n\nNote: To actually create users without logging out, a backend Edge Function is required.`);
+            const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-create-user`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to create user');
+
+            alert(`User ${formData.email} has been created successfully!\n\nThey can now log in using the password you provided.`);
 
             onSuccess();
             onClose();
-            setFormData({ fullName: '', email: '', role: 'user' });
-        } catch (error) {
-            console.error(error);
+            setFormData({ fullName: '', email: '', password: '', role: 'user', planId: 'free' });
+        } catch (error: any) {
+            console.error('Create user error:', error);
+            alert(`Error creating user: ${error.message || 'Unknown error'}`);
         } finally {
             setLoading(false);
         }
@@ -91,6 +111,26 @@ export function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) 
                             leftIcon={<Mail className="w-4 h-4 text-muted-foreground" />}
                             required
                             placeholder="john@example.com"
+                        />
+
+                        {/* Password */}
+                        <Input
+                            label="Initial Password"
+                            type="text"
+                            value={formData.password}
+                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                            leftIcon={<Shield className="w-4 h-4 text-muted-foreground" />}
+                            required
+                            placeholder="Secure password (e.g. Temp123!)"
+                        />
+
+                        {/* Plan */}
+                        <Select
+                            label="Subscription Plan"
+                            value={formData.planId}
+                            onChange={(val) => setFormData({ ...formData, planId: val })}
+                            leftIcon={<Shield className="w-4 h-4 text-muted-foreground" />}
+                            options={plans.map(p => ({ value: p.id, label: p.name }))}
                         />
 
                         {/* Role */}

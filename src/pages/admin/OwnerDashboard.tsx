@@ -105,8 +105,8 @@ export default function OwnerDashboard() {
                 <div className="p-4 bg-red-50 rounded-full">
                     <LockClosedIcon className="w-12 h-12 text-destructive" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Access Denied</h2>
-                <p className="text-gray-500 max-w-md">
+                <h2 className="text-2xl font-bold text-foreground dark:text-white">Access Denied</h2>
+                <p className="text-muted-foreground max-w-md">
                     This area is restricted to Super Administrators (Owners).
                     <br />Error: {error}
                 </p>
@@ -134,20 +134,20 @@ export default function OwnerDashboard() {
                         GOD MODE
                     </span>
                 </div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">
                     Financial intelligence, strategic growth, and system integrity.
                 </p>
             </div>
 
             {/* Financial Pulse Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-xl shadow-brand-500/5 relative overflow-hidden group">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-border dark:border-gray-700 shadow-xl shadow-brand-500/5 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                         <BanknotesIcon className="w-24 h-24 text-brand-600" />
                     </div>
                     <div className="relative">
-                        <div className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Monthly Recurring Revenue</div>
-                        <div className="text-4xl font-black text-gray-900 dark:text-white mb-2">
+                        <div className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">Monthly Recurring Revenue</div>
+                        <div className="text-4xl font-black text-foreground dark:text-white mb-2">
                             ₪{metrics?.mrr?.toLocaleString()}
                         </div>
                         <div className="flex items-center gap-1 text-xs font-bold text-emerald-500">
@@ -158,13 +158,13 @@ export default function OwnerDashboard() {
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm relative overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-border dark:border-gray-700 shadow-sm relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-4 opacity-5">
                         <UsersIcon className="w-24 h-24 text-primary" />
                     </div>
                     <div className="relative">
-                        <div className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Active Subscribers</div>
-                        <div className="text-4xl font-black text-gray-900 dark:text-white mb-2">
+                        <div className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">Active Subscribers</div>
+                        <div className="text-4xl font-black text-foreground dark:text-white mb-2">
                             {metrics?.active_subscribers}
                         </div>
                         <div className="text-xs font-bold text-primary">
@@ -173,13 +173,13 @@ export default function OwnerDashboard() {
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm relative overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-border dark:border-gray-700 shadow-sm relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-4 opacity-5">
-                        <UsersIcon className="w-24 h-24 text-blue-600" />
+                        <UsersIcon className="w-24 h-24 text-primary" />
                     </div>
                     <div className="relative">
-                        <div className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Total Users</div>
-                        <div className="text-4xl font-black text-gray-900 dark:text-white mb-2">
+                        <div className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">Total Users</div>
+                        <div className="text-4xl font-black text-foreground dark:text-white mb-2">
                             {metrics?.total_users}
                         </div>
                         <div className="text-xs font-bold text-primary">
@@ -188,16 +188,16 @@ export default function OwnerDashboard() {
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm relative overflow-hidden">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-border dark:border-gray-700 shadow-sm relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-4 opacity-5">
                         <ServerIcon className="w-24 h-24 text-emerald-600" />
                     </div>
                     <div className="relative">
-                        <div className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">System Health</div>
+                        <div className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">System Health</div>
                         <div className="text-4xl font-black text-emerald-500 mb-2">
                             100%
                         </div>
-                        <div className="text-xs font-bold text-gray-400">
+                        <div className="text-xs font-bold text-muted-foreground">
                             All Systems Operational
                         </div>
                     </div>
@@ -207,8 +207,8 @@ export default function OwnerDashboard() {
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Growth Chart */}
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm">
-                    <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight mb-6">User Growth & Revenue</h3>
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-border dark:border-gray-700 shadow-sm">
+                    <h3 className="text-sm font-black text-foreground dark:text-white uppercase tracking-tight mb-6">User Growth & Revenue</h3>
                     <div className="h-64 w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={growthData}>
@@ -228,7 +228,7 @@ export default function OwnerDashboard() {
 
                 {/* Quick Actions / System Status */}
                 <div className="space-y-6">
-                    <div className="bg-gray-900 text-white p-6 rounded-3xl shadow-2xl relative overflow-hidden">
+                    <div className="bg-foreground text-white p-6 rounded-3xl shadow-2xl relative overflow-hidden">
                         <div className="relative z-10">
                             <h3 className="text-lg font-black uppercase tracking-tight mb-2">Technical Infrastructure</h3>
                             <div className="space-y-3">
@@ -242,7 +242,7 @@ export default function OwnerDashboard() {
                                     </div>
                                     <div className="space-y-2">
                                         <div className="flex justify-between text-xs font-bold">
-                                            <span className="text-gray-400">STORAGE USAGE ({metrics?.storage?.total_mb?.toFixed(1) || '0'} MB)</span>
+                                            <span className="text-muted-foreground">STORAGE USAGE ({metrics?.storage?.total_mb?.toFixed(1) || '0'} MB)</span>
                                             <span className="text-white">{metrics?.storage?.total_mb ? ((metrics.storage.total_mb / 5000) * 100).toFixed(1) : '0'}%</span>
                                         </div>
                                         <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden flex">
@@ -258,11 +258,11 @@ export default function OwnerDashboard() {
                                         <div className="flex gap-4 pt-1">
                                             <div className="flex items-center gap-1.5">
                                                 <div className="w-1.5 h-1.5 rounded-full bg-brand-500"></div>
-                                                <span className="text-[8px] font-black uppercase text-gray-400">Media ({metrics?.storage?.media_mb?.toFixed(1)} MB)</span>
+                                                <span className="text-[8px] font-black uppercase text-muted-foreground">Media ({metrics?.storage?.media_mb?.toFixed(1)} MB)</span>
                                             </div>
                                             <div className="flex items-center gap-1.5">
                                                 <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
-                                                <span className="text-[8px] font-black uppercase text-gray-400">Docs ({metrics?.storage?.docs_mb?.toFixed(1)} MB)</span>
+                                                <span className="text-[8px] font-black uppercase text-muted-foreground">Docs ({metrics?.storage?.docs_mb?.toFixed(1)} MB)</span>
                                             </div>
                                         </div>
                                     </div>
@@ -280,7 +280,7 @@ export default function OwnerDashboard() {
                                         )}
                                     >
                                         <div className="flex justify-between items-center">
-                                            <ShieldCheckIcon className={cn("w-5 h-5", metrics?.system_status?.maintenance_mode ? "text-white" : "text-slate-500 dark:text-gray-500")} />
+                                            <ShieldCheckIcon className={cn("w-5 h-5", metrics?.system_status?.maintenance_mode ? "text-white" : "text-slate-500 dark:text-muted-foreground")} />
                                             {toggling === 'maintenance_mode' && <Loader2 className="w-3 h-3 animate-spin" />}
                                         </div>
                                         <div className="text-xs font-black uppercase tracking-widest">Maintenance Control</div>
@@ -300,7 +300,7 @@ export default function OwnerDashboard() {
                                         )}
                                     >
                                         <div className="flex justify-between items-center">
-                                            <ServerIcon className={cn("w-5 h-5", metrics?.system_status?.ai_disabled ? "text-white" : "text-slate-500 dark:text-gray-500")} />
+                                            <ServerIcon className={cn("w-5 h-5", metrics?.system_status?.ai_disabled ? "text-white" : "text-slate-500 dark:text-muted-foreground")} />
                                             {toggling === 'disable_ai_processing' && <Loader2 className="w-3 h-3 animate-spin" />}
                                         </div>
                                         <div className="text-xs font-black uppercase tracking-widest">AI Kill-Switch</div>
@@ -316,17 +316,17 @@ export default function OwnerDashboard() {
                         <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-primary/30 rounded-full blur-3xl"></div>
                     </div>
 
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm relative overflow-hidden group">
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-border dark:border-gray-700 shadow-sm relative overflow-hidden group">
                         <div className="flex justify-between items-start mb-4">
                             <div>
-                                <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">Active Broadcasts</h3>
-                                <p className="text-xs text-gray-500 uppercase font-bold mt-1">Global System Messages</p>
+                                <h3 className="text-sm font-black text-foreground dark:text-white uppercase tracking-tight">Active Broadcasts</h3>
+                                <p className="text-xs text-muted-foreground uppercase font-bold mt-1">Global System Messages</p>
                             </div>
                             <MegaphoneIcon className="w-6 h-6 text-brand-600" />
                         </div>
 
                         <div className="flex items-end justify-between">
-                            <div className="text-4xl font-black text-gray-900 dark:text-white">
+                            <div className="text-4xl font-black text-foreground dark:text-white">
                                 {activeBroadcasts}
                             </div>
                             <Link
@@ -340,8 +340,8 @@ export default function OwnerDashboard() {
                         <div className="absolute -bottom-4 -right-4 w-16 h-16 bg-brand-500/5 rounded-full group-hover:scale-150 transition-transform"></div>
                     </div>
 
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm">
-                        <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight mb-4">Admin Privileges</h3>
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-border dark:border-gray-700 shadow-sm">
+                        <h3 className="text-sm font-black text-foreground dark:text-white uppercase tracking-tight mb-4">Admin Privileges</h3>
                         <div className="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-100 dark:border-amber-800">
                             <ShieldCheckIcon className="w-6 h-6 text-amber-600" />
                             <div>

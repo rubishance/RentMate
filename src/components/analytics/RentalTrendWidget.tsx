@@ -65,7 +65,7 @@ export const RentalTrendWidget: React.FC = () => {
     if (isLoading) {
         return (
             <GlassCard className="h-[200px] flex items-center justify-center animate-pulse">
-                <div className="text-gray-400">{t('loading')}...</div>
+                <div className="text-muted-foreground">{t('loading')}...</div>
             </GlassCard>
         );
     }
@@ -75,7 +75,7 @@ export const RentalTrendWidget: React.FC = () => {
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <TrendingUp className="h-5 w-5 text-brand-500" />
-                    <h3 className="font-semibold text-gray-900 dark:text-white">
+                    <h3 className="font-semibold text-foreground dark:text-white">
                         {t('marketIntelligence')}
                     </h3>
                 </div>
@@ -91,9 +91,9 @@ export const RentalTrendWidget: React.FC = () => {
             </div>
 
             {pinnedCities.length === 0 ? (
-                <GlassCard className="p-8 text-center border-dashed border-2 border-gray-200 dark:border-gray-800">
+                <GlassCard className="p-8 text-center border-dashed border-2 border-border dark:border-gray-800">
                     <MapPin className="h-10 w-10 text-gray-300 mx-auto mb-3" />
-                    <p className="text-gray-500 dark:text-gray-400 mb-4">
+                    <p className="text-muted-foreground dark:text-muted-foreground mb-4">
                         {t('noCitiesPinnedDescription')}
                     </p>
                     <Button onClick={() => setIsManageModalOpen(true)}>
@@ -115,13 +115,13 @@ export const RentalTrendWidget: React.FC = () => {
                                 className="p-4 hover:shadow-lg transition-all border-l-4 border-l-brand-500"
                             >
                                 <div className="flex justify-between items-start mb-2">
-                                    <div className="font-medium text-gray-900 dark:text-white flex items-center gap-1">
-                                        <Map className="h-3 w-3 text-gray-400" />
+                                    <div className="font-medium text-foreground dark:text-white flex items-center gap-1">
+                                        <Map className="h-3 w-3 text-muted-foreground" />
                                         {t(pinned.city)}
                                     </div>
                                     <button
                                         onClick={() => removeCityCard(index)}
-                                        className="text-gray-400 hover:text-destructive transition-colors"
+                                        className="text-muted-foreground hover:text-destructive transition-colors"
                                     >
                                         <X className="h-4 w-4" />
                                     </button>
@@ -129,7 +129,7 @@ export const RentalTrendWidget: React.FC = () => {
 
                                 <div className="flex items-end justify-between">
                                     <div>
-                                        <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                                        <div className="text-2xl font-bold text-foreground dark:text-white">
                                             ₪{Math.round(adjustedRent).toLocaleString()}
                                         </div>
                                         <div className="flex items-center gap-2 mt-1">
@@ -151,7 +151,7 @@ export const RentalTrendWidget: React.FC = () => {
                                         {Math.abs(data.annualGrowth)}%
                                     </div>
                                 </div>
-                                <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-between text-sm text-gray-400">
+                                <div className="mt-3 pt-3 border-t border-border dark:border-gray-800 flex justify-between text-sm text-muted-foreground">
                                     <span>5Y: {data.historical['5Y']}%</span>
                                     <span>MoM: {data.monthOverMonth}%</span>
                                 </div>
@@ -169,20 +169,20 @@ export const RentalTrendWidget: React.FC = () => {
             >
                 <div className="space-y-4">
                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <input
                             type="text"
                             placeholder={t('searchCities')}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none"
+                            className="w-full pl-10 pr-4 py-2 bg-secondary dark:bg-foreground border border-border dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none"
                         />
                     </div>
 
                     <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2">
                         {pinnedCities.length > 0 && (
                             <div>
-                                <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                                <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                                     {t('currentlyTracking')}
                                 </h4>
                                 <div className="flex flex-wrap gap-2">
@@ -202,7 +202,7 @@ export const RentalTrendWidget: React.FC = () => {
                         )}
 
                         <div>
-                            <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                            <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                                 {t('availableCities')}
                             </h4>
                             <div className="grid grid-cols-2 gap-2">
@@ -211,14 +211,14 @@ export const RentalTrendWidget: React.FC = () => {
                                         <button
                                             key={city}
                                             onClick={() => addCity(city)}
-                                            className="flex items-center justify-between p-2 rounded-lg border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left text-sm"
+                                            className="flex items-center justify-between p-2 rounded-lg border border-border dark:border-gray-800 hover:bg-secondary dark:hover:bg-gray-800 transition-colors text-left text-sm"
                                         >
                                             <span className="text-gray-700 dark:text-gray-300">{t(city)}</span>
-                                            <Plus className="h-3 w-3 text-gray-400" />
+                                            <Plus className="h-3 w-3 text-muted-foreground" />
                                         </button>
                                     ))
                                 ) : (
-                                    <div className="col-span-2 text-center py-4 text-gray-400 text-sm">
+                                    <div className="col-span-2 text-center py-4 text-muted-foreground text-sm">
                                         {t('noResultsFound')}
                                     </div>
                                 )}
@@ -226,7 +226,7 @@ export const RentalTrendWidget: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="flex justify-end pt-4 border-t border-gray-100 dark:border-gray-800">
+                    <div className="flex justify-end pt-4 border-t border-border dark:border-gray-800">
                         <Button onClick={() => setIsManageModalOpen(false)}>
                             {t('done')}
                         </Button>
