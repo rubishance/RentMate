@@ -101,7 +101,7 @@ export function ActivityWidget() {
                     <Users className="w-6 h-6 text-primary" />
                 </div>
                 <div>
-                    <h2 className="text-2xl font-black text-foreground tracking-tight lowercase">
+                    <h2 className="text-xl font-black text-foreground tracking-tight lowercase">
                         {/* {t('userActivity') || 'User Activity'} */}
                         user activity
                     </h2>
@@ -114,7 +114,7 @@ export function ActivityWidget() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* DAU Chart */}
                 <div className="glass-premium dark:bg-neutral-900/40 border-white/5 rounded-[2.5rem] p-8 shadow-minimal">
-                    <h3 className="text-lg font-black text-foreground mb-6 flex items-center gap-2 lowercase">
+                    <h3 className="text-xl font-black text-foreground mb-6 flex items-center gap-2 lowercase">
                         <Users className="w-4 h-4 text-emerald-500" />
                         daily active users
                     </h3>
@@ -143,7 +143,7 @@ export function ActivityWidget() {
 
                 {/* Page Views Chart */}
                 <div className="glass-premium dark:bg-neutral-900/40 border-white/5 rounded-[2.5rem] p-8 shadow-minimal">
-                    <h3 className="text-lg font-black text-foreground mb-6 flex items-center gap-2 lowercase">
+                    <h3 className="text-xl font-black text-foreground mb-6 flex items-center gap-2 lowercase">
                         <Eye className="w-4 h-4 text-primary" />
                         page views trend
                     </h3>
@@ -179,7 +179,7 @@ export function ActivityWidget() {
 
             {/* Top Pages List */}
             <div className="glass-premium dark:bg-neutral-900/40 border-white/5 rounded-[2.5rem] p-8 shadow-minimal">
-                <h3 className="text-lg font-black text-foreground mb-6 flex items-center gap-2 lowercase">
+                <h3 className="text-xl font-black text-foreground mb-6 flex items-center gap-2 lowercase">
                     <TrendingUp className="w-4 h-4 text-amber-500" />
                     most visited pages
                 </h3>

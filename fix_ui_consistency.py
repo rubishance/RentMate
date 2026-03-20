@@ -17,6 +17,8 @@ REPLACEMENTS = {
     r'bg-gray-50(?!/)': 'bg-secondary',
     r'bg-gray-100(?!/)': 'bg-muted',
     r'bg-gray-900': 'bg-foreground',
+    r'bg-purple-\d+': 'bg-primary',
+    r'bg-violet-\d+': 'bg-primary',
     
     # Text colors
     r'text-blue-600': 'text-primary',
@@ -25,11 +27,15 @@ REPLACEMENTS = {
     r'text-gray-500': 'text-muted-foreground',
     r'text-gray-600': 'text-muted-foreground',
     r'text-gray-400': 'text-muted-foreground',
+    r'text-purple-\d+': 'text-primary',
+    r'text-violet-\d+': 'text-primary',
     
     # Border colors
     r'border-gray-200': 'border-border',
     r'border-gray-100': 'border-border',
     r'border-blue-500': 'border-primary',
+    r'border-purple-\d+': 'border-primary',
+    r'border-violet-\d+': 'border-primary',
     
     # Hover states
     r'hover:bg-blue-700': 'hover:bg-primary/90',
@@ -37,10 +43,16 @@ REPLACEMENTS = {
     r'hover:bg-blue-50': 'hover:bg-primary/5',
     r'hover:text-blue-600': 'hover:text-primary',
     r'hover:text-blue-700': 'hover:text-primary',
+    r'hover:bg-purple-\d+': 'hover:bg-primary/90',
+    r'hover:bg-violet-\d+': 'hover:bg-primary/90',
+    r'hover:text-purple-\d+': 'hover:text-primary',
+    r'hover:text-violet-\d+': 'hover:text-primary',
     
     # Focus states
-    r'focus:ring-blue-500': 'focus:ring-indigo-500',
-    r'focus:border-blue-500': 'focus:border-indigo-500',
+    r'focus:ring-blue-500': 'focus:ring-primary',
+    r'focus:border-blue-500': 'focus:border-primary',
+    r'focus:ring-purple-\d+': 'focus:ring-primary',
+    r'focus:ring-violet-\d+': 'focus:ring-primary',
 }
 
 def process_file(filepath):

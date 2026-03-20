@@ -86,7 +86,7 @@ export default function MFAChallenge() {
                 </div>
 
                 <form onSubmit={handleVerify} className="mt-8 space-y-6">
-                    <div className="rounded-md shadow-sm -space-y-px">
+                    <div className="rounded-lg shadow-sm -space-y-px">
                         <div>
                             <label htmlFor="code" className="sr-only">Authentication Code</label>
                             <div className="relative">
@@ -98,7 +98,7 @@ export default function MFAChallenge() {
                                     name="code"
                                     type="text"
                                     required
-                                    className="appearance-none rounded-md relative block w-full pl-10 px-3 py-2 border border-gray-300 placeholder-gray-500 text-foreground focus:outline-none focus:ring-brand-500 focus:border-brand-500 focus:z-10 sm:text-sm text-center tracking-widest text-2xl font-mono"
+                                    className="appearance-none rounded-lg relative block w-full pl-10 px-3 py-2 border border-gray-300 placeholder-gray-500 text-foreground focus:outline-none focus:ring-brand-500 focus:border-brand-500 focus:z-10 sm:text-sm text-center tracking-widest text-2xl font-mono"
                                     placeholder="000 000"
                                     value={code}
                                     onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
@@ -118,7 +118,7 @@ export default function MFAChallenge() {
                         <button
                             type="submit"
                             disabled={verifying || code.length !== 6}
-                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:opacity-50"
+                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:opacity-50"
                         >
                             {verifying ? (
                                 <Loader2 className="w-5 h-5 animate-spin" />

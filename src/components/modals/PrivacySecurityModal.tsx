@@ -101,14 +101,14 @@ export function PrivacySecurityModal({ isOpen, onClose }: PrivacySecurityModalPr
                             <h2 className="text-xl font-bold text-foreground dark:text-white">
                                 {t('privacySecurityTitle')}
                             </h2>
-                            <p className="text-sm text-muted-foreground dark:text-muted-foreground">
+                            <p className="text-base text-muted-foreground dark:text-muted-foreground">
                                 {t('privacySecuritySubtitle')}
                             </p>
                         </div>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 hover:bg-muted dark:hover:bg-gray-700 rounded-lg transition-colors"
+                        className="p-2 hover:bg-muted dark:hover:bg-gray-700 rounded-xl transition-colors"
                     >
                         <X className="w-5 h-5 text-muted-foreground" />
                     </button>
@@ -130,10 +130,10 @@ export function PrivacySecurityModal({ isOpen, onClose }: PrivacySecurityModalPr
                                 <h4 className="font-medium text-primary-900 dark:text-primary-100 mb-1">
                                     {t('aiAnalysisTitle')}
                                 </h4>
-                                <p className="text-sm text-primary">
+                                <p className="text-base text-primary">
                                     {t('aiAnalysisDesc')}
                                     <span className='block mt-1 font-semibold'>{t('aiAnalysisRequiredFor')}</span>
-                                    <span className='block mt-2 text-xs opacity-80 italic'>
+                                    <span className='block mt-2 text-sm opacity-80 italic'>
                                         {t('aiAnalysisDisclaimer')}
                                     </span>
                                 </p>
@@ -175,7 +175,7 @@ export function PrivacySecurityModal({ isOpen, onClose }: PrivacySecurityModalPr
                             <div className="space-y-4 p-4 bg-secondary dark:bg-foreground rounded-xl">
                                 {/* New Password */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <label className="block text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
                                         {t('newPassword')}
                                     </label>
                                     <div className="relative">
@@ -198,7 +198,7 @@ export function PrivacySecurityModal({ isOpen, onClose }: PrivacySecurityModalPr
 
                                 {/* Confirm Password */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <label className="block text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
                                         {t('confirmPassword')}
                                     </label>
                                     <input
@@ -211,11 +211,11 @@ export function PrivacySecurityModal({ isOpen, onClose }: PrivacySecurityModalPr
                                 </div>
 
                                 {passwordError && (
-                                    <p className="text-sm text-destructive">{passwordError}</p>
+                                    <p className="text-base text-destructive">{passwordError}</p>
                                 )}
 
                                 {passwordSuccess && (
-                                    <p className="text-sm text-secondary">
+                                    <p className="text-base text-secondary">
                                         {t('passwordChangedSuccess')}
                                     </p>
                                 )}
@@ -255,7 +255,7 @@ export function PrivacySecurityModal({ isOpen, onClose }: PrivacySecurityModalPr
                         <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-4">
                             <div className="flex gap-3">
                                 <AlertTriangle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
-                                <div className="text-sm text-orange-800 dark:text-orange-200">
+                                <div className="text-base text-orange-800 dark:text-orange-200">
                                     <p className="font-semibold mb-2">
                                         {t('deletionProcessTitle')}
                                     </p>

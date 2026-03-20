@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { AddUserModal } from '../../components/modals/AddUserModal';
 import { useScrollLock } from '../../hooks/useScrollLock';
@@ -67,6 +67,8 @@ interface SecurityLog {
 
 const UserManagement = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    
     const [users, setUsers] = useState<UserWithStats[]>([]);
     const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
     const [loading, setLoading] = useState(true);
@@ -74,7 +76,7 @@ const UserManagement = () => {
     const [columnFilters, setColumnFilters] = useState({
         name: '',
         role: 'all',
-        plan: 'all',
+        plan: searchParams.get('plan') || 'all',
         status: 'all',
     });
 
@@ -446,17 +448,17 @@ const UserManagement = () => {
 
     if (loading) return (
         <div className="flex h-96 items-center justify-center">
-            <Loader2 className="w-10 h-10 animate-spin text-brand-600" />
+            <Loader2 className="w-10 h-10 animate-spin text-primary-600" />
         </div>
     );
 
     return (
-        <div className="space-y-8 pb-20">
+        <div className="space-y-8">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-extrabold text-foreground dark:text-white tracking-tight flex items-center gap-2">
-                        <UserIcon className="w-8 h-8 text-brand-600" />
+                        <UserIcon className="w-8 h-8 text-primary-600" />
                         User Management
                     </h1>
                     <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground mt-1">
@@ -467,16 +469,10 @@ const UserManagement = () => {
                     <Button
                         variant="outline"
                         onClick={fetchData}
-                        className="p-2.5 bg-white dark:bg-gray-800 rounded-xl border-border dark:border-gray-700 shadow-sm hover:bg-secondary dark:hover:bg-gray-700 h-auto"
+                        className="p-2.5 bg-white dark:bg-gray-800 rounded-xl border-border dark:border-gray-700 shadow-sm hover:bg-blue-50 dark:hover:bg-gray-700 h-auto"
                         title="Refresh List"
                     >
                         <ArrowPathIcon className="w-6 h-6 text-muted-foreground dark:text-muted-foreground" />
-                    </Button>
-                    <Button
-                        onClick={() => setIsAddModalOpen(true)}
-                        className="inline-flex items-center justify-center rounded-xl bg-brand-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-brand-600/20 hover:bg-brand-700 transition-all"
-                    >
-                        Add New User
                     </Button>
                 </div>
             </div>
@@ -494,13 +490,13 @@ const UserManagement = () => {
             {/* Filters Header Summary (Optional, but we'll focus on the column filters) */}
             <div className="flex items-center justify-between gap-4 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-border dark:border-gray-700">
                 <div className="flex items-center gap-2">
-                    <FunnelIcon className="h-5 w-5 text-brand-600" />
+                    <FunnelIcon className="h-5 w-5 text-primary-600" />
                     <span className="text-sm font-black text-foreground dark:text-white uppercase tracking-widest">Active Filters:</span>
                     <div className="flex gap-2">
                         {Object.entries(columnFilters).map(([key, value]) => {
                             if (value === 'all' || value === '') return null;
                             return (
-                                <span key={key} className="px-2 py-1 bg-brand-50 text-brand-700 rounded-lg text-xs font-black uppercase border border-brand-100 flex items-center gap-1">
+                                <span key={key} className="px-2 py-1 bg-primary-50 text-primary-700 rounded-xl text-xs font-black uppercase border border-primary-100 flex items-center gap-1">
                                     {key}: {value}
                                     <button onClick={() => setColumnFilters({ ...columnFilters, [key]: key === 'name' ? '' : 'all' })}><XMarkIcon className="w-3 h-3" /></button>
                                 </span>
@@ -513,7 +509,7 @@ const UserManagement = () => {
                     variant="link"
                     size="sm"
                     onClick={() => setColumnFilters({ name: '', role: 'all', plan: 'all', status: 'all' })}
-                    className="text-xs font-black text-brand-600 uppercase tracking-widest hover:underline h-auto p-0"
+                    className="text-xs font-black text-primary-600 uppercase tracking-widest hover:underline h-auto p-0"
                 >
                     Clear All
                 </Button>
@@ -523,13 +519,13 @@ const UserManagement = () => {
             <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border dark:border-gray-700 shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-right" dir="rtl">
-                        <thead className="bg-secondary dark:bg-foreground/50">
+                        <thead className="bg-blue-50 dark:bg-foreground/50">
                             <tr>
                                 <th scope="col" className="py-4 pl-3 pr-4 sm:pr-6 whitespace-nowrap w-4">
                                     <div className="flex items-center">
                                         <input
                                             type="checkbox"
-                                            className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-600 dark:border-gray-600 dark:bg-gray-800"
+                                            className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-600 dark:border-gray-600 dark:bg-gray-800"
                                             checked={isAllSelected}
                                             ref={(input) => {
                                                 if (input) {
@@ -609,12 +605,12 @@ const UserManagement = () => {
                                 </tr>
                             ) : (
                                 filteredUsers.map((user) => (
-                                    <tr key={user.id} className={`transition-colors ${selectedUserIds.includes(user.id) ? 'bg-brand-50/50 dark:bg-brand-900/10' : 'hover:bg-secondary dark:hover:bg-gray-700/50'}`}>
+                                    <tr key={user.id} className={`transition-colors ${selectedUserIds.includes(user.id) ? 'bg-primary-50/50 dark:bg-primary-900/10' : 'hover:bg-blue-50 dark:hover:bg-gray-700/50'}`}>
                                         <td className="whitespace-nowrap py-5 pl-3 pr-4 sm:pr-6">
                                             <div className="flex items-center">
                                                 <input
                                                     type="checkbox"
-                                                    className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-600 dark:border-gray-600 dark:bg-gray-800"
+                                                    className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-600 dark:border-gray-600 dark:bg-gray-800"
                                                     checked={selectedUserIds.includes(user.id)}
                                                     onChange={() => handleSelectUser(user.id)}
                                                 />
@@ -622,10 +618,10 @@ const UserManagement = () => {
                                         </td>
                                         <td className="whitespace-nowrap py-5 pr-3 pl-3 text-sm">
                                             <div className="flex items-center gap-4">
-                                                <div className="h-10 w-10 flex-shrink-0 rounded-xl bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-800 flex items-center justify-center text-brand-600 dark:text-brand-400 font-black relative">
+                                                <div className="h-10 w-10 flex-shrink-0 rounded-xl bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800 flex items-center justify-center text-primary-600 dark:text-primary-400 font-black relative">
                                                     {user.full_name?.charAt(0) || user.email?.charAt(0).toUpperCase()}
                                                     {user.open_tickets_count > 0 && (
-                                                        <span className="absolute -top-1 -right-1 h-4 w-4 bg-rose-500 text-white text-[8px] font-black flex items-center justify-center rounded-full border-2 border-white dark:border-gray-800">
+                                                        <span className="absolute -top-1 -right-1 h-4 w-4 bg-rose-500 text-white text-xs font-black flex items-center justify-center rounded-full border-2 border-white dark:border-gray-800">
                                                             {user.open_tickets_count}
                                                         </span>
                                                     )}
@@ -633,16 +629,16 @@ const UserManagement = () => {
                                                 <div>
                                                     <div className="font-bold text-foreground dark:text-white flex items-center gap-2">
                                                         {user.full_name || 'No Name'}
-                                                        {user.is_super_admin && <span className="text-[8px] bg-amber-100 text-amber-700 px-1 rounded font-black uppercase">SA</span>}
+                                                        {user.is_super_admin && <span className="text-xs bg-amber-100 text-amber-700 px-1 rounded font-black uppercase">SA</span>}
                                                     </div>
                                                     <div className="text-xs font-medium text-muted-foreground tracking-tight">{user.email}</div>
-                                                    {user.phone && <div className="text-xs font-bold text-brand-600 tracking-tight mt-0.5">{user.phone}</div>}
+                                                    {user.phone && <div className="text-xs font-bold text-primary-600 tracking-tight mt-0.5">{user.phone}</div>}
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="whitespace-nowrap px-3 py-5">
                                             <div className="flex flex-col gap-1">
-                                                <span className={`inline-flex w-fit rounded-lg px-2 py-0.5 text-[11px] font-black uppercase tracking-widest ${user.role === 'admin' ? 'bg-primary-50 text-primary-700 border border-primary-100 dark:bg-primary-900/20 dark:border-primary-800' : 'bg-muted text-gray-700 dark:bg-gray-700 dark:text-gray-300'}`}>
+                                                <span className={`inline-flex w-fit rounded-xl px-2 py-0.5 text-xs font-black uppercase tracking-widest ${user.role === 'admin' ? 'bg-primary-50 text-primary-700 border border-primary-100 dark:bg-primary-900/20 dark:border-primary-800' : 'bg-muted text-gray-700 dark:bg-gray-700 dark:text-gray-300'}`}>
                                                     {user.role}
                                                 </span>
                                                 <span className="text-xs font-bold text-primary uppercase tracking-widest">
@@ -659,7 +655,7 @@ const UserManagement = () => {
                                         </td>
                                         <td className="whitespace-nowrap px-3 py-5 text-right">
                                             <div className="flex flex-col gap-1 text-xs font-black uppercase">
-                                                <div className="text-muted-foreground flex justify-between gap-4">STORAGE: <span className="text-emerald-600">{user.storage_usage_mb || 0} MB</span></div>
+                                                <div className="text-muted-foreground flex justify-between gap-4">STORAGE: <span className="text-blue-600">{user.storage_usage_mb || 0} MB</span></div>
                                                 <div className="text-muted-foreground flex justify-between gap-4">AI SESS: <span className="text-primary">{user.ai_sessions_count || 0}</span></div>
                                             </div>
                                         </td>
@@ -668,16 +664,16 @@ const UserManagement = () => {
                                                 {user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never'}
                                             </div>
                                             {user.last_login && (
-                                                <div className="text-[11px] text-muted-foreground font-medium">
+                                                <div className="text-xs text-muted-foreground font-medium">
                                                     {new Date(user.last_login).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                 </div>
                                             )}
                                         </td>
                                         <td className="whitespace-nowrap px-3 py-5">
                                             {user.subscription_status === 'active' ? (
-                                                <span className="inline-flex rounded-lg bg-emerald-50 px-2.5 py-0.5 text-xs font-black uppercase tracking-widest text-emerald-700 border border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800">Active</span>
+                                                <span className="inline-flex rounded-xl bg-blue-50 px-2.5 py-0.5 text-xs font-black uppercase tracking-widest text-blue-700 border border-blue-100 dark:bg-blue-900/20 dark:border-blue-800">Active</span>
                                             ) : (
-                                                <span className="inline-flex rounded-lg bg-red-50 px-2.5 py-0.5 text-xs font-black uppercase tracking-widest text-red-700 border border-red-100 dark:bg-red-900/20 dark:border-red-800">{user.subscription_status || 'Suspended'}</span>
+                                                <span className="inline-flex rounded-xl bg-red-50 px-2.5 py-0.5 text-xs font-black uppercase tracking-widest text-red-700 border border-red-100 dark:bg-red-900/20 dark:border-red-800">{user.subscription_status || 'Suspended'}</span>
                                             )}
                                         </td>
                                         <td className="whitespace-nowrap py-5 pl-6 pr-3 text-left">
@@ -686,7 +682,7 @@ const UserManagement = () => {
                                                     variant="ghost"
                                                     size="sm"
                                                     onClick={() => navigate(`/admin/client/${user.id}`)}
-                                                    className="p-2 text-muted-foreground hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 rounded-xl transition-all h-auto"
+                                                    className="p-2 text-muted-foreground hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition-all h-auto"
                                                     title="Client Hub (CRM & Messaging)"
                                                 >
                                                     <UserCircleIcon className="w-5 h-5" />
@@ -695,7 +691,7 @@ const UserManagement = () => {
                                                     variant="ghost"
                                                     size="sm"
                                                     onClick={() => openEditModal(user)}
-                                                    className="p-2 text-muted-foreground hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 rounded-xl transition-all h-auto"
+                                                    className="p-2 text-muted-foreground hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition-all h-auto"
                                                     title="Edit Account Settings"
                                                 >
                                                     <PencilSquareIcon className="w-5 h-5" />
@@ -746,7 +742,7 @@ const UserManagement = () => {
                         </div>
 
                         {modalMessage && (
-                            <div className={`mb-6 p-4 rounded-2xl text-sm font-bold ${modalMessage.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-700 border border-red-100'}`}>
+                            <div className={`mb-6 p-4 rounded-2xl text-sm font-bold ${modalMessage.type === 'success' ? 'bg-blue-50 text-blue-700 border border-blue-100' : 'bg-red-50 text-red-700 border border-red-100'}`}>
                                 {modalMessage.text}
                             </div>
                         )}
@@ -793,8 +789,8 @@ const UserManagement = () => {
                                 />
                             </div>
 
-                            <div className="bg-brand-50/30 dark:bg-brand-900/10 rounded-2xl p-6 border border-brand-100 dark:border-brand-800">
-                                <h4 className="text-xs font-black text-brand-600 dark:text-brand-400 uppercase tracking-widest mb-4">System Analytics</h4>
+                            <div className="bg-primary-50/30 dark:bg-primary-900/10 rounded-2xl p-6 border border-primary-100 dark:border-primary-800">
+                                <h4 className="text-xs font-black text-primary-600 dark:text-primary-400 uppercase tracking-widest mb-4">System Analytics</h4>
                                 <div className="grid grid-cols-2 gap-y-4 gap-x-8">
                                     <div className="flex justify-between items-center text-xs">
                                         <span className="font-bold text-muted-foreground uppercase tracking-tighter">Total Assets</span>
@@ -810,23 +806,23 @@ const UserManagement = () => {
                                     </div>
                                     <div className="flex justify-between items-center text-xs">
                                         <span className="font-bold text-muted-foreground uppercase tracking-tighter">Cloud Usage</span>
-                                        <span className="font-black text-emerald-600">{selectedUser.storage_usage_mb || 0} MB</span>
+                                        <span className="font-black text-blue-600">{selectedUser.storage_usage_mb || 0} MB</span>
                                     </div>
-                                    <div className="col-span-2 pt-2 border-t border-brand-100 dark:border-brand-800 flex justify-between items-center text-xs">
+                                    <div className="col-span-2 pt-2 border-t border-primary-100 dark:border-primary-800 flex justify-between items-center text-xs">
                                         <span className="font-bold text-muted-foreground uppercase tracking-tighter">Joined Date</span>
                                         <span className="font-black text-foreground dark:text-white">{new Date(selectedUser.created_at).toLocaleDateString()}</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="bg-secondary dark:bg-foreground rounded-2xl p-6 border border-border dark:border-gray-700">
+                            <div className="bg-blue-50 dark:bg-foreground rounded-2xl p-6 border border-border dark:border-gray-700">
                                 <h4 className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-4">Danger Zone</h4>
                                 <div className="space-y-3">
                                     <Button
                                         variant="outline"
                                         onClick={handleResetPassword}
                                         disabled={actionLoading}
-                                        className="w-full justify-center rounded-xl border-border dark:border-gray-700 px-4 py-2.5 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-secondary h-auto"
+                                        className="w-full justify-center rounded-xl border-border dark:border-gray-700 px-4 py-2.5 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-blue-50 h-auto"
                                     >
                                         Send Password Reset Email
                                     </Button>
@@ -846,7 +842,7 @@ const UserManagement = () => {
                                 <Button
                                     onClick={handleSaveChanges}
                                     disabled={actionLoading}
-                                    className="flex-1 justify-center rounded-2xl bg-brand-600 px-6 py-4 text-sm font-black text-white shadow-xl shadow-brand-600/20 hover:bg-brand-700 uppercase tracking-widest h-auto"
+                                    className="flex-1 justify-center rounded-2xl bg-primary-600 px-6 py-4 text-sm font-black text-white shadow-xl shadow-primary-600/20 hover:bg-primary-700 uppercase tracking-widest h-auto"
                                 >
                                     {actionLoading ? 'Saving...' : 'Save Changes'}
                                 </Button>
@@ -876,14 +872,14 @@ const UserManagement = () => {
 
                         <div className="max-h-[50vh] overflow-y-auto space-y-3 pr-2 custom-scrollbar">
                             {logsLoading ? (
-                                <div className="py-20 flex justify-center"><Loader2 className="animate-spin text-brand-600" /></div>
+                                <div className="py-20 flex justify-center"><Loader2 className="animate-spin text-primary-600" /></div>
                             ) : securityLogs.length === 0 ? (
-                                <div className="py-20 text-center text-sm font-bold text-muted-foreground uppercase tracking-widest bg-secondary dark:bg-foreground/50 rounded-2xl">No security events found.</div>
+                                <div className="py-20 text-center text-sm font-bold text-muted-foreground uppercase tracking-widest bg-blue-50 dark:bg-foreground/50 rounded-2xl">No security events found.</div>
                             ) : (
                                 securityLogs.map((log) => (
-                                    <div key={log.id} className="p-4 rounded-2xl bg-secondary dark:bg-foreground border border-border dark:border-gray-700 flex flex-col gap-2">
+                                    <div key={log.id} className="p-4 rounded-2xl bg-blue-50 dark:bg-foreground border border-border dark:border-gray-700 flex flex-col gap-2">
                                         <div className="flex items-center justify-between">
-                                            <span className={`px-2 py-0.5 rounded-lg text-xs font-black uppercase tracking-widest ${log.severity === 'critical' ? 'bg-red-100 text-red-700' :
+                                            <span className={`px-2 py-0.5 rounded-xl text-xs font-black uppercase tracking-widest ${log.severity === 'critical' ? 'bg-red-100 text-red-700' :
                                                 log.severity === 'high' ? 'bg-orange-100 text-orange-700' :
                                                     'bg-primary/10 text-blue-700'
                                                 }`}>
@@ -894,7 +890,7 @@ const UserManagement = () => {
                                         <div className="text-xs text-muted-foreground dark:text-muted-foreground font-medium whitespace-pre-wrap break-all">
                                             {JSON.stringify(log.details, null, 2)}
                                         </div>
-                                        <div className="flex items-center gap-4 mt-1 opacity-80 text-[11px] font-bold uppercase tracking-tighter">
+                                        <div className="flex items-center gap-4 mt-1 opacity-80 text-xs font-bold uppercase tracking-tighter">
                                             <span>IP: {log.ip_address || 'Unknown'}</span>
                                             <span>Severity: {log.severity}</span>
                                         </div>
@@ -934,7 +930,7 @@ const UserManagement = () => {
                         dir="ltr"
                     >
                         <div className="flex items-center gap-3 pr-6 border-r border-gray-700">
-                            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-brand-600 text-white font-black text-sm">
+                            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary-600 text-white font-black text-sm">
                                 {selectedUserIds.length}
                             </span>
                             <span className="text-sm font-bold text-gray-300">Selected</span>
@@ -1004,7 +1000,7 @@ const UserManagement = () => {
                         <Button variant="ghost" size="sm" onClick={() => setIsBulkStatusModalOpen(false)} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground dark:hover:text-white p-1 h-auto"><XMarkIcon className="h-5 w-5" /></Button>
                         <h3 className="text-xl font-black mb-4">Update Status ({selectedUserIds.length})</h3>
                         <div className="space-y-3">
-                            <Button onClick={() => handleBulkStatusChange('active')} disabled={actionLoading} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-12 rounded-xl">Set Active</Button>
+                            <Button onClick={() => handleBulkStatusChange('active')} disabled={actionLoading} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold h-12 rounded-xl">Set Active</Button>
                             <Button onClick={() => handleBulkStatusChange('suspended')} disabled={actionLoading} className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold h-12 rounded-xl">Set Suspended</Button>
                         </div>
                     </div>
@@ -1024,7 +1020,7 @@ const UserManagement = () => {
                             options={plans.map(p => ({ value: p.id, label: p.name }))}
                             className="w-full mb-6"
                         />
-                        <Button onClick={handleBulkPlanChange} disabled={actionLoading} className="w-full h-12 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold">Apply Plan</Button>
+                        <Button onClick={handleBulkPlanChange} disabled={actionLoading} className="w-full h-12 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-bold">Apply Plan</Button>
                     </div>
                 </div>
             )}
@@ -1064,11 +1060,11 @@ const UserManagement = () => {
                         <textarea
                             value={bulkBroadcastMessage}
                             onChange={(e) => setBulkBroadcastMessage(e.target.value)}
-                            className="w-full h-32 rounded-xl border border-border dark:border-gray-700 bg-white dark:bg-gray-800 p-3 text-sm focus:ring-2 focus:ring-brand-600 mb-4 outline-none resize-none font-medium"
+                            className="w-full h-32 rounded-xl border border-border dark:border-gray-700 bg-white dark:bg-gray-800 p-3 text-sm focus:ring-2 focus:ring-primary-600 mb-4 outline-none resize-none font-medium"
                             placeholder="Enter your message..."
                             dir="auto"
                         />
-                        <Button onClick={handleBulkBroadcast} disabled={actionLoading || !bulkBroadcastMessage.trim()} className="w-full h-12 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold">Send / Log Interaction</Button>
+                        <Button onClick={handleBulkBroadcast} disabled={actionLoading || !bulkBroadcastMessage.trim()} className="w-full h-12 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-bold">Send / Log Interaction</Button>
                     </div>
                 </div>
             )}

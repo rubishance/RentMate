@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RentMate - Custom Icons Preview (Exact Image)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+            background-color: #F8FAFC;
+            color: #0F172A;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 60px 20px;
+            margin: 0;
+            direction: rtl;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            color: #0F172A;
+            text-align: center;
+        }
+        p.subtitle {
+            color: #64748B;
+            font-size: 1.2rem;
+            margin-bottom: 60px;
+            text-align: center;
+            max-width: 600px;
+            line-height: 1.5;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 30px;
+            width: 100%;
+            max-width: 1100px;
+        }
+        .icon-card {
+            background: #FFFFFF;
+            border-radius: 24px;
+            padding: 50px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.06);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+            border: 1px solid #F1F5F9;
+            position: relative;
+        }
+        .icon-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px -15px rgba(0,0,0,0.12);
+            border-color: #E2E8F0;
+        }
+        .icon-title {
+            margin-top: 28px;
+            font-weight: 600;
+            font-size: 1.15rem;
+            color: #334155;
+            letter-spacing: -0.01em;
+        }
+        .icon-svg-container {
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            filter: drop-shadow(0px 8px 16px rgba(0,0,0,0.04));
+        }
+        .icon-card:hover .icon-svg-container {
+            transform: scale(1.1) rotate(2deg);
+        }
+        .card-desc {
+            font-size: 0.9rem;
+            color: #94A3B8;
+            margin-top: 8px;
+            text-align: center;
+        }
+        .badge {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background-color: #FEF3C7;
+            color: #D97706;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 999px;
+            letter-spacing: 0.05em;
+        }
+        .image-icon-wrapper {
+            width: 100px; 
+            height: 100px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            background: #FFFFFF; 
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #E2E8F0;
+        }
+        .image-icon-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>עיצוב אייקונים מותאמים אישית - הרצל Edition</h1>
+    <p class="subtitle">התמונה של הרצל בדיוק כמו שהעלת אותה, בלי שינויים!</p>
+
+    <div class="grid">
+        
+        <!-- 6. Balcony (Herzl - Processed Image) -->
+        <div class="icon-card">
+            <div class="badge">תמונה שהעלת ✨</div>
+            <div class="icon-svg-container image-icon-wrapper" style="background: rgba(79, 70, 229, 0.08);">
+                <img src="public/herzl_icon.png" alt="Herzl Icon" style="width: 70%; object-fit: contain;">
+            </div>
+            <div class="icon-title">מרפסת נכס</div>
+            <div class="card-desc">Your Exact Silhouette</div>
+        </div>
+
+        <!-- 2. Media -->
+        <div class="icon-card">
+            <div class="icon-svg-container">
+                <svg width="120" height="120" viewBox="0 0 100 100" fill="none">
+                    <defs>
+                        <linearGradient id="g-media" x1="0" y1="0" x2="100" y2="100">
+                            <stop offset="0%" stop-color="#3B82F6" />
+                            <stop offset="100%" stop-color="#1D4ED8" />
+                        </linearGradient>
+                    </defs>
+                    <rect x="0" y="0" width="100" height="100" rx="28" fill="rgba(59, 130, 246, 0.12)" />
+                    <rect x="26" y="22" width="56" height="52" rx="12" stroke="url(#g-media)" stroke-width="4" stroke-opacity="0.3" transform="rotate(6 54 48)" />
+                    <rect x="20" y="24" width="60" height="52" rx="14" stroke="url(#g-media)" stroke-width="7" fill="#F8FAFC" />
+                    <circle cx="36" cy="38" r="6" stroke="url(#g-media)" stroke-width="4" fill="none" />
+                    <path d="M22 62 L40 42 L52 56 L62 46 L78 64" stroke="url(#g-media)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                </svg>
+            </div>
+            <div class="icon-title">תמונה / גלריה</div>
+            <div class="card-desc">Image / Gallery</div>
+        </div>
+        
+        <!-- 7. Safe Room (Mamad) -->
+        <div class="icon-card">
+            <div class="icon-svg-container">
+                <svg width="120" height="120" viewBox="0 0 100 100" fill="none">
+                    <defs>
+                        <linearGradient id="g-mamad" x1="0" y1="0" x2="100" y2="100">
+                            <stop offset="0%" stop-color="#94A3B8" />
+                            <stop offset="100%" stop-color="#475569" />
+                        </linearGradient>
+                    </defs>
+                    <rect x="0" y="0" width="100" height="100" rx="28" fill="rgba(100, 116, 139, 0.12)" />
+                    <!-- Heavy Door Frame -->
+                    <rect x="28" y="18" width="44" height="64" rx="6" stroke="url(#g-mamad)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+                    <!-- Inner Door Panel -->
+                    <rect x="34" y="24" width="32" height="52" rx="3" stroke="url(#g-mamad)" stroke-width="3" />
+                    <!-- Locking Wheel -->
+                    <circle cx="50" cy="50" r="10" stroke="url(#g-mamad)" stroke-width="5" />
+                    <line x1="50" y1="38" x2="50" y2="62" stroke="url(#g-mamad)" stroke-width="4" stroke-linecap="round" />
+                    <line x1="38" y1="50" x2="62" y2="50" stroke="url(#g-mamad)" stroke-width="4" stroke-linecap="round" />
+                </svg>
+            </div>
+            <div class="icon-title">חדר ממ"ד / מוגן</div>
+            <div class="card-desc">Safe Room</div>
+        </div>
+
+        <!-- 1. Success -->
+        <div class="icon-card">
+            <div class="icon-svg-container">
+                <svg width="120" height="120" viewBox="0 0 100 100" fill="none">
+                    <defs>
+                        <linearGradient id="g-success" x1="0" y1="0" x2="100" y2="100">
+                            <stop offset="0%" stop-color="#34D399" />
+                            <stop offset="100%" stop-color="#059669" />
+                        </linearGradient>
+                    </defs>
+                    <rect x="0" y="0" width="100" height="100" rx="28" fill="rgba(16, 185, 129, 0.12)" />
+                    <circle cx="50" cy="50" r="24" stroke="url(#g-success)" stroke-width="7" />
+                    <path d="M40 51 L46 57 L60 43" stroke="url(#g-success)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </div>
+            <div class="icon-title">הצלחה / אישור</div>
+            <div class="card-desc">Success / Verified</div>
+        </div>
+
+        <!-- 3. Document -->
+        <div class="icon-card">
+            <div class="icon-svg-container">
+                <svg width="120" height="120" viewBox="0 0 100 100" fill="none">
+                    <defs>
+                        <linearGradient id="g-doc" x1="0" y1="0" x2="100" y2="100">
+                            <stop offset="0%" stop-color="#FB923C" />
+                            <stop offset="100%" stop-color="#EA580C" />
+                        </linearGradient>
+                    </defs>
+                    <rect x="0" y="0" width="100" height="100" rx="28" fill="rgba(249, 115, 22, 0.12)" />
+                    <path d="M34 18 H56 L72 34 V74 C72 78.418 68.418 82 64 82 H34 C29.582 82 26 78.418 26 74 V26 C26 21.582 29.582 18 34 18 Z" stroke="url(#g-doc)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M56 18 V34 H72" stroke="url(#g-doc)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+                    <line x1="40" y1="50" x2="58" y2="50" stroke="url(#g-doc)" stroke-width="6" stroke-linecap="round" />
+                    <line x1="40" y1="64" x2="50" y2="64" stroke="url(#g-doc)" stroke-width="6" stroke-linecap="round" />
+                </svg>
+            </div>
+            <div class="icon-title">מסמך / חוזה</div>
+            <div class="card-desc">Document / File</div>
+        </div>
+
+        <!-- 4. Security -->
+        <div class="icon-card">
+            <div class="icon-svg-container">
+                <svg width="120" height="120" viewBox="0 0 100 100" fill="none">
+                    <defs>
+                        <linearGradient id="g-sec" x1="0" y1="0" x2="100" y2="100">
+                            <stop offset="0%" stop-color="#2DD4BF" />
+                            <stop offset="100%" stop-color="#0D9488" />
+                        </linearGradient>
+                    </defs>
+                    <rect x="0" y="0" width="100" height="100" rx="28" fill="rgba(20, 184, 166, 0.12)" />
+                    <path d="M50 18 L24 28 V48 C24 66 36 80 50 86 C64 80 76 66 76 48 V28 L50 18 Z" stroke="url(#g-sec)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M40 52 L47 59 L60 44" stroke="url(#g-sec)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="icon-title">ביטחון / אחריות</div>
+            <div class="card-desc">Security / Guarantee</div>
+        </div>
+
+        <!-- 5. Money -->
+        <div class="icon-card">
+            <div class="icon-svg-container">
+                <svg width="120" height="120" viewBox="0 0 100 100" fill="none">
+                    <defs>
+                        <linearGradient id="g-money" x1="0" y1="0" x2="100" y2="100">
+                            <stop offset="0%" stop-color="#FB7185" />
+                            <stop offset="100%" stop-color="#E11D48" />
+                        </linearGradient>
+                    </defs>
+                    <rect x="0" y="0" width="100" height="100" rx="28" fill="rgba(244, 63, 94, 0.12)" />
+                    <rect x="18" y="32" width="64" height="36" rx="8" stroke="url(#g-money)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+                    <circle cx="50" cy="50" r="8" stroke="url(#g-money)" stroke-width="6" />
+                    <circle cx="32" cy="50" r="3" fill="url(#g-money)" />
+                    <circle cx="68" cy="50" r="3" fill="url(#g-money)" />
+                </svg>
+            </div>
+            <div class="icon-title">תשלום / כסף</div>
+            <div class="card-desc">Payment / Money</div>
+        </div>
+
+    </div>
+
+</body>
+</html>

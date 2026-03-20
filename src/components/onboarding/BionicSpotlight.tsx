@@ -139,7 +139,7 @@ export function BionicSpotlight({
                     >
                         <div className="w-[300px] glass-premium rounded-2xl shadow-jewel border border-white/20 overflow-hidden relative">
                             {/* Decorative gradient */}
-                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-violet-500" />
+                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-blue-500" />
 
                             <div className="p-4">
                                 <div className="flex justify-between items-start mb-2">

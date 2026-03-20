@@ -90,6 +90,30 @@ serve(async (req) => {
             errors.push(`CBS Selected Fetch Error: ${e instanceof Error ? e.message : String(e)}`);
         }
 
+        // 1.5 Fetch Housing Index specifically (120490) since it's missing from price_selected_b
+        try {
+            console.log('Fetching Housing Index from CBS (series 120490)...');
+            const housingUrl = 'https://api.cbs.gov.il/index/data/price?series=120490&format=json&download=false&last=2';
+            const resp = await fetchWithRetry(housingUrl, 3, 2000);
+            const json = await resp.json();
+            const points = json.month || json.data || [];
+            if (points.length > 0) {
+                // Sort by date descending
+                points.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                const latest = points[0];
+                results.push({
+                    index_type: 'housing',
+                    date: latest.date,
+                    value: parseFloat(latest.value),
+                    source: 'cbs'
+                });
+                console.log(`Parsed housing: ${latest.value} for ${latest.date}`);
+            }
+        } catch (e) {
+            console.error('Error fetching Housing Index directly:', e);
+            errors.push(`CBS Housing Fetch Error: ${e instanceof Error ? e.message : String(e)}`);
+        }
+
         // 4. Fetch Exchange Rates from Bank of Israel (XML API)
         try {
             console.log('Fetching Exchange Rates from BOI (XML)...');
@@ -161,10 +185,67 @@ serve(async (req) => {
                     },
                     body: JSON.stringify(notificationPayload)
                 });
-                console.log('Notification sent.');
+                console.log('Admin notification sent.');
             } else {
                 console.log('No new data found and no system errors. Staying silent for retry.');
             }
+
+            // --- 4. Send Notifications to All Active Users (If New Data Found) ---
+            if (hasNewCbsData) {
+                console.log('New CBS indices found! Dispatching in-app notifications to users...');
+                
+                // Extract the parsed values for the template
+                const newCpi = results.find(r => r.source === 'cbs' && r.index_type === 'cpi' && r.date === expectedMonthStr)?.value;
+                const newHousing = results.find(r => r.source === 'cbs' && r.index_type === 'housing' && r.date === expectedMonthStr)?.value;
+
+                if (newCpi && newHousing) {
+                    // Fetch all active users
+                    const { data: users, error: userError } = await adminSupabase
+                        .from('user_profiles')
+                        .select('id, lang')
+                        .eq('is_active', true);
+
+                    if (userError) {
+                        console.error('Failed to fetch active users for notifications:', userError);
+                    } else if (users && users.length > 0) {
+                        console.log(`Preparing to notify ${users.length} active users.`);
+                        const userNotifications = users.map(user => {
+                            const isHebrew = user.lang === 'he';
+                            const title = isHebrew ? 'עודכנו מדדי המחירים החדשים' : 'New Index Rates Updated';
+                            const message = isHebrew
+                                ? `הלמ"ס פרסמה את מדדי ${expectedMonthStr}. מדד המחירים לצרכן עודכן ל-${newCpi} ומדד שירותי דיור ל-${newHousing}. היכנס למערכת כדי לראות את ההשפעה על החוזים שלך.`
+                                : `The CBS just published the ${expectedMonthStr} indices. CPI is now ${newCpi} and Housing Index is ${newHousing}. Check your dashboard to see the impact on your leases.`;
+
+                            return {
+                                user_id: user.id,
+                                type: 'info',
+                                title: title,
+                                message: message,
+                                metadata: { 
+                                    action: 'view_indices',
+                                    cpi_value: newCpi,
+                                    housing_value: newHousing,
+                                    month: expectedMonthStr
+                                }
+                            };
+                        });
+
+                        // Insert all notifications in bulk
+                        const { error: notifyError } = await adminSupabase
+                            .from('notifications')
+                            .insert(userNotifications);
+
+                        if (notifyError) {
+                            console.error('Failed to insert user notifications:', notifyError);
+                        } else {
+                            console.log(`Successfully dispatched ${userNotifications.length} in-app notifications.`);
+                        }
+                    }
+                } else {
+                     console.log('Missing specific CPI or Housing values for the new month, skipping user notifications.');
+                }
+            }
+            
         } catch (e) {
             console.error('Error sending notification:', e);
         }

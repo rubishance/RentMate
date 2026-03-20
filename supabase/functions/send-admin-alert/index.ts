@@ -218,6 +218,43 @@ serve(async (req) => {
                     console.error("WhatsApp Send Failed:", waErr);
                 }
             }
+        } else if (record.type === 'cbs_data_update') {
+            const isSuccess = record.success !== false;
+            subject = isSuccess ? "CBS Rental Data Updated ✅" : "CBS Data Update Failed ⚠️";
+
+            const message = `
+                <p><strong>Status:</strong> ${isSuccess ? '<span style="color: green;">Success</span>' : '<span style="color: red;">Failed</span>'}</p>
+                <p><strong>Job Type:</strong> ${record.job_type || 'CBS Data Sync'}</p>
+                <p><strong>Details:</strong> ${record.details || 'No details provided'}</p>
+                <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+            `;
+            htmlBody = wrapInTemplate(isSuccess ? "עדכון נתוני הלמ״ס בוצע" : "שגיאה בעדכון נתוני הלמ״ס", message, "https://app.rentmate.co.il/admin", "לוח בקרה למנהל");
+
+            // --- SEND WHATSAPP ---
+            if (WHATSAPP_ACCESS_TOKEN && WHATSAPP_PHONE_NUMBER_ID && adminWhatsApp) {
+                try {
+                    console.log(`Sending CBS Update WhatsApp to ${adminWhatsApp}...`);
+                    const waBody = isSuccess
+                        ? `✅ *עדכון נתוני הלמ״ס RentMate*\n\nהנתונים עודכנו בהצלחה.\nסוג: ${record.job_type}\nפרטים: ${record.details}\nזמן: ${new Date().toLocaleString()}`
+                        : `⚠️ *שגיאה בעדכון הלמ״ס RentMate*\n\nחלו שגיאות במהלך העדכון.\nסוג: ${record.job_type}\nפרטים: ${record.details}\nבדוק את לוג המערכת.`;
+
+                    await fetch(`https://graph.facebook.com/v18.0/${WHATSAPP_PHONE_NUMBER_ID}/messages`, {
+                        method: "POST",
+                        headers: {
+                            "Authorization": `Bearer ${WHATSAPP_ACCESS_TOKEN}`,
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            messaging_product: "whatsapp",
+                            to: adminWhatsApp,
+                            type: "text",
+                            text: { body: waBody }
+                        }),
+                    });
+                } catch (waErr) {
+                    console.error("WhatsApp Send Failed:", waErr);
+                }
+            }
         } else {
             console.log("Ignored event type:", eventType);
             return new Response(JSON.stringify({ message: "Notification ignored" }), {

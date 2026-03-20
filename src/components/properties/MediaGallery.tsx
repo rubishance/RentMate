@@ -12,6 +12,7 @@ import { DatePicker } from '../ui/DatePicker';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { Textarea } from '../ui/Textarea';
+import { useSubscription } from '../../hooks/useSubscription';
 
 interface MediaGalleryProps {
     property: Property;
@@ -20,6 +21,8 @@ interface MediaGalleryProps {
 
 export function MediaGallery({ property, readOnly }: MediaGalleryProps) {
     const { t } = useTranslation();
+    const { plan } = useSubscription();
+    const isFreePlan = plan?.id === 'free' || plan?.id === 'solo';
     const [folders, setFolders] = useState<DocumentFolder[]>([]);
     const [mediaItems, setMediaItems] = useState<PropertyDocument[]>([]);
     const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
@@ -313,8 +316,18 @@ export function MediaGallery({ property, readOnly }: MediaGalleryProps) {
                                 <input
                                     type="file"
                                     multiple
-                                    accept="image/*,video/*"
-                                    onChange={handleFileSelect}
+                                    accept={isFreePlan ? "image/*" : "image/*,video/*"}
+                                    onChange={(e) => {
+                                        if (isFreePlan) {
+                                            const hasVideo = Array.from(e.target.files || []).some(f => f.type.startsWith('video/'));
+                                            if (hasVideo) {
+                                                alert(t('upgradeForVideo', { defaultValue: 'Video uploads require a PRO plan.' }));
+                                                e.target.value = '';
+                                                return;
+                                            }
+                                        }
+                                        handleFileSelect(e);
+                                    }}
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                 />
                                 <div className="w-full py-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl group-hover:border-primary group-hover:bg-primary/10/30 dark:group-hover:bg-blue-900/10 transition-all flex flex-col items-center justify-center text-center gap-2">
@@ -323,7 +336,7 @@ export function MediaGallery({ property, readOnly }: MediaGalleryProps) {
                                     </div>
                                     <div>
                                         <p className="text-sm font-medium text-foreground dark:text-white">{t('clickToUploadDrag')}</p>
-                                        <p className="text-xs text-muted-foreground dark:text-muted-foreground mt-1">PNG, JPG, MP4</p>
+                                        <p className="text-xs text-muted-foreground dark:text-muted-foreground mt-1">{isFreePlan ? 'PNG, JPG' : 'PNG, JPG, MP4'}</p>
                                     </div>
                                 </div>
                             </div>
@@ -414,7 +427,7 @@ export function MediaGallery({ property, readOnly }: MediaGalleryProps) {
                             <div key={folder.id} className="bg-white dark:bg-gray-800 rounded-xl border border-border dark:border-gray-700 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                                 <div className="p-4 bg-gray-50/50 dark:bg-gray-700/30 flex items-start justify-between border-b border-border dark:border-gray-700">
                                     <div className="flex items-start gap-3">
-                                        <div className="p-2 bg-primary/10 dark:bg-blue-900/30 text-primary dark:text-blue-400 rounded-lg mt-1">
+                                        <div className="p-2 bg-primary/10 dark:bg-blue-900/30 text-primary dark:text-blue-400 rounded-xl mt-1">
                                             <Folder className="w-5 h-5" />
                                         </div>
                                         <div>

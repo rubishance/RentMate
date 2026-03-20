@@ -10,6 +10,7 @@ export type StackLayerType =
     | 'property_wizard'   // Level 2: Property Creation
     | 'contract_wizard'   // Level 2: Contract Creation
     | 'document_viewer'   // Level 2: File Preview
+    | 'protocol_wizard'   // Level 2: Protocol Wizard
     | 'single_bill';      // Level 2: Bill Details
 
 export type StackLayer = {

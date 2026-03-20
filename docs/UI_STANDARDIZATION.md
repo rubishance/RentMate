@@ -7,6 +7,7 @@
 - **Sizes**:
     - Page Title: `text-3xl font-bold`
     - Section Header: `text-xl font-semibold`
+    - Widget Header: `text-xl font-black`
     - Body: `text-base`
     - Small/Muted: `text-sm`
 

@@ -199,10 +199,10 @@ rentmate.co.il`
                 <div className="p-6 overflow-y-auto">
                     <div className="space-y-4">
                         {/* Tone Selector */}
-                        <div className="flex p-1 bg-muted dark:bg-gray-700/50 rounded-lg">
+                        <div className="flex p-1 bg-muted dark:bg-gray-700/50 rounded-xl">
                             <button
                                 onClick={() => setTone('friendly')}
-                                className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${tone === 'friendly'
+                                className={`flex-1 py-2 text-base font-medium rounded-lg transition-all ${tone === 'friendly'
                                     ? 'bg-white dark:bg-gray-800 shadow-sm text-foreground dark:text-white'
                                     : 'text-muted-foreground dark:text-muted-foreground hover:text-gray-700 dark:hover:text-gray-200'
                                     }`}
@@ -211,7 +211,7 @@ rentmate.co.il`
                             </button>
                             <button
                                 onClick={() => setTone('formal')}
-                                className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${tone === 'formal'
+                                className={`flex-1 py-2 text-base font-medium rounded-lg transition-all ${tone === 'formal'
                                     ? 'bg-white dark:bg-gray-800 shadow-sm text-foreground dark:text-white'
                                     : 'text-muted-foreground dark:text-muted-foreground hover:text-gray-700 dark:hover:text-gray-200'
                                     }`}
@@ -230,12 +230,12 @@ rentmate.co.il`
                             <textarea
                                 readOnly
                                 value={generateMessage()}
-                                className="w-full h-40 p-3 bg-secondary dark:bg-foreground/50 border border-border dark:border-gray-700 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                                className="w-full h-40 p-3 bg-secondary dark:bg-foreground/50 border border-border dark:border-gray-700 rounded-xl text-base resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                             />
                             <button
                                 onClick={() => handleCopyObj(generateMessage())}
                                 disabled={loadingUrl}
-                                className="absolute top-2 left-2 p-1.5 bg-white dark:bg-gray-800 border border-border dark:border-gray-700 rounded-lg hover:bg-secondary dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                                className="absolute top-2 left-2 p-1.5 bg-white dark:bg-gray-800 border border-border dark:border-gray-700 rounded-xl hover:bg-secondary dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
                                 title="Copy Text"
                             >
                                 {copied ? <CheckIcon className="w-4 h-4 text-secondary" /> : <CopyIcon className="w-4 h-4 text-muted-foreground" />}

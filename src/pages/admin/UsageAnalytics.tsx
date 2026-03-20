@@ -30,7 +30,7 @@ interface UsageStats {
     }[];
 }
 
-const COLORS = ['#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899', '#f43f5e'];
+const COLORS = ['#4f46e5', '#10b981', '#f59e0b', '#0ea5e9', '#3b82f6', '#14b8a6'];
 
 export default function UsageAnalytics() {
     const { t } = useTranslation();
@@ -133,14 +133,14 @@ export default function UsageAnalytics() {
                     value={formatNumber(stats?.top_users.length || 0)}
                     icon={<Users className="w-5 h-5" />}
                     trend="+5%"
-                    color="violet"
+                    color="amber"
                 />
                 <MetricCard
                     title="Top Feature"
                     value={stats?.feature_popularity[0]?.event_name.replace(/_/g, ' ') || 'N/A'}
                     icon={<MousePointer2 className="w-5 h-5" />}
                     trend="Most Used"
-                    color="emerald"
+                    color="blue"
                 />
             </div>
 
@@ -205,13 +205,13 @@ export default function UsageAnalytics() {
                     <div className="flex items-center justify-between mb-8">
                         <div>
                             <h3 className="font-bold text-foreground flex items-center gap-2">
-                                <BarChart3 className="w-5 h-5 text-violet-500" />
+                                <BarChart3 className="w-5 h-5 text-amber-500" />
                                 Feature Adoption
                             </h3>
                             <p className="text-xs text-slate-400">Relative usage of key platform actions</p>
                         </div>
-                        <div className="p-2 bg-violet-50 dark:bg-violet-900/20 rounded-xl">
-                            <MousePointer2 className="w-4 h-4 text-violet-600" />
+                        <div className="p-2 bg-amber-50 dark:bg-amber-900/20 rounded-xl">
+                            <MousePointer2 className="w-4 h-4 text-amber-600" />
                         </div>
                     </div>
                     <div className="h-[300px] w-full">
@@ -233,7 +233,7 @@ export default function UsageAnalytics() {
                                         if (active && payload && payload.length) {
                                             return (
                                                 <div className="bg-white dark:bg-neutral-800 p-3 rounded-xl border border-slate-200 dark:border-neutral-700 shadow-xl">
-                                                    <p className="text-violet-600 font-black text-lg">{payload[0].value} <span className="text-xs font-normal text-slate-400">uses</span></p>
+                                                    <p className="text-amber-600 font-black text-lg">{payload[0].value} <span className="text-xs font-normal text-slate-400">uses</span></p>
                                                 </div>
                                             );
                                         }
@@ -332,8 +332,8 @@ export default function UsageAnalytics() {
 function MetricCard({ title, value, icon, trend, color }: { title: string, value: string, icon: any, trend: string, color: string }) {
     const colorClasses: Record<string, string> = {
         indigo: "bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400",
-        violet: "bg-violet-50 text-violet-600 dark:bg-violet-900/20 dark:text-violet-400",
-        emerald: "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
+        amber: "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400",
+        blue: "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
     };
 
     return (
@@ -342,7 +342,7 @@ function MetricCard({ title, value, icon, trend, color }: { title: string, value
                 <div className={cn("p-2.5 rounded-2xl", colorClasses[color])}>
                     {icon}
                 </div>
-                <div className="text-xs font-black uppercase tracking-widest text-emerald-500 flex items-center gap-1">
+                <div className="text-xs font-black uppercase tracking-widest text-blue-500 flex items-center gap-1">
                     {trend}
                 </div>
             </div>

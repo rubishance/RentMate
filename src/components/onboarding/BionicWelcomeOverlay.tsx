@@ -75,7 +75,7 @@ export function BionicWelcomeOverlay({ firstName }: BionicWelcomeOverlayProps) {
                     >
                         {/* Jewel Glow Effects */}
                         <div className="absolute -top-20 -left-20 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl animate-pulse" />
-                        <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-violet-500/20 rounded-full blur-3xl animate-pulse delay-700" />
+                        <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-primary/20 rounded-full blur-3xl animate-pulse delay-700" />
 
                         <div className="relative overflow-hidden rounded-[2.5rem] bg-white/10 dark:bg-neutral-950/40 border border-white/20 shadow-2xl backdrop-blur-xl">
                             {/* Renty Visualization (Abstract/Icon driven) */}
@@ -87,7 +87,7 @@ export function BionicWelcomeOverlay({ firstName }: BionicWelcomeOverlayProps) {
                                     transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
                                     className="relative"
                                 >
-                                    <div className="w-32 h-32 rounded-[2.5rem] bg-gradient-to-br from-indigo-500/20 to-violet-600/20 backdrop-blur-md border border-white/10 flex items-center justify-center shadow-jewel rotate-3 relative overflow-hidden group">
+                                    <div className="w-32 h-32 rounded-[2.5rem] bg-gradient-to-br from-indigo-500/20 to-blue-600/20 backdrop-blur-md border border-white/10 flex items-center justify-center shadow-jewel rotate-3 relative overflow-hidden group">
                                         <div className="absolute inset-0 bg-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                                         <RentyMascot size={96} showBackground={false} className="relative z-10 drop-shadow-2xl" />
                                     </div>
@@ -103,7 +103,7 @@ export function BionicWelcomeOverlay({ firstName }: BionicWelcomeOverlayProps) {
                                     <h2 className="text-3xl font-black tracking-tighter text-foreground leading-tight">
                                         {lang === 'he' ? `היי ${firstName},` : `Hi ${firstName},`}
                                         <br />
-                                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">
+                                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">
                                             {lang === 'he' ? 'בוא נתחיל!' : "Let's Get Started!"}
                                         </span>
                                     </h2>

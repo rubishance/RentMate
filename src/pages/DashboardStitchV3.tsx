@@ -52,7 +52,10 @@ export function DashboardStitchV3() {
                 if (saved) {
                     try {
                         const parsed = JSON.parse(saved);
-                        const validLayout = parsed.filter((w: any) => Object.keys(WIDGET_REGISTRY).includes(w.widgetId));
+                        const migratedLayout = parsed.map((w: any) => 
+                            w.widgetId === 'financial_health' && w.size === 'large' ? { ...w, size: 'medium' } : w
+                        );
+                        const validLayout = migratedLayout.filter((w: any) => Object.keys(WIDGET_REGISTRY).includes(w.widgetId));
                         setLayout(validLayout.length > 0 ? validLayout : DEFAULT_WIDGET_LAYOUT);
                     } catch (e) {
                         setLayout(DEFAULT_WIDGET_LAYOUT);
@@ -183,21 +186,23 @@ export function DashboardStitchV3() {
 
     // Stitch Design V3: Final Polish, Bionic Density, Micro-interactions
     return (
-        <div className="min-h-screen bg-background dark:bg-neutral-950 pb-40 space-y-4 animate-in fade-in slide-in-from-bottom-6 duration-700">
+        <div className="min-h-screen bg-background dark:bg-neutral-950 pb-24 space-y-4 animate-in fade-in slide-in-from-bottom-6 duration-700">
             {/* Hero Section - V3: Sticky, Blurred 2xl, integrated seamlessly */}
             <div className="sticky top-0 z-20 backdrop-blur-2xl bg-white/50 dark:bg-neutral-950/50 border-b border-white/20 dark:border-neutral-800/50 pt-2 pb-2 transition-all duration-300">
-                <RentyCommandCenter firstName={firstName} feedItems={feedItems} />
+                <div className="w-full px-5">
+                    <RentyCommandCenter firstName={firstName} feedItems={feedItems} />
+                </div>
             </div>
 
 
             {/* Content Section - Main Grid */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="w-full px-5">
                 {/* V3 Toolbar: Tighter, cleaner */}
                 <div className="flex items-center justify-end mb-4 gap-3">
                     {reportsEnabled && (
                         <button
                             onClick={() => setIsReportModalOpen(true)}
-                            className="flex items-center gap-1.5 px-4 py-2 text-xs font-black uppercase tracking-widest rounded-lg bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 hover:border-indigo-500/30 text-muted-foreground hover:text-indigo-600 transition-all shadow-sm hover:shadow-md"
+                            className="flex items-center gap-1.5 px-4 py-2 text-xs font-black uppercase tracking-widest rounded-xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 hover:border-indigo-500/30 text-muted-foreground hover:text-indigo-600 transition-all shadow-sm hover:shadow-md"
                         >
                             <FileSearch className="w-3 h-3" />
                             {lang === 'he' ? 'הפקת דוח' : 'Report'}
@@ -207,7 +212,7 @@ export function DashboardStitchV3() {
                     <button
                         onClick={() => setIsEditingLayout(!isEditingLayout)}
                         className={cn(
-                            "flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all duration-300",
+                            "flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300",
                             isEditingLayout
                                 ? "bg-primary text-primary-foreground shadow-lg scale-105"
                                 : "bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-muted-foreground hover:border-primary/30 hover:text-primary shadow-sm hover:shadow-md"

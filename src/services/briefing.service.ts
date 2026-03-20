@@ -7,7 +7,7 @@ export interface FeedItem {
     type: 'warning' | 'info' | 'success' | 'urgent' | 'action';
     title: string;
     desc: string;
-    date: string;
+    date?: string;
     actionLabel?: string;
     onAction?: () => void;
     metadata?: any;
@@ -108,7 +108,6 @@ export const BriefingService = {
                     type: 'action',
                     title: t('conciergeTitle'),
                     desc: t('conciergeDesc', { count: props.count || 0 }),
-                    date: t('now'),
                     actionLabel: t('conciergeStart'),
                     metadata: { type: 'onboarding_stalled' }
                 });
@@ -124,8 +123,7 @@ export const BriefingService = {
                 id: 'welcome',
                 type: 'success',
                 title: t('welcomeMessage'),
-                desc: t('allLooksQuiet'),
-                date: t('now')
+                desc: t('allLooksQuiet')
             });
         }
 

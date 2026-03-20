@@ -26,6 +26,21 @@ export interface Property {
     updated_at?: string;
 }
 
+export interface Protocol {
+    id: string;
+    property_id: string;
+    contract_id?: string | null;
+    status: 'draft' | 'signed';
+    handover_date?: string | null;
+    tenants_details?: Json | null;
+    content?: Json | null;
+    evidence_urls?: Json | null;
+    landlord_signature?: string | null;
+    tenant_signature?: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
 export type DocumentCategory =
     | 'photo'
     | 'video'

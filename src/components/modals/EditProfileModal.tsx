@@ -204,12 +204,12 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                             <label className="text-xs font-black uppercase tracking-widest text-muted-foreground dark:text-muted-foreground block ml-1 flex items-center justify-between">
                                 <span>{lang === 'he' ? 'טלפון' : 'Phone'}</span>
                                 {isPhoneVerified && !isReadOnly && phone.trim() === initialData.phone?.trim() && (
-                                    <span className="text-green-500 flex items-center gap-1 bg-green-500/10 px-2 rounded-full text-[10px]">
+                                    <span className="text-green-500 flex items-center gap-1 bg-green-500/10 px-2 rounded-full text-xs">
                                         ✓ {lang === 'he' ? 'מאומת (WhatsApp)' : 'Verified (WhatsApp)'}
                                     </span>
                                 )}
                                 {!isPhoneVerified && !isReadOnly && phone.trim() && (
-                                    <span className="text-amber-500 flex items-center gap-1 bg-amber-500/10 px-2 rounded-full text-[10px]">
+                                    <span className="text-amber-500 flex items-center gap-1 bg-amber-500/10 px-2 rounded-full text-xs">
                                         ! {lang === 'he' ? 'לא מאומת' : 'Unverified'}
                                     </span>
                                 )}
@@ -262,7 +262,7 @@ export function EditProfileModal({ isOpen, onClose, onSuccess, initialData }: Ed
                                             {isVerifyingOtp ? <Loader2 className="w-4 h-4 animate-spin" /> : (lang === 'he' ? 'אמת' : 'Confirm')}
                                         </button>
                                     </div>
-                                    <p className="text-[10px] text-muted-foreground">{lang === 'he' ? 'הכנס את הקוד שקיבלת ל-WhatsApp. אם לא קיבלת, ודא שהוספת קידומת בינלאומית, למשל +972' : 'Enter the code sent to your WhatsApp. Make sure your number includes country code e.g. +1 or +972.'}</p>
+                                    <p className="text-xs text-muted-foreground">{lang === 'he' ? 'הכנס את הקוד שקיבלת ל-WhatsApp. אם לא קיבלת, ודא שהוספת קידומת בינלאומית, למשל +972' : 'Enter the code sent to your WhatsApp. Make sure your number includes country code e.g. +1 or +972.'}</p>
                                 </div>
                             )}
                         </div>

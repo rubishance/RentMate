@@ -43,7 +43,7 @@ export const Checkbox = React.forwardRef<HTMLButtonElement, CheckboxProps>(({
             <div className="flex items-center gap-4">
                 {icon && (
                     <div className={cn(
-                        "p-2 rounded-lg transition-colors",
+                        "p-2 rounded-xl transition-colors",
                         checked ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-muted/50 dark:bg-neutral-800 text-muted-foreground"
                     )}>
                         {icon}

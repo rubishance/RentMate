@@ -26,7 +26,7 @@ export function KnowledgeBaseWidget() {
                     {t('knowledgeBase')}
                 </div>
 
-                <h3 className="text-xl font-black mb-3 leading-tight tracking-tight">
+                <h3 className="text-xl font-black mb-3 text-primary leading-tight tracking-tight">
                     {featuredArticle.title}
                 </h3>
                 <p className="text-muted-foreground dark:text-muted-foreground text-sm line-clamp-3 font-medium leading-relaxed">
@@ -38,7 +38,7 @@ export function KnowledgeBaseWidget() {
                 onClick={() => navigate(`/knowledge-base/${featuredArticle.slug}`)}
                 className="relative z-10 mt-8 w-full py-4 bg-secondary dark:bg-neutral-800 hover:bg-muted dark:hover:bg-neutral-700 rounded-2xl text-sm font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-2 border border-border dark:border-neutral-700 shadow-sm"
             >
-                {t('readArticle')} <ExternalLink className="w-4 h-4" />
+                <ExternalLink className="w-4 h-4" /> {t('readArticle')}
             </button>
         </div>
     );

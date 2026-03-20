@@ -68,7 +68,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
 
                     {/* STATUS BAR */}
                     <div className="absolute top-4 inset-x-0 h-8 flex items-center justify-between px-10 z-[100]">
-                        <span className="text-[12px] font-bold text-foreground drop-shadow-sm">9:41</span>
+                        <span className="text-sm font-bold text-foreground drop-shadow-sm">9:41</span>
                         <div className="flex gap-2 items-center opacity-80">
                             <Signal className="w-3.5 h-3.5 text-foreground" />
                             <Wifi className="w-3.5 h-3.5 text-foreground" />
@@ -93,7 +93,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                                 className="flex items-center gap-2 px-3"
                             >
                                 <div className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_10px_#34d399]" />
-                                <span className="text-[11px] font-black text-white uppercase tracking-tighter">SCANNING</span>
+                                <span className="text-xs font-black text-white uppercase tracking-tighter">SCANNING</span>
                             </motion.div>
                         )}
                         {step === 'USER_VOICE' && (
@@ -175,8 +175,8 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                                     </div>
                                 </div>
                                 <div className="min-w-0">
-                                    <div className="text-[11px] font-black text-white/60 uppercase tracking-widest leading-none mb-1">AI ASSISTANT</div>
-                                    <div className="text-[13px] font-bold text-white truncate">Ask Renty Ready</div>
+                                    <div className="text-xs font-black text-white/60 uppercase tracking-widest leading-none mb-1">AI ASSISTANT</div>
+                                    <div className="text-sm font-bold text-white truncate">Ask Renty Ready</div>
                                 </div>
                                 <motion.div
                                     className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white/10 flex items-center justify-center"
@@ -233,12 +233,12 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                                                 exit={{ scale: 0, opacity: 0 }}
                                             >
                                                 {step === 'USER_VOICE' ? (
-                                                    <div className="text-[11px] font-black tracking-widest uppercase flex items-center justify-center gap-2">
+                                                    <div className="text-xs font-black tracking-widest uppercase flex items-center justify-center gap-2">
                                                         <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
                                                         {isRtl ? 'מקליט...' : 'LISTENING...'}
                                                     </div>
                                                 ) : (
-                                                    <div className="text-[11px] font-black truncate">{isRtl ? 'מתייק חשבון...' : 'Filing Bill...'}</div>
+                                                    <div className="text-xs font-black truncate">{isRtl ? 'מתייק חשבון...' : 'Filing Bill...'}</div>
                                                 )}
                                             </motion.div>
                                         )}
@@ -269,7 +269,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
                                         <div className="h-2.5 w-1/2 bg-neutral-100 dark:bg-neutral-800 rounded-full" />
                                     </div>
                                     <div className="flex justify-between items-center text-xs font-black text-neutral-400 tracking-tighter">
-                                        <span className="bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-lg">15/01/2026</span>
+                                        <span className="bg-neutral-100 dark:bg-neutral-800 px-2.5 py-1 rounded-xl">15/01/2026</span>
                                         <span className="text-destructive">{isRtl ? 'ממתין לתשלום' : 'PENDING'}</span>
                                     </div>
                                     {/* Scanning High-Tec Beam */}

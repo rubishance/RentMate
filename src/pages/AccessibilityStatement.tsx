@@ -17,7 +17,7 @@ export function AccessibilityStatement() {
             <div className="absolute top-0 left-0 w-full h-96 bg-primary/5 dark:bg-primary/5 filter blur-3xl z-0 pointer-events-none" />
             <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-teal-500/10 dark:bg-teal-600/5 filter blur-3xl rounded-full z-0 pointer-events-none" />
 
-            <div className="relative z-10 pb-20 pt-8">
+            <div className="relative z-10 pt-8">
                 <div className="container mx-auto px-4 max-w-4xl">
                     <div className="flex justify-end mb-2">
                         <LanguageToggle />
@@ -114,8 +114,8 @@ export function AccessibilityStatement() {
                                 href="mailto:support@rentmate.co.il"
                                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors font-medium text-sm shadow-sm hover:shadow shadow-primary-500/20"
                             >
-                                {isRtl ? 'צור קשר לדיווח על בעיה' : 'Contact us to report an issue'}
                                 <ExternalLink className="w-4 h-4" />
+                                {isRtl ? 'צור קשר לדיווח על בעיה' : 'Contact us to report an issue'}
                             </a>
                         </div>
 

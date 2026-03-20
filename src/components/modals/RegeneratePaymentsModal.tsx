@@ -197,7 +197,7 @@ export function RegeneratePaymentsModal({ isOpen, onClose, onSuccess }: Regenera
                         </div>
                     ) : (
                         <div className="space-y-4">
-                            <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-lg text-sm">
+                            <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-xl text-sm">
                                 <AlertTriangle className="w-4 h-4 shrink-0" />
                                 <p>{t('foundMissingPayments', { count: orphanContracts.length }) || `Found ${orphanContracts.length} contracts with missing payments.`}</p>
                             </div>

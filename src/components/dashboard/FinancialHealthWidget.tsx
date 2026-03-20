@@ -1,9 +1,9 @@
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { cn } from '../../lib/utils';
-import { TrendingUp, AlertTriangle, CheckCircle2, DollarSign } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { TrendingUp, AlertTriangle, CheckCircle2, DollarSign, ChevronDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Mid-Century Traffic Light Colors
 const STATUS_COLORS = {
@@ -18,11 +18,23 @@ interface FinancialHealthWidgetProps {
         collected: number;
         pending: number;
     };
+    isExpanded?: boolean;
+    onToggleExpand?: () => void;
 }
 
-export function FinancialHealthWidget({ stats }: FinancialHealthWidgetProps) {
+export function FinancialHealthWidget({ stats, isExpanded: externalIsExpanded, onToggleExpand }: FinancialHealthWidgetProps) {
     const { t, lang } = useTranslation();
     const isRtl = lang === 'he';
+    const [localIsExpanded, setLocalIsExpanded] = useState(true);
+    const isExpanded = externalIsExpanded !== undefined ? externalIsExpanded : localIsExpanded;
+
+    const toggleExpand = () => {
+        if (onToggleExpand) {
+            onToggleExpand();
+        } else {
+            setLocalIsExpanded(!localIsExpanded);
+        }
+    };
 
     const healthStatus = useMemo(() => {
         if (stats.pending > 0 && stats.pending > stats.monthlyIncome * 0.5) return 'critical';
@@ -54,81 +66,85 @@ export function FinancialHealthWidget({ stats }: FinancialHealthWidgetProps) {
     const statusConfig = statusConfigMap[healthStatus];
 
     return (
-        <Card className="overflow-hidden border-none shadow-premium relative group">
-            {/* Background Pattern - Mid Century Abstract */}
-            <div className={cn(
-                "absolute inset-0 opacity-10 pointer-events-none transition-colors duration-500",
-                statusConfig.color.replace('text', 'bg').replace('shadow', 'fill')
-            )}>
-                <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="1" />
-                        </pattern>
-                    </defs>
-                    <rect width="100%" height="100%" fill="url(#grid)" />
-                </svg>
+        <Card className="h-full overflow-hidden border-none shadow-premium relative group flex flex-col justify-start">
+            
+            {/* Widget Header for Collapsing */}
+            <div 
+                className="flex justify-between items-center p-4 md:p-6 cursor-pointer select-none group/header relative z-20"
+                onClick={toggleExpand}
+            >
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-slate-100 dark:bg-neutral-800 rounded-xl shrink-0">
+                        <DollarSign className="w-5 h-5 text-emerald-500" />
+                    </div>
+                    <h3 className="text-xl font-black font-heading text-primary">
+                        {isRtl ? 'מצב פיננסי' : 'Financial Health'}
+                    </h3>
+                </div>
+                <div className="flex items-center gap-2">
+                    <div className="text-muted-foreground/50 group-hover/header:text-foreground transition-colors p-1">
+                        <ChevronDown className={cn("w-5 h-5 transition-transform duration-300", isExpanded ? "rotate-180" : "rotate-0")} />
+                    </div>
+                </div>
             </div>
 
-            <CardContent className="p-6 md:p-8 relative z-10">
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-
-                    {/* Traffic Light Indicator (Mobile First: Top Prominence) */}
-                    <div className="flex items-center gap-4 w-full md:w-auto">
-                        <div className={cn(
-                            "w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-500",
-                            statusConfig.color
-                        )}>
-                            <statusConfig.icon className="w-8 h-8" />
-                        </div>
-                        <div className="space-y-1">
-                            <h3 className="text-lg md:text-xl font-heading font-bold text-foreground leading-tight">
-                                {statusConfig.label}
-                            </h3>
-                            <p className="text-sm text-muted-foreground font-medium">
-                                {statusConfig.message}
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Financial Stats (Stacked for Mobile) */}
-                    <div className="grid grid-cols-2 gap-4 w-full md:w-auto mt-4 md:mt-0 bg-white/50 dark:bg-black/20 p-4 rounded-xl backdrop-blur-sm border border-black/5 dark:border-white/5">
-                        <div className="space-y-1">
-                            <span className="text-xs uppercase tracking-widest text-muted-foreground font-bold">
-                                {isRtl ? 'שולם החודש' : 'Collected'}
-                            </span>
-                            <div className="flex items-center gap-1 text-secondary font-bold text-xl">
-                                <span>₪</span>
-                                <span>{stats.collected.toLocaleString()}</span>
-                            </div>
-                        </div>
-                        <div className="space-y-1 border-s border-black/10 dark:border-white/10 ps-4">
-                            <span className="text-xs uppercase tracking-widest text-muted-foreground font-bold">
-                                {isRtl ? 'צפי חודשי' : 'Forecast'}
-                            </span>
-                            <div className="flex items-center gap-1 text-foreground font-bold text-xl opacity-80">
-                                <span>₪</span>
-                                <span>{stats.monthlyIncome.toLocaleString()}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                {/* Progress Bar */}
-                <div className="mt-8 relative h-2 bg-muted rounded-full overflow-hidden">
+            <AnimatePresence initial={false}>
+                {isExpanded && (
                     <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${Math.min((stats.collected / (stats.monthlyIncome || 1)) * 100, 100)}%` }}
-                        transition={{ duration: 1, ease: "easeOut" }}
-                        className={cn(
-                            "absolute top-0 bottom-0 left-0 rounded-full",
-                            healthStatus === 'healthy' ? 'bg-emerald-500' :
-                                healthStatus === 'warning' ? 'bg-amber-500' : 'bg-rose-500'
-                        )}
-                    />
-                </div>
-            </CardContent>
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        className="overflow-hidden relative z-10 flex-1 flex flex-col"
+                    >
+                        <CardContent className="p-6 md:p-8 pt-0 md:pt-0 relative z-10 flex-1 flex flex-col justify-end">
+                            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+
+                                {/* Traffic Light Indicator (Mobile First: Top Prominence) */}
+                                <div className="flex items-center gap-4 w-full md:w-auto">
+                                    <div className={cn(
+                                        "w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-500",
+                                        statusConfig.color
+                                    )}>
+                                        <statusConfig.icon className="w-8 h-8" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h3 className="text-xl font-heading font-bold text-foreground leading-tight">
+                                            {statusConfig.label}
+                                        </h3>
+                                        <p className="text-sm text-muted-foreground font-medium">
+                                            {statusConfig.message}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Financial Stats (Stacked for Mobile) */}
+                                <div className="grid grid-cols-2 gap-4 w-full md:w-auto mt-4 md:mt-0 bg-white/50 dark:bg-black/20 p-4 rounded-xl backdrop-blur-sm border border-black/5 dark:border-white/5">
+                                    <div className="space-y-1">
+                                        <span className="text-xs uppercase tracking-widest text-muted-foreground font-bold">
+                                            {isRtl ? 'שולם החודש' : 'Collected'}
+                                        </span>
+                                        <div className="flex items-center gap-1 text-secondary font-bold text-xl">
+                                            <span>₪</span>
+                                            <span>{stats.collected.toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1 border-s border-black/10 dark:border-white/10 ps-4">
+                                        <span className="text-xs uppercase tracking-widest text-muted-foreground font-bold">
+                                            {isRtl ? 'צפי חודשי' : 'Forecast'}
+                                        </span>
+                                        <div className="flex items-center gap-1 text-foreground font-bold text-xl opacity-80">
+                                            <span>₪</span>
+                                            <span>{stats.monthlyIncome.toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </CardContent>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </Card>
     );
 }

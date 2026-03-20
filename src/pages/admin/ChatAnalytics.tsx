@@ -178,7 +178,7 @@ export default function ChatAnalytics() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-96">
-                <Loader2 className="w-10 h-10 animate-spin text-brand-600" />
+                <Loader2 className="w-10 h-10 animate-spin text-primary-600" />
             </div>
         );
     }
@@ -197,12 +197,12 @@ export default function ChatAnalytics() {
     if (!analytics) return null;
 
     return (
-        <div className="space-y-8 pb-20">
+        <div className="space-y-8">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-extrabold text-foreground dark:text-white tracking-tight flex items-center gap-2">
-                        <BarChart3 className="w-8 h-8 text-brand-600" />
+                        <BarChart3 className="w-8 h-8 text-primary-600" />
                         Chat Analytics
                     </h1>
                     <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground mt-1">
@@ -215,8 +215,8 @@ export default function ChatAnalytics() {
                             <button
                                 key={range}
                                 onClick={() => setTimeRange(range)}
-                                className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${timeRange === range
-                                    ? 'bg-white dark:bg-gray-800 text-brand-600 shadow-sm'
+                                className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${timeRange === range
+                                    ? 'bg-white dark:bg-gray-800 text-primary-600 shadow-sm'
                                     : 'text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300'
                                     }`}
                             >
@@ -348,9 +348,9 @@ export default function ChatAnalytics() {
                     <h3 className="text-sm font-black text-foreground dark:text-white uppercase tracking-tight mb-6">Top 10 Questions</h3>
                     <div className="space-y-3 max-h-[300px] overflow-y-auto">
                         {analytics.common_questions.map((q, i) => (
-                            <div key={i} className="flex items-center justify-between gap-4 p-3 bg-secondary dark:bg-foreground rounded-xl">
+                            <div key={i} className="flex items-center justify-between gap-4 p-3 bg-blue-50 dark:bg-foreground rounded-xl">
                                 <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1">{q.question}</span>
-                                <span className="px-2 py-1 bg-brand-100 dark:bg-brand-900/20 text-brand-700 dark:text-brand-400 rounded-lg text-xs font-bold shrink-0">
+                                <span className="px-2 py-1 bg-primary-100 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400 rounded-xl text-xs font-bold shrink-0">
                                     {q.count}x
                                 </span>
                             </div>

@@ -21,9 +21,7 @@ export default function SupportChat() {
     
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Dev Tools State
-    const [showDevTools, setShowDevTools] = useState(false);
-    const [simText, setSimText] = useState('');
+
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -125,13 +123,7 @@ export default function SupportChat() {
         }
     };
 
-    const handleSimulateReply = async () => {
-        if (!simText.trim() || !selectedId) return;
-        await WhatsAppInternalService.simulateIncomingReply(selectedId, simText);
-        setSimText('');
-        await loadMessages(selectedId);
-        await loadConversations();
-    };
+
 
     const activeConversation = conversations.find(c => c.id === selectedId);
 
@@ -144,13 +136,7 @@ export default function SupportChat() {
                 <div className="p-4 border-b border-border flex items-center justify-between">
                     <h2 className="font-bold text-lg">Chats</h2>
                     <div className="flex gap-2">
-                        <button
-                            onClick={() => setShowDevTools(!showDevTools)}
-                            className={`p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors ${showDevTools ? 'text-primary bg-primary/5' : 'text-slate-400'}`}
-                            title="Toggle Dev Simulator"
-                        >
-                            <Zap className="w-4 h-4" />
-                        </button>
+
                         <button className="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-400">
                             <RefreshCw className="w-4 h-4" onClick={() => loadConversations()} />
                         </button>
@@ -176,16 +162,6 @@ export default function SupportChat() {
                     ) : conversations.length === 0 ? (
                         <div className="p-8 text-center flex flex-col items-center">
                             <p className="text-slate-400 text-sm mb-4">No active chats</p>
-                            <button
-                                onClick={async () => {
-                                    setLoading(true);
-                                    await WhatsAppInternalService.createMockConversation('+972500000000', 'Test User');
-                                    await loadConversations();
-                                }}
-                                className="text-xs bg-primary/10 text-primary px-3 py-2 rounded-lg font-bold hover:opacity-80 transition-opacity"
-                            >
-                                + Create Test Chat
-                            </button>
                         </div>
                     ) : (
                         conversations.map(conv => (
@@ -253,35 +229,7 @@ export default function SupportChat() {
                             </div>
                         </div>
 
-                        {/* DEV SIMULATOR PANEL */}
-                        <AnimatePresence>
-                            {showDevTools && (
-                                <motion.div
-                                    initial={{ height: 0, opacity: 0 }}
-                                    animate={{ height: 'auto', opacity: 1 }}
-                                    exit={{ height: 0, opacity: 0 }}
-                                    className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 p-2 z-10"
-                                >
-                                    <div className="flex gap-2 items-center text-sm px-4">
-                                        <Zap className="w-4 h-4 text-amber-600" />
-                                        <span className="font-bold text-amber-800 dark:text-amber-200 uppercase text-xs tracking-wider">Simulator:</span>
-                                        <input
-                                            value={simText}
-                                            onChange={(e) => setSimText(e.target.value)}
-                                            placeholder="Simulate user reply..."
-                                            className="flex-1 px-3 py-1 text-xs border border-amber-300 rounded bg-white dark:bg-black/50"
-                                            onKeyDown={(e) => e.key === 'Enter' && handleSimulateReply()}
-                                        />
-                                        <button
-                                            onClick={handleSimulateReply}
-                                            className="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1 rounded text-xs font-bold"
-                                        >
-                                            Inbound
-                                        </button>
-                                    </div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+
 
 
                         {/* Messages List */}
@@ -313,7 +261,7 @@ export default function SupportChat() {
                                             </button>
                                         )}
                                         <div
-                                            className={`max-w-[70%] rounded-lg px-4 py-2 shadow-sm relative ${isMe
+                                            className={`max-w-[70%] rounded-xl px-4 py-2 shadow-sm relative ${isMe
                                                 ? 'bg-[#d9fdd3] dark:bg-[#005c4b] text-foreground rounded-tr-none'
                                                 : 'bg-card text-foreground rounded-tl-none'
                                                 }`}
@@ -438,7 +386,7 @@ export default function SupportChat() {
                                 <button
                                     onClick={handleSend}
                                     disabled={(!inputText.trim() && !attachment) || isUploading}
-                                    className="p-3 bg-green-500 hover:bg-secondary text-white rounded-full shadow-lg disabled:opacity-50 disabled:shadow-none transition-all transform active:scale-95"
+                                    className="p-3 bg-green-500 hover:bg-blue-50 text-white rounded-full shadow-lg disabled:opacity-50 disabled:shadow-none transition-all transform active:scale-95"
                                 >
                                     {isUploading ? <Loader2 className="w-5 h-5 ml-0.5 animate-spin" /> : <Send className="w-5 h-5 ml-0.5" />}
                                 </button>

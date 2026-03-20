@@ -2,11 +2,13 @@ import { useNavigate } from 'react-router-dom';
 import logoIconOnly from '../../assets/rentmate-icon-only.png';
 import logoIconDark from '../../assets/rentmate-icon-only-dark.png';
 import { useUserPreferences } from '../../contexts/UserPreferencesContext';
-import { Sun, Moon, Monitor, Star } from 'lucide-react';
+import { Sun, Moon, Star, Crown } from 'lucide-react';
+import { useSubscription } from '../../hooks/useSubscription';
 
 export function TopBar() {
     const navigate = useNavigate();
-    const { effectiveTheme, setTheme, preferences } = useUserPreferences();
+    const { effectiveTheme, setTheme } = useUserPreferences();
+    const { plan, loading } = useSubscription();
 
     return (
         <header className="fixed top-0 left-0 right-0 h-16 bg-white/95 dark:bg-black/95 backdrop-blur-sm border-b border-slate-100 dark:border-neutral-900 z-[60] flex items-center justify-between px-6 shadow-sm">
@@ -17,14 +19,14 @@ export function TopBar() {
 
             {/* Left: Logo */}
             <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/dashboard')}>
-                <div className="w-8 h-8 bg-black dark:bg-white rounded-lg flex items-center justify-center group-hover:rotate-12 transition-transform duration-500">
+                <div className="w-8 h-8 bg-black dark:bg-white rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-500">
                     <img
                         src={effectiveTheme === 'dark' ? logoIconDark : logoIconOnly}
                         alt="RentMate"
                         className="w-5 h-5 invert dark:invert-0"
                     />
                 </div>
-                <span className="text-2xl tracking-tighter text-black dark:text-white leading-none font-sans lowercase hidden sm:inline-block">
+                <span className="text-2xl tracking-tighter text-black dark:text-white leading-none font-sans hidden sm:inline-block">
                     <span className="font-black">Rent</span>
                     <span className="font-normal opacity-40">Mate</span>
                 </span>
@@ -32,15 +34,31 @@ export function TopBar() {
 
             {/* Right: Actions */}
             <div className="flex items-center gap-3">
-                <button
-                    onClick={() => navigate('/pricing')}
-                    className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-primary/10 to-cyan-600/10 hover:from-primary/20 hover:to-cyan-600/20 border border-blue-200 dark:border-blue-900 transition-all group"
-                >
-                    <Star className="w-3 h-3 text-primary group-hover:scale-110 transition-transform" />
-                    <span className="text-xs font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-cyan-600">
-                        UPGRADE
-                    </span>
-                </button>
+                {!loading && plan && (
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                        {plan.id === 'free' && (
+                            <button
+                                onClick={() => navigate('/subscription')}
+                                className="flex sm:hidden items-center justify-center px-2.5 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-full text-xs font-bold shadow-sm"
+                            >
+                                שדרג
+                            </button>
+                        )}
+                        <button
+                            onClick={() => navigate('/subscription')}
+                            className={`${plan.id === 'free' ? 'hidden sm:flex' : 'flex'} items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-gradient-to-r from-primary/10 to-cyan-600/10 hover:from-primary/20 hover:to-cyan-600/20 border border-blue-200 dark:border-blue-900 transition-all group`}
+                        >
+                            {plan.id === 'free' || plan.id === 'solo' ? (
+                                <Star className="w-3 h-3 text-primary group-hover:scale-110 transition-transform" />
+                            ) : (
+                                <Crown className="w-3 h-3 text-yellow-500 fill-yellow-500 group-hover:scale-110 transition-transform" />
+                            )}
+                            <span className="text-xs sm:text-xs font-bold uppercase tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-primary to-cyan-600">
+                                {plan.id === 'free' || plan.id === 'solo' || plan.name === 'BASIC' ? 'FREE' : plan.name}
+                            </span>
+                        </button>
+                    </div>
+                )}
 
                 {/* Right: Theme Toggle */}
                 <button

@@ -1,9 +1,12 @@
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { SparklesIcon as Sparkles, ArrowRightIcon as ArrowRight } from '../icons/NavIcons';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '../ui/Card';
 import { Button } from '../ui/Button';
+import { ChevronDown } from 'lucide-react';
+import { cn } from '../../lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface SmartAction {
     id: string;
@@ -21,11 +24,23 @@ interface SmartActionsWidgetProps {
         openMaintenance: number;
     };
     loading?: boolean;
+    isExpanded?: boolean;
+    onToggleExpand?: () => void;
 }
 
-export function SmartActionsWidget({ stats, loading }: SmartActionsWidgetProps) {
+export function SmartActionsWidget({ stats, loading, isExpanded: externalIsExpanded, onToggleExpand }: SmartActionsWidgetProps) {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const [localIsExpanded, setLocalIsExpanded] = useState(true);
+    const isExpanded = externalIsExpanded !== undefined ? externalIsExpanded : localIsExpanded;
+
+    const toggleExpand = () => {
+        if (onToggleExpand) {
+            onToggleExpand();
+        } else {
+            setLocalIsExpanded(!localIsExpanded);
+        }
+    };
 
     const actions: SmartAction[] = useMemo(() => {
         const list: SmartAction[] = [];
@@ -67,35 +82,65 @@ export function SmartActionsWidget({ stats, loading }: SmartActionsWidgetProps) 
     return (
         <Card className="h-full flex flex-col justify-between overflow-hidden relative group border-primary/20 bg-slate-900 text-white dark:bg-slate-950">
             {/* Background Decoration */}
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity z-0 pointer-events-none">
                 <Sparkles className="w-48 h-48 transform rotate-12" />
             </div>
 
-            <CardHeader className="relative z-10 pb-0">
-                <div className="flex items-center gap-2 bg-white/10 w-fit px-2.5 py-1 md:px-3 md:py-1.5 rounded-full text-[11px] md:text-xs font-bold uppercase tracking-widest backdrop-blur-md border border-white/10 mb-4">
-                    <Sparkles className="w-2.5 md:w-3 h-2.5 md:h-3 text-emerald-400" />
-                    {t('smartRecommendation')}
+            <CardHeader 
+                className={cn(
+                    "flex flex-row items-center justify-between space-y-0 pb-4 cursor-pointer select-none group/header relative z-10",
+                    isExpanded ? "" : "pb-0"
+                )}
+                onClick={toggleExpand}
+            >
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-slate-100 dark:bg-neutral-800 rounded-xl shrink-0">
+                        <Sparkles className="w-5 h-5 text-amber-500" />
+                    </div>
+                    <CardTitle className="text-xl font-black font-heading text-primary">
+                        {t('quickActions')}
+                    </CardTitle>
                 </div>
-                <CardTitle className="text-xl md:text-2xl text-white">{topAction.title}</CardTitle>
-                <CardDescription className="text-slate-300 font-medium">
-                    {topAction.description}
-                </CardDescription>
+                <div className="flex items-center gap-2">
+                    <div className="text-white/50 group-hover/header:text-white transition-colors p-1 bg-white/5 rounded-full backdrop-blur-sm">
+                        <ChevronDown className={cn("w-5 h-5 transition-transform duration-300", isExpanded ? "rotate-180" : "rotate-0")} />
+                    </div>
+                </div>
             </CardHeader>
 
-            <CardContent className="relative z-10 pt-4 flex-1">
-                {/* Spacer or content if needed */}
-            </CardContent>
+            <AnimatePresence initial={false}>
+                {isExpanded && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        className="overflow-hidden relative z-10 flex-1 flex flex-col"
+                    >
+                        <CardHeader className="pt-2 pb-0 flex-none">
+                            <CardTitle className="text-xl md:text-2xl text-white">{topAction.title}</CardTitle>
+                            <CardDescription className="text-slate-300 font-medium">
+                                {topAction.description}
+                            </CardDescription>
+                        </CardHeader>
 
-            <CardFooter className="relative z-10 pt-0">
-                <Button
-                    onClick={topAction.onAction}
-                    className="w-full bg-white text-slate-900 hover:bg-muted/50 font-bold"
-                    size="lg"
-                >
-                    {topAction.actionLabel}
-                    <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
-                </Button>
-            </CardFooter>
+                        <CardContent className="pt-4 flex-1">
+                            {/* Spacer or content if needed */}
+                        </CardContent>
+
+                        <CardFooter className="pt-0 flex-none">
+                            <Button
+                                onClick={(e) => { e.stopPropagation(); topAction.onAction(); }}
+                                className="w-full bg-white text-slate-900 hover:bg-muted/50 font-bold"
+                                size="lg"
+                            >
+                                <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                                {topAction.actionLabel}
+                            </Button>
+                        </CardFooter>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </Card>
     );
 }

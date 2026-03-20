@@ -9,6 +9,7 @@ import { MaintenanceChat } from '../stack/MaintenanceChat';
 import { AddPropertyWizard } from '../stack/AddPropertyWizard';
 import { ContractHub } from '../stack/ContractHub';
 import { AddContractWizard } from '../stack/AddContractWizard';
+import { ProtocolWizard } from '../properties/ProtocolWizard';
 
 // Placeholder components for the stack layers
 const LayerRegistry: Record<string, (props: any) => React.JSX.Element> = {
@@ -19,6 +20,7 @@ const LayerRegistry: Record<string, (props: any) => React.JSX.Element> = {
     'contract_wizard': (props) => <AddContractWizard {...props} />,
     'contract_viewer': (props) => <ContractHub {...props} />,
     'document_viewer': (props) => <div className="p-4">Document Viewer</div>,
+    'protocol_wizard': (props) => <ProtocolWizard {...props} isOpen={true} />,
     'single_bill': (props) => <div className="p-4">Bill Details</div>,
 };
 
@@ -141,7 +143,7 @@ export function StackContainer() {
 
                             {/* Content */}
                             <div className="flex-1 overflow-y-auto min-h-0 pb-20">
-                                <Component {...layer.props} />
+                                <Component {...layer.props} onClose={() => pop()} />
                             </div>
                         </motion.div>
                     </div>

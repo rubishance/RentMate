@@ -35,13 +35,13 @@ export function MaintenanceTracker() {
     const recentActivity = documents.slice(0, 5);
 
     return (
-        <div className="pb-40 pt-8 px-4 md:px-8 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300">
+        <div className="pt-2 md:pt-8 px-5 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300">
             {/* Header Area */}
             <div className="flex items-center justify-between gap-4">
                 <div className="space-y-1 overflow-hidden">
                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-orange-500/5 dark:bg-orange-500/10 backdrop-blur-md rounded-full border border-orange-500/10 shadow-sm mb-1">
                         <Wrench className="w-3 h-3 text-orange-500" />
-                        <span className="text-[11px] font-black uppercase tracking-widest text-warning">
+                        <span className="text-xs font-black uppercase tracking-widest text-warning">
                             {t('maintenanceHub') || 'Maintenance Hub'}
                         </span>
                     </div>
@@ -112,7 +112,7 @@ export function MaintenanceTracker() {
             {/* Recent Activity List */}
             <div className="space-y-6">
                 <div className="">
-                    <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground opacity-70 lowercase">{t('recentActivity') || 'Recent Activity'}</h3>
+                    <h3 className="text-xs font-black uppercase tracking-[0.4em] text-muted-foreground opacity-70 lowercase">{t('recentActivity') || 'Recent Activity'}</h3>
                 </div>
 
                 <div className="glass-premium dark:bg-neutral-900/40 border-white/5 rounded-[3rem] shadow-minimal overflow-hidden">
@@ -158,7 +158,7 @@ export function MaintenanceTracker() {
                                             <span className="text-xs opacity-40">₪</span>
                                             <span className="text-xl sm:text-2xl tracking-tighter">{(doc.amount || 0).toLocaleString()}</span>
                                         </div>
-                                        <span className="text-[8px] font-black uppercase tracking-[2px] px-3 py-1 rounded-full glass-premium border-white/5 text-muted-foreground opacity-90">
+                                        <span className="text-xs font-black uppercase tracking-[2px] px-3 py-1 rounded-full glass-premium border-white/5 text-muted-foreground opacity-90">
                                             {doc.issue_type || 'General'}
                                         </span>
                                     </div>

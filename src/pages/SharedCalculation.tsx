@@ -94,10 +94,10 @@ export function SharedCalculation() {
     const isReconciliation = 'totalBackPayOwed' in result_data;
 
     return (
-        <div className={`min-h-screen bg-background py-8 px-4 ${isRtl ? 'text-right' : 'text-left'}`} dir={isRtl ? 'rtl' : 'ltr'}>
+        <div className={`min-h-screen bg-background pt-8 pb-4 px-5 ${isRtl ? 'text-right' : 'text-left'}`} dir={isRtl ? 'rtl' : 'ltr'}>
             <div className="max-w-md mx-auto space-y-6">
                 {/* Branding Header */}
-                <div className="text-center space-y-2 mb-8">
+                <div className="text-center space-y-2 mb-8 px-4">
                     <div className="flex items-end justify-center gap-2 text-primary font-bold text-2xl">
                         <Calculator className="w-8 h-8" />
                         <span>RentMate</span>
@@ -108,7 +108,7 @@ export function SharedCalculation() {
                 </div>
 
                 {/* Main Card */}
-                <div className="bg-window border border-border rounded-3xl shadow-xl overflow-hidden">
+                <div className="bg-window border-y sm:border border-border rounded-none sm:rounded-3xl shadow-xl overflow-hidden">
                     <div className="p-6 space-y-6">
 
                         {!isReconciliation ? (
@@ -230,7 +230,7 @@ export function SharedCalculation() {
                 </div>
 
                 {/* Sign up CTA */}
-                <div className="text-center space-y-3">
+                <div className="text-center space-y-3 px-4">
                     <p className="text-sm text-muted-foreground">{t('shared_calc_cta')}</p>
                     <Link
                         to="/"

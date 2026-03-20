@@ -130,7 +130,7 @@ export function ConfirmDeleteModal({
                                     </div>
                                 )}
 
-                                <div className="p-3 text-sm text-muted-foreground bg-secondary dark:bg-gray-700/50 rounded-lg">
+                                <div className="p-3 text-sm text-muted-foreground bg-secondary dark:bg-gray-700/50 rounded-xl">
                                     {lang === 'he'
                                         ? 'פעולה זו אינה הפיכה. המידע ימחק לצמיתות ולא ניתן יהיה לשחזר אותו.'
                                         : 'This action cannot be undone. The data will be deleted permanently and cannot be restored.'}
@@ -167,12 +167,12 @@ export function ConfirmDeleteModal({
                                     : 'bg-destructive hover:bg-red-700 shadow-red-500/30'
                                     }`}
                             >
-                                {isDeleting ? (
+                                <ArrowRight className="w-4 h-4" /> {isDeleting ? (
                                     <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                 ) : (
                                     step === 1 && requireDoubleConfirm ? (
                                         <>
-                                            {lang === 'he' ? 'אני מבין/ה, המשך' : 'I Understand, Continue'} <ArrowRight className="w-4 h-4" />
+                                            {lang === 'he' ? 'אני מבין/ה, המשך' : 'I Understand, Continue'}
                                         </>
                                     ) : (
                                         <>

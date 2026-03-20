@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
-import { Check, X, Edit3 } from 'lucide-react';
+import { Check, X, Edit3, ChevronRight, ChevronLeft } from 'lucide-react';
+import { useUserPreferences } from '../../contexts/UserPreferencesContext';
 
 interface ActionOption {
     label: string;
@@ -16,37 +17,41 @@ interface ActionCardProps {
 }
 
 export function ActionCard({ title, description, options, onSelect }: ActionCardProps) {
+    const { preferences } = useUserPreferences();
+    const isRtl = preferences?.language === 'he';
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded-2xl p-4 shadow-sm my-2 max-w-[85%]"
+            className="w-full my-1 flex flex-col gap-2"
         >
-            <h4 className="font-bold text-sm text-foreground mb-1">{title}</h4>
-            {description && (
-                <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
-                    {description}
-                </p>
-            )}
+            <div className="mb-1">
+                <h4 className="font-bold text-sm text-foreground">{title}</h4>
+                {description && (
+                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                        {description}
+                    </p>
+                )}
+            </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-col gap-2">
                 {options.map((opt) => (
                     <button
                         key={opt.value}
                         onClick={() => onSelect(opt.value)}
                         className={cn(
-                            "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors",
-                            opt.variant === 'destructive'
-                                ? "bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200"
-                                : opt.variant === 'outline'
-                                    ? "bg-background text-slate-600 hover:bg-muted/50 border border-slate-200"
-                                    : "bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm"
+                            "w-full flex items-center justify-between p-3 bg-white/50 dark:bg-neutral-900/50 hover:bg-white dark:hover:bg-neutral-800 shadow-sm border border-border/50 dark:border-white/10 rounded-xl transition-all text-sm font-medium text-foreground",
+                            opt.variant === 'destructive' && "text-rose-600 hover:text-rose-700 bg-rose-50/50 hover:bg-rose-50 border-rose-100"
                         )}
                     >
-                        {opt.value === 'approve' && <Check className="w-3 h-3" />}
-                        {opt.value === 'reject' && <X className="w-3 h-3" />}
-                        {opt.value === 'edit' && <Edit3 className="w-3 h-3" />}
-                        {opt.label}
+                        <div className="flex items-center gap-3">
+                            {opt.value === 'approve' && <Check className="w-4 h-4 text-emerald-500" />}
+                            {opt.value === 'reject' && <X className="w-4 h-4 text-rose-500" />}
+                            {opt.value === 'edit' && <Edit3 className="w-4 h-4 text-blue-500" />}
+                            <span>{opt.label}</span>
+                        </div>
+                        {isRtl ? <ChevronLeft className="w-4 h-4 opacity-40 shrink-0" /> : <ChevronRight className="w-4 h-4 opacity-40 shrink-0" />}
                     </button>
                 ))}
             </div>

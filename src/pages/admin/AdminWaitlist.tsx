@@ -96,7 +96,7 @@ export default function AdminWaitlist() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-96">
-                <Loader2 className="w-8 h-8 animate-spin text-brand-600" />
+                <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
             </div>
         );
     }
@@ -106,8 +106,8 @@ export default function AdminWaitlist() {
             {/* Header & Stats */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-border dark:border-gray-700">
                 <div className="flex items-center gap-4">
-                    <div className="bg-brand-100 dark:bg-brand-900/30 p-3 rounded-xl border border-brand-200 dark:border-brand-800/50">
-                        <Users className="w-6 h-6 text-brand-600 dark:text-brand-400" />
+                    <div className="bg-primary-100 dark:bg-primary-900/30 p-3 rounded-xl border border-primary-200 dark:border-primary-800/50">
+                        <Users className="w-6 h-6 text-primary-600 dark:text-primary-400" />
                     </div>
                     <div>
                         <h1 className="text-2xl font-bold text-foreground dark:text-white leading-tight">Waitlist Users</h1>
@@ -123,7 +123,7 @@ export default function AdminWaitlist() {
                             placeholder="Search names or emails..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full sm:w-64 pl-9 pr-4 py-2 bg-secondary dark:bg-foreground border border-border dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 transition-shadow"
+                            className="w-full sm:w-64 pl-9 pr-4 py-2 bg-blue-50 dark:bg-foreground border border-border dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 transition-shadow"
                         />
                     </div>
                     <Button
@@ -158,11 +158,11 @@ export default function AdminWaitlist() {
                                 </tr>
                             ) : (
                                 filteredEntries.map((entry) => (
-                                    <tr key={entry.id} className="hover:bg-secondary dark:hover:bg-gray-700/30 transition-colors">
+                                    <tr key={entry.id} className="hover:bg-blue-50 dark:hover:bg-gray-700/30 transition-colors">
                                         {/* Name */}
                                         <td className="py-4 px-6 align-top">
                                             <div className="flex items-center gap-3">
-                                                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-brand-50 border border-brand-100 dark:bg-brand-900/30 dark:border-brand-800 flex items-center justify-center text-brand-600 font-bold uppercase">
+                                                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary-50 border border-primary-100 dark:bg-primary-900/30 dark:border-primary-800 flex items-center justify-center text-primary-600 font-bold uppercase">
                                                     {entry.full_name.charAt(0)}
                                                 </div>
                                                 <div className="font-semibold text-foreground dark:text-white capitalize truncate max-w-[150px] md:max-w-xs">
@@ -176,12 +176,12 @@ export default function AdminWaitlist() {
                                             <div className="space-y-1.5 flex flex-col justify-center h-10">
                                                 <div className="flex items-center gap-2 text-sm text-muted-foreground dark:text-gray-300">
                                                     <Mail className="w-3.5 h-3.5 opacity-70" />
-                                                    <a href={`mailto:${entry.email}`} className="hover:text-brand-600 hover:underline truncate max-w-[150px] md:max-w-xs">{entry.email}</a>
+                                                    <a href={`mailto:${entry.email}`} className="hover:text-primary-600 hover:underline truncate max-w-[150px] md:max-w-xs">{entry.email}</a>
                                                 </div>
                                                 {entry.phone && (
                                                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                                         <Phone className="w-3.5 h-3.5 opacity-70" />
-                                                        <a href={`tel:${entry.phone}`} className="hover:text-brand-600 truncate">{entry.phone}</a>
+                                                        <a href={`tel:${entry.phone}`} className="hover:text-primary-600 truncate">{entry.phone}</a>
                                                     </div>
                                                 )}
                                             </div>
@@ -203,7 +203,7 @@ export default function AdminWaitlist() {
                                                     size="sm"
                                                     onClick={() => handleDelete(entry.id, entry.full_name)}
                                                     disabled={isDeleting === entry.id}
-                                                    className="text-destructive hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-1.5 h-auto rounded-lg"
+                                                    className="text-destructive hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-1.5 h-auto rounded-xl"
                                                     title="Remove from waitlist"
                                                 >
                                                     {isDeleting === entry.id ? (

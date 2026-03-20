@@ -240,14 +240,14 @@ export function Properties() {
 
     if (loading) {
         return (
-            <div className="pb-40 pt-16 space-y-24">
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 px-4 md:px-8">
+            <div className="pt-16 space-y-24">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 px-0">
                     <div className="space-y-2">
                         <Skeleton className="h-6 w-32 rounded-full" />
                         <Skeleton className="h-16 w-64 rounded-xl" />
                     </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 px-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 px-0">
                     {[1, 2, 3, 4, 5, 6].map((i) => (
                         <div key={i} className="h-[500px] rounded-[3rem] overflow-hidden border border-slate-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
                             <Skeleton className="h-72 w-full" />
@@ -268,13 +268,13 @@ export function Properties() {
     }
 
     return (
-        <div className="pb-40 pt-8 px-4 md:px-8 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300 w-full max-w-[100vw] overflow-x-hidden">
+        <div className="pb-4 pt-2 md:pt-8 px-5 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300 w-full max-w-[100vw] overflow-x-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 px-0">
                 <div className="space-y-1 overflow-hidden">
                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 dark:bg-primary/10 backdrop-blur-md rounded-full border border-primary/10 shadow-sm mb-1">
                         <Home className="w-3 h-3 text-primary" />
-                        <span className="text-[11px] font-black uppercase tracking-widest text-primary dark:text-primary">
+                        <span className="text-xs font-black uppercase tracking-widest text-primary dark:text-primary">
                             {t('myPortfolio')}
                         </span>
                     </div>
@@ -296,7 +296,7 @@ export function Properties() {
 
             {/* Empty State */}
             {properties.length === 0 ? (
-                <div className="px-4 md:px-8 flex flex-col items-center justify-center py-40 rounded-[3rem] border border-slate-100 dark:border-neutral-800 bg-background/50 dark:bg-neutral-900/50 mx-4 md:mx-8">
+                <div className="px-0 flex flex-col items-center justify-center py-40 rounded-[3rem] border border-slate-100 dark:border-neutral-800 bg-background/50 dark:bg-neutral-900/50 mx-0">
                     <div className="w-32 h-32 bg-white dark:bg-neutral-900 rounded-[3rem] flex items-center justify-center mx-auto shadow-minimal mb-10">
                         <Home className="w-12 h-12 text-slate-200" />
                     </div>
@@ -316,7 +316,7 @@ export function Properties() {
             ) : (
                 /* Properties Grid */
                 <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-4 md:px-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-0">
                         {properties.map((property) => {
                             const today = format(new Date(), 'yyyy-MM-dd');
                             const activeContract = property.contracts?.find(c =>
@@ -328,11 +328,11 @@ export function Properties() {
                                 <Card
                                     key={property.id}
                                     onClick={() => handleView(property)}
-                                    className="group flex flex-col h-full rounded-[2.5rem] border-none shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer p-0 gap-0 bg-card dark:bg-card mask-clip-card"
+                                    className="group flex flex-col h-full border-none shadow-low hover:shadow-high transition-all duration-500 cursor-pointer p-0 gap-0 bg-card dark:bg-card mask-clip-card"
                                     hoverEffect
                                 >
                                     {/* Image Section */}
-                                    <div className="relative h-64 bg-muted/50 dark:bg-neutral-800 overflow-hidden rounded-t-[2.5rem]">
+                                    <div className="relative h-64 bg-muted/50 dark:bg-neutral-800 overflow-hidden rounded-t-2xl">
                                         <SecureImage
                                             bucket="property-images"
                                             path={property.image_url}
@@ -345,7 +345,7 @@ export function Properties() {
                                         {/* Status Badge */}
                                         <div className={`absolute top-5 ${lang === 'he' ? 'left-5' : 'right-5'} flex gap-3`}>
                                             <span className={cn(
-                                                "px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest backdrop-blur-md shadow-sm border transition-all duration-500",
+                                                "px-4 py-2 rounded-full text-sm font-bold uppercase tracking-widest backdrop-blur-md shadow-sm border transition-all duration-500",
                                                 activeContract
                                                     ? 'bg-emerald-500/90 text-white border-transparent'
                                                     : 'bg-white/90 text-slate-700 border-white/20'
@@ -354,15 +354,7 @@ export function Properties() {
                                             </span>
                                         </div>
 
-                                        {/* Property Type Badge */}
-                                        <div className={`absolute bottom-5 ${lang === 'he' ? 'right-5' : 'left-5'}`}>
-                                            <div className="flex items-center gap-3 px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-full border border-white/20 shadow-lg">
-                                                <span className="text-sm font-bold uppercase tracking-widest text-white">
-                                                    {property.property_type ? t(property.property_type as string) : t('apartment')}
-                                                </span>
-                                                <PropertyIcon type={property.property_type} className="w-7 h-7 text-white" />
-                                            </div>
-                                        </div>
+
                                     </div>
 
                                     {/* Content */}
@@ -445,7 +437,7 @@ export function Properties() {
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors"
+                                                    className="h-12 w-12 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition-all"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         handleDelete(property);

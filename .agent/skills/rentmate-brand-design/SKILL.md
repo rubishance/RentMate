@@ -44,7 +44,12 @@ RentMate must feel dynamic and expensive. Avoid static 'flat' components.
 *   **The "Template Ban":** Do not rely on standard, generic web layout templates. RentMate pages should feature custom, thoughtful layouts.
 *   **Glassmorphism:** Use touches of blurred backgrounds (e.g. `bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl`) selectively for sticky headers or prominent overlay cards.
 
-## 5. Stitch-Optimized AI Iteration (Google Stitch Protocol)
+## 5. Widget Layout
+*   **Collapse Buttons (Chevron):** The collapse toggle button must ALWAYS be positioned at the absolute far edge of the widget header, completely separated from the title and primary icon. 
+    *   In RTL (Hebrew), the title/icon group is on the right, and the collapse chevron MUST be on the absolute far left.
+    *   Use `justify-between` to push the elements to opposite edges. Ensure no parent container restricts the chevron from reaching the full width of the widget's padding.
+
+## 6. Stitch-Optimized AI Iteration (Google Stitch Protocol)
 When iterating on RentMate designs or crafting prompts for new components, automatically apply these Google Stitch principles:
 *   **RentMate Vibe Adjectives:** Always ground design generation with RentMate's core vibes: *"Premium, High-Contrast, Professional yet Approachable"*. This ensures any AI-assisted layout output matches the core identity.
 *   **Incremental Changes (No Layout Jumps):** Never mix structural layout overhauls with micro-UI surface tweaks in a single step. Focus iterations tightly (e.g., update *only* the spacing, then *only* the button shadow).

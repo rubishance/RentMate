@@ -43,6 +43,7 @@ interface FinancialMetrics {
 export default function OwnerDashboard() {
     const [loading, setLoading] = useState(true);
     const [metrics, setMetrics] = useState<FinancialMetrics | null>(null);
+    const [growthData, setGrowthData] = useState<any[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [activeBroadcasts, setActiveBroadcasts] = useState<number>(0);
     const [toggling, setToggling] = useState<string | null>(null);
@@ -58,6 +59,12 @@ export default function OwnerDashboard() {
 
             if (error) throw error;
             setMetrics(data as FinancialMetrics);
+
+            // Fetch historical growth data (graceful fallback if RPC doesn't exist yet)
+            const growthRes = await supabase.rpc('get_historical_growth', { p_months: 6 });
+            if (!growthRes.error && Array.isArray(growthRes.data)) {
+                setGrowthData(growthRes.data);
+            }
         } catch (err: unknown) {
             console.error('Error fetching owner metrics:', err);
             setError(err instanceof Error ? err.message : 'Unknown error');
@@ -94,7 +101,7 @@ export default function OwnerDashboard() {
     if (loading) {
         return (
             <div className="flex h-96 items-center justify-center">
-                <Loader2 className="h-12 w-12 animate-spin text-brand-600" />
+                <Loader2 className="h-12 w-12 animate-spin text-primary-600" />
             </div>
         );
     }
@@ -114,16 +121,10 @@ export default function OwnerDashboard() {
         );
     }
 
-    // Mock data for graphs until we implement historical tracking tables
-    const growthData = [
-        { name: 'Jan', users: 65, mrr: 2400 },
-        { name: 'Feb', users: 85, mrr: 3100 },
-        { name: 'Mar', users: 120, mrr: 4500 },
-        { name: 'Apr', users: metrics?.total_users || 145, mrr: metrics?.mrr || 5200 },
-    ];
+
 
     return (
-        <div className="space-y-8 pb-20">
+        <div className="space-y-8">
             {/* Header */}
             <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-3">
@@ -141,16 +142,16 @@ export default function OwnerDashboard() {
 
             {/* Financial Pulse Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-border dark:border-gray-700 shadow-xl shadow-brand-500/5 relative overflow-hidden group">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-border dark:border-gray-700 shadow-xl shadow-primary-500/5 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <BanknotesIcon className="w-24 h-24 text-brand-600" />
+                        <BanknotesIcon className="w-24 h-24 text-primary-600" />
                     </div>
                     <div className="relative">
                         <div className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">Monthly Recurring Revenue</div>
                         <div className="text-4xl font-black text-foreground dark:text-white mb-2">
                             ₪{metrics?.mrr?.toLocaleString()}
                         </div>
-                        <div className="flex items-center gap-1 text-xs font-bold text-emerald-500">
+                        <div className="flex items-center gap-1 text-xs font-bold text-blue-500">
                             <ArrowTrendingUpIcon className="w-4 h-4" />
                             <span>+12.5%</span>
                             <span className="text-gray-300 ml-1">vs last month</span>
@@ -190,11 +191,11 @@ export default function OwnerDashboard() {
 
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-border dark:border-gray-700 shadow-sm relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-4 opacity-5">
-                        <ServerIcon className="w-24 h-24 text-emerald-600" />
+                        <ServerIcon className="w-24 h-24 text-blue-600" />
                     </div>
                     <div className="relative">
                         <div className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">System Health</div>
-                        <div className="text-4xl font-black text-emerald-500 mb-2">
+                        <div className="text-4xl font-black text-blue-500 mb-2">
                             100%
                         </div>
                         <div className="text-xs font-bold text-muted-foreground">
@@ -234,10 +235,10 @@ export default function OwnerDashboard() {
                             <div className="space-y-3">
                                 <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
                                     <div className="flex justify-between items-center mb-3">
-                                        <span className="text-xs font-black uppercase tracking-widest text-emerald-400">Database & API</span>
+                                        <span className="text-xs font-black uppercase tracking-widest text-blue-400">Database & API</span>
                                         <div className="flex items-center gap-1.5">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></div>
-                                            <span className="text-xs font-mono text-emerald-400">HEALTHY</span>
+                                            <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></div>
+                                            <span className="text-xs font-mono text-blue-400">HEALTHY</span>
                                         </div>
                                     </div>
                                     <div className="space-y-2">
@@ -247,7 +248,7 @@ export default function OwnerDashboard() {
                                         </div>
                                         <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden flex">
                                             <div
-                                                className="bg-brand-500 h-full transition-all duration-500"
+                                                className="bg-primary-500 h-full transition-all duration-500"
                                                 style={{ width: `${metrics?.storage?.total_mb ? (metrics.storage.media_mb / (metrics.storage.total_mb || 1)) * 100 : 0}%` }}
                                             />
                                             <div
@@ -257,12 +258,12 @@ export default function OwnerDashboard() {
                                         </div>
                                         <div className="flex gap-4 pt-1">
                                             <div className="flex items-center gap-1.5">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-brand-500"></div>
-                                                <span className="text-[8px] font-black uppercase text-muted-foreground">Media ({metrics?.storage?.media_mb?.toFixed(1)} MB)</span>
+                                                <div className="w-1.5 h-1.5 rounded-full bg-primary-500"></div>
+                                                <span className="text-xs font-black uppercase text-muted-foreground">Media ({metrics?.storage?.media_mb?.toFixed(1)} MB)</span>
                                             </div>
                                             <div className="flex items-center gap-1.5">
                                                 <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
-                                                <span className="text-[8px] font-black uppercase text-muted-foreground">Docs ({metrics?.storage?.docs_mb?.toFixed(1)} MB)</span>
+                                                <span className="text-xs font-black uppercase text-muted-foreground">Docs ({metrics?.storage?.docs_mb?.toFixed(1)} MB)</span>
                                             </div>
                                         </div>
                                     </div>
@@ -284,7 +285,7 @@ export default function OwnerDashboard() {
                                             {toggling === 'maintenance_mode' && <Loader2 className="w-3 h-3 animate-spin" />}
                                         </div>
                                         <div className="text-xs font-black uppercase tracking-widest">Maintenance Control</div>
-                                        <div className="text-[11px] font-bold opacity-90 uppercase">
+                                        <div className="text-xs font-bold opacity-90 uppercase">
                                             {metrics?.system_status?.maintenance_mode ? 'APP IS LOCKED' : 'RELEASE APP'}
                                         </div>
                                     </button>
@@ -304,7 +305,7 @@ export default function OwnerDashboard() {
                                             {toggling === 'disable_ai_processing' && <Loader2 className="w-3 h-3 animate-spin" />}
                                         </div>
                                         <div className="text-xs font-black uppercase tracking-widest">AI Kill-Switch</div>
-                                        <div className="text-[11px] font-bold opacity-90 uppercase">
+                                        <div className="text-xs font-bold opacity-90 uppercase">
                                             {metrics?.system_status?.ai_disabled ? 'AI IS HEATED' : 'FREEZE AI'}
                                         </div>
                                     </button>
@@ -312,7 +313,7 @@ export default function OwnerDashboard() {
                             </div>
                         </div>
                         {/* Abstract background blobs */}
-                        <div className="absolute -top-20 -right-20 w-64 h-64 bg-brand-500/30 rounded-full blur-3xl"></div>
+                        <div className="absolute -top-20 -right-20 w-64 h-64 bg-primary-500/30 rounded-full blur-3xl"></div>
                         <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-primary/30 rounded-full blur-3xl"></div>
                     </div>
 
@@ -322,7 +323,7 @@ export default function OwnerDashboard() {
                                 <h3 className="text-sm font-black text-foreground dark:text-white uppercase tracking-tight">Active Broadcasts</h3>
                                 <p className="text-xs text-muted-foreground uppercase font-bold mt-1">Global System Messages</p>
                             </div>
-                            <MegaphoneIcon className="w-6 h-6 text-brand-600" />
+                            <MegaphoneIcon className="w-6 h-6 text-primary-600" />
                         </div>
 
                         <div className="flex items-end justify-between">
@@ -331,13 +332,13 @@ export default function OwnerDashboard() {
                             </div>
                             <Link
                                 to="/admin/broadcasts"
-                                className="text-xs font-black uppercase tracking-widest text-brand-600 hover:text-brand-700 flex items-center gap-1 group-hover:gap-2 transition-all"
+                                className="text-xs font-black uppercase tracking-widest text-primary-600 hover:text-primary-700 flex items-center gap-1 group-hover:gap-2 transition-all"
                             >
                                 Manage Announcements
                                 <span>→</span>
                             </Link>
                         </div>
-                        <div className="absolute -bottom-4 -right-4 w-16 h-16 bg-brand-500/5 rounded-full group-hover:scale-150 transition-transform"></div>
+                        <div className="absolute -bottom-4 -right-4 w-16 h-16 bg-primary-500/5 rounded-full group-hover:scale-150 transition-transform"></div>
                     </div>
 
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-border dark:border-gray-700 shadow-sm">

@@ -1,50 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .font-premium {
+    font-family: 'Cinzel', serif !important;
+  }
+}
+
 @layer base {
   :root {
-    /* Modern Real Estate Theme - Light Mode */
-    /* Crisp Off-White Background */
-    --background: 210 20% 98%;
-    /* Ink Black Foreground */
-    --foreground: 220 40% 10%;
+    /* Design System: Estate Trust */
+    --background: 216 33% 97%; /* #F5F7FA */
+    --foreground: 234 66% 30%; /* #1A237E */
 
-    /* Card White */
-    --card: 0 0% 100%;
-    --card-foreground: 220 40% 10%;
+    --card: 0 0% 100%; /* #FFFFFF */
+    --card-foreground: 200 18% 26%; /* #37474F */
 
-    /* Popover White */
     --popover: 0 0% 100%;
-    --popover-foreground: 220 40% 10%;
+    --popover-foreground: 234 66% 30%;
 
-    /* Deep Navy Primary */
-    --primary: 220 60% 20%;
+    --primary: 216 85% 34%; /* #0D47A1 */
     --primary-foreground: 0 0% 100%;
 
-    /* Sage Green Secondary */
-    --secondary: 150 30% 45%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 204 82% 94%; /* #E3F2FD */
+    --secondary-foreground: 216 85% 34%;
 
-    /* Muted Slate (Adjusted for better readability - Dark Blue Slate) */
-    --muted: 210 20% 90%;
-    --muted-foreground: 215 40% 18%;
+    --muted: 216 33% 97%; 
+    --muted-foreground: 200 18% 26%;
 
-    /* Accent Slate */
-    --accent: 210 20% 90%;
-    --accent-foreground: 220 60% 20%;
+    --accent: 204 82% 94%;
+    --accent-foreground: 216 85% 34%;
 
-    /* Terracotta Destructive (Keeping clear error color) */
-    --destructive: 8 50% 51%;
+    --destructive: 0 66% 47%; /* #C62828 */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 220 60% 20%;
+    --success: 123 46% 34%; /* #2E7D32 */
+    --success-foreground: 0 0% 100%;
 
-    --radius: 0.75rem;
+    --warning: 37 94% 56%; /* #F9A825 */
+    --warning-foreground: 0 0% 100%;
 
-    /* Window Background - Solid for consistency */
+    --border: 200 18% 84%; /* #CFD8DC */
+    --input: 200 18% 84%;
+    --ring: 216 85% 34%;
+
+    --radius: 1rem; /* 16px */
+
     --window-background: 0 0% 100%;
   }
 
@@ -65,9 +69,9 @@
     --primary: 215 100% 70%;
     --primary-foreground: 220 40% 10%;
 
-    /* Sage Green remains clear accent */
-    --secondary: 150 30% 45%;
-    --secondary-foreground: 0 0% 100%;
+    /* Secondary Blue (Dark Slate Blue) */
+    --secondary: 215 28% 17%;
+    --secondary-foreground: 210 20% 98%;
 
     --muted: 215 28% 17%;
     --muted-foreground: 215 20% 75%;
@@ -80,7 +84,7 @@
 
     --border: 215 28% 17%;
     --input: 215 28% 17%;
-    --ring: 150 30% 45%;
+    --ring: 215 100% 70%;
 
     --window-background: 220 40% 8%;
   }
@@ -263,6 +267,14 @@ a {
       0 2px 4px -1px rgba(20, 40, 75, 0.06);
   }
 
+  .shadow-low {
+    box-shadow: 0px 4px 12px rgba(13, 71, 161, 0.08);
+  }
+
+  .shadow-high {
+    box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.15);
+  }
+
   .shadow-jewel {
     box-shadow:
       0 10px 15px -3px rgba(20, 40, 75, 0.1),
@@ -399,4 +411,18 @@ html.dyslexia-font * {
   font-family: 'Comic Sans MS', 'OpenDyslexic', Arial, sans-serif !important;
   letter-spacing: 0.05em !important;
   word-spacing: 0.1em !important;
+}
+
+/* Hide UserWay widget on mobile devices to prevent UI overlap */
+@media (max-width: 768px) {
+  div[class*="userway"],
+  div[id*="userway"],
+  div[class*="uwy"],
+  div[id*="uwy"],
+  iframe[title*="accessibility"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
 }

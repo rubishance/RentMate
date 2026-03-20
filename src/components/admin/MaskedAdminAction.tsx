@@ -58,7 +58,7 @@ export const MaskedAdminAction = ({
             <button
                 onClick={handleReveal}
                 disabled={isLogging}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-600 dark:bg-brand-900/20 dark:hover:bg-brand-900/40 rounded-lg transition-all text-xs font-black uppercase tracking-widest border border-brand-100 dark:border-brand-800"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-600 dark:bg-brand-900/20 dark:hover:bg-brand-900/40 rounded-xl transition-all text-xs font-black uppercase tracking-widest border border-brand-100 dark:border-brand-800"
                 title={`Unlock ${label} (Will be logged)`}
             >
                 <EyeIcon className="w-3.5 h-3.5" />

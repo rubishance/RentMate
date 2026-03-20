@@ -89,7 +89,7 @@ export default function MFAEnrollment() {
 
                 <div className="space-y-6">
                     {/* QR Code Section */}
-                    <div className="flex flex-col items-center justify-center p-4 bg-secondary rounded-lg border border-border">
+                    <div className="flex flex-col items-center justify-center p-4 bg-secondary rounded-xl border border-border">
                         {qrCodeUrl && (
                             <img src={qrCodeUrl} alt="MFA QR Code" className="w-48 h-48 mb-4" />
                         )}
@@ -109,7 +109,7 @@ export default function MFAEnrollment() {
 
                     {/* Verification Form */}
                     <form onSubmit={handleVerify} className="mt-8 space-y-6">
-                        <div className="rounded-md shadow-sm -space-y-px">
+                        <div className="rounded-lg shadow-sm -space-y-px">
                             <div>
                                 <label htmlFor="code" className="sr-only">Verification Code</label>
                                 <input
@@ -117,7 +117,7 @@ export default function MFAEnrollment() {
                                     name="code"
                                     type="text"
                                     required
-                                    className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-foreground focus:outline-none focus:ring-brand-500 focus:border-brand-500 focus:z-10 sm:text-sm text-center tracking-widest text-2xl font-mono"
+                                    className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-foreground focus:outline-none focus:ring-brand-500 focus:border-brand-500 focus:z-10 sm:text-sm text-center tracking-widest text-2xl font-mono"
                                     placeholder="000 000"
                                     value={verifyCode}
                                     onChange={(e) => setVerifyCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
@@ -136,7 +136,7 @@ export default function MFAEnrollment() {
                             <button
                                 type="submit"
                                 disabled={verifying || verifyCode.length !== 6}
-                                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:opacity-50"
+                                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:opacity-50"
                             >
                                 {verifying ? (
                                     <Loader2 className="w-5 h-5 animate-spin" />

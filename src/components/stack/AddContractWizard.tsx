@@ -852,7 +852,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                         </div>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto no-scrollbar pt-6 pb-32">
+                    <div className="flex-1 overflow-y-auto no-scrollbar pt-6 pb-24">
                         <div className="max-w-2xl mx-auto px-6">
                             <div className="bg-card glass-premium border border-border rounded-3xl p-6 shadow-xl min-h-[400px]" dir="rtl">
                                 <AnimatePresence mode="wait">
@@ -1384,7 +1384,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                                         <span className="text-muted-foreground">{t('optionPeriods')}</span>
                                                                         <div className="text-right space-y-1">
                                                                             {formData.optionPeriods.map((p, i) => (
-                                                                                <div key={i} className="text-[11px] font-normal flex flex-col gap-0.5">
+                                                                                <div key={i} className="text-xs font-normal flex flex-col gap-0.5">
                                                                                     <div>{t('until')} {format(parseISO(p.endDate), 'dd/MM/yyyy')}{p.rentAmount ? ` | ${p.rentAmount}₪` : ''}</div>
                                                                                     {(p.noticeDays || p.reminderDays) && (
                                                                                         <div className="text-xs text-muted-foreground">
@@ -1424,7 +1424,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                                         <span className="text-muted-foreground">{t('rentSteps')}</span>
                                                                         <div className="text-right space-y-1">
                                                                             {formData.rentSteps.map((s, i) => (
-                                                                                <div key={i} className="text-[11px] font-normal">
+                                                                                <div key={i} className="text-xs font-normal">
                                                                                     {format(parseISO(s.startDate), 'dd/MM/yyyy')}: {s.amount}₪
                                                                                 </div>
                                                                             ))}
@@ -1434,7 +1434,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
 
                                                                 {formData.hasLinkage && (
                                                                     <>
-                                                                        <span className="text-brand-500 pt-2 col-span-2 border-t border-border/30 mt-1 uppercase text-[11px]">{t('linkage')}</span>
+                                                                        <span className="text-brand-500 pt-2 col-span-2 border-t border-border/30 mt-1 uppercase text-xs">{t('linkage')}</span>
                                                                         <span className="text-muted-foreground">{t('indexOption')}</span>
                                                                         <span className="text-right">{t(`linkedTo${formData.linkageType.charAt(0).toUpperCase() + formData.linkageType.slice(1)}` as any)}</span>
                                                                         <span className="text-muted-foreground">{t('baseDate')}</span>

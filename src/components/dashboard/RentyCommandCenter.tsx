@@ -12,7 +12,7 @@ interface FeedItem {
     type: 'warning' | 'info' | 'success' | 'urgent' | 'action';
     title: string;
     desc: string;
-    date: string;
+    date?: string;
     actionLabel?: string;
     onAction?: () => void;
 }
@@ -117,7 +117,7 @@ export function RentyCommandCenter({ firstName, feedItems, className }: RentyCom
     return (
         <div className={cn("space-y-4 relative", className)}>
             {/* Ambient Background Glow */}
-            <div className="absolute top-[-100px] left-1/2 -translate-x-1/2 w-full h-[300px] bg-gradient-to-b from-indigo-500/10 via-violet-500/5 to-transparent blur-3xl -z-10 pointer-events-none" />
+            <div className="absolute top-[-100px] left-1/2 -translate-x-1/2 w-full h-[300px] bg-gradient-to-b from-indigo-500/10 via-blue-500/5 to-transparent blur-3xl -z-10 pointer-events-none" />
 
             {/* Consolidated Header & Greeting */}
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
@@ -128,11 +128,11 @@ export function RentyCommandCenter({ firstName, feedItems, className }: RentyCom
                         className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/5 dark:bg-indigo-500/10 backdrop-blur-md rounded-full border border-indigo-500/10 shadow-sm mb-2"
                     >
                         <Sparkles className="w-3 h-3 text-indigo-500" />
-                        <span className="text-[11px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                        <span className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
                             {t('commandCenter')}
                         </span>
                     </motion.div>
-                    <h1 className="text-xl md:text-2xl font-black tracking-tighter text-foreground leading-tight lowercase">
+                    <h1 className="text-xl md:text-2xl font-black tracking-tighter text-foreground leading-tight">
                         {t('commandCenter')}
                     </h1>
                 </div>
@@ -154,7 +154,7 @@ export function RentyCommandCenter({ firstName, feedItems, className }: RentyCom
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.2, duration: 0.5 }}
-                className="max-w-2xl mx-auto w-full relative group"
+                className="w-full relative group"
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
@@ -163,7 +163,7 @@ export function RentyCommandCenter({ firstName, feedItems, className }: RentyCom
                     "absolute inset-0 rounded-[2rem] transition-all duration-300 pointer-events-none",
                     isDragging
                         ? "bg-indigo-500/20 ring-4 ring-indigo-500/30 scale-105"
-                        : "bg-gradient-to-r from-indigo-500 to-violet-500 blur opacity-20 group-hover:opacity-30"
+                        : "bg-gradient-to-r from-indigo-500 to-blue-500 blur opacity-20 group-hover:opacity-30"
                 )} />
 
                 <form
@@ -244,59 +244,89 @@ export function RentyCommandCenter({ firstName, feedItems, className }: RentyCom
                 </form>
             </motion.div>
 
-            {/* Briefing Cards (Carousel) */}
+            {/* Briefing Cards (List) */}
             {hasItems && (
-                <div className="max-w-5xl mx-auto px-4 overflow-x-auto pb-4 pt-2 -mx-4 scrollbar-hide flex gap-4 snap-x snap-mandatory justify-start md:justify-center">
-                    {activeItems.map((item, idx) => (
-                        <motion.div
-                            key={item.id}
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.4 + (idx * 0.1) }}
-                            className="flex-shrink-0 snap-center"
-                        >
-                            <Card
-                                className={cn(
-                                    "w-[280px] h-full rounded-[2rem] border transition-all duration-300 hover:scale-[1.02]",
-                                    item.type === 'urgent'
-                                        ? "bg-rose-50/50 border-rose-200 dark:bg-rose-900/10 dark:border-rose-900/30"
-                                        : item.type === 'warning'
-                                            ? "bg-amber-50/50 border-amber-200 dark:bg-amber-900/10 dark:border-amber-900/30"
-                                            : "bg-card dark:bg-slate-900/50"
-                                )}
-                                onClick={() => handleCardClick(item)}
-                                hoverEffect
-                            >
-                                <CardContent className="p-4 h-full flex flex-col justify-between">
-                                    <div>
-                                        <div className="flex items-center justify-between mb-3">
-                                            <div className={cn(
-                                                "p-2 rounded-xl",
-                                                item.type === 'urgent' ? "bg-rose-100 text-rose-600 dark:bg-rose-900/50 dark:text-rose-400" :
-                                                    item.type === 'warning' ? "bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-400" :
-                                                        "bg-indigo-50 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400"
-                                            )}>
-                                                {item.type === 'urgent' || item.type === 'warning' ? <AlertCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
+                <div className="w-full group mt-2 z-10 relative">
+                    <div className="flex flex-col gap-4 w-full">
+                        {activeItems.map((item, idx) => {
+                            const isActionOrInfo = item.type !== 'urgent' && item.type !== 'warning';
+                            return (
+                                <motion.div
+                                    key={item.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.4 + (idx * 0.1) }}
+                                    className="w-full"
+                                >
+                                    <Card
+                                        className={cn(
+                                            "w-full rounded-[2rem] border transition-all duration-300 hover:scale-[1.01] cursor-pointer group/card overflow-hidden",
+                                            item.type === 'urgent'
+                                                ? "bg-rose-50/50 border-rose-200 dark:bg-rose-900/10 dark:border-rose-900/30"
+                                                : item.type === 'warning'
+                                                    ? "bg-amber-50/50 border-amber-200 dark:bg-amber-900/10 dark:border-amber-900/30"
+                                                    : "bg-primary border-primary/20 shadow-md text-primary-foreground dark:bg-primary/90"
+                                        )}
+                                        onClick={() => handleCardClick(item)}
+                                    >
+                                        <CardContent className="p-5 flex flex-col h-full justify-between relative">
+                                            {/* Decorative background circle for blue card */}
+                                            {isActionOrInfo && (
+                                                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl opacity-50 -mr-10 -mt-10 pointer-events-none" />
+                                            )}
+                                            
+                                            <div className="relative z-10 w-full flex flex-col items-stretch text-right" dir="auto">
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <div className={cn(
+                                                        "p-2 rounded-xl shrink-0",
+                                                        item.type === 'urgent' ? "bg-rose-100 text-rose-600 dark:bg-rose-900/50 dark:text-rose-400" :
+                                                            item.type === 'warning' ? "bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-400" :
+                                                                "bg-white/20 text-white backdrop-blur-sm"
+                                                    )}>
+                                                        {item.type === 'urgent' || item.type === 'warning' ? <AlertCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
+                                                    </div>
+                                                    <span className={cn(
+                                                        "text-xs font-bold uppercase tracking-widest opacity-90",
+                                                        isActionOrInfo ? "text-primary-foreground/80" : "text-muted-foreground"
+                                                    )}>{item.date}</span>
+                                                </div>
+
+                                                <h3 className={cn(
+                                                    "font-black text-xl md:text-2xl tracking-tight leading-tight mb-2",
+                                                    isActionOrInfo ? "text-primary-foreground" : "text-foreground"
+                                                )}>
+                                                    {item.title}
+                                                </h3>
+                                                <p className={cn(
+                                                    "text-base leading-relaxed font-medium mb-5",
+                                                    isActionOrInfo ? "text-primary-foreground/80" : "text-muted-foreground"
+                                                )}>
+                                                    {item.desc}
+                                                </p>
+                                                
+                                                <div className={cn(
+                                                    "flex items-center gap-2 text-base font-bold uppercase tracking-widest group-hover/card:underline decoration-2 underline-offset-4 self-start md:self-auto",
+                                                    isActionOrInfo ? "text-primary-foreground decoration-primary-foreground/50" : "text-primary dark:text-primary decoration-primary/30"
+                                                )}>
+                                                    {isRtl ? (
+                                                        <>
+                                                            <ArrowRight className="w-4 h-4 transition-transform group-hover/card:-translate-x-1 rotate-180" />
+                                                            {t('rentySuggestsAction')}
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <ArrowRight className="w-4 h-4 transition-transform group-hover/card:translate-x-1" />
+                                                            {t('rentySuggestsAction')}
+                                                        </>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground opacity-90">{item.date}</span>
-                                        </div>
-
-                                        <h3 className="font-bold text-sm leading-tight mb-2 line-clamp-2 text-foreground">
-                                            {item.title}
-                                        </h3>
-                                        <p className="text-xs text-muted-foreground line-clamp-2 mb-4">
-                                            {item.desc}
-                                        </p>
-                                    </div>
-
-                                    <div className="flex items-center gap-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest group-hover:underline decoration-2 underline-offset-4 decoration-indigo-200">
-                                        {t('rentySuggestsAction')}
-                                        <ArrowRight className={cn("w-3 h-3 transition-transform group-hover:translate-x-1", isRtl && "rotate-180 group-hover:-translate-x-1")} />
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </motion.div>
-                    ))}
+                                        </CardContent>
+                                    </Card>
+                                </motion.div>
+                            );
+                        })}
+                    </div>
                 </div>
             )}
         </div>

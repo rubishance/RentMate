@@ -78,18 +78,18 @@ export default function AdminFeedback() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-96">
-                <Loader2 className="w-10 h-10 animate-spin text-brand-600" />
+                <Loader2 className="w-10 h-10 animate-spin text-primary-600" />
             </div>
         );
     }
 
     return (
-        <div className="space-y-8 pb-20">
+        <div className="space-y-8">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-extrabold text-foreground dark:text-white tracking-tight flex items-center gap-2">
-                        <MessageSquare className="w-8 h-8 text-brand-600" />
+                        <MessageSquare className="w-8 h-8 text-primary-600" />
                         Feedback Manager
                     </h1>
                     <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground mt-1">
@@ -120,7 +120,7 @@ export default function AdminFeedback() {
                         key={status}
                         onClick={() => setFilterStatus(status)}
                         className={`px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${filterStatus === status
-                            ? 'bg-white dark:bg-gray-800 text-brand-600 shadow-sm border border-border dark:border-gray-700'
+                            ? 'bg-white dark:bg-gray-800 text-primary-600 shadow-sm border border-border dark:border-gray-700'
                             : 'text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300'
                             }`}
                     >
@@ -139,23 +139,23 @@ export default function AdminFeedback() {
                     filteredFeedback.map((item) => (
                         <div key={item.id} className="bg-white dark:bg-gray-800 rounded-2xl border border-border dark:border-gray-700 shadow-sm overflow-hidden flex flex-col md:flex-row gap-6 p-6 hover:shadow-md transition-shadow">
                             {/* Left Info Bar */}
-                            <div className={`w-1.5 md:w-2 rounded-full h-auto self-stretch shrink-0 ${item.status === 'new' ? 'bg-brand-600' :
-                                item.status === 'in_progress' ? 'bg-amber-500' : 'bg-emerald-500'
+                            <div className={`w-1.5 md:w-2 rounded-full h-auto self-stretch shrink-0 ${item.status === 'new' ? 'bg-primary-600' :
+                                item.status === 'in_progress' ? 'bg-amber-500' : 'bg-blue-500'
                                 }`} />
 
                             {/* Main Content */}
                             <div className="flex-1 space-y-4">
                                 <div className="flex flex-wrap items-center gap-3">
-                                    <span className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-widest border ${item.type === 'bug' ? 'bg-red-50 text-red-700 border-red-100 dark:bg-red-900/20 dark:border-red-800' :
+                                    <span className={`px-2.5 py-1 rounded-xl text-xs font-black uppercase tracking-widest border ${item.type === 'bug' ? 'bg-red-50 text-red-700 border-red-100 dark:bg-red-900/20 dark:border-red-800' :
                                         item.type === 'feature' ? 'bg-primary-50 text-primary-700 border-primary-100 dark:bg-primary-900/20 dark:border-primary-800' :
-                                            'bg-secondary text-muted-foreground border-border dark:bg-foreground dark:border-gray-700 dark:text-muted-foreground'
+                                            'bg-blue-50 text-muted-foreground border-border dark:bg-foreground dark:border-gray-700 dark:text-muted-foreground'
                                         }`}>
                                         {item.type}
                                     </span>
                                     <span className="text-gray-300 dark:text-muted-foreground font-light">|</span>
                                     <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">{new Date(item.created_at).toLocaleString('he-IL')}</span>
                                     <span className="text-gray-300 dark:text-muted-foreground font-light">|</span>
-                                    <span className="text-xs font-mono text-muted-foreground tracking-tighter bg-secondary dark:bg-foreground px-2 py-0.5 rounded border border-border dark:border-gray-700">
+                                    <span className="text-xs font-mono text-muted-foreground tracking-tighter bg-blue-50 dark:bg-foreground px-2 py-0.5 rounded border border-border dark:border-gray-700">
                                         ID: {item.user_id ? item.user_id.split('-')[0] : 'ANON'}
                                     </span>
                                 </div>
@@ -166,8 +166,8 @@ export default function AdminFeedback() {
 
                                 {/* Device Metadata */}
                                 {item.device_info && (
-                                    <div className="inline-flex items-center gap-2 bg-secondary dark:bg-foreground rounded-xl px-4 py-2 border border-border dark:border-gray-700">
-                                        <DevicePhoneMobileIcon className="w-4 h-4 text-brand-600" />
+                                    <div className="inline-flex items-center gap-2 bg-blue-50 dark:bg-foreground rounded-xl px-4 py-2 border border-border dark:border-gray-700">
+                                        <DevicePhoneMobileIcon className="w-4 h-4 text-primary-600" />
                                         <div className="text-xs font-bold text-muted-foreground uppercase tracking-tight">
                                             {item.device_info.screen?.width}x{item.device_info.screen?.height} Resolution
                                             <span className="mx-2 text-gray-300">/</span>
@@ -184,7 +184,7 @@ export default function AdminFeedback() {
                                     <select
                                         value={item.status}
                                         onChange={(e) => handleStatusUpdate(item.id, e.target.value)}
-                                        className="w-full text-xs font-black uppercase tracking-widest border border-border dark:border-gray-700 rounded-xl p-2.5 bg-secondary dark:bg-foreground text-foreground dark:text-white focus:ring-2 focus:ring-brand-500/20 outline-none"
+                                        className="w-full text-xs font-black uppercase tracking-widest border border-border dark:border-gray-700 rounded-xl p-2.5 bg-blue-50 dark:bg-foreground text-foreground dark:text-white focus:ring-2 focus:ring-primary-500/20 outline-none"
                                     >
                                         <option value="new">🟢 NEW ENTRY</option>
                                         <option value="in_progress">🟡 IN PROGRESS</option>
@@ -197,7 +197,7 @@ export default function AdminFeedback() {
                                         href={item.screenshot_url}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-brand-600 hover:text-brand-700 transition-colors bg-brand-50 dark:bg-brand-900/20 px-3 py-2 rounded-xl border border-brand-100 dark:border-brand-800"
+                                        className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-primary-600 hover:text-primary-700 transition-colors bg-primary-50 dark:bg-primary-900/20 px-3 py-2 rounded-xl border border-primary-100 dark:border-primary-800"
                                     >
                                         <PhotoIcon className="w-4 h-4" />
                                         Screenshot

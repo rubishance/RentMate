@@ -66,7 +66,7 @@ export function SmartActionsRow() {
                         </div>
 
                         <div className="flex flex-col items-start min-w-[80px]">
-                            <span className="text-[13px] font-bold text-slate-800 dark:text-white leading-tight">
+                            <span className="text-sm font-bold text-slate-800 dark:text-white leading-tight">
                                 {action.label}
                             </span>
                             {action.subLabel && (

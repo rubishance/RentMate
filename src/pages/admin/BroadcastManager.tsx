@@ -94,14 +94,14 @@ export default function BroadcastManager() {
         setIsEditing(true);
     };
 
-    if (loading) return <div className="flex h-96 items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-brand-600" /></div>;
+    if (loading) return <div className="flex h-96 items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary-600" /></div>;
 
     return (
-        <div className="space-y-8 pb-20">
+        <div className="space-y-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-extrabold text-foreground dark:text-white tracking-tight flex items-center gap-2">
-                        <MegaphoneIcon className="w-8 h-8 text-brand-600" />
+                        <MegaphoneIcon className="w-8 h-8 text-primary-600" />
                         Broadcast Manager
                     </h1>
                     <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground mt-1">
@@ -110,7 +110,7 @@ export default function BroadcastManager() {
                 </div>
                 <button
                     onClick={() => { setForm({ message: '', type: 'info', is_active: true, expires_at: '', target_link: '' }); setIsEditing(true); }}
-                    className="flex items-center gap-2 px-6 py-2.5 bg-brand-600 text-white rounded-xl hover:bg-brand-700 transition-all font-bold shadow-lg shadow-brand-600/20"
+                    className="flex items-center gap-2 px-6 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-all font-bold shadow-lg shadow-primary-600/20"
                 >
                     <PlusIcon className="w-5 h-5" />
                     New Announcement
@@ -118,7 +118,7 @@ export default function BroadcastManager() {
             </div>
 
             {isEditing && (
-                <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-brand-500 p-8 shadow-2xl space-y-6">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-primary-500 p-8 shadow-2xl space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="md:col-span-2">
                             <label className="block text-xs font-black text-muted-foreground uppercase tracking-widest mb-2">Message</label>
@@ -126,7 +126,7 @@ export default function BroadcastManager() {
                                 value={form.message || ''}
                                 onChange={e => setForm({ ...form, message: e.target.value })}
                                 rows={2}
-                                className="w-full p-4 bg-secondary dark:bg-foreground border border-border dark:border-gray-700 rounded-xl font-bold text-foreground dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20"
+                                className="w-full p-4 bg-blue-50 dark:bg-foreground border border-border dark:border-gray-700 rounded-xl font-bold text-foreground dark:text-white outline-none focus:ring-2 focus:ring-primary-500/20"
                                 placeholder="Enter announcement text..."
                             />
                         </div>
@@ -135,7 +135,7 @@ export default function BroadcastManager() {
                             <select
                                 value={form.type}
                                 onChange={e => setForm({ ...form, type: e.target.value as Broadcast['type'] })}
-                                className="w-full p-3 bg-secondary dark:bg-foreground border border-border dark:border-gray-700 rounded-xl font-bold text-foreground dark:text-white outline-none"
+                                className="w-full p-3 bg-blue-50 dark:bg-foreground border border-border dark:border-gray-700 rounded-xl font-bold text-foreground dark:text-white outline-none"
                             >
                                 <option value="info">Information (Blue)</option>
                                 <option value="warning">Warning (Amber)</option>
@@ -149,7 +149,7 @@ export default function BroadcastManager() {
                                 type="datetime-local"
                                 value={form.expires_at || ''}
                                 onChange={e => setForm({ ...form, expires_at: e.target.value })}
-                                className="w-full p-3 bg-secondary dark:bg-foreground border border-border dark:border-gray-700 rounded-xl font-bold text-foreground dark:text-white outline-none"
+                                className="w-full p-3 bg-blue-50 dark:bg-foreground border border-border dark:border-gray-700 rounded-xl font-bold text-foreground dark:text-white outline-none"
                             />
                         </div>
                         <div className="md:col-span-2">
@@ -158,7 +158,7 @@ export default function BroadcastManager() {
                                 type="text"
                                 value={form.target_link || ''}
                                 onChange={e => setForm({ ...form, target_link: e.target.value })}
-                                className="w-full p-3 bg-secondary dark:bg-foreground border border-border dark:border-gray-700 rounded-xl font-bold text-foreground dark:text-white outline-none"
+                                className="w-full p-3 bg-blue-50 dark:bg-foreground border border-border dark:border-gray-700 rounded-xl font-bold text-foreground dark:text-white outline-none"
                                 placeholder="/dashboard, /pricing, etc."
                             />
                         </div>
@@ -169,7 +169,7 @@ export default function BroadcastManager() {
                         <button
                             onClick={handleSave}
                             disabled={saving}
-                            className="px-8 py-2.5 bg-emerald-600 text-white rounded-xl font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20 disabled:opacity-80 flex items-center gap-2"
+                            className="px-8 py-2.5 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 disabled:opacity-80 flex items-center gap-2"
                         >
                             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircleIcon className="w-4 h-4" />}
                             Publish Announcement
@@ -181,7 +181,7 @@ export default function BroadcastManager() {
             <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border dark:border-gray-700 shadow-sm overflow-hidden">
                 <table className="w-full text-left">
                     <thead>
-                        <tr className="bg-secondary dark:bg-foreground/30">
+                        <tr className="bg-blue-50 dark:bg-foreground/30">
                             <th className="px-6 py-4 text-xs font-black text-muted-foreground uppercase tracking-widest">Status</th>
                             <th className="px-6 py-4 text-xs font-black text-muted-foreground uppercase tracking-widest">Announcement</th>
                             <th className="px-6 py-4 text-xs font-black text-muted-foreground uppercase tracking-widest text-center">Expiry</th>
@@ -193,11 +193,11 @@ export default function BroadcastManager() {
                             <tr><td colSpan={4} className="px-6 py-20 text-center font-bold text-muted-foreground uppercase tracking-widest">No announcements history</td></tr>
                         ) : (
                             broadcasts.map(b => (
-                                <tr key={b.id} className="hover:bg-secondary dark:hover:bg-gray-700/30 transition-colors">
+                                <tr key={b.id} className="hover:bg-blue-50 dark:hover:bg-gray-700/30 transition-colors">
                                     <td className="px-6 py-5">
                                         <span className={cn(
-                                            "px-2 py-0.5 rounded text-[11px] font-black uppercase tracking-widest",
-                                            b.is_active ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground"
+                                            "px-2 py-0.5 rounded text-xs font-black uppercase tracking-widest",
+                                            b.is_active ? "bg-blue-100 text-blue-700" : "bg-muted text-muted-foreground"
                                         )}>
                                             {b.is_active ? 'Active' : 'Archived'}
                                         </span>
@@ -208,12 +208,12 @@ export default function BroadcastManager() {
                                                 "w-2 h-2 rounded-full",
                                                 b.type === 'info' ? "bg-primary" :
                                                     b.type === 'warning' ? "bg-amber-500" :
-                                                        b.type === 'error' ? "bg-red-500" : "bg-emerald-500"
+                                                        b.type === 'error' ? "bg-red-500" : "bg-blue-500"
                                             )}></div>
                                             <div className="text-sm font-bold text-foreground dark:text-white">{b.message}</div>
                                         </div>
                                         {b.target_link && (
-                                            <div className="mt-1 flex items-center gap-1 text-xs font-bold text-brand-600 uppercase">
+                                            <div className="mt-1 flex items-center gap-1 text-xs font-bold text-primary-600 uppercase">
                                                 <LinkIcon className="w-3 h-3" />
                                                 {b.target_link}
                                             </div>
@@ -235,8 +235,8 @@ export default function BroadcastManager() {
                                     </td>
                                     <td className="px-6 py-5 text-right">
                                         <div className="flex justify-end gap-2">
-                                            <button onClick={() => handleEdit(b)} className="p-2 text-muted-foreground hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 rounded-lg transition-all"><PencilSquareIcon className="w-5 h-5" /></button>
-                                            <button onClick={() => handleDelete(b.id)} className="p-2 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"><TrashIcon className="w-5 h-5" /></button>
+                                            <button onClick={() => handleEdit(b)} className="p-2 text-muted-foreground hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition-all"><PencilSquareIcon className="w-5 h-5" /></button>
+                                            <button onClick={() => handleDelete(b.id)} className="p-2 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"><TrashIcon className="w-5 h-5" /></button>
                                         </div>
                                     </td>
                                 </tr>

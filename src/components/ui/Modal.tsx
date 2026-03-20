@@ -43,7 +43,8 @@ export const Modal: React.FC<ModalProps> = ({
         <AnimatePresence>
             {isOpen && (
                 <div className={cn(
-                    "fixed inset-0 z-[100] flex items-start justify-center p-4 sm:p-6 pt-20 sm:pt-24",
+                    "fixed inset-0 z-[100] flex items-start justify-center",
+                    "p-0 sm:p-6 pt-0 sm:pt-24",
                     modeless && "pointer-events-none"
                 )}>
                     {/* Backdrop */}
@@ -68,8 +69,9 @@ export const Modal: React.FC<ModalProps> = ({
                         }}
                         exit={{ opacity: 0, scale: 0.95, y: 10, transition: { duration: 0.2 } }}
                         className={cn(
-                            "relative w-full bg-window shadow-premium rounded-3xl overflow-hidden flex flex-col border border-border/50",
-                            "max-h-[90dvh] sm:max-h-[85vh]",
+                            "relative w-full bg-window flex flex-col overflow-hidden",
+                            "h-[100dvh] max-h-[100dvh] rounded-none border-0", // Mobile: Full screen
+                            "sm:h-auto sm:max-h-[85vh] sm:rounded-3xl sm:border sm:border-border/50 sm:shadow-premium", // Desktop: Standard modal
                             sizes[size],
                             modeless && "pointer-events-auto",
                             className
@@ -80,7 +82,7 @@ export const Modal: React.FC<ModalProps> = ({
                             <div>
                                 <h2 className="text-xl font-black tracking-tight text-foreground">{title}</h2>
                                 {description && (
-                                    <p className="text-sm text-muted-foreground mt-1">{description}</p>
+                                    <p className="text-base text-muted-foreground mt-1">{description}</p>
                                 )}
                             </div>
                             <Button

@@ -93,7 +93,7 @@ serve(async (req) => {
 
         // 3. Request Data
         const body = await req.json();
-        const { propertyId, startDate, endDate, lang = 'he' } = body;
+        const { propertyId, startDate, endDate, lang = 'he', isCPAFormat = false } = body;
         if (!propertyId) throw new Error('Property ID is required');
 
         console.log(`[ReportFunction] Fetching data for property: ${propertyId}, range: ${startDate} to ${endDate}`);
@@ -197,93 +197,230 @@ serve(async (req) => {
             }
         }
 
-        // -- Header --
-        doc.setFillColor(15, 23, 42);
-        doc.rect(0, 0, width, 45, 'F');
-        doc.setTextColor(255, 255, 255);
-
-        doc.setFontSize(24);
-        const title = isRtl ? fixRtl('דוח ביצועי נכס - RentMate') : 'Property Performance Report';
-        doc.text(title, isRtl ? width - margin : margin, 20, { align: isRtl ? 'right' : 'left' });
-
-        doc.setFontSize(10);
-        doc.text(`${formatDate(startDate)} - ${formatDate(endDate)}`, isRtl ? width - margin : margin, 32, { align: isRtl ? 'right' : 'left' });
-
-        // -- Property Summary --
-        doc.setTextColor(30, 41, 59);
-        doc.setFontSize(16);
-        doc.text(fixRtl(property.title || property.address || 'Address'), isRtl ? width - margin : margin, 60, { align: isRtl ? 'right' : 'left' });
-        doc.setFontSize(11);
-        const roomsText = isRtl ? fixRtl(`${property.rooms || 0} חדרים`) : `${property.rooms || 0} Rooms`;
-        const sqmText = isRtl ? fixRtl(`${property.size_sqm || 0} מ"ר`) : `${property.size_sqm || 0} sqm`;
-        doc.text(`${fixRtl(property.city || '')} | ${roomsText} | ${sqmText}`, isRtl ? width - margin : margin, 68, { align: isRtl ? 'right' : 'left' });
-
-        // -- Financial Scoreboard --
         const totalIncome = (payments || []).reduce((sum, p) => sum + parseFloat(p.paid_amount || p.amount || '0'), 0);
         const totalExpenses = (utilities || []).reduce((sum, u) => sum + (u.amount || 0), 0);
 
-        doc.setFillColor(248, 250, 252);
-        doc.roundedRect(margin, 75, width - (margin * 2), 25, 3, 3, 'F');
+        if (isCPAFormat) {
+            // --- CPA P&L FORMAT ---
+            doc.setFillColor(255, 255, 255);
+            doc.setTextColor(0, 0, 0);
 
-        doc.setTextColor(100, 116, 139);
-        doc.setFontSize(8);
-        doc.text(isRtl ? fixRtl('סה"כ הכנסות') : 'Total Income', margin + 10, 85);
-        doc.text(isRtl ? fixRtl('סה"כ הוצאות') : 'Total Expenses', width / 2, 85, { align: 'center' });
-        doc.text(isRtl ? fixRtl('תזרים נקי') : 'Net Cash Flow', width - margin - 10, 85, { align: 'right' });
+            // Header
+            doc.setFontSize(20);
+            const title = isRtl ? fixRtl('דוח רווח והפסד מנכס מושכר') : 'Profit & Loss Statement (Rental Property)';
+            doc.text(title, width / 2, 25, { align: 'center' });
 
-        doc.setTextColor(15, 23, 42);
-        doc.setFontSize(14);
-        doc.text(formatCurrency(totalIncome), margin + 10, 93);
-        doc.text(formatCurrency(totalExpenses), width / 2, 93, { align: 'center' });
-        doc.text(formatCurrency(totalIncome - totalExpenses), width - margin - 10, 93, { align: 'right' });
+            doc.setFontSize(11);
+            const periodStr = `${formatDate(startDate)} - ${formatDate(endDate)}`;
+            doc.text(isRtl ? fixRtl(`תקופת דיווח: ${periodStr}`) : `Reporting Period: ${periodStr}`, width / 2, 32, { align: 'center' });
+            
+            doc.setDrawColor(200, 200, 200);
+            doc.line(margin, 38, width - margin, 38);
 
-        // -- Contract & Linkage --
-        if (contract) {
-            doc.setFontSize(12);
-            doc.text(isRtl ? fixRtl('פרטי חוזה והצמדה') : 'Contract & Linkage', isRtl ? width - margin : margin, 115, { align: isRtl ? 'right' : 'left' });
+            // Property Info
+            doc.setFontSize(10);
+            doc.text(isRtl ? fixRtl(`כתובת הנכס: ${property.address}, ${property.city || ''}`) : `Property: ${property.address}, ${property.city || ''}`, isRtl ? width - margin : margin, 45, { align: isRtl ? 'right' : 'left' });
+            doc.text(isRtl ? fixRtl(`בעלים: ${user.user_metadata?.name || user.email || 'N/A'}`) : `Owner: ${user.user_metadata?.name || user.email || 'N/A'}`, isRtl ? width - margin : margin, 52, { align: isRtl ? 'right' : 'left' });
 
-            const contractRows = [
-                [isRtl ? fixRtl('שכר דירה בסיס') : 'Base Rent', formatCurrency(parseFloat(contract.base_rent || '0'))],
-                [isRtl ? fixRtl('סוג הצמדה') : 'Linkage Type', contract.linkage_type?.toUpperCase() || 'NONE'],
-                [isRtl ? fixRtl('תוספת הצמדה (חיזוי)') : 'Linkage Delta (Proj)', formatCurrency(linkageDelta)],
-                [isRtl ? fixRtl('שכר דירה נוכחי') : 'Current Adjusted Rent', formatCurrency(adjustedRent)],
-                [isRtl ? fixRtl('פיקדון') : 'Security Deposit', formatCurrency(parseFloat(contract.security_deposit_amount || '0'))]
+            let currentY = 65;
+
+            // 1. Revenues
+            doc.setFontSize(14);
+            doc.setFont('Heebo', 'bold');
+            doc.text(isRtl ? fixRtl('1. הכנסות (Revenues)') : '1. Revenues', isRtl ? width - margin : margin, currentY, { align: isRtl ? 'right' : 'left' });
+            doc.setFont('Heebo', 'normal');
+            
+            const incomeRows = [
+                [isRtl ? fixRtl('הכנסות מדמי שכירות (Rent Income)') : 'Rent Income', formatCurrency(totalIncome)],
+            ];
+            autoTable(doc, {
+                startY: currentY + 5,
+                body: incomeRows,
+                theme: 'plain',
+                styles: { halign: isRtl ? 'right' : 'left', font: isRtl ? 'Heebo' : 'helvetica', fontSize: 10, cellPadding: 2 },
+                columnStyles: { 0: { cellWidth: isRtl ? 'auto' : 120 }, 1: { halign: isRtl ? 'left' : 'right' } }
+            });
+
+            currentY = (doc as any).lastAutoTable?.finalY + 15;
+
+            // 2. Expenses
+            doc.setFontSize(14);
+            doc.setFont('Heebo', 'bold');
+            doc.text(isRtl ? fixRtl('2. הוצאות מוכרות שוטפות (Deductible Expenses)') : '2. Deductible Expenses', isRtl ? width - margin : margin, currentY, { align: isRtl ? 'right' : 'left' });
+            doc.setFont('Heebo', 'normal');
+
+            // Categorize expenses
+            let maintenance = 0; let legal = 0; let management = 0; let insurance = 0; let other = 0;
+            (utilities || []).forEach(u => {
+                const amount = u.amount || 0;
+                const cat = u.category?.toLowerCase() || '';
+                if (cat.includes('maintenance') || cat.includes('repair')) maintenance += amount;
+                else if (cat.includes('legal') || cat.includes('cpa')) legal += amount;
+                else if (cat.includes('management')) management += amount;
+                else if (cat.includes('insurance')) insurance += amount;
+                else other += amount;
+            });
+
+            const expenseRows = [
+                [isRtl ? fixRtl('דמי ניהול והחזקה (Management)') : 'Management', formatCurrency(management)],
+                [isRtl ? fixRtl('תיקונים ושוטף (Repairs & Maintenance)') : 'Repairs', formatCurrency(maintenance)],
+                [isRtl ? fixRtl('ביטוח מבנה (Insurance)') : 'Insurance', formatCurrency(insurance)],
+                [isRtl ? fixRtl('שכ"ט עו"ד/רו"ח (Legal & Accounting)') : 'Legal & Accounting', formatCurrency(legal)],
+                [isRtl ? fixRtl('שונות (Other)') : 'Other', formatCurrency(other)],
+                [{ content: isRtl ? fixRtl('סה"כ הוצאות שוטפות') : 'Total Current Expenses', styles: { fontStyle: 'bold' } }, { content: formatCurrency(totalExpenses), styles: { fontStyle: 'bold' } }]
             ];
 
             autoTable(doc, {
-                startY: 120,
-                head: [[isRtl ? fixRtl('תיאור') : 'Description', isRtl ? fixRtl('ערך') : 'Value']],
-                body: contractRows,
+                startY: currentY + 5,
+                body: expenseRows,
                 theme: 'plain',
+                styles: { halign: isRtl ? 'right' : 'left', font: isRtl ? 'Heebo' : 'helvetica', fontSize: 10, cellPadding: 2 },
+                columnStyles: { 0: { cellWidth: isRtl ? 'auto' : 120 }, 1: { halign: isRtl ? 'left' : 'right' } }
+            });
+
+            currentY = (doc as any).lastAutoTable?.finalY + 15;
+
+            // 3. Depreciation & Finance (CPA Fill)
+            doc.setFontSize(14);
+            doc.setFont('Heebo', 'bold');
+            doc.text(isRtl ? fixRtl('3. פחת בניין וריבית משכנתא (Depreciation & Interest)') : '3. Depreciation & Interest', isRtl ? width - margin : margin, currentY, { align: isRtl ? 'right' : 'left' });
+            doc.setFont('Heebo', 'normal');
+
+            const financeRows = [
+                [isRtl ? fixRtl('פחת בניין (מוזן ע"י רו"ח)') : 'Building Depreciation (CPA fill)', '_____________ ₪'],
+                [isRtl ? fixRtl('הוצאות ריבית משכנתא מוכרת (ע"פ אישור הבנק)') : 'Recognized Mortgage Interest (CPA fill)', '_____________ ₪']
+            ];
+
+            autoTable(doc, {
+                startY: currentY + 5,
+                body: financeRows,
+                theme: 'plain',
+                styles: { halign: isRtl ? 'right' : 'left', font: isRtl ? 'Heebo' : 'helvetica', fontSize: 10, textColor: [100, 100, 100], cellPadding: 2 },
+                columnStyles: { 0: { cellWidth: isRtl ? 'auto' : 120 }, 1: { halign: isRtl ? 'left' : 'right' } }
+            });
+
+            currentY = (doc as any).lastAutoTable?.finalY + 15;
+
+            // 4. Summary
+            doc.setFontSize(14);
+            doc.setFont('Heebo', 'bold');
+            doc.text(isRtl ? fixRtl('4. סיכום רווח / הפסד (Net Profit)') : '4. Net Profit', isRtl ? width - margin : margin, currentY, { align: isRtl ? 'right' : 'left' });
+            doc.setFont('Heebo', 'normal');
+
+            const summaryRows = [
+                [{ content: isRtl ? fixRtl(`רווח נקי תפעולי (NOI לפני פחת ומימון)`) : 'Net Operating Income (Before Depreciation)', styles: { fontStyle: 'bold', fontSize: 11 } }, { content: formatCurrency(totalIncome - totalExpenses), styles: { fontStyle: 'bold', fontSize: 11 } }]
+            ];
+
+            autoTable(doc, {
+                startY: currentY + 5,
+                body: summaryRows,
+                theme: 'plain',
+                styles: { halign: isRtl ? 'right' : 'left', font: isRtl ? 'Heebo' : 'helvetica', fontSize: 10, cellPadding: 2 },
+                columnStyles: { 0: { cellWidth: isRtl ? 'auto' : 120 }, 1: { halign: isRtl ? 'left' : 'right' } }
+            });
+
+            currentY = (doc as any).lastAutoTable?.finalY + 20;
+
+            // Tax Notes
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            const taxNotes = isRtl 
+                ? 'הערות למסלולי מיסוי מקרקעין:\n* מסלול 10%: החישוב מתבצע על סעיף 1 (הכנסות ברוטו) ללא ניכוי הוצאות ופחת.\n* מסלול פטור / מס שולי: יש להתחשב בתוצאת סעיף 4 לאחר שקלול הוצאות מוכרות, פחת בניין (לרוב 2%-4%) וריבית משכנתא.'
+                : 'Tax Route Notes:\n* 10% Flat Tax: Calculated on Section 1 (Gross Income) without deductions.\n* Marginal/Exempt Tax: Evaluate based on Section 4 after accounting for depreciation and interest.';
+            
+            doc.text(fixRtl(taxNotes), isRtl ? width - margin : margin, currentY, { align: isRtl ? 'right' : 'left', maxWidth: width - (margin * 2) });
+            
+            // Footer
+            doc.setFontSize(8);
+            doc.setTextColor(150, 150, 150);
+            doc.text('RentMate Accountancy System - CPA Report Format', width / 2, 285, { align: 'center' });
+
+        } else {
+            // --- STANDARD SCOREBOARD FORMAT ---
+            doc.setFillColor(15, 23, 42);
+            doc.rect(0, 0, width, 45, 'F');
+            doc.setTextColor(255, 255, 255);
+
+            doc.setFontSize(24);
+            const title = isRtl ? fixRtl('דוח ביצועי נכס - RentMate') : 'Property Performance Report';
+            doc.text(title, isRtl ? width - margin : margin, 20, { align: isRtl ? 'right' : 'left' });
+
+            doc.setFontSize(10);
+            doc.text(`${formatDate(startDate)} - ${formatDate(endDate)}`, isRtl ? width - margin : margin, 32, { align: isRtl ? 'right' : 'left' });
+
+            // -- Property Summary --
+            doc.setTextColor(30, 41, 59);
+            doc.setFontSize(16);
+            doc.text(fixRtl(property.title || property.address || 'Address'), isRtl ? width - margin : margin, 60, { align: isRtl ? 'right' : 'left' });
+            doc.setFontSize(11);
+            const roomsText = isRtl ? fixRtl(`${property.rooms || 0} חדרים`) : `${property.rooms || 0} Rooms`;
+            const sqmText = isRtl ? fixRtl(`${property.size_sqm || 0} מ"ר`) : `${property.size_sqm || 0} sqm`;
+            doc.text(`${fixRtl(property.city || '')} | ${roomsText} | ${sqmText}`, isRtl ? width - margin : margin, 68, { align: isRtl ? 'right' : 'left' });
+
+            // -- Financial Scoreboard --
+            doc.setFillColor(248, 250, 252);
+            doc.roundedRect(margin, 75, width - (margin * 2), 25, 3, 3, 'F');
+
+            doc.setTextColor(100, 116, 139);
+            doc.setFontSize(8);
+            doc.text(isRtl ? fixRtl('סה"כ הכנסות') : 'Total Income', margin + 10, 85);
+            doc.text(isRtl ? fixRtl('סה"כ הוצאות') : 'Total Expenses', width / 2, 85, { align: 'center' });
+            doc.text(isRtl ? fixRtl('תזרים נקי') : 'Net Cash Flow', width - margin - 10, 85, { align: 'right' });
+
+            doc.setTextColor(15, 23, 42);
+            doc.setFontSize(14);
+            doc.text(formatCurrency(totalIncome), margin + 10, 93);
+            doc.text(formatCurrency(totalExpenses), width / 2, 93, { align: 'center' });
+            doc.text(formatCurrency(totalIncome - totalExpenses), width - margin - 10, 93, { align: 'right' });
+
+            // -- Contract & Linkage --
+            if (contract) {
+                doc.setFontSize(12);
+                doc.text(isRtl ? fixRtl('פרטי חוזה והצמדה') : 'Contract & Linkage', isRtl ? width - margin : margin, 115, { align: isRtl ? 'right' : 'left' });
+
+                const contractRows = [
+                    [isRtl ? fixRtl('שכר דירה בסיס') : 'Base Rent', formatCurrency(parseFloat(contract.base_rent || '0'))],
+                    [isRtl ? fixRtl('סוג הצמדה') : 'Linkage Type', contract.linkage_type?.toUpperCase() || 'NONE'],
+                    [isRtl ? fixRtl('תוספת הצמדה (חיזוי)') : 'Linkage Delta (Proj)', formatCurrency(linkageDelta)],
+                    [isRtl ? fixRtl('שכר דירה נוכחי') : 'Current Adjusted Rent', formatCurrency(adjustedRent)],
+                    [isRtl ? fixRtl('פיקדון') : 'Security Deposit', formatCurrency(parseFloat(contract.security_deposit_amount || '0'))]
+                ];
+
+                autoTable(doc, {
+                    startY: 120,
+                    head: [[isRtl ? fixRtl('תיאור') : 'Description', isRtl ? fixRtl('ערך') : 'Value']],
+                    body: contractRows,
+                    theme: 'plain',
+                    styles: {
+                        halign: isRtl ? 'right' : 'left',
+                        fontSize: 9,
+                        font: isRtl ? 'Heebo' : 'helvetica'
+                    }
+                });
+            }
+
+            // -- Payment History Table --
+            const paymentsY = (doc as any).lastAutoTable?.finalY + 15 || 115;
+            doc.setFontSize(12);
+            doc.text(isRtl ? fixRtl('פירוט תקבולים') : 'Payment History', isRtl ? width - margin : margin, paymentsY, { align: isRtl ? 'right' : 'left' });
+
+            autoTable(doc, {
+                startY: paymentsY + 5,
+                head: [[isRtl ? fixRtl('תאריך') : 'Date', isRtl ? fixRtl('סטטוס') : 'Status', isRtl ? fixRtl('סכום') : 'Amount']],
+                body: (payments || []).map(p => [formatDate(p.due_date), p.status.toUpperCase(), formatCurrency(parseFloat(p.amount || '0'))]),
+                headStyles: { fillColor: [79, 70, 229] },
                 styles: {
                     halign: isRtl ? 'right' : 'left',
-                    fontSize: 9,
-                    font: isRtl ? 'Heebo' : 'helvetica'
+                    font: isRtl ? 'Heebo' : 'helvetica',
+                    fontSize: 9
                 }
             });
+
+            // -- Footer --
+            doc.setFontSize(8);
+            doc.setTextColor(150, 150, 150);
+            doc.text('RentMate Vanguard Management Intelligence - Automated Report', width / 2, 285, { align: 'center' });
         }
-
-        // -- Payment History Table --
-        const paymentsY = (doc as any).lastAutoTable?.finalY + 15 || 115;
-        doc.setFontSize(12);
-        doc.text(isRtl ? fixRtl('פירוט תקבולים') : 'Payment History', isRtl ? width - margin : margin, paymentsY, { align: isRtl ? 'right' : 'left' });
-
-        autoTable(doc, {
-            startY: paymentsY + 5,
-            head: [[isRtl ? fixRtl('תאריך') : 'Date', isRtl ? fixRtl('סטטוס') : 'Status', isRtl ? fixRtl('סכום') : 'Amount']],
-            body: (payments || []).map(p => [formatDate(p.due_date), p.status.toUpperCase(), formatCurrency(parseFloat(p.amount || '0'))]),
-            headStyles: { fillColor: [79, 70, 229] },
-            styles: {
-                halign: isRtl ? 'right' : 'left',
-                font: isRtl ? 'Heebo' : 'helvetica',
-                fontSize: 9
-            }
-        });
-
-        // -- Footer --
-        doc.setFontSize(8);
-        doc.setTextColor(150, 150, 150);
-        doc.text('RentMate Vanguard Management Intelligence - Automated Report', width / 2, 285, { align: 'center' });
 
         // 8. Output
         console.log('[ReportFunction] PDF generated successfully');

@@ -166,17 +166,17 @@ export function ActionInbox() {
                                         <div className="flex items-center gap-2">
                                             <h4 className="text-sm font-black text-foreground dark:text-white">{action.title}</h4>
                                             {action.metadata.is_lead && (
-                                                <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[8px] font-black uppercase tracking-widest">
+                                                <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded text-xs font-black uppercase tracking-widest">
                                                     LEAD
                                                 </span>
                                             )}
                                             {action.type === 'sales_lead' && (
-                                                <span className="px-1.5 py-0.5 bg-primary/10 text-blue-700 rounded text-[8px] font-black uppercase tracking-widest">
+                                                <span className="px-1.5 py-0.5 bg-primary/10 text-blue-700 rounded text-xs font-black uppercase tracking-widest">
                                                     SALE
                                                 </span>
                                             )}
                                             {new Date(action.updatedAt) < new Date(Date.now() - 24 * 60 * 60 * 1000) && (
-                                                <span className="px-1.5 py-0.5 bg-rose-50 text-rose-600 border border-rose-100 rounded text-[8px] font-black uppercase tracking-widest animate-pulse">
+                                                <span className="px-1.5 py-0.5 bg-rose-50 text-rose-600 border border-rose-100 rounded text-xs font-black uppercase tracking-widest animate-pulse">
                                                     Stagnant
                                                 </span>
                                             )}
@@ -196,7 +196,7 @@ export function ActionInbox() {
                                                 className="w-full bg-transparent border-none focus:ring-0 text-xs font-semibold text-gray-700 dark:text-gray-300 italic resize-none p-0"
                                                 rows={3}
                                             />
-                                            <div className="mt-2 text-[11px] font-black text-muted-foreground uppercase tracking-widest text-right">
+                                            <div className="mt-2 text-xs font-black text-muted-foreground uppercase tracking-widest text-right">
                                                 AI Draft - Editable
                                             </div>
                                         </div>
@@ -205,12 +205,12 @@ export function ActionInbox() {
                                     <div className="flex items-center gap-3">
                                         <button
                                             onClick={() => handleApprove(action)}
-                                            className="px-4 py-2 bg-brand-600 text-white text-xs font-black uppercase tracking-widest rounded-lg hover:bg-brand-700 transition-all flex items-center gap-2"
+                                            className="px-4 py-2 bg-brand-600 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-brand-700 transition-all flex items-center gap-2"
                                         >
                                             <CheckCircleIcon className="w-4 h-4" />
                                             Approve & Send
                                         </button>
-                                        <button className="px-4 py-2 bg-white dark:bg-gray-800 text-muted-foreground text-xs font-black uppercase tracking-widest border border-border rounded-lg hover:bg-secondary transition-all flex items-center gap-2">
+                                        <button className="px-4 py-2 bg-white dark:bg-gray-800 text-muted-foreground text-xs font-black uppercase tracking-widest border border-border rounded-xl hover:bg-secondary transition-all flex items-center gap-2">
                                             <XCircleIcon className="w-4 h-4" />
                                             Dismiss
                                         </button>

@@ -1,0 +1,26 @@
+﻿diff --git a/src/pages/Settings.tsx b/src/pages/Settings.tsx
+index 1300152..c2573c5 100644
+--- a/src/pages/Settings.tsx
++++ b/src/pages/Settings.tsx
+@@ -1,7 +1,7 @@
+ import { useState, useEffect } from 'react';
+ import { supabase } from '../lib/supabase';
+ import { useNavigate } from 'react-router-dom';
+-import { User, Bell, Shield, ChevronRight, Mail, Send, Check, LogOut, MessageCircle, Accessibility } from 'lucide-react';
++import { User, Bell, Shield, ChevronRight, Mail, Send, Check, LogOut, MessageCircle, Accessibility, Crown } from 'lucide-react';
+ import { useUserPreferences } from '../contexts/UserPreferencesContext';
+ 
+ import { EditProfileModal, NotificationsSettingsModal } from '../components/modals/EditProfileModal';
+@@ -99,6 +99,12 @@ export function Settings() {
+                     description: t('controlData'),
+                     onClick: () => setIsPrivacySecurityOpen(true)
+                 },
++                {
++                    icon: Crown,
++                    label: t('planName') || 'Subscription Plan',
++                    description: t('upgradeToUnlock') || 'Manage your plan',
++                    onClick: () => navigate('/pricing')
++                },
+             ]
+         }
+     ];

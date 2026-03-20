@@ -12,8 +12,8 @@
 const META_GRAPH_URL = 'https://graph.facebook.com/v18.0';
 
 // PLACEHOLDERS - To be replaced with real keys or fetched from Supabase 'system_settings'
-const WHATSAPP_PHONE_NUMBER_ID = 'PLACEHOLDER_PHONE_ID';
-const WHATSAPP_ACCESS_TOKEN = 'PLACEHOLDER_ACCESS_TOKEN';
+const WHATSAPP_PHONE_NUMBER_ID = process.env.VITE_WHATSAPP_PHONE_ID || '';
+const WHATSAPP_ACCESS_TOKEN = process.env.VITE_WHATSAPP_ACCESS_TOKEN || '';
 
 export const WhatsAppExternalService = {
 
@@ -21,7 +21,7 @@ export const WhatsAppExternalService = {
      * Send a text message via Meta Graph API
      */
     sendTextMessage: async (toMobile: string, textBody: string) => {
-        if (WHATSAPP_ACCESS_TOKEN === 'PLACEHOLDER_ACCESS_TOKEN') {
+        if (!WHATSAPP_ACCESS_TOKEN) {
             console.warn('WhatsApp External Service: Missing Access Token. Message not sent to Meta.');
             return { error: 'Configuration Missing', success: false };
         }
@@ -65,7 +65,7 @@ export const WhatsAppExternalService = {
      * Send a template message (Required for starting conversations outside 24h window)
      */
     sendTemplateMessage: async (toMobile: string, templateName: string, languageCode = 'he', components: any[] = []) => {
-        if (WHATSAPP_ACCESS_TOKEN === 'PLACEHOLDER_ACCESS_TOKEN') return;
+        if (!WHATSAPP_ACCESS_TOKEN) return;
 
         const url = `${META_GRAPH_URL}/${WHATSAPP_PHONE_NUMBER_ID}/messages`;
 

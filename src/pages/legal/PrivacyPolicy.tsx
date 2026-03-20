@@ -17,7 +17,7 @@ export default function PrivacyPolicy() {
             <div className="absolute top-0 left-0 w-full h-96 bg-primary/5 dark:bg-primary/5 filter blur-3xl z-0 pointer-events-none" />
             <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-teal-500/10 dark:bg-teal-600/5 filter blur-3xl rounded-full z-0 pointer-events-none" />
 
-            <div className="relative z-10 pb-20 pt-8">
+            <div className="relative z-10 pt-8">
                 <div className="container mx-auto px-4 max-w-4xl">
                     <div className="flex justify-end mb-2">
                         <LanguageToggle />

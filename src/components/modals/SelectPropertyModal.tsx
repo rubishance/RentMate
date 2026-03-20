@@ -63,7 +63,7 @@ export function SelectPropertyModal({ isOpen, onClose, properties, onSelect }: S
                                             <p className="font-bold text-foreground truncate">
                                                 {property.address}
                                             </p>
-                                            <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
+                                            <p className="text-sm text-slate-400 flex items-center gap-1 mt-0.5">
                                                 <MapPin className="w-3 h-3" />
                                                 {property.city}
                                             </p>

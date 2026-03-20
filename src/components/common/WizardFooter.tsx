@@ -76,7 +76,7 @@ export function WizardFooter({
                         </div>
                     ) : (
                         <div className="flex items-center justify-center gap-2">
-                            <span className={isLastStep ? "text-[12px]" : ""}>
+                            <span className={isLastStep ? "text-sm" : ""}>
                                 {nextLabel || (isLastStep ? t('finish') : t('next'))}
                             </span>
                             <ArrowRight className={cn(

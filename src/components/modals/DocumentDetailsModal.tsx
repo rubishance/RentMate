@@ -163,7 +163,7 @@ export function DocumentDetailsModal({ isOpen, onClose, document, onDelete }: Do
                                                 <Tag className="w-4 h-4" />
                                                 <span className="text-sm font-medium">{t('category')}</span>
                                             </div>
-                                            <span className="text-xs font-bold px-2 py-1 bg-brand-500/10 text-brand-500 rounded-lg uppercase tracking-wider">
+                                            <span className="text-xs font-bold px-2 py-1 bg-brand-500/10 text-brand-500 rounded-xl uppercase tracking-wider">
                                                 {t(document.category)}
                                             </span>
                                         </div>

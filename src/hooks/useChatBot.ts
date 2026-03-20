@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useToast } from './useToast';
 import { useUserPreferences } from '../contexts/UserPreferencesContext';
+import { chatBus } from '../events/chatEvents';
 
 export interface Message {
     role: 'user' | 'assistant' | 'system';
@@ -21,8 +22,12 @@ export function useChatBot() {
     const [isLoading, setIsLoading] = useState(false);
     const [conversationId, setConversationId] = useState<string | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
+    const [unreadCount, setUnreadCount] = useState(0);
     const [isAiMode, setIsAiMode] = useState(true); // Default to chat mode directly
-    const [isTtsEnabled, setIsTtsEnabled] = useState(false);
+    const [isTtsEnabled, setIsTtsEnabled] = useState(() => {
+        const savedPrefs = localStorage.getItem('rentyTtsEnabled');
+        return savedPrefs ? JSON.parse(savedPrefs) : false;
+    });
     const { info } = useToast();
     const { preferences } = useUserPreferences();
     const isRtl = preferences.language === 'he';
@@ -31,6 +36,10 @@ export function useChatBot() {
     const isOpenRef = useRef(isOpen);
     useEffect(() => {
         isOpenRef.current = isOpen;
+        if (isOpen) {
+            setUnreadCount(0);
+            chatBus.emit('UNREAD_COUNT_CHANGED', 0);
+        }
     }, [isOpen]);
 
     useEffect(() => {
@@ -45,6 +54,18 @@ export function useChatBot() {
                     try {
                         const parsedHistory = JSON.parse(storedHistory);
                         if (Array.isArray(parsedHistory) && parsedHistory.length > 0) {
+                            // Legacy cache upgrade: Ensure the first menu matches the latest 3-lines menu (Image 2)
+                            if (parsedHistory[0] && parsedHistory[0].type === 'action' && parsedHistory[0].actionData && parsedHistory[0].actionData.title) {
+                                parsedHistory[0].actionData = {
+                                    title: isRtl ? 'תמיכה ושירות' : 'Support & Service',
+                                    options: [
+                                        { label: isRtl ? 'מדריך לאפליקציה' : 'App Guide', value: 'ACTION_APP_GUIDE' },
+                                        { label: isRtl ? 'חבילות ומנויים' : 'Packages & Subscriptions', value: 'ACTION_PACKAGES' },
+                                        { label: isRtl ? 'שאלות כלליות' : 'General Questions', value: 'ACTION_GENERAL_QA' },
+                                        { label: isRtl ? 'נציג אנושי' : 'Human Support', value: 'ACTION_HUMAN_SUPPORT' }
+                                    ]
+                                };
+                            }
                             setMessages(parsedHistory);
                             return; // Skip default welcome message
                         }
@@ -64,15 +85,15 @@ export function useChatBot() {
                 timestamp: new Date().toISOString()
             };
 
-            // Add options for logged in users
             if (!isGuest) {
                 welcomeMessageObj.type = 'action';
                 welcomeMessageObj.actionData = {
-                    title: isRtl ? 'בחר פעולה מהירה:' : 'Quick Actions:',
+                    title: isRtl ? 'תמיכה ושירות' : 'Support & Service',
                     options: [
-                        { label: isRtl ? 'הצג את הנכסים שלי' : 'Show my properties', value: isRtl ? 'הצג את כל הנכסים שלי' : 'Show all my properties' },
-                        { label: isRtl ? 'דווח על תקלה' : 'Report an issue', value: isRtl ? 'אני רוצה לדווח על תקלה בנכס' : 'I want to report a maintenance issue' },
-                        { label: isRtl ? 'חישוב הצמדה למדד' : 'Calculate linkage', value: isRtl ? 'אני צריך עזרה בחישוב הצמדה למדד' : 'I need help calculating rent linkage' }
+                        { label: isRtl ? 'מדריך לאפליקציה' : 'App Guide', value: 'ACTION_APP_GUIDE' },
+                        { label: isRtl ? 'חבילות ומנויים' : 'Packages & Subscriptions', value: 'ACTION_PACKAGES' },
+                        { label: isRtl ? 'שאלות כלליות' : 'General Questions', value: 'ACTION_GENERAL_QA' },
+                        { label: isRtl ? 'נציג אנושי' : 'Human Support', value: 'ACTION_HUMAN_SUPPORT' }
                     ]
                 };
             }
@@ -98,14 +119,38 @@ export function useChatBot() {
 
     const [uiAction, setUiAction] = useState<{ action: string, modal: string, data: any } | null>(null);
 
+    const audioCtxRef = useRef<AudioContext | null>(null);
+
+    useEffect(() => {
+        // Initialize AudioContext lazily
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioContextClass) {
+            audioCtxRef.current = new AudioContextClass();
+        }
+    }, []);
+
     const toggleChat = () => setIsOpen(!isOpen);
-    const toggleTts = () => setIsTtsEnabled(!isTtsEnabled);
+    
+    const toggleTts = () => {
+        setIsTtsEnabled((prev: boolean) => {
+            const newValue = !prev;
+            localStorage.setItem('rentyTtsEnabled', JSON.stringify(newValue));
+            
+            // Unlock Web Audio context on user interaction
+            if (newValue && audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
+                audioCtxRef.current.resume();
+            }
+            return newValue;
+        });
+    };
 
     const clearUiAction = () => setUiAction(null);
 
     const playTts = async (text: string) => {
+        console.log('--- TTS Triggered ---', { isTtsEnabled, text });
         try {
             const { data: { session } } = await supabase.auth.getSession();
+            console.log('TTS Session check:', !!session);
             if (!session) {
                 info(isRtl ? 'שגיאת שמע' : 'Audio Error', { description: isRtl ? 'יש להתחבר כדי לשמוע קול' : 'Please log in to use voice.' });
                 setIsTtsEnabled(false);
@@ -114,27 +159,83 @@ export function useChatBot() {
 
             const projectUrl = import.meta.env.VITE_SUPABASE_URL;
             const functionUrl = `${projectUrl}/functions/v1/text-to-speech`;
+            console.log('TTS Fetching:', functionUrl);
 
             const res = await fetch(functionUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session.access_token}`
+                    'Authorization': `Bearer ${session.access_token}`,
+                    'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
                 },
                 body: JSON.stringify({ text })
             });
 
+            console.log('TTS Fetch completed. OK:', res.ok, 'Status:', res.status);
             if (!res.ok) {
                 const errData = await res.json().catch(() => ({}));
+                console.error('TTS Fetch failed:', errData);
                 info(isRtl ? 'שגיאת שמע' : 'Audio Error', { description: errData.error || 'Premium feature requirement not met.' });
-                setIsTtsEnabled(false);
+                // We no longer turn off TTS here, user can manually toggle it if desired
                 return;
             }
 
-            const blob = await res.blob();
-            const url = URL.createObjectURL(blob);
+            if (!res.body) throw new Error('ReadableStream not yet supported in this browser.');
+            console.log('TTS Streaming Audio started...');
+
+            // We must use MediaSource to play standard mp3 streams cleanly in real-time
+            const mediaSource = new MediaSource();
+            const url = URL.createObjectURL(mediaSource);
             const audio = new Audio(url);
-            audio.play();
+
+            mediaSource.addEventListener('sourceopen', async () => {
+                // OpenAI returns mp3 format by default
+                const sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg');
+                const reader = res.body!.getReader();
+                
+                // Keep track of whether we are actively appending
+                let isAppending = false;
+                let queue: Uint8Array[] = [];
+
+                const appendNext = () => {
+                    if (!sourceBuffer.updating && queue.length > 0) {
+                        isAppending = true;
+                        const chunk = queue.shift()!;
+                        // Fix for TypeScript: Explicitly convert to an ArrayBuffer
+                        sourceBuffer.appendBuffer(chunk.buffer as ArrayBuffer);
+                    }
+                };
+
+                sourceBuffer.addEventListener('updateend', () => {
+                    isAppending = false;
+                    appendNext();
+                });
+
+                audio.play().then(() => console.log('TTS Playback started immediately!'))
+                           .catch(e => console.error('Audio play error:', e));
+
+                try {
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        
+                        queue.push(value);
+                        if (!isAppending) appendNext();
+                    }
+                    
+                    // Wait for queue to drain before ending the stream
+                    const finishInterval = setInterval(() => {
+                        if (!isAppending && queue.length === 0 && !sourceBuffer.updating) {
+                            clearInterval(finishInterval);
+                            mediaSource.endOfStream();
+                        }
+                    }, 50);
+
+                } catch (e) {
+                    console.error('Error reading stream:', e);
+                    mediaSource.endOfStream('network');
+                }
+            });
         } catch (err) {
             console.error('TTS Playback error:', err);
         }
@@ -203,7 +304,20 @@ export function useChatBot() {
                     assistantMessage.actionData = data.choices[0].message.actionData;
                 }
 
-                setMessages(prev => [...prev, assistantMessage]);
+                setMessages(prev => {
+                    const updated = [...prev, assistantMessage];
+                    
+                    // Track unread if chat is closed
+                    if (!isOpenRef.current) {
+                        setUnreadCount(c => {
+                            const newCount = c + 1;
+                            chatBus.emit('UNREAD_COUNT_CHANGED', newCount);
+                            return newCount;
+                        });
+                    }
+                    
+                    return updated;
+                });
 
                 if (data.conversationId) {
                     setConversationId(data.conversationId);
@@ -221,12 +335,9 @@ export function useChatBot() {
                     playTts(cleanText);
                 }
 
-                // Show notification if chat is not open
-                if (!isOpenRef.current) {
-                    info(isRtl ? 'רנטי: הודעה חדשה התקבלה' : 'Renty: New message received', {
-                        description: isRtl ? 'פתח את הצ׳אט כדי לקרוא את התגובה.' : 'Open chat to read the response.'
-                    });
-                }
+                info(isRtl ? 'קיבלת הודעה חדשה מ-Renty' : 'New message from Renty', {
+                    description: isRtl ? 'פתח את הצ׳אט כדי לקרוא.' : 'Open chat to read.',
+                });
             }
 
         } catch (err: any) {
@@ -283,5 +394,41 @@ export function useChatBot() {
     const openChat = () => setIsOpen(true);
     const closeChat = () => setIsOpen(false);
 
-    return { isOpen, toggleChat, openChat, closeChat, isLoading, messages, sendMessage, injectLocalMessage, uiAction, clearUiAction, isAiMode, activateAiMode, deactivateAiMode, isTtsEnabled, toggleTts };
+    const resetChat = async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        const isGuest = !session;
+        const userId = session?.user?.id;
+
+        if (userId) {
+            localStorage.removeItem(`rentmate_chat_history_${userId}`);
+        }
+
+        const welcomeMsg = isGuest
+            ? 'שלום! אני רנטי. אני יכול לעזור לך להבין איך RentMate עובד. כדי להשתמש ביכולות המתקדמות (סריקת מסמכים, חישובים והצמדות), עליך להתחבר למערכת.'
+            : 'שלום! אני רנטי - בוט ה-AI של RentMate. כיצד אפשר לעזור היום?\n\n(לידיעתך, שיחות אלו נשמרות באופן מאובטח לצרכי שיפור השירות והבטחת איכות).';
+
+        const welcomeMessageObj: Message = {
+            role: 'assistant',
+            content: welcomeMsg,
+            timestamp: new Date().toISOString()
+        };
+
+        if (!isGuest) {
+            welcomeMessageObj.type = 'action';
+            welcomeMessageObj.actionData = {
+                title: isRtl ? 'תמיכה ושירות' : 'Support & Service',
+                options: [
+                    { label: isRtl ? 'מדריך לאפליקציה' : 'App Guide', value: 'ACTION_APP_GUIDE' },
+                    { label: isRtl ? 'חבילות ומנויים' : 'Packages & Subscriptions', value: 'ACTION_PACKAGES' },
+                    { label: isRtl ? 'שאלות כלליות' : 'General Questions', value: 'ACTION_GENERAL_QA' },
+                    { label: isRtl ? 'נציג אנושי' : 'Human Support', value: 'ACTION_HUMAN_SUPPORT' }
+                ]
+            };
+        }
+
+        setMessages([welcomeMessageObj]);
+        info(isRtl ? 'היסטוריית הצ׳אט אופסה' : 'Chat history reset', { icon: '🧹' });
+    };
+
+    return { isOpen, toggleChat, openChat, closeChat, resetChat, isLoading, messages, sendMessage, injectLocalMessage, uiAction, clearUiAction, isAiMode, activateAiMode, deactivateAiMode, isTtsEnabled, toggleTts };
 }

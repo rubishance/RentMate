@@ -234,7 +234,7 @@ export default function SupportTickets() {
             case 'high': return 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800';
             case 'medium': return 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800';
             case 'low': return 'bg-primary/10 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800';
-            default: return 'bg-secondary text-gray-700 border-border dark:bg-foreground/20 dark:border-gray-700';
+            default: return 'bg-blue-50 text-gray-700 border-border dark:bg-foreground/20 dark:border-gray-700';
         }
     };
 
@@ -244,8 +244,8 @@ export default function SupportTickets() {
             case 'in_progress': return 'bg-primary/10 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800';
             case 'waiting_user': return 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800';
             case 'resolved': return 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:border-green-800';
-            case 'closed': return 'bg-secondary text-gray-700 border-border dark:bg-foreground/20 dark:border-gray-700';
-            default: return 'bg-secondary text-gray-700 border-border dark:bg-foreground/20 dark:border-gray-700';
+            case 'closed': return 'bg-blue-50 text-gray-700 border-border dark:bg-foreground/20 dark:border-gray-700';
+            default: return 'bg-blue-50 text-gray-700 border-border dark:bg-foreground/20 dark:border-gray-700';
         }
     };
 
@@ -260,18 +260,18 @@ export default function SupportTickets() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-96">
-                <Loader2 className="w-10 h-10 animate-spin text-brand-600" />
+                <Loader2 className="w-10 h-10 animate-spin text-primary-600" />
             </div>
         );
     }
 
     return (
-        <div className="space-y-8 pb-20">
+        <div className="space-y-8">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-extrabold text-foreground dark:text-white tracking-tight flex items-center gap-2">
-                        <Ticket className="w-8 h-8 text-brand-600" />
+                        <Ticket className="w-8 h-8 text-primary-600" />
                         Support Tickets
                     </h1>
                     <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground mt-1">
@@ -311,7 +311,7 @@ export default function SupportTickets() {
                         placeholder="Search tickets..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-border dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500/20 outline-none"
+                        className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-border dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/20 outline-none"
                     />
                 </div>
                 <div className="flex gap-2 p-1 bg-muted dark:bg-foreground rounded-xl border border-border dark:border-gray-700 overflow-x-auto no-scrollbar">
@@ -320,9 +320,9 @@ export default function SupportTickets() {
                             key={status}
                             onClick={() => setFilterStatus(status)}
                             className={cn(
-                                "px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap",
+                                "px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap",
                                 filterStatus === status
-                                    ? 'bg-white dark:bg-gray-800 text-brand-600 shadow-sm'
+                                    ? 'bg-white dark:bg-gray-800 text-primary-600 shadow-sm'
                                     : 'text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300'
                             )}
                         >
@@ -353,7 +353,7 @@ export default function SupportTickets() {
                                     className={cn(
                                         "bg-white dark:bg-gray-800 p-5 rounded-3xl border cursor-pointer transition-all hover:shadow-xl group relative overflow-hidden",
                                         selectedTicket?.id === ticket.id
-                                            ? 'border-brand-600 shadow-xl ring-1 ring-brand-600/20'
+                                            ? 'border-primary-600 shadow-xl ring-1 ring-primary-600/20'
                                             : 'border-slate-100 dark:border-neutral-800 shadow-minimal'
                                     )}
                                 >
@@ -364,15 +364,15 @@ export default function SupportTickets() {
                                     <div className="flex items-start justify-between gap-2 mb-3">
                                         <div className="flex gap-2 items-start">
                                             <span className="text-lg">{sentimentEmoji}</span>
-                                            <h3 className="font-bold text-sm text-foreground dark:text-white line-clamp-2 leading-tight group-hover:text-brand-600 transition-colors">{ticket.title}</h3>
+                                            <h3 className="font-bold text-sm text-foreground dark:text-white line-clamp-2 leading-tight group-hover:text-primary-600 transition-colors">{ticket.title}</h3>
                                         </div>
-                                        <span className={cn("px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-[0.2em] border shrink-0", getPriorityColor(ticket.priority))}>
+                                        <span className={cn("px-2 py-0.5 rounded-xl text-xs font-black uppercase tracking-[0.2em] border shrink-0", getPriorityColor(ticket.priority))}>
                                             {ticket.priority}
                                         </span>
                                     </div>
 
                                     {analysis?.ai_summary && (
-                                        <p className="text-xs font-black uppercase text-brand-600 tracking-widest mb-2 flex items-center gap-1">
+                                        <p className="text-xs font-black uppercase text-primary-600 tracking-widest mb-2 flex items-center gap-1">
                                             <Sparkles className="w-3 h-3" />
                                             AI: {analysis.ai_summary}
                                         </p>
@@ -380,10 +380,10 @@ export default function SupportTickets() {
 
                                     <p className="text-xs text-muted-foreground dark:text-muted-foreground line-clamp-2 mb-4 leading-relaxed">{ticket.description}</p>
                                     <div className="flex items-center justify-between gap-2 mt-auto pt-2 border-t border-slate-50 dark:border-neutral-800">
-                                        <span className={cn("px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest border", getStatusColor(ticket.status))}>
+                                        <span className={cn("px-2 py-0.5 rounded-xl text-xs font-black uppercase tracking-widest border", getStatusColor(ticket.status))}>
                                             {ticket.status.replace('_', ' ')}
                                         </span>
-                                        <span className="text-[11px] font-black text-muted-foreground tracking-widest uppercase">{new Date(ticket.created_at).toLocaleDateString()}</span>
+                                        <span className="text-xs font-black text-muted-foreground tracking-widest uppercase">{new Date(ticket.created_at).toLocaleDateString()}</span>
                                     </div>
                                 </div>
                             );
@@ -406,7 +406,7 @@ export default function SupportTickets() {
                         <div className="bg-white dark:bg-gray-800 rounded-3xl border border-slate-100 dark:border-neutral-800 overflow-hidden flex flex-col h-[800px] shadow-premium relative">
                             {/* AI Background Accent */}
                             {selectedTicket.ticket_analysis?.[0] && (
-                                <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500/5 blur-[120px] rounded-full -mr-32 -mt-32 pointer-events-none" />
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/5 blur-[120px] rounded-full -mr-32 -mt-32 pointer-events-none" />
                             )}
 
                             {/* Ticket Header */}
@@ -416,17 +416,17 @@ export default function SupportTickets() {
                                         <div className="flex items-center gap-3">
                                             <h2 className="text-2xl font-black text-foreground dark:text-white tracking-tighter leading-none">{selectedTicket.title}</h2>
                                             {selectedTicket.ticket_analysis?.[0] && (
-                                                <div className="flex items-center gap-1.5 px-3 py-1 bg-brand-50 text-brand-600 rounded-full border border-brand-100 text-[11px] font-black uppercase tracking-widest">
+                                                <div className="flex items-center gap-1.5 px-3 py-1 bg-primary-50 text-primary-600 rounded-full border border-primary-100 text-xs font-black uppercase tracking-widest">
                                                     <Sparkles className="w-3 h-3" />
                                                     AI Analyzed
                                                 </div>
                                             )}
                                         </div>
                                         <div className="flex flex-wrap items-center gap-3">
-                                            <span className={cn("px-3 py-1 rounded-xl text-[11px] font-black uppercase tracking-widest border", getPriorityColor(selectedTicket.priority))}>
+                                            <span className={cn("px-3 py-1 rounded-xl text-xs font-black uppercase tracking-widest border", getPriorityColor(selectedTicket.priority))}>
                                                 {selectedTicket.priority}
                                             </span>
-                                            <span className={cn("px-3 py-1 rounded-xl text-[11px] font-black uppercase tracking-widest border", getStatusColor(selectedTicket.status))}>
+                                            <span className={cn("px-3 py-1 rounded-xl text-xs font-black uppercase tracking-widest border", getStatusColor(selectedTicket.status))}>
                                                 {selectedTicket.status.replace('_', ' ')}
                                             </span>
                                         </div>
@@ -435,7 +435,7 @@ export default function SupportTickets() {
                                         {!selectedTicket.assigned_to && (
                                             <button
                                                 onClick={() => handleAssignToMe(selectedTicket.id)}
-                                                className="px-4 py-2 bg-brand-600 text-white rounded-[1.2rem] text-xs font-black uppercase tracking-widest hover:bg-brand-700 transition-colors shadow-lg shadow-brand-600/20"
+                                                className="px-4 py-2 bg-primary-600 text-white rounded-[1.2rem] text-xs font-black uppercase tracking-widest hover:bg-primary-700 transition-colors shadow-lg shadow-primary-600/20"
                                             >
                                                 Assign to Me
                                             </button>
@@ -443,7 +443,7 @@ export default function SupportTickets() {
                                         <select
                                             value={selectedTicket.status}
                                             onChange={(e) => handleUpdateStatus(selectedTicket.id, e.target.value)}
-                                            className="px-4 py-2 bg-background dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[1.2rem] text-xs font-black uppercase tracking-widest focus:ring-2 focus:ring-brand-500/20 outline-none cursor-pointer"
+                                            className="px-4 py-2 bg-background dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[1.2rem] text-xs font-black uppercase tracking-widest focus:ring-2 focus:ring-primary-500/20 outline-none cursor-pointer"
                                         >
                                             <option value="open">Open</option>
                                             <option value="in_progress">In Progress</option>
@@ -460,13 +460,13 @@ export default function SupportTickets() {
 
                                 <div className="flex items-center gap-6 text-xs font-black uppercase tracking-widest text-muted-foreground">
                                     <div className="flex items-center gap-2">
-                                        <div className="w-6 h-6 rounded-lg bg-muted/50 dark:bg-neutral-800 flex items-center justify-center">
+                                        <div className="w-6 h-6 rounded-xl bg-muted/50 dark:bg-neutral-800 flex items-center justify-center">
                                             <User className="w-3 h-3" />
                                         </div>
                                         {selectedTicket.user?.email || 'Unknown'}
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <div className="w-6 h-6 rounded-lg bg-muted/50 dark:bg-neutral-800 flex items-center justify-center">
+                                        <div className="w-6 h-6 rounded-xl bg-muted/50 dark:bg-neutral-800 flex items-center justify-center">
                                             <Calendar className="w-3 h-3" />
                                         </div>
                                         {new Date(selectedTicket.created_at).toLocaleString()}
@@ -480,23 +480,23 @@ export default function SupportTickets() {
                                 {selectedTicket.ticket_analysis?.[0] && (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="p-6 bg-white dark:bg-neutral-900 rounded-[2rem] border border-slate-100 dark:border-neutral-800 shadow-minimal space-y-3">
-                                            <h4 className="text-xs font-black uppercase tracking-[0.25em] text-brand-600 flex items-center gap-2">
+                                            <h4 className="text-xs font-black uppercase tracking-[0.25em] text-primary-600 flex items-center gap-2">
                                                 <Sparkles className="w-3.5 h-3.5" />
                                                 Insight Details
                                             </h4>
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div className="space-y-1">
-                                                    <p className="text-[11px] font-black text-muted-foreground uppercase tracking-widest">Sentiment</p>
+                                                    <p className="text-xs font-black text-muted-foreground uppercase tracking-widest">Sentiment</p>
                                                     <p className="text-xl font-black">{(selectedTicket.ticket_analysis?.[0]?.sentiment_score ?? 0) > 0 ? 'Positive' : 'Fustrated'}</p>
                                                 </div>
                                                 <div className="space-y-1">
-                                                    <p className="text-[11px] font-black text-muted-foreground uppercase tracking-widest">Category</p>
+                                                    <p className="text-xs font-black text-muted-foreground uppercase tracking-widest">Category</p>
                                                     <p className="text-xl font-black capitalize">{selectedTicket.ticket_analysis?.[0]?.category || 'N/A'}</p>
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="p-6 bg-white dark:bg-neutral-900 rounded-[2rem] border border-slate-100 dark:border-neutral-800 shadow-minimal space-y-3">
-                                            <h4 className="text-xs font-black uppercase tracking-[0.25em] text-brand-600 flex items-center gap-2">
+                                            <h4 className="text-xs font-black uppercase tracking-[0.25em] text-primary-600 flex items-center gap-2">
                                                 <Activity className="w-3.5 h-3.5" />
                                                 Intelligence Loop
                                             </h4>
@@ -509,20 +509,20 @@ export default function SupportTickets() {
 
                                 {/* Auto Reply Section */}
                                 {selectedTicket.auto_reply_draft && (
-                                    <div className="p-8 bg-gradient-to-br from-brand-50 to-primary-50 dark:from-brand-900/10 dark:to-primary-900/10 rounded-[2.5rem] border border-brand-100/50 dark:border-brand-500/10 shadow-premium-dark relative overflow-hidden group">
+                                    <div className="p-8 bg-gradient-to-br from-primary-50 to-primary-50 dark:from-primary-900/10 dark:to-primary-900/10 rounded-[2.5rem] border border-primary-100/50 dark:border-primary-500/10 shadow-premium-dark relative overflow-hidden group">
                                         <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform">
-                                            <Sparkles className="w-16 h-16 text-brand-600" />
+                                            <Sparkles className="w-16 h-16 text-primary-600" />
                                         </div>
                                         <div className="relative z-10 flex flex-col gap-6">
                                             <div className="flex items-center justify-between">
                                                 <div className="space-y-1">
-                                                    <h4 className="text-xs font-black uppercase tracking-[0.3em] text-brand-600 flex items-center gap-2">
+                                                    <h4 className="text-xs font-black uppercase tracking-[0.3em] text-primary-600 flex items-center gap-2">
                                                         <SparklesIcon className="w-4 h-4" />
                                                         Autopilot Draft
                                                     </h4>
                                                     <p className="text-xs font-bold text-muted-foreground lowercase">this reply was crafted specifically for this user context</p>
                                                 </div>
-                                                <div className="px-2 py-1 bg-white/50 dark:bg-black/50 backdrop-blur-md rounded-lg text-[8px] font-black text-brand-600 uppercase tracking-widest border border-brand-100">
+                                                <div className="px-2 py-1 bg-white/50 dark:bg-black/50 backdrop-blur-md rounded-xl text-xs font-black text-primary-600 uppercase tracking-widest border border-primary-100">
                                                     Optimized
                                                 </div>
                                             </div>
@@ -548,7 +548,7 @@ export default function SupportTickets() {
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-4 px-2">
                                         <div className="h-px flex-1 bg-muted/50 dark:border-neutral-800" />
-                                        <span className="text-[11px] font-black text-muted-foreground uppercase tracking-widest">Communication History</span>
+                                        <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">Communication History</span>
                                         <div className="h-px flex-1 bg-muted/50 dark:border-neutral-800" />
                                     </div>
                                     {comments.map((comment) => (
@@ -559,10 +559,10 @@ export default function SupportTickets() {
                                         )}>
                                             <div className="flex items-center justify-between mb-3">
                                                 <span className="text-xs font-black text-foreground dark:text-white uppercase tracking-widest flex items-center gap-2">
-                                                    <div className={cn("w-1.5 h-1.5 rounded-full", comment.is_admin ? "bg-brand-500" : "bg-slate-400")} />
+                                                    <div className={cn("w-1.5 h-1.5 rounded-full", comment.is_admin ? "bg-primary-500" : "bg-slate-400")} />
                                                     {comment.is_admin ? 'RentMate Team' : comment.user?.full_name || 'Client'}
                                                 </span>
-                                                <span className="text-[11px] font-black text-muted-foreground uppercase tracking-widest leading-none opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <span className="text-xs font-black text-muted-foreground uppercase tracking-widest leading-none opacity-0 group-hover:opacity-100 transition-opacity">
                                                     {new Date(comment.created_at).toLocaleString()}
                                                 </span>
                                             </div>
@@ -586,12 +586,12 @@ export default function SupportTickets() {
                                         onChange={(e) => setNewComment(e.target.value)}
                                         onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
                                         placeholder="Add to follow-up..."
-                                        className="flex-1 px-6 py-4 bg-background dark:bg-neutral-800 border-none rounded-2xl text-xs font-bold tracking-widest focus:ring-2 focus:ring-brand-500/20 outline-none placeholder:uppercase placeholder:text-[11px]"
+                                        className="flex-1 px-6 py-4 bg-background dark:bg-neutral-800 border-none rounded-2xl text-xs font-bold tracking-widest focus:ring-2 focus:ring-primary-500/20 outline-none placeholder:uppercase placeholder:text-xs"
                                     />
                                     <button
                                         onClick={handleAddComment}
                                         disabled={submitting || !newComment.trim()}
-                                        className="w-14 h-14 bg-brand-600 text-white rounded-2xl hover:bg-brand-700 hover:scale-105 active:scale-95 transition-all shadow-premium-dark flex items-center justify-center disabled:opacity-50"
+                                        className="w-14 h-14 bg-primary-600 text-white rounded-2xl hover:bg-primary-700 hover:scale-105 active:scale-95 transition-all shadow-premium-dark flex items-center justify-center disabled:opacity-50"
                                     >
                                         {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                                     </button>

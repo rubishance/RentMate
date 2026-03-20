@@ -85,16 +85,16 @@ export function AppShell() {
 
                     <a
                         href="#main-content"
-                        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-64 z-[999] px-4 py-2 bg-primary text-primary-foreground rounded-md shadow-lg"
+                        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-64 z-[999] px-4 py-2 bg-primary text-primary-foreground rounded-lg shadow-lg"
                     >
                         {preferences.language === 'he' ? 'דלג לתוכן המרכזי' : 'Skip to main content'}
                     </a>
 
                     <main
                         id="main-content"
-                        className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-8 scroll-smooth relative z-10"
+                        className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-0 pb-24 pb-safe md:pb-8 md:py-8 scroll-smooth relative z-10"
                     >
-                        <div className="max-w-7xl mx-auto w-full">
+                        <div className="w-full">
                             <Outlet key={location.pathname} />
                         </div>
                     </main>

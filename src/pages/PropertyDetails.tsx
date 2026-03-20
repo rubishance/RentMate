@@ -68,7 +68,7 @@ export default function PropertyDetails() {
                 <p className="text-muted-foreground">{error || t('propertyNotFound')}</p>
                 <button
                     onClick={() => navigate('/properties')}
-                    className="mt-4 px-4 py-2 bg-primary text-white rounded-lg"
+                    className="mt-4 px-4 py-2 bg-primary text-white rounded-xl"
                 >
                     {t('goBack')}
                 </button>
@@ -79,7 +79,7 @@ export default function PropertyDetails() {
     if (!id) return null;
 
     return (
-        <div className="pb-24 pt-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="pb-4 pt-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* We rely on PropertyHub to render the content. 
                  PropertyHub works well as a block. 
                  It acts as the "Page Content". */}

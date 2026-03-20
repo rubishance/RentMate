@@ -19,5 +19,5 @@ ON storage.objects FOR SELECT
 TO authenticated
 USING ( 
     bucket_id = 'chat-archives' AND
-    EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND (role = 'admin' OR is_super_admin = true))
+    EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin')
 );

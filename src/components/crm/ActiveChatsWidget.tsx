@@ -47,12 +47,12 @@ export function ActiveChatsWidget() {
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-border dark:border-gray-700 shadow-sm h-full flex flex-col">
             <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-2">
-                    <div className="p-2 bg-brand-100 dark:bg-brand-900/30 rounded-lg">
+                    <div className="p-2 bg-brand-100 dark:bg-brand-900/30 rounded-xl">
                         <MessageCircle className="w-5 h-5 text-brand-600 dark:text-brand-400" />
                     </div>
                     <h3 className="font-black text-foreground dark:text-white uppercase tracking-tight">Active Support Chats</h3>
                 </div>
-                <span className="bg-brand-600 text-white text-xs font-bold px-2 py-1 rounded-md">
+                <span className="bg-brand-600 text-white text-xs font-bold px-2 py-1 rounded-lg">
                     {chats.length}
                 </span>
             </div>
@@ -80,7 +80,7 @@ export function ActiveChatsWidget() {
                             </div>
                             <button
                                 onClick={() => navigate(`/admin/client/${chat.user_id}`)}
-                                className="w-full mt-2 flex items-center justify-center gap-1 text-xs font-black uppercase tracking-widest text-brand-600 hover:text-brand-700 bg-white dark:bg-gray-800 py-2 rounded-lg border border-transparent hover:border-brand-200 transition-all"
+                                className="w-full mt-2 flex items-center justify-center gap-1 text-xs font-black uppercase tracking-widest text-brand-600 hover:text-brand-700 bg-white dark:bg-gray-800 py-2 rounded-xl border border-transparent hover:border-brand-200 transition-all"
                             >
                                 Open Chat <ArrowRight className="w-3 h-3" />
                             </button>

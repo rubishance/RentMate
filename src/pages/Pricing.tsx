@@ -26,6 +26,7 @@ interface Tier {
     isPopular?: boolean;
     buttonVariant: 'primary' | 'outline';
     features: TierFeature[];
+    extendedFeatures: TierFeature[];
 }
 
 const ICON_MAP: Record<string, any> = {
@@ -87,7 +88,7 @@ export default function Pricing() {
             const plans = [
                 {
                     id: 'free',
-                    name: 'BASIC',
+                    name: 'FREE',
                     price: 0,
                     description: isRtl ? 'שקט נפשי דיגיטלי לבעלי נכס יחיד.' : 'Digital peace of mind for the single-unit owner.',
                     features: [
@@ -96,41 +97,60 @@ export default function Pricing() {
                         { icon: MessageCircle, text: isRtl ? 'ללא AI וללא בוט וואטסאפ' : 'No AI & No WhatsApp Bot' },
                         { icon: Check, text: isRtl ? 'מעקב תחזוקה בסיסי' : 'Basic Maintenance Tracking' },
                     ],
+                    extendedFeatures: [
+                        { icon: Check, text: isRtl ? "מעקב הוצאות והכנסות ברמת נכס יחיד" : "Single Asset Income & Expense Tracking" },
+                        { icon: Check, text: isRtl ? "ניהול חוזה אחד ותיוקו החכם בארכיון" : "Manage 1 Active Contract & Archive Smart Filing" },
+                        { icon: Check, text: isRtl ? "תזכורות תקופתיות פשוטות לתחזוקה מצד השוכר" : "Simple Periodic Maintenance Reminders from Tenant" },
+                    ],
                     cta: isRtl ? 'התחל בחינם' : 'Start for Free',
                     popular: false,
                     color: 'text-slate-500',
                     bg: 'bg-background/50'
                 },
                 {
-                    id: 'mate', // Starter
-                    name: 'STARTER',
-                    price: 29,
-                    description: isRtl ? 'ניהול מקצועי עם AI לבעלי דירה אחת.' : 'Professional management with AI for single owners.',
+                    id: 'pro',
+                    name: 'PRO',
+                    price: 49,
+                    description: isRtl ? 'טייס אוטומטי מלא משקיעים ומנהלי נכסים קטנים.' : 'Full autopilot for growing investors and managers.',
                     features: [
-                        { icon: Lock, text: isRtl ? 'נכס 1' : '1 Asset' },
-                        { icon: FileText, text: isRtl ? 'חוזה פעיל 1 (+3 בארכיון)' : '1 Active Contract (+3 Archived)' },
-                        { icon: Zap, text: isRtl ? 'כולל כלי AI מלאים' : 'Includes Full AI Tools' },
-                        { icon: MessageCircle, text: isRtl ? 'תזכורות בוואטסאפ' : 'WhatsApp Reminders' },
-                        { icon: FileText, text: isRtl ? 'יצוא נתונים' : 'Data Export' }
+                        { icon: Lock, text: isRtl ? 'עד 3 נכסים' : 'Up to 3 Assets' },
+                        { icon: FileText, text: isRtl ? '3 חוזים פעילים (+15 בארכיון)' : '3 Active Contracts (+15 Archived)' },
+                        { icon: Zap, text: isRtl ? 'כלים מתקדמים: AI, פרוטוקולים, סינון' : 'Advanced: AI, protocols, screening' },
+                        { icon: MessageCircle, text: isRtl ? 'בוט וואטסאפ ייעודי' : 'Dedicated WhatsApp Bot' },
                     ],
-                    cta: isRtl ? 'שדרג ל-Starter' : 'Upgrade to Starter',
+                    extendedFeatures: [
+                        { icon: Check, text: isRtl ? "כל הפיצ'רים של תוכנית Free" : "All Free Plan Features" },
+                        { icon: Zap, text: isRtl ? "עוזר AI אישי לשליחת הודעות מנוסחות לוואטסאפ השוכר" : "Personal AI Assistant for drafting WhatsApp messages to Tenant" },
+                        { icon: Shield, text: isRtl ? "סינון וניהול מועמדים דיגיטלי לדירה" : "Fast Tenant Screening & Application Flow" },
+                        { icon: FileText, text: isRtl ? "מעקב וניהול מתקדם של תזרים צ'קים דחויים" : "Advanced Post-dated Checks Flow Management" },
+                        { icon: Lock, text: isRtl ? "גיבוי ענן מאובטח לכל המסמכים והסרטונים של הנכס" : "Secure Cloud Backup for All Docs & Videos" },
+                        { icon: FileText, text: isRtl ? "גישה מלאה לספרייה המשפטית העדכנית" : "Full Access to Updated Legal Library" },
+                        { icon: Bell, text: isRtl ? "התראות חכמות למימוש אופציה ועדכון שכר דירה" : "Smart alerts for extending options & rent updates" },
+                    ],
+                    cta: isRtl ? 'שדרג ל-Pro' : 'Upgrade to Pro',
                     popular: true,
                     color: 'text-primary',
                     bg: 'bg-primary/10/50 dark:bg-blue-900/20'
                 },
                 {
-                    id: 'pro', // Pro
-                    name: 'PRO',
-                    price: 59,
-                    description: isRtl ? 'טייס אוטומטי מלא למשקיעים צומחים.' : 'Full autopilot for growing investors.',
+                    id: 'investor',
+                    name: 'INVESTOR',
+                    price: 119,
+                    description: isRtl ? 'מעטפת פרימיום למשקיעים רציניים.' : 'Premium suite for serious investors.',
                     features: [
-                        { icon: Lock, text: isRtl ? 'עד 3 נכסים' : 'Up to 3 Assets' },
-                        { icon: FileText, text: isRtl ? '3 חוזים פעילים (+15 בארכיון)' : '3 Active Contracts (+15 Archived)' },
-                        { icon: Zap, text: isRtl ? 'AI וניתוח תשואה מתקדם' : 'AI & Advanced Yield Analysis' },
-                        { icon: MessageCircle, text: isRtl ? 'תמיכה בעדיפות גבוהה' : 'Priority Support' },
-                        { icon: Check, text: isRtl ? 'כל מה שיש ב-Starter' : 'Everything in Starter' }
+                        { icon: Lock, text: isRtl ? 'עד 10 נכסים' : 'Up to 10 Assets' },
+                        { icon: FileText, text: isRtl ? 'הכל כולל הכל מתוכנית ה-Pro' : 'Everything included in the Pro Plan' },
+                        { icon: Zap, text: isRtl ? 'כלים ייחודיים למשקיעים' : 'Unique tools for investors' },
+                        { icon: MessageCircle, text: isRtl ? 'תמיכת VIP אישית' : 'Personal VIP Support' },
                     ],
-                    cta: isRtl ? 'שדרג ל-Pro' : 'Upgrade to Pro',
+                    extendedFeatures: [
+                        { icon: Check, text: isRtl ? "כל הפיצ'רים של תוכנית Pro" : "All Pro Plan Features" },
+                        { icon: FileText, text: isRtl ? "הפקת דוחות מס בלחיצת כפתור לשקיפות מול רואה החשבון" : "Generate Tax Reports in 1-Click for CPA" },
+                        { icon: PieChart, text: isRtl ? "ניהול משולב לפורטפוליו ומספר רב של נכסים" : "Integrated Multi-Asset Portfolio Management" },
+                        { icon: MessageCircle, text: isRtl ? "טיפול בתקלות בעדיפות עליונה מול אנשי מקצוע" : "Top Priority Support Queuing for Professionals" },
+                        { icon: Zap, text: isRtl ? "גישה מוקדמת (Beta) לפיצ'רים עתידיים לפני כולם" : "Early Access (Beta) to Future Features" },
+                    ],
+                    cta: isRtl ? 'שדרג ל-Investor' : 'Upgrade to Investor',
                     popular: false,
                     color: 'text-amber-500',
                     bg: 'bg-amber-50/50 dark:bg-amber-900/20'
@@ -152,7 +172,8 @@ export default function Pricing() {
                 bg: plan.bg,
                 isPopular: plan.popular,
                 buttonVariant: plan.id === 'mate' ? 'primary' : 'outline',
-                features: plan.features
+                features: plan.features,
+                extendedFeatures: plan.extendedFeatures
             }));
 
             setTiers(mappedTiers);
@@ -164,7 +185,7 @@ export default function Pricing() {
     };
 
     return (
-        <div className="min-h-screen bg-background dark:bg-black pt-20 pb-20 px-4">
+        <div className="min-h-screen bg-background dark:bg-black pt-20 px-4">
             <div className="max-w-6xl mx-auto space-y-12">
 
                 {/* Header */}
@@ -271,7 +292,122 @@ export default function Pricing() {
                     )}
                 </div>
 
-                <div className="text-center pt-12 text-slate-400 text-sm">
+                {/* Full Breakdown Section */}
+                {!loading && (
+                    <div className="mt-20 max-w-5xl mx-auto">
+                        <div className="text-center mb-10">
+                            <h2 className="text-2xl md:text-3xl font-black tracking-tight text-foreground">
+                                {isRtl ? "השוואת מסלולים מלאה" : "Full Feature Breakdown"}
+                            </h2>
+                            <p className="text-muted-foreground mt-2">
+                                {isRtl
+                                    ? "כל הכלים והיכולות שתקבלו בכל מסלול, לפרטי פרטים."
+                                    : "Everything included in each plan, in detail."}
+                            </p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {tiers.map((tier) => (
+                                <div
+                                    key={`breakdown-${tier.id}`}
+                                    className="bg-muted/30 dark:bg-muted/10 rounded-2xl p-6 border border-border/50"
+                                >
+                                    <h3
+                                        className={`font-bold text-xl mb-6 flex items-center gap-2 ${tier.color}`}
+                                    >
+                                        <tier.icon className="w-5 h-5" />
+                                        {tier.name}
+                                    </h3>
+
+                                    <div className="space-y-4">
+                                        {/* Show extended features */}
+                                        {tier.extendedFeatures.map((extFeature, fIdx) => (
+                                            <div
+                                                key={`ext-${fIdx}`}
+                                                className="flex items-start gap-3 text-sm"
+                                            >
+                                                <div className="p-1.5 rounded-full bg-secondary/20 text-primary shrink-0 mt-0.5">
+                                                    <extFeature.icon className="w-3.5 h-3.5" strokeWidth={2.5} />
+                                                </div>
+                                                <span className="text-foreground/90 font-medium">
+                                                    {extFeature.text}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    
+                                    <div className="mt-8 pt-6 border-t border-border/50">
+                                        <button
+                                            onClick={() => navigate('/login?plan=' + tier.id)}
+                                            className={`w-full py-2.5 rounded-xl font-bold text-sm transition-all ${
+                                                tier.buttonVariant === 'primary'
+                                                ? 'bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 hover:border-primary/30'
+                                                : 'bg-muted/50 hover:bg-muted text-foreground border border-border'
+                                            }`}
+                                        >
+                                            {tier.ctaText || (tier.price === 0 ? t('pricing_get_started') : t('pricing_start_free_trial'))}
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* FAQ Section */}
+                <div className="mt-24 max-w-4xl mx-auto">
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl font-black tracking-tight text-foreground">
+                            {isRtl ? "שאלות נפוצות" : "Frequently Asked Questions"}
+                        </h2>
+                        <p className="text-muted-foreground mt-2 text-lg">
+                            {isRtl ? "כל מה שצריך לדעת לפני שמתחילים." : "Everything you need to know before getting started."}
+                        </p>
+                    </div>
+                    <div className="grid gap-4">
+                        {[
+                            {
+                                q: isRtl ? "האם יש תקופת התחייבות?" : "Is there a commitment period?",
+                                a: isRtl 
+                                    ? "לא! המסלול החודשי שלנו הוא ללא התחייבות וניתן לביטול בכל רגע. המסלול השנתי מציע הנחה משמעותית אך גם אותו ניתן להפסיק בכפוף למדיניות הביטולים שלנו." 
+                                    : "No! Our monthly plan is commitment-free and can be canceled anytime. The annual plan offers a significant discount but can also be stopped subject to our cancellation policy."
+                            },
+                            {
+                                q: isRtl ? "מי נחשב 'נכס' במערכת?" : "What counts as an 'Asset' in the system?",
+                                a: isRtl 
+                                    ? "נכס הוא כל יחידת דיור שמושכרת בנפרד ומייצרת תזרים מניב עצמאי (למשל, דירה, חנות, יחידת דיור נפרדת). אם דירה מפוצלת ל-3 יחידות דיור - כל יחידה נספרת כנכס." 
+                                    : "An asset is any separate rental unit that generates independent revenue (e.g., apartment, store, separate housing unit). If an apartment is split into 3 units, each unit counts as an asset."
+                            },
+                            {
+                                q: isRtl ? "האם המידע שלי מאובטח?" : "Is my data secure?",
+                                a: isRtl 
+                                    ? "בוודאי. אנו משתמשים בטכנולוגיות ההצפנה והאבטחה המתקדמות ביותר כדי להבטיח שהמידע, המסמכים והחוזים שלך יישארו פרטיים ומאובטחים בענן." 
+                                    : "Absolutely. We use the most advanced encryption and security technologies to ensure your information, documents, and contracts remain private and secure in the cloud."
+                            },
+                            {
+                                q: isRtl ? "מה קורה אם יש לי יותר מ-10 נכסים?" : "What if I have more than 10 properties?",
+                                a: isRtl 
+                                    ? "למשקיעים ומוסדות בעלי מעל ל-10 נכסים בניווט פרימיום, אנו מציעים בניית תיק ניהול בהתאמה אישית. צרו קשר עם מחלקת העסקים שלנו." 
+                                    : "For investors and institutions with over 10 properties, we offer custom-tailored management portfolio building. Contact our business department."
+                            }
+                        ].map((faq, i) => (
+                            <details key={i} className="group rounded-2xl border border-border bg-card overflow-hidden hover:border-primary/50 transition-colors">
+                                <summary className="flex cursor-pointer items-center justify-between p-6 font-bold marker:content-none text-foreground">
+                                    <span className="text-lg pr-4">{faq.q}</span>
+                                    <span className="relative flex shrink-0 items-center justify-center p-2 rounded-full bg-secondary text-primary group-open:bg-primary group-open:text-primary-foreground transition-all duration-300">
+                                        <svg className="h-4 w-4 transition-transform duration-300 group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </span>
+                                </summary>
+                                <div className="px-6 pb-6 text-muted-foreground leading-relaxed animate-in fade-in slide-in-from-top-2 duration-300 text-base border-t border-border/50 pt-4">
+                                    <p>{faq.a}</p>
+                                </div>
+                            </details>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="text-center pt-20 text-slate-400 text-sm">
                     <p>{t('pricing_need_custom_plan')} <span className="underline cursor-pointer hover:text-primary" onClick={() => navigate('/contact')}>{t('pricing_contact_sales_link')}</span></p>
                 </div>
 

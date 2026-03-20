@@ -339,7 +339,7 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                                             <span className="font-bold">₪{p.amount.toLocaleString()}</span>
                                         </div>
                                         {isBestMatch && (
-                                            <span className="px-2 py-0.5 bg-brand-100 dark:bg-brand-900 text-brand-700 dark:text-brand-300 text-[11px] font-black uppercase tracking-wider rounded-full">
+                                            <span className="px-2 py-0.5 bg-brand-100 dark:bg-brand-900 text-brand-700 dark:text-brand-300 text-xs font-black uppercase tracking-wider rounded-full">
                                                 {t('bestMatch')}
                                             </span>
                                         )}

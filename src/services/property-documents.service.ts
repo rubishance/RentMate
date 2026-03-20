@@ -471,6 +471,53 @@ class PropertyDocumentsService {
     }
 
     /**
+     * Get all documents for a user across ALL properties with flexible filters
+     */
+    async getGlobalDocuments(filters?: {
+        category?: string;
+        propertyId?: string;
+    }): Promise<PropertyDocument[]> {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+
+        let query = supabase
+            .from('property_documents')
+            .select(`
+                *,
+                properties (
+                    id,
+                    address,
+                    city
+                )
+            `)
+            .eq('user_id', user.id)
+            .order('document_date', { ascending: false });
+
+        if (filters?.propertyId && filters.propertyId !== 'all') {
+            query = query.eq('property_id', filters.propertyId);
+        }
+
+        if (filters?.category && filters.category !== 'all') {
+            if (filters.category === 'utilities') {
+                query = query.like('category', 'utility_%');
+            } else if (filters.category === 'media') {
+                query = query.in('category', ['photo', 'video']);
+            } else if (filters.category === 'checks' || filters.category === 'receipts') {
+                query = query.eq('category', 'receipt');
+            } else if (filters.category === 'documents') {
+                query = query.in('category', ['lease', 'id', 'other', 'maintenance']);
+            } else {
+                query = query.eq('category', filters.category);
+            }
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+        
+        return data as PropertyDocument[];
+    }
+
+    /**
      * Get all documents for a user across ALL properties by category
      * Used for Global Dashboards (e.g. Maintenance Hub)
      */

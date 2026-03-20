@@ -312,7 +312,7 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
                                     <div className="flex items-center gap-4 md:gap-6 flex-1 min-w-0">
                                         <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl glass-premium flex flex-col items-center justify-center shrink-0 border border-white/10 group-hover:scale-105 transition-all duration-300">
                                             <span className="text-lg md:text-xl font-black leading-none">{format(parseISO(item.date), 'dd')}</span>
-                                            <span className="text-[11px] font-black uppercase tracking-widest opacity-90 mt-0.5">{format(parseISO(item.date), 'MMM')}</span>
+                                            <span className="text-xs font-black uppercase tracking-widest opacity-90 mt-0.5">{format(parseISO(item.date), 'MMM')}</span>
                                         </div>
 
                                         <div className="flex-1 min-w-0 space-y-1">
@@ -321,7 +321,7 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
                                                     {isRent ? t('financeRent') : (item.title || item.file_name || t('financeBills'))}
                                                 </h3>
                                                 <span className={cn(
-                                                    "text-[11px] px-2 py-0.5 rounded-full uppercase font-black tracking-widest border shrink-0",
+                                                    "text-xs px-2 py-0.5 rounded-full uppercase font-black tracking-widest border shrink-0",
                                                     item.displayType === 'bill' ? 'bg-primary/10 text-primary border-primary/20' :
                                                         isPaid ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
                                                             item.status === 'overdue' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' :
@@ -350,7 +350,7 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
                                                     </span>
                                                 </div>
                                             </div>
-                                            <p className="text-[11px] font-bold text-muted-foreground opacity-70 uppercase tracking-widest mt-1">
+                                            <p className="text-xs font-bold text-muted-foreground opacity-70 uppercase tracking-widest mt-1">
                                                 {formatDate(item.date)}
                                             </p>
                                         </div>

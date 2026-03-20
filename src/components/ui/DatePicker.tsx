@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { DayPicker } from 'react-day-picker';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { Calendar as CalendarIcon, X } from 'lucide-react';
@@ -8,10 +7,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useScrollLock } from '../../hooks/useScrollLock';
 import { useTranslation } from '../../hooks/useTranslation';
-
-// Import react-day-picker styles if not using custom classNames exclusively?
-// Actually, we'll use custom classNames to fit the Glass Bionic theme perfectly.
-import 'react-day-picker/dist/style.css';
+import { MobileDatePicker } from './MobileDatePicker';
 
 export interface DatePickerProps {
     value?: Date;
@@ -24,7 +20,7 @@ export interface DatePickerProps {
     className?: string;
     error?: string | boolean;
     readonly?: boolean;
-    variant?: 'default' | 'inline' | 'compact';
+    variant?: 'default' | 'inline' | 'compact' | 'bento';
 }
 
 export function DatePicker({
@@ -42,6 +38,7 @@ export function DatePicker({
 }: DatePickerProps) {
     const [isOpen, setIsOpen] = React.useState(false);
     const [month, setMonth] = React.useState<Date | undefined>(value || new Date());
+    const inputRef = React.useRef<HTMLInputElement>(null);
 
     const { t } = useTranslation();
 
@@ -57,7 +54,6 @@ export function DatePicker({
     // Close on selection if single mode (default)
     const handleSelect = (date: Date | undefined) => {
         onChange?.(date);
-        setIsOpen(false);
     };
 
     return (
@@ -67,25 +63,35 @@ export function DatePicker({
             <div className="relative">
                 <button
                     type="button"
-                    onClick={() => !readonly && setIsOpen(true)}
+                    onClick={() => {
+                        if (!readonly) {
+                            setIsOpen(true);
+                        }
+                    }}
                     className={cn(
-                        "w-full flex items-center justify-between bg-background/50 backdrop-blur-sm border rounded-xl transition-all duration-300 group",
-                        variant === 'default' ? "p-3" : (variant === 'compact' ? "p-2" : "p-1"),
-                        error ? "border-red-500 ring-1 ring-red-500" : "border-border hover:border-primary/50 hover:bg-secondary/30",
-                        isOpen && "ring-2 ring-primary/20 border-primary",
-                        readonly && "cursor-default opacity-60 bg-secondary/20 hover:border-border hover:bg-secondary/20"
+                        "w-full flex items-center justify-between transition-all duration-300 group",
+                        variant === 'bento' 
+                            ? "h-20 rounded-[2rem] bg-slate-50 dark:bg-neutral-800/50 border-2 border-transparent px-6 font-black text-xl hover:border-primary/20"
+                            : "bg-background/50 backdrop-blur-sm border rounded-xl",
+                        variant === 'default' && "p-3",
+                        variant === 'compact' && "p-2",
+                        variant === 'inline' && "p-1",
+                        error ? (variant === 'bento' ? "border-red-500 bg-red-50/50" : "border-red-500 ring-1 ring-red-500") : (!variant || variant !== 'bento') && "border-border hover:border-primary/50 hover:bg-muted/30",
+                        isOpen && (variant === 'bento' ? "border-primary/30 shadow-sm" : "ring-2 ring-primary/20 border-primary"),
+                        readonly && "cursor-default opacity-60 bg-muted/20 hover:border-border hover:bg-muted/20"
                     )}
                 >
                     <div className={cn("flex items-center", variant === 'default' ? "gap-3" : "gap-2")}>
                         <div className={cn(
-                            "rounded-lg transition-colors flex items-center justify-center shrink-0",
-                            variant === 'default' ? "w-10 h-10" : "w-8 h-8",
-                            "bg-primary/10 text-primary group-hover:bg-primary/20"
+                            "transition-colors flex items-center justify-center shrink-0",
+                            variant === 'bento' ? "w-12 h-12 rounded-2xl bg-primary/10 text-primary group-hover:bg-primary/20" :
+                            (variant === 'default' ? "w-10 h-10 rounded-xl bg-primary/10 text-primary group-hover:bg-primary/20" : "w-8 h-8 rounded-xl bg-primary/10 text-primary group-hover:bg-primary/20")
                         )}>
-                            <CalendarIcon className={variant === 'default' ? "w-5 h-5" : "w-4 h-4"} />
+                            <CalendarIcon className={variant === 'bento' ? "w-5 h-5 ml-0.5" : variant === 'default' ? "w-5 h-5" : "w-4 h-4"} />
                         </div>
                         <span className={cn(
-                            variant === 'default' ? "text-sm font-medium" : (variant === 'compact' ? "text-xs font-semibold" : "text-[11px] font-bold"),
+                            variant === 'bento' ? "text-xl translate-y-[1px]" :
+                            (variant === 'default' ? "text-sm font-medium" : (variant === 'compact' ? "text-xs font-semibold" : "text-xs font-bold")),
                             value ? "text-foreground" : "text-muted-foreground"
                         )}>
                             {value ? format(value, 'dd/MM/yyyy') : t(placeholder as any)}
@@ -93,53 +99,45 @@ export function DatePicker({
                     </div>
                 </button>
 
+                {/* Mobile Native Date Picker Overlay Removed in favor of MobileDatePicker */}
+
                 {/* Portal the modal to body/root to avoid z-index/transform issues */}
                 {typeof document !== 'undefined' && createPortal(
                     <AnimatePresence>
                         {isOpen && (
-                            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+                            <div className="fixed inset-0 z-[9999] flex items-end md:items-center justify-center p-0 md:p-4">
                                 {/* Backdrop */}
                                 <motion.div
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
                                     onClick={() => setIsOpen(false)}
-                                    className="absolute inset-0 bg-black/20 backdrop-blur-[2px]"
+                                    className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
                                 />
 
-                                {/* Calendar Popover - Centered Modal */}
+                                {/* Scroll Wheel Bottom Sheet (Mobile) / Centered Modal (Desktop) */}
                                 <motion.div
-                                    initial={{ opacity: 0, scale: 0.9, y: 0 }}
-                                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                                    exit={{ opacity: 0, scale: 0.9, y: 0 }}
-                                    className="relative bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl w-auto max-w-[90vw] overflow-hidden"
+                                    initial={{ opacity: 0, y: "100%", scale: window.matchMedia('(min-width: 768px)').matches ? 0.9 : 1 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: "100%", scale: window.matchMedia('(min-width: 768px)').matches ? 0.9 : 1 }}
+                                    transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                                    className="relative w-full md:w-auto md:min-w-[400px] bg-white dark:bg-neutral-900 rounded-t-[2.5rem] md:rounded-[2.5rem] p-6 pb-12 md:pb-6 shadow-2xl"
                                 >
-                                    <div className="flex justify-between items-center mb-4 px-4 pt-4">
+                                    <div className="flex justify-between items-center mb-6 px-2 w-full">
                                         <h2 className="font-bold text-lg text-foreground">{t('selectDate')}</h2>
-                                        <button
-                                            onClick={() => setIsOpen(false)}
-                                            className="p-1 hover:bg-secondary rounded-full transition-colors"
+                                        <button 
+                                            onClick={() => { setIsOpen(false); }} 
+                                            className="bg-primary/10 text-primary px-6 py-2 rounded-full font-bold text-sm hover:bg-primary/20 transition-colors"
                                         >
-                                            <X className="w-5 h-5 text-muted-foreground" />
+                                            {t('save') || 'שמור'}
                                         </button>
                                     </div>
-
-                                    <div className="p-4 pt-0">
-                                        <DayPicker
-                                            mode="single"
-                                            selected={value}
-                                            onSelect={handleSelect}
-                                            disabled={disabledDays}
-                                            month={month}
-                                            onMonthChange={setMonth}
-                                            startMonth={minDate || new Date(new Date().getFullYear() - 10, 0)}
-                                            endMonth={maxDate || new Date(new Date().getFullYear() + 40, 11)}
-                                            captionLayout="dropdown"
-                                            showOutsideDays
-                                            className="p-0 border-none"
-                                            locale={he}
-                                        />
-                                    </div>
+                                    <MobileDatePicker 
+                                        value={value} 
+                                        onChange={(d) => onChange?.(d)} 
+                                        minDate={minDate} 
+                                        maxDate={maxDate} 
+                                    />
                                 </motion.div>
                             </div>
                         )}

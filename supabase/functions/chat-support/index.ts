@@ -308,24 +308,58 @@ const FUNCTION_TOOLS = [
                 required: ["title", "options"]
             }
         }
+    },
+    {
+        type: "function",
+        function: {
+            name: "search_knowledge_base",
+            description: "Search the knowledge base for documentation, guides, or general information. Use this when the user asks a question about how to use the app or needs help.",
+            parameters: {
+                type: "object",
+                properties: {
+                    query: { type: "string", description: "The user's question or search term" }
+                },
+                required: ["query"]
+            }
+        }
     }
 ];
 
-// Function groupings for Intent Routing
-const toolCategories: Record<string, string[]> = {
-    contracts: ["search_contracts", "check_expiring_contracts"],
-    documents: ["list_folders", "create_folder", "organize_document"],
-    maintenance: ["prepare_add_maintenance", "search_maintenance_records", "log_maintenance_expense"],
-    payments: ["get_financial_summary", "prepare_add_payment"],
-    properties: ["list_properties", "prepare_add_property"],
-    tenants: ["get_tenant_details", "prepare_add_tenant", "prepare_add_contract"],
-    utilities: ["calculate_rent_linkage"],
-    support: ["trigger_human_support", "generate_whatsapp_message"],
-    debug: ["debug_entity"],
-    general_knowledge: []
-};
-
 // Function implementations
+async function searchKnowledgeBase(query: string, userLanguage: string) {
+    try {
+        const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+        const embedStartTime = Date.now();
+        const embedRes = await fetch("https://api.openai.com/v1/embeddings", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${OPENAI_API_KEY}` },
+            body: JSON.stringify({ input: query.replace(/\n/g, ' '), model: "text-embedding-3-small" }),
+        });
+        const embedData = await embedRes.json();
+        
+        if (embedData.data && embedData.data[0]) {
+            const queryEmbedding = embedData.data[0].embedding;
+            const { data: matchedDocs, error: matchError } = await supabase.rpc('match_knowledge', {
+                query_embedding: queryEmbedding, match_threshold: 0.25, match_count: 5
+            });
+            
+            if (matchError) {
+                console.error("Supabase match_knowledge error:", matchError);
+                return { success: false, message: `Database error: ${matchError.message}` };
+            } else if (matchedDocs && matchedDocs.length > 0) {
+                const langDocs = matchedDocs.filter((d: any) => d.metadata?.language === userLanguage || !d.metadata?.language);
+                const finalDocs = langDocs.length > 0 ? langDocs : matchedDocs;
+                const knowledgeStr = finalDocs.map((d: any) => `[Source: ${d.metadata?.source || 'Documentation'}]:\n${d.content}`).join("\n\n---\n\n");
+                return { success: true, knowledge: knowledgeStr };
+            }
+        }
+        return { success: true, knowledge: "No relevant documentation found." };
+    } catch (e: any) {
+        console.error("Vector Search Error:", e);
+        return { success: false, message: `Vector Search Error: ${e.message}` };
+    }
+}
+
 async function checkConsent(userId: string, supabase: any, clientConsent?: boolean) {
     if (clientConsent === true) return true;
     console.log(`Checking AI consent for user: ${userId}`);
@@ -367,7 +401,7 @@ async function searchContracts(query: string, userId: string, hasAiConsent?: boo
         // Simple search on contracts table only
         const { data, error } = await supabase
             .from('contracts')
-            .select('id, start_date, end_date, monthly_rent, status, property_id, tenant_id')
+            .select('id, start_date, end_date, base_rent, status, property_id, tenants')
             .eq('user_id', userId)
             .limit(10);
 
@@ -383,9 +417,10 @@ async function searchContracts(query: string, userId: string, hasAiConsent?: boo
         // Return simplified results
         const results = data.map(contract => ({
             id: contract.id,
-            rent: `₪${contract.monthly_rent}`,
+            rent: `₪${contract.base_rent}`,
             period: `${contract.start_date} עד ${contract.end_date}`,
-            status: contract.status
+            status: contract.status,
+            tenants: Array.isArray(contract.tenants) ? contract.tenants.map((t: any) => t.name).join(', ') : 'Unknown'
         }));
 
         // Log Security Audit
@@ -484,7 +519,7 @@ async function checkExpiringContracts(daysThreshold: number, userId: string, has
 
     const { data, error } = await supabase
         .from('contracts')
-        .select('*, tenant:tenants(name)') // Assuming relation
+        .select('*')
         .eq('user_id', userId)
         .eq('status', 'active')
         .lte('end_date', futureDate.toISOString())
@@ -502,12 +537,15 @@ async function checkExpiringContracts(daysThreshold: number, userId: string, has
     return {
         success: true,
         count: data.length,
-        expiring_contracts: data.map(c => ({
-            id: c.id,
-            tenant: c.tenant?.name || 'Unknown',
-            end_date: c.end_date,
-            rent: c.monthly_rent
-        }))
+        expiring_contracts: data.map(c => {
+            const tenantNames = Array.isArray(c.tenants) ? c.tenants.map((t: any) => t.name).join(', ') : 'Unknown';
+            return {
+                id: c.id,
+                tenant: tenantNames,
+                end_date: c.end_date,
+                rent: c.base_rent
+            };
+        })
     };
 }
 
@@ -858,18 +896,11 @@ serve(async (req) => {
         const startTime = Date.now();
         console.log("Chat support function invoked.");
 
+        const perfMetrics: Record<string, number> = {};
+
         const logPerf = async (step: string, duration: number, details?: any) => {
             console.log(`[PERF] ${step}: ${duration.toFixed(2)}ms`);
-            if (userId) {
-                const sb = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
-                const { error } = await sb.from('debug_logs').insert({
-                    function_name: 'chat-support:perf',
-                    level: 'info',
-                    message: `Step: ${step}`,
-                    details: { ...details, duration, userId }
-                });
-                if (error) console.error("Logging failed", error);
-            }
+            perfMetrics[step] = Number(duration.toFixed(2));
         };
 
         if (!OPENAI_API_KEY && !GEMINI_API_KEY) {
@@ -923,106 +954,77 @@ serve(async (req) => {
         console.log("Auth header present:", !!authHeader, "Internal call:", isInternalCall);
 
         // Extract user ID from JWT or internal request
-        let userId = null;
         const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-        if (isInternalCall && bodyUserId) {
-            userId = bodyUserId;
-            console.log("Extracted userId from internal webhook:", userId);
-        } else if (authHeader) {
-            const token = authHeader.replace("Bearer ", "");
-            const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-            if (authError) {
-                console.error("Auth error extracting user:", authError);
-            }
-            userId = user?.id;
-            console.log("Extracted userId from token:", userId);
-            await logPerf("auth_extraction", Date.now() - startTime);
-        } else {
-            console.log("No authorization header or internal key provided.");
-        }
-
-        // Check usage limits (if user is authenticated)
-        if (userId) {
-            const { data: usageCheck, error: usageError } = await supabase.rpc('check_ai_chat_usage', {
-                p_user_id: userId,
-                p_tokens_used: 500 // Estimate, will update after actual usage
-            });
-
-            if (usageError) {
-                console.error("Usage check error:", usageError);
-            } else if (usageCheck && !usageCheck.allowed) {
-                // ... message generation ...
-                const errorMessage = usageCheck.reason === 'message_limit_exceeded'
-                    ? `הגעת למגבלת ההודעות החודשית (${usageCheck.limit} הודעות). שדרג את המנוי שלך להמשך שימוש. / You've reached your monthly message limit (${usageCheck.limit} messages). Please upgrade your subscription.`
-                    : `הגעת למגבלת הטוקנים החודשית. שדרג את המנוי שלך. / You've reached your monthly token limit. Please upgrade your subscription.`;
-
-                await logPerf("usage_limit_hit", Date.now() - startTime, { reason: usageCheck.reason });
-
-                return new Response(
-                    JSON.stringify({
-                        choices: [{
-                            message: { role: "assistant", content: errorMessage }
-                        }]
-                    }),
-                    { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-                );
-            }
-            await logPerf("usage_check", Date.now() - startTime);
-        }
-
-        // Detect user language
-        const userLanguage = userContent.match(/[\u0590-\u05FF]/) ? 'he' : 'en';
-        
-        // Fetch vector embeddings for the user query to build dynamic knowledge base
+        // --- PARALLEL INITIALIZATION TASKS ---
+        let userId: string | null = null;
+        let usageCheckResult: any = null;
         let knowledgeBase = "";
-        try {
-            const embedStartTime = Date.now();
-            const embedRes = await fetch("https://api.openai.com/v1/embeddings", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${OPENAI_API_KEY}`,
-                },
-                body: JSON.stringify({
-                    input: userContent.replace(/\n/g, ' '),
-                    model: "text-embedding-3-small",
-                }),
-            });
-            const embedData = await embedRes.json();
-            
-            if (embedData.data && embedData.data[0]) {
-                const queryEmbedding = embedData.data[0].embedding;
-                await logPerf("query_embedding", Date.now() - embedStartTime);
-                
-                const searchStartTime = Date.now();
-                // Query Supabase for matching knowledge
-                const { data: matchedDocs, error: matchError } = await supabase.rpc('match_knowledge', {
-                    query_embedding: queryEmbedding,
-                    match_threshold: 0.25,
-                    match_count: 5
-                });
-                
-                if (matchError) {
-                    console.error("Supabase match_knowledge error:", matchError);
-                } else if (matchedDocs && matchedDocs.length > 0) {
-                    // Filter by language if metadata has it, or just use top matches
-                    const langDocs = matchedDocs.filter((d: any) => d.metadata?.language === userLanguage || !d.metadata?.language);
-                    const finalDocs = langDocs.length > 0 ? langDocs : matchedDocs;
-                    
-                    knowledgeBase = finalDocs.map((d: any) => `[Source: ${d.metadata?.source || 'Documentation'}]:\n${d.content}`).join("\n\n---\n\n");
-                }
-                await logPerf("vector_search", Date.now() - searchStartTime, { matches: matchedDocs?.length || 0 });
+        let activeTools = FUNCTION_TOOLS;
+        const pStartTime = Date.now();
+
+        // TASK 1: Auth & Usage Check
+        const authTask = async () => {
+            if (isInternalCall && bodyUserId) {
+                userId = bodyUserId;
+                console.log("Extracted userId from internal webhook:", userId);
+            } else if (authHeader) {
+                const token = authHeader.replace("Bearer ", "");
+                const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+                if (authError) console.error("Auth error extracting user:", authError);
+                userId = user?.id || null;
+                console.log("Extracted userId from token:", userId);
+                await logPerf("auth_extraction", Date.now() - startTime);
+            } else {
+                console.log("No authorization header or internal key provided.");
             }
-        } catch (e) {
-            console.error("Vector Search Error:", e);
+        };
+
+        const authPromise = (async () => {
+            await Promise.race([
+                authTask(),
+                new Promise<void>((resolve) => setTimeout(() => {
+                    console.warn("Auth extraction timed out after 5s! Proceeding unauthenticated.");
+                    resolve();
+                }, 5000))
+            ]);
+            
+            if (userId) {
+                const uStart = Date.now();
+                const { data: usageCheck, error: usageError } = await supabase.rpc('check_ai_chat_usage', {
+                    p_user_id: userId,
+                    p_tokens_used: 500 // Estimate
+                });
+                if (usageError) console.error("Usage check error:", usageError);
+                else if (usageCheck) usageCheckResult = usageCheck;
+                await logPerf("usage_check_bg", Date.now() - uStart);
+            }
+        })();
+
+        // Wait for all interleaved tasks to finish simultaneously
+        await authPromise;
+        await logPerf("parallel_init_total", Date.now() - pStartTime);
+
+        // Usage validation boundary
+        if (usageCheckResult && !usageCheckResult.allowed) {
+            const errorMessage = usageCheckResult.reason === 'message_limit_exceeded'
+                ? `הגעת למגבלת ההודעות החודשית (${usageCheckResult.limit} הודעות). שדרג את המנוי שלך להמשך שימוש. / You've reached your monthly message limit (${usageCheckResult.limit} messages). Please upgrade your subscription.`
+                : `הגעת למגבלת הטוקנים החודשית. שדרג את המנוי שלך. / You've reached your monthly token limit. Please upgrade your subscription.`;
+
+            await logPerf("usage_limit_hit", Date.now() - startTime, { reason: usageCheckResult.reason });
+
+            return new Response(
+                JSON.stringify({
+                    choices: [{ message: { role: "assistant", content: errorMessage } }],
+                    perfMetrics: perfMetrics
+                }),
+                { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
         }
 
-        // Define system prompt based on authentication status
+        // Construct System Prompt
         let systemPrompt = "";
-
         if (userId) {
-            // PRO MODE (Authenticated)
             systemPrompt = `You are a helper for property owners using "RentMate". 
                 
 ROLE & TONE:
@@ -1055,7 +1057,9 @@ CAPABILITIES:
 6. **Document Organization**: Move uploaded files to property-specific folders using \`organize_document\`.
 
 DIRECTIONS:
+- **USE THE APP FOR CALCULATIONS:** If the user asks to calculate the CPI index or performs other tasks that have dedicated features in the app, DO NOT perform the calculation or task directly. Instead, refer them to use the app's feature (e.g., "You can easily calculate the CPI index using our built-in Calculator located in the main menu."). Explain briefly where to find it.
 - If the user asks about their assets, properties, or adding a bill, ALWAYS start by calling \`list_properties\` to get the available context. This is required even if they have only one asset.
+- If a support question has more than 1 possible answer or method (e.g., "how to add a new bill", "how to add a property"), you MUST provide ALL the possibilities (up to 3 methods) in your answer as a clear bulleted list.
 
 CONTEXT FROM KNOWLEDGE BASE:
 ${knowledgeBase}`;
@@ -1089,96 +1093,17 @@ ${knowledgeBase}`;
         }
 
         // Build messages for OpenAI
+        const recentMessages = messages.slice(-10); // Keep last 5 turns to reduce context bloat
         const openaiMessages = [
             {
                 role: "system",
                 content: systemPrompt
             },
-            ...messages.map((msg: any) => ({
+            ...recentMessages.map((msg: any) => ({
                 role: msg.role,
                 content: msg.hiddenContext ? `${msg.content}\n\n${msg.hiddenContext}` : msg.content
             }))
         ];
-
-        // INTENT ROUTING PASS
-        let activeTools: any[] = [];
-
-        if (userId) {
-            const routingStartTime = Date.now();
-            try {
-                // We use Gemini Flash for blazing fast intent classification
-                const routerApiKey = GEMINI_API_KEY || OPENAI_API_KEY; // Prefer Gemini for speed/cost if available
-                const routerModel = GEMINI_API_KEY ? "gemini-1.5-flash" : "gpt-4o-mini";
-                const routerUrl = GEMINI_API_KEY
-                    ? `https://generativelanguage.googleapis.com/v1beta/models/${routerModel}:generateContent?key=${routerApiKey}`
-                    : "https://api.openai.com/v1/chat/completions";
-
-                const routerPrompt = `You are a fast intent classifier for a property management app. 
-Based on the user's latest message: "${Math.max(0, userContent.length) > 500 ? userContent.substring(0, 500) + '...' : userContent}", 
-which feature category are they trying to access? 
-
-Options: [contracts, documents, maintenance, payments, properties, tenants, utilities, support, debug, general_knowledge]. 
-If unsure or if they are just asking a general question, output "general_knowledge".
-Return ONLY the exact category name as a raw string without quotes or punctuation.`;
-
-                let intentCategory = "general_knowledge";
-
-                if (GEMINI_API_KEY) {
-                    const routingRes = await fetch(routerUrl, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: routerPrompt }] }],
-                            generationConfig: { maxOutputTokens: 10, temperature: 0.1 }
-                        }),
-                        signal: AbortSignal.timeout(5000)
-                    });
-                    if (routingRes.ok) {
-                        const routingData = await routingRes.json();
-                        intentCategory = routingData.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toLowerCase() || "general_knowledge";
-                    }
-                } else {
-                    const routingRes = await fetch(routerUrl, {
-                        method: "POST",
-                        headers: {
-                            "Authorization": `Bearer ${routerApiKey}`,
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({
-                            model: routerModel,
-                            messages: [{ role: "user", content: routerPrompt }],
-                            max_tokens: 10,
-                            temperature: 0.1
-                        }),
-                        signal: AbortSignal.timeout(5000)
-                    });
-                    if (routingRes.ok) {
-                        const routingData = await routingRes.json();
-                        intentCategory = routingData.choices?.[0]?.message?.content?.trim().toLowerCase() || "general_knowledge";
-                    }
-                }
-
-                // Clean up string just in case LLM added punctuation
-                intentCategory = intentCategory.replace(/[^a-z_]/g, '');
-
-                // Validate category exists, fallback to all tools if completely broken, otherwise use specialized subset
-                if (toolCategories[intentCategory]) {
-                    const allowedNames = toolCategories[intentCategory];
-                    // Always inject core context tools if the user is using a functional feature
-                    const coreTools = allowedNames.length > 0 ? ["list_properties", "search_contracts"] : [];
-                    const allAllowed = [...allowedNames, ...coreTools];
-                    activeTools = FUNCTION_TOOLS.filter(t => allAllowed.includes(t.function.name));
-                    console.log(`Intent Router selected category: ${intentCategory} with ${activeTools.length} tools.`);
-                } else {
-                    console.log(`Intent Router returned unknown category: ${intentCategory}. Falling back to general_knowledge (0 tools).`);
-                }
-
-            } catch (routeErr) {
-                console.error("Intent routing failed, falling back to full toolset:", routeErr);
-                activeTools = FUNCTION_TOOLS; // Fallback to safe mode (all tools) if router breaks
-            }
-            await logPerf("intent_router_pass", Date.now() - routingStartTime, { count: activeTools.length });
-        }
 
         // Initial API call with function tools
         let apiUrl = "https://api.openai.com/v1/chat/completions";
@@ -1222,147 +1147,24 @@ Return ONLY the exact category name as a raw string without quotes or punctuatio
 
         // Log initial usage if available (including tool calls prompt)
         if (userId && result.usage) {
-            try {
-                await supabase.rpc('log_ai_usage', {
-                    p_user_id: userId,
-                    p_model: result.model || "gpt-4o-mini",
-                    p_feature: 'chat',
-                    p_input_tokens: result.usage.prompt_tokens,
-                    p_output_tokens: result.usage.completion_tokens
-                });
-                totalTurnCost += (result.usage.prompt_tokens / 1000000 * 0.15) + (result.usage.completion_tokens / 1000000 * 0.60);
-            } catch (logError) {
-                console.error("Failed to log initial AI usage:", logError);
-            }
-        }
-
-        // Check if OpenAI wants to call a function
-        const toolCalls = result.choices?.[0]?.message?.tool_calls;
-
-        if (toolCalls && toolCalls.length > 0) {
-            const toolCall = toolCalls[0];
-            const functionName = toolCall.function.name;
-            const functionArgs = JSON.parse(toolCall.function.arguments);
-
-            let functionResult;
-            const toolStartTime = Date.now();
-
-            // Execute the function
-            if (!userId) {
-                functionResult = { success: false, message: "User not authenticated. Please log in to use this feature." };
-            } else {
-                if (functionName === "search_contracts") {
-                    functionResult = await searchContracts(functionArgs.query, userId, hasAiConsent);
-                } else if (functionName === "get_financial_summary") {
-                    functionResult = await getFinancialSummary(functionArgs.period, userId, functionArgs.currency, hasAiConsent);
-                } else if (functionName === "get_tenant_details") {
-                    functionResult = await getTenantDetails(functionArgs.name_or_email, userId, hasAiConsent);
-                } else if (functionName === "list_properties") {
-                    functionResult = await listProperties(userId, hasAiConsent);
-                } else if (functionName === "list_folders") {
-                    functionResult = await listFolders(functionArgs.property_id, userId, hasAiConsent);
-                } else if (functionName === "trigger_human_support") {
-                    // ESCALATE TO HUMAN
-                    return new Response(
-                        JSON.stringify({
-                            choices: [{
-                                message: {
-                                    content: "I am connecting you to a human agent now. One moment please...",
-                                    role: "assistant"
-                                }
-                            }],
-                            uiAction: {
-                                action: "TRIGGER_HUMAN",
-                                data: { reason: functionArgs.reason }
-                            }
-                        }),
-                        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-                    );
-                } else if (functionName === "generate_whatsapp_message") {
-                    // GENERATE WHATSAPP MESSAGE (No DB Write)
-                    const { tenant_name, type, amount, property_name } = functionArgs;
-                    let text = `שלום ${tenant_name}, `;
-
-                    if (type === 'rent_reminder') {
-                        text += `רק מזכיר שהגיע מועד תשלום השכירות${property_name ? ` עבור ${property_name}` : ''}${amount ? ` על סך ₪${amount}` : ''}. תודה!`;
-                    } else if (type === 'linkage_update') {
-                        text += `מעדכן שבוצעה הצמדה למדד${property_name ? ` בנכס ${property_name}` : ''}. השכירות המעודכנת היא ₪${amount}. המשך יום נעים!`;
-                    } else if (type === 'maintenance_update') {
-                        text += `עדכון לגבי התיקון ${property_name ? `בנכס ${property_name}` : ''}: העבודה הושלמה. תודה על הסבלנות!`;
-                    } else {
-                        text += `מה שלומך? אשמח לדבר איתך לגבי ${property_name || 'הדירה'}. תודה!`;
+            // @ts-ignore EdgeRuntime is provided natively by Deno Deploy/Supabase Edge Functions
+            if (typeof EdgeRuntime !== 'undefined') {
+                // @ts-ignore
+                EdgeRuntime.waitUntil((async () => {
+                    try {
+                        const sb = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+                        await sb.rpc('log_ai_usage', {
+                            p_user_id: userId,
+                            p_model: result.model || "gpt-4o-mini",
+                            p_feature: 'chat',
+                            p_input_tokens: result.usage.prompt_tokens,
+                            p_output_tokens: result.usage.completion_tokens
+                        });
+                    } catch (e) {
+                        console.error("BG log usage error", e);
                     }
-
-                    return new Response(
-                        JSON.stringify({
-                            choices: [{
-                                message: {
-                                    content: `הפקתי עבורך הודעת וואטסאפ מוכנה:\n\n"${text}"\n\nאתה יכול להעתיק אותה ולשלוח לשוכר.`,
-                                    role: "assistant"
-                                }
-                            }]
-                        }),
-                        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-                    );
-                } else if (functionName.startsWith("prepare_")) {
-                    // UI PREPARATION TOOLS (No DB Write)
-                    functionResult = {
-                        success: true,
-                        message: "Form prepared for user",
-                        ui_action: "OPEN_MODAL",
-                        modal: functionName.replace("prepare_add_", "").replace("prepare_", ""),
-                        data: functionArgs
-                    };
-                } else if (functionName === "organize_document") {
-                    functionResult = await organizeDocument(functionArgs, userId, hasAiConsent);
-                } else if (functionName === "calculate_rent_linkage") {
-                    functionResult = await calculateRentLinkage(functionArgs, userId, hasAiConsent);
-                } else if (functionName === "debug_entity") {
-                    functionResult = await debugEntity(functionArgs, userId, hasAiConsent);
-                } else if (functionName === "present_options") {
-                    // Send options directly to UI Action property block to intercept later
-                    functionResult = {
-                        success: true,
-                        ui_action: "PRESENT_OPTIONS",
-                        data: functionArgs
-                    };
-                } else {
-                    functionResult = { success: false, message: `Tool Error: Unknown function '${functionName}'.` };
-                }
-
-                await logPerf(`tool_execution_${functionName}`, Date.now() - toolStartTime);
-            }
-
-            // Send function result back to OpenAI
-            openaiMessages.push(result.choices[0].message);
-            openaiMessages.push({
-                role: "tool",
-                tool_call_id: toolCall.id,
-                content: JSON.stringify(functionResult)
-            });
-
-            // Get final response from AI
-            response = await fetch(apiUrl, {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${apiKey}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    model: model,
-                    messages: openaiMessages,
-                    temperature: 0.7,
-                    max_tokens: 800,
-                }),
-                signal: AbortSignal.timeout(50000) // 50s timeout
-            });
-
-            const aiSecondTurnStartTime = Date.now();
-            result = await response.json();
-            await logPerf(`ai_second_turn_${model}`, Date.now() - aiSecondTurnStartTime);
-
-            // Log final usage if authentication and usage info are present
-            if (userId && result.usage) {
+                })());
+            } else {
                 try {
                     await supabase.rpc('log_ai_usage', {
                         p_user_id: userId,
@@ -1371,45 +1173,192 @@ Return ONLY the exact category name as a raw string without quotes or punctuatio
                         p_input_tokens: result.usage.prompt_tokens,
                         p_output_tokens: result.usage.completion_tokens
                     });
-                    totalTurnCost += (result.usage.prompt_tokens / 1000000 * 0.15) + (result.usage.completion_tokens / 1000000 * 0.60);
-                } catch (logError) {
-                    console.error("Failed to log final AI usage:", logError);
+                } catch (e) { console.error(e); }
+            }
+            totalTurnCost += (result.usage.prompt_tokens / 1000000 * 0.15) + (result.usage.completion_tokens / 1000000 * 0.60);
+        }
+
+        // -------------------------------------------------------------
+        // --- MULTI-TURN AI TOOL EXECUTION LOOP ---
+        // -------------------------------------------------------------
+        let turnCount = 1;
+        let aiMessage = result.choices?.[0]?.message?.content || "";
+        const MAX_TURNS = 3;
+
+        while (result.choices?.[0]?.message?.tool_calls && result.choices[0].message.tool_calls.length > 0 && turnCount <= MAX_TURNS) {
+            const toolCalls = result.choices[0].message.tool_calls;
+            // Append the assistant's tool-call request to history
+            openaiMessages.push(result.choices[0].message);
+
+            // Execute all tools requested in this turn
+            for (const toolCall of toolCalls) {
+                const functionName = toolCall.function.name;
+                const functionArgsRaw = toolCall.function.arguments || "{}";
+                let functionArgs = {};
+                try {
+                    functionArgs = JSON.parse(functionArgsRaw);
+                } catch(e) { /* ignore parse error */ }
+                
+                let functionResult;
+                const toolStartTime = Date.now();
+
+                if (!userId) {
+                    functionResult = { success: false, message: "User not authenticated. Please log in to use this feature." };
+                } else {
+                    if (functionName === "search_knowledge_base") {
+                        const userLanguage = userContent.match(/[\u0590-\u05FF]/) ? 'he' : 'en';
+                        functionResult = await searchKnowledgeBase(functionArgs.query, userLanguage);
+                    } else if (functionName === "search_contracts") {
+                        functionResult = await searchContracts(functionArgs.query, userId, hasAiConsent);
+                    } else if (functionName === "get_financial_summary") {
+                        functionResult = await getFinancialSummary(functionArgs.period, userId, functionArgs.currency, hasAiConsent);
+                    } else if (functionName === "get_tenant_details") {
+                        functionResult = await getTenantDetails(functionArgs.name_or_email, userId, hasAiConsent);
+                    } else if (functionName === "list_properties") {
+                        functionResult = await listProperties(userId, hasAiConsent);
+                    } else if (functionName === "list_folders") {
+                        functionResult = await listFolders(functionArgs.property_id, userId, hasAiConsent);
+                    } else if (functionName === "trigger_human_support") {
+                        return new Response(
+                            JSON.stringify({
+                                choices: [{ message: { content: "I am connecting you to a human agent now. One moment please...", role: "assistant" } }],
+                                uiAction: { action: "TRIGGER_HUMAN", data: { reason: functionArgs.reason } }
+                            }),
+                            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                        );
+                    } else if (functionName === "generate_whatsapp_message") {
+                        const { tenant_name, type, amount, property_name } = functionArgs;
+                        let text = `שלום ${tenant_name}, `;
+                        if (type === 'rent_reminder') text += `רק מזכיר שהגיע מועד תשלום השכירות${property_name ? ` עבור ${property_name}` : ''}${amount ? ` על סך ₪${amount}` : ''}. תודה!`;
+                        else if (type === 'linkage_update') text += `מעדכן שבוצעה הצמדה למדד${property_name ? ` בנכס ${property_name}` : ''}. השכירות המעודכנת היא ₪${amount}. המשך יום נעים!`;
+                        else if (type === 'maintenance_update') text += `עדכון לגבי התיקון ${property_name ? `בנכס ${property_name}` : ''}: העבודה הושלמה. תודה על הסבלנות!`;
+                        else text += `מה שלומך? אשמח לדבר איתך לגבי ${property_name || 'הדירה'}. תודה!`;
+
+                        return new Response(
+                            JSON.stringify({
+                                choices: [{ message: { content: `הפקתי עבורך הודעת וואטסאפ מוכנה:\n\n"${text}"\n\nאתה יכול להעתיק אותה ולשלוח לשוכר.`, role: "assistant" } }]
+                            }),
+                            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                        );
+                    } else if (functionName.startsWith("prepare_")) {
+                        functionResult = { success: true, message: "Form prepared for user", ui_action: "OPEN_MODAL", modal: functionName.replace("prepare_add_", "").replace("prepare_", ""), data: functionArgs };
+                    } else if (functionName === "organize_document") {
+                        functionResult = await organizeDocument(functionArgs, userId, hasAiConsent);
+                    } else if (functionName === "calculate_rent_linkage") {
+                        functionResult = await calculateRentLinkage(functionArgs, userId, hasAiConsent);
+                    } else if (functionName === "debug_entity") {
+                        functionResult = await debugEntity(functionArgs, userId, hasAiConsent);
+                    } else if (functionName === "present_options") {
+                        functionResult = { success: true, ui_action: "PRESENT_OPTIONS", data: functionArgs };
+                    } else {
+                        functionResult = { success: false, message: `Tool Error: Unknown function '${functionName}'.` };
+                    }
                 }
+                await logPerf(`tool_${functionName}_t${turnCount}`, Date.now() - toolStartTime);
+
+                // Push tool result back
+                openaiMessages.push({
+                    role: "tool",
+                    tool_call_id: toolCall.id,
+                    content: JSON.stringify(functionResult)
+                });
+            }
+
+            turnCount++;
+            if (turnCount > MAX_TURNS) {
+                 aiMessage = "I'm sorry, gathering this information required too many steps. Please try simplifying your request.";
+                 break;
+            }
+
+            // Fetch Next Turn
+            const aiTurnStartTime = Date.now();
+            try {
+                response = await fetch(apiUrl, {
+                    method: "POST",
+                    headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: openaiMessages,
+                        temperature: 0.7,
+                        max_tokens: 800,
+                        tools: activeTools.length > 0 ? activeTools : undefined
+                    }),
+                    signal: AbortSignal.timeout(50000)
+                });
+
+                const resultRaw = await response.text();
+                // Avoid using 0ms precision drops, guarantee >= 1 ms for visibility
+                const elapsedStr = Math.max(1, Date.now() - aiTurnStartTime);
+                await logPerf(`ai_turn_${turnCount}_${model}`, elapsedStr);
+
+                try {
+                    result = JSON.parse(resultRaw);
+                } catch(e) {
+                    result = { error: { message: "Failed to parse JSON" } };
+                }
+
+                if (!response.ok) {
+                    return new Response(
+                        JSON.stringify({ error: `AI Engine Error (${response.status}): ${result?.error?.message || "Internal failure"}` }),
+                        { status: response.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                    );
+                }
+
+                // Log Token Usage
+                if (userId && result.usage) {
+                    try {
+                        totalTurnCost += (result.usage.prompt_tokens / 1000000 * 0.15) + (result.usage.completion_tokens / 1000000 * 0.60);
+                    } catch(e) {}
+                }
+
+                aiMessage = result.choices?.[0]?.message?.content || "";
+            } catch (err: any) {
+                console.error(`AI Fetch Loop Error Turn ${turnCount}:`, err);
+                await logPerf(`ai_error_turn_${turnCount}`, Date.now() - aiTurnStartTime);
+                return new Response(
+                    JSON.stringify({ error: `Connection failed resolving AI response. Turn ${turnCount}` }),
+                    { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                );
             }
         }
 
-        const aiMessage = result.choices?.[0]?.message?.content || "I'm sorry, I couldn't generate a response.";
+        // Fallback for edge cases where AI generates an empty string
+        if (!aiMessage || aiMessage.trim() === "") {
+            aiMessage = "I processed your request, but I couldn't formulate a text response. Please check the screen or try phrasing another way.";
+        }
 
         // Persist conversation to Storage if authenticated
         let savedConvId = conversationId;
         if (userId) {
-            try {
-                // Generate a conversation ID if one isn't provided
-                const conversation_id = conversationId || crypto.randomUUID();
-                savedConvId = conversation_id;
+            savedConvId = conversationId || crypto.randomUUID();
+            
+            const backgroundStorageUpload = async () => {
+                try {
+                    const fullConversation = [
+                        ...messages.map((m: any) => ({ ...m, timestamp: m.timestamp || new Date().toISOString() })),
+                        { role: 'assistant', content: aiMessage, timestamp: new Date().toISOString() }
+                    ];
 
-                // Create the complete transcript to save
-                // The messages array passed in contains the history, and we append the new AI response
-                const fullConversation = [
-                    ...messages.map((m: any) => ({ ...m, timestamp: m.timestamp || new Date().toISOString() })),
-                    { role: 'assistant', content: aiMessage, timestamp: new Date().toISOString() }
-                ];
+                    const filePath = `${userId}/${savedConvId}.json`;
+                    const sb = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-                const filePath = `${userId}/${conversation_id}.json`;
+                    const { error: storageError } = await sb.storage
+                        .from('chat-archives')
+                        .upload(filePath, JSON.stringify(fullConversation), { upsert: true });
 
-                // Upload or overwrite the JSON file in the chat-archives bucket
-                const { error: storageError } = await supabase.storage
-                    .from('chat-archives')
-                    .upload(filePath, JSON.stringify(fullConversation), {
-                        contentType: 'application/json',
-                        upsert: true // Overwrite the existing file on every turn
-                    });
-
-                if (storageError) {
-                    console.error("Error persisting conversation to storage:", storageError);
+                    if (storageError) console.error("Error persisting to storage:", storageError);
+                } catch (saveError) {
+                    console.error("Failed to persist conversation chain:", saveError);
                 }
-            } catch (saveError) {
-                console.error("Failed to persist conversation chain to storage:", saveError);
+            };
+
+            // @ts-ignore
+            if (typeof EdgeRuntime !== 'undefined') {
+                // @ts-ignore
+                EdgeRuntime.waitUntil(backgroundStorageUpload());
+            } else {
+                // Fallback for local testing if EdgeRuntime is inexplicably missing
+                backgroundStorageUpload().then(() => {});
             }
         }
 
@@ -1444,7 +1393,8 @@ Return ONLY the exact category name as a raw string without quotes or punctuatio
                     action: uiAction.ui_action,
                     modal: uiAction.modal,
                     data: uiAction.data
-                } : null
+                } : null,
+                perfMetrics: perfMetrics
             }),
             { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );

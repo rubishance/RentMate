@@ -134,6 +134,7 @@ File to edit: UserService.ts
 | ✅ **Code works?** | Did I test/verify the change? |
 | ✅ **No errors?** | Lint and TypeScript pass? |
 | ✅ **Nothing forgotten?** | Any edge cases missed? |
+| 📸 **UI Changed?** | **MANDATORY: Did I update the relevant App Manual in `src/content/articles/` AND capture a new updated screenshot? Every single manual MUST have a screenshot of its relevant page.** |
 
 > 🔴 **Rule:** If ANY check fails, fix it before completing.
 

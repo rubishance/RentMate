@@ -52,7 +52,10 @@ export function DashboardStitchV1() {
                 if (saved) {
                     try {
                         const parsed = JSON.parse(saved);
-                        const validLayout = parsed.filter((w: any) => Object.keys(WIDGET_REGISTRY).includes(w.widgetId));
+                        const migratedLayout = parsed.map((w: any) => 
+                            w.widgetId === 'financial_health' && w.size === 'large' ? { ...w, size: 'medium' } : w
+                        );
+                        const validLayout = migratedLayout.filter((w: any) => Object.keys(WIDGET_REGISTRY).includes(w.widgetId));
                         setLayout(validLayout.length > 0 ? validLayout : DEFAULT_WIDGET_LAYOUT);
                     } catch (e) {
                         setLayout(DEFAULT_WIDGET_LAYOUT);
@@ -183,10 +186,12 @@ export function DashboardStitchV1() {
 
     // Stitch Design V1: "Thin Layout" & "Essentialism"
     return (
-        <div className="min-h-screen bg-background/50 dark:bg-neutral-950 pb-40 pt-2 space-y-6 animate-in fade-in slide-in-from-bottom-6 duration-700">
+        <div className="min-h-screen bg-background/50 dark:bg-neutral-950 pb-24 pt-2 space-y-6 animate-in fade-in slide-in-from-bottom-6 duration-700">
             {/* Hero Section - Wrapped in glass for separation */}
             <div className="relative sticky top-0 z-10 backdrop-blur-xl bg-background/40 border-b border-white/20 dark:border-neutral-800/50 pb-4 pt-2">
-                <RentyCommandCenter firstName={firstName} feedItems={feedItems} />
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <RentyCommandCenter firstName={firstName} feedItems={feedItems} />
+                </div>
             </div>
 
 

@@ -83,7 +83,7 @@ const AdminLayout = () => {
         // Hide UserWay accessibility widget in Admin Console
         const style = document.createElement('style');
         style.id = 'hide-userway-admin';
-        style.innerHTML = `
+        style.textContent = `
             div[class*="userway"], 
             div[id*="userway"],
             div[class*="uwy"],
@@ -131,7 +131,7 @@ const AdminLayout = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-secondary dark:bg-foreground text-foreground font-['Heebo']" dir="rtl">
+        <div className="min-h-screen bg-blue-50 dark:bg-foreground text-foreground font-['Heebo']" dir="rtl">
             {/* Mobile sidebar backdrop */}
             {sidebarOpen && (
                 <div
@@ -142,10 +142,10 @@ const AdminLayout = () => {
 
             {/* Sidebar */}
             <div className={`fixed inset-y-0 right-0 z-50 w-64 bg-white dark:bg-foreground transform transition-transform duration-300 ease-in-out md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'} border-l border-border dark:border-gray-800`}>
-                <div className="flex h-16 items-center justify-between px-6 bg-secondary dark:bg-gray-950 border-b border-border dark:border-gray-800">
+                <div className="flex h-16 items-center justify-between px-6 bg-blue-50 dark:bg-gray-950 border-b border-border dark:border-gray-800">
                     <h1 className="text-xl font-bold text-foreground dark:text-white tracking-tight">RentMate Admin</h1>
                     <button
-                        className="text-muted-foreground dark:text-muted-foreground md:hidden hover:bg-muted dark:hover:bg-gray-800 p-1 rounded-lg"
+                        className="text-muted-foreground dark:text-muted-foreground md:hidden hover:bg-muted dark:hover:bg-gray-800 p-1 rounded-xl"
                         onClick={() => setSidebarOpen(false)}
                     >
                         <XMarkIcon className="h-6 w-6" />
@@ -166,12 +166,12 @@ const AdminLayout = () => {
                                 to={item.href}
                                 onClick={() => setSidebarOpen(false)}
                                 className={`${isActive
-                                    ? 'bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300'
-                                    : 'text-muted-foreground dark:text-muted-foreground hover:bg-secondary dark:hover:bg-gray-800 hover:text-foreground dark:hover:text-white'
+                                    ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
+                                    : 'text-muted-foreground dark:text-muted-foreground hover:bg-blue-50 dark:hover:bg-gray-800 hover:text-foreground dark:hover:text-white'
                                     } group flex items-center rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-200`}
                             >
                                 <item.icon
-                                    className={`${isActive ? 'text-brand-600 dark:text-brand-400' : 'text-muted-foreground group-hover:text-muted-foreground dark:group-hover:text-gray-300'
+                                    className={`${isActive ? 'text-primary-600 dark:text-primary-400' : 'text-muted-foreground group-hover:text-muted-foreground dark:group-hover:text-gray-300'
                                         } ml-3 h-5 w-5 flex-shrink-0 transition-colors`}
                                     aria-hidden="true"
                                 />
@@ -183,7 +183,7 @@ const AdminLayout = () => {
                 <div className="absolute bottom-0 w-full p-4 border-t border-border dark:border-gray-800 bg-white/80 dark:bg-foreground/80 backdrop-blur-xl">
                     <Link
                         to="/dashboard"
-                        className="flex items-center justify-center w-full px-4 py-2.5 text-sm font-bold text-muted-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-white rounded-xl hover:bg-secondary dark:hover:bg-gray-800 transition-all group"
+                        className="flex items-center justify-center w-full px-4 py-2.5 text-sm font-bold text-muted-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-white rounded-xl hover:bg-blue-50 dark:hover:bg-gray-800 transition-all group"
                     >
                         <span className="ml-2 font-mono">←</span>
                         Back to App
@@ -196,7 +196,7 @@ const AdminLayout = () => {
                 <div className="sticky top-0 z-10 flex h-16 flex-shrink-0 bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700 md:hidden">
                     <button
                         type="button"
-                        className="px-4 text-muted-foreground hover:text-brand-600 focus:outline-none md:hidden"
+                        className="px-4 text-muted-foreground hover:text-primary-600 focus:outline-none md:hidden"
                         onClick={() => setSidebarOpen(true)}
                     >
                         <span className="sr-only">Open sidebar</span>
@@ -207,7 +207,7 @@ const AdminLayout = () => {
                     </div>
                 </div>
 
-                <main className="flex-1 p-6">
+                <main className="flex-1 py-6 px-0">
                     <Outlet />
                 </main>
             </div>
@@ -215,9 +215,9 @@ const AdminLayout = () => {
             {/* Global Chat Notification Toast */}
             {notification && (
                 <div className="fixed bottom-6 right-6 z-[100] animate-in slide-in-from-bottom-5 fade-in duration-300">
-                    <div className="bg-white dark:bg-gray-800 border-l-4 border-brand-600 shadow-2xl rounded-r-xl p-4 max-w-sm flex items-start gap-4">
-                        <div className="p-2 bg-brand-100 dark:bg-brand-900/30 rounded-full shrink-0">
-                            <ChatBubbleLeftRightIcon className="w-6 h-6 text-brand-600" />
+                    <div className="bg-white dark:bg-gray-800 border-l-4 border-primary-600 shadow-2xl rounded-r-xl p-4 max-w-sm flex items-start gap-4">
+                        <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-full shrink-0">
+                            <ChatBubbleLeftRightIcon className="w-6 h-6 text-primary-600" />
                         </div>
                         <div className="flex-1">
                             <h4 className="font-black text-foreground dark:text-white uppercase tracking-tight text-sm">New Live Chat Request</h4>
@@ -228,7 +228,7 @@ const AdminLayout = () => {
                                 <Link
                                     to={`/admin/client/${notification.userId}`}
                                     onClick={() => setNotification(null)}
-                                    className="bg-brand-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-brand-700 transition-colors uppercase tracking-wider"
+                                    className="bg-primary-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl hover:bg-primary-700 transition-colors uppercase tracking-wider"
                                 >
                                     Open Chat
                                 </Link>

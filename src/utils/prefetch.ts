@@ -11,7 +11,6 @@ export const prefetchRoutes = {
     // contracts: () => import('../pages/Contracts'), // File removed, logic moved to stack hub
     payments: () => import('../pages/Payments'),
     maintenance: () => import('../pages/MaintenanceTracker'),
-    analytics: () => import('../pages/Analytics'),
     settings: () => import('../pages/Settings'),
     // addContract: () => import('../pages/AddContract'), // File removed, flow moved to Stack component
     adminDashboard: () => import('../pages/admin/AdminDashboard'),

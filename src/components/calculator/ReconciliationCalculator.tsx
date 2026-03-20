@@ -313,12 +313,12 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
     return (
         <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Contract Loading */}
-            <div className="bg-background dark:bg-neutral-800/30 p-8 rounded-[2.5rem] border border-slate-100/50 dark:border-neutral-800/50">
+            <div className="bg-background dark:bg-neutral-800/30 p-5 md:p-8 rounded-[2.5rem] border border-slate-100/50 dark:border-neutral-800/50">
                 <label className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground mb-4 block ml-1">
                     {t('loadFromContract')}
                 </label>
                 <select
-                    className="w-full h-16 px-6 bg-white dark:bg-neutral-900 border-2 border-transparent focus:border-primary rounded-[1.25rem] text-sm font-black text-foreground outline-none shadow-minimal transition-all appearance-none"
+                    className="w-full h-16 px-4 md:px-6 bg-white dark:bg-neutral-900 border-2 border-transparent focus:border-primary rounded-[1.25rem] text-sm font-black text-foreground outline-none shadow-minimal transition-all appearance-none"
                     onChange={(e) => handleLoadContract(e.target.value)}
                     defaultValue=""
                 >
@@ -331,7 +331,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                 </select>
             </div>
 
-            <section className="bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[3rem] p-6 sm:p-10 md:p-14 shadow-premium space-y-12">
+            <section className="bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[2.5rem] p-4 md:p-6 shadow-premium space-y-12">
                 <div className="flex flex-col xl:grid xl:grid-cols-2 gap-16">
                     {/* Left Column: Payments History */}
                     <div className="order-2 xl:order-1 space-y-12">
@@ -370,7 +370,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                                 </button>
                             </div>
                             <div className="border border-slate-100 dark:border-neutral-800 rounded-[2rem] overflow-hidden bg-background/50 dark:bg-neutral-800/30">
-                                <div className="bg-white dark:bg-neutral-900/50 p-4 text-xs font-black uppercase tracking-widest text-muted-foreground grid grid-cols-12 gap-4 px-6 border-b border-slate-100 dark:border-neutral-800">
+                                <div className="bg-white dark:bg-neutral-900/50 py-4 px-4 md:px-6 text-xs font-black uppercase tracking-widest text-muted-foreground grid grid-cols-12 gap-4 border-b border-slate-100 dark:border-neutral-800">
                                     <span className="col-span-7">{t('date')}</span>
                                     <span className="col-span-4 text-center">{t('amount')}</span>
                                     <span className="col-span-1"></span>
@@ -450,7 +450,7 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                         <div className="space-y-6">
                             <label className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground block ml-1">{t('actualPayments')}</label>
                             <div className="border border-slate-100 dark:border-neutral-800 rounded-[2rem] overflow-hidden bg-background/50 dark:bg-neutral-800/30">
-                                <div className="bg-white dark:bg-neutral-900/50 p-4 text-xs font-black uppercase tracking-widest text-muted-foreground grid grid-cols-12 gap-4 px-6 border-b border-slate-100 dark:border-neutral-800">
+                                <div className="bg-white dark:bg-neutral-900/50 py-4 px-4 md:px-6 text-xs font-black uppercase tracking-widest text-muted-foreground grid grid-cols-12 gap-4 border-b border-slate-100 dark:border-neutral-800">
                                     <span className="col-span-7">{t('date')}</span>
                                     <span className="col-span-4 text-center">{t('amount')}</span>
                                     <span className="col-span-1"></span>
@@ -655,10 +655,11 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
             {/* Reconciliation Results */}
             {
                 result && (
-                    <section className="bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[3rem] p-10 md:p-14 shadow-premium space-y-10 animate-in zoom-in-95 duration-700">
+                    <section className="relative overflow-hidden bg-white dark:bg-neutral-900 border-y sm:border border-primary/20 dark:border-primary/30 rounded-none sm:rounded-[2.5rem] p-4 md:p-6 shadow-[0_0_40px_-15px_hsl(var(--primary))] space-y-10 animate-in zoom-in-95 duration-700">
+                        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 dark:bg-primary/10 blur-[100px] rounded-full pointer-events-none -z-10" />
                         <h3 className="font-black text-xs uppercase tracking-[0.4em] text-muted-foreground text-center">{t('paymentReconciliationResults')}</h3>
 
-                        <div className="bg-red-50 dark:bg-red-950/20 p-12 rounded-[2.5rem] border border-red-100 dark:border-red-900/30 text-center space-y-3">
+                        <div className="bg-red-50 dark:bg-red-950/20 p-8 md:p-12 rounded-[2.5rem] border border-red-100 dark:border-red-900/30 text-center space-y-3">
                             <span className="text-xs font-black uppercase tracking-[0.2em] text-red-400 block">{t('totalBackPayOwed')}</span>
                             <span className="text-6xl font-black text-destructive">₪{result.totalBackPayOwed.toLocaleString()}</span>
                             <p className="text-xs font-bold text-red-300 dark:text-red-800 uppercase tracking-widest pt-2">

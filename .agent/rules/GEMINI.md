@@ -60,6 +60,14 @@ When user's prompt is NOT in English:
 2. **Respond in user's language** - match their communication
 3. **Code comments/variables** remain in English
 
+### 🎨 UI Component Design Mandate (Global Mandatory)
+
+**MANDATORY: When adding or editing ANY UI component (window, widget, page, modal, etc.), you MUST strictly follow the `@[skills/rentmate-brand-design]` skill.**
+
+- **No Exceptions:** This rule overrides generic design suggestions and must be followed for all visual changes in the project.
+- Always apply RentMate's custom aesthetics, color palettes, spacing rules, and premium component animations.
+- **Icon Placement Consistency:** All widgets and windows MUST have their header/title icons on the SAME side for visual consistency across the entire application (e.g., adhering to the established RTL/LTR alignment).
+
 ### 🧹 Clean Code (Global Mandatory)
 
 **ALL code MUST follow `@[skills/clean-code]` rules. No exceptions.**

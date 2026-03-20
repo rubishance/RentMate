@@ -395,7 +395,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                                     )}
                                                                 >
                                                                     <div className={cn(
-                                                                        "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300",
+                                                                        "w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-300",
                                                                         isActive
                                                                             ? "bg-white/20 text-white"
                                                                             : "bg-white dark:bg-neutral-800 text-primary shadow-sm"
@@ -403,7 +403,7 @@ export function AddPropertyWizard({ initialData, mode = 'add', onSuccess }: AddP
                                                                         {React.cloneElement(amenity.icon as any, { className: "w-4 h-4" })}
                                                                     </div>
                                                                     <span className={cn(
-                                                                        "font-bold text-[11px] transition-colors py-0.5",
+                                                                        "font-bold text-xs transition-colors py-0.5",
                                                                         isActive ? "text-white" : "text-muted-foreground"
                                                                     )}>
                                                                         {amenity.label || amenity.id}

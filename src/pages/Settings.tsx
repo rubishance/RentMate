@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
-import { User, Bell, Shield, ChevronRight, Mail, Send, Check, LogOut, MessageCircle, Accessibility } from 'lucide-react';
+import { User, Bell, Shield, ChevronRight, Mail, Send, Check, LogOut, MessageCircle, Accessibility, Crown } from 'lucide-react';
 import { useUserPreferences } from '../contexts/UserPreferencesContext';
 
 import { EditProfileModal, NotificationsSettingsModal } from '../components/modals/EditProfileModal';
@@ -99,17 +99,23 @@ export function Settings() {
                     description: t('controlData'),
                     onClick: () => setIsPrivacySecurityOpen(true)
                 },
+                {
+                    icon: Crown,
+                    label: t('planName') || 'Subscription Plan',
+                    description: t('upgradeToUnlock') || 'Manage your plan',
+                    onClick: () => navigate('/subscription')
+                },
             ]
         }
     ];
 
     return (
-        <div className="pb-40 pt-8 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300 px-4 md:px-8">
+        <div className="pb-4 pt-2 md:pt-8 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300 px-5">
             {/* Header */}
             <div className="space-y-1">
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 dark:bg-primary/10 backdrop-blur-md rounded-full border border-primary/10 shadow-sm mb-1">
                     <User className="w-3 h-3 text-primary" />
-                    <span className="text-[11px] font-black uppercase tracking-widest text-primary dark:text-primary">
+                    <span className="text-xs font-black uppercase tracking-widest text-primary dark:text-primary">
                         {t('preferencesAndAccount')}
                     </span>
                 </div>
@@ -129,7 +135,7 @@ export function Settings() {
                     {userData.full_name?.charAt(0) || userData.email?.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 space-y-1 md:space-y-2">
-                    <h3 className="font-black text-lg md:text-3xl tracking-tighter text-foreground lowercase leading-none">{userData.full_name || 'rentmate user'}</h3>
+                    <h3 className="font-black text-lg md:text-3xl tracking-tighter text-foreground leading-none">{userData.full_name || 'RentMate User'}</h3>
                     <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground opacity-70">{userData.email}</p>
                 </div>
                 <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl glass-premium border-white/10 flex items-center justify-center text-muted-foreground/30 group-hover:bg-foreground group-hover:text-background group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-minimal">
@@ -175,7 +181,7 @@ export function Settings() {
                                         </div>
                                         <div className="flex-1 space-y-2">
                                             <div className="font-black text-lg md:text-xl tracking-tighter text-foreground lowercase">{item.label}</div>
-                                            <div className="text-[11px] font-black uppercase tracking-widest text-muted-foreground opacity-70">{item.description}</div>
+                                            <div className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70">{item.description}</div>
                                         </div>
                                         <ChevronRight className="w-6 h-6 text-muted-foreground/20 group-hover:text-primary group-hover:translate-x-2 transition-all duration-500" />
                                     </button>
@@ -199,7 +205,7 @@ export function Settings() {
                             </div>
                             <div>
                                 <div className="font-black text-lg md:text-xl tracking-tighter text-foreground lowercase">{t('theme')}</div>
-                                <div className="text-[11px] font-black uppercase tracking-widest text-muted-foreground opacity-70">{t('chooseTheme')}</div>
+                                <div className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70">{t('chooseTheme')}</div>
                             </div>
                         </div>
                         <ThemeToggle className="w-full md:w-auto" />
@@ -214,7 +220,7 @@ export function Settings() {
                             </div>
                             <div>
                                 <div className="font-black text-lg md:text-xl tracking-tighter text-foreground lowercase">{t('language')}</div>
-                                <div className="text-[11px] font-black uppercase tracking-widest text-muted-foreground opacity-70">{t('chooseLanguage')}</div>
+                                <div className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70">{t('chooseLanguage')}</div>
                             </div>
                         </div>
                         <LanguageToggle className="w-full md:w-auto justify-center" />
@@ -232,7 +238,7 @@ export function Settings() {
                             </div>
                             <div>
                                 <div className="font-black text-lg md:text-xl tracking-tighter text-foreground lowercase">{t('accessibility_options') || 'Accessibility Options'}</div>
-                                <div className="text-[11px] font-black uppercase tracking-widest text-muted-foreground opacity-70">{t('accessibility_subtitle') || 'Customize your experience'}</div>
+                                <div className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70">{t('accessibility_subtitle') || 'Customize your experience'}</div>
                             </div>
                         </div>
                         <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-muted-foreground/30 group-hover:bg-foreground group-hover:text-background transition-all duration-300">
@@ -257,7 +263,7 @@ export function Settings() {
                         </div>
                         <div className="flex-1 space-y-2">
                             <div className="font-black text-xl tracking-tighter text-foreground lowercase">{t('contactSupport')}</div>
-                            <div className="text-[11px] font-black uppercase tracking-widest text-muted-foreground opacity-70">
+                            <div className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70">
                                 {t('contactSupportDesc')}
                             </div>
                         </div>

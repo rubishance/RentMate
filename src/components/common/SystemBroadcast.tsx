@@ -99,7 +99,7 @@ export function SystemBroadcast() {
                         )}
                         <button
                             onClick={() => setVisible(false)}
-                            className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors"
+                            className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-xl transition-colors"
                         >
                             <XMarkIcon className="w-5 h-5" />
                         </button>

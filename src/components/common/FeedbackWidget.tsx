@@ -130,13 +130,13 @@ export function FeedbackWidget() {
                     <form onSubmit={handleSubmit} className="p-4 space-y-4">
 
                         {/* Type Selection */}
-                        <div className="flex bg-muted dark:bg-gray-700 rounded-lg p-1">
+                        <div className="flex bg-muted dark:bg-gray-700 rounded-xl p-1">
                             {(['bug', 'feature', 'other'] as const).map((t) => (
                                 <button
                                     key={t}
                                     type="button"
                                     onClick={() => setType(t)}
-                                    className={`flex-1 py-1.5 text-xs font-medium rounded-md capitalize transition-all ${type === t
+                                    className={`flex-1 py-1.5 text-xs font-medium rounded-lg capitalize transition-all ${type === t
                                         ? 'bg-white dark:bg-gray-600 shadow text-black dark:text-white'
                                         : 'text-muted-foreground hover:text-gray-700 dark:text-muted-foreground'
                                         }`}
@@ -170,10 +170,10 @@ export function FeedbackWidget() {
                                         setIncludeScreenshot(false); // Disable auto-capture if manual file is selected
                                     }
                                 }}
-                                className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800 cursor-pointer"
+                                className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800 cursor-pointer"
                             />
                             {manualFile && (
-                                <div className="flex items-center gap-2 text-xs text-secondary bg-green-50 dark:bg-green-900/20 p-2 rounded-lg">
+                                <div className="flex items-center gap-2 text-xs text-secondary bg-green-50 dark:bg-green-900/20 p-2 rounded-xl">
                                     <Camera className="w-4 h-4" />
                                     <span className="flex-1 truncate">{manualFile.name}</span>
                                     <button

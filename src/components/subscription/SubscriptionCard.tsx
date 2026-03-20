@@ -81,8 +81,8 @@ export const SubscriptionCard: FC = () => {
                                 onClick={() => setIsUpgradeModalOpen(true)}
                                 className="px-4 py-2 bg-gradient-to-r from-primary to-indigo-600 text-white rounded-xl font-medium shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all active:scale-95 flex items-center gap-2"
                             >
-                                {t('upgradeToPro')}
                                 <ArrowRight className="w-4 h-4" />
+                                {t('upgradeToPro')}
                             </button>
                         </div>
                     </div>

@@ -49,18 +49,18 @@ export default function AuditLogs() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-96">
-                <Loader2 className="w-10 h-10 animate-spin text-brand-600" />
+                <Loader2 className="w-10 h-10 animate-spin text-primary-600" />
             </div>
         );
     }
 
     return (
-        <div className="space-y-8 pb-20">
+        <div className="space-y-8">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-extrabold text-foreground dark:text-white tracking-tight flex items-center gap-2">
-                        <ShieldCheckIcon className="w-8 h-8 text-brand-600" />
+                        <ShieldCheckIcon className="w-8 h-8 text-primary-600" />
                         Audit Logs
                     </h1>
                     <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground mt-1">
@@ -99,7 +99,7 @@ export default function AuditLogs() {
                     placeholder="Search logs by action, user ID or specific details..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-foreground border border-border dark:border-gray-700 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all shadow-sm text-foreground dark:text-white"
+                    className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-foreground border border-border dark:border-gray-700 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all shadow-sm text-foreground dark:text-white"
                 />
             </div>
 
@@ -107,7 +107,7 @@ export default function AuditLogs() {
             <div className="bg-white dark:bg-gray-800 border border-border dark:border-gray-700 rounded-2xl shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
-                        <thead className="bg-secondary dark:bg-foreground/50 text-xs font-black text-muted-foreground uppercase tracking-widest border-b border-border dark:border-gray-700">
+                        <thead className="bg-blue-50 dark:bg-foreground/50 text-xs font-black text-muted-foreground uppercase tracking-widest border-b border-border dark:border-gray-700">
                             <tr>
                                 <th className="px-6 py-4">Security Action</th>
                                 <th className="px-6 py-4 text-center">User Context</th>
@@ -124,12 +124,12 @@ export default function AuditLogs() {
                                 </tr>
                             ) : (
                                 filteredLogs.map((log) => (
-                                    <tr key={log.id} className="hover:bg-secondary dark:hover:bg-gray-700/50 transition-colors">
+                                    <tr key={log.id} className="hover:bg-blue-50 dark:hover:bg-gray-700/50 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                <div className={`p-1.5 rounded-lg border ${log.action.includes('DELETE') ? 'bg-destructive/10 text-destructive border-red-100 dark:bg-red-900/20 dark:border-red-800' :
+                                                <div className={`p-1.5 rounded-xl border ${log.action.includes('DELETE') ? 'bg-destructive/10 text-destructive border-red-100 dark:bg-red-900/20 dark:border-red-800' :
                                                     log.action.includes('UPDATE') ? 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:border-amber-800' :
-                                                        'bg-brand-50 text-brand-600 border-brand-100 dark:bg-brand-900/20 dark:border-brand-800'
+                                                        'bg-primary-50 text-primary-600 border-primary-100 dark:bg-primary-900/20 dark:border-primary-800'
                                                     }`}>
                                                     <Bars3CenterLeftIcon className="w-4 h-4" />
                                                 </div>
@@ -137,7 +137,7 @@ export default function AuditLogs() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-center">
-                                            <div className="inline-flex items-center px-2 py-1 bg-muted dark:bg-foreground border border-border dark:border-gray-700 rounded-lg text-xs font-mono text-muted-foreground dark:text-muted-foreground">
+                                            <div className="inline-flex items-center px-2 py-1 bg-muted dark:bg-foreground border border-border dark:border-gray-700 rounded-xl text-xs font-mono text-muted-foreground dark:text-muted-foreground">
                                                 {log.user_id ? log.user_id.split('-')[0] + '...' : 'SYSTEM'}
                                             </div>
                                         </td>

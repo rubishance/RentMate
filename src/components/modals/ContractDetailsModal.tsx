@@ -590,7 +590,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                 </div>
 
                                 {linkageType !== 'none' && (
-                                    <div className="bg-secondary dark:bg-foreground/50 p-3 rounded-lg space-y-3">
+                                    <div className="bg-secondary dark:bg-foreground/50 p-3 rounded-xl space-y-3">
                                         <div className="grid grid-cols-1 gap-3">
                                             <div className="space-y-1">
                                                 <label className="text-xs text-muted-foreground">{t('baseIndexDate')}</label>
@@ -644,7 +644,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                             </h3>
                             <div className="space-y-3">
                                 {optionPeriodFields.map((field, idx) => (
-                                    <div key={field.id} className="bg-secondary dark:bg-gray-800 p-3 rounded-lg space-y-3">
+                                    <div key={field.id} className="bg-secondary dark:bg-gray-800 p-3 rounded-xl space-y-3">
                                         <div className="flex items-center justify-between">
                                             <span className="text-xs font-medium text-muted-foreground uppercase">{t('optionRent')} {idx + 1}</span>
                                             {!readOnly && (
@@ -681,7 +681,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                         type="number"
                                                         disabled={readOnly}
                                                         {...register(`optionPeriods.${idx}.rentAmount`)}
-                                                        className="w-full px-2 py-1.5 text-xs border border-border rounded-lg"
+                                                        className="w-full px-2 py-1.5 text-xs border border-border rounded-xl"
                                                     />
                                                 </div>
                                                 <div className="w-24">
@@ -710,7 +710,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                     type="number"
                                                     disabled={readOnly}
                                                     {...register(`optionPeriods.${idx}.noticeDays`, { valueAsNumber: true })}
-                                                    className="w-full px-2 py-1.5 text-xs border border-border rounded-lg"
+                                                    className="w-full px-2 py-1.5 text-xs border border-border rounded-xl"
                                                 />
                                             </div>
                                             <div className="relative">
@@ -719,7 +719,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                                     type="number"
                                                     disabled={readOnly}
                                                     {...register(`optionPeriods.${idx}.reminderDays`, { valueAsNumber: true })}
-                                                    className="w-full px-2 py-1.5 text-xs border border-border rounded-lg"
+                                                    className="w-full px-2 py-1.5 text-xs border border-border rounded-xl"
                                                 />
                                             </div>
                                         </div>

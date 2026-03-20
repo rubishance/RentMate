@@ -101,7 +101,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
                         <div className="p-8 border-t border-border bg-background/50 dark:bg-neutral-950/20 shrink-0">
                             <Button
                                 onClick={onClose}
-                                className="w-full h-14 rounded-2xl bg-foreground text-background font-black uppercase tracking-widest text-[11px]"
+                                className="w-full h-14 rounded-2xl bg-foreground text-background font-black uppercase tracking-widest text-xs"
                             >
                                 {t('showResults')}
                             </Button>

@@ -355,7 +355,7 @@ export function RedactionStudio({ images, onConfirm, onCancel }: RedactionStudio
                                 <button
                                     key={idx}
                                     onClick={() => setCurrentIndex(idx)}
-                                    className={`w-full aspect-[3/4] rounded-lg border-2 relative group overflow-hidden transition-all ${isCurrent
+                                    className={`w-full aspect-[3/4] rounded-xl border-2 relative group overflow-hidden transition-all ${isCurrent
                                         ? 'border-green-500 shadow-[0_0_0_2px_rgba(34,197,94,0.3)]'
                                         : 'border-white/10 hover:border-white/30'
                                         }`}
@@ -412,14 +412,14 @@ export function RedactionStudio({ images, onConfirm, onCancel }: RedactionStudio
                     <button
                         onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
                         disabled={currentIndex === 0}
-                        className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 py-3 lg:py-2 rounded-lg bg-white/5 border border-white/10 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10 transition-all text-sm"
+                        className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 py-3 lg:py-2 rounded-xl bg-white/5 border border-white/10 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10 transition-all text-sm"
                     >
                         <ArrowRight size={16} /> הקודם
                     </button>
                     <button
                         onClick={() => setCurrentIndex(Math.min(images.length - 1, currentIndex + 1))}
                         disabled={currentIndex === images.length - 1}
-                        className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 py-3 lg:py-2 rounded-lg bg-white/5 border border-white/10 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10 transition-all text-sm"
+                        className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 py-3 lg:py-2 rounded-xl bg-white/5 border border-white/10 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10 transition-all text-sm"
                     >
                         הבא <ArrowLeft size={16} />
                     </button>
@@ -429,7 +429,7 @@ export function RedactionStudio({ images, onConfirm, onCancel }: RedactionStudio
                 <div className="flex flex-col lg:flex-row gap-3 lg:gap-4 items-center w-full lg:w-auto order-1 lg:order-2">
                     <button
                         onClick={() => setRedactions(prev => ({ ...prev, [currentIndex]: [] }))}
-                        className="w-full lg:w-auto px-4 py-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors text-sm text-center"
+                        className="w-full lg:w-auto px-4 py-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-colors text-sm text-center"
                     >
                         נקה עמוד
                     </button>
@@ -439,7 +439,7 @@ export function RedactionStudio({ images, onConfirm, onCancel }: RedactionStudio
                     <button
                         onClick={handleConfirm}
                         disabled={isProcessing}
-                        className="w-full lg:w-auto flex items-center justify-center gap-2 px-6 lg:px-8 py-3 bg-secondary hover:brightness-110 rounded-lg font-bold text-secondary-foreground shadow-lg shadow-secondary/20 transform hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-70 disabled:cursor-wait text-sm lg:text-base"
+                        className="w-full lg:w-auto flex items-center justify-center gap-2 px-6 lg:px-8 py-3 bg-secondary hover:brightness-110 rounded-xl font-bold text-secondary-foreground shadow-lg shadow-secondary/20 transform hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-70 disabled:cursor-wait text-sm lg:text-base"
                     >
                         {isProcessing ? 'מעבד...' : (
                             <>

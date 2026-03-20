@@ -90,7 +90,7 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
     }, [location.state]);
 
     return (
-        <div className="max-w-3xl mx-auto space-y-6 px-4 md:px-0">
+        <div className="max-w-3xl mx-auto space-y-6 px-4 md:px-5 w-full">
             {/* Shared Calculation Banner */}
             {isSharedCalculation && (
                 <motion.div
@@ -116,9 +116,9 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
             {!embedMode && (
                 <div className="flex items-center justify-between gap-4 mb-4">
                     <div className="space-y-1 overflow-hidden">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/5 dark:bg-indigo-500/10 backdrop-blur-md rounded-full border border-indigo-500/10 shadow-sm mb-2">
-                            <CalcIcon className="w-3 h-3 text-indigo-500" />
-                            <span className="text-[11px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 dark:bg-primary/10 backdrop-blur-md rounded-full border border-primary/10 shadow-sm mb-2">
+                            <CalcIcon className="w-3 h-3 text-primary" />
+                            <span className="text-xs font-black uppercase tracking-widest text-primary">
                                 {t('smartCalculator')}
                             </span>
                         </div>
@@ -126,23 +126,24 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
                             {t('calculator')}
                         </h1>
                     </div>
-                    <div className="w-14 h-14 rounded-2xl glass-premium border-white/10 flex items-center justify-center shadow-minimal shrink-0">
-                        <CalcIcon className="w-7 h-7 text-muted-foreground opacity-30" />
+                    <div className="w-14 h-14 rounded-2xl bg-white/50 dark:bg-neutral-800/50 backdrop-blur-sm border border-slate-200/50 dark:border-neutral-700/50 flex items-center justify-center shadow-sm shrink-0">
+                        <CalcIcon className="w-7 h-7 text-primary/40 dark:text-primary/60" />
                     </div>
                 </div>
             )}
 
             {/* Tabs */}
-            <div className="flex justify-center">
-                <SegmentedControl
-                    value={activeTab}
-                    onChange={(val) => setActiveTab(val as TabType)}
-                    options={[
-                        { value: 'standard', label: t('standardCalculation') },
-                        { value: 'reconciliation', label: t('paymentReconciliation') }
-                    ]}
-                    className="w-full max-w-xl glass-premium dark:bg-neutral-900/40 border-white/5 shadow-minimal p-1.5"
-                />
+            <div className="flex justify-center mb-8">
+                <div className="p-1.5 bg-slate-100/80 dark:bg-neutral-800/80 backdrop-blur-xl rounded-[2rem] border border-white/20 dark:border-neutral-700/50 shadow-sm w-full max-w-xl">
+                    <SegmentedControl
+                        value={activeTab}
+                        onChange={(val) => setActiveTab(val as TabType)}
+                        options={[
+                            { value: 'standard', label: t('standardCalculation') },
+                            { value: 'reconciliation', label: t('paymentReconciliation') }
+                        ]}
+                    />
+                </div>
             </div>
 
             {/* SEO Metadata */}

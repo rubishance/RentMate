@@ -542,9 +542,9 @@ export function ContractHub({
               className={cn(
                 "hidden md:flex px-3 py-1.5 glass-premium dark:bg-white/5 rounded-full text-xs font-black uppercase tracking-widest items-center gap-2 border border-white/5 shadow-minimal",
                 contract.status === "active"
-                  ? "text-emerald-500"
+                  ? "text-success"
                   : contract.status === "draft"
-                    ? "text-yellow-500"
+                    ? "text-warning"
                     : "text-slate-500",
               )}
             >
@@ -552,9 +552,9 @@ export function ContractHub({
                 className={cn(
                   "w-1.5 h-1.5 rounded-full shadow-[0_0_5px_rgba(var(--status-color),0.5)]",
                   contract.status === "active"
-                    ? "bg-emerald-500"
+                    ? "bg-success"
                     : contract.status === "draft"
-                      ? "bg-yellow-500"
+                      ? "bg-warning"
                       : "bg-background0",
                 )}
               />
@@ -733,7 +733,7 @@ export function ContractHub({
                                   : "text-muted-foreground",
                               ),
                             })}
-                            <span className="font-semibold text-[11px] whitespace-nowrap">
+                            <span className="font-semibold text-xs whitespace-nowrap">
                               {amenity.label || amenity.id}
                             </span>
                           </button>
@@ -749,9 +749,9 @@ export function ContractHub({
                 className={cn(
                   "px-3 py-1.5 glass-premium dark:bg-white/5 rounded-full text-xs font-black uppercase tracking-widest flex items-center gap-2 border border-white/5 shadow-minimal",
                   contract.status === "active"
-                    ? "text-emerald-500"
+                    ? "text-success"
                     : contract.status === "draft"
-                      ? "text-yellow-500"
+                      ? "text-warning"
                       : "text-slate-500",
                 )}
               >
@@ -759,9 +759,9 @@ export function ContractHub({
                   className={cn(
                     "w-1.5 h-1.5 rounded-full shadow-[0_0_5px_rgba(var(--status-color),0.5)]",
                     contract.status === "active"
-                      ? "bg-emerald-500"
+                      ? "bg-success"
                       : contract.status === "draft"
-                        ? "bg-yellow-500"
+                        ? "bg-warning"
                         : "bg-background0",
                   )}
                 />
@@ -801,7 +801,7 @@ export function ContractHub({
       {/* Form Content */}
       <form
         onSubmit={handleSave}
-        className="flex-1 p-3 md:p-6 space-y-8 pb-32 max-w-5xl mx-auto w-full"
+        className="flex-1 p-3 md:p-6 space-y-8 pb-24 max-w-5xl mx-auto w-full"
       >
         {/* 2. Tenant Details Section */}
         <div className="space-y-4">

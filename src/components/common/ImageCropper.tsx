@@ -66,7 +66,7 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel, aspect = 4 / 
                     classes={{
                         containerClassName: "bg-transparent",
                         mediaClassName: "",
-                        cropAreaClassName: "border-2 border-white/50 shadow-[0_0_0_9999px_rgba(0,0,0,0.5)] rounded-lg"
+                        cropAreaClassName: "border-2 border-white/50 shadow-[0_0_0_9999px_rgba(0,0,0,0.5)] rounded-xl"
                     }}
                 />
             </div>
@@ -85,7 +85,7 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel, aspect = 4 / 
                                 step={0.1}
                                 aria-labelledby="Zoom"
                                 onChange={(e) => setZoom(Number(e.target.value))}
-                                className="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                                className="w-full h-1 bg-slate-700 rounded-xl appearance-none cursor-pointer accent-indigo-500"
                             />
                             <ZoomIn className="w-4 h-4 text-slate-400" />
                         </div>
@@ -101,7 +101,7 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel, aspect = 4 / 
                                 step={1}
                                 aria-labelledby="Rotation"
                                 onChange={(e) => setRotation(Number(e.target.value))}
-                                className="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                                className="w-full h-1 bg-slate-700 rounded-xl appearance-none cursor-pointer accent-emerald-500"
                             />
                             <span className="text-xs text-slate-400 w-8">45°</span>
                         </div>

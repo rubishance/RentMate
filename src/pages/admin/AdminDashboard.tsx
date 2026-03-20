@@ -147,9 +147,9 @@ const AdminDashboard = () => {
     };
 
     const statCards = [
-        { name: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-brand-600', bg: 'bg-brand-50' },
+        { name: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-primary-600', bg: 'bg-primary-50' },
         { name: 'Total Contracts', value: stats.totalContracts, icon: FileText, color: 'text-primary', bg: 'bg-primary-50' },
-        { name: 'Total Revenue', value: stats.totalRevenue ? `₪${stats.totalRevenue.toLocaleString()}` : '₪0', icon: Wallet, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+        { name: 'Total Revenue', value: stats.totalRevenue ? `₪${stats.totalRevenue.toLocaleString()}` : '₪0', icon: Wallet, color: 'text-blue-600', bg: 'bg-blue-50' },
         { name: 'Active Users', value: stats.activeUsers, icon: Activity, color: 'text-orange-600', bg: 'bg-orange-50' },
         { name: 'AI Usage Cost', value: stats.totalAiCost ? `$${stats.totalAiCost.toFixed(2)}` : '$0.00', icon: Cpu, color: 'text-primary', bg: 'bg-primary/10' },
         { name: 'Autopilot Decisions', value: stats.totalAutomatedActions, icon: Sparkles, color: 'text-amber-600', bg: 'bg-amber-50' },
@@ -168,7 +168,7 @@ const AdminDashboard = () => {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-96">
-                <Loader2 className="w-8 h-8 animate-spin text-brand-600" />
+                <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
             </div>
         );
     }
@@ -181,7 +181,7 @@ const AdminDashboard = () => {
                 {statCards.map((item) => (
                     <div key={item.name} className="relative overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 shadow-sm border border-border dark:border-gray-700 hover:shadow-lg transition-all transform hover:-translate-y-1">
                         <div className="flex items-center">
-                            <div className={`rounded-xl p-3 ${item.bg} border border-brand-100 dark:border-brand-800`}>
+                            <div className={`rounded-xl p-3 ${item.bg} border border-primary-100 dark:border-primary-800`}>
                                 <item.icon className={`h-6 w-6 ${item.color}`} />
                             </div>
                             <div className="ml-5 w-0 flex-1">
@@ -211,7 +211,7 @@ const AdminDashboard = () => {
             {/* Top Cities Distribution */}
             <div className="bg-white dark:bg-gray-800 shadow-sm rounded-xl border border-border dark:border-gray-700 p-6">
                 <div className="flex items-center gap-2 mb-6">
-                    <Activity className="w-5 h-5 text-brand-600" />
+                    <Activity className="w-5 h-5 text-primary-600" />
                     <h3 className="text-lg font-bold text-foreground dark:text-white">Top 10 Cities By Properties</h3>
                 </div>
                 <div className="h-80 w-full">
@@ -255,7 +255,7 @@ const AdminDashboard = () => {
                             variant="link"
                             size="sm"
                             onClick={() => navigate('/admin/audit-logs')}
-                            className="text-xs font-medium text-brand-600 hover:text-brand-500 flex items-center gap-1 p-0 h-auto"
+                            className="text-xs font-medium text-primary-600 hover:text-primary-500 flex items-center gap-1 p-0 h-auto"
                         >
                             View All <ExternalLink className="w-3 h-3" />
                         </Button>
@@ -265,7 +265,7 @@ const AdminDashboard = () => {
                             <li className="px-6 py-4 text-center text-sm text-muted-foreground">No recent activity</li>
                         ) : (
                             recentActivity.map((log) => (
-                                <li key={log.id} className="px-6 py-4 hover:bg-secondary dark:hover:bg-gray-700/30 transition-colors">
+                                <li key={log.id} className="px-6 py-4 hover:bg-blue-50 dark:hover:bg-gray-700/30 transition-colors">
                                     <div className="flex justify-between items-start">
                                         <div className="flex gap-3">
                                             <div className="mt-1 p-1.5 rounded-full bg-muted dark:bg-gray-700 text-muted-foreground">
@@ -299,7 +299,7 @@ const AdminDashboard = () => {
                             variant="link"
                             size="sm"
                             onClick={() => navigate('/admin/users')}
-                            className="text-xs font-medium text-brand-600 hover:text-brand-500 flex items-center gap-1 p-0 h-auto"
+                            className="text-xs font-medium text-primary-600 hover:text-primary-500 flex items-center gap-1 p-0 h-auto"
                         >
                             View All <ExternalLink className="w-3 h-3" />
                         </Button>
@@ -309,9 +309,9 @@ const AdminDashboard = () => {
                             <li className="px-6 py-4 text-center text-sm text-muted-foreground">No new users</li>
                         ) : (
                             newUsers.map((user) => (
-                                <li key={user.id} className="px-6 py-4 hover:bg-secondary dark:hover:bg-gray-700/30 transition-colors">
+                                <li key={user.id} className="px-6 py-4 hover:bg-blue-50 dark:hover:bg-gray-700/30 transition-colors">
                                     <div className="flex items-center gap-4">
-                                        <div className="h-8 w-8 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-brand-600 dark:text-brand-400 font-bold text-xs">
+                                        <div className="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 dark:text-primary-400 font-bold text-xs">
                                             {user.full_name?.charAt(0) || user.email.charAt(0).toUpperCase()}
                                         </div>
                                         <div className="flex-1 min-w-0">
@@ -344,14 +344,14 @@ const AdminDashboard = () => {
                         variant="link"
                         size="sm"
                         onClick={() => navigate('/admin/conversations')}
-                        className="text-xs font-medium text-brand-600 hover:text-brand-500 flex items-center gap-1 p-0 h-auto"
+                        className="text-xs font-medium text-primary-600 hover:text-primary-500 flex items-center gap-1 p-0 h-auto"
                     >
                         View Analytics <ExternalLink className="w-3 h-3" />
                     </Button>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead className="bg-secondary dark:bg-foreground/50">
+                        <thead className="bg-blue-50 dark:bg-foreground/50">
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">User</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Last Message</th>
@@ -366,7 +366,7 @@ const AdminDashboard = () => {
                                 </tr>
                             ) : (
                                 recentAiConvs.map((conv) => (
-                                    <tr key={conv.id} className="hover:bg-secondary dark:hover:bg-gray-700/30 transition-colors">
+                                    <tr key={conv.id} className="hover:bg-blue-50 dark:hover:bg-gray-700/30 transition-colors">
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center">
                                                 <div className="ml-0">
@@ -407,10 +407,10 @@ const AdminDashboard = () => {
                             key={link.name}
                             onClick={() => navigate(link.path)}
                             variant="ghost"
-                            className="relative flex items-center space-x-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-6 py-5 shadow-sm focus-visible:ring-2 focus-visible:ring-brand-500 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-secondary dark:hover:bg-gray-700/50 transition-all text-left h-auto w-full justify-start"
+                            className="relative flex items-center space-x-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-6 py-5 shadow-sm focus-visible:ring-2 focus-visible:ring-primary-500 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-blue-50 dark:hover:bg-gray-700/50 transition-all text-left h-auto w-full justify-start"
                         >
                             <div className="flex-shrink-0">
-                                <div className="h-10 w-10 rounded-lg bg-muted dark:bg-gray-700 flex items-center justify-center text-muted-foreground dark:text-gray-300">
+                                <div className="h-10 w-10 rounded-xl bg-muted dark:bg-gray-700 flex items-center justify-center text-muted-foreground dark:text-gray-300">
                                     <link.icon className="h-6 w-6" />
                                 </div>
                             </div>

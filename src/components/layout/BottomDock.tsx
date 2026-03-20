@@ -1,5 +1,5 @@
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { HomeIcon, AssetsIcon, ContractsIcon, PaymentsIcon, ToolsIcon, AdminIcon } from '../icons/NavIcons';
+import { HomeIcon, AssetsIcon, ContractsIcon, PaymentsIcon, ToolsIcon, AdminIcon, DocumentsIcon } from '../icons/NavIcons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../../lib/utils';
 import { useUserPreferences } from '../../contexts/UserPreferencesContext';
@@ -13,16 +13,18 @@ const NAV_LABELS = {
         '/dashboard': 'בית',
         '/properties': 'נכסים',
         '/contracts': 'חוזים',
+        '/documents': 'מסמכים',
         '/payments': 'תשלומים',
-        '/tools': 'כלים',
+        '/tools': 'מחשבון',
         '/admin': 'ניהול'
     },
     en: {
         '/dashboard': 'Home',
         '/properties': 'Assets',
         '/contracts': 'Contracts',
+        '/documents': 'Documents',
         '/payments': 'Wallet',
-        '/tools': 'Tools',
+        '/tools': 'Calculator',
         '/admin': 'Admin'
     }
 } as const;
@@ -49,15 +51,16 @@ export function BottomDock() {
     const navItems = [
         { path: '/dashboard', label: labels['/dashboard'], icon: HomeIcon },
         { path: '/properties', label: labels['/properties'], icon: AssetsIcon },
+        { path: '/documents', label: labels['/documents'], icon: DocumentsIcon },
         { path: '/payments', label: labels['/payments'], icon: PaymentsIcon },
         { path: '/tools', label: labels['/tools'], icon: ToolsIcon },
         ...(isAdmin ? [{ path: '/admin', label: labels['/admin'], icon: AdminIcon }] : []),
     ];
 
     return (
-        <div className="fixed bottom-10 left-0 right-0 z-[50] flex justify-center px-3 pointer-events-none">
+        <div className="fixed bottom-0 left-0 right-0 z-[50] pointer-events-none w-full">
             <nav
-                className="glass-premium p-2.5 rounded-[2.5rem] shadow-premium flex gap-2 pointer-events-auto"
+                className="bg-card dark:glass-premium shadow-[0_-8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_-8px_30px_rgb(0,0,0,0.5)] rounded-t-3xl rounded-b-none flex justify-between items-center px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] pointer-events-auto border-t border-border/20 dark:border-border/10 w-full"
                 role="navigation"
                 aria-label="Bottom Dock"
             >
@@ -86,18 +89,20 @@ export function BottomDock() {
                             }}
                             aria-label={item.label}
                             aria-current={isActive ? 'page' : undefined}
-                            className={cn(
-                                "relative flex flex-col items-center justify-center min-w-[70px] h-16 rounded-[1.8rem] transition-all duration-300 gap-1",
-                                isActive
-                                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25 px-6 -translate-y-1.5"
-                                    : "text-muted-foreground hover:text-foreground hover:bg-white/5 px-4"
-                            )}
+                            className="relative flex flex-col items-center gap-1.5 min-w-[60px] transition-all duration-300 group"
                         >
-                            <Icon className={cn("w-5 h-5 transition-all duration-300", isActive && "scale-110")} />
+                            <div className={cn(
+                                "flex items-center justify-center w-[3rem] h-[3rem] rounded-[1.5rem] transition-colors duration-300",
+                                isActive 
+                                    ? "bg-secondary/15 dark:bg-white/10 text-foreground" 
+                                    : "text-muted-foreground group-hover:bg-secondary/5 dark:group-hover:bg-white/5"
+                            )}>
+                                <Icon className={cn("w-6 h-6 transition-transform duration-300", isActive && "scale-110 stroke-[2.2px]")} />
+                            </div>
                             <span
                                 className={cn(
-                                    "text-xs font-black uppercase tracking-tight whitespace-nowrap",
-                                    isActive ? "opacity-100" : "opacity-60"
+                                    "text-[11px] font-bold tracking-tight whitespace-nowrap transition-colors duration-300",
+                                    isActive ? "text-foreground" : "text-muted-foreground"
                                 )}
                             >
                                 {item.label}

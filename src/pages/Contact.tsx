@@ -114,12 +114,12 @@ export default function Contact() {
     };
 
     return (
-        <div className="pb-40 pt-16 animate-in fade-in duration-1000 px-4">
-            <div className="max-w-5xl mx-auto space-y-16">
-                <div className="space-y-4 px-4 md:px-0">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/5 dark:bg-indigo-500/10 backdrop-blur-md rounded-full border border-indigo-500/10 shadow-sm mb-2">
-                        <MessageCircle className="w-3 h-3 text-indigo-500" />
-                        <span className="text-[11px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+        <div className="pt-16 animate-in fade-in duration-1000 px-5">
+            <div className="w-full mx-0 space-y-16">
+                <div className="space-y-4 px-5">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 dark:bg-primary/10 backdrop-blur-md rounded-full border border-primary/10 shadow-sm mb-2">
+                        <MessageCircle className="w-3 h-3 text-primary" />
+                        <span className="text-xs font-black uppercase tracking-widest text-primary dark:text-indigo-400">
                             {t('contactTitle') || 'Support Hub'}
                         </span>
                     </div>
@@ -211,7 +211,7 @@ export default function Contact() {
                                 <motion.div
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className="p-6 glass-premium dark:bg-indigo-500/10 border border-indigo-500/20 rounded-[2rem] flex items-center gap-4 text-indigo-400 font-black text-xs uppercase tracking-widest relative z-10"
+                                    className="p-6 glass-premium dark:bg-primary/10 border border-primary/20 rounded-[2rem] flex items-center gap-4 text-indigo-400 font-black text-xs uppercase tracking-widest relative z-10"
                                 >
                                     <CheckCircle2 className="w-5 h-5 shrink-0" />
                                     {isRtl
@@ -225,11 +225,11 @@ export default function Contact() {
                             <div className="p-8 glass-premium dark:bg-neutral-900/60 border-white/10 rounded-[3rem] shadow-minimal flex items-center gap-6 group cursor-pointer hover:shadow-jewel transition-all duration-700"
                                 onClick={() => window.location.href = `mailto:${contactInfo.email}`}
                             >
-                                <div className="w-14 h-14 glass-premium dark:bg-neutral-800/40 rounded-2xl flex items-center justify-center text-indigo-500 shadow-minimal border border-white/5 group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
+                                <div className="w-14 h-14 glass-premium dark:bg-neutral-800/40 rounded-2xl flex items-center justify-center text-primary shadow-minimal border border-white/5 group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
                                     <Mail className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <div className="text-[11px] font-black text-muted-foreground uppercase tracking-widest opacity-70 mb-1">{isRtl ? 'אימייל' : 'Email'}</div>
+                                    <div className="text-xs font-black text-muted-foreground uppercase tracking-widest opacity-70 mb-1">{isRtl ? 'אימייל' : 'Email'}</div>
                                     <div className="font-black text-foreground tracking-tight lowercase">{contactInfo.email}</div>
                                 </div>
                             </div>
@@ -237,11 +237,11 @@ export default function Contact() {
                             <div className="p-8 glass-premium dark:bg-neutral-900/60 border-white/10 rounded-[3rem] shadow-minimal flex items-center gap-6 group cursor-pointer hover:shadow-jewel transition-all duration-700"
                                 onClick={() => window.location.href = `tel:${contactInfo.phone.replace(/[^0-9+]/g, '')}`}
                             >
-                                <div className="w-14 h-14 glass-premium dark:bg-neutral-800/40 rounded-2xl flex items-center justify-center text-indigo-500 shadow-minimal border border-white/5 group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
+                                <div className="w-14 h-14 glass-premium dark:bg-neutral-800/40 rounded-2xl flex items-center justify-center text-primary shadow-minimal border border-white/5 group-hover:scale-110 group-hover:rotate-3 transition-all duration-700">
                                     <Phone className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <div className="text-[11px] font-black text-muted-foreground uppercase tracking-widest opacity-70 mb-1">{isRtl ? 'טלפון' : 'Phone'}</div>
+                                    <div className="text-xs font-black text-muted-foreground uppercase tracking-widest opacity-70 mb-1">{isRtl ? 'טלפון' : 'Phone'}</div>
                                     <div className="font-black text-foreground tracking-tight lowercase">{contactInfo.phone}</div>
                                 </div>
                             </div>
@@ -251,11 +251,11 @@ export default function Contact() {
                     {/* Sidebar Info */}
                     <div className="space-y-8">
                         <div className="p-8 glass-premium dark:bg-neutral-900/60 border-white/10 rounded-[3rem] shadow-minimal space-y-8">
-                            <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-muted-foreground opacity-70 lowercase pb-4 border-b border-white/5">{isRtl ? 'זמינות ותמיכה' : 'Availability & Support'}</h4>
+                            <h4 className="text-xs font-black uppercase tracking-[0.4em] text-muted-foreground opacity-70 lowercase pb-4 border-b border-white/5">{isRtl ? 'זמינות ותמיכה' : 'Availability & Support'}</h4>
 
                             <div className="space-y-8">
                                 <div className="flex items-start gap-4">
-                                    <div className="w-10 h-10 glass-premium rounded-xl flex items-center justify-center text-indigo-500 border-white/5 shadow-sm">
+                                    <div className="w-10 h-10 glass-premium rounded-xl flex items-center justify-center text-primary border-white/5 shadow-sm">
                                         <Clock className="w-5 h-5" />
                                     </div>
                                     <div className="space-y-1">
@@ -287,10 +287,10 @@ export default function Contact() {
                                 <p className="text-indigo-100 text-sm font-medium leading-relaxed opacity-80">{isRtl ? 'ה-AI שלנו זמין 24/7 לכל שאלה בנוגע למערכת' : 'Our AI is available 24/7 for any system-related questions'}</p>
                                 <button
                                     onClick={() => window.dispatchEvent(new CustomEvent('OPEN_CHAT'))}
-                                    className="w-full h-12 bg-white text-indigo-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white/90 transition-all flex items-center justify-center gap-3 active:scale-95"
+                                    className="w-full h-12 bg-white text-primary rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white/90 transition-all flex items-center justify-center gap-3 active:scale-95"
                                 >
-                                    {isRtl ? 'דבר עם רנטי' : 'Talk with Renty'}
                                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                                    {isRtl ? 'דבר עם רנטי' : 'Talk with Renty'}
                                 </button>
                             </div>
                         </div>

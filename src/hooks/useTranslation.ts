@@ -124,6 +124,7 @@ export type TranslationKeys =
     | 'tenants' | 'tenants_female'
     | 'contracts' | 'contracts_female'
     | 'payments'
+    | 'candidates'
     | 'calculator'
     | 'settings'
     | 'profile'
@@ -304,6 +305,29 @@ export type TranslationKeys =
     | 'noTenantsFound'
     | 'customize'
     | 'myPortfolio'
+    | 'customizeDashboard'
+    | 'customizeDashboardDesc'
+    | 'visible'
+    | 'hidden'
+    | 'usage_overview_title'
+    | 'index_pulse'
+    | 'smart_actions_title'
+    | 'digital_protocol_title'
+    | 'digital_protocol_subtitle'
+    | 'quick_actions_title'
+    | 'prospective_tenants_title'
+    | 'prospective_tenants_subtitle'
+    | 'rental_trends_title'
+    | 'marketAnalysisFilters'
+    | 'includeMamahPremium'
+    | 'mamahImpactDesc'
+    | 'comparisonDuration'
+    | 'showResults'
+    | '1Y'
+    | '2Y'
+    | '3Y'
+    | '4Y'
+    | '5Y'
     // Coming Soon
     | 'coming_soon_title'
     | 'coming_soon_subtitle'
@@ -465,6 +489,8 @@ export type TranslationKeys =
     | 'inRespectOf'
     | 'knownIndexHelp'
     | 'updateFrequency'
+    | 'howItWorksTitle'
+    | 'reconciliationInfoText'
     | 'everyMonth'
     | 'quarterly'
     | 'annually'
@@ -472,7 +498,14 @@ export type TranslationKeys =
     | 'linkageFloor'
     | 'indexBaseMin'
     | 'indexBaseMinHelp'
+    | 'tooltipIndexBaseMinText'
+    | 'tooltipIndexBaseMinExample'
+    | 'tooltipPartialLinkageText'
+    | 'tooltipPartialLinkageExample'
     | 'maxIncrease'
+    | 'tooltipMaxIncreaseText'
+    | 'tooltipMaxIncreaseExample'
+    | 'exampleLabel'
     | 'capCeiling'
     | 'periodStart'
     | 'periodEnd'
@@ -1111,7 +1144,10 @@ export type TranslationKeys =
     | 'guarantees'
     | 'guaranteesPlaceholder'
     | 'dateRange'
-    | 'noOptionsDefined';
+    | 'noOptionsDefined'
+    | '3Months'
+    | '6Months'
+    | '12Months';
 
 export const translations: Record<string, any> = {
     he: {
@@ -1276,6 +1312,7 @@ export const translations: Record<string, any> = {
         tenants_female: 'דיירים',
         contracts: 'חוזים',
         contracts_female: 'חוזים',
+        candidates: 'מתעניינים',
         legal_management: 'ניהול משפטי',
         active_contract: 'חוזה פעיל',
         archived_contract: 'חוזה בארכיון',
@@ -1359,6 +1396,9 @@ export const translations: Record<string, any> = {
         paymentStatus: 'סטטוס תשלומים',
         last12Months: '12 חודשים אחרונים',
         vsLastYear: 'לעומת שנה שעברה',
+        '3Months': '3 חודשים',
+        '6Months': '6 חודשים',
+        '12Months': '12 חודשים',
 
         // Feature Keys & Misc
         originalContract: 'חוזה מקורי',
@@ -1373,6 +1413,29 @@ export const translations: Record<string, any> = {
         generateReport: 'הפק דוח',
         done: 'סיום',
         customize: 'התאמה אישית',
+        customizeDashboard: 'התאם אישית את הדשבורד',
+        customizeDashboardDesc: 'סדר והסתר ווידג׳טים לפי הצרכים שלך',
+        visible: 'מוצג',
+        hidden: 'מוסתר',
+        usage_overview_title: 'תמונת מצב משאבים',
+        index_pulse: 'מדדים ומטבעות',
+        smart_actions_title: 'פעולות חכמות',
+        digital_protocol_title: 'פרוטוקול מסירה דיגיטלי',
+        digital_protocol_subtitle: 'פרוטוקול מסירה דיגיטלי לכניסה ויציאה',
+        quick_actions_title: 'קיצורי דרך',
+        prospective_tenants_title: 'שוכרים פוטנציאליים',
+        prospective_tenants_subtitle: 'היערכות לדיירים חדשים',
+        rental_trends_title: 'מגמות שוק',
+        marketAnalysisFilters: 'סינונים לניתוח שוק',
+        includeMamahPremium: 'הנכס כולל ממ"ד',
+        mamahImpactDesc: '',
+        comparisonDuration: 'תקופת השוואה',
+        showResults: 'הצג תוצאות',
+        '1Y': 'שנה',
+        '2Y': 'שנתיים',
+        '3Y': '3 שנים',
+        '4Y': '4 שנים',
+        '5Y': '5 שנים',
         myPortfolio: 'התיק שלי',
         leaseEnds: 'חוזה מסתיים',
         deleteAsset: 'מחיקת נכס',
@@ -1457,10 +1520,10 @@ export const translations: Record<string, any> = {
         // Calculator & Reconciliation
         indexCalculator: 'מחשבון הצמדה',
         calculatorDesc: 'חישוב הפרשי הצמדה למדד והתחשבנות',
-        standardCalculation: 'חישוב רגיל',
-        paymentReconciliation: 'התחשבנות (רטרו)',
-        baseRent: 'שכירות בסיס (₪)',
-        linkageType: 'סוג הצמדה',
+        standardCalculation: 'סכום בודד',
+        paymentReconciliation: 'סדרת תשלומים',
+        baseRent: 'סכום להצמיד',
+        linkageType: 'מדד להצמדה',
         baseDate: 'תאריך בסיס',
         baseIndexDate: 'תאריך מדד בסיס',
         targetDate: 'תאריך יעד',
@@ -1485,7 +1548,7 @@ export const translations: Record<string, any> = {
         shareMessage: 'חישבתי את הצמדה למדד במחשבון של RentMate, אפשר לראות את התוצאה כאן:',
         loadFromContract: 'טען מחוזה (אופציונלי)',
         selectContractPlaceholder: 'בחר חוזה למילוי אוטומטי...',
-        expectedBaseRent: 'שכירות בסיס צפויה',
+        expectedBaseRent: 'סכום לפני מדד',
         clearList: 'נקה רשימה',
         generateList: 'צור רשימה',
         generateList_female: 'צרי רשימה',
@@ -1515,12 +1578,21 @@ export const translations: Record<string, any> = {
         inRespectOf: 'מדד קובע',
         knownIndexHelp: 'לפי המדד האחרון שפורסם במועד התחשבנות',
         updateFrequency: 'תדירות עדכון',
-        everyMonth: 'בכל חודש',
+        everyMonth: 'חודשי',
         updateFrequencyHelp: 'באיזו תכיפות מעדכנים את שכר הדירה?',
         linkageFloor: 'רצפת הצמדה',
-        indexBaseMin: 'מדד בסיס הוא רצפה',
+        indexBaseMin: "מדד בסיס הוא מדד מינ'",
         indexBaseMinHelp: 'האם למנוע ירידת שכירות כשהמדד שלילי?',
-        maxIncrease: 'תקרת עלייה',
+        tooltipIndexBaseMinText: 'כאשר אפשרות זו פעילה, במידה ומדד המחירים במועד החישוב נמוך ממדד הבסיס (המדד ביום תחילת החוזה), החישוב יתבצע כאילו המדד לא ירד כלל.',
+        tooltipIndexBaseMinExample: 'אם מדד הבסיס היה 100 והמדד הנוכחי ירד ל-98, המערכת תחשב לפיו המדד נשאר 100, כך ששכר הדירה לא יפחת.',
+        tooltipPartialLinkageText: 'מאפשר להצמיד רק חלק מסוים משכר הדירה למדד.',
+        tooltipPartialLinkageExample: 'אם שכר הדירה הוא 5,000 ש"ח והגדרתם 80% הצמדה, רק 4,000 ש"ח מתוכם יושפעו מעליית המדד, וה-1,000 ש"ח הנותרים יישארו קבועים ללא שינוי.',
+        maxIncrease: "עליית מדד שנתית מקס'",
+        tooltipMaxIncreaseText: 'מגביל את אחוז העלייה המקסימלי של שכר הדירה בשנה, להגנה מפני עליות מדד חריגות. תקרת העלייה (ההגנה) מחושבת באופן יחסי למספר החודשים שעברו.',
+        tooltipMaxIncreaseExample: 'אם הגדרתם מקסימום 5% בשנה, ועברו 6 חודשים (חצי שנה), שכר הדירה לא יעלה ביותר מ-2.5% בתקופה זו, גם אם המדד בפועל עלה יותר.',
+        exampleLabel: 'דוגמה:',
+        howItWorksTitle: 'מחשבון התחשבנות מתקדם',
+        reconciliationInfoText: 'מחשבון זה בודק את פער התשלומים לאורך התקופה. הזינו את התשלומים ששולמו בפועל, והמערכת תשווה אותם למה שהיה אמור להשתלם (כולל חישובי הצמדה). לבסוף תקבלו דוח המציג חוב או זכות בצורה מדויקת.',
         capCeiling: 'מקסימום שינוי (%)',
         periodStart: 'תחילת תקופה',
         periodEnd: 'סוף תקופה',
@@ -1606,8 +1678,8 @@ export const translations: Record<string, any> = {
         paymentFrequency: 'תדירות תשלום',
         paymentMethod: 'אמצעי תשלום',
         contractIsIndexed: 'החוזה צמוד למדד',
-        linkedToCpi: 'מדד המחירים לצרכן',
-        linkedToHousing: 'מדד מחירי הדיור',
+        linkedToCpi: 'מחירים לצרכן',
+        linkedToHousing: 'מחירי הדיור',
         linkedToUsd: 'צמוד לדולר',
         linkedToEur: 'צמוד לאירו',
         linkedToConstruction: 'צמוד למדד תשומות הבנייה',
@@ -1633,7 +1705,7 @@ export const translations: Record<string, any> = {
         foreignCurrency: 'מטבע חוץ',
         baseIndexValue: 'ערך מדד בסיס',
         baseDateRequired: 'יש להזין תאריך בסיס',
-        indexTypeRequired: 'יש לבחור סוג הצמדה',
+        indexTypeRequired: 'יש לבחור מדד להצמיד',
         indexOption: 'אופציית מדד',
         linkageCategory: 'קטגוריית הצמדה',
         propertySpecs: 'מפרט נכס',
@@ -1678,7 +1750,7 @@ export const translations: Record<string, any> = {
         solo: 'SOLO',
         mate: 'MATE',
         master: 'MASTER',
-        unlimited: 'MASTER',
+        unlimited: 'ללא הגבלה',
         ai_bills: 'פיענוח חשבונות AI',
         cpi_autopilot: 'Auto-Pilot הצמדות',
         pricing_per_unit: 'ליחידה',
@@ -1813,12 +1885,12 @@ export const translations: Record<string, any> = {
         deleteDocumentConfirmation: 'האם למחוק מסמך זה?',
         deleteDocumentConfirmation_female: 'האם למחוק מסמך זה?',
         checksStorage: 'צ׳קים',
-        mediaStorage: 'תמונות וסירטונים',
+        mediaStorage: 'מדיה',
         utilitiesStorage: 'חשבונות',
         maintenanceStorage: 'תחזוקה ותיקונים',
-        documentsStorage: 'מסמכים וחוזים',
+        documentsStorage: 'מסמכים',
         documents: 'מסמכים',
-        photosAndVideos: 'תמונות וסרטונים',
+        photosAndVideos: 'מדיה',
         mediaGalleryDesc: 'גלריית נכס ותיעוד ויזואלי',
         vacant: 'פנוי',
         storageUsage: 'ניצול שטח אחסון',
@@ -1942,8 +2014,8 @@ export const translations: Record<string, any> = {
         resetFilters: 'איפוס סינונים',
         shared_calc_official_index: 'חישוב הצמדה למדד',
         shared_calc_updated_rent: 'שכירות מעודכנת',
-        shared_calc_base_rent: 'שכירות בסיס',
-        shared_calc_linkage: 'סוג הצמדה',
+        shared_calc_base_rent: 'סכום להצמיד',
+        shared_calc_linkage: 'מדד להצמיד',
         shared_calc_base_date: 'תאריך בסיס',
         shared_calc_target_date: 'תאריך יעד',
         shared_calc_index_change: 'שינוי מדד',
@@ -2007,7 +2079,7 @@ export const translations: Record<string, any> = {
         linkageStatus: 'סטטוס הצמדה',
         calculatingProjection: 'מחשב תחזית...',
         backToDashboard: 'חזרה ללוח הבקרה',
-        indexWatcherTitle: 'מעקב מדדים והצמדות',
+        indexWatcherTitle: 'מעקב מדדים',
         baseAmount: 'סכום בסיס',
         adjustedAmount: 'סכום מתואם',
         linkageCalculation: 'חישוב הצמדה',
@@ -2104,7 +2176,7 @@ export const translations: Record<string, any> = {
         selectCategory: 'בחר סוג נכס',
         finish: 'סיום',
         occupied: 'מושכר',
-        base_rent: 'שכירות בסיס',
+        base_rent: 'סכום להצמיד',
         whereIsItLocated: 'איפה הנכס ממוקם?',
         noAssetsFound: 'לא נמצאו נכסים',
         tellUsAboutProperty: 'ספרו לנו על הנכס',
@@ -2278,7 +2350,7 @@ export const translations: Record<string, any> = {
         specialClausesPlaceholder: 'הכנס תנאים מיוחדים כאן...',
         guarantees: 'ביטחונות',
         indexWatcherDesc: 'עקוב אחרי מדדי מחירים לצרכן ושירותי דיור להצמדת חוזים מושכלת.',
-        baseRentWarning: 'יש להזין שכירות בסיס',
+        baseRentWarning: 'יש להזין סכום להצמיד',
         linkageCalculated: 'עדכון ההצמדה חושב',
         indexPulseFailed: 'כישלון בעדכון המדדים',
         cpi: 'מדד המחירים לצרכן',
@@ -2286,6 +2358,19 @@ export const translations: Record<string, any> = {
         cpiAbbr: 'מדד',
         housingAbbr: 'דיור',
 
+        // Regions and Districts
+        'Northern District': 'מחוז הצפון',
+        'Haifa District': 'מחוז חיפה',
+        'Central District': 'מחוז המרכז',
+        'Tel Aviv District': 'מחוז תל אביב',
+        'Jerusalem District': 'מחוז ירושלים',
+        'Southern District': 'מחוז הדרום',
+        'Judea and Samaria': 'יהודה ושומרון',
+        'North': 'צפון',
+        'South': 'דרום',
+        'Center': 'מרכז',
+        fiveYears: '5 שנים',
+        mom: 'חודשי',
         // Quick Actions: 'מדד תשומות הבנייה',
         usd: 'דולר ארה"ב',
         eur: 'אירו',
@@ -2323,6 +2408,7 @@ export const translations: Record<string, any> = {
         archived: 'Archived',
         ACTIVE: 'Active',
         ARCHIVED: 'Archived',
+        candidates: 'Candidates',
         legal_management: 'Legal Management',
         active_contract: 'Active Contract',
         archived_contract: 'Archived Contract',
@@ -2520,6 +2606,19 @@ export const translations: Record<string, any> = {
         parties: 'Parties',
         timeline: 'Timeline',
         additionalDetails: 'Additional Details',
+        customizeDashboard: 'Customize Dashboard',
+        customizeDashboardDesc: 'Reorder and hide widgets based on your needs',
+        visible: 'Visible',
+        hidden: 'Hidden',
+        usage_overview_title: 'Resource Overview',
+        index_pulse: 'Index Pulse',
+        smart_actions_title: 'Smart Actions',
+        digital_protocol_title: 'Digital Protocol',
+        digital_protocol_subtitle: 'Digital handover protocol for move-in/out',
+        quick_actions_title: 'Quick Actions',
+        prospective_tenants_title: 'Prospective Tenants',
+        prospective_tenants_subtitle: 'Prepare for new tenants',
+        rental_trends_title: 'Market Trends',
 
         // Plans
         free: 'SOLO',
@@ -2527,7 +2626,7 @@ export const translations: Record<string, any> = {
         solo: 'SOLO',
         mate: 'MATE',
         master: 'MASTER',
-        unlimited: 'MASTER',
+        unlimited: 'Unlimited',
         ai_bills: 'AI Bill Extraction',
         cpi_autopilot: 'CPI Auto-Pilot',
         pricing_per_unit: 'per unit',
@@ -2565,8 +2664,17 @@ export const translations: Record<string, any> = {
         approveAndCreate: 'Approve & Create',
         paymentMarkedPaid: 'Payment marked as paid',
         paymentUndoSuccess: 'Action undone',
-        errorInUndo: 'Error undoing action',
         undo: 'Undo',
+
+        tooltipIndexBaseMinText: 'When enabled, if the price index at calculation is lower than the base index, the calculation treats it as if it didn\'t drop.',
+        tooltipIndexBaseMinExample: 'If base index was 100 and dropped to 98, rent won\'t decrease.',
+        tooltipPartialLinkageText: 'Link only a portion of the rent to the index.',
+        tooltipPartialLinkageExample: 'Rent 5,000 with 80% linkage means only 4,000 is affected by index changes.',
+        tooltipMaxIncreaseText: 'Caps the maximum annual rent increase to protect against high index jumps.',
+        tooltipMaxIncreaseExample: 'A 5% yearly cap means rent won\'t increase by more than 2.5% after 6 months.',
+        exampleLabel: 'Example:',
+        howItWorksTitle: 'Advanced Reconciliation',
+        reconciliationInfoText: 'This calculator checks the payment gap over time. Enter the actual payments made, and the system will compare them against what should have been paid (inclusive of index linkage calculations). Finally, you will receive an accurate debt or credit report.',
         errorMarkingPaid: 'Error marking as paid',
         back: 'Back',
         amountGreaterThanZero: 'Amount must be greater than zero',
@@ -2639,6 +2747,8 @@ export const translations: Record<string, any> = {
         noIndexHistoryDesc: 'Waiting for automatic monthly updates...',
         cpiAbbr: 'CPI',
         housingAbbr: 'HOU',
+        '3Y': '3 Years',
+        '4Y': '4 Years',
 
         // Feature KeysPlaceholder: 'Enter special clauses here...',
         guarantees: 'Guarantees',
@@ -2687,6 +2797,8 @@ export const translations: Record<string, any> = {
         language_toggle: 'עברית',
         contract_expiry: 'Contract Expiry',
         overdue_payment: 'Overdue Payment',
+        fiveYears: '5Y',
+        mom: 'MoM',
     }
 };
 

@@ -36,11 +36,11 @@ export function MaintenanceChat({ ticketId: _ticketId, propertyAddress }: Mainte
             {/* Header */}
             <div className="h-16 border-b border-border bg-white dark:bg-neutral-900 flex items-center justify-between px-6 shrink-0">
                 <div>
-                    <h2 className="text-sm font-black uppercase tracking-wider">Broken AC - Apt 4</h2>
-                    <span className="text-xs text-muted-foreground">{propertyAddress || 'Ben Yehuda 14'}</span>
+                    <h2 className="text-base font-black uppercase tracking-wider">Broken AC - Apt 4</h2>
+                    <span className="text-sm text-muted-foreground">{propertyAddress || 'Ben Yehuda 14'}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <span className="px-3 py-1 bg-amber-100 text-amber-700 text-xs font-bold uppercase tracking-widest rounded-full">In Progress</span>
+                    <span className="px-3 py-1 bg-amber-100 text-amber-700 text-sm font-bold uppercase tracking-widest rounded-full">In Progress</span>
                 </div>
             </div>
 
@@ -50,7 +50,7 @@ export function MaintenanceChat({ ticketId: _ticketId, propertyAddress }: Mainte
                     <div key={msg.id} className={`flex flex-col ${msg.sender === 'me' ? 'items-end' : msg.sender === 'system' ? 'items-center' : 'items-start'}`}>
                         {/* System Message */}
                         {msg.sender === 'system' ? (
-                            <div className="bg-muted/50 dark:bg-neutral-800 px-4 py-2 rounded-full text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
+                            <div className="bg-muted/50 dark:bg-neutral-800 px-4 py-2 rounded-full text-sm font-bold text-muted-foreground uppercase tracking-wider mb-2">
                                 {msg.text}
                             </div>
                         ) : (
@@ -60,10 +60,10 @@ export function MaintenanceChat({ ticketId: _ticketId, propertyAddress }: Mainte
                                 : 'bg-white dark:bg-neutral-800 border border-slate-100 dark:border-neutral-700 rounded-tl-sm'
                                 }`}>
                                 {msg.hasImage && (
-                                    <div className="w-full h-32 bg-slate-200 dark:bg-neutral-700 rounded-lg mb-2 animate-pulse" />
+                                    <div className="w-full h-32 bg-slate-200 dark:bg-neutral-700 rounded-xl mb-2 animate-pulse" />
                                 )}
-                                <p className="text-sm leading-relaxed font-medium">{msg.text}</p>
-                                <span className="text-[11px] opacity-80 block mt-2 font-mono uppercase">{msg.time}</span>
+                                <p className="text-base leading-relaxed font-medium">{msg.text}</p>
+                                <span className="text-sm opacity-80 block mt-2 font-mono uppercase">{msg.time}</span>
                             </div>
                         )}
                     </div>
@@ -71,7 +71,7 @@ export function MaintenanceChat({ ticketId: _ticketId, propertyAddress }: Mainte
             </div>
 
             {/* Input Area */}
-            <div className="p-4 bg-white dark:bg-neutral-900 border-t border-border shrink-0 pb-10">
+            <div className="p-4 bg-white dark:bg-neutral-900 border-t border-border shrink-0 pb-24 md:pb-12">
                 <div className="flex items-center gap-4">
                     <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary transition-colors">
                         <PaperclipIcon className="w-5 h-5" />
@@ -85,7 +85,7 @@ export function MaintenanceChat({ ticketId: _ticketId, propertyAddress }: Mainte
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                             placeholder={t('typeMessage')}
-                            className="w-full bg-background dark:bg-neutral-800 border-none rounded-2xl px-4 py-3 text-sm focus-visible:ring-1 focus-visible:ring-primary shadow-none h-auto"
+                            className="w-full bg-background dark:bg-neutral-800 border-none rounded-2xl px-4 py-3 text-base focus-visible:ring-1 focus-visible:ring-primary shadow-none h-auto"
                         />
                     </div>
                     <Button onClick={handleSend} size="icon" className="rounded-full w-10 h-10 shrink-0">

@@ -72,7 +72,7 @@ export function AccessibilitySettingsModal({ isOpen, onClose }: AccessibilitySet
                             <h2 className="text-xl font-black text-foreground tracking-tighter lowercase">
                                 {t('accessibilityStatement') || 'Accessibility'}
                             </h2>
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                            <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">
                                 {t('accessibility_subtitle') || 'Customize your experience'}
                             </p>
                         </div>

@@ -124,18 +124,18 @@ export function StorageManagement() {
     if (loading) {
         return (
             <div className="flex justify-center items-center h-96">
-                <Loader2 className="w-10 h-10 animate-spin text-brand-600" />
+                <Loader2 className="w-10 h-10 animate-spin text-primary-600" />
             </div>
         );
     }
 
     return (
-        <div className="space-y-8 pb-20">
+        <div className="space-y-8">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-extrabold text-foreground dark:text-white tracking-tight flex items-center gap-2">
-                        <ServerIcon className="w-8 h-8 text-brand-600" />
+                        <ServerIcon className="w-8 h-8 text-primary-600" />
                         Storage Management
                     </h1>
                     <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground mt-1">
@@ -162,8 +162,8 @@ export function StorageManagement() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-brand-50 dark:bg-brand-900/20 rounded-xl border border-brand-100 dark:border-brand-800">
-                            <CircleStackIcon className="w-6 h-6 text-brand-600" />
+                        <div className="p-3 bg-primary-50 dark:bg-primary-900/20 rounded-xl border border-primary-100 dark:border-primary-800">
+                            <CircleStackIcon className="w-6 h-6 text-primary-600" />
                         </div>
                         <div>
                             <p className="text-xs font-black text-muted-foreground uppercase tracking-widest leading-none mb-1">Total Managed</p>
@@ -184,8 +184,8 @@ export function StorageManagement() {
                 </div>
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-800">
-                            <UsersIcon className="w-6 h-6 text-emerald-600" />
+                        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
+                            <UsersIcon className="w-6 h-6 text-blue-600" />
                         </div>
                         <div>
                             <p className="text-xs font-black text-muted-foreground uppercase tracking-widest leading-none mb-1">Active Accounts</p>
@@ -205,14 +205,14 @@ export function StorageManagement() {
                             placeholder="Filter by email or ID..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-foreground border border-border dark:border-gray-700 rounded-xl text-sm font-medium focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
+                            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-foreground border border-border dark:border-gray-700 rounded-xl text-sm font-medium focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
                         />
                     </div>
                     <div className="flex gap-1 p-1 bg-muted dark:bg-foreground rounded-xl">
                         <button
                             onClick={() => setFilter('all')}
-                            className={`px-4 py-1.5 text-xs font-black uppercase tracking-widest rounded-lg transition-all ${filter === 'all'
-                                ? 'bg-white dark:bg-gray-800 text-brand-600 shadow-sm'
+                            className={`px-4 py-1.5 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${filter === 'all'
+                                ? 'bg-white dark:bg-gray-800 text-primary-600 shadow-sm'
                                 : 'text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300'
                                 }`}
                         >
@@ -220,7 +220,7 @@ export function StorageManagement() {
                         </button>
                         <button
                             onClick={() => setFilter('high_usage')}
-                            className={`px-4 py-1.5 text-xs font-black uppercase tracking-widest rounded-lg transition-all ${filter === 'high_usage'
+                            className={`px-4 py-1.5 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${filter === 'high_usage'
                                 ? 'bg-orange-600 text-white shadow-md'
                                 : 'text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300'
                                 }`}
@@ -233,7 +233,7 @@ export function StorageManagement() {
                 <div className="overflow-x-auto">
                     <table className="w-full text-right" dir="rtl">
                         <thead>
-                            <tr className="bg-secondary dark:bg-foreground/50">
+                            <tr className="bg-blue-50 dark:bg-foreground/50">
                                 <th className="px-6 py-4 text-xs font-black text-muted-foreground uppercase tracking-widest">User / ID</th>
                                 <th className="px-6 py-4 text-xs font-black text-muted-foreground uppercase tracking-widest">Plan</th>
                                 <th className="px-6 py-4 text-xs font-black text-muted-foreground uppercase tracking-widest">Storage Usage</th>
@@ -242,15 +242,15 @@ export function StorageManagement() {
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                             {filteredStats.map((item) => (
-                                <tr key={item.user_id} className="hover:bg-secondary dark:hover:bg-gray-700/50 transition-colors">
+                                <tr key={item.user_id} className="hover:bg-blue-50 dark:hover:bg-gray-700/50 transition-colors">
                                     <td className="px-6 py-5">
                                         <div className="font-bold text-foreground dark:text-white text-sm">{item.email}</div>
                                         <div className="text-xs text-muted-foreground font-mono tracking-tighter mt-0.5">{item.user_id}</div>
                                     </td>
                                     <td className="px-6 py-5">
-                                        <span className={`px-2.5 py-1 text-xs font-black uppercase tracking-widest rounded-lg border ${item.plan_name === 'pro' ? 'bg-primary/10 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:border-blue-800' :
+                                        <span className={`px-2.5 py-1 text-xs font-black uppercase tracking-widest rounded-xl border ${item.plan_name === 'pro' ? 'bg-primary/10 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:border-blue-800' :
                                             item.plan_name === 'enterprise' ? 'bg-primary-50 text-primary-700 border-primary-100 dark:bg-primary-900/20 dark:border-primary-800' :
-                                                'bg-secondary text-muted-foreground border-border dark:bg-gray-800 dark:border-gray-700 dark:text-muted-foreground'
+                                                'bg-blue-50 text-muted-foreground border-border dark:bg-gray-800 dark:border-gray-700 dark:text-muted-foreground'
                                             }`}>
                                             {item.plan_name}
                                         </span>
@@ -268,7 +268,7 @@ export function StorageManagement() {
                                                     <div
                                                         className={`h-full rounded-full transition-all duration-500 ${item.usage_percent > 90 ? 'bg-destructive shadow-[0_0_8px_rgba(220,38,38,0.5)]' :
                                                             item.usage_percent > 75 ? 'bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.5)]' :
-                                                                'bg-brand-600 shadow-[0_0_8px_rgba(37,99,235,0.5)]'
+                                                                'bg-primary-600 shadow-[0_0_8px_rgba(37,99,235,0.5)]'
                                                             }`}
                                                         style={{ width: `${Math.min(item.usage_percent, 100)}%` }}
                                                     />
@@ -277,7 +277,7 @@ export function StorageManagement() {
                                                     {item.usage_percent.toFixed(0)}%
                                                 </span>
                                             </div>
-                                            <div className="flex justify-between text-[11px] font-bold text-muted-foreground uppercase tracking-tighter">
+                                            <div className="flex justify-between text-xs font-bold text-muted-foreground uppercase tracking-tighter">
                                                 <span>Limit: {item.max_storage_mb === -1 ? '∞' : `${item.max_storage_mb}MB`}</span>
                                             </div>
                                         </div>

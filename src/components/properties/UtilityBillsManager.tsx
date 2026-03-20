@@ -383,7 +383,7 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                         </button>
                         <div className="flex items-center gap-3">
                             {utilities.find(u => u.id === activeUtility)?.icon && (
-                                <div className={cn("p-2 rounded-lg", utilities.find(u => u.id === activeUtility)?.bg, utilities.find(u => u.id === activeUtility)?.color)}>
+                                <div className={cn("p-2 rounded-xl", utilities.find(u => u.id === activeUtility)?.bg, utilities.find(u => u.id === activeUtility)?.color)}>
                                     {(() => {
                                         const Icon = utilities.find(u => u.id === activeUtility)!.icon;
                                         return <Icon className="w-5 h-5" />;
@@ -519,7 +519,7 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
 
                                                     <div className="flex justify-between items-start mb-3 mt-2">
                                                         <div className="flex items-center gap-2 overflow-hidden flex-1">
-                                                            <div className="p-1.5 bg-primary/10 dark:bg-blue-900/30 text-primary dark:text-blue-400 rounded-lg shrink-0">
+                                                            <div className="p-1.5 bg-primary/10 dark:bg-blue-900/30 text-primary dark:text-blue-400 rounded-xl shrink-0">
                                                                 <FileText className="w-4 h-4" />
                                                             </div>
                                                             <span className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">{file.file.name}</span>
@@ -550,12 +550,12 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                                                         </div>
                                                     ) : file.aiData ? (
                                                         <div className="mb-3 space-y-2">
-                                                            <div className="flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded-lg w-fit">
+                                                            <div className="flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded-xl w-fit">
                                                                 <Sparkles className="w-3 h-3" />
                                                                 <span>Auto-filled by Gemini</span>
                                                             </div>
                                                             {file.isDuplicate && (
-                                                                <div className="flex items-center gap-2 text-xs text-destructive bg-red-50 dark:bg-red-900/20 px-2 py-1.5 rounded-lg border border-red-100 dark:border-red-900/30">
+                                                                <div className="flex items-center gap-2 text-xs text-destructive bg-red-50 dark:bg-red-900/20 px-2 py-1.5 rounded-xl border border-red-100 dark:border-red-900/30">
                                                                     <X className="w-3.5 h-3.5" />
                                                                     <span className="font-bold">Duplicate Detected!</span>
                                                                     <span>A bill with this number, vendor, and date already exists.</span>
@@ -570,7 +570,7 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                                                             <select
                                                                 value={file.targetPropertyId || ''}
                                                                 onChange={(e) => updateStagedFile(file.id, 'targetPropertyId', e.target.value)}
-                                                                className={cn("w-full h-8 px-2 text-xs rounded-md border", !file.targetPropertyId ? "border-red-500 bg-red-50 dark:bg-red-900/20" : "bg-white/50 dark:bg-foreground/50 border-input")}
+                                                                className={cn("w-full h-8 px-2 text-xs rounded-lg border", !file.targetPropertyId ? "border-red-500 bg-red-50 dark:bg-red-900/20" : "bg-white/50 dark:bg-foreground/50 border-input")}
                                                             >
                                                                 <option value="" disabled>Select Asset...</option>
                                                                 {allProperties.map(p => (
@@ -583,7 +583,7 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                                                             <select
                                                                 value={file.targetCategory || activeUtility}
                                                                 onChange={(e) => updateStagedFile(file.id, 'targetCategory', e.target.value)}
-                                                                className={cn("w-full h-8 px-2 text-xs rounded-md border bg-white/50 dark:bg-foreground/50 border-input")}
+                                                                className={cn("w-full h-8 px-2 text-xs rounded-lg border bg-white/50 dark:bg-foreground/50 border-input")}
                                                             >
                                                                 {utilities.map(u => (
                                                                     <option key={u.id} value={u.id}>{u.label}</option>

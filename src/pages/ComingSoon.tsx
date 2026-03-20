@@ -429,7 +429,7 @@ export function ComingSoon() {
                                                     className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary bg-background border-border rounded focus:ring-primary ring-offset-background focus:ring-2   md:mt-0.5 cursor-pointer transition-colors"
                                                 />
                                             </div>
-                                            <label htmlFor="termsConsent" className="text-[11px] md:text-xs font-medium text-muted-foreground cursor-pointer">
+                                            <label htmlFor="termsConsent" className="text-xs md:text-xs font-medium text-muted-foreground cursor-pointer">
                                                 {isRtl ? (
                                                     <span>
                                                         אני מסכים/ה <a href="/legal/terms" target="_blank" className="font-semibold text-primary hover:text-primary/80 transition-colors underline underline-offset-4 decoration-primary/30 hover:decoration-primary/80">לתנאי השימוש</a> ול<a href="/legal/privacy" target="_blank" className="font-semibold text-primary hover:text-primary/80 transition-colors underline underline-offset-4 decoration-primary/30 hover:decoration-primary/80">מדיניות הפרטיות</a>.
@@ -516,12 +516,12 @@ export function ComingSoon() {
                             <a href="/accessibility" className="text-xs md:text-xs text-muted-foreground hover:text-primary transition-colors underline underline-offset-4">
                                 {isRtl ? 'הצהרת נגישות' : 'Accessibility Statement'}
                             </a>
-                            <p className="text-[11px] text-muted-foreground/60 max-w-md text-center leading-relaxed px-4">
+                            <p className="text-xs text-muted-foreground/60 max-w-md text-center leading-relaxed px-4">
                                 {t('coming_soon_ip_protection')}
                             </p>
                         </div>
                         {isRtl && (
-                            <p className="text-[11px] md:text-xs text-muted-foreground/80 max-w-sm text-center leading-relaxed">
+                            <p className="text-xs md:text-xs text-muted-foreground/80 max-w-sm text-center leading-relaxed">
                                 * האתר והאפליקציה מנוסחים בלשון זכר מטעמי נוחות בלבד, אך מתייחסים ופונים לשני המינים כאחד.
                             </p>
                         )}
@@ -650,7 +650,7 @@ export function ComingSoon() {
                             >
                                 <GlassCard className="w-[300px] sm:w-[380px] h-auto min-h-[120px] md:h-[140px] flex flex-col justify-center p-4 md:p-6 border-white/20 bg-card/70 backdrop-blur-2xl text-foreground shadow-xl pointer-events-auto">
                                     <div className={`flex items-center gap-2 md:gap-3 mb-2 ${isRtl ? 'flex-row' : 'flex-row'}`} dir={isRtl ? 'rtl' : 'ltr'}>
-                                        <div className="p-1.5 md:p-2 bg-primary rounded-lg text-white">
+                                        <div className="p-1.5 md:p-2 bg-primary rounded-xl text-white">
                                             {(() => {
                                                 const Icon = SLIDE_CONTENT[currentImageIndex].icon;
                                                 return <Icon className="w-4 h-4 md:w-5 md:h-5" />;

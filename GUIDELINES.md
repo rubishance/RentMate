@@ -46,6 +46,14 @@
     - **Accessibility**: Services must meet WCAG 2.1 AA standards as per the Equal Rights for Persons with Disabilities Law.
     - **Consumer Protection**: Cancelation policies and pricing transparency must be clear.
 
+### 6. Test User Protocol 🧪
+- **Single Source of Truth for Testing**:
+    - **Always** use the official test user for all testing, QA, and validation purposes.
+    - **Email**: `test@rentmate.co.il`
+    - **Password**: `Test!123`
+    - **Name**: `משה כהן`
+    - **CRITICAL**: ONLY create additional test users if there is absolutely no other option or if a specific multi-user flow is being tested that strictly requires it. Otherwise, use this test user to prevent database bloat and orphaned user records.
+
 ---
 
 *These guidelines ensure RentMate remains secure, accessible, and user-friendly for Israeli landlords managing their properties on the go.*

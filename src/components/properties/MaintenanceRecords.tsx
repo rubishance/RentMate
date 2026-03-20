@@ -358,7 +358,7 @@ export function MaintenanceRecords({ property, readOnly }: MaintenanceRecordsPro
                                     <div key={file.id} className="bg-white/60 dark:bg-gray-800/60 p-4 rounded-xl border border-border dark:border-gray-700 shadow-sm backdrop-blur-sm hover:shadow-md transition-all">
                                         <div className="flex justify-between items-start mb-3">
                                             <div className="flex items-center gap-2 overflow-hidden">
-                                                <div className="p-1.5 bg-warning/10 text-warning rounded-lg">
+                                                <div className="p-1.5 bg-warning/10 text-warning rounded-xl">
                                                     <Hammer className="w-4 h-4" />
                                                 </div>
                                                 <span className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">{file.file.name}</span>
@@ -380,7 +380,7 @@ export function MaintenanceRecords({ property, readOnly }: MaintenanceRecordsPro
                                                 {t('scanningBill', { defaultValue: 'Analyzing receipt...' })}
                                             </div>
                                         ) : file.aiData ? (
-                                            <div className="mb-3 flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded-lg w-fit">
+                                            <div className="mb-3 flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded-xl w-fit">
                                                 <Sparkles className="w-3 h-3" />
                                                 <span>{t('autoFilledByGemini', { defaultValue: 'Auto-filled by Gemini' })}</span>
                                                 <span className="font-mono opacity-70">({(file.aiData.confidence * 100).toFixed(0)}% conf)</span>

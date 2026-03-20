@@ -11,7 +11,7 @@ interface FormLabelProps {
 
 export function FormLabel({ label, required, readOnly, className, children }: FormLabelProps) {
     return (
-        <label className={cn("text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1", className)}>
+        <label className={cn("text-base font-semibold text-foreground flex items-center gap-1", className)}>
             {label}
             {required && !readOnly && <span className="text-destructive">*</span>}
             {children}

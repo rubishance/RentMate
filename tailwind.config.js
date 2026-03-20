@@ -15,10 +15,10 @@ module.exports = {
         },
         extend: {
             fontFamily: {
-                hebrew: ["Assistant", "sans-serif"],
-                english: ["IBM Plex Sans", "sans-serif"],
-                sans: ["Assistant", "Inter", "sans-serif"],
-                heading: ["Assistant", "Outfit", "sans-serif"],
+                hebrew: ["Assistant", "Plus Jakarta Sans", "sans-serif"],
+                english: ["Plus Jakarta Sans", "Inter", "sans-serif"],
+                sans: ["Plus Jakarta Sans", "Assistant", "Inter", "sans-serif"],
+                heading: ["Plus Jakarta Sans", "Assistant", "Inter", "sans-serif"],
             },
             // Accessibility & Readability Typography Scale (30s-50s Demographic Focus)
             fontSize: {
@@ -72,23 +72,16 @@ module.exports = {
                     950: '#0A1811',
                 },
                 success: {
-                    DEFAULT: '#4B5F43', // Olive Drab
-                    foreground: '#FFFFFF',
-                    50: '#F4F7F4',
-                    100: '#E6EBE5',
-                    500: '#4B5F43',
-                    900: '#1A2317',
+                    DEFAULT: 'hsl(var(--success))',
+                    foreground: 'hsl(var(--success-foreground))',
                 },
                 warning: {
-                    DEFAULT: '#E0A458',
-                    foreground: '#1A1A1A',
+                    DEFAULT: 'hsl(var(--warning))',
+                    foreground: 'hsl(var(--warning-foreground))',
                 },
                 destructive: {
                     DEFAULT: 'hsl(var(--destructive))',
                     foreground: 'hsl(var(--destructive-foreground))',
-                    50: '#FEF2F2',
-                    500: '#C05746',
-                    900: '#451510',
                 },
                 neutral: {
                     50: '#F9FAFB',

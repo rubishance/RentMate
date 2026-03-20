@@ -125,11 +125,17 @@ export function useSubscription() {
         usage,
         loading,
         refreshSubscription,
-        canAddProperty: true,
+        canAddProperty: (() => {
+            if (!plan) return false;
+            if (plan.id === 'free' || plan.id === 'solo') {
+                return usage.properties < 1;
+            }
+            return checkLimit(usage.properties, plan.max_properties);
+        })(),
         canAddTenant: true,
         canAddContract: true,
-        canAddActiveContract: true,
-        canArchiveContract: true,
+        canAddActiveContract,
+        canArchiveContract,
 
         // Feature flags helper
         hasFeature: (featureKey: string) => {

@@ -45,14 +45,15 @@ serve(async (req) => {
 
         const tier = profile?.subscription_tier || "free";
         
-        if (tier === "free") {
-            return new Response(
-                JSON.stringify({ 
-                    error: "Voice output is a premium feature. Please upgrade your subscription to use this feature." 
-                }), 
-                { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-            );
-        }
+        // Temporarily bypass premium check for testing by the developer
+        // if (tier === "free") {
+        //     return new Response(
+        //         JSON.stringify({ 
+        //             error: "Voice output is a premium feature. Please upgrade your subscription to use this feature." 
+        //         }), 
+        //         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        //     );
+        // }
 
         if (!OPENAI_API_KEY) {
              return new Response(JSON.stringify({ error: "Server missing OpenAI Key" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -79,12 +80,12 @@ serve(async (req) => {
             throw new Error("Failed to generate speech");
         }
 
-        const audioBuffer = await ttsResponse.arrayBuffer();
-
-        return new Response(audioBuffer, {
+        // Stream the response directly back to the client
+        return new Response(ttsResponse.body, {
             headers: {
                 ...corsHeaders,
-                "Content-Type": "audio/mpeg"
+                "Content-Type": "audio/mpeg",
+                "Transfer-Encoding": "chunked"
             }
         });
 

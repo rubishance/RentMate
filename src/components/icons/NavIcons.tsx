@@ -4,7 +4,7 @@ import {
     Plus, Trash2, Edit2, Calendar, Clock, AlertCircle, Filter, ArrowRight,
     TrendingUp, Activity, Bell, BellOff, Sparkles, Database, Image, Receipt,
     MoreVertical, Eye, Phone, Mail, User, Search, MapPin, Car, Box, Upload,
-    DollarSign, BedDouble, Ruler, GalleryVertical
+    DollarSign, BedDouble, Ruler, GalleryVertical, FileStack, Calculator
 } from 'lucide-react';
 
 const baseProps = {
@@ -20,8 +20,9 @@ export const HomeIcon = (props: React.SVGProps<SVGSVGElement>) => IconWrapper(Ho
 export const AssetsIcon = (props: React.SVGProps<SVGSVGElement>) => IconWrapper(Building2, props);
 export const TenantsIcon = (props: React.SVGProps<SVGSVGElement>) => IconWrapper(Users, props);
 export const ContractsIcon = (props: React.SVGProps<SVGSVGElement>) => IconWrapper(FileText, props);
+export const DocumentsIcon = (props: React.SVGProps<SVGSVGElement>) => IconWrapper(FileStack, props);
 export const PaymentsIcon = (props: React.SVGProps<SVGSVGElement>) => IconWrapper(CreditCard, props);
-export const ToolsIcon = (props: React.SVGProps<SVGSVGElement>) => IconWrapper(Wrench, props);
+export const ToolsIcon = (props: React.SVGProps<SVGSVGElement>) => IconWrapper(Calculator, props);
 export const AdminIcon = (props: React.SVGProps<SVGSVGElement>) => IconWrapper(ShieldCheck, props);
 export const SettingsIcon = (props: React.SVGProps<SVGSVGElement>) => IconWrapper(Settings, props);
 export const PlusIcon = (props: React.SVGProps<SVGSVGElement>) => IconWrapper(Plus, props);
@@ -55,5 +56,53 @@ export const CreditCardIcon = (props: React.SVGProps<SVGSVGElement>) => IconWrap
 export const DollarSignIcon = (props: React.SVGProps<SVGSVGElement>) => IconWrapper(DollarSign, props);
 export const BedIcon = (props: React.SVGProps<SVGSVGElement>) => IconWrapper(BedDouble, props);
 export const RulerIcon = (props: React.SVGProps<SVGSVGElement>) => IconWrapper(Ruler, props);
-export const BalconyIcon = (props: React.SVGProps<SVGSVGElement>) => IconWrapper(GalleryVertical, props);
-export const SafeRoomIcon = (props: React.SVGProps<SVGSVGElement>) => IconWrapper(ShieldCheck, props);
+export const BalconyIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="lucide lucide-balcony"
+        {...props}
+    >
+        <path d="M4 14v7" />
+        <path d="M20 14v7" />
+        <path d="M2 14h20" />
+        <path d="M4 10a8 8 0 0 1 16 0" />
+        <path d="M8 14v3" />
+        <path d="M12 14v3" />
+        <path d="M16 14v3" />
+        <path d="M4 17h16" />
+        <path d="M2 21h20" />
+    </svg>
+);
+
+export const SafeRoomIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="lucide lucide-box-select"
+        {...props}
+    >
+        <path d="M5 3a2 2 0 0 0-2 2" />
+        <path d="M19 3a2 2 0 0 1 2 2" />
+        <path d="M21 19a2 2 0 0 1-2 2" />
+        <path d="M5 21a2 2 0 0 1-2-2" />
+        <path d="M9 3h1" />
+        <path d="M9 21h1" />
+        <path d="M14 3h1" />
+        <path d="M14 21h1" />
+        <path d="M3 9v1" />
+        <path d="M21 9v1" />
+        <path d="M3 14v1" />
+        <path d="M21 14v1" />
+    </svg>
+);

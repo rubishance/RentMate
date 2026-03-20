@@ -145,18 +145,18 @@ const AdminNotifications = () => {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-96">
-                <Loader2 className="w-10 h-10 animate-spin text-brand-600" />
+                <Loader2 className="w-10 h-10 animate-spin text-primary-600" />
             </div>
         );
     }
 
     return (
-        <div className="space-y-8 pb-20">
+        <div className="space-y-8">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-extrabold text-foreground dark:text-white tracking-tight flex items-center gap-2">
-                        <BellIcon className="w-8 h-8 text-brand-600" />
+                        <BellIcon className="w-8 h-8 text-primary-600" />
                         Notification Center
                     </h1>
                     <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground mt-1">
@@ -182,7 +182,7 @@ const AdminNotifications = () => {
 
             {notifications.length === 0 ? (
                 <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border dark:border-gray-700 p-20 text-center shadow-sm">
-                    <CheckCircleIcon className="w-16 h-16 mx-auto mb-4 text-emerald-100 dark:text-emerald-900/20" />
+                    <CheckCircleIcon className="w-16 h-16 mx-auto mb-4 text-blue-100 dark:text-blue-900/20" />
                     <h3 className="text-base font-black text-foreground dark:text-white uppercase tracking-widest">Inbox Zero</h3>
                     <p className="text-xs font-medium text-muted-foreground mt-1">Everything is up to date. Check back later for new requests.</p>
                 </div>
@@ -199,7 +199,7 @@ const AdminNotifications = () => {
                                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                                     <div className="flex-1 flex gap-4">
                                         <div className={`p-3 rounded-2xl border shrink-0 ${n.type === 'upgrade_request' ? 'bg-primary-50 text-primary border-primary-100 dark:bg-primary-900/20 dark:border-primary-800' :
-                                            'bg-brand-50 text-brand-600 border-brand-100 dark:bg-brand-900/20 dark:border-brand-800'
+                                            'bg-primary-50 text-primary-600 border-primary-100 dark:bg-primary-900/20 dark:border-primary-800'
                                             }`}>
                                             {n.type === 'upgrade_request' ? <ArrowUpCircleIcon className="w-6 h-6" /> : <BellIcon className="w-6 h-6" />}
                                         </div>
@@ -208,9 +208,9 @@ const AdminNotifications = () => {
                                                 <h3 className="text-sm font-black text-foreground dark:text-white uppercase tracking-tight">
                                                     {n.type === 'upgrade_request' ? 'Plan Upgrade Request' : n.type.replace('_', ' ').toUpperCase()}
                                                 </h3>
-                                                <span className={`px-2 py-0.5 rounded-lg text-[11px] font-black uppercase tracking-widest border ${n.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:border-amber-800' :
-                                                    n.status === 'resolved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800' :
-                                                        'bg-secondary text-muted-foreground border-border dark:bg-foreground dark:border-gray-700'
+                                                <span className={`px-2 py-0.5 rounded-xl text-xs font-black uppercase tracking-widest border ${n.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:border-amber-800' :
+                                                    n.status === 'resolved' ? 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-900/20 dark:border-blue-800' :
+                                                        'bg-blue-50 text-muted-foreground border-border dark:bg-foreground dark:border-gray-700'
                                                     }`}>
                                                     {n.status}
                                                 </span>
@@ -221,9 +221,9 @@ const AdminNotifications = () => {
                                                     {n.user?.email || 'Unknown Source'}
                                                 </p>
                                                 {n.content?.requested_plan && (
-                                                    <div className="inline-flex items-center gap-2 px-2 py-1 bg-secondary dark:bg-foreground border border-border dark:border-gray-700 rounded-lg text-xs font-black text-muted-foreground uppercase tracking-widest mt-2">
-                                                        <UserPlusIcon className="w-3.5 h-3.5 text-brand-600" />
-                                                        Route: <span className="text-brand-600">{n.content.requested_plan}</span>
+                                                    <div className="inline-flex items-center gap-2 px-2 py-1 bg-blue-50 dark:bg-foreground border border-border dark:border-gray-700 rounded-xl text-xs font-black text-muted-foreground uppercase tracking-widest mt-2">
+                                                        <UserPlusIcon className="w-3.5 h-3.5 text-primary-600" />
+                                                        Route: <span className="text-primary-600">{n.content.requested_plan}</span>
                                                     </div>
                                                 )}
                                             </div>
@@ -233,7 +233,7 @@ const AdminNotifications = () => {
                                     <div className="flex items-center gap-3 self-end md:self-center">
                                         <div className="text-right mr-4 hidden md:block">
                                             <div className="text-xs font-black text-muted-foreground uppercase tracking-widest">Received</div>
-                                            <div className="text-[11px] font-bold text-foreground dark:text-white">
+                                            <div className="text-xs font-bold text-foreground dark:text-white">
                                                 {new Date(n.created_at).toLocaleString('he-IL', { dateStyle: 'short', timeStyle: 'short' })}
                                             </div>
                                         </div>
@@ -250,15 +250,15 @@ const AdminNotifications = () => {
                                                 <button
                                                     onClick={() => handleApprove(n)}
                                                     disabled={!!processingId}
-                                                    className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all font-bold shadow-lg shadow-emerald-600/20 disabled:opacity-50"
+                                                    className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-bold shadow-lg shadow-blue-600/20 disabled:opacity-50"
                                                 >
                                                     {processingId === n.id ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircleIcon className="w-5 h-5" />}
                                                     <span className="hidden sm:inline">Approve Update</span>
                                                 </button>
                                             </div>
                                         ) : (
-                                            <div className="flex items-center gap-2 px-4 py-2 bg-secondary dark:bg-foreground text-muted-foreground rounded-xl border border-border dark:border-gray-700 text-xs font-black uppercase tracking-widest">
-                                                <CheckCircleIcon className="w-4 h-4 text-emerald-500" />
+                                            <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-foreground text-muted-foreground rounded-xl border border-border dark:border-gray-700 text-xs font-black uppercase tracking-widest">
+                                                <CheckCircleIcon className="w-4 h-4 text-blue-500" />
                                                 Process Complete
                                             </div>
                                         )}

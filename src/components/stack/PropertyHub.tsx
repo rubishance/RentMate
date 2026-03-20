@@ -18,20 +18,16 @@ import {
   FileText,
   Car,
   ShieldCheck,
-  ArrowUpDown,
   Upload,
   Loader2,
   Calendar,
   ArrowLeft,
   Wind,
   Package,
+  FileSignature,
+  Users,
+  ChevronDown,
 } from "lucide-react";
-import {
-  BalconyIcon,
-  SafeRoomIcon,
-  StorageIcon,
-  CarIcon,
-} from "../icons/NavIcons";
 import {
   Menu,
   MenuButton,
@@ -43,9 +39,9 @@ import {
 import { PropertyDocumentsHub } from "../properties/PropertyDocumentsHub";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
-import { SnapshotTab } from "./tabs/SnapshotTab";
 import { ContractsTab } from "./tabs/ContractsTab";
 import { WalletTab } from "./tabs/WalletTab";
+
 import { PropertyTypeSelect } from "../common/PropertyTypeSelect";
 import { GoogleAutocomplete } from "../common/GoogleAutocomplete";
 import { useStack } from "../../contexts/StackContext";
@@ -60,19 +56,26 @@ import { propertyService } from "../../services/property.service";
 import { CompressionService } from "../../services/compression.service";
 import { getPropertyPlaceholder } from "../../lib/property-placeholders";
 import { useSignedUrl } from "../../hooks/useSignedUrl";
+import { ProtocolWizard } from "../properties/ProtocolWizard";
+import { GlobalDocumentUploadModal } from "../modals/GlobalDocumentUploadModal";
+import { BalconyIcon, SafeRoomIcon, StorageIcon, CarIcon, BedIcon, RulerIcon } from "../../components/icons/NavIcons";
 
 interface PropertyHubProps {
   propertyId: string;
   property: Property;
+  initialTab?: TabType;
+  initialAction?: string;
   onDelete?: () => void;
   onSave?: () => void;
 }
 
-type TabType = "contracts" | "wallet" | "files";
+type TabType = "contracts" | "wallet" | "files" | "candidates";
 
 export function PropertyHub({
   property: initialProperty,
   propertyId,
+  initialTab,
+  initialAction,
   onDelete,
   onSave,
 }: PropertyHubProps) {
@@ -80,7 +83,9 @@ export function PropertyHub({
   const navigate = useNavigate();
   const { push, pop } = useStack();
   const { set, clear } = useDataCache();
-  const [activeTab, setActiveTab] = useState<TabType>("contracts");
+  const [activeTab, setActiveTab] = useState<TabType>(
+    initialTab || "contracts",
+  );
   const [property, setProperty] = useState(initialProperty);
   const [isEditing, setIsEditing] = useState(false);
   const [editedProperty, setEditedProperty] =
@@ -126,6 +131,8 @@ export function PropertyHub({
   // Modals
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isAddPaymentModalOpen, setIsAddPaymentModalOpen] = useState(false);
+  const [isProtocolWizardOpen, setIsProtocolWizardOpen] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeContract, setActiveContract] = useState<Contract | null>(null);
@@ -280,7 +287,7 @@ export function PropertyHub({
       if (
         window.confirm(
           t("unsavedChangesWarning") ||
-          "You have unsaved changes. Are you sure you want to exit without saving?",
+            "You have unsaved changes. Are you sure you want to exit without saving?",
         )
       ) {
         navigate(-1);
@@ -295,7 +302,7 @@ export function PropertyHub({
       if (
         window.confirm(
           t("unsavedChangesWarning") ||
-          "You have unsaved changes. Are you sure you want to exit without saving?",
+            "You have unsaved changes. Are you sure you want to exit without saving?",
         )
       ) {
         setIsEditing(false);
@@ -433,7 +440,7 @@ export function PropertyHub({
   return (
     <div className="flex flex-col h-full bg-background dark:bg-black">
       {/* 1. Compact Header (No Image) */}
-      <div className="relative shrink-0 pt-4 md:pt-6 px-3 md:px-6 z-10 pb-4">
+      <div className="relative shrink-0 pt-4 md:pt-6 px-5 md:px-6 z-10 pb-4">
         <div className="flex justify-between items-start gap-3 md:gap-4">
           {/* Back Button */}
           <Button
@@ -451,7 +458,7 @@ export function PropertyHub({
 
           <div className="flex-1 min-w-0">
             {/* Status Badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 backdrop-blur-3xl rounded-full border border-white/10 text-[11px] font-black uppercase tracking-widest mb-2 shadow-xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 backdrop-blur-3xl rounded-full border border-white/10 text-sm font-black uppercase tracking-widest mb-2 shadow-xl">
               {(() => {
                 const today = new Date().toISOString().split("T")[0];
                 const hasActiveContract = (property as any).contracts?.some(
@@ -483,7 +490,7 @@ export function PropertyHub({
             {marketTrend && (
               <div
                 className={cn(
-                  "inline-flex items-center gap-1.5 px-3 py-1 ml-2 backdrop-blur-md rounded-full border text-xs font-black uppercase tracking-widest mb-2 transition-all",
+                  "inline-flex items-center gap-1.5 px-3 py-1 ml-2 backdrop-blur-md rounded-full border text-sm font-black uppercase tracking-widest mb-2 transition-all",
                   marketTrend.annualGrowth > 0
                     ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600"
                     : "bg-red-500/10 border-red-500/20 text-red-600",
@@ -503,7 +510,7 @@ export function PropertyHub({
             {isEditing ? (
               <div className="space-y-6 bg-white/5 dark:bg-neutral-900/60 p-4 md:p-6 rounded-[2rem] border border-white/10 backdrop-blur-3xl shadow-xl">
                 <div className="p-4 rounded-[1.5rem] bg-background dark:bg-neutral-800/30 border border-slate-100 dark:border-neutral-700">
-                  <label className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block mb-3 text-center">
+                  <label className="text-sm font-black uppercase tracking-[0.2em] text-muted-foreground block mb-3 text-center">
                     {t("selectCategory") || t("propertyType")}
                   </label>
                   <PropertyTypeSelect
@@ -542,7 +549,8 @@ export function PropertyHub({
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 rounded-[1.5rem] bg-background dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
-                    <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">
+                    <label className="flex items-center gap-2 text-sm font-black uppercase tracking-wider text-muted-foreground mb-2">
+                      <BedIcon className="w-4 h-4 shrink-0" />
                       {t("rooms")}
                     </label>
                     <Input
@@ -560,7 +568,8 @@ export function PropertyHub({
                     />
                   </div>
                   <div className="p-4 rounded-[1.5rem] bg-background dark:bg-neutral-800/50 border border-slate-100 dark:border-neutral-700">
-                    <label className="text-xs font-black uppercase tracking-wider text-muted-foreground block mb-2">
+                    <label className="flex items-center gap-2 text-sm font-black uppercase tracking-wider text-muted-foreground mb-2">
+                      <RulerIcon className="w-4 h-4 shrink-0" />
                       {t("sqm")}
                     </label>
                     <Input
@@ -581,7 +590,7 @@ export function PropertyHub({
                 <div className="space-y-4">
                   <div className="flex items-center justify-between px-2">
                     <div className="h-px flex-1 bg-muted/50 dark:bg-neutral-800" />
-                    <span className="mx-4 text-xs font-black uppercase tracking-[0.3em] text-muted-foreground opacity-80">
+                    <span className="mx-4 text-sm font-black uppercase tracking-[0.3em] text-muted-foreground opacity-80">
                       {t("amenities")}
                     </span>
                     <div className="h-px flex-1 bg-muted/50 dark:bg-neutral-800" />
@@ -591,22 +600,22 @@ export function PropertyHub({
                       {
                         key: "has_balcony",
                         label: t("balcony"),
-                        icon: <Wind className="w-5 h-5" />,
+                        icon: <BalconyIcon className="w-5 h-5" />,
                       },
                       {
                         key: "has_safe_room",
                         label: t("safeRoom"),
-                        icon: <ShieldCheck className="w-5 h-5" />,
+                        icon: <SafeRoomIcon className="w-5 h-5" />,
                       },
                       {
                         key: "has_parking",
                         label: t("parking"),
-                        icon: <Car className="w-5 h-5" />,
+                        icon: <CarIcon className="w-5 h-5" />,
                       },
                       {
                         key: "has_storage",
                         label: t("storage"),
-                        icon: <Package className="w-5 h-5" />,
+                        icon: <StorageIcon className="w-5 h-5" />,
                       },
                     ].map((feat) => {
                       const isActive =
@@ -630,7 +639,7 @@ export function PropertyHub({
                         >
                           <div
                             className={cn(
-                              "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300",
+                              "w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-300",
                               isActive
                                 ? "bg-white/20 text-white"
                                 : "bg-white dark:bg-neutral-800 text-indigo-600 shadow-sm",
@@ -642,10 +651,8 @@ export function PropertyHub({
                           </div>
                           <span
                             className={cn(
-                              "font-bold text-[11px] transition-colors py-0.5",
-                              isActive
-                                ? "text-white"
-                                : "text-muted-foreground",
+                              "font-bold text-sm transition-colors py-0.5",
+                              isActive ? "text-white" : "text-muted-foreground",
                             )}
                           >
                             {feat.label}
@@ -663,7 +670,7 @@ export function PropertyHub({
 
                 <div className="pt-4 space-y-4 border-t border-slate-100 dark:border-neutral-800">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+                    <label className="text-sm font-black uppercase tracking-widest text-muted-foreground">
                       {t("propertyImage")}
                     </label>
                     <div className="flex p-1 bg-muted/50 dark:bg-neutral-800 rounded-xl">
@@ -672,7 +679,7 @@ export function PropertyHub({
                         variant="ghost"
                         size="sm"
                         className={cn(
-                          "px-3 py-1 text-xs font-black uppercase h-7",
+                          "px-3 py-1 text-sm font-black uppercase h-7",
                           uploadMode === "upload"
                             ? "bg-white dark:bg-neutral-700 text-primary shadow-sm hover:bg-white dark:hover:bg-neutral-700"
                             : "text-muted-foreground hover:bg-transparent hover:text-foreground",
@@ -688,7 +695,7 @@ export function PropertyHub({
                         variant="ghost"
                         size="sm"
                         className={cn(
-                          "px-3 py-1 text-xs font-black uppercase h-7",
+                          "px-3 py-1 text-sm font-black uppercase h-7",
                           uploadMode === "url"
                             ? "bg-white dark:bg-neutral-700 text-primary shadow-sm hover:bg-white dark:hover:bg-neutral-700"
                             : "text-muted-foreground hover:bg-transparent hover:text-foreground",
@@ -702,7 +709,7 @@ export function PropertyHub({
                   {uploadMode === "url" && isFetchingMap && (
                     <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-200 dark:border-neutral-800 rounded-2xl bg-background/50 dark:bg-neutral-800/20 h-24">
                       <Loader2 className="w-5 h-5 text-primary animate-spin mb-1" />
-                      <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">
+                      <span className="text-sm font-black uppercase tracking-widest text-muted-foreground animate-pulse">
                         {t("fetchingStreetView") || "Fetching..."}
                       </span>
                     </div>
@@ -723,7 +730,7 @@ export function PropertyHub({
                         ) : (
                           <Upload className="w-5 h-5 text-slate-300 group-hover:text-primary transition-all" />
                         )}
-                        <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+                        <span className="text-sm font-black uppercase tracking-widest text-muted-foreground">
                           {isUploading
                             ? t("uploading_ellipsis") || "Uploading..."
                             : t("clickToUploadPicture") || "Click to upload"}
@@ -743,9 +750,7 @@ export function PropertyHub({
                         <img
                           src={
                             signedImageUrl ||
-                            getPropertyPlaceholder(
-                              editedProperty.property_type,
-                            )
+                            getPropertyPlaceholder(editedProperty.property_type)
                           }
                           alt="Preview"
                           className="w-full h-full object-cover"
@@ -778,89 +783,74 @@ export function PropertyHub({
                     )}
                   </AnimatePresence>
                   {imageError && (
-                    <p className="text-xs text-destructive font-bold">
+                    <p className="text-sm text-destructive font-bold">
                       {imageError}
                     </p>
                   )}
                 </div>
               </div>
             ) : (
-              <div className="flex flex-col gap-1">
-                <div className="flex flex-col md:flex-row md:items-end gap-2 md:gap-4">
-                  <h1 className="text-3xl font-black tracking-tighter text-foreground leading-none">
+              <div className="flex flex-col gap-3 max-w-full">
+                <div className="flex flex-col gap-1 min-w-0">
+                  <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-foreground leading-tight md:leading-none break-words line-clamp-2">
                     {property.address}
                   </h1>
-                  {/* Snapshot Info - Inline with Address on Desktop, Below on Mobile */}
-                  <div className="flex items-center gap-3 text-sm font-bold text-muted-foreground bg-white/50 dark:bg-neutral-900/50 px-3 py-1 rounded-lg border border-slate-100 dark:border-neutral-800 backdrop-blur-sm self-start md:self-auto md:mb-1">
-                    {property.rooms ? (
-                      <div className="flex items-center gap-1.5">
-                        <span>{property.rooms}</span>
-                        <span className="text-xs uppercase tracking-wider opacity-70">
-                          {t("rooms")}
-                        </span>
-                      </div>
-                    ) : null}
-                    {property.rooms && property.size_sqm ? (
-                      <div className="w-[1px] h-3 bg-current opacity-20" />
-                    ) : null}
-                    {property.size_sqm ? (
-                      <div className="flex items-center gap-1.5">
-                        <span>{property.size_sqm}</span>
-                        <span className="text-xs uppercase tracking-wider opacity-70">
-                          {t("sqm")}
-                        </span>
-                      </div>
-                    ) : null}
-                    {(property.has_parking ||
-                      property.has_storage ||
-                      property.has_balcony ||
-                      property.has_safe_room) && (
+                  <div className="flex flex-wrap items-center gap-2 text-sm">
+                    <p className="text-muted-foreground font-medium truncate">
+                      {property.city}
+                    </p>
+                    {activeContract?.option_periods &&
+                      activeContract.option_periods.length > 0 && (
                         <>
-                          {(property.rooms || property.size_sqm) && (
-                            <div className="w-[1px] h-3 bg-current opacity-20" />
-                          )}
-                          <div className="flex items-center gap-2">
-                            {property.has_balcony && (
-                              <Wind className="w-3.5 h-3.5" />
-                            )}
-                            {property.has_safe_room && (
-                              <ShieldCheck className="w-3.5 h-3.5" />
-                            )}
-                            {property.has_parking && (
-                              <Car className="w-3.5 h-3.5" />
-                            )}
-                            {property.has_storage && (
-                              <Package className="w-3.5 h-3.5" />
-                            )}
+                          <div className="w-1 h-1 rounded-full bg-slate-300 mx-1 shrink-0" />
+                          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full shrink-0">
+                            <Calendar className="w-3 h-3 text-emerald-500" />
+                            <span className="text-sm font-bold text-emerald-600 uppercase tracking-tight">
+                              {lang === "he" ? "כולל אופציה" : "Incl. Option"}:{" "}
+                              {activeContract.option_periods[0].length}{" "}
+                              {activeContract.option_periods[0].unit === "years"
+                                ? lang === "he"
+                                  ? "שנים"
+                                  : "yrs"
+                                : lang === "he"
+                                  ? "חודשים"
+                                  : "mos"}
+                            </span>
                           </div>
                         </>
                       )}
                   </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="text-muted-foreground font-medium">
-                    {property.city}
-                  </p>
-                  {activeContract?.option_periods &&
-                    activeContract.option_periods.length > 0 && (
-                      <>
-                        <div className="w-1 h-1 rounded-full bg-slate-300 mx-1" />
-                        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
-                          <Calendar className="w-3 h-3 text-emerald-500" />
-                          <span className="text-xs font-bold text-emerald-600 uppercase tracking-tight">
-                            {lang === "he" ? "כולל אופציה" : "Incl. Option"}:{" "}
-                            {activeContract.option_periods[0].length}{" "}
-                            {activeContract.option_periods[0].unit === "years"
-                              ? lang === "he"
-                                ? "שנים"
-                                : "yrs"
-                              : lang === "he"
-                                ? "חודשים"
-                                : "mos"}
-                          </span>
-                        </div>
-                      </>
-                    )}
+
+                <div className="flex items-center gap-2.5 w-full">
+                  {property.size_sqm ? (
+                    <div className="flex items-center justify-center flex-1 gap-2 bg-white/60 dark:bg-neutral-900/60 py-2 sm:py-1.5 rounded-2xl border border-white/20 dark:border-neutral-800 shadow-sm backdrop-blur-md h-16 sm:h-14">
+                      <span className="text-xl font-black text-foreground leading-none tracking-tight">
+                        {property.size_sqm}
+                      </span>
+                      <RulerIcon className="w-7 h-7 text-muted-foreground shrink-0" />
+                    </div>
+                  ) : null}
+                  {property.rooms ? (
+                    <div className="flex items-center justify-center flex-1 gap-2 bg-white/60 dark:bg-neutral-900/60 py-2 sm:py-1.5 rounded-2xl border border-white/20 dark:border-neutral-800 shadow-sm backdrop-blur-md h-16 sm:h-14">
+                      <span className="text-xl font-black text-foreground leading-none tracking-tight">
+                        {property.rooms}
+                      </span>
+                      <BedIcon className="w-7 h-7 text-muted-foreground shrink-0" />
+                    </div>
+                  ) : null}
+                  <div className="flex items-center justify-center flex-1 bg-white/60 dark:bg-neutral-900/60 py-2 sm:py-1.5 rounded-2xl border border-white/20 dark:border-neutral-800 shadow-sm backdrop-blur-md text-muted-foreground h-16 sm:h-14">
+                    <StorageIcon className={cn("w-7 h-7", !property.has_storage && "opacity-20")} />
+                  </div>
+                  <div className="flex items-center justify-center flex-1 bg-white/60 dark:bg-neutral-900/60 py-2 sm:py-1.5 rounded-2xl border border-white/20 dark:border-neutral-800 shadow-sm backdrop-blur-md text-muted-foreground h-16 sm:h-14">
+                    <SafeRoomIcon className={cn("w-7 h-7", !property.has_safe_room && "opacity-20")} />
+                  </div>
+                  <div className="flex items-center justify-center flex-1 bg-white/60 dark:bg-neutral-900/60 py-2 sm:py-1.5 rounded-2xl border border-white/20 dark:border-neutral-800 shadow-sm backdrop-blur-md text-muted-foreground h-16 sm:h-14">
+                    <CarIcon className={cn("w-7 h-7", !property.has_parking && "opacity-20")} />
+                  </div>
+                  <div className="flex items-center justify-center flex-1 bg-white/60 dark:bg-neutral-900/60 py-2 sm:py-1.5 rounded-2xl border border-white/20 dark:border-neutral-800 shadow-sm backdrop-blur-md text-muted-foreground h-16 sm:h-14">
+                    <BalconyIcon className={cn("w-7 h-7", !property.has_balcony && "opacity-20")} />
+                  </div>
                 </div>
               </div>
             )}
@@ -914,11 +904,39 @@ export function PropertyHub({
                         <MenuItem>
                           {({ focus }) => (
                             <Button
+                              onClick={() => {
+                                setIsMoreMenuOpen(false);
+                                setIsProtocolWizardOpen(true);
+                              }}
+                              variant="ghost"
+                              leftIcon={
+                                <FileSignature className="w-4 h-4 text-brand-500" />
+                              }
+                              className={cn(
+                                "justify-start w-full px-4 py-2.5 text-base font-semibold rounded-2xl transition-all h-auto",
+                                focus
+                                  ? "bg-brand-50/10 text-brand-600 dark:text-brand-400"
+                                  : "text-foreground",
+                              )}
+                            >
+                              {lang === "he"
+                                ? "הפקת פרוטוקול מסירה"
+                                : "Generate Protocol"}
+                            </Button>
+                          )}
+                        </MenuItem>
+                        <MenuItem>
+                          {({ focus }) => (
+                            <Button
                               onClick={() => setIsAddPaymentModalOpen(true)}
                               variant="ghost"
-                              leftIcon={<span className="font-sans font-bold flex items-center justify-center text-brand-500 text-base leading-none w-4 h-4">₪</span>}
+                              leftIcon={
+                                <span className="font-sans font-bold flex items-center justify-center text-brand-500 text-base leading-none w-4 h-4">
+                                  ₪
+                                </span>
+                              }
                               className={cn(
-                                "w-full justify-start gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all h-auto",
+                                "w-full justify-start gap-3 px-4 py-3 rounded-2xl text-base font-bold transition-all h-auto",
                                 focus
                                   ? "bg-background dark:bg-neutral-800 text-foreground"
                                   : "text-muted-foreground",
@@ -936,9 +954,11 @@ export function PropertyHub({
                             <Button
                               onClick={handleAddContract}
                               variant="ghost"
-                              leftIcon={<FilePlus className="w-4 h-4 text-emerald-500" />}
+                              leftIcon={
+                                <FilePlus className="w-4 h-4 text-emerald-500" />
+                              }
                               className={cn(
-                                "w-full justify-start gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all h-auto",
+                                "w-full justify-start gap-3 px-4 py-3 rounded-2xl text-base font-bold transition-all h-auto",
                                 focus
                                   ? "bg-background dark:bg-neutral-800 text-foreground"
                                   : "text-muted-foreground",
@@ -954,9 +974,11 @@ export function PropertyHub({
                             <Button
                               onClick={handleEdit}
                               variant="ghost"
-                              leftIcon={<Edit2 className="w-4 h-4 text-brand-500" />}
+                              leftIcon={
+                                <Edit2 className="w-4 h-4 text-brand-500" />
+                              }
                               className={cn(
-                                "w-full justify-start gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all h-auto",
+                                "w-full justify-start gap-3 px-4 py-3 rounded-2xl text-base font-bold transition-all h-auto",
                                 focus
                                   ? "bg-background dark:bg-neutral-800 text-foreground"
                                   : "text-muted-foreground",
@@ -974,7 +996,7 @@ export function PropertyHub({
                               variant="ghost"
                               leftIcon={<Trash2 className="w-4 h-4" />}
                               className={cn(
-                                "w-full justify-start gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all h-auto",
+                                "w-full justify-start gap-3 px-4 py-3 rounded-2xl text-base font-bold transition-all h-auto",
                                 focus
                                   ? "bg-red-50 dark:bg-red-900/20 text-red-600"
                                   : "text-destructive",
@@ -995,8 +1017,39 @@ export function PropertyHub({
       </div>
 
       {/* 2. Tabs Navigation */}
-      <div className="px-3 md:px-6 relative z-20">
-        <div className="flex gap-1.5 bg-white/5 backdrop-blur-3xl p-1.5 rounded-[1.8rem] border border-white/10 shadow-xl overflow-x-auto no-scrollbar">
+      <div className="px-5 md:px-6 relative z-20 w-full">
+        {/* Mobile Dropdown / Select for Tabs */}
+        <div className="block md:hidden relative w-full mb-1">
+          <select
+            value={activeTab}
+            onChange={(e) => setActiveTab(e.target.value as any)}
+            className={cn(
+              "w-full h-14 pl-5 pr-12 bg-white/70 dark:bg-neutral-900/70 backdrop-blur-3xl rounded-[1.3rem] border border-white/20 dark:border-neutral-800 shadow-sm text-sm font-black uppercase tracking-[0.1em] text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all",
+              lang === "he" ? "pr-5 pl-12" : "",
+            )}
+          >
+            {tabs.map((tab) => (
+              <option
+                key={tab.id}
+                value={tab.id}
+                className="text-foreground bg-background font-sans font-bold"
+              >
+                {tab.label}
+              </option>
+            ))}
+          </select>
+          <div
+            className={cn(
+              "absolute top-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center w-8 h-8 rounded-xl bg-black/5 dark:bg-white/5",
+              lang === "he" ? "left-3" : "right-3",
+            )}
+          >
+            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+          </div>
+        </div>
+
+        {/* Desktop Sliding Tabs */}
+        <div className="hidden md:flex gap-1.5 bg-white/5 backdrop-blur-3xl p-1.5 rounded-[1.8rem] border border-white/10 shadow-xl overflow-x-auto no-scrollbar max-w-full">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -1017,7 +1070,7 @@ export function PropertyHub({
                     isActive ? "scale-110" : "group-hover:scale-110",
                   )}
                 />
-                <span className="text-xs font-black uppercase tracking-[0.2em]">
+                <span className="text-sm font-black uppercase tracking-[0.2em]">
                   {tab.label}
                 </span>
                 {isActive && (
@@ -1034,8 +1087,8 @@ export function PropertyHub({
       </div>
 
       {/* 3. Tab Content */}
-      <div className="flex-1 overflow-y-auto min-h-0 pt-6 pb-20">
-        <div className="px-3 md:px-6 h-full">
+      <div className="flex-1 overflow-y-auto min-h-0 pt-6 pb-6">
+        <div className="px-5 md:px-6 h-full">
           {activeTab === "contracts" && (
             <ContractsTab
               key={refreshKey}
@@ -1090,6 +1143,25 @@ export function PropertyHub({
           )?.id,
         }}
       />
-    </div >
+
+      <GlobalDocumentUploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onSuccess={() => {
+          setIsUploadModalOpen(false);
+          // Invalidate cache and trigger re-fetch to show new document
+          clear();
+          setRefreshKey((prev) => prev + 1);
+        }}
+        properties={[property]}
+        initialPropertyId={property.id}
+      />
+
+      <ProtocolWizard
+        isOpen={isProtocolWizardOpen}
+        onClose={() => setIsProtocolWizardOpen(false)}
+        propertyId={propertyId}
+      />
+    </div>
   );
 }

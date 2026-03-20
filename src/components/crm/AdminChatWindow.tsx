@@ -118,7 +118,7 @@ export function AdminChatWindow({ userId, adminId, onClose }: AdminChatWindowPro
                     >
                         End Chat
                     </button>
-                    <button onClick={onClose} className="p-1 hover:bg-brand-500 rounded-lg transition-colors">
+                    <button onClick={onClose} className="p-1 hover:bg-brand-500 rounded-xl transition-colors">
                         <XMarkIcon className="w-5 h-5" />
                     </button>
                 </div>
@@ -148,7 +148,7 @@ export function AdminChatWindow({ userId, adminId, onClose }: AdminChatWindowPro
                                     }`}>
                                     {msg.content}
                                 </div>
-                                <span className="text-[11px] text-muted-foreground mt-1 px-1">
+                                <span className="text-xs text-muted-foreground mt-1 px-1">
                                     {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </span>
                             </div>
@@ -172,7 +172,7 @@ export function AdminChatWindow({ userId, adminId, onClose }: AdminChatWindowPro
                     <button
                         type="submit"
                         disabled={!newMessage.trim() || sending}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-brand-600 text-white rounded-lg hover:bg-brand-700 disabled:opacity-50 disabled:bg-gray-400 transition-all"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-brand-600 text-white rounded-xl hover:bg-brand-700 disabled:opacity-50 disabled:bg-gray-400 transition-all"
                     >
                         {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <PaperAirplaneIcon className="w-4 h-4" />}
                     </button>

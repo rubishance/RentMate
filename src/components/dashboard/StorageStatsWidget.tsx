@@ -31,7 +31,7 @@ export function StorageStatsWidget({ counts, loading }: StorageStatsWidgetProps)
                         {[1, 2, 3].map(i => (
                             <div key={i} className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-xl bg-muted/50 dark:bg-neutral-800 animate-pulse"></div>
-                                <div className="h-4 w-full bg-muted/50 dark:bg-neutral-800 rounded-lg animate-pulse"></div>
+                                <div className="h-4 w-full bg-muted/50 dark:bg-neutral-800 rounded-xl animate-pulse"></div>
                             </div>
                         ))}
                     </div>
@@ -77,10 +77,10 @@ export function StorageStatsWidget({ counts, loading }: StorageStatsWidgetProps)
         <Card hoverEffect glass className="h-full flex flex-col justify-between group/widget">
             <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                 <div className="flex items-center gap-2">
-                    <Storage className="w-4 h-4 text-muted-foreground dashed-border p-0.5 box-content rounded-md" />
+                    <Storage className="w-4 h-4 text-muted-foreground dashed-border p-0.5 box-content rounded-lg" />
                     <CardTitle className="text-sm uppercase tracking-widest text-muted-foreground">{t('financeBills')}</CardTitle>
                 </div>
-                <div className="px-2.5 py-1 bg-muted rounded-md border border-border">
+                <div className="px-2.5 py-1 bg-muted rounded-lg border border-border">
                     <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                         {totalFiles} {t('items')}
                     </span>
@@ -92,11 +92,11 @@ export function StorageStatsWidget({ counts, loading }: StorageStatsWidgetProps)
                     {categories.map((cat) => (
                         <div
                             key={cat.id}
-                            className="group cursor-pointer flex items-center justify-between p-2 rounded-lg hover:bg-background dark:hover:bg-white/5 transition-colors border border-transparent hover:border-border/50"
+                            className="group cursor-pointer flex items-center justify-between p-2 rounded-xl hover:bg-background dark:hover:bg-white/5 transition-colors border border-transparent hover:border-border/50"
                             onClick={() => navigate(`/properties?tab=${cat.id === 'utilities' ? 'utility' : cat.id}`)}
                         >
                             <div className="flex items-center gap-3">
-                                <div className={`p-2 rounded-lg transition-all group-hover:scale-105 ${cat.bg}`}>
+                                <div className={`p-2 rounded-xl transition-all group-hover:scale-105 ${cat.bg}`}>
                                     <cat.icon className="w-4 h-4" />
                                 </div>
                                 <span className="text-sm font-medium text-foreground transition-colors">

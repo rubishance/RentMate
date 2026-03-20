@@ -289,13 +289,13 @@ const SignupFormView = ({
                                 className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary bg-background border-border rounded focus:ring-primary ring-offset-background focus:ring-2 md:mt-0.5 cursor-pointer transition-colors"
                             />
                         </div>
-                        <label htmlFor="termsConsentSignup" className="text-[11px] md:text-xs font-medium text-muted-foreground cursor-pointer">
+                        <label htmlFor="termsConsentSignup" className="text-xs md:text-xs font-medium text-muted-foreground cursor-pointer">
                             {t('agreeToTerms').split('{terms}').map((part: string, i: number) => {
                                 if (i === 1) {
                                     const [p1, p2] = part.split('{privacy}');
                                     return <React.Fragment key={i}>
-                                        <Link to="/legal/terms" className="font-semibold text-primary hover:text-primary/80 transition-colors underline underline-offset-4 decoration-primary/30 hover:decoration-primary/80 text-[11px] md:text-xs" target="_blank">{t('termsOfService')}</Link>{p1}
-                                        <Link to="/legal/privacy" className="font-semibold text-primary hover:text-primary/80 transition-colors underline underline-offset-4 decoration-primary/30 hover:decoration-primary/80 text-[11px] md:text-xs" target="_blank">{t('privacyPolicy')}</Link>{p2}
+                                        <Link to="/legal/terms" className="font-semibold text-primary hover:text-primary/80 transition-colors underline underline-offset-4 decoration-primary/30 hover:decoration-primary/80 text-xs md:text-xs" target="_blank">{t('termsOfService')}</Link>{p1}
+                                        <Link to="/legal/privacy" className="font-semibold text-primary hover:text-primary/80 transition-colors underline underline-offset-4 decoration-primary/30 hover:decoration-primary/80 text-xs md:text-xs" target="_blank">{t('privacyPolicy')}</Link>{p2}
                                     </React.Fragment>;
                                 }
                                 return part;
@@ -312,7 +312,7 @@ const SignupFormView = ({
                                 className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary bg-background border-border rounded focus:ring-primary ring-offset-background focus:ring-2 md:mt-0.5 cursor-pointer transition-colors"
                             />
                         </div>
-                        <label htmlFor="marketingConsentSignup" className="text-[11px] md:text-xs font-medium text-muted-foreground cursor-pointer">
+                        <label htmlFor="marketingConsentSignup" className="text-xs md:text-xs font-medium text-muted-foreground cursor-pointer">
                             <span>{t('marketingConsent')}</span>
                         </label>
                     </div>

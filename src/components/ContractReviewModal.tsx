@@ -7,7 +7,7 @@ const FIELD_TRANSLATIONS: Record<string, string> = {
     tenantName: 'שם הדייר', tenantId: 'תעודת זהות', tenantEmail: 'אימייל', tenantPhone: 'טלפון',
     rent: 'שכר דירה', currency: 'מטבע', paymentFrequency: 'תדירות תשלום', paymentDay: 'יום תשלום', paymentMethod: 'שיטת תשלום',
     signingDate: 'תאריך חתימה', startDate: 'תאריך התחלה', endDate: 'תאריך סיום', optionPeriod: 'תקופת אופציה',
-    linkageType: 'סוג הצמדה', baseIndexDate: 'תאריך מדד בסיס', baseIndexValue: 'מדד בסיס',
+    linkageType: 'מדד להצמיד', baseIndexDate: 'תאריך מדד בסיס', baseIndexValue: 'מדד בסיס',
     securityDeposit: 'סכום פיקדון', guarantees: 'ערבויות',
     parking: 'חניה', furniture: 'ריהוט',
     guarantorsInfo: 'פרטי ערבים', specialClauses: 'סעיפים מיוחדים'
@@ -105,7 +105,7 @@ export function ContractReviewModal({ extractedFields, contractFileUrl, onConfir
                                     <div
                                         key={index}
                                         ref={(el) => { fieldRefs.current[index] = el; }}
-                                        className={`border rounded-lg p-3 lg:p-4 transition-all ${field.userConfirmed
+                                        className={`border rounded-xl p-3 lg:p-4 transition-all ${field.userConfirmed
                                             ? 'border-green-300 bg-green-50 dark:bg-green-900/10 shadow-sm'
                                             : 'border-gray-300 dark:border-gray-600 bg-white shadow-sm hover:shadow-md'
                                             }`}
@@ -140,7 +140,7 @@ export function ContractReviewModal({ extractedFields, contractFileUrl, onConfir
                                                     value={field.extractedValue?.toString() || ''}
                                                     onChange={(e) => handleFieldChange(index, e.target.value)}
                                                     rows={4}
-                                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm w-full"
+                                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-sm w-full"
                                                 />
                                             ) : (
                                                 <input
@@ -148,13 +148,13 @@ export function ContractReviewModal({ extractedFields, contractFileUrl, onConfir
                                                     type="text"
                                                     value={field.extractedValue?.toString() || ''}
                                                     onChange={(e) => handleFieldChange(index, e.target.value)}
-                                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
                                                 />
                                             )}
                                             {!field.userConfirmed && (
                                                 <button
                                                     onClick={() => handleConfirmField(index)}
-                                                    className="px-3 py-2 bg-secondary text-white rounded-lg hover:bg-green-700 flex items-center gap-1 text-sm font-medium transition-colors shrink-0"
+                                                    className="px-3 py-2 bg-secondary text-white rounded-xl hover:bg-green-700 flex items-center gap-1 text-sm font-medium transition-colors shrink-0"
                                                 >
                                                     <Check className="w-4 h-4" />
                                                     <span className="hidden sm:inline">אישור</span>
@@ -187,7 +187,7 @@ export function ContractReviewModal({ extractedFields, contractFileUrl, onConfir
 
                     {/* Left Side (Desktop) / Bottom (Mobile): Contract Preview */}
                     <div className="w-full lg:w-1/2 bg-gray-800 flex flex-col relative overflow-hidden h-[40vh] lg:h-auto shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.3)] z-10 border-t border-gray-700">
-                        <div className="absolute top-2 right-2 lg:top-4 lg:right-4 z-10 flex gap-2 bg-black/50 p-1 rounded-lg backdrop-blur-sm">
+                        <div className="absolute top-2 right-2 lg:top-4 lg:right-4 z-10 flex gap-2 bg-black/50 p-1 rounded-xl backdrop-blur-sm">
                             <button onClick={() => setZoom(z => Math.min(z + 0.2, 3))} className="p-1.5 lg:p-2 text-white hover:bg-white/20 rounded">
                                 <ZoomIn size={16} className="lg:w-5 lg:h-5" />
                             </button>
@@ -219,7 +219,7 @@ export function ContractReviewModal({ extractedFields, contractFileUrl, onConfir
                 <div className="hidden lg:flex p-4 border-t border-border dark:border-gray-700 gap-4 bg-white dark:bg-gray-800 shrink-0 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
                     <button
                         onClick={onCancel}
-                        className="px-4 lg:px-6 py-2 border border-gray-300 rounded-lg hover:bg-secondary flex items-center justify-center gap-2 text-gray-700 font-medium whitespace-nowrap"
+                        className="px-4 lg:px-6 py-2 border border-gray-300 rounded-xl hover:bg-secondary flex items-center justify-center gap-2 text-gray-700 font-medium whitespace-nowrap"
                     >
                         <X className="w-4 h-4" />
                         <span className="hidden sm:inline">ביטול</span>
@@ -227,7 +227,7 @@ export function ContractReviewModal({ extractedFields, contractFileUrl, onConfir
                     <button
                         onClick={handleConfirmAll}
                         disabled={!allConfirmed}
-                        className="flex-1 px-4 lg:px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-bold shadow-lg shadow-blue-900/20 transition-all"
+                        className="flex-1 px-4 lg:px-6 py-2 bg-primary text-white rounded-xl hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-bold shadow-lg shadow-blue-900/20 transition-all"
                     >
                         <Check className="w-5 h-5" />
                         {allConfirmed ? 'שמור והמשך' : `אשר את כל השדות (${fields.filter(f => f.userConfirmed).length}/${fields.length})`}

@@ -53,7 +53,7 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
                         {isActive && (
                             <motion.div
                                 layoutId={`segmented-control-active-${uniqueId}`}
-                                className="absolute inset-0 bg-primary rounded-lg shadow-minimal -z-10"
+                                className="absolute inset-0 bg-primary rounded-xl shadow-minimal -z-10"
                                 transition={{ type: "spring", stiffness: 500, damping: 30, duration: 0.2 }}
                             />
                         )}

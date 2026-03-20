@@ -6,6 +6,7 @@ import { UtilityBillsManager } from './UtilityBillsManager';
 import { MaintenanceRecords } from './MaintenanceRecords';
 import { MiscDocuments } from './MiscDocuments';
 import { ChecksManager } from './ChecksManager';
+import { ProtocolsManager } from './ProtocolsManager';
 import { useTranslation } from '../../hooks/useTranslation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../../lib/utils';
@@ -19,7 +20,7 @@ interface PropertyDocumentsHubProps {
     autoOpenUpload?: boolean;
 }
 
-type TabType = 'menu' | 'media' | 'utilities' | 'maintenance' | 'documents' | 'checks';
+type TabType = 'menu' | 'media' | 'utilities' | 'maintenance' | 'documents' | 'checks' | 'protocols';
 
 export function PropertyDocumentsHub({ property, readOnly, requestedTab, autoOpenUpload }: PropertyDocumentsHubProps) {
     const { t, lang } = useTranslation();
@@ -38,7 +39,7 @@ export function PropertyDocumentsHub({ property, readOnly, requestedTab, autoOpe
             icon: ImageIcon,
             color: 'text-indigo-600 dark:text-indigo-400',
             bg: 'bg-indigo-50 dark:bg-indigo-900/20',
-            description: lang === 'he' ? 'תמונות וסרטונים ערוכים' : 'Photos and videos'
+            description: lang === 'he' ? 'מדיה' : 'Photos and videos'
         },
         {
             id: 'utilities' as TabType,
@@ -64,6 +65,14 @@ export function PropertyDocumentsHub({ property, readOnly, requestedTab, autoOpe
             bg: 'bg-pink-50 dark:bg-pink-900/20',
             description: lang === 'he' ? 'צילומי צ\'קים לשכירות וביטחון' : 'Rent & security checks'
         },
+        {
+            id: 'protocols' as TabType,
+            label: (lang === 'he' ? 'פרוטוקולי מסירה' : 'Protocols & Handovers'),
+            icon: FolderIcon,
+            color: 'text-violet-600 dark:text-violet-400',
+            bg: 'bg-violet-50 dark:bg-violet-900/20',
+            description: lang === 'he' ? 'פרוטוקולים חתומים ומאושרים' : 'Signed delivery protocols'
+        },
     ];
 
     const renderContent = () => {
@@ -72,6 +81,7 @@ export function PropertyDocumentsHub({ property, readOnly, requestedTab, autoOpe
             case 'utilities': return <UtilityBillsManager property={property} readOnly={readOnly} />;
             case 'documents': return <MiscDocuments property={property} readOnly={readOnly} autoOpenUpload={autoOpenUpload} />;
             case 'checks': return <ChecksManager property={property} readOnly={readOnly} />;
+            case 'protocols': return <ProtocolsManager property={property} readOnly={readOnly} />;
             default: return null;
         }
     };
@@ -119,7 +129,7 @@ export function PropertyDocumentsHub({ property, readOnly, requestedTab, autoOpe
                                         <GlassCard className="h-full p-4 flex flex-col gap-3 transition-all duration-300 hover:shadow-lg hover:border-primary/20 hover:bg-white/40 dark:hover:bg-neutral-800/60 active:scale-[0.98]">
                                             <div className="flex items-start justify-between">
                                                 <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 duration-300", category.bg)}>
-                                                    <Icon className={cn("w-5 h-5", category.color)} />
+
                                                 </div>
                                                 <ChevronLeft className={cn("w-4 h-4 text-muted-foreground/50 transition-transform duration-300 group-hover:-translate-x-1", lang === 'he' ? "" : "rotate-180")} />
                                             </div>
@@ -128,7 +138,7 @@ export function PropertyDocumentsHub({ property, readOnly, requestedTab, autoOpe
                                                 <h3 className="font-black text-sm text-foreground tracking-tight leading-tight">
                                                     {category.label}
                                                 </h3>
-                                                <p className="text-[11px] text-muted-foreground line-clamp-2 leading-tight opacity-90">
+                                                <p className="text-xs text-muted-foreground line-clamp-2 leading-tight opacity-90">
                                                     {category.description}
                                                 </p>
                                             </div>
@@ -166,7 +176,7 @@ export function PropertyDocumentsHub({ property, readOnly, requestedTab, autoOpe
                                     const ActiveIcon = category.icon;
                                     return (
                                         <>
-                                            <div className={cn("w-6 h-6 rounded-md flex items-center justify-center", category.bg)}>
+                                            <div className={cn("w-6 h-6 rounded-lg flex items-center justify-center", category.bg)}>
                                                 <ActiveIcon className={cn("w-3.5 h-3.5", category.color)} />
                                             </div>
                                             <span className="font-bold text-sm tracking-tight">{category.label}</span>
@@ -177,7 +187,7 @@ export function PropertyDocumentsHub({ property, readOnly, requestedTab, autoOpe
                         </div>
 
                         {/* Content Area */}
-                        <div className="flex-1 overflow-y-auto min-h-0 bg-background/50 dark:bg-neutral-900/30 rounded-3xl border border-slate-200/40 dark:border-neutral-800/40 p-1 mb-4">
+                        <div className="flex-1 overflow-y-auto min-h-0 bg-background/50 dark:bg-neutral-900/30 rounded-3xl border border-slate-200/40 dark:border-neutral-800/40 p-1 mb-4 pb-24">
                             {renderContent()}
                         </div>
                     </motion.div>

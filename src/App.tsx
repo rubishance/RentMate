@@ -16,12 +16,15 @@ const PageLoader = () => (
   </div>
 );
 
+import Landing from './pages/Landing';
 import { WelcomeLanding } from './pages/WelcomeLanding';
 import { ComingSoon } from './pages/ComingSoon';
 import WelcomeLandingStitch from './pages/WelcomeLandingStitch';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { Properties } from './pages/Properties';
+const GlobalDocuments = lazy(() => import('./pages/GlobalDocuments'));
+const SubscriptionSelection = lazy(() => import('./pages/SubscriptionSelection'));
 const Signup = lazy(() => import('./pages/Signup').then(module => ({ default: module.Signup })));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword').then(module => ({ default: module.ForgotPassword })));
 const PropertyDetails = lazy(() => import('./pages/PropertyDetails'));
@@ -29,7 +32,6 @@ const PropertyDetails = lazy(() => import('./pages/PropertyDetails'));
 
 import { Payments } from './pages/Payments';
 import { Calculator } from './pages/Calculator';
-import { Analytics } from './pages/Analytics';
 const MaintenanceTracker = lazy(() => import('./pages/MaintenanceTracker').then(module => ({ default: module.MaintenanceTracker })));
 const ContractDetails = lazy(() => import('./pages/ContractDetails'));
 const SharedCalculation = lazy(() => import('./pages/SharedCalculation').then(module => ({ default: module.SharedCalculation })));
@@ -40,6 +42,8 @@ const AccessibilityStatement = lazy(() => import('./pages/AccessibilityStatement
 const KnowledgeBase = lazy(() => import('./pages/KnowledgeBase').then(module => ({ default: module.KnowledgeBase })));
 const ArticleViewer = lazy(() => import('./pages/ArticleViewer').then(module => ({ default: module.ArticleViewer })));
 const Contact = lazy(() => import('./pages/Contact'));
+const TenantApplication = lazy(() => import('./pages/public/TenantApplication'));
+const SignProtocol = lazy(() => import('./pages/public/SignProtocol'));
 import { CPICalculatorPage } from './pages/tools/CPICalculatorPage';
 const AccountSuspended = lazy(() => import('./pages/AccountSuspended'));
 const Unsubscribe = lazy(() => import('./pages/Unsubscribe').then(module => ({ default: module.Unsubscribe })));
@@ -110,7 +114,8 @@ const RootLayout = () => {
 
   const hideChatPaths = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/accessibility', '/legal/privacy', '/legal/terms'];
   const isAdminRoute = location.pathname.startsWith('/admin');
-  const shouldHideChat = hideChatPaths.includes(location.pathname) || isWizard || isAdminRoute;
+  const isPublicRoute = location.pathname.startsWith('/apply/') || location.pathname.startsWith('/sign/');
+  const shouldHideChat = hideChatPaths.includes(location.pathname) || isWizard || isAdminRoute || isPublicRoute;
 
   return (
     <>
@@ -124,6 +129,8 @@ const RootLayout = () => {
   );
 };
 
+
+
 // Define the static router configuration for guaranteed sync (V1.4.5)
 const router = createBrowserRouter([
   {
@@ -132,7 +139,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <ComingSoon />,
+        element: <Landing />,
       },
       {
         path: "/welcome-new",
@@ -173,6 +180,14 @@ const router = createBrowserRouter([
       {
         path: "/system-maintenance",
         element: <MaintenancePage />,
+      },
+      {
+        path: "/apply/:token",
+        element: <TenantApplication />,
+      },
+      {
+        path: "/sign/:token",
+        element: <SignProtocol />,
       },
       {
         path: "/account-suspended",
@@ -248,6 +263,14 @@ const router = createBrowserRouter([
                 element: <MaintenanceTracker />,
               },
               {
+                path: "/documents",
+                element: <GlobalDocuments />,
+              },
+              {
+                path: "/subscription",
+                element: <SubscriptionSelection />,
+              },
+              {
                 path: "/assets",
                 element: <Navigate to="/properties" replace />,
               },
@@ -266,10 +289,6 @@ const router = createBrowserRouter([
               {
                 path: "/settings",
                 element: <Settings />,
-              },
-              {
-                path: "/analytics",
-                element: <Analytics />,
               },
               {
                 path: "/tools",

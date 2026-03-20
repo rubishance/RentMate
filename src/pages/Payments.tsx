@@ -344,11 +344,11 @@ export function Payments() {
             }}
             hoverEffect
             glass
-            className={cn("group p-0 rounded-[2rem] border-white/5 cursor-pointer", isActionNeeded ? "bg-rose-500/5 dark:bg-rose-500/10 border-rose-500/20" : "")}
+            className={cn("group p-0 rounded-2xl border-white/5 cursor-pointer", isActionNeeded ? "bg-destructive/5 dark:bg-destructive/10 border-destructive/20" : "")}
         >
             <CardContent className="p-4 md:p-6 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4 md:gap-6 flex-1 min-w-0">
-                    <div className={cn("w-14 h-14 md:w-16 md:h-16 rounded-2xl glass-premium flex flex-col items-center justify-center shrink-0 border border-white/10 group-hover:scale-105 transition-all duration-300", isActionNeeded ? "bg-rose-500/10 text-rose-600" : "")}>
+                    <div className={cn("w-14 h-14 md:w-16 md:h-16 rounded-2xl glass-premium flex flex-col items-center justify-center shrink-0 border border-white/10 group-hover:scale-105 transition-all duration-300", isActionNeeded ? "bg-destructive/10 text-destructive" : "")}>
                         <span className="text-2xl md:text-3xl font-black leading-none">{format(new Date(payment.due_date), 'dd')}</span>
                         <span className="text-sm md:text-base font-black uppercase tracking-widest opacity-90 mt-0.5">{format(new Date(payment.due_date), 'MMM', { locale: lang === 'he' ? he : undefined })}</span>
                     </div>
@@ -363,9 +363,9 @@ export function Payments() {
                             <span className={cn(
                                 "text-sm px-3 py-1 rounded-full uppercase font-black tracking-widest border shrink-0",
                                 payment.displayType === 'bill' ? 'bg-primary/10 text-primary border-primary/20' :
-                                    payment.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
-                                        payment.status === 'overdue' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' :
-                                            'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                                    payment.status === 'paid' ? 'bg-success/10 text-success border-success/20' :
+                                        payment.status === 'overdue' ? 'bg-destructive/10 text-destructive border-destructive/20' :
+                                            'bg-warning/10 text-warning border-warning/20'
                             )}>
                                 {payment.displayType === 'bill' ? t('bills') : t(payment.status)}
                             </span>
@@ -383,8 +383,8 @@ export function Payments() {
                     <div className="text-right">
                         <div className="flex flex-col items-end">
                             <div className="flex items-baseline gap-1 justify-end">
-                                <span className={cn("text-sm md:text-base font-black opacity-40", isActionNeeded ? "text-rose-500" : "text-foreground")}>₪</span>
-                                <span className={cn("text-2xl md:text-3xl font-black tracking-tight", isActionNeeded ? "text-rose-600" : "text-foreground")}>
+                                <span className={cn("text-sm md:text-base font-black opacity-40", isActionNeeded ? "text-destructive" : "text-foreground")}>₪</span>
+                                <span className={cn("text-2xl md:text-3xl font-black tracking-tight", isActionNeeded ? "text-destructive" : "text-foreground")}>
                                     {formatCurrency(payment.paid_amount || payment.amount)}
                                 </span>
                             </div>
@@ -402,7 +402,7 @@ export function Payments() {
                                             </span>
                                         )}
                                         {isPaid && Math.abs(diff) > 1 && (
-                                            <span className={cn("text-sm font-black leading-none mt-1", diff > 0 ? "text-emerald-500" : "text-rose-500")}>
+                                            <span className={cn("text-sm font-black leading-none mt-1", diff > 0 ? "text-success" : "text-destructive")}>
                                                 {t('diff')} {diff > 0 ? '(עודף)' : '(חסר)'}: {diff > 0 ? '+' : ''}{formatCurrency(diff)}
                                             </span>
                                         )}
@@ -421,7 +421,7 @@ export function Payments() {
                                     e.stopPropagation();
                                     handleInstaPay(payment);
                                 }}
-                                className="bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-white rounded-xl w-10 h-10 md:w-11 md:h-11 shadow-sm"
+                                className="bg-success/10 hover:bg-success text-success hover:text-white rounded-xl w-10 h-10 md:w-11 md:h-11 shadow-sm"
                                 title={t('markAsPaid')}
                             >
                                 <CheckCircle2 className="w-5 h-5" />
@@ -438,16 +438,16 @@ export function Payments() {
     );
 
     const renderTable = (paymentsList: any[]) => (
-        <div className="overflow-x-auto glass-premium rounded-[2.5rem] border border-white/5 shadow-sm bg-white/30 dark:bg-neutral-900/30">
+        <div className="overflow-x-auto glass-premium rounded-2xl border border-white/5 shadow-low bg-white/30 dark:bg-neutral-900/30">
             <table className="w-full text-left border-collapse min-w-[600px]">
                 <thead>
                     <tr className="border-b border-black/5 dark:border-white/5 bg-background0/5 text-xs uppercase font-black tracking-widest text-muted-foreground">
-                        <th className={cn("p-6", lang === 'he' ? "rounded-tr-[2.5rem]" : "rounded-tl-[2.5rem]")}>{t('date') || 'Date'}</th>
+                        <th className={cn("p-6", lang === 'he' ? "rounded-tr-2xl" : "rounded-tl-2xl")}>{t('date') || 'Date'}</th>
                         <th className="p-6">{t('tenant') || 'Tenant'}</th>
                         <th className="p-6">{t('asset') || 'Asset'}</th>
                         <th className="p-6">{t('status') || 'Status'}</th>
                         <th className="p-6">{t('method') || 'Method'}</th>
-                        <th className={cn("p-6", lang === 'he' ? "text-left rounded-tl-[2.5rem]" : "text-right rounded-tr-[2.5rem]")}>{t('amount') || 'Amount'}</th>
+                        <th className={cn("p-6", lang === 'he' ? "text-left rounded-tl-2xl" : "text-right rounded-tr-2xl")}>{t('amount') || 'Amount'}</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-black/5 dark:divide-white/5">
@@ -480,9 +480,9 @@ export function Payments() {
                                 <span className={cn(
                                     "text-xs px-2.5 py-1 rounded-full uppercase font-black tracking-widest border shrink-0 inline-block",
                                     payment.displayType === 'bill' ? 'bg-primary/10 text-primary border-primary/20' :
-                                        payment.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
-                                            payment.status === 'overdue' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' :
-                                                'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                                        payment.status === 'paid' ? 'bg-success/10 text-success border-success/20' :
+                                            payment.status === 'overdue' ? 'bg-destructive/10 text-destructive border-destructive/20' :
+                                                'bg-warning/10 text-warning border-warning/20'
                                 )}>
                                     {payment.displayType === 'bill' ? t('bills') : t(payment.status)}
                                 </span>
@@ -499,7 +499,7 @@ export function Payments() {
                                             e.stopPropagation();
                                             handleInstaPay(payment);
                                         }}
-                                        className="bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-white rounded-xl w-8 h-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        className="bg-success/10 hover:bg-success text-success hover:text-white rounded-xl w-8 h-8 opacity-0 group-hover:opacity-100 transition-opacity"
                                         title={t('markAsPaid')}
                                     >
                                         <CheckCircle2 className="w-4 h-4" />
@@ -521,7 +521,7 @@ export function Payments() {
                                                     </span>
                                                 )}
                                                 {isPaid && Math.abs(diff) > 1 && (
-                                                    <span className={cn("text-xs font-black leading-none mt-1", diff > 0 ? "text-emerald-500" : "text-rose-500")}>
+                                                    <span className={cn("text-xs font-black leading-none mt-1", diff > 0 ? "text-success" : "text-destructive")}>
                                                         {t('diff')} {diff > 0 ? '(עודף)' : '(חסר)'}: {diff > 0 ? '+' : ''}{formatCurrency(diff)}
                                                     </span>
                                                 )}
@@ -564,18 +564,18 @@ export function Payments() {
 
     if (loading) {
         return (
-            <div className="pb-40 pt-16 px-4 md:px-8 space-y-12">
+            <div className="pt-16 px-5 space-y-12">
                 <div className="space-y-4">
                     <Skeleton className="h-4 w-32 rounded-full" />
                     <Skeleton className="h-12 w-64 rounded-xl" />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <Skeleton className="h-44 rounded-[2.5rem]" />
-                    <Skeleton className="h-44 rounded-[2.5rem]" />
+                    <Skeleton className="h-44 rounded-2xl" />
+                    <Skeleton className="h-44 rounded-2xl" />
                 </div>
                 <div className="space-y-4">
                     {[1, 2, 3].map((i) => (
-                        <Skeleton key={i} className="h-24 rounded-[2rem]" />
+                        <Skeleton key={i} className="h-24 rounded-2xl" />
                     ))}
                 </div>
             </div>
@@ -583,14 +583,14 @@ export function Payments() {
     }
 
     return (
-        <div className="pb-40 pt-8 px-4 md:px-8 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300 w-full max-w-[100vw] overflow-x-hidden">
+        <div className="pt-2 md:pt-8 px-5 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300 w-full max-w-[100vw] overflow-x-hidden">
             {/* Header */}
             <div className="flex flex-col gap-6">
                 <div className="flex items-center justify-between gap-4">
                     <div className="space-y-1 overflow-hidden">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 dark:bg-primary/10 backdrop-blur-md rounded-full border border-primary/10 shadow-sm mb-1">
                             <CalendarCheck className="w-3 h-3 text-primary" />
-                            <span className="text-[11px] font-black uppercase tracking-widest text-primary dark:text-primary">
+                            <span className="text-xs font-black uppercase tracking-widest text-primary dark:text-primary">
                                 {t('financialOverview')}
                             </span>
                         </div>
@@ -686,7 +686,7 @@ export function Payments() {
                                 <div className="absolute top-[calc(100%+0.5rem)] left-0 w-full flex justify-center z-10">
                                     <button
                                         onClick={resetFilters}
-                                        className="text-[10px] font-black uppercase tracking-widest text-primary hover:opacity-80 flex items-center gap-1.5 transition-opacity whitespace-nowrap bg-background0/80 backdrop-blur-md px-2 py-1 rounded-lg border border-primary/10 shadow-sm"
+                                        className="text-xs font-black uppercase tracking-widest text-primary hover:opacity-80 flex items-center gap-1.5 transition-opacity whitespace-nowrap bg-background0/80 backdrop-blur-md px-2 py-1 rounded-xl border border-primary/10 shadow-sm"
                                     >
                                         <RotateCcw className="w-3 h-3" />
                                         {t('resetFilters') || 'Reset'}
@@ -848,7 +848,7 @@ export function Payments() {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
-                <Card glass className="rounded-[2.5rem] border shadow-sm bg-primary/5 border-primary/10">
+                <Card glass className="rounded-2xl border shadow-low bg-primary/5 border-primary/10">
                     <CardContent className="p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-8 h-full">
                         <div className="flex items-center gap-8">
                             <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center border border-white/10 shrink-0">
@@ -861,7 +861,7 @@ export function Payments() {
                                     <span className="text-4xl font-black text-foreground tracking-tighter">{stats.monthlyExpected.toLocaleString()}</span>
                                 </div>
                                 {stats.monthlyIndexSum > 0 && (
-                                    <div className="mt-2 inline-flex items-center gap-2 px-2 py-1 bg-emerald-500/10 text-emerald-500 rounded-full border border-emerald-500/20 text-[11px] font-bold uppercase tracking-wide">
+                                    <div className="mt-2 inline-flex items-center gap-2 px-2 py-1 bg-success/10 text-success rounded-full border border-success/20 text-xs font-bold uppercase tracking-wide">
                                         <ArrowUpRight className="w-3 h-3" />
                                         + ₪{stats.monthlyIndexSum.toLocaleString()} {t('indexSum')}
                                     </div>
@@ -893,20 +893,20 @@ export function Payments() {
                     </CardContent>
                 </Card>
 
-                <Card glass className="rounded-[2.5rem] border shadow-sm bg-orange-500/5 border-orange-500/10">
+                <Card glass className="rounded-2xl border shadow-low bg-warning/5 border-warning/10">
                     <CardContent className="p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-8 h-full">
                         <div className="flex items-center gap-8">
                             <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center border border-white/10 shrink-0">
                                 <Clock className="w-8 h-8 text-orange-500" />
                             </div>
                             <div>
-                                <span className="text-xs font-black uppercase tracking-[0.2em] text-orange-500/60 mb-1 block">{t('pending')}</span>
+                                <span className="text-xs font-black uppercase tracking-[0.2em] text-warning/60 mb-1 block">{t('pending')}</span>
                                 <div className="flex items-baseline gap-1">
-                                    <span className="text-sm font-black text-orange-500 opacity-40">₪</span>
-                                    <span className="text-4xl font-black text-orange-500 tracking-tighter">{stats.pending.toLocaleString()}</span>
+                                    <span className="text-sm font-black text-warning opacity-40">₪</span>
+                                    <span className="text-4xl font-black text-warning tracking-tighter">{stats.pending.toLocaleString()}</span>
                                 </div>
                                 {stats.partialDebt > 1 && (
-                                    <div className="mt-2 inline-flex items-center gap-2 px-2 py-1 bg-rose-500/10 text-rose-500 rounded-full border border-rose-500/20 text-[11px] font-bold uppercase tracking-wide">
+                                    <div className="mt-2 inline-flex items-center gap-2 px-2 py-1 bg-destructive/10 text-destructive rounded-full border border-destructive/20 text-xs font-bold uppercase tracking-wide">
                                         <ArrowUpRight className="w-3 h-3" />
                                         + ₪{Math.round(stats.partialDebt).toLocaleString()} {t('remainingDebt')} = ₪{Math.round(stats.pending + stats.partialDebt).toLocaleString()}
                                     </div>
@@ -916,8 +916,8 @@ export function Payments() {
 
                         {/* Per-contract Breakdown */}
                         {Object.values(stats.contractBreakdown).filter(c => c.isRent && c.pending > 0).length > 1 && (
-                            <div className="w-full md:w-auto md:min-w-[40%] bg-orange-500/5 rounded-2xl p-4 border border-orange-500/10">
-                                <div className="text-xs font-black uppercase tracking-widest text-orange-500/60 mb-3">{t('contractBreakdown') || 'Breakdown'}</div>
+                            <div className="w-full md:w-auto md:min-w-[40%] bg-warning/5 rounded-2xl p-4 border border-warning/10">
+                                <div className="text-xs font-black uppercase tracking-widest text-warning/60 mb-3">{t('contractBreakdown') || 'Breakdown'}</div>
                                 <div className="space-y-2">
                                     {Object.values(stats.contractBreakdown)
                                         .filter(c => c.isRent && c.pending > 0)
@@ -963,10 +963,10 @@ export function Payments() {
                         {actionNeededPayments.length > 0 && (
                             <div className="space-y-4 relative">
                                 <div className="flex items-center gap-3 px-2">
-                                    <div className="w-8 h-8 rounded-full bg-rose-500/10 flex items-center justify-center">
-                                        <AlertCircle className="w-4 h-4 text-rose-500" />
+                                    <div className="w-8 h-8 rounded-full bg-destructive/10 flex items-center justify-center">
+                                        <AlertCircle className="w-4 h-4 text-destructive" />
                                     </div>
-                                    <h2 className="text-xl font-black text-rose-500 tracking-tight">{t('actionNeeded') || 'Action Needed'}</h2>
+                                    <h2 className="text-xl font-black text-destructive tracking-tight">{t('actionNeeded') || 'Action Needed'}</h2>
                                 </div>
                                 {viewStyle === 'table' ? renderTable(actionNeededPayments) : actionNeededPayments.map(p => renderPaymentCard(p, true))}
                             </div>
@@ -976,8 +976,8 @@ export function Payments() {
                             <div className="space-y-4 relative pb-4">
                                 {actionNeededPayments.length > 0 && (
                                     <div className="flex items-center gap-3 px-2 pt-4">
-                                        <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                                            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                                        <div className="w-8 h-8 rounded-full bg-success/10 flex items-center justify-center">
+                                            <CheckCircle2 className="w-4 h-4 text-success" />
                                         </div>
                                         <h2 className="text-xl font-black text-foreground tracking-tight">{t('upcomingAndPaid') || 'Upcoming & Paid'}</h2>
                                     </div>

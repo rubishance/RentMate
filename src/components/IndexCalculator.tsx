@@ -207,7 +207,7 @@ export function IndexCalculator() {
                     <select
                         value={indexType}
                         onChange={(e) => setIndexType(e.target.value as any)}
-                        className="w-full px-4 py-3 bg-secondary dark:bg-neutral-800 border-2 border-transparent focus:border-black dark:focus:border-white rounded-[1.25rem] text-sm font-bold outline-none appearance-none transition-all"
+                        className="w-full px-4 py-3 bg-slate-50 dark:bg-neutral-800 border-2 border-transparent focus:border-black dark:focus:border-white rounded-[1.25rem] text-sm font-bold outline-none appearance-none transition-all"
                     >
                         <option value="cpi">{t('cpi')}</option>
                         <option value="housing">{t('housingServices')}</option>
@@ -320,7 +320,7 @@ export function IndexCalculator() {
                     </div>
 
                     {/* Detailed Formula Display handled by Service */}
-                    <div className="bg-secondary/20 p-3 rounded-lg text-xs font-mono text-muted-foreground overflow-x-auto whitespace-nowrap flex items-center justify-between">
+                    <div className="bg-secondary/20 p-3 rounded-xl text-xs font-mono text-muted-foreground overflow-x-auto whitespace-nowrap flex items-center justify-between">
                         <span>{calculatedResult.formula}</span>
                         <Button
                             variant="ghost"

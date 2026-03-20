@@ -12,7 +12,7 @@ export default function ContractDetails() {
     }
 
     return (
-        <div className="pb-24 pt-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="pb-4 pt-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* ContractHub will handle data fetching and display.
                  We just provide the context. */}
             <ContractHub

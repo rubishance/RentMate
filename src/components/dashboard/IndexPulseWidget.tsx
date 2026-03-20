@@ -5,7 +5,7 @@ import { getLatestIndex, getIndexValue } from '../../services/index-data.service
 import { format, subMonths } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../../lib/utils';
-import { Activity, TrendingUp, TrendingDown, Minus, Clock, ArrowRight, Settings2, Check, X, Plus, Trash2 } from 'lucide-react';
+import { Activity, TrendingUp, TrendingDown, Minus, Clock, ArrowRight, Settings2, Check, X, Plus, Trash2, ChevronDown } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { DatePicker } from '../ui/DatePicker';
@@ -30,24 +30,36 @@ interface IndexPulse {
     method: 'known' | 'base';
 }
 
+export interface IndexPulseSettings {
+    trackedIndices?: TrackedIndex[];
+}
+
 interface IndexPulseWidgetProps {
-    settings?: {
-        trackedIndices?: TrackedIndex[];
-        displayedIndices?: string[]; // Legacy Support
-        baseDates?: Record<string, string>; // Legacy Support
-    };
-    onUpdateSettings: (settings: any) => void;
+    settings?: IndexPulseSettings;
+    onUpdateSettings?: (settings: IndexPulseSettings) => void;
+    isExpanded?: boolean;
+    onToggleExpand?: () => void;
 }
 
 const ALL_TYPES = ['cpi', 'housing'] as const;
 
-export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidgetProps) {
+export function IndexPulseWidget({ settings, onUpdateSettings, isExpanded: externalIsExpanded, onToggleExpand }: IndexPulseWidgetProps) {
     const { t, lang } = useTranslation();
     const navigate = useNavigate();
     const [pulses, setPulses] = useState<IndexPulse[]>([]);
     const [baseIndexes, setBaseIndexes] = useState<Record<string, number>>({});
     const [isLoading, setIsLoading] = useState(true);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [localIsExpanded, setLocalIsExpanded] = useState(true);
+    const isExpanded = externalIsExpanded !== undefined ? externalIsExpanded : localIsExpanded;
+    
+    const toggleExpand = () => {
+        if (onToggleExpand) {
+            onToggleExpand();
+        } else {
+            setLocalIsExpanded(!localIsExpanded);
+        }
+    };
 
     const defaultDate = useMemo(() => format(subMonths(new Date(), 1), 'yyyy-MM-dd'), []);
 
@@ -58,12 +70,14 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
         }
 
         // Migrate old settings
-        if (settings?.displayedIndices) {
-            return settings.displayedIndices.map(type => ({
+        // This part assumes `settings` might still contain legacy fields if not fully migrated
+        // If `settings` is strictly `IndexPulseSettings`, this block might need adjustment
+        if ((settings as any)?.displayedIndices) {
+            return (settings as any).displayedIndices.map((type: string) => ({
                 id: crypto.randomUUID(),
                 type: type as 'cpi' | 'housing',
                 method: 'base' as const,
-                date: settings.baseDates?.[type] ? format(new Date(settings.baseDates[type]), 'yyyy-MM-dd') : defaultDate
+                date: (settings as any).baseDates?.[type] ? format(new Date((settings as any).baseDates[type]), 'yyyy-MM-dd') : defaultDate
             }));
         }
 
@@ -103,6 +117,10 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
                         let effectiveBaseDate = tracked.date.slice(0, 7);
                         if (tracked.method === 'known') {
                             const d = new Date(tracked.date);
+                            // Always shift back 1 month because the index published this month belongs to the previous month
+                            d.setMonth(d.getMonth() - 1);
+                            
+                            // If today is the 15th or earlier, the index for the previous month hasn't been published yet
                             if (d.getDate() <= 15) {
                                 d.setMonth(d.getMonth() - 1);
                             }
@@ -142,7 +160,7 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
 
         loadData();
         return () => { mounted = false; };
-    }, [settings?.trackedIndices]);
+    }, [settings?.trackedIndices, localIndices]);
 
     const addIndex = () => {
         setLocalIndices(prev => [
@@ -187,7 +205,7 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
     }
 
     return (
-        <Card hoverEffect glass className="min-h-[300px] flex flex-col h-full group/widget relative overflow-hidden">
+        <Card hoverEffect glass className={cn("flex flex-col h-full group/widget relative overflow-hidden transition-all duration-300", isExpanded && !isSettingsOpen ? "min-h-[300px]" : "")}>
             <AnimatePresence mode="wait">
                 {!isSettingsOpen ? (
                     <motion.div
@@ -197,22 +215,44 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
                         exit={{ opacity: 0, scale: 1.02 }}
                         className="flex flex-col h-full"
                     >
-                        <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                            <div className="flex items-center gap-2">
-                                <Activity className="w-4 h-4 text-emerald-500" />
-                                <CardTitle className="text-base uppercase tracking-widest text-muted-foreground">{t('indexWatcherTitle')}</CardTitle>
-                            </div>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setIsSettingsOpen(true)}
-                                className="h-8 w-8 p-0"
-                            >
-                                <Settings2 className="w-4 h-4 text-muted-foreground" />
-                            </Button>
-                        </CardHeader>
+                        <div 
+                            className="cursor-pointer select-none group/header relative z-20"
+                            onClick={toggleExpand}
+                        >
+                            <CardHeader className="flex flex-row items-center justify-between p-4 md:p-6 pb-2 space-y-0">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-slate-100 dark:bg-neutral-800 rounded-xl shrink-0">
+                                        <Activity className="w-5 h-5 text-emerald-500" />
+                                    </div>
+                                    <CardTitle className="text-xl font-black font-heading text-primary">
+                                        {lang === 'he' ? 'מעקב מדדים' : 'Market Intelligence'}
+                                    </CardTitle>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={(e) => { e.stopPropagation(); setIsSettingsOpen(true); }}
+                                        className="h-8 w-8 p-0 group-hover/header:text-foreground text-muted-foreground/50 hover:bg-transparent transition-colors"
+                                    >
+                                        <Settings2 className="w-4 h-4 text-muted-foreground" />
+                                    </Button>
+                                    <div className="text-muted-foreground/50 group-hover/header:text-foreground transition-colors p-1">
+                                        <ChevronDown className={cn("w-5 h-5 transition-transform duration-300", isExpanded && "rotate-180")} />
+                                    </div>
+                                </div>
+                            </CardHeader>
+                        </div>
 
-                        <CardContent className="space-y-4 flex-1 pt-4">
+                        <AnimatePresence>
+                            {isExpanded && (
+                                <motion.div
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    className="overflow-hidden"
+                                >
+                                    <CardContent className="space-y-4 flex-1 pt-4 pb-6">
                             {groupedPulses.map((group) => (
                                 <motion.div
                                     key={group.type}
@@ -235,7 +275,7 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
                                     </div>
                                     <div className="space-y-3 mt-4 pt-4 border-t border-slate-200 dark:border-white/5 opacity-95 transition-opacity">
                                         {group.trackers.map(tracker => (
-                                            <div key={tracker.id} className="flex items-center justify-between bg-white dark:bg-neutral-800/50 p-3 rounded-lg border border-slate-100 dark:border-white/5">
+                                            <div key={tracker.id} className="flex items-center justify-between bg-white dark:bg-neutral-800/50 p-3 rounded-xl border border-slate-100 dark:border-white/5">
                                                 <div className="flex flex-col gap-0.5">
                                                     <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
                                                         <span className="text-foreground font-bold">
@@ -251,7 +291,7 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
                                                 </div>
 
                                                 <div className={cn(
-                                                    "flex items-center justify-end gap-1.5 text-base font-black px-2 py-1 rounded-md min-w-[80px]",
+                                                    "flex items-center justify-end gap-1.5 text-base font-black px-2 py-1 rounded-lg min-w-[80px]",
                                                     tracker.change > 0 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : tracker.change < 0 ? "bg-rose-500/10 text-rose-600 dark:text-rose-400" : "bg-slate-100 dark:bg-neutral-800 text-muted-foreground"
                                                 )}>
                                                     <div className={cn(lang === 'he' && "-scale-x-100", "flex items-center justify-center")}>
@@ -265,6 +305,9 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
                                 </motion.div>
                             ))}
                         </CardContent>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </motion.div>
                 ) : (
                     <motion.div
@@ -320,11 +363,11 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
                                                 <div className="pr-8 space-y-4">
                                                     {/* Type Select */}
                                                     <div className="space-y-1.5">
-                                                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{t('indexType') || 'INDEX TYPE'}</label>
+                                                        <label className="text-xs font-black text-muted-foreground uppercase tracking-widest">{t('indexType') || 'INDEX TYPE'}</label>
                                                         <select
                                                             value={tracked.type}
                                                             onChange={(e) => updateIndex(tracked.id, { type: e.target.value as any })}
-                                                            className="w-full bg-white dark:bg-neutral-900 border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-xs font-bold outline-none"
+                                                            className="w-full bg-white dark:bg-neutral-900 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-bold outline-none"
                                                         >
                                                             {ALL_TYPES.map(tOption => (
                                                                 <option key={tOption} value={tOption}>{t(tOption) || tOption.toUpperCase()}</option>
@@ -334,7 +377,7 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
 
                                                     {/* Method Control */}
                                                     <div className="space-y-1.5">
-                                                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{t('linkageCalculationMethod') || 'CALCULATION METHOD'}</label>
+                                                        <label className="text-xs font-black text-muted-foreground uppercase tracking-widest">{t('linkageCalculationMethod') || 'CALCULATION METHOD'}</label>
                                                         <SegmentedControl
                                                             options={[
                                                                 { label: t('knownIndex') || 'Known Index', value: 'known' },
@@ -347,7 +390,7 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
 
                                                     {/* Date Picker */}
                                                     <div className="space-y-1.5">
-                                                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{t('baseDate') || 'BASE DATE'}</label>
+                                                        <label className="text-xs font-black text-muted-foreground uppercase tracking-widest">{t('baseDate') || 'BASE DATE'}</label>
                                                         <DatePicker
                                                             value={tracked.date ? new Date(tracked.date) : new Date(defaultDate)}
                                                             onChange={(date) => updateIndex(tracked.id, { date: date ? format(date, 'yyyy-MM-dd') : defaultDate })}
@@ -376,7 +419,7 @@ export function IndexPulseWidget({ settings, onUpdateSettings }: IndexPulseWidge
                         <CardFooter className="pt-2">
                             <Button
                                 onClick={() => {
-                                    onUpdateSettings({
+                                    onUpdateSettings?.({
                                         ...settings,
                                         trackedIndices: localIndices
                                     });

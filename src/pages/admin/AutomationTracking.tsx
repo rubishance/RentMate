@@ -68,7 +68,7 @@ export default function AutomationTracking() {
     });
 
     return (
-        <div className="space-y-8 pb-20">
+        <div className="space-y-8">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-center gap-4">
@@ -80,7 +80,7 @@ export default function AutomationTracking() {
                     </button>
                     <div>
                         <h1 className="text-3xl font-extrabold text-foreground dark:text-white tracking-tight flex items-center gap-2">
-                            <Sparkles className="w-8 h-8 text-brand-600" />
+                            <Sparkles className="w-8 h-8 text-primary-600" />
                             Automation Tracking
                         </h1>
                         <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground mt-1">
@@ -104,8 +104,8 @@ export default function AutomationTracking() {
                         key={f}
                         onClick={() => setFilter(f)}
                         className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest border transition-all ${filter === f
-                            ? 'bg-brand-600 text-white border-brand-600 shadow-md shadow-brand-500/20'
-                            : 'bg-white dark:bg-gray-800 text-muted-foreground border-border hover:border-brand-500'
+                            ? 'bg-primary-600 text-white border-primary-600 shadow-md shadow-primary-500/20'
+                            : 'bg-white dark:bg-gray-800 text-muted-foreground border-border hover:border-primary-500'
                             }`}
                     >
                         {f}
@@ -121,7 +121,7 @@ export default function AutomationTracking() {
                     placeholder="Search by action, user name or email..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 bg-white dark:bg-foreground border border-border rounded-2xl text-sm font-medium focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all shadow-sm text-foreground dark:text-white"
+                    className="w-full pl-12 pr-4 py-4 bg-white dark:bg-foreground border border-border rounded-2xl text-sm font-medium focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all shadow-sm text-foreground dark:text-white"
                 />
             </div>
 
@@ -177,7 +177,7 @@ export default function AutomationTracking() {
                                         </td>
                                         <td className="px-6 py-5">
                                             <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest ${log.status === 'success'
-                                                ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800'
+                                                ? 'bg-blue-50 text-blue-600 border border-blue-100 dark:bg-blue-900/20 dark:border-blue-800'
                                                 : log.status === 'failed'
                                                     ? 'bg-rose-50 text-rose-600 border border-rose-100 dark:bg-rose-900/20 dark:border-rose-800'
                                                     : 'bg-amber-50 text-amber-600 border border-amber-100 dark:bg-amber-900/20 dark:border-amber-800'

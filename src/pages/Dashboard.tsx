@@ -7,9 +7,9 @@ import { useDataCache } from '../contexts/DataCacheContext';
 import { DashboardHero } from '../components/dashboard/DashboardHero';
 import { QuickActionFAB } from '../components/dashboard/QuickActionFAB';
 import { DEFAULT_WIDGET_LAYOUT, WidgetConfig, DashboardData, WIDGET_REGISTRY } from '../components/dashboard/WidgetRegistry';
-import { FileSearch, Plus } from 'lucide-react';
-import { ReportGenerationModal } from '../components/modals/ReportGenerationModal';
+import { Plus, Settings2 } from 'lucide-react';
 import { DashboardAddModal } from '../components/modals/DashboardAddModal';
+import { DashboardEditModal } from '../components/modals/DashboardEditModal';
 import { cn } from '../lib/utils';
 import { useSubscription } from '../hooks/useSubscription';
 import { BriefingService, FeedItem } from '../services/briefing.service';
@@ -20,6 +20,7 @@ import { SmartActionsRow } from '../components/dashboard/SmartActionsRow';
 import { Button } from '../components/ui/Button';
 import { useStack } from '../contexts/StackContext';
 import { NotificationGeneratorService } from '../services/NotificationGeneratorService';
+import { UsageOverviewWidget } from '../components/dashboard/UsageOverviewWidget';
 
 export function Dashboard() {
     const { lang, t } = useTranslation();
@@ -39,8 +40,8 @@ export function Dashboard() {
     const [counts, setCounts] = useState<{ properties: number; contracts: number; tenants: number } | null>(null);
     const [isRefetching, setIsRefetching] = useState(false);
 
-    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     const [mountId] = useState(() => Math.random().toString(36).substring(7));
 
@@ -48,12 +49,21 @@ export function Dashboard() {
     useEffect(() => {
         console.log(`[Dashboard] [${mountId}] Final Stabilization Mount`);
         if (user) {
-            const layoutKey = `dashboard_layout_${user.id}_v2`;
+            const layoutKey = `dashboard_layout_${user.id}_v3`;
             const saved = localStorage.getItem(layoutKey);
             if (saved) {
                 try {
                     const parsed = JSON.parse(saved);
-                    const validLayout = parsed.filter((w: any) => Object.keys(WIDGET_REGISTRY).includes(w.widgetId));
+                    // Filter out any invalid widgets or explicitly removed ones like usage_overview
+                    const validLayout = parsed.filter((w: any) => Object.keys(WIDGET_REGISTRY).includes(w.widgetId) && w.widgetId !== 'usage_overview');
+                    
+                    // Merge any newly added widgets that might not be in the saved layout
+                    const existingIds = new Set(validLayout.map((w: any) => w.widgetId));
+                    const missingWidgets = DEFAULT_WIDGET_LAYOUT.filter(w => !existingIds.has(w.widgetId));
+                    if (missingWidgets.length > 0) {
+                        validLayout.push(...missingWidgets);
+                    }
+                    
                     if (validLayout.length > 0) setLayout(validLayout);
                 } catch (e) { console.warn('Layout parse error', e); }
             }
@@ -176,17 +186,24 @@ export function Dashboard() {
         feedItems
     }), [authProfile, stats, storageCounts, activeContracts, feedItems]);
 
-    const handleLayoutChange = (newLayout: WidgetConfig[]) => {
-        setLayout(newLayout);
-        if (user) {
-            localStorage.setItem(`dashboard_layout_${user.id}_v2`, JSON.stringify(newLayout));
-        }
-    };
+    const handleLayoutChange = useCallback((newLayout: WidgetConfig[]) => {
+        setLayout(prev => {
+            if (user) {
+                localStorage.setItem(`dashboard_layout_${user.id}_v3`, JSON.stringify(newLayout));
+            }
+            return newLayout;
+        });
+    }, [user]);
 
-    const updateWidget = (id: string, updates: Partial<WidgetConfig>) => {
-        const newLayout = layout.map(w => w.id === id ? { ...w, ...updates } : w);
-        handleLayoutChange(newLayout);
-    };
+    const updateWidget = useCallback((id: string, updates: Partial<WidgetConfig>) => {
+        setLayout(prev => {
+            const newLayout = prev.map(w => w.id === id ? { ...w, ...updates } : w);
+            if (user) {
+                localStorage.setItem(`dashboard_layout_${user.id}_v3`, JSON.stringify(newLayout));
+            }
+            return newLayout;
+        });
+    }, [user]);
 
     const firstName = authProfile?.full_name?.split(' ')[0] || '';
 
@@ -229,17 +246,17 @@ export function Dashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-canvas text-foreground pb-32 md:pb-12 relative overflow-x-hidden transition-colors duration-500">
+        <div className="bg-canvas text-foreground relative overflow-x-hidden transition-colors duration-500">
             {/* Mobile: Top Bar Background Extension */}
             <div className="fixed top-0 left-0 right-0 h-32 bg-gradient-to-b from-canvas to-transparent z-0 pointer-events-none md:hidden" />
 
             {/* Bionic Elements */}
             <BionicWelcomeOverlay firstName={firstName} />
 
-            <div className="pb-32 pt-8 px-4 md:px-8 space-y-8 md:space-y-12 relative z-10">
+            <div className="pb-4 pt-2 md:pt-8 px-5 relative z-10">
 
                 {/* Header Area: Hero + Actions aligned with other pages */}
-                <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-6 mb-6">
                     <div className="flex items-center justify-between gap-4">
                         <div className="flex-1 overflow-hidden">
                             <DashboardHero
@@ -270,29 +287,49 @@ export function Dashboard() {
                         <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => setIsReportModalOpen(true)}
-                            className="text-xs uppercase tracking-widest font-bold bg-white/50 dark:bg-black/20 backdrop-blur-md border border-white/20 hover:bg-white/80 transition-all flex-1 sm:flex-none"
+                            onClick={() => setIsEditModalOpen(true)}
+                            className="text-xs uppercase tracking-widest font-bold bg-white/50 dark:bg-black/20 backdrop-blur-md border border-white/20 hover:bg-white/80 transition-all sm:flex-none p-2 h-9 w-9 rounded-full"
+                            title={t('customize') || 'Customize'}
                         >
-                            <FileSearch className="w-3.5 h-3.5 mr-2" />
-                            {t('generateReport')}
+                            <Settings2 className="w-4 h-4" />
                         </Button>
                     </div>
                 </div>
 
-                {/* Alerts / Insights Carousel below header */}
-                <div className="mb-6 md:mb-10">
-                    <DashboardHero
-                        firstName={firstName}
-                        feedItems={feedItemsWithActions}
-                        showOnly="alerts"
-                    />
+                {/* Always display Usage Overview at the very top if relevant */}
+                <div className="w-full mb-5 md:mb-8 empty:hidden">
+                    <UsageOverviewWidget />
                 </div>
+
+                {/* Alerts / Insights Carousel below header */}
+                {feedItemsWithActions.filter(item => item.id !== 'welcome').length > 0 && (
+                    <div className="w-full mb-5 md:mb-8">
+                        <DashboardHero
+                            firstName={firstName}
+                            feedItems={feedItemsWithActions}
+                            showOnly="alerts"
+                        />
+                    </div>
+                )}
 
                 {/* Bento Stack / Grid Layout */}
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-8 auto-rows-min">
+
                     {layout
                         .filter(w => w.visible)
-                        .sort((a, b) => a.order - b.order)
+                        .sort((a, b) => {
+                            const priorityWidgets = ['digital_protocol', 'prospective_tenants', 'smart_actions'];
+                            const isAPriority = priorityWidgets.includes(a.widgetId);
+                            const isBPriority = priorityWidgets.includes(b.widgetId);
+                            
+                            if (isAPriority && !isBPriority) return -1;
+                            if (!isAPriority && isBPriority) return 1;
+                            if (isAPriority && isBPriority) {
+                                return priorityWidgets.indexOf(a.widgetId) - priorityWidgets.indexOf(b.widgetId);
+                            }
+                            
+                            return a.order - b.order;
+                        })
                         .map((widget) => {
                             const WidgetComponent = WIDGET_REGISTRY[widget.widgetId];
                             if (!WidgetComponent) return null;
@@ -307,29 +344,28 @@ export function Dashboard() {
                             return (
                                 <div
                                     key={widget.id}
-                                    className={cn(colSpan, "relative group animate-in fade-in zoom-in-95 duration-500")}
+                                    style={{ order: widget.order }}
+                                    className={cn(colSpan, "relative group animate-in fade-in zoom-in-95 duration-500 empty:hidden")}
                                     data-widget-id={widget.widgetId}
-                                >
-
-                                    {/* Render Widget */}
-                                    {WidgetComponent(
-                                        dashboardData,
-                                        widget,
-                                        (updates) => updateWidget(widget.id, updates)
-                                    )}
-                                </div>
+                                >{WidgetComponent(
+                                    dashboardData,
+                                    widget,
+                                    (updates) => updateWidget(widget.id, updates)
+                                )}</div>
                             );
                         })}
                 </div>
             </div>
 
-            <ReportGenerationModal
-                isOpen={isReportModalOpen}
-                onClose={() => setIsReportModalOpen(false)}
-            />
             <DashboardAddModal
                 isOpen={isAddModalOpen}
                 onClose={() => setIsAddModalOpen(false)}
+            />
+            <DashboardEditModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                layout={layout}
+                onSave={handleLayoutChange}
             />
         </div>
     );

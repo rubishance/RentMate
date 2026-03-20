@@ -1,5 +1,7 @@
 import { useTranslation } from '../../../hooks/useTranslation';
 import { Property } from '../../../types/database';
+import { BedIcon, RulerIcon, BalconyIcon, SafeRoomIcon, CarIcon, StorageIcon } from '../../icons/NavIcons';
+import { cn } from '../../../lib/utils';
 
 interface SnapshotTabProps {
     property: Property;
@@ -14,110 +16,120 @@ export function SnapshotTab({ property, isEditing, onPropertyChange }: SnapshotT
         <div className="p-6 space-y-6">
             <div className="bg-white dark:bg-neutral-800 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-neutral-700">
                 <h3 className="text-lg font-bold mb-4">{t('overview') || 'Overview'}</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {(isEditing || property.rooms) ? (
+                
+                {isEditing ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="p-4 bg-background dark:bg-neutral-900 rounded-xl">
                             <div className="text-xs text-muted-foreground uppercase tracking-wider">{t('rooms')}</div>
-                            {isEditing ? (
-                                <input
-                                    type="number"
-                                    step="0.5"
-                                    className="text-xl font-black bg-transparent border-b border-primary/20 w-full outline-none focus:border-primary"
-                                    value={property.rooms ?? ''}
-                                    onChange={e => onPropertyChange?.({ ...property, rooms: parseFloat(e.target.value) || 0 })}
-                                />
-                            ) : (
-                                <div className="text-xl font-black">{property.rooms}</div>
-                            )}
+                            <input
+                                type="number"
+                                step="0.5"
+                                className="text-xl font-black bg-transparent border-b border-primary/20 w-full outline-none focus:border-primary"
+                                value={property.rooms ?? ''}
+                                onChange={e => onPropertyChange?.({ ...property, rooms: parseFloat(e.target.value) || 0 })}
+                            />
                         </div>
-                    ) : null}
-                    {(isEditing || property.size_sqm) ? (
                         <div className="p-4 bg-background dark:bg-neutral-900 rounded-xl">
                             <div className="text-xs text-muted-foreground uppercase tracking-wider">{t('sqm')}</div>
-                            {isEditing ? (
-                                <input
-                                    type="number"
-                                    className="text-xl font-black bg-transparent border-b border-primary/20 w-full outline-none focus:border-primary"
-                                    value={property.size_sqm ?? ''}
-                                    onChange={e => onPropertyChange?.({ ...property, size_sqm: parseFloat(e.target.value) || 0 })}
-                                />
-                            ) : (
-                                <div className="text-xl font-black">{property.size_sqm} m²</div>
-                            )}
+                            <input
+                                type="number"
+                                className="text-xl font-black bg-transparent border-b border-primary/20 w-full outline-none focus:border-primary"
+                                value={property.size_sqm ?? ''}
+                                onChange={e => onPropertyChange?.({ ...property, size_sqm: parseFloat(e.target.value) || 0 })}
+                            />
                         </div>
-                    ) : null}
 
-                    {/* Features Grid */}
-                    <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
-                        {/* Parking */}
-                        {(isEditing || property.has_parking) ? (
+                        {/* Features Grid */}
+                        <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
+                            {/* Parking */}
                             <div className="p-4 bg-background dark:bg-neutral-900 rounded-xl flex flex-col gap-2">
                                 <div className="text-xs text-muted-foreground uppercase tracking-widest">{t('parking')}</div>
                                 <label className="flex items-center gap-3 cursor-pointer group">
                                     <input
                                         type="checkbox"
-                                        disabled={!isEditing}
                                         checked={!!property.has_parking}
                                         onChange={e => onPropertyChange?.({ ...property, has_parking: e.target.checked })}
-                                        className="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary disabled:opacity-50"
+                                        className="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary"
                                     />
                                     <span className="text-sm font-bold">{property.has_parking ? t('yes') || 'Yes' : t('no') || 'No'}</span>
                                 </label>
                             </div>
-                        ) : null}
 
-                        {/* Balcony */}
-                        {(isEditing || property.has_balcony) ? (
+                            {/* Balcony */}
                             <div className="p-4 bg-background dark:bg-neutral-900 rounded-xl flex flex-col gap-2">
                                 <div className="text-xs text-muted-foreground uppercase tracking-widest">{t('balcony')}</div>
                                 <label className="flex items-center gap-3 cursor-pointer group">
                                     <input
                                         type="checkbox"
-                                        disabled={!isEditing}
                                         checked={!!property.has_balcony}
                                         onChange={e => onPropertyChange?.({ ...property, has_balcony: e.target.checked })}
-                                        className="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary disabled:opacity-50"
+                                        className="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary"
                                     />
                                     <span className="text-sm font-bold">{property.has_balcony ? t('yes') || 'Yes' : t('no') || 'No'}</span>
                                 </label>
                             </div>
-                        ) : null}
 
-                        {/* Safe Room (Mamad) */}
-                        {(isEditing || property.has_safe_room) ? (
+                            {/* Safe Room (Mamad) */}
                             <div className="p-4 bg-background dark:bg-neutral-900 rounded-xl flex flex-col gap-2">
                                 <div className="text-xs text-muted-foreground uppercase tracking-widest">{t('safeRoom')}</div>
                                 <label className="flex items-center gap-3 cursor-pointer group">
                                     <input
                                         type="checkbox"
-                                        disabled={!isEditing}
                                         checked={!!property.has_safe_room}
                                         onChange={e => onPropertyChange?.({ ...property, has_safe_room: e.target.checked })}
-                                        className="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary disabled:opacity-50"
+                                        className="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary"
                                     />
                                     <span className="text-sm font-bold">{property.has_safe_room ? t('yes') || 'Yes' : t('no') || 'No'}</span>
                                 </label>
                             </div>
-                        ) : null}
 
-                        {/* Storage */}
-                        {(isEditing || property.has_storage) ? (
+                            {/* Storage */}
                             <div className="p-4 bg-background dark:bg-neutral-900 rounded-xl flex flex-col gap-2">
                                 <div className="text-xs text-muted-foreground uppercase tracking-widest">{t('storage')}</div>
                                 <label className="flex items-center gap-3 cursor-pointer group">
                                     <input
                                         type="checkbox"
-                                        disabled={!isEditing}
                                         checked={!!property.has_storage}
                                         onChange={e => onPropertyChange?.({ ...property, has_storage: e.target.checked })}
-                                        className="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary disabled:opacity-50"
+                                        className="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary"
                                     />
                                     <span className="text-sm font-bold">{property.has_storage ? t('yes') || 'Yes' : t('no') || 'No'}</span>
                                 </label>
                             </div>
-                        ) : null}
+                        </div>
                     </div>
-                </div>
+                ) : (
+                    <div className="flex items-center gap-2.5 w-full">
+                        {property.size_sqm ? (
+                            <div className="flex items-center justify-center flex-1 gap-2 bg-background dark:bg-neutral-900 py-2 sm:py-1.5 rounded-2xl shadow-sm h-16 sm:h-14">
+                                <span className="text-xl font-black text-foreground leading-none tracking-tight">
+                                    {property.size_sqm}
+                                </span>
+                                <RulerIcon className="w-7 h-7 text-muted-foreground shrink-0" />
+                            </div>
+                        ) : null}
+                        {property.rooms ? (
+                            <div className="flex items-center justify-center flex-1 gap-2 bg-background dark:bg-neutral-900 py-2 sm:py-1.5 rounded-2xl shadow-sm h-16 sm:h-14">
+                                <span className="text-xl font-black text-foreground leading-none tracking-tight">
+                                    {property.rooms}
+                                </span>
+                                <BedIcon className="w-7 h-7 text-muted-foreground shrink-0" />
+                            </div>
+                        ) : null}
+                        <div className="flex items-center justify-center flex-1 bg-background dark:bg-neutral-900 py-2 sm:py-1.5 rounded-2xl shadow-sm text-muted-foreground h-16 sm:h-14">
+                            <StorageIcon className={cn("w-7 h-7", !property.has_storage && "opacity-20")} />
+                        </div>
+                        <div className="flex items-center justify-center flex-1 bg-background dark:bg-neutral-900 py-2 sm:py-1.5 rounded-2xl shadow-sm text-muted-foreground h-16 sm:h-14">
+                            <SafeRoomIcon className={cn("w-7 h-7", !property.has_safe_room && "opacity-20")} />
+                        </div>
+                        <div className="flex items-center justify-center flex-1 bg-background dark:bg-neutral-900 py-2 sm:py-1.5 rounded-2xl shadow-sm text-muted-foreground h-16 sm:h-14">
+                            <CarIcon className={cn("w-7 h-7", !property.has_parking && "opacity-20")} />
+                        </div>
+                        <div className="flex items-center justify-center flex-1 bg-background dark:bg-neutral-900 py-2 sm:py-1.5 rounded-2xl shadow-sm text-muted-foreground h-16 sm:h-14">
+                            <BalconyIcon className={cn("w-7 h-7", !property.has_balcony && "opacity-20")} />
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

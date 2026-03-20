@@ -59,15 +59,16 @@ class NotificationDispatcher {
         this.voiceProvider = new VoiceProvider();
     }
 
-    async dispatch(type: 'info' | 'warning' | 'error', title: string, message: string, metadata: any = {}) {
-        const saved = await this.createInAppNotification(type, title, message, metadata);
+    async dispatch(type: 'info' | 'warning' | 'error', title: string, message: string, metadata: any = {}, deduplicateDays: number = 30) {
+        const saved = await this.createInAppNotification(type, title, message, metadata, deduplicateDays);
         if (!saved) return false;
 
         const isCritical = type === 'error' || type === 'warning';
         const forceEmail = metadata?.channels?.email === true;
-        const emailGloballyEnabled = (this.settings.globalSettings || []).find(s => s.key === 'email_notifications_enabled')?.value !== false;
+        const suppressEmail = metadata?.channels?.email === false;
+        const emailGloballyEnabled = (this.settings.globalSettings || []).find((s: any) => s.key === 'email_notifications_enabled')?.value !== false;
 
-        if ((isCritical || forceEmail) && emailGloballyEnabled && this.user.email) {
+        if (!suppressEmail && (isCritical || forceEmail) && emailGloballyEnabled && this.user.email) {
             await this.emailProvider.send(this.user.id, this.user.email, { title, body: message });
         }
 
@@ -76,23 +77,42 @@ class NotificationDispatcher {
         }
 
         // Voice Stub Logic
-        const voiceEnabled = (this.settings.globalSettings || []).find(s => s.key === 'voice_capture_enabled')?.value === true;
+        const voiceEnabled = (this.settings.globalSettings || []).find((s: any) => s.key === 'voice_capture_enabled')?.value === true;
         if (voiceEnabled) {
             await this.voiceProvider.send(this.user.id, "000-0000", { title, body: message });
         }
         return true;
     }
 
-    private async createInAppNotification(type: string, title: string, message: string, metadata: any): Promise<boolean> {
-        const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-        const { data: recent } = await this.supabase
+    private async createInAppNotification(type: string, title: string, message: string, metadata: any, deduplicateDays: number): Promise<boolean> {
+        // 1. Check all-time count for this exact event type to enforce the "Max 2" rule
+        let countQuery = this.supabase
+            .from('notifications')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', this.user.id)
+            .eq('title', title);
+        
+        if (metadata?.payment_id) countQuery = countQuery.contains('metadata', { payment_id: metadata.payment_id });
+        else if (metadata?.contract_id) countQuery = countQuery.contains('metadata', { contract_id: metadata.contract_id });
+        else if (metadata?.action) countQuery = countQuery.contains('metadata', { action: metadata.action });
+
+        const { count } = await countQuery;
+        if (count !== null && count >= 2) return false;
+
+        // 2. Check if we recently sent one within the deduplicateDays window
+        const thresholdDate = new Date(Date.now() - deduplicateDays * 24 * 60 * 60 * 1000).toISOString();
+        let recentQuery = this.supabase
             .from('notifications')
             .select('id')
             .eq('user_id', this.user.id)
             .eq('title', title)
-            .gt('created_at', dayAgo)
-            .limit(1);
+            .gt('created_at', thresholdDate);
 
+        if (metadata?.payment_id) recentQuery = recentQuery.contains('metadata', { payment_id: metadata.payment_id });
+        else if (metadata?.contract_id) recentQuery = recentQuery.contains('metadata', { contract_id: metadata.contract_id });
+        else if (metadata?.action) recentQuery = recentQuery.contains('metadata', { action: metadata.action });
+
+        const { data: recent } = await recentQuery.limit(1);
         if (recent && recent.length > 0) return false;
 
         await this.supabase.from('notifications').insert({
@@ -165,7 +185,7 @@ serve(async (req) => {
                         const body = user.lang === 'he'
                             ? `החוזה עבור ${address}${city} מסתיים בעוד ${leaseThreshold} ימים.`
                             : `Contract for ${address}${city} ends in ${leaseThreshold} days.`;
-                        await dispatcher.dispatch('warning', title, body, { contract_id: contract.id, action: 'renew' });
+                        await dispatcher.dispatch('warning', title, body, { contract_id: contract.id, action: 'renew' }, 30);
                     }
                 }
             }
@@ -190,7 +210,7 @@ serve(async (req) => {
                         const body = user.lang === 'he'
                             ? `התשלום עבור ${address}${city} לא בוצע בזמן.`
                             : `Payment for ${address}${city} is late.`;
-                        await dispatcher.dispatch('error', title, body, { payment_id: payment.id, action: 'collect' });
+                        await dispatcher.dispatch('error', title, body, { payment_id: payment.id, action: 'collect', channels: { email: false } }, 30);
                     }
                 }
             }
@@ -212,7 +232,7 @@ serve(async (req) => {
                                 const body = user.lang === 'he'
                                     ? `שכר הדירה המעודכן עבור ${address}${city} צריך להיות ${newRent} ש"ח.`
                                     : `New rent for ${address}${city} should be ${newRent} ILS.`;
-                                await dispatcher.dispatch('info', title, body, { contract_id: contract.id, action: 'update_rent', new_rent: newRent });
+                                await dispatcher.dispatch('info', title, body, { contract_id: contract.id, action: 'update_rent', new_rent: newRent }, 30);
                             }
                         }
                     }
@@ -223,12 +243,12 @@ serve(async (req) => {
             if (getSetting('auto_growth_engine_enabled') === true) {
                 const propertyCount = userProperties?.length || 0;
                 if (user.subscription_plan === 'free_forever' && propertyCount >= 3) {
-                    await dispatcher.dispatch('info', 'Upsell Opportunity: Power User', `${user.full_name} has ${propertyCount} properties on a Free plan.`, { action: 'sales_lead', is_lead: true, lead_type: 'upsell', current_properties: propertyCount, channels: { dashboard: true } });
+                    await dispatcher.dispatch('info', 'Upsell Opportunity: Power User', `${user.full_name} has ${propertyCount} properties on a Free plan.`, { action: 'sales_lead', is_lead: true, lead_type: 'upsell', current_properties: propertyCount, channels: { dashboard: true } }, 30);
                 }
 
                 const daysSinceJoined = Math.floor((today.getTime() - new Date(user.created_at).getTime()) / (1000 * 60 * 60 * 24));
                 if (daysSinceJoined > 5 && propertyCount > 0 && (!activeContracts || activeContracts.length === 0)) {
-                    await dispatcher.dispatch('warning', 'Concierge: Onboarding Stalled', `${user.full_name} added properties but no contracts.`, { action: 'sales_lead', is_lead: true, lead_type: 'onboarding_help', channels: { dashboard: true } });
+                    await dispatcher.dispatch('warning', 'Concierge: Onboarding Stalled', `${user.full_name} added properties but no contracts.`, { action: 'sales_lead', is_lead: true, lead_type: 'onboarding_help', channels: { dashboard: true } }, 7);
                 }
             }
         }
@@ -258,8 +278,7 @@ serve(async (req) => {
                         const body = user.lang === 'he'
                             ? `הדוח הפיננסי עבור ${prop.address}${city} זמין כעת.`
                             : `Your financial report for ${prop.address}${city} is now available.`;
-                        await dispatcher.dispatch('info', title, body, { action: 'view_report', property_id: prop.id, period: today.toISOString().slice(0, 7), channels: { email: true } }
-                        );
+                        await dispatcher.dispatch('info', title, body, { action: 'view_report', property_id: prop.id, period: today.toISOString().slice(0, 7), channels: { email: true } }, 25);
                     }
                 }
             }

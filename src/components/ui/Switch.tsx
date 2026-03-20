@@ -27,19 +27,19 @@ export const Switch: React.FC<SwitchProps> = ({
                 disabled={disabled}
                 onClick={() => !disabled && onChange(!checked)}
                 className={cn(
-                    "relative inline-flex h-8 w-14 shrink-0 cursor-pointer items-center rounded-full transition-colors duration-300 shadow-inner border border-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-                    checked ? "bg-primary" : "bg-muted",
+                    "relative inline-flex h-8 w-14 shrink-0 cursor-pointer items-center p-1 rounded-full transition-colors duration-300 shadow-inner border border-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                    checked ? "bg-primary justify-end" : "bg-muted justify-start",
                     disabled && "opacity-50 cursor-not-allowed"
                 )}
             >
                 <motion.span
+                    layout
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     animate={{
-                        x: checked ? 28 : 4,
                         scale: checked ? 1.05 : 0.9,
                     }}
                     initial={false}
-                    className="pointer-events-none block h-6 w-6 rounded-full bg-white ring-0"
+                    className="pointer-events-none block h-6 w-6 rounded-full bg-white ring-0 shadow-sm"
                     style={{
                         boxShadow: checked ? '0 0 15px hsl(var(--primary))' : '0 2px 4px rgba(0,0,0,0.1)'
                     }}

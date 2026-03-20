@@ -75,7 +75,7 @@ function CustomDropdown({ value, onChange, disabled, t }: PropertyTypeSelectProp
                 type="button"
                 onClick={() => !disabled && setIsOpen(!isOpen)}
                 disabled={disabled}
-                className={`w-full flex items-center justify-between px-4 py-2 border rounded-lg bg-white dark:bg-foreground transition-all ${isOpen ? 'border-primary ring-2 ring-primary/20' : 'border-border dark:border-gray-700'
+                className={`w-full flex items-center justify-between px-4 py-2 border rounded-xl bg-white dark:bg-foreground transition-all ${isOpen ? 'border-primary ring-2 ring-primary/20' : 'border-border dark:border-gray-700'
                     } ${disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:border-gray-300 dark:hover:border-gray-600'}`}
             >
                 <div className="flex items-center gap-3">
@@ -94,7 +94,7 @@ function CustomDropdown({ value, onChange, disabled, t }: PropertyTypeSelectProp
                             onClick={() => handleSelect(type.value)}
                             className={`w-full flex items-center gap-3 px-4 py-2.5 transition-colors ${value === type.value
                                 ? 'bg-primary/10 dark:bg-blue-900/20 text-blue-900 dark:text-blue-100'
-                                : 'text-gray-700 dark:text-gray-300 hover:bg-secondary dark:hover:bg-gray-700/50'
+                                : 'text-gray-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700/50'
                                 }`}
                         >
                             <PropertyIcon type={type.value} className="w-10 h-10" />

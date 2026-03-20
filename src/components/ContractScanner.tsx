@@ -415,7 +415,7 @@ export function ContractScanner({ onScanComplete, onCancel, mode = 'modal', skip
                                 <p className="text-sm text-slate-500 mb-4">
                                     PDF או תמונה (JPG, PNG)
                                 </p>
-                                <div className="inline-flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white rounded-lg text-sm font-bold shadow-lg shadow-slate-900/20 group-hover:bg-primary group-hover:shadow-blue-600/30 transition-all">
+                                <div className="inline-flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-bold shadow-lg shadow-slate-900/20 group-hover:bg-primary group-hover:shadow-blue-600/30 transition-all">
                                     <Upload className="w-4 h-4" />
                                     בחר קובץ מהמחשב
                                 </div>

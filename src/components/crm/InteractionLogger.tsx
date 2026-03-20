@@ -98,7 +98,7 @@ export function InteractionLogger({ userId, onLogSuccess, onCancel }: Interactio
                             key={t.id}
                             type="button"
                             onClick={() => setType(t.id as CRMInteractionType)}
-                            className={`flex-1 min-w-[80px] py-2 px-3 rounded-lg flex flex-col items-center gap-1 transition-all ${type === t.id
+                            className={`flex-1 min-w-[80px] py-2 px-3 rounded-xl flex flex-col items-center gap-1 transition-all ${type === t.id
                                     ? 'bg-white dark:bg-gray-800 shadow-sm text-brand-600 dark:text-brand-400 font-bold'
                                     : 'text-muted-foreground hover:bg-white/50 dark:hover:bg-gray-800/50'
                                 }`}
@@ -114,7 +114,7 @@ export function InteractionLogger({ userId, onLogSuccess, onCancel }: Interactio
                     {type === 'call' && (
                         <>
                             <div>
-                                <label className="block text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-1.5">Outcome</label>
+                                <label className="block text-xs font-black text-muted-foreground uppercase tracking-widest mb-1.5">Outcome</label>
                                 <select
                                     value={callOutcome}
                                     onChange={(e) => setCallOutcome(e.target.value)}
@@ -127,7 +127,7 @@ export function InteractionLogger({ userId, onLogSuccess, onCancel }: Interactio
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-1.5">Duration (min)</label>
+                                <label className="block text-xs font-black text-muted-foreground uppercase tracking-widest mb-1.5">Duration (min)</label>
                                 <input
                                     type="number"
                                     value={callDuration}
@@ -141,7 +141,7 @@ export function InteractionLogger({ userId, onLogSuccess, onCancel }: Interactio
 
                     {type === 'email' && (
                         <div>
-                            <label className="block text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-1.5">Direction</label>
+                            <label className="block text-xs font-black text-muted-foreground uppercase tracking-widest mb-1.5">Direction</label>
                             <select
                                 value={emailDirection}
                                 onChange={(e) => setEmailDirection(e.target.value)}
@@ -155,7 +155,7 @@ export function InteractionLogger({ userId, onLogSuccess, onCancel }: Interactio
 
                     {/* Common Fields */}
                     <div className={type === 'call' || type === 'email' ? "" : "col-span-2"}>
-                        <label className="block text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-1.5">
+                        <label className="block text-xs font-black text-muted-foreground uppercase tracking-widest mb-1.5">
                             {type === 'email' ? 'Subject' : 'Title (Optional)'}
                         </label>
                         <input
@@ -168,7 +168,7 @@ export function InteractionLogger({ userId, onLogSuccess, onCancel }: Interactio
                     </div>
 
                     <div className={type === 'call' ? "col-span-2" : ""}>
-                        <label className="block text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-1.5">Interaction Status</label>
+                        <label className="block text-xs font-black text-muted-foreground uppercase tracking-widest mb-1.5">Interaction Status</label>
                         <select
                             value={status}
                             onChange={(e) => setStatus(e.target.value as any)}
@@ -182,7 +182,7 @@ export function InteractionLogger({ userId, onLogSuccess, onCancel }: Interactio
 
                     {type !== 'call' && (
                         <div>
-                            <label className="block text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-1.5">External Link</label>
+                            <label className="block text-xs font-black text-muted-foreground uppercase tracking-widest mb-1.5">External Link</label>
                             <input
                                 type="url"
                                 value={externalLink}
@@ -195,7 +195,7 @@ export function InteractionLogger({ userId, onLogSuccess, onCancel }: Interactio
                 </div>
 
                 <div>
-                    <label className="block text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-1.5">Notes / Content</label>
+                    <label className="block text-xs font-black text-muted-foreground uppercase tracking-widest mb-1.5">Notes / Content</label>
                     <textarea
                         value={content}
                         onChange={(e) => setContent(e.target.value)}

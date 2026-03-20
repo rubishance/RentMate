@@ -64,7 +64,7 @@ export function TimelineItem({ interaction, onDelete, onReassign, onOpenBotChat 
 
             <div className="flex justify-between items-start mb-2">
                 <div className="flex items-center gap-2">
-                    <span className={`p-1.5 rounded-lg border ${getTypeStyles(interaction.type)}`}>
+                    <span className={`p-1.5 rounded-xl border ${getTypeStyles(interaction.type)}`}>
                         {getTypeIcon(interaction.type)}
                     </span>
                     <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">
@@ -82,7 +82,7 @@ export function TimelineItem({ interaction, onDelete, onReassign, onOpenBotChat 
                             href={interaction.metadata.external_link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="p-1 px-2 flex items-center gap-1.5 bg-muted hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-muted-foreground rounded-lg text-[11px] font-black uppercase tracking-widest transition-all"
+                            className="p-1 px-2 flex items-center gap-1.5 bg-muted hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-muted-foreground rounded-xl text-xs font-black uppercase tracking-widest transition-all"
                         >
                             <ArrowDownTrayIcon className="w-3 h-3 rotate-180" />
                             LINK
@@ -114,12 +114,12 @@ export function TimelineItem({ interaction, onDelete, onReassign, onOpenBotChat 
                 <h4 className="text-sm font-black text-foreground dark:text-white mb-1.5 flex items-center gap-2">
                     {interaction.title}
                     {(isBot || interaction.type === 'human_chat') && (
-                        <span className={`px-2 py-0.5 rounded text-[11px] font-black uppercase tracking-widest ${isBot ? 'bg-primary-50 text-primary' : 'bg-brand-50 text-brand-600'}`}>
+                        <span className={`px-2 py-0.5 rounded text-xs font-black uppercase tracking-widest ${isBot ? 'bg-primary-50 text-primary' : 'bg-brand-50 text-brand-600'}`}>
                             {interaction.metadata?.messages?.length || 0} msgs
                         </span>
                     )}
                     {isTicket && interaction.status && (
-                        <span className={`px-2 py-0.5 rounded text-[11px] font-black uppercase tracking-widest border ${interaction.status === 'open' ? 'bg-destructive/10 text-destructive border-red-100' :
+                        <span className={`px-2 py-0.5 rounded text-xs font-black uppercase tracking-widest border ${interaction.status === 'open' ? 'bg-destructive/10 text-destructive border-red-100' :
                             interaction.status === 'resolved' ? 'bg-secondary/10 text-secondary border-green-100' :
                                 'bg-secondary text-muted-foreground border-border'
                             }`}>
@@ -127,7 +127,7 @@ export function TimelineItem({ interaction, onDelete, onReassign, onOpenBotChat 
                         </span>
                     )}
                     {!isBot && !isTicket && interaction.type !== 'human_chat' && interaction.status && (
-                        <span className={`px-2 py-0.5 rounded text-[11px] font-black uppercase tracking-widest border ${interaction.status === 'open' ? 'bg-primary/10 text-primary border-blue-100' :
+                        <span className={`px-2 py-0.5 rounded text-xs font-black uppercase tracking-widest border ${interaction.status === 'open' ? 'bg-primary/10 text-primary border-blue-100' :
                             interaction.status === 'needs_follow_up' ? 'bg-rose-50 text-rose-600 border-rose-100' :
                                 'bg-background text-slate-600 border-slate-100'
                             }`}>
@@ -143,33 +143,33 @@ export function TimelineItem({ interaction, onDelete, onReassign, onOpenBotChat 
                 {isTicket && interaction.metadata?.ai_analysis && (
                     <div className="mt-4 pt-4 border-t border-border dark:border-gray-700/50 space-y-4">
                         <div className="flex flex-wrap gap-2">
-                            <span className={`px-2 py-0.5 rounded-lg text-[11px] font-black uppercase tracking-widest border ${interaction.metadata.ai_analysis.urgency_level === 'critical' ? 'bg-red-500 text-white border-red-600' :
+                            <span className={`px-2 py-0.5 rounded-xl text-xs font-black uppercase tracking-widest border ${interaction.metadata.ai_analysis.urgency_level === 'critical' ? 'bg-red-500 text-white border-red-600' :
                                 interaction.metadata.ai_analysis.urgency_level === 'high' ? 'bg-orange-50 text-orange-600 border-orange-200' :
                                     'bg-primary/10 text-primary border-blue-200'
                                 }`}>
                                 AI Priority: {interaction.metadata.ai_analysis.urgency_level}
                             </span>
-                            <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-lg text-[11px] font-black uppercase tracking-widest">
+                            <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-xl text-xs font-black uppercase tracking-widest">
                                 AI Category: {interaction.metadata.ai_analysis.category}
                             </span>
-                            <span className={`px-2 py-0.5 rounded-lg text-[11px] font-black uppercase tracking-widest border ${interaction.metadata.ai_analysis.sentiment_score < 0 ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                            <span className={`px-2 py-0.5 rounded-xl text-xs font-black uppercase tracking-widest border ${interaction.metadata.ai_analysis.sentiment_score < 0 ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'
                                 }`}>
                                 Sentiment: {interaction.metadata.ai_analysis.sentiment_score?.toFixed(2)}
                             </span>
                         </div>
 
                         {interaction.metadata.ai_analysis.ai_summary && (
-                            <div className="bg-white/50 dark:bg-black/20 p-3 rounded-lg border border-border dark:border-gray-700/50">
-                                <span className="text-[11px] font-black text-muted-foreground uppercase tracking-widest block mb-1">AI Summary</span>
+                            <div className="bg-white/50 dark:bg-black/20 p-3 rounded-xl border border-border dark:border-gray-700/50">
+                                <span className="text-xs font-black text-muted-foreground uppercase tracking-widest block mb-1">AI Summary</span>
                                 <p className="text-xs italic text-muted-foreground">{interaction.metadata.ai_analysis.ai_summary}</p>
                             </div>
                         )}
 
                         {interaction.metadata?.auto_reply_draft && (
                             <div className="bg-brand-50/30 dark:bg-brand-500/5 p-4 rounded-xl border border-brand-100 dark:border-brand-500/20">
-                                <span className="text-[11px] font-black text-brand-600 uppercase tracking-widest block mb-2">AI Proposed Response</span>
+                                <span className="text-xs font-black text-brand-600 uppercase tracking-widest block mb-2">AI Proposed Response</span>
                                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{interaction.metadata.auto_reply_draft}</p>
-                                <button className="px-4 py-2 bg-brand-600 text-white text-xs font-black uppercase tracking-widest rounded-lg hover:bg-brand-700 transition-all shadow-minimal">
+                                <button className="px-4 py-2 bg-brand-600 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-brand-700 transition-all shadow-minimal">
                                     Approve & Send
                                 </button>
                             </div>
@@ -186,7 +186,7 @@ export function TimelineItem({ interaction, onDelete, onReassign, onOpenBotChat 
             </div>
 
             {interaction.type === 'error_report' && (
-                <div className="mt-3 p-3 bg-red-50/50 dark:bg-red-900/10 rounded-lg border border-red-100/50 dark:border-red-900/20">
+                <div className="mt-3 p-3 bg-red-50/50 dark:bg-red-900/10 rounded-xl border border-red-100/50 dark:border-red-900/20">
                     <div className="flex items-start gap-2 text-xs text-destructive">
                         <ExclamationTriangleIcon className="w-4 h-4 mt-0.5 flex-shrink-0" />
                         <div className="space-y-1">
@@ -197,7 +197,7 @@ export function TimelineItem({ interaction, onDelete, onReassign, onOpenBotChat 
                             {interaction.metadata?.stack && (
                                 <details className="cursor-pointer">
                                     <summary className="hover:underline font-bold">View Stack Trace</summary>
-                                    <pre className="mt-2 text-[8px] overflow-x-auto p-2 bg-black/5 rounded text-muted-foreground max-h-40">
+                                    <pre className="mt-2 text-xs overflow-x-auto p-2 bg-black/5 rounded text-muted-foreground max-h-40">
                                         {interaction.metadata.stack}
                                     </pre>
                                 </details>

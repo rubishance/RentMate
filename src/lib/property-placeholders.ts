@@ -3,6 +3,7 @@ import placeholderPenthouse from '../assets/placeholder-penthouse.png';
 import placeholderGarden from '../assets/placeholder-garden.png';
 import placeholderHouse from '../assets/placeholder-house.png';
 import placeholderGeneric from '../assets/placeholder-generic.png';
+import placeholderRoof from '../assets/placeholder-roof.png';
 
 export const getPropertyPlaceholder = (type?: string | null) => {
     switch (type) {
@@ -10,6 +11,8 @@ export const getPropertyPlaceholder = (type?: string | null) => {
         case 'penthouse': return placeholderPenthouse;
         case 'garden': return placeholderGarden;
         case 'house': return placeholderHouse;
+        case 'roof': return placeholderRoof;
+        case 'roof_apartment': return placeholderRoof;
         default: return placeholderGeneric;
     }
 };

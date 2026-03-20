@@ -90,7 +90,7 @@ const AdminErrorLogs = () => {
                             <button
                                 key={f}
                                 onClick={() => setFilter(f)}
-                                className={`px-4 py-2 text-xs font-black uppercase tracking-widest rounded-lg transition-all ${filter === f
+                                className={`px-4 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${filter === f
                                     ? 'bg-white dark:bg-gray-700 text-foreground dark:text-white shadow-minimal'
                                     : 'text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300'
                                     }`}
@@ -101,7 +101,7 @@ const AdminErrorLogs = () => {
                     </div>
                     <button
                         onClick={fetchLogs}
-                        className="p-2.5 bg-white dark:bg-gray-800 border border-border dark:border-gray-700 rounded-xl hover:bg-secondary dark:hover:bg-gray-700 transition-all"
+                        className="p-2.5 bg-white dark:bg-gray-800 border border-border dark:border-gray-700 rounded-xl hover:bg-blue-50 dark:hover:bg-gray-700 transition-all"
                     >
                         <ArrowPathIcon className={`w-5 h-5 text-muted-foreground ${loading ? 'animate-spin' : ''}`} />
                     </button>
@@ -110,12 +110,12 @@ const AdminErrorLogs = () => {
 
             {loading && logs.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-gray-800/50 rounded-2xl border border-dashed border-border dark:border-gray-700">
-                    <ArrowPathIcon className="w-10 h-10 text-brand-500 animate-spin mb-4" />
+                    <ArrowPathIcon className="w-10 h-10 text-primary-500 animate-spin mb-4" />
                     <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">Loading Errors...</p>
                 </div>
             ) : logs.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-gray-800/50 rounded-2xl border border-dashed border-border dark:border-gray-700 text-center">
-                    <CheckCircleIcon className="w-12 h-12 text-secondary mb-4" />
+                    <CheckCircleIcon className="w-12 h-12 text-blue-50 mb-4" />
                     <h3 className="text-lg font-bold text-foreground dark:text-white">Clean Slate!</h3>
                     <p className="text-muted-foreground text-sm max-w-xs mx-auto">No system errors found in this category. Your application is running smoothly.</p>
                 </div>
@@ -132,8 +132,8 @@ const AdminErrorLogs = () => {
                             <div className="flex justify-between items-start gap-4">
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-3 mb-2 flex-wrap">
-                                        <span className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-widest border ${log.is_resolved
-                                            ? 'bg-secondary/10 text-secondary border-green-100 dark:bg-green-900/10 dark:text-green-400'
+                                        <span className={`px-2.5 py-1 rounded-xl text-xs font-black uppercase tracking-widest border ${log.is_resolved
+                                            ? 'bg-blue-50/10 text-blue-50 border-green-100 dark:bg-green-900/10 dark:text-green-400'
                                             : 'bg-destructive/10 text-destructive border-red-100 dark:bg-red-900/10 dark:text-red-400'
                                             }`}>
                                             {log.is_resolved ? 'Resolved' : 'Open'}
@@ -142,7 +142,7 @@ const AdminErrorLogs = () => {
                                             <ClockIcon className="w-4 h-4" />
                                             {format(new Date(log.created_at), 'dd/MM HH:mm:ss')}
                                         </span>
-                                        <span className="flex items-center gap-1.5 text-xs text-brand-500 font-medium bg-brand-50 dark:bg-brand-900/10 px-2 py-0.5 rounded-lg border border-brand-100 dark:border-brand-900/20">
+                                        <span className="flex items-center gap-1.5 text-xs text-primary-500 font-medium bg-primary-50 dark:bg-primary-900/10 px-2 py-0.5 rounded-xl border border-primary-100 dark:border-primary-900/20">
                                             <GlobeAltIcon className="w-4 h-4" />
                                             {log.environment}
                                         </span>
@@ -154,12 +154,12 @@ const AdminErrorLogs = () => {
                                     </h3>
 
                                     <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4">
-                                        <div className="flex items-center gap-1.5 bg-secondary dark:bg-gray-700/50 px-2 py-1 rounded-md">
+                                        <div className="flex items-center gap-1.5 bg-blue-50 dark:bg-gray-700/50 px-2 py-1 rounded-lg">
                                             <FunnelIcon className="w-3.5 h-3.5" />
                                             <span className="font-mono">{log.route}</span>
                                         </div>
                                         {log.user_profiles ? (
-                                            <div className="flex items-center gap-1.5 text-brand-600 dark:text-brand-400 font-bold">
+                                            <div className="flex items-center gap-1.5 text-primary-600 dark:text-primary-400 font-bold">
                                                 <UserIcon className="w-3.5 h-3.5" />
                                                 {log.user_profiles.full_name || log.user_profiles.email}
                                             </div>
@@ -176,7 +176,7 @@ const AdminErrorLogs = () => {
                                             <span className="group-open/details:rotate-90 transition-transform">▸</span>
                                             View Stack Trace
                                         </summary>
-                                        <div className="mt-3 p-4 bg-secondary dark:bg-foreground/50 rounded-xl border border-border dark:border-gray-700/50 overflow-x-auto">
+                                        <div className="mt-3 p-4 bg-blue-50 dark:bg-foreground/50 rounded-xl border border-border dark:border-gray-700/50 overflow-x-auto">
                                             <pre className="text-xs text-muted-foreground font-mono whitespace-pre-wrap leading-relaxed">
                                                 {log.stack || 'No stack trace provided'}
                                             </pre>
@@ -188,8 +188,8 @@ const AdminErrorLogs = () => {
                                     <button
                                         onClick={() => toggleResolve(log.id, log.is_resolved)}
                                         className={`p-2.5 rounded-xl border transition-all ${log.is_resolved
-                                            ? 'bg-secondary text-muted-foreground border-border hover:bg-red-50 hover:text-destructive hover:border-red-100'
-                                            : 'bg-secondary/10 text-secondary border-green-100 hover:bg-green-100 hover:shadow-minimal'
+                                            ? 'bg-blue-50 text-muted-foreground border-border hover:bg-red-50 hover:text-destructive hover:border-red-100'
+                                            : 'bg-blue-50/10 text-blue-50 border-green-100 hover:bg-green-100 hover:shadow-minimal'
                                             }`}
                                         title={log.is_resolved ? 'Reopen' : 'Resolve'}
                                     >

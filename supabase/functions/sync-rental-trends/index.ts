@@ -81,6 +81,20 @@ serve(async (req) => {
 
         if (updateError) throw updateError;
 
+        // Notify Admin of Success
+        try {
+            await adminSupabase.functions.invoke('send-admin-alert', {
+                body: {
+                    type: 'cbs_data_update',
+                    success: true,
+                    job_type: 'National Rent Index Sync',
+                    details: `Market Growth Calculated: ${growthPercent}%. Successfully updated ${updates.length} regions based on period ${previous.date} to ${latest.date}.`
+                }
+            });
+        } catch (alertError) {
+            console.error('Failed to send admin alert:', alertError);
+        }
+
         return new Response(JSON.stringify({
             success: true,
             market_growth_calculated: `${growthPercent}%`,
@@ -93,6 +107,22 @@ serve(async (req) => {
 
     } catch (error) {
         console.error('Automation Error:', error);
+
+        // Notify Admin of Failure
+        try {
+            const adminSupabase = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
+            await adminSupabase.functions.invoke('send-admin-alert', {
+                body: {
+                    type: 'cbs_data_update',
+                    success: false,
+                    job_type: 'National Rent Index Sync',
+                    details: error instanceof Error ? error.message : 'Unknown error occurred during Rent Index Sync.'
+                }
+            });
+        } catch (alertError) {
+            console.error('Failed to send admin alert:', alertError);
+        }
+
         return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 500,

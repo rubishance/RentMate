@@ -8,6 +8,7 @@ import { format, parseISO } from 'date-fns';
 import { DocumentTimeline } from './DocumentTimeline';
 import { DocumentDetailsModal } from '../modals/DocumentDetailsModal';
 import { DatePicker } from '../ui/DatePicker';
+import { useSubscription } from '../../hooks/useSubscription';
 
 interface MiscDocumentsProps {
     property: Property;
@@ -17,6 +18,8 @@ interface MiscDocumentsProps {
 
 export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocumentsProps) {
     const { t } = useTranslation();
+    const { plan } = useSubscription();
+    const isFreePlan = plan?.id === 'free' || plan?.id === 'solo';
     const [folders, setFolders] = useState<DocumentFolder[]>([]);
     const [documents, setDocuments] = useState<PropertyDocument[]>([]);
     const [loading, setLoading] = useState(true);
@@ -221,7 +224,13 @@ export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocume
             {/* Actions */}
             {!readOnly && !showUploadForm && (
                 <button
-                    onClick={() => setShowUploadForm(true)}
+                    onClick={() => {
+                        if (isFreePlan && documents.length >= 5) {
+                            alert(t('upgradeForMoreDocuments', { defaultValue: 'Please upgrade your plan to store more than 5 documents.' }));
+                            return;
+                        }
+                        setShowUploadForm(true);
+                    }}
                     className="w-full py-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-blue-400 hover:bg-primary/10/50 dark:hover:bg-blue-900/20 transition-colors flex items-center justify-center gap-2 text-muted-foreground dark:text-muted-foreground"
                 >
                     <Plus className="w-5 h-5" />
@@ -327,7 +336,7 @@ export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocume
                                     <div key={file.id} className="relative group bg-white/60 dark:bg-gray-800/60 p-4 rounded-xl border border-border dark:border-gray-700 shadow-sm hover:shadow-md transition-all">
                                         <div className="flex justify-between items-start mb-3">
                                             <div className="flex items-center gap-3 overflow-hidden">
-                                                <div className="p-2 bg-white dark:bg-gray-800 rounded-lg border border-border dark:border-gray-700 shadow-sm">
+                                                <div className="p-2 bg-white dark:bg-gray-800 rounded-xl border border-border dark:border-gray-700 shadow-sm">
                                                     <FileText className="w-5 h-5 text-indigo-500" />
                                                 </div>
                                                 <span className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate max-w-[180px]" title={file.file.name}>
@@ -336,7 +345,7 @@ export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocume
                                             </div>
                                             <button
                                                 onClick={() => removeStagedFile(file.id)}
-                                                className="opacity-0 group-hover:opacity-100 p-1.5 bg-red-50 text-destructive rounded-lg hover:bg-red-100 transition-all"
+                                                className="opacity-0 group-hover:opacity-100 p-1.5 bg-red-50 text-destructive rounded-xl hover:bg-red-100 transition-all"
                                             >
                                                 <X className="w-4 h-4" />
                                             </button>
@@ -357,7 +366,7 @@ export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocume
                                                     type="number"
                                                     value={file.amount}
                                                     onChange={(e) => updateStagedFile(file.id, 'amount', e.target.value)}
-                                                    className="w-full px-2 py-1.5 text-xs bg-white dark:bg-foreground border border-border dark:border-gray-700 rounded-lg focus:ring-1 focus:ring-indigo-500 outline-none"
+                                                    className="w-full px-2 py-1.5 text-xs bg-white dark:bg-foreground border border-border dark:border-gray-700 rounded-xl focus:ring-1 focus:ring-indigo-500 outline-none"
                                                     placeholder="0.00"
                                                 />
                                             </div>
@@ -367,7 +376,7 @@ export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocume
                                                 type="text"
                                                 value={file.description}
                                                 onChange={(e) => updateStagedFile(file.id, 'description', e.target.value)}
-                                                className="w-full px-3 py-2 text-xs bg-secondary dark:bg-foreground border border-transparent focus:bg-white focus:border-blue-200 rounded-lg transition-all outline-none"
+                                                className="w-full px-3 py-2 text-xs bg-secondary dark:bg-foreground border border-transparent focus:bg-white focus:border-blue-200 rounded-xl transition-all outline-none"
                                                 placeholder={t('addQuickNote')}
                                             />
                                         </div>

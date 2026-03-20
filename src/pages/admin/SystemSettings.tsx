@@ -257,18 +257,18 @@ export default function SystemSettings() {
     if (loading) {
         return (
             <div className="flex h-96 items-center justify-center">
-                <Loader2 className="h-10 w-10 animate-spin text-brand-600" />
+                <Loader2 className="h-10 w-10 animate-spin text-primary-600" />
             </div>
         );
     }
 
     return (
-        <div className="space-y-8 pb-20">
+        <div className="space-y-8">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-extrabold text-foreground dark:text-white tracking-tight flex items-center gap-2">
-                        <Settings className="w-8 h-8 text-brand-600" />
+                        <Settings className="w-8 h-8 text-primary-600" />
                         System Settings
                     </h1>
                     <p className="mt-1 text-sm font-medium text-muted-foreground dark:text-muted-foreground">
@@ -295,7 +295,7 @@ export default function SystemSettings() {
 
             {message && (
                 <div className={`p-4 rounded-2xl flex items-center gap-3 border animate-in fade-in slide-in-from-top-2 ${message.type === 'success'
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800'
+                    ? 'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:border-blue-800'
                     : 'bg-red-50 text-red-700 border-red-100 dark:bg-red-900/20 dark:border-red-800'
                     }`}>
                     {message.type === 'success' ? <CheckCircle2 className="w-5 h-5" /> : <AlertTriangle className="w-5 h-5" />}
@@ -308,7 +308,7 @@ export default function SystemSettings() {
                 <button
                     onClick={() => setActiveTab('notifications')}
                     className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'notifications'
-                        ? 'bg-white dark:bg-gray-800 text-brand-600 shadow-sm border border-border dark:border-gray-700'
+                        ? 'bg-white dark:bg-gray-800 text-primary-600 shadow-sm border border-border dark:border-gray-700'
                         : 'text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300'
                         }`}
                 >
@@ -320,7 +320,7 @@ export default function SystemSettings() {
                 <button
                     onClick={() => setActiveTab('general')}
                     className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'general'
-                        ? 'bg-white dark:bg-gray-800 text-brand-600 shadow-sm border border-border dark:border-gray-700'
+                        ? 'bg-white dark:bg-gray-800 text-primary-600 shadow-sm border border-border dark:border-gray-700'
                         : 'text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300'
                         }`}
                 >
@@ -332,7 +332,7 @@ export default function SystemSettings() {
                 <button
                     onClick={() => setActiveTab('autopilot')}
                     className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'autopilot'
-                        ? 'bg-white dark:bg-gray-800 text-brand-600 shadow-sm border border-border dark:border-gray-700'
+                        ? 'bg-white dark:bg-gray-800 text-primary-600 shadow-sm border border-border dark:border-gray-700'
                         : 'text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300'
                         }`}
                 >
@@ -344,7 +344,7 @@ export default function SystemSettings() {
                 <button
                     onClick={() => setActiveTab('integrations')}
                     className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'integrations'
-                        ? 'bg-white dark:bg-gray-800 text-brand-600 shadow-sm border border-border dark:border-gray-700'
+                        ? 'bg-white dark:bg-gray-800 text-primary-600 shadow-sm border border-border dark:border-gray-700'
                         : 'text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300'
                         }`}
                 >
@@ -356,7 +356,7 @@ export default function SystemSettings() {
                 <button
                     onClick={() => setActiveTab('email_reports')}
                     className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'email_reports'
-                        ? 'bg-white dark:bg-gray-800 text-brand-600 shadow-sm border border-border dark:border-gray-700'
+                        ? 'bg-white dark:bg-gray-800 text-primary-600 shadow-sm border border-border dark:border-gray-700'
                         : 'text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300'
                         }`}
                 >
@@ -368,7 +368,7 @@ export default function SystemSettings() {
                 <button
                     onClick={() => setActiveTab('contact')}
                     className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'contact'
-                        ? 'bg-white dark:bg-gray-800 text-brand-600 shadow-sm border border-border dark:border-gray-700'
+                        ? 'bg-white dark:bg-gray-800 text-primary-600 shadow-sm border border-border dark:border-gray-700'
                         : 'text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300'
                         }`}
                 >
@@ -389,7 +389,7 @@ export default function SystemSettings() {
                     <div className="overflow-x-auto">
                         <table className="w-full text-right" dir="rtl">
                             <thead>
-                                <tr className="bg-secondary dark:bg-foreground/30">
+                                <tr className="bg-blue-50 dark:bg-foreground/30">
                                     <th className="px-6 py-4 text-xs font-black text-muted-foreground uppercase tracking-widest text-right">Enabled</th>
                                     <th className="px-6 py-4 text-xs font-black text-muted-foreground uppercase tracking-widest text-right">Trigger Rule</th>
                                     <th className="px-6 py-4 text-xs font-black text-muted-foreground uppercase tracking-widest text-center">Days Offset</th>
@@ -398,11 +398,11 @@ export default function SystemSettings() {
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-gray-700 text-right">
                                 {rules.map((rule) => (
-                                    <tr key={rule.id} className="hover:bg-secondary dark:hover:bg-gray-700/30 transition-colors">
+                                    <tr key={rule.id} className="hover:bg-blue-50 dark:hover:bg-gray-700/30 transition-colors">
                                         <td className="px-6 py-5">
                                             <button
                                                 onClick={() => handleRuleChange(rule.id, 'is_enabled', !rule.is_enabled)}
-                                                className={`transition-all ${rule.is_enabled ? 'text-brand-600' : 'text-gray-300'}`}
+                                                className={`transition-all ${rule.is_enabled ? 'text-primary-600' : 'text-gray-300'}`}
                                             >
                                                 {rule.is_enabled ? <ToggleRight className="w-10 h-10" /> : <ToggleLeft className="w-10 h-10" />}
                                             </button>
@@ -416,7 +416,7 @@ export default function SystemSettings() {
                                                 type="number"
                                                 value={rule.days_offset}
                                                 onChange={(e) => handleRuleChange(rule.id, 'days_offset', parseInt(e.target.value))}
-                                                className="w-20 px-3 py-2 bg-secondary dark:bg-foreground border border-border dark:border-gray-700 rounded-xl text-center font-black text-sm text-foreground dark:text-white focus:ring-2 focus:ring-brand-500/20 outline-none"
+                                                className="w-20 px-3 py-2 bg-slate-50 dark:bg-foreground border border-border dark:border-gray-700 rounded-xl text-center font-black text-sm text-foreground dark:text-white focus:ring-2 focus:ring-primary-500/20 outline-none"
                                             />
                                         </td>
                                         <td className="px-6 py-5">
@@ -424,7 +424,7 @@ export default function SystemSettings() {
                                                 type="text"
                                                 value={rule.message_template}
                                                 onChange={(e) => handleRuleChange(rule.id, 'message_template', e.target.value)}
-                                                className="w-full px-4 py-2.5 bg-secondary dark:bg-foreground border border-border dark:border-gray-700 rounded-xl font-mono text-xs text-brand-600 dark:text-brand-400 focus:ring-2 focus:ring-brand-500/20 outline-none"
+                                                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-foreground border border-border dark:border-gray-700 rounded-xl font-mono text-xs text-primary-600 dark:text-primary-400 focus:ring-2 focus:ring-primary-500/20 outline-none"
                                             />
                                         </td>
                                     </tr>
@@ -442,7 +442,7 @@ export default function SystemSettings() {
                         <div key={setting.key} className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-border dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
                             <div className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-2">Technical Key: {setting.key}</div>
                             <h3 className="text-sm font-black text-foreground dark:text-white uppercase tracking-tight mb-2">{setting.key.replace(/_/g, ' ')}</h3>
-                            <p className="text-[11px] font-bold text-muted-foreground dark:text-muted-foreground mb-6 leading-relaxed flex-1">{setting.description}</p>
+                            <p className="text-xs font-bold text-muted-foreground dark:text-muted-foreground mb-6 leading-relaxed flex-1">{setting.description}</p>
 
                             <div className="mt-auto">
                                 {/* Boolean Toggles */}
@@ -450,8 +450,8 @@ export default function SystemSettings() {
                                     <button
                                         onClick={() => handleSettingChange(setting.key, !setting.value)}
                                         className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl border-2 transition-all ${setting.value
-                                            ? 'bg-brand-50 dark:bg-brand-900/10 border-brand-200 dark:border-brand-800 text-brand-700 dark:text-brand-400'
-                                            : 'bg-secondary dark:bg-foreground/50 border-border dark:border-gray-700 text-muted-foreground'
+                                            ? 'bg-primary-50 dark:bg-primary-900/10 border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-400'
+                                            : 'bg-blue-50 dark:bg-foreground/50 border-border dark:border-gray-700 text-muted-foreground'
                                             }`}
                                     >
                                         <span className="text-xs font-black uppercase tracking-widest">{setting.value ? 'Active' : 'Disabled'}</span>
@@ -463,7 +463,7 @@ export default function SystemSettings() {
                                             type="number"
                                             value={setting.value}
                                             onChange={(e) => handleSettingChange(setting.key, parseFloat(e.target.value))}
-                                            className="w-full px-5 py-3 bg-secondary dark:bg-foreground border-2 border-border dark:border-gray-700 rounded-2xl text-foreground dark:text-white font-black text-lg focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all"
+                                            className="w-full px-5 py-3 bg-slate-50 dark:bg-foreground border-2 border-border dark:border-gray-700 rounded-2xl text-foreground dark:text-white font-black text-lg focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all"
                                         />
                                     </div>
                                 ) : (
@@ -471,7 +471,7 @@ export default function SystemSettings() {
                                         type="text"
                                         value={typeof setting.value === 'object' ? JSON.stringify(setting.value) : setting.value}
                                         onChange={(e) => handleSettingChange(setting.key, e.target.value)}
-                                        className="w-full px-5 py-3 bg-secondary dark:bg-foreground border-2 border-border dark:border-gray-700 rounded-2xl text-foreground dark:text-white font-bold text-sm focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all"
+                                        className="w-full px-5 py-3 bg-slate-50 dark:bg-foreground border-2 border-border dark:border-gray-700 rounded-2xl text-foreground dark:text-white font-bold text-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all"
                                     />
                                 )}
                             </div>
@@ -485,7 +485,7 @@ export default function SystemSettings() {
                 <div className="space-y-10">
                     {/* Master Switch Section */}
                     {settings.find(s => s.key === 'auto_autopilot_master_enabled') && (
-                        <div className="bg-brand-600 p-8 rounded-[2.5rem] shadow-xl shadow-brand-600/20 text-white flex flex-col md:flex-row items-center justify-between gap-6 transition-all">
+                        <div className="bg-primary-600 p-8 rounded-[2.5rem] shadow-xl shadow-primary-600/20 text-white flex flex-col md:flex-row items-center justify-between gap-6 transition-all">
                             <div className="flex-1 space-y-2">
                                 <h2 className="text-2xl font-black uppercase tracking-tight">Backend Automation Engine</h2>
                                 <p className="text-sm font-bold opacity-80 max-w-xl">
@@ -495,7 +495,7 @@ export default function SystemSettings() {
                             <button
                                 onClick={() => handleSettingChange('auto_autopilot_master_enabled', !settings.find(s => s.key === 'auto_autopilot_master_enabled')?.value)}
                                 className={`flex items-center gap-4 px-8 py-4 rounded-2xl border-2 transition-all ${settings.find(s => s.key === 'auto_autopilot_master_enabled')?.value
-                                    ? 'bg-white text-brand-600 border-white'
+                                    ? 'bg-white text-primary-600 border-white'
                                     : 'bg-transparent border-white/30 text-white'
                                     }`}
                             >
@@ -509,20 +509,20 @@ export default function SystemSettings() {
 
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                         {settings.filter(s => s.key.startsWith('auto_') && s.key !== 'auto_autopilot_master_enabled').map((setting) => (
-                            <div key={setting.key} className="bg-white dark:bg-gray-800 p-6 rounded-3xl border-2 border-dashed border-border dark:border-gray-700 shadow-sm transition-all hover:border-brand-200 dark:hover:border-brand-800">
+                            <div key={setting.key} className="bg-white dark:bg-gray-800 p-6 rounded-3xl border-2 border-dashed border-border dark:border-gray-700 shadow-sm transition-all hover:border-primary-200 dark:hover:border-primary-800">
                                 <div className="flex items-center gap-2 mb-4">
-                                    <div className={`p-2 rounded-xl ${setting.value ? 'bg-brand-50 text-brand-600' : 'bg-secondary text-muted-foreground'}`}>
+                                    <div className={`p-2 rounded-xl ${setting.value ? 'bg-primary-50 text-primary-600' : 'bg-blue-50 text-muted-foreground'}`}>
                                         <Sparkles className="w-5 h-5" />
                                     </div>
                                     <h3 className="text-sm font-black text-foreground dark:text-white uppercase tracking-tight">{setting.key.replace(/^auto_/, '').replace(/_/g, ' ')}</h3>
                                 </div>
-                                <p className="text-[11px] font-bold text-muted-foreground dark:text-muted-foreground mb-6 leading-relaxed">{setting.description}</p>
+                                <p className="text-xs font-bold text-muted-foreground dark:text-muted-foreground mb-6 leading-relaxed">{setting.description}</p>
 
                                 <button
                                     onClick={() => handleSettingChange(setting.key, !setting.value)}
                                     className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl border-2 transition-all ${setting.value
-                                        ? 'bg-brand-600 border-brand-600 text-white shadow-lg shadow-brand-600/20'
-                                        : 'bg-secondary dark:bg-foreground/50 border-border dark:border-gray-700 text-muted-foreground'
+                                        ? 'bg-primary-600 border-primary-600 text-white shadow-lg shadow-primary-600/20'
+                                        : 'bg-blue-50 dark:bg-foreground/50 border-border dark:border-gray-700 text-muted-foreground'
                                         }`}
                                 >
                                     <span className="text-xs font-black uppercase tracking-widest">{setting.value ? 'Active' : 'Disabled'}</span>
@@ -532,7 +532,7 @@ export default function SystemSettings() {
                         ))}
                     </div>
 
-                    <div className="p-8 bg-secondary dark:bg-foreground/50 rounded-[2.5rem] border border-border dark:border-gray-800">
+                    <div className="p-8 bg-blue-50 dark:bg-foreground/50 rounded-[2.5rem] border border-border dark:border-gray-800">
                         <div className="flex items-center gap-3 mb-6">
                             <ToggleLeft className="w-6 h-6 text-muted-foreground" />
                             <h2 className="text-base font-black text-foreground dark:text-white uppercase tracking-tight">Voice & Phone Integration (RESTRICTED)</h2>
@@ -558,7 +558,7 @@ export default function SystemSettings() {
                                             value={typeof setting.value === 'string' ? setting.value : ''}
                                             placeholder="Enter API Key..."
                                             onChange={(e) => handleSettingChange(setting.key, e.target.value)}
-                                            className="w-full px-5 py-4 bg-white dark:bg-gray-800 border-2 border-border dark:border-gray-700 rounded-2xl text-foreground dark:text-white font-bold text-sm focus:border-brand-500 outline-none transition-all"
+                                            className="w-full px-5 py-4 bg-white dark:bg-gray-800 border-2 border-border dark:border-gray-700 rounded-2xl text-foreground dark:text-white font-bold text-sm focus:border-primary-500 outline-none transition-all"
                                         />
                                     )}
                                 </div>
@@ -572,7 +572,7 @@ export default function SystemSettings() {
                     <div className="flex flex-col md:flex-row items-start justify-between gap-8">
                         <div className="max-w-xl space-y-4">
                             <div className="flex items-center gap-3">
-                                <div className="p-3 bg-brand-50 rounded-2xl">
+                                <div className="p-3 bg-primary-50 rounded-2xl">
                                     <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-8 h-8" />
                                 </div>
                                 <h3 className="text-xl font-black text-foreground dark:text-white uppercase tracking-tight">Google Drive Integration</h3>
@@ -583,15 +583,15 @@ export default function SystemSettings() {
                                 invoices, and user statistics directly to a dedicated "RentMate" folder in your Google Drive.
                             </p>
                             <ul className="space-y-2">
-                                <li className="flex items-center gap-2 text-xs font-bold text-emerald-600">
+                                <li className="flex items-center gap-2 text-xs font-bold text-blue-600">
                                     <CheckCircle2 className="w-4 h-4" />
                                     Automatic Daily Backups
                                 </li>
-                                <li className="flex items-center gap-2 text-xs font-bold text-emerald-600">
+                                <li className="flex items-center gap-2 text-xs font-bold text-blue-600">
                                     <CheckCircle2 className="w-4 h-4" />
                                     One-Click CRM Exports (Google Sheets)
                                 </li>
-                                <li className="flex items-center gap-2 text-xs font-bold text-emerald-600">
+                                <li className="flex items-center gap-2 text-xs font-bold text-blue-600">
                                     <CheckCircle2 className="w-4 h-4" />
                                     Secure Data Syncing
                                 </li>
@@ -601,10 +601,10 @@ export default function SystemSettings() {
                         <div className="w-full md:w-auto">
                             <button
                                 onClick={connectGoogle}
-                                className="w-full md:w-[280px] flex items-center justify-center gap-3 px-8 py-5 bg-white dark:bg-foreground border-2 border-border dark:border-gray-700 rounded-2xl hover:border-brand-500 transition-all group shadow-sm"
+                                className="w-full md:w-[280px] flex items-center justify-center gap-3 px-8 py-5 bg-white dark:bg-foreground border-2 border-border dark:border-gray-700 rounded-2xl hover:border-primary-500 transition-all group shadow-sm"
                             >
                                 <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-6 h-6" />
-                                <span className="text-sm font-black text-foreground dark:text-white uppercase tracking-widest group-hover:text-brand-600">Connect account</span>
+                                <span className="text-sm font-black text-foreground dark:text-white uppercase tracking-widest group-hover:text-primary-600">Connect account</span>
                             </button>
                         </div>
                     </div>
@@ -614,8 +614,8 @@ export default function SystemSettings() {
                 <div className="space-y-10">
                     {!settings.find(s => s.key === 'admin_email_daily_summary_enabled') ? (
                         <div className="bg-white dark:bg-gray-800 p-12 rounded-[2.5rem] border-2 border-dashed border-border dark:border-gray-700 text-center space-y-6">
-                            <div className="w-20 h-20 bg-brand-50 rounded-full flex items-center justify-center mx-auto">
-                                <Bell className="w-10 h-10 text-brand-600" />
+                            <div className="w-20 h-20 bg-primary-50 rounded-full flex items-center justify-center mx-auto">
+                                <Bell className="w-10 h-10 text-primary-600" />
                             </div>
                             <div className="max-w-md mx-auto space-y-2">
                                 <h3 className="text-xl font-black text-foreground dark:text-white uppercase tracking-tight">Email Reports Not Configured</h3>
@@ -626,7 +626,7 @@ export default function SystemSettings() {
                             <button
                                 onClick={initializeEmailReports}
                                 disabled={saving}
-                                className="inline-flex items-center gap-2 px-8 py-4 bg-brand-600 text-white rounded-2xl hover:bg-brand-700 transition-all font-bold shadow-lg shadow-brand-600/20 disabled:opacity-50"
+                                className="inline-flex items-center gap-2 px-8 py-4 bg-primary-600 text-white rounded-2xl hover:bg-primary-700 transition-all font-bold shadow-lg shadow-primary-600/20 disabled:opacity-50"
                             >
                                 {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-5 h-5" />}
                                 Setup Email Reports System
@@ -636,7 +636,7 @@ export default function SystemSettings() {
                         <>
                             {/* Master Switch Section */}
                             {settings.find(s => s.key === 'admin_email_daily_summary_enabled') && (
-                                <div className="bg-brand-600 p-8 rounded-[2.5rem] shadow-xl shadow-brand-600/20 text-white flex flex-col md:flex-row items-center justify-between gap-6 transition-all">
+                                <div className="bg-primary-600 p-8 rounded-[2.5rem] shadow-xl shadow-primary-600/20 text-white flex flex-col md:flex-row items-center justify-between gap-6 transition-all">
                                     <div className="flex-1 space-y-2">
                                         <h2 className="text-2xl font-black uppercase tracking-tight">Daily Summary Email</h2>
                                         <p className="text-sm font-bold opacity-80 max-w-xl">
@@ -646,7 +646,7 @@ export default function SystemSettings() {
                                     <button
                                         onClick={() => handleSettingChange('admin_email_daily_summary_enabled', !settings.find(s => s.key === 'admin_email_daily_summary_enabled')?.value)}
                                         className={`flex items-center gap-4 px-8 py-4 rounded-2xl border-2 transition-all ${settings.find(s => s.key === 'admin_email_daily_summary_enabled')?.value
-                                            ? 'bg-white text-brand-600 border-white'
+                                            ? 'bg-white text-primary-600 border-white'
                                             : 'bg-transparent border-white/30 text-white'
                                             }`}
                                     >
@@ -662,15 +662,15 @@ export default function SystemSettings() {
                             {settings.find(s => s.key === 'admin_email_content_preferences') && (
                                 <div className="bg-white dark:bg-gray-800 p-8 rounded-[2.5rem] border border-border dark:border-gray-700 shadow-sm">
                                     <div className="flex items-center gap-3 mb-6">
-                                        <div className="p-3 bg-brand-50 rounded-2xl">
-                                            <Sparkles className="w-6 h-6 text-brand-600" />
+                                        <div className="p-3 bg-primary-50 rounded-2xl">
+                                            <Sparkles className="w-6 h-6 text-primary-600" />
                                         </div>
                                         <h2 className="text-lg font-black text-foreground dark:text-white uppercase tracking-tight">Report Content Configuration</h2>
                                     </div>
 
                                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                                         {Object.entries(settings.find(s => s.key === 'admin_email_content_preferences')?.value as Record<string, boolean> || {}).map(([key, enabled]) => (
-                                            <div key={key} className="flex items-center justify-between p-4 bg-secondary dark:bg-foreground/50 rounded-2xl border border-border dark:border-gray-700">
+                                            <div key={key} className="flex items-center justify-between p-4 bg-blue-50 dark:bg-foreground/50 rounded-2xl border border-border dark:border-gray-700">
                                                 <label className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
                                                     {key.replace(/_/g, ' ')}
                                                 </label>
@@ -679,7 +679,7 @@ export default function SystemSettings() {
                                                         const currentPrefs = settings.find(s => s.key === 'admin_email_content_preferences')?.value as Record<string, boolean> || {};
                                                         handleSettingChange('admin_email_content_preferences', { ...currentPrefs, [key]: !enabled });
                                                     }}
-                                                    className={`transition-all ${enabled ? 'text-brand-600' : 'text-gray-300'}`}
+                                                    className={`transition-all ${enabled ? 'text-primary-600' : 'text-gray-300'}`}
                                                 >
                                                     {enabled ? <ToggleRight className="w-8 h-8" /> : <ToggleLeft className="w-8 h-8" />}
                                                 </button>
@@ -693,8 +693,8 @@ export default function SystemSettings() {
                             {settings.find(s => s.key === 'admin_notification_email') && (
                                 <div className="bg-white dark:bg-gray-800 p-8 rounded-[2.5rem] border border-border dark:border-gray-700 shadow-sm">
                                     <div className="flex items-center gap-3 mb-6">
-                                        <div className="p-3 bg-brand-50 rounded-2xl">
-                                            <Bell className="w-6 h-6 text-brand-600" />
+                                        <div className="p-3 bg-primary-50 rounded-2xl">
+                                            <Bell className="w-6 h-6 text-primary-600" />
                                         </div>
                                         <h2 className="text-lg font-black text-foreground dark:text-white uppercase tracking-tight">Recipient Configuration</h2>
                                     </div>
@@ -706,7 +706,7 @@ export default function SystemSettings() {
                                                 value={settings.find(s => s.key === 'admin_notification_email')?.value as string || ''}
                                                 onChange={(e) => handleSettingChange('admin_notification_email', e.target.value)}
                                                 placeholder="e.g. admin@rentmate.co.il"
-                                                className="w-full px-5 py-4 bg-secondary dark:bg-foreground border-2 border-border dark:border-gray-700 rounded-2xl text-foreground dark:text-white font-bold text-sm focus:border-brand-500 outline-none transition-all"
+                                                className="w-full px-5 py-4 bg-slate-50 dark:bg-foreground border-2 border-border dark:border-gray-700 rounded-2xl text-foreground dark:text-white font-bold text-sm focus:border-primary-500 outline-none transition-all"
                                             />
                                             <p className="text-xs font-bold text-muted-foreground mt-1 uppercase tracking-tight">
                                                 The daily report and system alerts will be sent to this address.
@@ -723,8 +723,8 @@ export default function SystemSettings() {
                 <div className="space-y-10">
                     <div className="bg-white dark:bg-gray-800 p-8 rounded-[2.5rem] border border-border dark:border-gray-700 shadow-sm">
                         <div className="flex items-center gap-3 mb-6">
-                            <div className="p-3 bg-brand-50 rounded-2xl">
-                                <Mail className="w-6 h-6 text-brand-600" />
+                            <div className="p-3 bg-primary-50 rounded-2xl">
+                                <Mail className="w-6 h-6 text-primary-600" />
                             </div>
                             <h2 className="text-lg font-black text-foreground dark:text-white uppercase tracking-tight">System Email Addresses</h2>
                         </div>
@@ -738,7 +738,7 @@ export default function SystemSettings() {
                                         type="email"
                                         value={setting.value as string || ''}
                                         onChange={(e) => handleSettingChange(setting.key, e.target.value)}
-                                        className="w-full px-5 py-4 bg-secondary dark:bg-foreground border-2 border-border dark:border-gray-700 rounded-2xl text-foreground dark:text-white font-bold text-sm focus:border-brand-500 outline-none transition-all"
+                                        className="w-full px-5 py-4 bg-slate-50 dark:bg-foreground border-2 border-border dark:border-gray-700 rounded-2xl text-foreground dark:text-white font-bold text-sm focus:border-primary-500 outline-none transition-all"
                                     />
                                     <p className="text-xs font-bold text-muted-foreground uppercase tracking-tight px-1">{setting.description}</p>
                                 </div>
@@ -748,8 +748,8 @@ export default function SystemSettings() {
 
                     <div className="bg-white dark:bg-gray-800 p-8 rounded-[2.5rem] border border-border dark:border-gray-700 shadow-sm">
                         <div className="flex items-center gap-3 mb-6">
-                            <div className="p-3 bg-brand-50 rounded-2xl">
-                                <Phone className="w-6 h-6 text-brand-600" />
+                            <div className="p-3 bg-primary-50 rounded-2xl">
+                                <Phone className="w-6 h-6 text-primary-600" />
                             </div>
                             <h2 className="text-lg font-black text-foreground dark:text-white uppercase tracking-tight">Support Contact Methods</h2>
                         </div>
@@ -763,7 +763,7 @@ export default function SystemSettings() {
                                         type="text"
                                         value={setting.value as string || ''}
                                         onChange={(e) => handleSettingChange(setting.key, e.target.value)}
-                                        className="w-full px-5 py-4 bg-secondary dark:bg-foreground border-2 border-border dark:border-gray-700 rounded-2xl text-foreground dark:text-white font-bold text-sm focus:border-brand-500 outline-none transition-all"
+                                        className="w-full px-5 py-4 bg-slate-50 dark:bg-foreground border-2 border-border dark:border-gray-700 rounded-2xl text-foreground dark:text-white font-bold text-sm focus:border-primary-500 outline-none transition-all"
                                     />
                                     <p className="text-xs font-bold text-muted-foreground uppercase tracking-tight px-1">{setting.description}</p>
                                 </div>

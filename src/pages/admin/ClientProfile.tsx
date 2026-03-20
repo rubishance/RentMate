@@ -211,7 +211,7 @@ const ClientProfile = () => {
 
     if (loading) return (
         <div className="flex h-96 items-center justify-center">
-            <Loader2 className="w-10 h-10 animate-spin text-brand-600" />
+            <Loader2 className="w-10 h-10 animate-spin text-primary-600" />
         </div>
     );
 
@@ -219,7 +219,7 @@ const ClientProfile = () => {
         <div className="p-8 text-center">
             <ExclamationCircleIcon className="w-12 h-12 text-destructive mx-auto mb-4" />
             <p className="text-foreground dark:text-white font-bold">{error || 'Client not found'}</p>
-            <button onClick={() => navigate('/admin/users')} className="mt-4 text-brand-600 font-bold hover:underline">
+            <button onClick={() => navigate('/admin/users')} className="mt-4 text-primary-600 font-bold hover:underline">
                 Back to User Management
             </button>
         </div>
@@ -234,7 +234,7 @@ const ClientProfile = () => {
     };
 
     return (
-        <div className="space-y-8 pb-20">
+        <div className="space-y-8">
             {/* Header / Breadcrumb */}
             <div className="flex items-center gap-4">
                 <button
@@ -263,7 +263,7 @@ const ClientProfile = () => {
                     <button
                         onClick={handleExport}
                         disabled={isExporting}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-emerald-600/20 disabled:opacity-80"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-blue-600/20 disabled:opacity-80"
                     >
                         {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Table className="w-4 h-4" />}
                         Export to Sheets
@@ -291,17 +291,17 @@ const ClientProfile = () => {
                                             <option key={p.id} value={p.id}>{p.name} (₪{p.price_monthly})</option>
                                         ))}
                                     </select>
-                                    <button onClick={handleUpdatePlan} className="text-xs text-brand-600 font-bold hover:underline">Save</button>
+                                    <button onClick={handleUpdatePlan} className="text-xs text-primary-600 font-bold hover:underline">Save</button>
                                     <button onClick={() => setIsEditingPlan(false)} className="text-xs text-muted-foreground hover:text-muted-foreground">Cancel</button>
                                 </div>
                             ) : (
                                 <div className="flex items-center gap-2">
-                                    <span className="px-3 py-1 bg-brand-50 text-brand-700 dark:bg-brand-900/20 dark:text-brand-400 rounded-lg text-xs font-black uppercase tracking-widest">
+                                    <span className="px-3 py-1 bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-400 rounded-xl text-xs font-black uppercase tracking-widest">
                                         {getEffectivePlanName().replace('_', ' ')}
                                     </span>
                                     <button
                                         onClick={() => { setNewPlanId(profile.plan_id || ''); setIsEditingPlan(true); }}
-                                        className="text-xs text-muted-foreground hover:text-brand-600"
+                                        className="text-xs text-muted-foreground hover:text-primary-600"
                                     >
                                         Edit
                                     </button>
@@ -310,8 +310,8 @@ const ClientProfile = () => {
                         </div>
                         <div className="flex items-center justify-between">
                             <span className="text-sm font-bold text-gray-700 dark:text-gray-300">Standing</span>
-                            <span className={`px-3 py-1 rounded-lg text-xs font-black uppercase tracking-widest ${profile.subscription_status === 'active'
-                                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20'
+                            <span className={`px-3 py-1 rounded-xl text-xs font-black uppercase tracking-widest ${profile.subscription_status === 'active'
+                                ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/20'
                                 : 'bg-red-50 text-red-700'
                                 }`}>
                                 {profile.subscription_status}
@@ -327,7 +327,7 @@ const ClientProfile = () => {
                                 <p className="text-xs text-muted-foreground font-medium italic">No invoices found for this client.</p>
                             ) : (
                                 invoices.slice(0, 5).map((inv: Invoice) => (
-                                    <div key={inv.id} className="flex items-center justify-between p-3 rounded-xl bg-secondary dark:bg-foreground/50 border border-border dark:border-gray-800">
+                                    <div key={inv.id} className="flex items-center justify-between p-3 rounded-xl bg-blue-50 dark:bg-foreground/50 border border-border dark:border-gray-800">
                                         <div className="flex items-center gap-3">
                                             <DocumentTextIcon className="w-5 h-5 text-muted-foreground" />
                                             <div>
@@ -335,7 +335,7 @@ const ClientProfile = () => {
                                                 <div className="text-xs text-muted-foreground">{new Date(inv.issue_date).toLocaleDateString()}</div>
                                             </div>
                                         </div>
-                                        <span className={`text-[11px] font-black uppercase tracking-widest ${inv.status === 'paid' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                        <span className={`text-xs font-black uppercase tracking-widest ${inv.status === 'paid' ? 'text-blue-600' : 'text-amber-600'}`}>
                                             {inv.status}
                                         </span>
                                     </div>
@@ -343,7 +343,7 @@ const ClientProfile = () => {
                             )}
                         </div>
                         {invoices.length > 5 && (
-                            <button className="w-full mt-4 text-xs font-black text-brand-600 uppercase tracking-widest hover:underline">
+                            <button className="w-full mt-4 text-xs font-black text-primary-600 uppercase tracking-widest hover:underline">
                                 View All Invoices
                             </button>
                         )}
@@ -357,7 +357,7 @@ const ClientProfile = () => {
                             <h3 className="text-xs font-black text-muted-foreground uppercase tracking-widest">Interactive Timeline</h3>
                             <button
                                 onClick={() => setIsAddingNote(true)}
-                                className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-brand-600/20"
+                                className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-primary-600/20"
                             >
                                 <PlusIcon className="w-4 h-4" />
                                 Log Interaction
@@ -366,7 +366,7 @@ const ClientProfile = () => {
 
                         {/* Add Note Form */}
                         {isAddingNote && (
-                            <div className="border-b border-border dark:border-gray-700 bg-brand-50/30 dark:bg-brand-900/10">
+                            <div className="border-b border-border dark:border-gray-700 bg-primary-50/30 dark:bg-primary-900/10">
                                 <InteractionLogger
                                     userId={id!}
                                     onLogSuccess={handleLogSuccess}
@@ -382,7 +382,7 @@ const ClientProfile = () => {
                                     key={f}
                                     onClick={() => setFeedFilter(f as any)}
                                     className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${feedFilter === f
-                                        ? 'bg-brand-50 text-brand-700 dark:bg-brand-900/20 dark:text-brand-400'
+                                        ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-400'
                                         : 'text-muted-foreground hover:text-muted-foreground dark:hover:text-gray-300'
                                         }`}
                                 >
@@ -406,7 +406,7 @@ const ClientProfile = () => {
                                         {usageEvents.map(event => (
                                             <div key={event.id} className="flex items-center justify-between p-4 rounded-2xl bg-background dark:bg-neutral-800/20 border border-slate-100 dark:border-neutral-800">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg">
+                                                    <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl">
                                                         <MousePointer2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                                                     </div>
                                                     <div>
@@ -419,7 +419,7 @@ const ClientProfile = () => {
                                                     </div>
                                                 </div>
                                                 {event.metadata && (
-                                                    <div className="text-xs text-indigo-500 font-bold bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded-md">
+                                                    <div className="text-xs text-indigo-500 font-bold bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 rounded-lg">
                                                         {JSON.stringify(event.metadata)}
                                                     </div>
                                                 )}
@@ -468,11 +468,11 @@ const ClientProfile = () => {
                             {selectedBotChat.metadata?.messages?.map((msg: { role: string; content: string; timestamp?: string }, idx: number) => (
                                 <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                                     <div className="mb-1 flex items-center gap-2">
-                                        <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">{msg.role}</span>
-                                        <span className="text-[11px] text-gray-300">{new Date(msg.timestamp || Date.now()).toLocaleTimeString()}</span>
+                                        <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">{msg.role}</span>
+                                        <span className="text-xs text-gray-300">{new Date(msg.timestamp || Date.now()).toLocaleTimeString()}</span>
                                     </div>
                                     <div className={`p-4 rounded-2xl max-w-[85%] text-sm font-medium leading-relaxed ${msg.role === 'user'
-                                        ? 'bg-brand-600 text-white rounded-tr-none'
+                                        ? 'bg-primary-600 text-white rounded-tr-none'
                                         : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-border dark:border-gray-700 rounded-tl-none shadow-sm'
                                         }`}>
                                         {msg.content}
@@ -480,7 +480,7 @@ const ClientProfile = () => {
                                 </div>
                             ))}
                         </div>
-                        <div className="p-4 bg-secondary dark:bg-gray-800 border-t border-border dark:border-gray-700 text-center">
+                        <div className="p-4 bg-blue-50 dark:bg-gray-800 border-t border-border dark:border-gray-700 text-center">
                             <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">End of Automated Transcript</span>
                         </div>
                     </div>

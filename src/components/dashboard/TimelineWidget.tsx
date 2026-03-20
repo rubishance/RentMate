@@ -104,8 +104,8 @@ export function TimelineWidget({ contracts, loading }: TimelineWidgetProps) {
     return (
         <div className="bg-white dark:bg-neutral-900 rounded-[2.5rem] p-8 shadow-sm border border-border dark:border-neutral-800">
             <div className="flex items-center justify-between mb-8">
-                <h3 className="font-black text-xs uppercase tracking-widest text-muted-foreground dark:text-muted-foreground flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
+                <h3 className="text-xl font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                    <Calendar className="w-5 h-5" />
                     {t('leaseTimeline')}
                 </h3>
             </div>
@@ -152,7 +152,7 @@ export function TimelineWidget({ contracts, loading }: TimelineWidgetProps) {
                         </div>
 
                         {item.isOptionApproaching && (
-                            <div className="mt-2 flex items-center gap-2 text-xs text-orange-600 bg-orange-50 dark:bg-orange-900/10 p-2 rounded-lg">
+                            <div className="mt-2 flex items-center gap-2 text-xs text-orange-600 bg-orange-50 dark:bg-orange-900/10 p-2 rounded-xl">
                                 <AlertTriangle className="w-3 h-3 shrink-0" />
                                 <span>{t('optionDeadlineWarning', { date: item.displayOptionDeadline })}</span>
                                 <button className="ml-auto underline font-medium hover:text-orange-700">
@@ -169,7 +169,7 @@ export function TimelineWidget({ contracts, loading }: TimelineWidgetProps) {
                     onClick={() => navigate('/properties')}
                     className="w-full mt-4 text-xs text-muted-foreground hover:text-primary flex items-center justify-center gap-1 py-2"
                 >
-                    {t('viewAllContracts')} <ArrowRight className="w-3 h-3" />
+                    <ArrowRight className="w-3 h-3" /> {t('viewAllContracts')}
                 </button>
             )}
         </div>
