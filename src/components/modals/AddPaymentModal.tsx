@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { format, parseISO, addMonths, differenceInDays } from 'date-fns';
 import { CheckCircle2 } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
+import { PAYMENT_METHODS } from '../../constants/paymentMethods';
 import { cn } from '../../lib/utils';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -415,26 +416,19 @@ export function AddPaymentModal({ isOpen, onClose, onSuccess, initialData }: Add
                 <div className="space-y-4">
                     <label className="text-xs font-black uppercase tracking-widest text-muted-foreground dark:text-muted-foreground ml-1">{t('method')}</label>
                     <div className="grid grid-cols-3 gap-2">
-                        {[
-                            { label: 'transfer', value: 'transfer' },
-                            { label: 'bit', value: 'bit' },
-                            { label: 'paybox', value: 'paybox' },
-                            { label: 'check', value: 'checks' },
-                            { label: 'cash', value: 'cash' },
-                            { label: 'other', value: 'other' }
-                        ].map(method => (
+                        {PAYMENT_METHODS.map(pm => (
                             <button
-                                key={method.value}
+                                key={pm.id}
                                 type="button"
-                                onClick={() => setValue('payment_method', method.value)}
+                                onClick={() => setValue('payment_method', pm.id)}
                                 className={cn(
                                     "py-3 px-2 rounded-2xl text-xs font-black uppercase tracking-tighter transition-all border-2",
-                                    watch('payment_method') === method.value
+                                    watch('payment_method') === pm.id
                                         ? 'bg-black dark:bg-white border-black dark:border-white text-white dark:text-black shadow-lg'
                                         : 'bg-window border-black/5 dark:border-white/5 text-muted-foreground hover:border-black/20 dark:hover:border-white/20'
                                 )}
                             >
-                                {t(method.label)}
+                                {t(pm.labelKey as any)}
                             </button>
                         ))}
                     </div>

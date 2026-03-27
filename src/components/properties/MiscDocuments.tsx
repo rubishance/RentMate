@@ -53,7 +53,7 @@ export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocume
     async function loadData() {
         setLoading(true);
         try {
-            const miscCategories: DocumentCategory[] = ['insurance', 'warranty', 'legal', 'invoice', 'receipt', 'other'];
+            const miscCategories: DocumentCategory[] = ['insurance', 'warranty', 'legal', 'invoice', 'other'];
 
             const [fetchedFolders, results] = await Promise.all([
                 propertyDocumentsService.getFolders(property.id, 'other'),
@@ -388,10 +388,10 @@ export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocume
                     </div>
 
                     {/* Actions */}
-                    <div className="flex gap-3 pt-4 border-t border-border dark:border-gray-700/50">
+                    <div className="sticky bottom-0 -mx-6 -mb-6 mt-6 p-4 sm:p-5 bg-gradient-to-t from-background via-background/95 to-transparent pt-8 flex gap-3 justify-end border-t border-transparent z-20">
                         <button
                             onClick={() => setShowUploadForm(false)}
-                            className="px-6 py-2.5 text-sm font-medium text-muted-foreground dark:text-gray-300 hover:bg-muted dark:hover:bg-gray-800 rounded-xl transition-colors"
+                            className="px-5 py-2.5 text-sm font-semibold text-muted-foreground bg-muted/80 hover:bg-muted dark:bg-neutral-800/80 dark:hover:bg-neutral-700/80 rounded-xl transition-all shadow-sm border border-border/50"
                         >
                             {t('cancel')}
                         </button>
@@ -399,11 +399,11 @@ export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocume
                             onClick={handleCreateAndUpload}
                             disabled={uploading}
                             className={`
-                                flex-1 px-6 py-2.5 text-sm font-medium text-white rounded-xl shadow-lg shadow-blue-500/25
+                                flex-1 px-6 py-2.5 text-sm font-bold text-white rounded-xl shadow-xl
                                 flex items-center justify-center gap-2 transition-all
                                 ${uploading
-                                    ? 'bg-gray-400 cursor-not-allowed opacity-70'
-                                    : 'bg-gradient-to-r from-primary to-indigo-600 hover:from-primary hover:to-indigo-700 hover:shadow-blue-500/40 active:scale-[0.98]'
+                                    ? 'bg-primary/50 cursor-not-allowed shadow-none'
+                                    : 'bg-gradient-to-r from-primary to-indigo-600 hover:from-primary hover:to-indigo-700 hover:scale-[1.02] active:scale-95'
                                 }
                             `}
                         >
@@ -427,6 +427,7 @@ export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocume
             <DocumentTimeline
                 documents={documents}
                 loading={loading}
+                property={property}
                 onDocumentClick={(doc) => {
                     setSelectedDocument(doc);
                     setIsDetailsModalOpen(true);
@@ -441,6 +442,10 @@ export function MiscDocuments({ property, readOnly, autoOpenUpload }: MiscDocume
                 }}
                 document={selectedDocument}
                 onDelete={() => loadData()}
+                onUpdate={(updatedDoc) => {
+                    setSelectedDocument(updatedDoc as any);
+                    loadData();
+                }}
             />
         </div>
     );

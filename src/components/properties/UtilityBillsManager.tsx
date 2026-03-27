@@ -8,6 +8,7 @@ import { useCallback } from 'react';
 import { cn } from '../../lib/utils';
 import { CompressionService } from '../../services/compression.service';
 import { BillAnalysisService, ExtractedBillData } from '../../services/bill-analysis.service';
+import { UTILITY_TYPES, UtilityType } from '../../constants/utilityTypes';
 
 import UpgradeRequestModal from '../modals/UpgradeRequestModal';
 import { useSubscription } from '../../hooks/useSubscription';
@@ -24,12 +25,11 @@ interface UtilityBillsManagerProps {
     readOnly?: boolean;
 }
 
-type UtilityType = 'water' | 'electric' | 'gas' | 'municipality' | 'management' | 'internet' | 'cable';
 
 
 
 export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerProps) {
-    const { t } = useTranslation();
+    const { t, lang } = useTranslation();
     const { hasFeature } = useSubscription();
     const { get } = useDataCache();
     const allProperties = get<Property[]>('properties_list') || [property];
@@ -66,18 +66,13 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [previewImage, setPreviewImage] = useState<string | null>(null);
 
-    // Correct Lucide icons mapping
-    const utilities = [
-        { id: 'electric' as UtilityType, label: t('utilityElectric'), icon: Zap, color: 'text-yellow-500', bg: 'bg-warning/10' },
-        { id: 'municipality' as UtilityType, label: t('utilityMunicipality'), icon: Landmark, color: 'text-muted-foreground', bg: 'bg-muted dark:bg-gray-700/50' },
-        { id: 'gas' as UtilityType, label: t('utilityGas'), icon: Flame, color: 'text-orange-500', bg: 'bg-warning/10' },
-        { id: 'management' as UtilityType, label: t('utilityManagement'), icon: Building2, color: 'text-primary', bg: 'bg-primary/10' },
-        { id: 'water' as UtilityType, label: t('utilityWater'), icon: Droplets, color: 'text-primary', bg: 'bg-primary/10 dark:bg-blue-900/30' },
-        { id: 'internet' as UtilityType, label: t('utilityInternet'), icon: Wifi, color: 'text-indigo-500', bg: 'bg-indigo-100 dark:bg-indigo-900/30' },
-        { id: 'tv' as UtilityType, label: t('utilityCable', { defaultValue: 'TV / Cable' }), icon: Tv, color: 'text-rose-500', bg: 'bg-rose-100 dark:bg-rose-900/30' },
-        { id: 'mortgage' as UtilityType, label: t('utilityMortgage', { defaultValue: 'Mortgage' }), icon: HomeIcon, color: 'text-emerald-500', bg: 'bg-emerald-100 dark:bg-emerald-900/30' },
-        { id: 'other' as UtilityType, label: t('utilityOther', { defaultValue: 'Other' }), icon: FileText, color: 'text-muted-foreground', bg: 'bg-muted dark:bg-gray-800/30' },
-    ];
+    const utilities = UTILITY_TYPES.map(u => ({
+        id: u.id,
+        label: t(u.labelKey) || (lang === 'he' ? u.fallbackHe : u.fallbackEn),
+        icon: u.icon,
+        color: u.color,
+        bg: u.bg
+    }));
 
 
 
@@ -663,14 +658,14 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                                 )}
                             </div>
 
-                            <div className="flex gap-3 pt-4 border-t border-border dark:border-gray-700/50">
+                            <div className="sticky bottom-0 -mx-6 -mb-6 mt-6 p-4 sm:p-5 bg-gradient-to-t from-background via-background/95 to-transparent pt-8 flex gap-3 justify-end border-t border-transparent z-20">
                                 <Button
                                     variant="ghost"
                                     onClick={() => {
                                         setStagedFiles([]);
                                         setShowUploadForm(false);
                                     }}
-                                    className="text-muted-foreground dark:text-gray-300"
+                                    className="px-5 py-2.5 text-sm font-semibold text-muted-foreground bg-muted/80 hover:bg-muted dark:bg-neutral-800/80 dark:hover:bg-neutral-700/80 rounded-xl transition-all shadow-sm border border-border/50"
                                 >
                                     {t('cancel')}
                                 </Button>
@@ -679,7 +674,7 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                                         onClick={handleApproveBill}
                                         disabled={uploading}
                                         isLoading={uploading}
-                                        className="flex-1 bg-gradient-to-r from-primary to-cyan-600 hover:from-primary hover:to-cyan-700 text-white shadow-lg"
+                                        className="flex-1 px-6 py-2.5 rounded-xl text-sm font-bold shadow-xl flex items-center justify-center gap-2 transition-all bg-gradient-to-r from-primary to-cyan-600 hover:from-primary hover:to-cyan-700 text-white hover:scale-[1.02] active:scale-95"
                                     >
                                         {!uploading && <Check className="w-4 h-4 mr-2" />}
                                         {stagedFiles.length > 1
@@ -695,7 +690,8 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                     {/* Timeline View */}
                     <DocumentTimeline
                         documents={documents}
-                        loading={loading}
+                        loading={false}
+                        property={property}
                         onDocumentClick={(doc) => {
                             setSelectedDocument(doc);
                             setIsDetailsModalOpen(true);
@@ -710,6 +706,10 @@ export function UtilityBillsManager({ property, readOnly }: UtilityBillsManagerP
                         }}
                         document={selectedDocument}
                         onDelete={() => loadData()}
+                        onUpdate={(updatedDoc) => {
+                            setSelectedDocument(updatedDoc as any);
+                            loadData();
+                        }}
                     />
 
                     <UpgradeRequestModal

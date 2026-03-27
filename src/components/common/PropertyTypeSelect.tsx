@@ -3,20 +3,13 @@ import { PropertyIcon } from './PropertyIcon';
 import type { Property } from '../../types/database';
 import { useTranslation } from '../../hooks/useTranslation';
 
+import { PROPERTY_TYPES } from '../../constants/propertyTypes';
+
 interface PropertyTypeSelectProps {
     value: NonNullable<Property['property_type']>;
     onChange: (value: NonNullable<Property['property_type']>) => void;
     disabled?: boolean;
 }
-
-// We use a function to get formatted types because we need the t() function
-const getPropertyTypes = (t: any): { value: NonNullable<Property['property_type']>; label: string }[] => [
-    { value: 'apartment', label: t('apartment') },
-    { value: 'penthouse', label: t('penthouse') },
-    { value: 'garden', label: t('garden') },
-    { value: 'house', label: t('house') },
-    { value: 'other', label: t('other') }
-];
 
 export function PropertyTypeSelect({ value, onChange, disabled }: PropertyTypeSelectProps) {
     const { t } = useTranslation();
@@ -51,7 +44,7 @@ function CustomDropdown({ value, onChange, disabled, t }: PropertyTypeSelectProp
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
-    const propertyTypes = getPropertyTypes(t);
+    const propertyTypes = PROPERTY_TYPES.map(p => ({ value: p.id, label: t(p.labelKey as any) }));
     const selectedOption = propertyTypes.find(p => p.value === value) || propertyTypes[0];
 
     useEffect(() => {

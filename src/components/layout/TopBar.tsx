@@ -46,7 +46,7 @@ export function TopBar() {
                         )}
                         <button
                             onClick={() => navigate('/subscription')}
-                            className={`${plan.id === 'free' ? 'hidden sm:flex' : 'flex'} items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-gradient-to-r from-primary/10 to-cyan-600/10 hover:from-primary/20 hover:to-cyan-600/20 border border-blue-200 dark:border-blue-900 transition-all group`}
+                            className="hidden sm:flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-gradient-to-r from-primary/10 to-cyan-600/10 hover:from-primary/20 hover:to-cyan-600/20 border border-blue-200 dark:border-blue-900 transition-all group"
                         >
                             {plan.id === 'free' || plan.id === 'solo' ? (
                                 <Star className="w-3 h-3 text-primary group-hover:scale-110 transition-transform" />

@@ -5,11 +5,13 @@ import { supabase } from '../lib/supabase';
 import { Property } from '../types/database';
 import { useTranslation } from '../hooks/useTranslation';
 import { Loader2 } from 'lucide-react';
+import { useDataCache } from '../contexts/DataCacheContext';
 
 export default function PropertyDetails() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { t } = useTranslation();
+    const { get, set } = useDataCache();
     const [property, setProperty] = useState<Property | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -17,6 +19,15 @@ export default function PropertyDetails() {
     useEffect(() => {
         async function fetchProperty() {
             if (!id) return;
+
+            const cacheKey = `property_detail_${id}`;
+            const cached = get<Property>(cacheKey);
+            if (cached) {
+                setProperty(cached);
+                setLoading(false);
+            } else {
+                setLoading(true);
+            }
 
             try {
                 const { data: { user } } = await supabase.auth.getUser();
@@ -27,10 +38,11 @@ export default function PropertyDetails() {
                     .select('*, contracts(*)')
                     .eq('id', id)
                     .eq('user_id', user.id)
-                    .single();
+                    .maybeSingle();
 
                 if (error) throw error;
                 setProperty(data);
+                set(cacheKey, data, { persist: true });
             } catch (err: any) {
                 console.error('Error fetching property:', err);
                 setError(err.message);
@@ -40,7 +52,7 @@ export default function PropertyDetails() {
         }
 
         fetchProperty();
-    }, [id]);
+    }, [id, get, set]);
 
     const handleDelete = () => {
         // After deletion, go back to the list
@@ -79,7 +91,7 @@ export default function PropertyDetails() {
     if (!id) return null;
 
     return (
-        <div className="pb-4 pt-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="pb-4 pt-0 animate-in fade-in slide-in-from-bottom-4 duration-500 w-full overflow-x-hidden">
             {/* We rely on PropertyHub to render the content. 
                  PropertyHub works well as a block. 
                  It acts as the "Page Content". */}

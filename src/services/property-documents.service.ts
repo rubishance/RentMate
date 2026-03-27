@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import type { PropertyDocument, DocumentCategory, UserStorageUsage, DocumentFolder } from '../types/database';
+import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET } from '../lib/cloudinary';
 import { CompressionService } from './compression.service';
 
 /**
@@ -13,15 +14,30 @@ class PropertyDocumentsService {
         return 'secure_documents';
     }
 
-    /**
-     * Generate storage path for a file
-     * Format: userId/propertyId/category/timestamp_filename
-     */
     private generateStoragePath(userId: string, propertyId: string, category: DocumentCategory, fileName: string): string {
         const timestamp = Date.now();
         // Sanitize category to ensure it's a valid folder name
         const folder = category.replace(/[^a-zA-Z0-9_-]/g, '_');
-        return `${userId}/${propertyId}/${folder}/${timestamp}_${fileName}`;
+        
+        // Extract extension
+        const lastDotIndex = fileName.lastIndexOf('.');
+        let ext = '';
+        let nameWithoutExt = fileName;
+        if (lastDotIndex !== -1) {
+            ext = fileName.substring(lastDotIndex);
+            nameWithoutExt = fileName.substring(0, lastDotIndex);
+        }
+        
+        // Sanitize file name for S3 storage key (ASCII only)
+        // This prevents "Invalid key" errors with Hebrew/special characters
+        let safeName = nameWithoutExt
+            .replace(/[^a-zA-Z0-9_\-]/g, '_')
+            .replace(/_+/g, '_')
+            .replace(/^_|_$/g, '');
+            
+        if (!safeName) safeName = 'doc';
+            
+        return `${userId}/${propertyId}/${folder}/${timestamp}_${safeName}${ext}`;
     }
 
     /**
@@ -378,15 +394,52 @@ class PropertyDocumentsService {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('Not authenticated');
 
-        const bucket = this.getBucketForCategory(metadata.category);
-        const storagePath = this.generateStoragePath(user.id, metadata.propertyId, metadata.category, file.name);
+        // Dynamically resolve abstract UI tabs to concrete DB enums to satisfy DB check constraint
+        let finalCategory = metadata.category as string;
+        if (finalCategory === 'media') {
+             finalCategory = file.type.startsWith('video/') ? 'video' : 'photo';
+        } else if (finalCategory === 'documents') {
+             finalCategory = 'other';
+        } else if (finalCategory === 'utilities') {
+             finalCategory = 'utility_other';
+        } else if (finalCategory === 'receipts') {
+             finalCategory = 'receipt';
+        }
 
-        // Upload to storage
-        const { error: uploadError } = await supabase.storage
-            .from(bucket)
-            .upload(storagePath, file);
+        let bucket = this.getBucketForCategory(finalCategory as DocumentCategory);
+        let storagePath = this.generateStoragePath(user.id, metadata.propertyId, finalCategory as DocumentCategory, file.name);
+        let finalFileSize = fileToUpload.size;
 
-        if (uploadError) throw uploadError;
+        // If it's a video, offload to Cloudinary securely
+        if (file.type.startsWith('video/')) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+            
+            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/video/upload`, {
+                method: 'POST',
+                body: formData,
+            });
+            
+            if (!res.ok) {
+                const errText = await res.text();
+                throw new Error(`Video processing failed: ${errText}`);
+            }
+            
+            const cloudinaryData = await res.json();
+            bucket = 'external';
+            storagePath = cloudinaryData.secure_url;
+            if (cloudinaryData.bytes) {
+                finalFileSize = cloudinaryData.bytes;
+            }
+        } else {
+            // Standard Supabase storage upload for PDFs, images, docs
+            const { error: uploadError } = await supabase.storage
+                .from(bucket)
+                .upload(storagePath, fileToUpload);
+
+            if (uploadError) throw uploadError;
+        }
 
         // Save metadata to database
         const { data, error: dbError } = await supabase
@@ -395,12 +448,12 @@ class PropertyDocumentsService {
                 user_id: user.id,
                 property_id: metadata.propertyId,
                 folder_id: metadata.folderId, // Insert folder_id
-                category: metadata.category,
+                category: finalCategory,
                 storage_bucket: bucket,
                 storage_path: storagePath,
                 file_name: file.name,
-                file_size: file.size,
-                mime_type: file.type,
+                file_size: finalFileSize,
+                mime_type: fileToUpload.type,
                 title: metadata.title,
                 description: metadata.description,
                 amount: metadata.amount,
@@ -417,6 +470,37 @@ class PropertyDocumentsService {
 
         if (dbError) throw dbError;
 
+        return data as PropertyDocument;
+    }
+
+    /**
+     * Update an existing document's metadata
+     */
+    async updateDocument(
+        documentId: string,
+        updates: Partial<PropertyDocument>
+    ): Promise<PropertyDocument> {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+
+        // Prevent updating critical system fields directly
+        const sanitizedUpdates = { ...updates };
+        delete sanitizedUpdates.id;
+        delete sanitizedUpdates.user_id;
+        delete sanitizedUpdates.property_id;
+        delete sanitizedUpdates.storage_bucket;
+        delete sanitizedUpdates.storage_path;
+        delete sanitizedUpdates.created_at;
+
+        const { data, error } = await supabase
+            .from('property_documents')
+            .update(sanitizedUpdates)
+            .eq('id', documentId)
+            .eq('user_id', user.id) // Enforce ownership
+            .select()
+            .single();
+
+        if (error) throw error;
         return data as PropertyDocument;
     }
 
@@ -502,7 +586,7 @@ class PropertyDocumentsService {
                 query = query.like('category', 'utility_%');
             } else if (filters.category === 'media') {
                 query = query.in('category', ['photo', 'video']);
-            } else if (filters.category === 'checks' || filters.category === 'receipts') {
+            } else if (filters.category === 'receipts') {
                 query = query.eq('category', 'receipt');
             } else if (filters.category === 'documents') {
                 query = query.in('category', ['lease', 'id', 'other', 'maintenance']);
@@ -552,9 +636,16 @@ class PropertyDocumentsService {
      * Expiration set to 1 hour (3600 seconds)
      */
     async getDocumentUrl(document: PropertyDocument): Promise<string> {
+        // Bypass Supabase Signature for External URLs (Cloudinary, etc.)
+        if (document.storage_path.startsWith('http')) {
+            return document.storage_path;
+        }
+
         const { data, error } = await supabase.storage
             .from(document.storage_bucket)
-            .createSignedUrl(document.storage_path, 3600);
+            .createSignedUrl(document.storage_path, 3600, {
+                download: document.file_name
+            });
 
         if (error) {
             console.error('Error creating signed URL:', error);

@@ -6,7 +6,8 @@ import {
     UsersIcon,
     ExclamationTriangleIcon,
     MagnifyingGlassIcon,
-    ArrowPathIcon
+    ArrowPathIcon,
+    CloudIcon
 } from '@heroicons/react/24/outline';
 import { Loader2 } from 'lucide-react';
 import { formatBytes } from '../../lib/utils';
@@ -51,9 +52,31 @@ export function StorageManagement() {
     const [filter, setFilter] = useState<'all' | 'high_usage'>('all');
     const [error, setError] = useState<string | null>(null);
 
+    // Cloudinary state
+    const [cloudinaryStats, setCloudinaryStats] = useState<any>(null);
+    const [cloudinaryLoading, setCloudinaryLoading] = useState(false);
+    const [cloudinaryError, setCloudinaryError] = useState<string | null>(null);
+
     useEffect(() => {
         fetchStorageStats();
+        fetchCloudinaryStats();
     }, []);
+
+    async function fetchCloudinaryStats() {
+        setCloudinaryLoading(true);
+        setCloudinaryError(null);
+        try {
+            const { data, error } = await supabase.functions.invoke('admin-cloudinary-usage');
+            if (error) throw error;
+            if (data?.error) throw new Error(data.error);
+            setCloudinaryStats(data);
+        } catch (err: unknown) {
+            console.error('Error fetching Cloudinary stats:', err);
+            setCloudinaryError(err instanceof Error ? err.message : 'Failed to load Cloudinary statistics');
+        } finally {
+            setCloudinaryLoading(false);
+        }
+    }
 
     async function fetchStorageStats() {
         setLoading(true);
@@ -158,7 +181,118 @@ export function StorageManagement() {
                 </div>
             )}
 
-            {/* Overview Cards */}
+            {/* Cloudinary Usage Section */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-10 pointer-events-none" />
+                
+                <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-xl border border-blue-100 dark:border-blue-800">
+                            <CloudIcon className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-bold text-foreground dark:text-white leading-tight">External Media Storage (Cloudinary)</h2>
+                            <p className="text-sm text-muted-foreground mt-0.5">Global usage limits and quotas</p>
+                        </div>
+                    </div>
+                </div>
+
+                {cloudinaryLoading ? (
+                    <div className="flex justify-center items-center h-24">
+                        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                    </div>
+                ) : cloudinaryError ? (
+                    <div className="text-sm text-red-600 dark:text-red-400 font-medium">
+                        Error loading Cloudinary stats: {cloudinaryError}
+                    </div>
+                ) : cloudinaryStats ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        
+                        {/* Credits */}
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-black text-muted-foreground uppercase tracking-wider">Monthly Credits</span>
+                                <span className="text-xs font-bold text-primary dark:text-blue-400">
+                                    {(cloudinaryStats.credits?.usage || 0).toFixed(2)} / {cloudinaryStats.credits?.limit || 25}
+                                </span>
+                            </div>
+                            <div className="h-2.5 bg-muted dark:bg-foreground rounded-full overflow-hidden border border-border dark:border-gray-700">
+                                <div 
+                                    className={`h-full rounded-full transition-all ${
+                                        (cloudinaryStats.credits?.used_percent || 0) > 80 ? 'bg-orange-500' : 'bg-primary'
+                                    }`}
+                                    style={{ width: `${Math.min(cloudinaryStats.credits?.used_percent || 0, 100)}%` }}
+                                />
+                            </div>
+                            <p className="text-xs text-muted-foreground font-medium text-right">
+                                {(cloudinaryStats.credits?.used_percent || 0).toFixed(1)}% Used
+                            </p>
+                        </div>
+
+                        {/* Storage */}
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-black text-muted-foreground uppercase tracking-wider">Storage</span>
+                                <span className="text-xs font-bold text-foreground dark:text-white">
+                                    {formatBytes(cloudinaryStats.storage?.usage || 0)}
+                                </span>
+                            </div>
+                            <div className="h-2.5 bg-muted dark:bg-foreground rounded-full overflow-hidden border border-border dark:border-gray-700">
+                                <div 
+                                    className="h-full bg-indigo-500 rounded-full transition-all"
+                                    style={{ width: `${Math.min(cloudinaryStats.storage?.used_percent || 0, 100)}%` }}
+                                />
+                            </div>
+                            <p className="text-xs text-muted-foreground font-medium text-right">
+                                Limit: {formatBytes(cloudinaryStats.storage?.limit || 0)}
+                            </p>
+                        </div>
+
+                        {/* Bandwidth */}
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-black text-muted-foreground uppercase tracking-wider">Bandwidth</span>
+                                <span className="text-xs font-bold text-foreground dark:text-white">
+                                    {formatBytes(cloudinaryStats.bandwidth?.usage || 0)}
+                                </span>
+                            </div>
+                            <div className="h-2.5 bg-muted dark:bg-foreground rounded-full overflow-hidden border border-border dark:border-gray-700">
+                                <div 
+                                    className="h-full bg-emerald-500 rounded-full transition-all"
+                                    style={{ width: `${Math.min(cloudinaryStats.bandwidth?.used_percent || 0, 100)}%` }}
+                                />
+                            </div>
+                            <p className="text-xs text-muted-foreground font-medium text-right">
+                                Limit: {formatBytes(cloudinaryStats.bandwidth?.limit || 0)}
+                            </p>
+                        </div>
+
+                        {/* Transformations */}
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-black text-muted-foreground uppercase tracking-wider">Transformations</span>
+                                <span className="text-xs font-bold text-foreground dark:text-white">
+                                    {(cloudinaryStats.transformations?.usage || 0).toLocaleString()}
+                                </span>
+                            </div>
+                            <div className="h-2.5 bg-muted dark:bg-foreground rounded-full overflow-hidden border border-border dark:border-gray-700">
+                                <div 
+                                    className="h-full bg-amber-500 rounded-full transition-all"
+                                    style={{ width: `${Math.min(cloudinaryStats.transformations?.used_percent || 0, 100)}%` }}
+                                />
+                            </div>
+                            <p className="text-xs text-muted-foreground font-medium text-right">
+                                Limit: {(cloudinaryStats.transformations?.limit || 0).toLocaleString()}
+                            </p>
+                        </div>
+
+                    </div>
+                ) : (
+                    <div className="text-sm text-muted-foreground">No data available</div>
+                )}
+            </div>
+
+            {/* Overview Cards (Internal Supabase Data) */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-border dark:border-gray-700 shadow-sm">
                     <div className="flex items-center gap-4">

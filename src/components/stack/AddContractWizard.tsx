@@ -4,7 +4,7 @@ import {
     Settings as SettingsIcon, Shield, FileText, ChevronDown,
     Cloud, HardDrive, Download, Car, Box, Plus, Trash2,
     MapPin, Image as ImageIcon, Loader2, Upload, AlertTriangle,
-    Clock, Wind, ShieldCheck, CheckCircle, Lock
+    Clock, Wind, ShieldCheck, CheckCircle, Lock, Phone, Mail, IdCard, Info, Sparkles
 } from 'lucide-react';
 import { ContractScanner } from '../ContractScanner';
 import { ValidatedField } from '../common/ValidatedField';
@@ -28,6 +28,8 @@ import { RegeneratePaymentsModal } from '../modals/RegeneratePaymentsModal';
 import { generatePaymentSchedule } from '../../utils/payment-generator';
 import { SegmentedControl } from '../ui/SegmentedControl';
 import { useScrollLock } from '../../hooks/useScrollLock';
+import { PAYMENT_METHODS } from '../../constants/paymentMethods';
+import { LINKAGE_TYPES, LINKAGE_SUB_TYPES } from '../../constants/linkageTypes';
 
 import { supabase } from '../../lib/supabase';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -56,10 +58,11 @@ const STEPS = [
 
 interface AddContractWizardProps {
     initialData?: Partial<ContractFormData> & { propertyId?: string; propertyLocked?: boolean };
+    propertyId?: string;
     onSuccess?: () => void;
 }
 
-export function AddContractWizard({ initialData, onSuccess }: AddContractWizardProps) {
+export function AddContractWizard({ initialData, propertyId, onSuccess }: AddContractWizardProps) {
     const { lang, t } = useTranslation();
     const { clear: clearCache } = useDataCache();
     const { pop, push } = useStack();
@@ -133,12 +136,14 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
 
     // Initial values from props
     useEffect(() => {
-        if (initialData?.propertyId) {
-            setValue('selectedPropertyId', initialData.propertyId);
+        const pId = propertyId || initialData?.propertyId;
+        if (pId) {
+            setValue('selectedPropertyId', pId);
             setValue('isExistingProperty', true);
             setIsPropertyLocked(true);
+            setStep(2); // Skip asset selection since property is pre-filled
         }
-    }, [initialData, setValue]);
+    }, [initialData, propertyId, setValue]);
 
     const fetchProperties = useCallback(async (autoSelectNewest = false) => {
         if (!user) return;
@@ -775,17 +780,8 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
 
     return (
         <div className={cn(
-            "relative h-full overflow-hidden bg-background dark:bg-neutral-950 flex flex-col rounded-t-[2.5rem]",
+            "relative h-full overflow-hidden bg-[#F5F7FA] dark:bg-neutral-950 flex flex-col lg:rounded-t-[2.5rem]",
         )}>
-            {/* PROGRESS TRACKER */}
-            <div className="absolute top-0 inset-x-0 h-1 bg-black/5 dark:bg-white/5 z-[100]">
-                <motion.div
-                    className="h-full bg-primary shadow-lg shadow-primary/20"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${(step / STEPS.length) * 100}%` }}
-                />
-            </div>
-
             {/* Floating Toggle Button */}
             <AnimatePresence>
                 {scannedContractUrl && !isScanning && (
@@ -794,10 +790,10 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                         animate={{ opacity: 1, scale: 1, x: 0 }}
                         exit={{ opacity: 0, scale: 0.8, x: -20 }}
                         onClick={() => setIsContractViewerOpen(!isContractViewerOpen)}
-                        className="fixed top-24 left-6 z-50 glass-premium dark:bg-neutral-800/60 shadow-lg border border-white/5 p-3 rounded-full flex items-center gap-3 hover:scale-105 transition-all text-primary"
+                        className="fixed top-24 left-6 z-50 glass-premium dark:bg-neutral-800/60 shadow-lg border border-[#CFD8DC] p-3 rounded-full flex items-center gap-3 hover:scale-105 transition-all text-[#0D47A1]"
                     >
                         {isContractViewerOpen ? <ChevronDown className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
-                        <span className="text-xs font-black uppercase tracking-widest pr-1 text-foreground">{t('hideContract')}</span>
+                        <span className="text-xs font-black uppercase tracking-widest pr-1 text-[#1A237E]">{t('hideContract')}</span>
                     </motion.button>
                 )}
             </AnimatePresence>
@@ -810,7 +806,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                 <div
                     className={cn(
                         "flex flex-col min-w-0 transition-all duration-300",
-                        isContractViewerOpen ? "border-b lg:border-b-0 lg:border-r border-white/5" : "h-full w-full"
+                        isContractViewerOpen ? "border-b lg:border-b-0 lg:border-r border-[#CFD8DC]" : "h-full w-full"
                     )}
                     style={{
                         height: (isContractViewerOpen && windowWidth < 1024) ? `${splitRatio}%` : '100%',
@@ -819,42 +815,49 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                     }}
                 >
                     {/* Header */}
-                    <div className="h-20 glass-premium dark:bg-neutral-900/60 border-b border-white/5 flex items-center justify-between px-8 z-20 shrink-0 backdrop-blur-2xl">
-                        <div className="flex items-center gap-6">
+                    <div className="h-16 flex items-center justify-between px-6 z-20 shrink-0 bg-[#F5F7FA]">
+                        <div className="flex-1"></div>
+                        <div className="flex-1 text-center">
+                            <h1 className="font-extrabold text-xl text-[#0D47A1]">הוספת חוזה חדש</h1>
+                        </div>
+                        <div className="flex-1 flex justify-end">
                             <button
                                 onClick={() => pop()}
-                                className="w-10 h-10 glass-premium dark:bg-neutral-800/40 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground transition-all border border-white/5"
+                                className="text-[#0D47A1] p-2 rounded-full hover:bg-black/5 transition-all"
                             >
-                                <ArrowLeft className={cn("w-4 h-4", lang === 'he' ? 'rotate-180' : '')} />
+                                <ArrowRight className={cn("w-6 h-6", lang === 'en' ? 'rotate-180' : '')} />
                             </button>
-                            <div className="flex flex-col">
-                                <span className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground opacity-70 mb-1">
-                                    {t('step')} {step} / {STEPS.length}
-                                </span>
-                                <h1 className="font-black text-xl tracking-tighter text-foreground leading-none lowercase">
-                                    {t(STEPS[step - 1].labelKey)}
-                                </h1>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                            <div className="flex gap-1.5 glass-premium dark:bg-neutral-800/40 p-1.5 rounded-2xl border border-white/5">
-                                {STEPS.map((s) => (
-                                    <div
-                                        key={s.id}
-                                        className={cn(
-                                            "w-2 h-2 rounded-full transition-all duration-700",
-                                            s.id === step ? "w-8 bg-primary shadow-md shadow-primary/30" : s.id < step ? "bg-primary/50 dark:bg-primary/30" : "bg-slate-200 dark:bg-neutral-800"
-                                        )}
-                                    />
-                                ))}
-                            </div>
                         </div>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto no-scrollbar pt-6 pb-24">
-                        <div className="max-w-2xl mx-auto px-6">
-                            <div className="bg-card glass-premium border border-border rounded-3xl p-6 shadow-xl min-h-[400px]" dir="rtl">
+                    <div className="flex-1 overflow-y-auto no-scrollbar pt-6 pb-32 px-4 sm:px-6">
+                        <div className="max-w-2xl mx-auto space-y-6">
+                            
+                            {/* Progress Card */}
+                            {!isScanning && (
+                                <div className="bg-white rounded-[16px] p-6 shadow-[0px_4px_12px_rgba(13,71,161,0.04)] border border-[#CFD8DC]/30" dir="rtl">
+                                    <div className="flex justify-between items-end mb-4">
+                                        <span className="text-[#37474F] text-sm font-medium">{t(STEPS[step - 1].labelKey)}</span>
+                                        <span className="text-[#0D47A1] font-bold text-lg">שלב {step} מתוך {STEPS.length}</span>
+                                    </div>
+                                    <div className="w-full bg-[#E3F2FD] h-2 rounded-full mb-4 overflow-hidden" dir="ltr">
+                                        <div 
+                                            className="bg-[#0D47A1] h-full rounded-full transition-all duration-500" 
+                                            style={{ width: `${(step / STEPS.length) * 100}%` }} 
+                                        />
+                                    </div>
+                                    <div className="flex justify-between items-center text-xs sm:text-sm font-medium">
+                                        {STEPS.slice().reverse().map(s => (
+                                            <span key={s.id} className={s.id === step ? "text-[#0D47A1] font-bold" : "text-[#CFD8DC]"}>
+                                                {t(s.labelKey)}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Content Card */}
+                            <div className="bg-white rounded-[16px] shadow-[0px_4px_12px_rgba(13,71,161,0.04)] border border-[#CFD8DC]/30 p-6 sm:p-8 min-h-[400px]" dir="rtl">
                                 <AnimatePresence mode="wait">
                                     {isScanning && (
                                         <ContractScanner
@@ -876,16 +879,16 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                         >
                                             {/* Step specific content here */}
                                             {step === 1 && (
-                                                <div className="space-y-6">
+                                                <div className="space-y-8 pb-4">
                                                     {!contractFile && (
-                                                        <div className="bg-primary rounded-2xl p-6 text-primary-foreground flex items-center justify-between shadow-xl">
+                                                        <div className="bg-[#0D47A1] rounded-2xl p-6 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between shadow-md gap-4">
                                                             <div>
-                                                                <h3 className="font-black text-lg mb-1">{t('aiScanTitle')}</h3>
+                                                                <h3 className="font-extrabold text-lg mb-1">{t('aiScanTitle')}</h3>
                                                                 <p className="text-white/80 text-sm">{t('aiScanDesc')}</p>
                                                             </div>
                                                             <Button
                                                                 onClick={() => setIsScanning(true)}
-                                                                className="bg-white text-brand-600 hover:bg-white/90 font-black shadow-lg"
+                                                                className="bg-white text-[#0D47A1] hover:bg-white/90 font-bold shadow-sm whitespace-nowrap"
                                                             >
                                                                 {t('scanNow')}
                                                             </Button>
@@ -899,19 +902,22 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                         </div>
                                                     )}
 
-                                                    <div className="space-y-4">
-                                                        <h3 className="font-black text-xl flex items-center gap-3 mb-6"><Building className="w-5 h-5 text-brand-500" /> {t('propertyDetails')}</h3>
+                                                    <div className="space-y-6">
+                                                        <div className="border-r-4 border-[#0D47A1] pr-4 mb-6 text-right">
+                                                            <h3 className="font-extrabold text-2xl text-[#0D47A1] mb-2">{t('propertyDetails')}</h3>
+                                                            <p className="text-[#37474F] text-sm leading-relaxed max-w-sm">בחירת הנכס אליו ישויך החוזה החדש.</p>
+                                                        </div>
 
                                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                             {!isPropertyLocked && (
                                                                 <button
                                                                     onClick={handleAddNewProperty}
-                                                                    className="p-6 rounded-2xl border-2 border-dashed border-secondary dark:border-neutral-800 hover:border-brand-500/50 hover:bg-brand-500/5 transition-all group flex flex-col items-center justify-center gap-3 min-h-[140px]"
+                                                                    className="p-6 rounded-2xl border-2 border-dashed border-[#CFD8DC] hover:border-[#0D47A1]/50 hover:bg-[#F5F7FA] transition-all group flex flex-col items-center justify-center gap-3 min-h-[140px] bg-white"
                                                                 >
-                                                                    <div className="w-12 h-12 rounded-full bg-brand-500/10 flex items-center justify-center text-brand-500 group-hover:scale-110 transition-transform">
+                                                                    <div className="w-12 h-12 rounded-full bg-[#E3F2FD] flex items-center justify-center text-[#0D47A1] group-hover:scale-110 transition-transform">
                                                                         <Plus className="w-6 h-6" />
                                                                     </div>
-                                                                    <span className="font-black text-foreground">{t('newProperty')}</span>
+                                                                    <span className="font-bold text-[#1A237E]">{t('newProperty')}</span>
                                                                 </button>
                                                             )}
 
@@ -928,18 +934,19 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                                         setStep(2);
                                                                     }}
                                                                     className={cn(
-                                                                        "p-6 rounded-2xl border-2 text-right transition-all group relative overflow-hidden",
+                                                                        "p-6 rounded-2xl border-2 text-right transition-all group relative overflow-hidden bg-white",
                                                                         formData.selectedPropertyId === p.id
-                                                                            ? "border-brand-500 bg-brand-500/5 shadow-inner-lg"
-                                                                            : "border-secondary dark:border-neutral-800 hover:border-brand-500/50",
+                                                                            ? "border-[#0D47A1] bg-[#E3F2FD]/20 shadow-sm"
+                                                                            : "border-[#CFD8DC] hover:border-[#0D47A1]/50",
                                                                         isPropertyLocked && formData.selectedPropertyId !== p.id && "hidden"
                                                                     )}
                                                                 >
                                                                     <div className="flex items-center justify-end mb-2">
-                                                                        {formData.selectedPropertyId === p.id && <CheckCircle className="w-5 h-5 text-brand-500" />}
+                                                                        {formData.selectedPropertyId === p.id && <CheckCircle className="w-5 h-5 text-[#0D47A1]" />}
+                                                                        {formData.selectedPropertyId !== p.id && <Building className="w-5 h-5 text-[#CFD8DC]" />}
                                                                     </div>
-                                                                    <p className="font-black text-lg text-foreground truncate">{p.address}</p>
-                                                                    <p className="text-sm text-muted-foreground">{p.city}</p>
+                                                                    <p className="font-bold text-lg text-[#1A237E] truncate">{p.address}</p>
+                                                                    <p className="text-sm text-[#37474F]">{p.city}</p>
                                                                 </button>
                                                             ))}
                                                         </div>
@@ -948,11 +955,14 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                             )}
 
                                             {step === 2 && (
-                                                <div className="space-y-6">
-                                                    <h3 className="font-black text-xl flex items-center gap-3 mb-6"><User className="w-5 h-5 text-brand-500" /> {t('tenantDetails')}</h3>
+                                                <div className="space-y-8 pb-4">
+                                                    <div className="border-r-4 border-[#0D47A1] pr-4 mb-8 text-right">
+                                                        <h3 className="font-extrabold text-2xl text-[#0D47A1] mb-2">פרטי הדייר</h3>
+                                                        <p className="text-[#37474F] text-sm leading-relaxed max-w-sm">אנא הזן את פרטי השוכר כפי שהם מופיעים בתעודת הזהות.</p>
+                                                    </div>
 
                                                     {formData.tenants.map((tenant, index) => (
-                                                        <div key={index} className="p-6 border border-border rounded-3xl space-y-4 relative bg-secondary/5 group transition-colors hover:bg-secondary/10 shadow-sm">
+                                                        <div key={index} className="space-y-6 relative group">
                                                             {formData.tenants.length > 1 && (
                                                                 <button
                                                                     type="button"
@@ -961,77 +971,129 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                                         newTenants.splice(index, 1);
                                                                         setValue('tenants', newTenants);
                                                                     }}
-                                                                    className="absolute top-4 left-4 p-2 text-destructive hover:bg-red-500/10 rounded-full transition-all"
+                                                                    className="absolute -top-10 left-0 p-2 text-red-500 hover:bg-red-500/10 rounded-full transition-all"
                                                                 >
                                                                     <Trash2 className="w-4 h-4" />
                                                                 </button>
                                                             )}
 
-                                                            <Input
-                                                                label={<span>{t('fullName')} <span className="text-destructive">*</span></span>}
-                                                                value={tenant.name}
-                                                                onChange={e => {
-                                                                    const newTenants = [...formData.tenants];
-                                                                    newTenants[index].name = e.target.value;
-                                                                    setValue('tenants', newTenants);
-                                                                }}
-                                                                className="w-full bg-background"
-                                                            />
+                                                            <div className="space-y-2 text-right">
+                                                                <label className="text-sm font-semibold flex items-center justify-end gap-2 text-[#1A237E]">
+                                                                    <span>{t('fullName')}</span>
+                                                                    <User className="w-4 h-4 text-[#0D47A1]" />
+                                                                </label>
+                                                                <input
+                                                                    type="text"
+                                                                    value={tenant.name}
+                                                                    onChange={e => {
+                                                                        const newTenants = [...formData.tenants];
+                                                                        newTenants[index].name = e.target.value;
+                                                                        setValue('tenants', newTenants);
+                                                                    }}
+                                                                    placeholder="ישראל ישראלי"
+                                                                    className="w-full bg-white border border-[#CFD8DC] rounded-xl px-4 py-3 text-right focus:outline-none focus:border-[#0D47A1] transition-all"
+                                                                />
+                                                            </div>
 
-                                                            <div className="grid grid-cols-2 gap-4">
-                                                                <Input
-                                                                    label={t('idNumber')}
+                                                            <div className="space-y-2 text-right">
+                                                                <label className="text-sm font-semibold flex items-center justify-end gap-2 text-[#1A237E]">
+                                                                    <span>{t('idNumber')}</span>
+                                                                    <IdCard className="w-4 h-4 text-[#0D47A1]" />
+                                                                </label>
+                                                                <input
+                                                                    type="text"
                                                                     value={tenant.id_number}
                                                                     onChange={e => {
                                                                         const newTenants = [...formData.tenants];
                                                                         newTenants[index].id_number = e.target.value;
                                                                         setValue('tenants', newTenants);
                                                                     }}
-                                                                    className="w-full bg-background font-mono"
+                                                                    placeholder="000000000"
+                                                                    className="w-full bg-white border border-[#CFD8DC] rounded-xl px-4 py-3 text-right font-mono focus:outline-none focus:border-[#0D47A1] transition-all"
                                                                 />
-                                                                <Input
-                                                                    label={t('phone')}
+                                                            </div>
+
+                                                            <div className="space-y-2 text-right">
+                                                                <label className="text-sm font-semibold flex items-center justify-end gap-2 text-[#1A237E]">
+                                                                    <span>{t('phone')}</span>
+                                                                    <Phone className="w-4 h-4 text-[#0D47A1]" />
+                                                                </label>
+                                                                <input
+                                                                    type="text"
                                                                     value={tenant.phone}
                                                                     onChange={e => {
                                                                         const newTenants = [...formData.tenants];
                                                                         newTenants[index].phone = e.target.value;
                                                                         setValue('tenants', newTenants);
                                                                     }}
-                                                                    className="w-full bg-background"
+                                                                    placeholder="050-0000000"
+                                                                    className="w-full bg-white border border-[#CFD8DC] rounded-xl px-4 py-3 text-right font-mono focus:outline-none focus:border-[#0D47A1] transition-all"
                                                                     dir="ltr"
                                                                 />
                                                             </div>
 
-                                                            <Input
-                                                                label={t('email')}
-                                                                value={tenant.email}
-                                                                onChange={e => {
-                                                                    const newTenants = [...formData.tenants];
-                                                                    newTenants[index].email = e.target.value;
-                                                                    setValue('tenants', newTenants);
-                                                                }}
-                                                                className="w-full bg-background"
-                                                                type="email"
-                                                                dir="ltr"
-                                                            />
+                                                            <div className="space-y-2 text-right">
+                                                                <label className="text-sm font-semibold flex items-center justify-end gap-2 text-[#1A237E]">
+                                                                    <span>{t('email')}</span>
+                                                                    <Mail className="w-4 h-4 text-[#0D47A1]" />
+                                                                </label>
+                                                                <input
+                                                                    type="email"
+                                                                    value={tenant.email}
+                                                                    onChange={e => {
+                                                                        const newTenants = [...formData.tenants];
+                                                                        newTenants[index].email = e.target.value;
+                                                                        setValue('tenants', newTenants);
+                                                                    }}
+                                                                    placeholder="example@domain.com"
+                                                                    className="w-full bg-white border border-[#CFD8DC] rounded-xl px-4 py-3 text-right focus:outline-none focus:border-[#0D47A1] transition-all"
+                                                                    dir="ltr"
+                                                                />
+                                                            </div>
                                                         </div>
                                                     ))}
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const newTenants = [...formData.tenants];
+                                                            newTenants.push({ name: '', id_number: '', email: '', phone: '' });
+                                                            setValue('tenants', newTenants);
+                                                        }}
+                                                        className="w-full mt-4 p-4 border-2 border-dashed border-[#0D47A1]/30 rounded-xl text-[#0D47A1] font-bold hover:bg-[#E3F2FD]/50 transition-colors flex justify-center items-center gap-2"
+                                                    >
+                                                        <Plus className="w-5 h-5" />
+                                                        {t('addTenant') || "הוסף שוכר נוסף"}
+                                                    </button>
+
+                                                    <div className="mt-8 bg-[#F5F7FA] rounded-xl p-5 flex items-start gap-4 justify-end">
+                                                        <div className="text-right flex-1 pt-1">
+                                                            <h4 className="font-bold text-[#0D47A1] text-sm mb-1">שותפים לחוזה</h4>
+                                                            <p className="text-sm text-[#37474F]">כל השוכרים המופיעים בחוזה צריכים להיות רשומים עם פרטיהם המלאים להבטחת כיסוי משפטי מעולה.</p>
+                                                        </div>
+                                                        <div className="w-8 h-8 rounded-full bg-[#0D47A1] flex items-center justify-center shrink-0">
+                                                            <Info className="w-5 h-5 text-white" />
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             )}
 
                                             {step === 3 && (
-                                                <div className="space-y-6">
-                                                    <h3 className="font-black text-xl flex items-center gap-3 mb-6"><Calendar className="w-5 h-5 text-brand-500" /> {t('leaseTerms')}</h3>
+                                                <div className="space-y-8 pb-4">
+                                                    <div className="border-r-4 border-[#0D47A1] pr-4 mb-8 text-right">
+                                                        <h3 className="font-extrabold text-2xl text-[#0D47A1] mb-2">{t('leaseTerms')}</h3>
+                                                        <p className="text-[#37474F] text-sm leading-relaxed max-w-sm">הגדרת תקופות השכירות ותחנות יציאה.</p>
+                                                    </div>
 
                                                     <div className="grid grid-cols-2 gap-4">
                                                         <DatePicker
-                                                            label={<span>{t('startDate')} <span className="text-destructive">*</span></span>}
+                                                            label={<span>{t('startDate')} <span className="text-red-500">*</span></span>}
                                                             value={formData.startDate ? parseISO(formData.startDate) : undefined}
                                                             onChange={(date) => setValue('startDate', date ? format(date, 'yyyy-MM-dd') : '')}
                                                             placeholder={t('pickDate')}
                                                         />
                                                         <DatePicker
-                                                            label={<span>{t('endDate')} <span className="text-destructive">*</span></span>}
+                                                            label={<span>{t('endDate')} <span className="text-red-500">*</span></span>}
                                                             value={formData.endDate ? parseISO(formData.endDate) : undefined}
                                                             onChange={(date) => setValue('endDate', date ? format(date, 'yyyy-MM-dd') : '')}
                                                             placeholder={t('pickDate')}
@@ -1045,19 +1107,19 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                         placeholder={t('pickDate')}
                                                     />
 
-                                                    <div className="pt-6 border-t border-border">
-                                                        <h4 className="font-black text-sm mb-4 uppercase tracking-widest text-muted-foreground">{t('optionPeriods')}</h4>
+                                                    <div className="pt-6 border-t border-[#CFD8DC]">
+                                                        <h4 className="font-bold text-sm mb-4 uppercase tracking-widest text-[#37474F]">{t('optionPeriods')}</h4>
                                                         {formData.optionPeriods.length === 0 && (
-                                                            <div className="text-center py-6 text-muted-foreground text-xs italic">
+                                                            <div className="text-center py-6 text-[#78909C] text-xs italic bg-[#F5F7FA] rounded-xl border border-dashed border-[#CFD8DC]">
                                                                 {t('noOptionsDefined')}
                                                             </div>
                                                         )}
                                                         {formData.optionPeriods.map((period, idx) => (
-                                                            <div key={idx} className="flex flex-col gap-4 bg-secondary/10 p-4 rounded-2xl mb-4 relative">
+                                                            <div key={idx} className="flex flex-col gap-4 bg-[#F5F7FA] border border-[#CFD8DC] p-5 rounded-2xl mb-4 relative">
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="icon"
-                                                                    className="absolute top-2 left-2 text-destructive hover:bg-red-500/10 rounded-full w-8 h-8"
+                                                                    className="absolute top-2 left-2 text-red-500 hover:bg-red-500/10 rounded-full w-8 h-8"
                                                                     onClick={() => setValue('optionPeriods', formData.optionPeriods.filter((_, i) => i !== idx))}
                                                                 >
                                                                     <Trash2 className="w-4 h-4" />
@@ -1084,7 +1146,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                                             setValue('optionPeriods', newPeriods);
                                                                         }}
                                                                         placeholder="0"
-                                                                        className="bg-background font-mono"
+                                                                        className="bg-white font-mono"
                                                                         dir="ltr"
                                                                     />
                                                                     <Input
@@ -1097,7 +1159,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                                             setValue('optionPeriods', newPeriods);
                                                                         }}
                                                                         placeholder="0"
-                                                                        className="bg-background font-mono"
+                                                                        className="bg-white font-mono"
                                                                         dir="ltr"
                                                                     />
                                                                 </div>
@@ -1127,7 +1189,7 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                                     }
                                                                 ]);
                                                             }}
-                                                            className="text-brand-500 font-black p-0 h-auto"
+                                                            className="text-[#0D47A1] font-bold p-0 h-auto hover:text-[#1A237E]"
                                                         >
                                                             <Plus className="w-4 h-4 mr-1" /> {t('addPeriod')}
                                                         </Button>
@@ -1137,21 +1199,24 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                             )}
 
                                             {step === 4 && (
-                                                <div className="space-y-6">
-                                                    <h3 className="font-black text-xl flex items-center gap-3 mb-6"><SettingsIcon className="w-5 h-5 text-brand-500" /> {t('paymentDetails')}</h3>
+                                                <div className="space-y-8 pb-4">
+                                                    <div className="border-r-4 border-[#0D47A1] pr-4 mb-8 text-right">
+                                                        <h3 className="font-extrabold text-2xl text-[#0D47A1] mb-2">{t('paymentDetails')}</h3>
+                                                        <p className="text-[#37474F] text-sm leading-relaxed max-w-sm">הגדרת סכום השכירות החודשי ואופן התשלום.</p>
+                                                    </div>
 
                                                     <Input
-                                                        label={<span>{t('monthlyRent')} <span className="text-destructive">*</span></span>}
+                                                        label={<span>{t('monthlyRent')} <span className="text-red-500">*</span></span>}
                                                         value={formatNumber(formData.rent)}
                                                         onChange={e => {
                                                             const val = parseNumber(e.target.value);
                                                             if (/^\d*\.?\d*$/.test(val)) setValue('rent', val as any);
                                                         }}
-                                                        className="w-full font-black text-2xl bg-background h-16"
-                                                        leftIcon={<span className="text-muted-foreground text-xl">₪</span>}
+                                                        className="w-full font-bold text-2xl bg-[#F5F7FA] border border-[#CFD8DC] rounded-xl h-16 text-[#1A237E]"
+                                                        leftIcon={<span className="text-[#37474F] text-xl font-medium">₪</span>}
                                                     />
 
-                                                    <div className="grid grid-cols-2 gap-4">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         <Input
                                                             label={t('paymentDay')}
                                                             type="number"
@@ -1163,18 +1228,6 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                                 if (!isNaN(val) && val >= 1 && val <= 31) setValue('paymentDay', val);
                                                             }}
                                                         />
-                                                        <Select
-                                                            label={t('paymentFrequency')}
-                                                            value={formData.paymentFrequency}
-                                                            onChange={val => setValue('paymentFrequency', val as any)}
-                                                            options={[
-                                                                { value: 'Monthly', label: t('monthly') },
-                                                                { value: 'Bimonthly', label: t('bimonthly') },
-                                                                { value: 'Quarterly', label: t('quarterly') },
-                                                                { value: 'Semiannually', label: t('semiannually') },
-                                                                { value: 'Annually', label: t('annually') }
-                                                            ]}
-                                                        />
                                                     </div>
 
                                                     <div className="grid grid-cols-1 gap-4">
@@ -1183,20 +1236,16 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                             value={formData.paymentMethod}
                                                             onChange={val => setValue('paymentMethod', val as any)}
                                                             placeholder={t('selectOption')}
-                                                            options={[
-                                                                { value: 'transfer', label: t('transfer') },
-                                                                { value: 'checks', label: t('check') },
-                                                                { value: 'cash', label: t('cash') },
-                                                                { value: 'bit', label: t('bit') },
-                                                                { value: 'paybox', label: t('paybox') },
-                                                                { value: 'other', label: t('other') }
-                                                            ]}
+                                                            options={PAYMENT_METHODS.map(pm => ({
+                                                                value: pm.id,
+                                                                label: t(pm.labelKey as any)
+                                                            }))}
                                                         />
                                                     </div>
 
-                                                    <div className="p-6 bg-secondary/10 rounded-3xl space-y-4">
+                                                    <div className="p-6 bg-[#F5F7FA] border border-[#CFD8DC] rounded-2xl space-y-4">
                                                         <Checkbox
-                                                            label={<span className="font-black">{t('contractIsIndexed')}</span>}
+                                                            label={<span className="font-bold text-[#1A237E]">{t('contractIsIndexed')}</span>}
                                                             checked={formData.hasLinkage}
                                                             onChange={checked => {
                                                                 setValue('hasLinkage', checked);
@@ -1207,32 +1256,32 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                             }}
                                                         />
                                                         {formData.hasLinkage && (
-                                                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-4 pt-4">
+                                                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-4 pt-4 border-t border-[#CFD8DC]">
                                                                 <Select
-                                                                    label={<span>{t('indexOption')} <span className="text-destructive">*</span></span>}
+                                                                    label={<span>{t('indexOption')} <span className="text-red-500">*</span></span>}
                                                                     value={formData.linkageType}
                                                                     onChange={val => setValue('linkageType', val as any)}
                                                                     placeholder={t('selectOption')}
-                                                                    options={[
-                                                                        { value: 'cpi', label: t('linkedToCpi') },
-                                                                        { value: 'housing', label: t('linkedToHousing') }
-                                                                    ]}
+                                                                    options={LINKAGE_TYPES.map((type: any) => ({
+                                                                        value: type.id,
+                                                                        label: t(type.labelKey as any)
+                                                                    }))}
                                                                 />
 
                                                                 <div className="space-y-2">
-                                                                    <label className="text-sm font-medium text-foreground">{t('linkageMethod')}</label>
+                                                                    <label className="text-sm font-medium text-[#37474F]">{t('linkageMethod')}</label>
                                                                     <SegmentedControl
                                                                         size="sm"
-                                                                        options={[
-                                                                            { label: t('knownIndex'), value: 'known' },
-                                                                            { label: t('determiningIndex'), value: 'base' }
-                                                                        ]}
+                                                                        options={LINKAGE_SUB_TYPES.map((type: any) => ({
+                                                                            label: t(type.labelKey as any),
+                                                                            value: type.id
+                                                                        }))}
                                                                         value={formData.linkageSubType === 'known' ? 'known' : 'base'}
                                                                         onChange={val => setValue('linkageSubType', val as any)}
                                                                     />
                                                                 </div>
                                                                 <DatePicker
-                                                                    label={<span>{t('baseDate')} <span className="text-destructive">*</span></span>}
+                                                                    label={<span>{t('baseDate')} <span className="text-red-500">*</span></span>}
                                                                     value={formData.baseIndexDate ? parseISO(formData.baseIndexDate) : undefined}
                                                                     onChange={date => setValue('baseIndexDate', date ? format(date, 'yyyy-MM-dd') : '')}
                                                                     error={errors.baseIndexDate?.message ? t(errors.baseIndexDate.message as any) : undefined}
@@ -1244,8 +1293,11 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                             )}
 
                                             {step === 5 && (
-                                                <div className="space-y-6">
-                                                    <h3 className="font-black text-xl flex items-center gap-3 mb-6"><Shield className="w-5 h-5 text-brand-500" /> {t('securityAndAppendices')}</h3>
+                                                <div className="space-y-8 pb-4">
+                                                    <div className="border-r-4 border-[#0D47A1] pr-4 mb-8 text-right">
+                                                        <h3 className="font-extrabold text-2xl text-[#0D47A1] mb-2">{t('securityAndAppendices')}</h3>
+                                                        <p className="text-[#37474F] text-sm leading-relaxed max-w-sm">הגדרת בטחונות וסעיפים נוספים לחוזה.</p>
+                                                    </div>
 
                                                     <Input
                                                         label={t('securityDeposit')}
@@ -1254,21 +1306,21 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                             const val = parseNumber(e.target.value);
                                                             if (/^\d*\.?\d*$/.test(val)) setValue('securityDeposit', val as any);
                                                         }}
-                                                        className="w-full font-black bg-background"
-                                                        leftIcon={<span className="text-muted-foreground">₪</span>}
+                                                        className="w-full font-bold bg-[#F5F7FA] border border-[#CFD8DC] rounded-xl text-[#1A237E]"
+                                                        leftIcon={<span className="text-[#37474F]">₪</span>}
                                                     />
 
                                                     <Textarea
                                                         label={t('guarantors')}
                                                         value={formData.guarantees}
                                                         onChange={e => setValue('guarantees', e.target.value)}
-                                                        className="min-h-[120px] rounded-2xl"
+                                                        className="min-h-[120px] rounded-xl border border-[#CFD8DC] bg-white focus:border-[#0D47A1]"
                                                     />
 
-                                                    <div className="p-6 border-2 border-border rounded-3xl flex items-center justify-between">
+                                                    <div className="p-6 border border-[#CFD8DC] bg-[#EBECF0]/30 rounded-2xl flex items-center justify-between">
                                                         <div className="space-y-1">
-                                                            <h4 className="font-black text-sm">{t('needsPainting')}</h4>
-                                                            <p className="text-xs text-muted-foreground">{t('needsPaintingDesc')}</p>
+                                                            <h4 className="font-bold text-sm text-[#1A237E]">{t('needsPainting')}</h4>
+                                                            <p className="text-xs text-[#37474F]">{t('needsPaintingDesc')}</p>
                                                         </div>
                                                         <SegmentedControl
                                                             size="sm"
@@ -1287,30 +1339,30 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                             {step === 6 && (
                                                 <div className="space-y-8">
                                                     <div className="text-center py-6">
-                                                        <div className="w-20 h-20 bg-green-500/10 text-secondary rounded-full flex items-center justify-center mx-auto mb-6 scale-110">
+                                                        <div className="w-20 h-20 bg-[#E3F2FD] text-[#0D47A1] rounded-full flex items-center justify-center mx-auto mb-6 scale-110 shadow-sm">
                                                             <Check className="w-10 h-10" />
                                                         </div>
-                                                        <h3 className="text-2xl font-black">{t('contractReadySummary')}</h3>
-                                                        <p className="text-muted-foreground mt-2">{t('contractReadySummaryDesc', { address: formData.address || '', city: formData.city || '' })}</p>
+                                                        <h3 className="text-2xl font-extrabold text-[#0D47A1]">{t('contractReadySummary')}</h3>
+                                                        <p className="text-[#37474F] mt-2">{t('contractReadySummaryDesc', { address: formData.address || '', city: formData.city || '' })}</p>
                                                     </div>
 
                                                     <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar pb-6">
                                                         {/* Property & Infrastructure */}
-                                                        <div className="bg-secondary/10 p-5 rounded-3xl space-y-3">
-                                                            <h4 className="font-black text-brand-500 flex items-center gap-2 border-b border-border/50 pb-3 mb-3 uppercase tracking-wider text-xs">
+                                                        <div className="bg-[#F5F7FA] border border-[#CFD8DC] p-5 rounded-2xl space-y-3">
+                                                            <h4 className="font-bold text-[#0D47A1] flex items-center gap-2 border-b border-[#CFD8DC] pb-3 mb-3 uppercase tracking-wider text-xs">
                                                                 <Building className="w-4 h-4" /> {t('infrastructure')}
                                                             </h4>
                                                             <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm font-bold">
-                                                                <span className="text-muted-foreground">{t('property')}</span>
-                                                                <span className="text-right truncate">{formData.address || '-'}, {formData.city || ''}</span>
+                                                                <span className="text-[#37474F]">{t('property')}</span>
+                                                                <span className="text-right text-[#1A237E] truncate">{formData.address || '-'}, {formData.city || ''}</span>
 
-                                                                <span className="text-muted-foreground">{t('propertyType')}</span>
-                                                                <span className="text-right">{t(formData.property_type as any)}</span>
+                                                                <span className="text-[#37474F]">{t('propertyType')}</span>
+                                                                <span className="text-right text-[#1A237E]">{t(formData.property_type as any)}</span>
 
                                                                 {(formData.rooms || formData.size) && (
                                                                     <>
-                                                                        <span className="text-muted-foreground">{t('specifications')}</span>
-                                                                        <span className="text-right font-normal">
+                                                                        <span className="text-[#37474F]">{t('specifications')}</span>
+                                                                        <span className="text-right text-[#1A237E] font-medium border border-[#CFD8DC] rounded-xl px-2 py-1 bg-white inline-block w-fit mr-auto">
                                                                             {formData.rooms ? `${formData.rooms} ${t('rooms')}` : ''}
                                                                             {formData.rooms && formData.size ? ' | ' : ''}
                                                                             {formData.size ? `${formData.size} ${t('sizeSqm')}` : ''}
@@ -1318,44 +1370,44 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                                     </>
                                                                 )}
 
-                                                                <span className="text-muted-foreground">{t('features')}</span>
+                                                                <span className="text-[#37474F]">{t('features')}</span>
                                                                 <div className="flex flex-wrap justify-end gap-2">
-                                                                    {formData.hasParking && <span className="bg-brand-500/10 text-brand-600 px-2 py-0.5 rounded text-xs uppercase font-bold">{t('hasParking')}</span>}
-                                                                    {formData.hasStorage && <span className="bg-brand-500/10 text-brand-600 px-2 py-0.5 rounded text-xs uppercase font-bold">{t('hasStorage')}</span>}
-                                                                    {formData.hasBalcony && <span className="bg-brand-500/10 text-brand-600 px-2 py-0.5 rounded text-xs uppercase font-bold">{t('hasBalcony')}</span>}
-                                                                    {formData.hasSafeRoom && <span className="bg-brand-500/10 text-brand-600 px-2 py-0.5 rounded text-xs uppercase font-bold">{t('hasSafeRoom')}</span>}
+                                                                    {formData.hasParking && <span className="bg-[#E3F2FD] text-[#0D47A1] px-2 py-0.5 rounded-lg text-xs uppercase font-bold">{t('hasParking')}</span>}
+                                                                    {formData.hasStorage && <span className="bg-[#E3F2FD] text-[#0D47A1] px-2 py-0.5 rounded-lg text-xs uppercase font-bold">{t('hasStorage')}</span>}
+                                                                    {formData.hasBalcony && <span className="bg-[#E3F2FD] text-[#0D47A1] px-2 py-0.5 rounded-lg text-xs uppercase font-bold">{t('hasBalcony')}</span>}
+                                                                    {formData.hasSafeRoom && <span className="bg-[#E3F2FD] text-[#0D47A1] px-2 py-0.5 rounded-lg text-xs uppercase font-bold">{t('hasSafeRoom')}</span>}
                                                                     {!formData.hasParking && !formData.hasStorage && !formData.hasBalcony && !formData.hasSafeRoom && '-'}
                                                                 </div>
                                                             </div>
                                                         </div>
 
                                                         {/* Parties Involed */}
-                                                        <div className="bg-secondary/10 p-5 rounded-3xl space-y-3">
-                                                            <h4 className="font-black text-brand-500 flex items-center gap-2 border-b border-border/50 pb-3 mb-3 uppercase tracking-wider text-xs">
+                                                        <div className="bg-[#F5F7FA] border border-[#CFD8DC] p-5 rounded-2xl space-y-3">
+                                                            <h4 className="font-bold text-[#0D47A1] flex items-center gap-2 border-b border-[#CFD8DC] pb-3 mb-3 uppercase tracking-wider text-xs">
                                                                 <User className="w-4 h-4" /> {t('parties')}
                                                             </h4>
                                                             <div className="space-y-4">
                                                                 {formData.tenants.map((tenant, idx) => (
-                                                                    <div key={idx} className={cn("grid grid-cols-2 gap-y-2 text-sm font-bold", idx > 0 && "pt-4 border-t border-border/30")}>
-                                                                        <span className="text-muted-foreground">{t('tenant')} {formData.tenants.length > 1 ? `#${idx + 1}` : ''}</span>
-                                                                        <span className="text-right">{tenant.name}</span>
+                                                                    <div key={idx} className={cn("grid grid-cols-2 gap-y-2 text-sm font-bold", idx > 0 && "pt-4 border-t border-[#CFD8DC]")}>
+                                                                        <span className="text-[#37474F]">{t('tenant')} {formData.tenants.length > 1 ? `#${idx + 1}` : ''}</span>
+                                                                        <span className="text-right text-[#1A237E]">{tenant.name}</span>
 
                                                                         {tenant.id_number && (
                                                                             <>
-                                                                                <span className="text-muted-foreground">{t('idNumber')}</span>
-                                                                                <span className="text-right font-normal">{tenant.id_number}</span>
+                                                                                <span className="text-[#37474F]">{t('idNumber')}</span>
+                                                                                <span className="text-right text-[#1A237E] font-medium">{tenant.id_number}</span>
                                                                             </>
                                                                         )}
                                                                         {tenant.phone && (
                                                                             <>
-                                                                                <span className="text-muted-foreground">{t('phone')}</span>
-                                                                                <span className="text-right font-normal ltr">{tenant.phone}</span>
+                                                                                <span className="text-[#37474F]">{t('phone')}</span>
+                                                                                <span className="text-right text-[#1A237E] font-medium ltr">{tenant.phone}</span>
                                                                             </>
                                                                         )}
                                                                         {tenant.email && (
                                                                             <>
-                                                                                <span className="text-muted-foreground">{t('email')}</span>
-                                                                                <span className="text-right font-normal truncate">{tenant.email}</span>
+                                                                                <span className="text-[#37474F]">{t('email')}</span>
+                                                                                <span className="text-right text-[#1A237E] font-medium truncate">{tenant.email}</span>
                                                                             </>
                                                                         )}
                                                                     </div>
@@ -1364,30 +1416,30 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                         </div>
 
                                                         {/* Timeline */}
-                                                        <div className="bg-secondary/10 p-5 rounded-3xl space-y-3">
-                                                            <h4 className="font-black text-brand-500 flex items-center gap-2 border-b border-border/50 pb-3 mb-3 uppercase tracking-wider text-xs">
+                                                        <div className="bg-[#F5F7FA] border border-[#CFD8DC] p-5 rounded-2xl space-y-3">
+                                                            <h4 className="font-bold text-[#0D47A1] flex items-center gap-2 border-b border-[#CFD8DC] pb-3 mb-3 uppercase tracking-wider text-xs">
                                                                 <Calendar className="w-4 h-4" /> {t('timeline')}
                                                             </h4>
                                                             <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm font-bold">
-                                                                <span className="text-muted-foreground">{t('leasePeriod')}</span>
-                                                                <span className="text-right">{formData.startDate ? format(parseISO(formData.startDate), 'dd/MM/yyyy') : '-'} - {formData.endDate ? format(parseISO(formData.endDate), 'dd/MM/yyyy') : '-'}</span>
+                                                                <span className="text-[#37474F]">{t('leasePeriod')}</span>
+                                                                <span className="text-right text-[#1A237E]">{formData.startDate ? format(parseISO(formData.startDate), 'dd/MM/yyyy') : '-'} - {formData.endDate ? format(parseISO(formData.endDate), 'dd/MM/yyyy') : '-'}</span>
 
                                                                 {formData.signingDate && (
                                                                     <>
-                                                                        <span className="text-muted-foreground">{t('signingDate')}</span>
-                                                                        <span className="text-right font-normal">{format(parseISO(formData.signingDate), 'dd/MM/yyyy')}</span>
+                                                                        <span className="text-[#37474F]">{t('signingDate')}</span>
+                                                                        <span className="text-right text-[#1A237E] font-medium">{format(parseISO(formData.signingDate), 'dd/MM/yyyy')}</span>
                                                                     </>
                                                                 )}
 
                                                                 {formData.optionPeriods.length > 0 && (
                                                                     <>
-                                                                        <span className="text-muted-foreground">{t('optionPeriods')}</span>
-                                                                        <div className="text-right space-y-1">
+                                                                        <span className="text-[#37474F]">{t('optionPeriods')}</span>
+                                                                        <div className="text-right text-[#1A237E] space-y-1">
                                                                             {formData.optionPeriods.map((p, i) => (
-                                                                                <div key={i} className="text-xs font-normal flex flex-col gap-0.5">
+                                                                                <div key={i} className="text-xs font-medium flex flex-col gap-0.5">
                                                                                     <div>{t('until')} {format(parseISO(p.endDate), 'dd/MM/yyyy')}{p.rentAmount ? ` | ${p.rentAmount}₪` : ''}</div>
                                                                                     {(p.noticeDays || p.reminderDays) && (
-                                                                                        <div className="text-xs text-muted-foreground">
+                                                                                        <div className="text-xs text-[#78909C]">
                                                                                             {p.noticeDays ? `${t('optionNoticeDays')}: ${p.noticeDays}` : ''}
                                                                                             {p.noticeDays && p.reminderDays ? ' | ' : ''}
                                                                                             {p.reminderDays ? `${t('optionReminderDays')}: ${p.reminderDays}` : ''}
@@ -1402,29 +1454,29 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                                                         </div>
 
                                                         {/* Financials & Linkage */}
-                                                        <div className="bg-secondary/10 p-5 rounded-3xl space-y-3">
-                                                            <h4 className="font-black text-brand-500 flex items-center gap-2 border-b border-border/50 pb-3 mb-3 uppercase tracking-wider text-xs">
+                                                        <div className="bg-[#F5F7FA] border border-[#CFD8DC] p-5 rounded-2xl space-y-3">
+                                                            <h4 className="font-bold text-[#0D47A1] flex items-center gap-2 border-b border-[#CFD8DC] pb-3 mb-3 uppercase tracking-wider text-xs">
                                                                 <SettingsIcon className="w-4 h-4" /> {t('financials')}
                                                             </h4>
                                                             <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm font-bold">
-                                                                <span className="text-muted-foreground">{t('rent')}</span>
-                                                                <span className="text-right text-brand-600">
+                                                                <span className="text-[#37474F]">{t('rent')}</span>
+                                                                <span className="text-right text-[#1A237E] font-extrabold">
                                                                     ₪
                                                                     {formatNumber(formData.rent)}
                                                                 </span>
 
-                                                                <span className="text-muted-foreground">{t('paymentMethod')}</span>
-                                                                <span className="text-right">{t(formData.paymentMethod?.toLowerCase() as any || '')}</span>
+                                                                <span className="text-[#37474F]">{t('paymentMethod')}</span>
+                                                                <span className="text-right text-[#1A237E]">{t(formData.paymentMethod?.toLowerCase() as any || '')}</span>
 
-                                                                <span className="text-muted-foreground">{t('paymentDay')}</span>
-                                                                <span className="text-right font-normal">{formData.paymentDay} {t('month')}</span>
+                                                                <span className="text-[#37474F]">{t('paymentDay')}</span>
+                                                                <span className="text-right text-[#1A237E] font-medium">{formData.paymentDay} {t('month')}</span>
 
                                                                 {formData.rentSteps.length > 0 && (
                                                                     <>
-                                                                        <span className="text-muted-foreground">{t('rentSteps')}</span>
+                                                                        <span className="text-[#37474F]">{t('rentSteps')}</span>
                                                                         <div className="text-right space-y-1">
                                                                             {formData.rentSteps.map((s, i) => (
-                                                                                <div key={i} className="text-xs font-normal">
+                                                                                <div key={i} className="text-xs font-medium text-[#1A237E]">
                                                                                     {format(parseISO(s.startDate), 'dd/MM/yyyy')}: {s.amount}₪
                                                                                 </div>
                                                                             ))}
@@ -1434,16 +1486,16 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
 
                                                                 {formData.hasLinkage && (
                                                                     <>
-                                                                        <span className="text-brand-500 pt-2 col-span-2 border-t border-border/30 mt-1 uppercase text-xs">{t('linkage')}</span>
-                                                                        <span className="text-muted-foreground">{t('indexOption')}</span>
-                                                                        <span className="text-right">{t(`linkedTo${formData.linkageType.charAt(0).toUpperCase() + formData.linkageType.slice(1)}` as any)}</span>
-                                                                        <span className="text-muted-foreground">{t('baseDate')}</span>
-                                                                        <span className="text-right font-normal">{formData.baseIndexDate ? format(parseISO(formData.baseIndexDate), 'dd/MM/yyyy') : '-'}</span>
+                                                                        <span className="text-[#0D47A1] pt-2 col-span-2 border-t border-[#CFD8DC] mt-1 uppercase text-xs">{t('linkage')}</span>
+                                                                        <span className="text-[#37474F]">{t('indexOption')}</span>
+                                                                        <span className="text-right text-[#1A237E]">{t(LINKAGE_TYPES.find(l => l.id === formData.linkageType)?.labelKey as any || formData.linkageType as any)}</span>
+                                                                        <span className="text-[#37474F]">{t('baseDate')}</span>
+                                                                        <span className="text-right text-[#1A237E] font-medium">{formData.baseIndexDate ? format(parseISO(formData.baseIndexDate), 'dd/MM/yyyy') : '-'}</span>
 
                                                                         {(formData.linkageCeiling || formData.linkageFloor) && (
                                                                             <>
-                                                                                <span className="text-muted-foreground">{t('restrictions')}</span>
-                                                                                <span className="text-right font-normal">
+                                                                                <span className="text-[#37474F]">{t('restrictions')}</span>
+                                                                                <span className="text-right text-[#1A237E] font-medium">
                                                                                     {formData.linkageFloor ? `${t('floorLabel')}: ${formData.linkageFloor}%` : ''}
                                                                                     {formData.linkageFloor && formData.linkageCeiling ? ' | ' : ''}
                                                                                     {formData.linkageCeiling ? `${t('ceilingLabel')}: ${formData.linkageCeiling}%` : ''}
@@ -1457,29 +1509,29 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
 
                                                         {/* Security */}
                                                         {(formData.securityDeposit || formData.guarantees || formData.guarantorsInfo) && (
-                                                            <div className="bg-secondary/10 p-5 rounded-3xl space-y-3">
-                                                                <h4 className="font-black text-brand-500 flex items-center gap-2 border-b border-border/50 pb-3 mb-3 uppercase tracking-wider text-xs">
+                                                            <div className="bg-[#F5F7FA] border border-[#CFD8DC] p-5 rounded-2xl space-y-3">
+                                                                <h4 className="font-bold text-[#0D47A1] flex items-center gap-2 border-b border-[#CFD8DC] pb-3 mb-3 uppercase tracking-wider text-xs">
                                                                     <Shield className="w-4 h-4" /> {t('securityAndAppendices')}
                                                                 </h4>
                                                                 <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm font-bold">
                                                                     {formData.securityDeposit && (
                                                                         <>
-                                                                            <span className="text-muted-foreground">{t('securityDeposit')}</span>
-                                                                            <span className="text-right font-bold">₪{formatNumber(formData.securityDeposit)}</span>
+                                                                            <span className="text-[#37474F]">{t('securityDeposit')}</span>
+                                                                            <span className="text-right font-extrabold text-[#1A237E]">₪{formatNumber(formData.securityDeposit)}</span>
                                                                         </>
                                                                     )}
 
                                                                     {formData.guarantees && (
                                                                         <>
-                                                                            <span className="text-muted-foreground">{t('guaranteesLabel')}</span>
-                                                                            <span className="text-right truncate">{formData.guarantees}</span>
+                                                                            <span className="text-[#37474F]">{t('guaranteesLabel')}</span>
+                                                                            <span className="text-right text-[#1A237E] truncate">{formData.guarantees}</span>
                                                                         </>
                                                                     )}
 
                                                                     {formData.guarantorsInfo && (
                                                                         <>
-                                                                            <span className="text-muted-foreground">{t('guarantorsInfo')}</span>
-                                                                            <span className="text-right font-normal truncate">{formData.guarantorsInfo}</span>
+                                                                            <span className="text-[#37474F]">{t('guarantorsInfo')}</span>
+                                                                            <span className="text-right text-[#1A237E] font-medium truncate">{formData.guarantorsInfo}</span>
                                                                         </>
                                                                     )}
                                                                 </div>
@@ -1488,22 +1540,22 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
 
                                                         {/* Additional Details */}
                                                         {(formData.specialClauses || formData.needsPainting) && (
-                                                            <div className="bg-secondary/10 p-5 rounded-3xl space-y-3">
-                                                                <h4 className="font-black text-brand-500 flex items-center gap-2 border-b border-border/50 pb-3 mb-3 uppercase tracking-wider text-xs">
+                                                            <div className="bg-[#F5F7FA] border border-[#CFD8DC] p-5 rounded-2xl space-y-3">
+                                                                <h4 className="font-bold text-[#0D47A1] flex items-center gap-2 border-b border-[#CFD8DC] pb-3 mb-3 uppercase tracking-wider text-xs">
                                                                     <FileText className="w-4 h-4" /> {t('additionalDetails')}
                                                                 </h4>
                                                                 <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm font-bold">
                                                                     {formData.needsPainting && (
                                                                         <>
-                                                                            <span className="text-muted-foreground">{t('paintingIncluded')}</span>
-                                                                            <span className="text-right text-green-600 uppercase text-xs">{t('yes')}</span>
+                                                                            <span className="text-[#37474F]">{t('paintingIncluded')}</span>
+                                                                            <span className="text-right text-[#0D47A1] uppercase text-xs font-black">{t('yes')}</span>
                                                                         </>
                                                                     )}
 
                                                                     {formData.specialClauses && (
                                                                         <>
-                                                                            <span className="text-muted-foreground col-span-2">{t('specialClauses')}</span>
-                                                                            <div className="text-left font-normal italic col-span-2 bg-white/50 p-3 rounded-2xl text-xs leading-relaxed border border-border/30">
+                                                                            <span className="text-[#37474F] col-span-2">{t('specialClauses')}</span>
+                                                                            <div className="text-left font-normal italic col-span-2 bg-white/70 p-3 rounded-xl border border-[#CFD8DC] text-xs leading-relaxed text-[#1A237E]">
                                                                                 {formData.specialClauses}
                                                                             </div>
                                                                         </>
@@ -1586,6 +1638,16 @@ export function AddContractWizard({ initialData, onSuccess }: AddContractWizardP
                         width: (isContractViewerOpen && windowWidth >= 1024) ? `${splitRatio}%` : '100%',
                         right: 0
                     }}
+                    supportAction={
+                        <Button
+                            variant="outline"
+                            className="hidden sm:flex h-12 px-6 rounded-2xl border-[#E3F2FD] bg-[#F5F7FA] text-[#0D47A1] hover:bg-[#E3F2FD] font-bold gap-2 shadow-sm"
+                            onClick={() => {}}
+                        >
+                            <Sparkles className="w-5 h-5" />
+                            {t('supportAssistant')}
+                        </Button>
+                    }
                 />
             </div>
 

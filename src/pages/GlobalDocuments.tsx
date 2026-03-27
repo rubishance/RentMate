@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from '../hooks/useTranslation';
 import { propertyDocumentsService } from '../services/property-documents.service';
 import { PropertyDocument } from '../types/database';
-import { FileStack, Building2, Search, Filter, Loader2, Image as ImageIcon, FileText, Banknote } from 'lucide-react';
+import { FileStack, Building2, Search, Filter, Loader2, Image as ImageIcon, FileText, Banknote, Receipt, ArrowDown, ArrowUp } from 'lucide-react';
 import { DocumentDetailsModal } from '../components/modals/DocumentDetailsModal';
 import { DatePicker } from '../components/ui/DatePicker';
 import { cn } from '../lib/utils';
@@ -14,8 +14,9 @@ import { Button } from '../components/ui/Button';
 import { Plus } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { StorageUsageWidget } from '../components/properties/StorageUsageWidget';
+import { DocumentTimeline } from '../components/properties/DocumentTimeline';
 
-type TabType = 'all' | 'utilities' | 'media' | 'documents' | 'checks';
+type TabType = 'all' | 'utilities' | 'media' | 'documents' | 'checks' | 'receipt';
 
 interface GlobalDocument extends PropertyDocument {
     properties?: {
@@ -31,6 +32,7 @@ export default function GlobalDocuments() {
     const [documents, setDocuments] = useState<GlobalDocument[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedPropertyId, setSelectedPropertyId] = useState<string>('all');
+    const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
     
     // Using simple states for modals
     const [selectedDocument, setSelectedDocument] = useState<GlobalDocument | null>(null);
@@ -87,6 +89,7 @@ export default function GlobalDocuments() {
 
     const tabs = [
         { id: 'all' as TabType, label: lang === 'he' ? 'הכל' : 'All', icon: FileStack },
+        { id: 'receipt' as TabType, label: lang === 'he' ? 'אסמכתאות' : 'Receipts', icon: Receipt },
         { id: 'utilities' as TabType, label: t('utilitiesStorage'), icon: FileText },
         { id: 'media' as TabType, label: t('mediaStorage'), icon: ImageIcon },
         { id: 'documents' as TabType, label: t('documentsStorage'), icon: FileStack },
@@ -94,7 +97,7 @@ export default function GlobalDocuments() {
     ];
 
     return (
-        <div className="pt-2 md:pt-8 px-5 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300 w-full max-w-full overflow-x-hidden min-h-[calc(100vh-100px)] flex flex-col">
+        <div className="pt-2 pb-24 md:pb-8 md:pt-4 px-5 space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-300 w-full max-w-full overflow-x-hidden min-h-[calc(100vh-100px)] flex flex-col">
             {/* Header */}
             <div className="flex flex-col gap-6">
                 <div className="flex items-center justify-between gap-4">
@@ -120,104 +123,104 @@ export default function GlobalDocuments() {
                 </div>
 
                 {/* Filters Area */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div className={`grid gap-3 sm:gap-4 w-full ${allProperties.length > 0 ? 'grid-cols-2 md:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2'}`}>
                     {allProperties.length > 0 && (
-                        <div className="flex items-center gap-2 bg-background0/5 dark:bg-white/5 backdrop-blur-md p-1 rounded-2xl border border-border/10 w-full sm:w-auto px-4 py-2">
-                            <Building2 className="w-4 h-4 text-muted-foreground shrink-0" />
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-muted-foreground ml-1">
+                                {lang === 'he' ? 'סינון נכסים' : 'Filter Properties'}
+                            </label>
+                            <div className="flex items-center gap-2 bg-background0/5 dark:bg-white/5 backdrop-blur-md p-1 rounded-2xl border border-border/10 w-full px-3 sm:px-4 py-2">
+                                <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground shrink-0" />
+                                <select
+                                    value={selectedPropertyId}
+                                    onChange={(e) => setSelectedPropertyId(e.target.value)}
+                                    className="bg-transparent border-none text-sm sm:text-base font-medium focus:ring-0 cursor-pointer flex-1 outline-none w-full"
+                                >
+                                    <option value="all">{lang === 'he' ? 'כל הנכסים' : 'All Properties'}</option>
+                                    {allProperties.map(p => (
+                                        <option key={p.id} value={p.id}>{p.address}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                    )}
+                    
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-muted-foreground ml-1">
+                            {lang === 'he' ? 'סוג מסמך' : 'Document Type'}
+                        </label>
+                        <div className="flex items-center gap-2 bg-background0/5 dark:bg-white/5 backdrop-blur-md p-1 rounded-2xl border border-border/10 w-full px-3 sm:px-4 py-2">
+                            <Filter className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground shrink-0" />
                             <select
-                                value={selectedPropertyId}
-                                onChange={(e) => setSelectedPropertyId(e.target.value)}
-                                className="bg-transparent border-none text-base font-medium focus:ring-0 cursor-pointer flex-1 outline-none min-w-[150px]"
+                                value={activeTab}
+                                onChange={(e) => setActiveTab(e.target.value as TabType)}
+                                className="bg-transparent border-none text-sm sm:text-base font-medium focus:ring-0 cursor-pointer flex-1 outline-none w-full"
                             >
-                                <option value="all">{lang === 'he' ? 'כל הנכסים' : 'All Properties'}</option>
-                                {allProperties.map(p => (
-                                    <option key={p.id} value={p.id}>{p.address}</option>
+                                {tabs.map(tab => (
+                                    <option key={tab.id} value={tab.id}>{tab.label}</option>
                                 ))}
                             </select>
                         </div>
-                    )}
+                    </div>
+
+                    <div className="space-y-1.5 md:col-start-3 max-w-[200px] sm:max-w-none">
+                        <label className="text-xs font-bold text-muted-foreground ml-1">
+                            {lang === 'he' ? 'סדר מסמכים' : 'Document Order'}
+                        </label>
+                        <button
+                            onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
+                            className="flex items-center gap-2 bg-background0/5 dark:bg-white/5 hover:bg-black/5 dark:hover:bg-white/10 backdrop-blur-md p-1 rounded-2xl border border-border/10 w-full px-3 sm:px-4 py-2 transition-colors cursor-pointer justify-center md:justify-start"
+                        >
+                            {sortOrder === 'desc' ? (
+                                <ArrowDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground shrink-0" />
+                            ) : (
+                                <ArrowUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground shrink-0" />
+                            )}
+                            <span className="text-sm sm:text-base font-medium text-foreground">
+                                {sortOrder === 'desc' 
+                                    ? (lang === 'he' ? 'מהחדש לישן' : 'Latest First')
+                                    : (lang === 'he' ? 'מהישן לחדש' : 'Earliest First')
+                                }
+                            </span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            {/* Scrollable Pill Filters */}
-            <div className="flex items-center justify-start gap-2 pb-4 overflow-x-auto scrollbar-hide px-5">
-                {tabs.map(tab => {
-                    const Icon = tab.icon;
-                    const isActive = activeTab === tab.id;
-                    return (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={cn(
-                                "flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold transition-all duration-300 select-none whitespace-nowrap shrink-0",
-                                isActive 
-                                    ? "bg-primary text-primary-foreground shadow-sm scale-100" 
-                                    : "bg-white/40 dark:bg-neutral-800/40 backdrop-blur-sm text-muted-foreground hover:bg-white/80 dark:hover:bg-neutral-800/80 hover:text-foreground border border-border/30 hover:border-border/60"
-                            )}
-                        >
-                            {tab.label}
-                        </button>
-                    );
-                })}
-            </div>
+
 
             {/* Content Area */}
-            <GlassCard className="min-h-[400px] p-6">
-                {loading ? (
-                    <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground gap-3">
-                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                        <p>{t('loading', { defaultValue: 'Loading documents...' })}</p>
-                    </div>
-                ) : documents.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground gap-3">
-                        <FileStack className="w-12 h-12 text-muted-foreground/50 dark:text-neutral-600 mb-2" />
-                        <h3 className="text-lg font-bold text-foreground">{lang === 'he' ? 'לא נמצאו מסמכים' : 'No documents found'}</h3>
-                        <p className="text-sm">{lang === 'he' ? 'אין מסמכים לקטגוריה או לנכס שנבחרו.' : 'No documents match your selected filters.'}</p>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-in fade-in duration-500">
-                        {documents.map((doc) => (
-                            <button
-                                key={doc.id}
-                                onClick={() => {
-                                    setSelectedDocument(doc);
-                                    setIsDetailsModalOpen(true);
-                                }}
-                                className="text-start group bg-white dark:bg-neutral-800 rounded-2xl p-4 border border-border dark:border-neutral-700 shadow-sm hover:shadow-md hover:border-primary/30 transition-all flex flex-col gap-3"
-                            >
-                                <div className="flex items-start justify-between">
-                                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                                        <FileText className="w-5 h-5" />
-                                    </div>
-                                    {doc.amount && (
-                                        <div className="px-2 py-1 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 text-sm font-bold font-mono">
-                                            ₪{doc.amount.toLocaleString()}
-                                        </div>
-                                    )}
-                                </div>
-                                
-                                <div>
-                                    <p className="font-bold text-base text-foreground line-clamp-1">{doc.title || doc.file_name}</p>
-                                    {doc.properties && (
-                                        <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1 line-clamp-1">
-                                            <Building2 className="w-3 h-3" />
-                                            {doc.properties.address}
-                                        </p>
-                                    )}
-                                </div>
-                                
-                                <div className="mt-auto pt-3 border-t border-border dark:border-neutral-700 flex items-center justify-between text-sm text-muted-foreground">
-                                    <span>{doc.document_date ? new Date(doc.document_date).toLocaleDateString() : new Date(doc.created_at).toLocaleDateString()}</span>
-                                    <span>{(doc.file_size ? doc.file_size / 1024 / 1024 : 0).toFixed(1)} MB</span>
-                                </div>
-                            </button>
-                        ))}
-                    </div>
-                )}
-            </GlassCard>
+            {loading || documents.length === 0 ? (
+                <GlassCard className="min-h-[400px] p-6">
+                    {loading ? (
+                        <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground gap-3">
+                            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                            <p>{t('loading', { defaultValue: 'Loading documents...' })}</p>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground gap-3">
+                            <FileStack className="w-12 h-12 text-muted-foreground/50 dark:text-neutral-600 mb-2" />
+                            <h3 className="text-lg font-bold text-foreground">{lang === 'he' ? 'לא נמצאו מסמכים' : 'No documents found'}</h3>
+                            <p className="text-sm">{lang === 'he' ? 'אין מסמכים לקטגוריה או לנכס שנבחרו.' : 'No documents match your selected filters.'}</p>
+                        </div>
+                    )}
+                </GlassCard>
+            ) : (
+                <div className="w-full relative z-10 pt-2 pb-8">
+                    <DocumentTimeline
+                        documents={documents as any[]}
+                        loading={loading}
+                        sortOrder={sortOrder}
+                        onDocumentClick={(doc) => {
+                            setSelectedDocument(doc as any);
+                            setIsDetailsModalOpen(true);
+                        }}
+                    />
+                </div>
+            )}
 
             {/* Storage Usage Widget */}
-            <div className="mt-4 animate-in fade-in duration-500 delay-100 mb-8">
+            <div className="mt-4 animate-in fade-in duration-500 delay-100 mb-8 md:mb-0">
                 <StorageUsageWidget isExpanded={true} />
             </div>
 
@@ -230,6 +233,10 @@ export default function GlobalDocuments() {
                 document={selectedDocument as any}
                 onDelete={() => {
                     setIsDetailsModalOpen(false);
+                    loadData();
+                }}
+                onUpdate={(updatedDoc) => {
+                    setSelectedDocument(updatedDoc as any);
                     loadData();
                 }}
             />

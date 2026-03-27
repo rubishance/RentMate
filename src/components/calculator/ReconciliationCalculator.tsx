@@ -12,6 +12,7 @@ import { MessageGeneratorModal } from '../modals/MessageGeneratorModal';
 import { format, parseISO, addMonths } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
+import { LINKAGE_TYPES, LINKAGE_SUB_TYPES } from '../../constants/linkageTypes';
 import type { ReconciliationResult } from '../../types/database';
 
 interface ReconciliationCalculatorProps {
@@ -289,9 +290,9 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
             const res = await calculateReconciliation({
                 baseRent: parseFloat(recBaseRent),
                 linkageType: recLinkageType as any,
-                contractStartDate: contractStartDate.slice(0, 7),
-                periodStart: periodStart.slice(0, 7),
-                periodEnd: periodEnd.slice(0, 7),
+                contractStartDate, // Service expects full string
+                periodStart, // Service expects full string
+                periodEnd, // Service expects full string
                 actualPaidPerMonth: parseFloat(actualPaid),
                 monthlyActuals: monthlyActuals || undefined,
                 partialLinkage: parseFloat(recPartialLinkage),
@@ -533,10 +534,10 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                         <div className="space-y-4">
                             <label className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground block ml-1">{t('linkageType')}</label>
                             <SegmentedControl
-                                options={[
-                                    { label: t('linkedToCpi'), value: 'cpi' },
-                                    { label: t('linkedToHousing'), value: 'housing' }
-                                ]}
+                                options={LINKAGE_TYPES.map((type: any) => ({
+                                    label: t(type.labelKey as any),
+                                    value: type.id
+                                }))}
                                 value={recLinkageType}
                                 onChange={(val) => setRecLinkageType(val as any)}
                                 size="md"
@@ -587,29 +588,16 @@ export function ReconciliationCalculator({ initialValues, shouldAutoCalculate }:
                             <div className="space-y-4">
                                 <label className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block ml-1">{t('linkageCalculationMethod')}</label>
                                 <SegmentedControl
-                                    options={[
-                                        { label: t('knownIndex'), value: 'known' },
-                                        { label: t('inRespectOf'), value: 'respect_of' }
-                                    ]}
+                                    options={LINKAGE_SUB_TYPES.map((type: any) => ({
+                                        label: t(type.labelKey as any),
+                                        value: type.id
+                                    }))}
                                     value={recLinkageSubType}
                                     onChange={(val) => setRecLinkageSubType(val as any)}
                                 />
                             </div>
 
-                            <div className="space-y-4">
-                                <label className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block ml-1">{t('updateFrequency')}</label>
-                                <SegmentedControl
-                                    options={[
-                                        { label: t('everyMonth'), value: 'monthly' },
-                                        { label: t('quarterly'), value: 'quarterly' },
-                                        { label: t('semiannually'), value: 'semiannually' },
-                                        { label: t('annually'), value: 'annually' }
-                                    ]}
-                                    value={recUpdateFrequency}
-                                    onChange={(val) => setRecUpdateFrequency(val as any)}
-                                    size="sm"
-                                />
-                            </div>
+
 
                             <div className="grid grid-cols-5 gap-4 md:gap-6">
                                 <div className="col-span-3 space-y-4">

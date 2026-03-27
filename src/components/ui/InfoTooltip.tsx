@@ -50,7 +50,7 @@ const PanelContent = ({ title, text, example, t }: { title: string, text: string
     return (
         <div 
             ref={containerRef}
-            className="overflow-hidden rounded-3xl shadow-premium-dark bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/40 dark:border-white/10 ring-1 ring-black/5 transition-transform duration-300 ease-out"
+            className="overflow-hidden rounded-2xl shadow-premium-dark bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/40 dark:border-white/10 ring-1 ring-black/5 transition-transform duration-300 ease-out"
             style={offset !== 0 ? { transform: `translateX(${offset}px)` } : undefined}
         >
             <div className="p-6 flex flex-col gap-3">

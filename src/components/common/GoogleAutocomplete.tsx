@@ -154,7 +154,7 @@ export function GoogleAutocomplete({
 
                 {/* Suggestions List - Classic Absolute to avoid Portal issues */}
                 {isOpen && suggestions.length > 0 && (
-                    <div className="absolute left-0 right-0 top-full mt-4 bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-3xl shadow-2xl z-[5000] max-h-[300px] overflow-y-auto overflow-x-hidden p-2 backdrop-blur-3xl animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="absolute left-0 right-0 top-full mt-4 bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-2xl shadow-2xl z-[5000] max-h-[300px] overflow-y-auto overflow-x-hidden p-2 backdrop-blur-3xl animate-in fade-in slide-in-from-top-2 duration-300">
                         {suggestions.map((item) => (
                             <button
                                 key={item.place_id}

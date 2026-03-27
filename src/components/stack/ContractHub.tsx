@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Fragment } from "react";
 import { useNavigate } from "react-router-dom";
+import { Menu, MenuButton, MenuItem, MenuItems, Transition } from "@headlessui/react";
 import {
   FileText,
   Calendar,
@@ -15,7 +16,7 @@ import {
   Wind,
   ShieldCheck,
   Car,
-  Box,
+  Archive,
   CheckCircle,
   Mail,
   Phone,
@@ -23,15 +24,23 @@ import {
   GitBranch,
   Coins,
   ArrowLeft,
+  ArrowRight,
+  MoreVertical,
+  MapPin,
   Trash2,
   Plus,
+  RefreshCw,
 } from "lucide-react";
+import { BalconyIcon, SafeRoomIcon, StorageIcon, CarIcon } from "../../components/icons/NavIcons";
+import { getIndexValue } from "../../services/index-data.service";
 import { supabase } from "../../lib/supabase";
 import { useTranslation } from "../../hooks/useTranslation";
 import { DatePicker } from "../ui/DatePicker";
-import { format, parseISO, addDays, addYears, isValid } from "date-fns";
+import { format, parseISO, addDays, addYears, isValid, startOfMonth, endOfMonth } from "date-fns";
 import { cn } from "../../lib/utils";
 import { useDataCache } from "../../contexts/DataCacheContext";
+import { PAYMENT_METHODS, getPaymentMethodConfig } from "../../constants/paymentMethods";
+import { LINKAGE_TYPES, LINKAGE_SUB_TYPES } from "../../constants/linkageTypes";
 import { propertyService } from "../../services/property.service";
 import { getPropertyPlaceholder } from "../../lib/property-placeholders";
 import { useSubscription } from "../../hooks/useSubscription";
@@ -49,6 +58,8 @@ import { Textarea } from "../ui/Textarea";
 import { SegmentedControl } from "../ui/SegmentedControl";
 import { useAuth } from "../../contexts/AuthContext";
 import { CompressionService } from "../../services/compression.service";
+import { EarlyTerminationModal } from "../modals/EarlyTerminationModal";
+import { DataFieldWidget } from "../ui/DataFieldWidget";
 
 interface ContractHubProps {
   contractId: string;
@@ -61,7 +72,7 @@ export function ContractHub({
 }: ContractHubProps) {
   const { t, lang } = useTranslation();
   const navigate = useNavigate();
-  const { clear } = useDataCache();
+  const { get, set, clear } = useDataCache();
   const { canAddActiveContract, refreshSubscription } = useSubscription();
   const [contract, setContract] = useState<any>(null);
   const [readOnly, setReadOnly] = useState(initialReadOnly);
@@ -69,6 +80,7 @@ export function ContractHub({
   const [saving, setSaving] = useState(false);
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isTerminationModalOpen, setIsTerminationModalOpen] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -151,10 +163,10 @@ export function ContractHub({
     signing_date: "",
     start_date: "",
     end_date: "",
-    base_rent: 0,
+    base_rent: 0 as number | string,
     currency: "ILS",
     payment_frequency: "monthly",
-    payment_day: 1,
+    payment_day: 1 as number | string,
     payment_method: "",
     linkage_type: "none",
     linkage_sub_type: "known",
@@ -162,7 +174,7 @@ export function ContractHub({
     base_index_value: 0,
     linkage_ceiling: "",
     linkage_floor: "",
-    security_deposit_amount: 0,
+    security_deposit_amount: 0 as number | string,
     status: "active",
     option_periods: [] as any[],
     rent_periods: [] as any[],
@@ -177,63 +189,99 @@ export function ContractHub({
   useEffect(() => {
     const fetchContract = async () => {
       if (!contractId) return;
-      setLoading(true);
-      const { data, error } = await supabase
-        .from("contracts")
-        .select(
-          `
-                    *,
-                    properties (
-                        address, 
-                        city, 
-                        property_type, 
-                        image_url,
-                        has_balcony,
-                        has_safe_room,
-                        has_parking,
-                        has_storage
-                    )
-                `,
-        )
-        .eq("id", contractId)
-        .single();
 
-      if (error) {
-        console.error("Error fetching contract:", error);
+      const cacheKey = `contract_detail_${contractId}`;
+      const cached = get<any>(cacheKey);
+      if (cached) {
+        setContract(cached.contractData);
+        setFormData(cached.formData);
+        setLoading(false);
       } else {
-        setContract(data);
-        setFormData({
-          signing_date: data.signing_date || "",
-          start_date: data.start_date || "",
-          end_date: data.end_date || "",
-          base_rent: data.base_rent || 0,
-          currency: data.currency || "ILS",
-          payment_frequency: data.payment_frequency || "monthly",
-          payment_day: data.payment_day || 1,
-          payment_method: data.payment_method || "",
-          linkage_type: data.linkage_type || "none",
-          linkage_sub_type: data.linkage_sub_type || "known",
-          base_index_date: data.base_index_date || "",
-          base_index_value: data.base_index_value || 0,
-          linkage_ceiling: data.linkage_ceiling?.toString() || "",
-          linkage_floor: data.linkage_floor?.toString() || "",
-          security_deposit_amount: data.security_deposit_amount || 0,
-          status: data.status || "active",
-          option_periods: data.option_periods || [],
-          rent_periods: data.rent_periods || [],
-          tenants: data.tenants || [],
-
-          special_clauses: data.special_clauses || "",
-          guarantees: data.guarantees || "",
-          guarantors_info: data.guarantors_info || "",
-          needs_painting: data.needs_painting ?? false,
-        });
+        setLoading(true);
       }
-      setLoading(false);
+
+      try {
+        const { data, error } = await supabase
+          .from("contracts")
+          .select(
+            `
+                      *,
+                      properties (
+                          address, 
+                          city, 
+                          property_type, 
+                          image_url,
+                          has_balcony,
+                          has_safe_room,
+                          has_parking,
+                          has_storage
+                      )
+                  `,
+          )
+          .eq("id", contractId)
+          .single();
+
+        if (error) {
+          console.error("Error fetching contract:", error);
+        } else {
+          const newFormData = {
+            signing_date: data.signing_date || "",
+            start_date: data.start_date || "",
+            end_date: data.end_date || "",
+            base_rent: data.base_rent || 0,
+            currency: data.currency || "ILS",
+            payment_frequency: data.payment_frequency || "monthly",
+            payment_day: data.payment_day || 1,
+            payment_method: data.payment_method || "",
+            linkage_type: data.linkage_type || "none",
+            linkage_sub_type: data.linkage_sub_type || "known",
+            base_index_date: data.base_index_date || "",
+            base_index_value: data.base_index_value || 0,
+            linkage_ceiling: data.linkage_ceiling?.toString() || "",
+            linkage_floor: data.linkage_floor?.toString() || "",
+            security_deposit_amount: data.security_deposit_amount || 0,
+            status: data.status || "active",
+            option_periods: data.option_periods || [],
+            rent_periods: data.rent_periods || [],
+            tenants: data.tenants || [],
+
+            special_clauses: data.special_clauses || "",
+            guarantees: data.guarantees || "",
+            guarantors_info: data.guarantors_info || "",
+            needs_painting: data.needs_painting ?? false,
+          };
+          setContract(data);
+          setFormData(newFormData);
+          set(cacheKey, { contractData: data, formData: newFormData }, { persist: true });
+        }
+      } catch (err) {
+        console.error("Exception fetching contract:", err);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchContract();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contractId]);
+
+  useEffect(() => {
+    const fetchBaseIndex = async () => {
+      if (!formData.base_index_date || formData.linkage_type === "none") {
+        return;
+      }
+      
+      const indexType = formData.linkage_type === 'cpi' ? 'cpi' : (formData.linkage_type === 'housing' ? 'housing' : null);
+      if (!indexType) return;
+
+      const value = await getIndexValue(indexType, formData.base_index_date);
+      if (value !== null && value !== formData.base_index_value) {
+        setFormData(prev => ({ ...prev, base_index_value: value }));
+      }
+    };
+
+    fetchBaseIndex();
+  }, [formData.base_index_date, formData.linkage_type]);
 
   const hasUnsavedChanges = () => {
     if (!contract || readOnly) return false;
@@ -277,6 +325,272 @@ export function ContractHub({
       }
     } else {
       navigate(-1);
+    }
+  };
+
+  const handleDeleteContract = async () => {
+    if (
+      !window.confirm(
+        t("confirmDeleteContract") ||
+        "Are you sure you want to delete this contract? This action cannot be undone."
+      )
+    ) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from("contracts")
+        .delete()
+        .eq("id", contractId);
+
+      if (error) throw error;
+      clear();
+      navigate(-1);
+    } catch (err: any) {
+      console.error("Error deleting contract:", err);
+      alert(t("errorUnspecified") || "Failed to delete contract: " + err.message);
+      setLoading(false);
+    }
+  };
+
+  const handleTerminateEarly = async (actualEndDate: string, finalPaymentAmount: number) => {
+    setLoading(true);
+    setIsTerminationModalOpen(false);
+    try {
+      // 1. Update contract to archived with early termination date
+      const { error: contractError } = await supabase
+        .from("contracts")
+        .update({
+          status: 'archived',
+          actual_end_date: actualEndDate,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", contractId);
+
+      if (contractError) throw contractError;
+
+      // 2. Identify the termination month dates
+      const termDate = parseISO(actualEndDate);
+      const startOfTermStr = format(startOfMonth(termDate), 'yyyy-MM-dd');
+      const endOfTermStr = format(endOfMonth(termDate), 'yyyy-MM-dd');
+
+      // 3. Find pending payment within the termination month
+      const { data: pendingPayments, error: fetchPendingError } = await supabase
+        .from("payments")
+        .select("id, due_date")
+        .eq("contract_id", contractId)
+        .eq("status", "pending")
+        .gte("due_date", startOfTermStr)
+        .lte("due_date", endOfTermStr);
+
+      if (fetchPendingError) throw fetchPendingError;
+
+      if (pendingPayments && pendingPayments.length > 0) {
+        // If there's a pending payment for the termination month, update it
+        if (finalPaymentAmount !== undefined && finalPaymentAmount >= 0) {
+           const { error: updateError } = await supabase
+              .from("payments")
+              .update({
+                 amount: finalPaymentAmount,
+                 details: { type: "partial_early_termination" }
+              })
+              .eq("id", pendingPayments[0].id);
+
+           if (updateError) throw updateError;
+        }
+      } else {
+        // Fallback: If no pending payment exists for the month, insert one
+        if (finalPaymentAmount !== undefined && finalPaymentAmount >= 0) {
+           const { error: insertError } = await supabase
+            .from("payments")
+            .insert([{
+               contract_id: contractId,
+               user_id: contract.user_id,
+               amount: finalPaymentAmount,
+               currency: contract.currency || "ILS",
+               due_date: actualEndDate, // Fallback to termination date
+               status: "pending",
+               details: { type: "partial_early_termination" }
+            }]);
+           if (insertError) throw insertError;
+        }
+      }
+
+      // 4. Clear future pending payments (after the termination month)
+      const { error: deleteError } = await supabase
+        .from("payments")
+        .delete()
+        .eq("contract_id", contractId)
+        .eq("status", "pending")
+        .gt("due_date", endOfTermStr);
+
+      if (deleteError) throw deleteError;
+      
+      // 5. Update property occupancy
+      if (contract.property_id) {
+        await propertyService.syncOccupancyStatus(contract.property_id, contract.user_id);
+      }
+      
+      clear();
+      // Refetch
+      const { data, error: fetchError } = await supabase
+        .from("contracts")
+        .select("*, properties(address, city)")
+        .eq("id", contractId)
+        .single();
+        
+      if (fetchError) console.error("Error re-fetching contract:", fetchError);
+      if (data) {
+          setContract(data);
+          setReadOnly(true);
+          setFormData(prev => ({...prev, status: 'archived'}));
+      }
+      
+    } catch (err: any) {
+      console.error("Error early terminating:", err);
+      alert(t("errorUnspecified") || "Failed: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReactivateContract = async () => {
+    if (
+      !window.confirm(
+        lang === "he"
+          ? "האם אתה בטוח שברצונך להפעיל מחדש את החוזה? פעולה זו תיצור מחדש את התשלומים שנותרו (יתכן ותצטרך לערוך את החוזה במידה ונוצרו פערים בתשלומים)."
+          : "Are you sure you want to reactivate this contract? This will regenerate the remaining payments."
+      )
+    ) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      setLoading(true);
+      await refreshSubscription();
+      if (!canAddActiveContract) {
+        alert(
+          t("error_limit_active_contracts") ||
+          "Limit Reached: You cannot have more active contracts on your current plan."
+        );
+        return;
+      }
+
+      const { count, error: countError } = await supabase
+        .from("contracts")
+        .select("id", { count: 'exact' })
+        .eq("property_id", contract.property_id)
+        .eq("status", "active")
+        .neq("id", contractId);
+        
+      if (countError) throw countError;
+      if (count && count > 0) {
+        alert(lang === 'he' ? "לא ניתן להחזיר לפעיל: קיים כבר חוזה פעיל עבור נכס זה." : "Cannot unarchive: An active contract already exists for this property.");
+        return;
+      }
+
+      const { error: contractError } = await supabase
+        .from("contracts")
+        .update({
+          status: 'active',
+          actual_end_date: null,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", contractId);
+
+      if (contractError) throw contractError;
+
+      let gapStart = contract.actual_end_date
+          ? format(addDays(parseISO(contract.actual_end_date), 1), "yyyy-MM-dd")
+          : format(new Date(), "yyyy-MM-dd");
+
+      if (gapStart > contract.end_date) {
+        // If the contract has already naturally expired, we still reactivated it above!
+        // But we cannot generate NEW regular payments because gapStart is beyond end_date.
+        alert(lang === 'he' ? "החוזה הוחזר לפעיל, אך תאריך הסיום כבר עבר ולכן לא נוצרו תשלומים עתידיים. אנא ערוך את תאריך הסיום כדי לייצר תשלומים נוספים." : "Contract reactivated, but its end date is in the past. No future payments were generated. Extend the lease to generate additional payments.");
+      } else {
+        const { data: genData, error: genError } =
+          await supabase.functions.invoke("generate-payments", {
+            body: {
+              startDate: gapStart,
+              endDate: contract.end_date,
+              baseRent: Number(formData.base_rent) || 1, // Fallback to 1 to bypass !baseRent error if 0
+              currency: formData.currency || "ILS",
+              paymentFrequency: formData.payment_frequency || "monthly",
+              paymentDay: Number(formData.payment_day) || 1,
+              linkageType: formData.linkage_type || "none",
+              linkageSubType:
+                formData.linkage_type === "none"
+                  ? null
+                  : formData.linkage_sub_type,
+              baseIndexDate: formData.base_index_date || null,
+              baseIndexValue: Number(formData.base_index_value) || null,
+              linkageCeiling: formData.linkage_ceiling !== "" && formData.linkage_ceiling !== null
+                  ? Number(formData.linkage_ceiling)
+                  : null,
+              linkageFloor: formData.linkage_floor !== "" && formData.linkage_floor !== null
+                  ? Number(formData.linkage_floor)
+                  : null,
+              rent_periods: formData.rent_periods || [],
+            },
+          });
+
+        if (genError) {
+          let msg = genError.message;
+          try {
+             if (genError.context && typeof genError.context.text === 'function') {
+                const rawBody = await genError.context.text();
+                msg += ` - raw: ${rawBody}`;
+             }
+          } catch(e) {}
+          throw new Error(`Extension Gen Error: ${msg}`);
+        }
+        
+        const schedule = genData?.payments || [];
+
+        if (schedule.length > 0) {
+          const { error: insertError } = await supabase
+            .from("payments")
+            .insert(
+              schedule.map((p: any) => ({
+                ...p,
+                contract_id: contractId,
+                user_id: contract.user_id,
+              }))
+            );
+          if (insertError) throw insertError;
+        } else {
+            console.warn("Generate-payments returned empty schedule array for gapStart:", gapStart, "and end_date:", contract.end_date);
+            alert(lang === 'he' ? "שגיאה זמנית: תשלומים עתידיים לא נוצרו בהצלחה." : "Notice: Contract active but no future payments were computed.");
+        }
+      }
+
+      if (contract.property_id) {
+        await propertyService.syncOccupancyStatus(contract.property_id, contract.user_id);
+      }
+      
+      clear();
+      const { data, error: fetchError } = await supabase
+        .from("contracts")
+        .select("*, properties(address, city)")
+        .eq("id", contractId)
+        .single();
+        
+      if (fetchError) console.error("Error re-fetching contract:", fetchError);
+      if (data) {
+          setContract(data);
+          setReadOnly(true);
+          setFormData(prev => ({...prev, status: 'active'}));
+      }
+      
+    } catch (err: any) {
+      console.error("Error reactivating:", err);
+      alert("Error: " + (err?.message || "Unknown error"));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -335,6 +649,20 @@ export function ContractHub({
           t("error_limit_active_contracts") ||
           "Limit Reached: You cannot have more active contracts on your current plan.",
         );
+        return;
+      }
+      
+      // Check if another active contract exists for this property
+      const { count, error: countError } = await supabase
+        .from("contracts")
+        .select("*", { count: 'exact', head: true })
+        .eq("property_id", contract.property_id)
+        .eq("status", "active")
+        .neq("id", contractId);
+        
+      if (countError) throw countError;
+      if (count && count > 0) {
+        alert(lang === 'he' ? "לא ניתן להחזיר לפעיל: קיים כבר חוזה פעיל עבור נכס זה." : "Cannot unarchive: An active contract already exists for this property.");
         return;
       }
     }
@@ -504,490 +832,460 @@ export function ContractHub({
 
   return (
     <div
-      className="flex flex-col bg-background dark:bg-black min-h-full"
+      className={cn(
+        "flex flex-col bg-background dark:bg-black min-h-screen -mt-4 md:-mt-8",
+      )}
       dir={lang === "he" ? "rtl" : "ltr"}
     >
-      {/* Header Content */}
-      <div className="px-3 md:px-6 py-6 border-b border-slate-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm">
-        <div className="flex justify-between items-start mb-4">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleBack}
-              className="bg-transparent border-white/5 hover:bg-background dark:hover:bg-neutral-800"
+      {/* Top App Bar */}
+      <div className="px-4 py-4 md:px-6 bg-white dark:bg-neutral-900 flex justify-between items-center sticky top-0 z-10 shadow-[0_4px_12px_rgba(13,71,161,0.03)] border-b border-border/50">
+        <div className="flex items-center gap-2">
+          <Menu as="div" className="relative inline-block text-left">
+            <MenuButton className="w-10 h-10 rounded-full hover:bg-secondary/10 text-primary flex items-center justify-center transition-colors">
+              <MoreVertical className="w-5 h-5" />
+            </MenuButton>
+            <Transition
+              as={Fragment}
+              enter="transition ease-out duration-100"
+              enterFrom="transform opacity-0 scale-95"
+              enterTo="transform opacity-100 scale-100"
+              leave="transition ease-in duration-75"
+              leaveFrom="transform opacity-100 scale-100"
+              leaveTo="transform opacity-0 scale-95"
             >
-              <ArrowLeft
-                className={cn("w-4 h-4", lang === "he" ? "rotate-180" : "")}
-              />
-            </Button>
-            <div className="w-12 h-12 rounded-2xl glass-premium dark:bg-neutral-800/40 border border-white/5 flex items-center justify-center text-primary shadow-minimal">
-              <FileText className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-black tracking-tight text-foreground">
-                {t("contractDetails")}
-              </h1>
-              <p className="text-muted-foreground font-medium flex items-center gap-2 mt-1 truncate max-w-[280px] sm:max-w-none">
-                <Building2 className="w-4 h-4 shrink-0" />
-                <span className="truncate">
-                  {contract.properties?.address}, {contract.properties?.city}
-                </span>
-              </p>
-            </div>
-          </div>
-          {/* Right side actions */}
-          <div className="flex items-center gap-3">
-            <div
-              className={cn(
-                "hidden md:flex px-3 py-1.5 glass-premium dark:bg-white/5 rounded-full text-xs font-black uppercase tracking-widest items-center gap-2 border border-white/5 shadow-minimal",
-                contract.status === "active"
-                  ? "text-success"
-                  : contract.status === "draft"
-                    ? "text-warning"
-                    : "text-slate-500",
-              )}
-            >
-              <div
+              <MenuItems
                 className={cn(
-                  "w-1.5 h-1.5 rounded-full shadow-[0_0_5px_rgba(var(--status-color),0.5)]",
-                  contract.status === "active"
-                    ? "bg-success"
-                    : contract.status === "draft"
-                      ? "bg-warning"
-                      : "bg-background0",
+                  "absolute z-[100] mt-2 w-48 rounded-2xl bg-white dark:bg-neutral-900 shadow-lg border border-border/50 focus:outline-none p-2",
+                  lang === "he" ? "right-0 origin-top-right" : "left-0 origin-top-left"
                 )}
-              />
-              {t(contract.status)}
-            </div>
-            {readOnly && (
-              <Button
-                onClick={() => setReadOnly(false)}
-                className="w-10 h-10 md:w-12 md:h-12 rounded-[1rem] shadow-jewel p-0 flex items-center justify-center shrink-0"
               >
-                <Pen className="w-4 h-4 md:w-5 md:h-5" />
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {/* Integrated Property Details (Visible on both modes, editable in edit mode) */}
-        <div className="flex flex-col md:flex-row gap-4 lg:gap-6 mt-6 pt-6 border-t border-slate-100 dark:border-neutral-800/50">
-          {/* Compact Image/Upload */}
-          <div className="relative shrink-0 w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden glass-premium border border-slate-200/50 dark:border-white/10 shadow-sm mx-auto md:mx-0">
-            {readOnly ? (
-              <img
-                loading="lazy"
-                src={
-                  contract?.properties?.image_url ||
-                  getPropertyPlaceholder(contract?.properties?.property_type)
-                }
-                alt="Property"
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  const placeholder = getPropertyPlaceholder(
-                    contract?.properties?.property_type,
-                  );
-                  if (target.src !== placeholder) target.src = placeholder;
-                }}
-              />
-            ) : (
-              <div className="group relative w-full h-full hover:shadow-md transition-all border-2 border-transparent hover:border-brand-500 cursor-pointer">
-                <img
-                  loading="lazy"
-                  src={
-                    contract?.properties?.image_url ||
-                    getPropertyPlaceholder(contract?.properties?.property_type)
-                  }
-                  alt="Property"
-                  className={cn(
-                    "w-full h-full object-cover transition-opacity",
-                    isUploading ? "opacity-50" : "group-hover:opacity-75",
-                  )}
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    const placeholder = getPropertyPlaceholder(
-                      contract?.properties?.property_type,
-                    );
-                    if (target.src !== placeholder) target.src = placeholder;
-                  }}
-                />
-                <div
-                  className={cn(
-                    "absolute inset-0 flex items-center justify-center transition-opacity bg-black/20",
-                    isUploading
-                      ? "opacity-100"
-                      : "opacity-0 group-hover:opacity-100",
-                  )}
-                >
-                  <div className="bg-white/90 p-1.5 rounded-full shadow-lg">
-                    {isUploading ? (
-                      <Loader2 className="w-4 h-4 text-brand-600 animate-spin" />
-                    ) : (
-                      <Pen className="w-4 h-4 text-brand-600" />
+                {readOnly && (
+                  <MenuItem>
+                    {({ focus }) => (
+                      <button
+                        onClick={() => setReadOnly(false)}
+                        className={cn(
+                          "flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-[15px] font-medium transition-colors text-foreground hover:bg-secondary/50",
+                          focus ? "bg-secondary/50" : ""
+                        )}
+                      >
+                        <Pen className="w-4 h-4 text-brand-600 dark:text-brand-400 shrink-0" />
+                        <span className="flex-1 text-start">
+                          {t("editContract") || (lang === "he" ? "עריכת חוזה" : "Edit Contract")}
+                        </span>
+                      </button>
                     )}
-                  </div>
-                </div>
-                <input
-                  type="file"
-                  accept="image/*"
-                  disabled={isUploading}
-                  onChange={handleFileUpload}
-                  title={t("upload") || "Upload Image"}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Amenities section (right side, fully integrated) */}
-          <div className="flex-1 flex flex-col justify-center">
-            {(!readOnly ||
-              contract?.properties?.has_balcony ||
-              contract?.properties?.has_safe_room ||
-              contract?.properties?.has_parking ||
-              contract?.properties?.has_storage) && (
-                <div className="w-full">
-                  <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                    {[
-                      {
-                        id: "has_balcony",
-                        label: t("balcony"),
-                        icon: <Wind className="w-4 h-4" />,
-                      },
-                      {
-                        id: "has_safe_room",
-                        label: t("safeRoom"),
-                        icon: <ShieldCheck className="w-4 h-4" />,
-                      },
-                      {
-                        id: "has_parking",
-                        label: t("parking"),
-                        icon: <Car className="w-4 h-4" />,
-                      },
-                      {
-                        id: "has_storage",
-                        label: t("storage"),
-                        icon: <Box className="w-4 h-4" />,
-                      },
-                    ]
-                      .filter(
-                        (item) =>
-                          !readOnly || (contract?.properties as any)?.[item.id],
-                      )
-                      .map((amenity) => {
-                        const isActive = !!(contract?.properties as any)?.[
-                          amenity.id
-                        ];
-                        return (
-                          <button
-                            key={amenity.id}
-                            type="button"
-                            disabled={readOnly}
-                            onClick={async () => {
-                              if (readOnly) return;
-                              const newVal = !isActive;
-
-                              setContract((prev: any) => ({
-                                ...prev,
-                                properties: {
-                                  ...prev.properties,
-                                  [amenity.id]: newVal,
-                                },
-                              }));
-
-                              try {
-                                const { error } = await supabase
-                                  .from("properties")
-                                  .update({ [amenity.id]: newVal })
-                                  .eq("id", contract.property_id);
-
-                                if (error) throw error;
-                              } catch (err) {
-                                console.error(
-                                  "Error updating property amenity:",
-                                  err,
-                                );
-                                setContract((prev: any) => ({
-                                  ...prev,
-                                  properties: {
-                                    ...prev.properties,
-                                    [amenity.id]: isActive,
-                                  },
-                                }));
-                              }
-                            }}
-                            className={cn(
-                              "flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all duration-300",
-                              isActive
-                                ? "bg-indigo-50/80 dark:bg-indigo-500/10 border-indigo-200 dark:border-indigo-500/30 text-indigo-700 dark:text-indigo-400 shadow-sm"
-                                : "bg-background dark:bg-neutral-800/50 border-transparent text-muted-foreground hover:bg-muted/50 dark:hover:bg-neutral-800",
-                            )}
-                          >
-                            {React.cloneElement(amenity.icon as any, {
-                              className: cn(
-                                "w-3.5 h-3.5",
-                                isActive
-                                  ? "text-indigo-600 dark:text-indigo-400"
-                                  : "text-muted-foreground",
-                              ),
-                            })}
-                            <span className="font-semibold text-xs whitespace-nowrap">
-                              {amenity.label || amenity.id}
-                            </span>
-                          </button>
-                        );
-                      })}
-                  </div>
-                </div>
-              )}
-
-            {/* Mobile only Status and Tools (stacked below amenities on small screens) */}
-            <div className="flex md:hidden flex-wrap items-center justify-center gap-2 mt-4">
-              <div
-                className={cn(
-                  "px-3 py-1.5 glass-premium dark:bg-white/5 rounded-full text-xs font-black uppercase tracking-widest flex items-center gap-2 border border-white/5 shadow-minimal",
-                  contract.status === "active"
-                    ? "text-success"
-                    : contract.status === "draft"
-                      ? "text-warning"
-                      : "text-slate-500",
+                  </MenuItem>
                 )}
-              >
-                <div
-                  className={cn(
-                    "w-1.5 h-1.5 rounded-full shadow-[0_0_5px_rgba(var(--status-color),0.5)]",
-                    contract.status === "active"
-                      ? "bg-success"
-                      : contract.status === "draft"
-                        ? "bg-warning"
-                        : "bg-background0",
-                  )}
-                />
-                {t(contract.status)}
-              </div>
-              {signedUrl && (
-                <a
-                  href={signedUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="px-3 py-1.5 glass-premium dark:bg-white/5 text-primary rounded-full text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:bg-white/10 transition-all border border-white/5 shadow-minimal"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  {lang === "he" ? "צפייה בחוזה" : "View PDF"}
-                </a>
-              )}
-            </div>
-          </div>
 
-          {/* Desktop Tools / PDF Link */}
+                {readOnly && <div className="h-px bg-slate-100 dark:bg-neutral-800 my-1 mx-2" />}
+
+                {readOnly && contract.status === 'active' && (
+                  <MenuItem>
+                    {({ focus }) => (
+                      <button
+                        onClick={(e) => { e.preventDefault(); setIsTerminationModalOpen(true); }}
+                        className={cn(
+                          "flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-[15px] font-medium transition-colors text-amber-600 dark:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20",
+                          focus ? "bg-amber-50 dark:bg-amber-900/20" : ""
+                        )}
+                      >
+                        <Archive className="w-4 h-4 shrink-0" /> 
+                        <span className="flex-1 text-start">
+                          {lang === "he" ? "סיום חוזה מוקדם (ארכיון)" : "End Contract Early"}
+                        </span>
+                      </button>
+                    )}
+                  </MenuItem>
+                )}
+
+                {readOnly && contract.status === 'archived' && (
+                  <MenuItem>
+                    {({ focus }) => (
+                      <button
+                        onClick={(e) => { e.preventDefault(); handleReactivateContract(); }}
+                        className={cn(
+                          "flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-[15px] font-medium transition-colors text-emerald-600 dark:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20",
+                          focus ? "bg-emerald-50 dark:bg-emerald-900/20" : ""
+                        )}
+                      >
+                        <RefreshCw className="w-4 h-4 shrink-0" /> 
+                        <span className="flex-1 text-start">
+                          {lang === "he" ? "הפעל מחדש את החוזה" : "Reactivate Contract"}
+                        </span>
+                      </button>
+                    )}
+                  </MenuItem>
+                )}
+
+                <MenuItem>
+                  {({ focus }) => (
+                    <button
+                      onClick={handleDeleteContract}
+                      className={cn(
+                        "flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-[15px] font-medium transition-colors text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20",
+                        focus ? "bg-red-50 dark:bg-red-900/20" : ""
+                      )}
+                    >
+                      <Trash2 className="w-4 h-4 shrink-0" />
+                      <span className="flex-1 text-start">
+                        {lang === "he" ? "מחיקת חוזה" : "Delete Contract"}
+                      </span>
+                    </button>
+                  )}
+                </MenuItem>
+              </MenuItems>
+            </Transition>
+          </Menu>
+
           {signedUrl && (
-            <div className="hidden md:flex items-center shrink-0">
-              <a
-                href={signedUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="px-4 py-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-all border border-indigo-100 dark:border-indigo-500/20 shadow-sm"
-              >
-                <ExternalLink className="w-4 h-4" />
-                {lang === "he" ? "צפייה בחוזה" : "View PDF"}
-              </a>
-            </div>
+            <a
+              href={signedUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-secondary/10 text-primary transition-colors"
+              title={lang === "he" ? "צפייה בחוזה" : "View PDF"}
+            >
+              <ExternalLink className="w-5 h-5" />
+            </a>
           )}
         </div>
+
+        <h1 className="text-lg font-bold text-primary dark:text-white absolute left-1/2 -translate-x-1/2 whitespace-nowrap hidden sm:block">
+          {t("contractDetails")}
+        </h1>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleBack}
+          className="w-10 h-10 rounded-full hover:bg-secondary/10 text-primary"
+        >
+          <ArrowRight className={cn("w-5 h-5", lang === "he" ? "" : "rotate-180")} />
+        </Button>
       </div>
 
-      {/* Form Content */}
+      {/* Main Form Content Container */}
       <form
         onSubmit={handleSave}
-        className="flex-1 p-3 md:p-6 space-y-8 pb-24 max-w-5xl mx-auto w-full"
+        className="flex-1 p-4 md:p-6 space-y-6 pb-[140px] lg:pb-24 max-w-2xl mx-auto w-full"
       >
-        {/* 2. Tenant Details Section */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 pb-2 border-b border-border/50">
-            <User className="w-5 h-5 text-primary" />
-            <h3 className="font-bold text-lg">{t("tenantDetails")}</h3>
-          </div>
-
-          <div className="space-y-4">
-            {formData.tenants.length > 0 ? (
-              formData.tenants.map((tenant: any, idx: number) => (
-                <Card
-                  key={idx}
-                  className="rounded-[2rem] border shadow-sm group"
-                >
-                  <CardContent className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {(!readOnly || tenant.name || tenant.full_name) && (
-                        <Input
-                          label={t("fullName")}
-                          readOnly={readOnly}
-                          value={tenant.name || tenant.full_name || ""}
-                          onChange={(e) => {
-                            const newTenants = [...formData.tenants];
-                            newTenants[idx] = {
-                              ...newTenants[idx],
-                              name: e.target.value,
-                            };
-                            setFormData({ ...formData, tenants: newTenants });
-                          }}
-                          placeholder={t("name")}
-                        />
-                      )}
-                      {(!readOnly || tenant.email) && (
-                        <Input
-                          label={t("email")}
-                          readOnly={readOnly}
-                          value={tenant.email || ""}
-                          onChange={(e) => {
-                            const newTenants = [...formData.tenants];
-                            newTenants[idx] = {
-                              ...newTenants[idx],
-                              email: e.target.value,
-                            };
-                            setFormData({ ...formData, tenants: newTenants });
-                          }}
-                          leftIcon={
-                            <Mail className="w-4 h-4 text-muted-foreground" />
-                          }
-                        />
-                      )}
-                      {(!readOnly || tenant.phone) && (
-                        <Input
-                          label={t("phone")}
-                          readOnly={readOnly}
-                          value={tenant.phone || ""}
-                          onChange={(e) => {
-                            const newTenants = [...formData.tenants];
-                            newTenants[idx] = {
-                              ...newTenants[idx],
-                              phone: e.target.value,
-                            };
-                            setFormData({ ...formData, tenants: newTenants });
-                          }}
-                          leftIcon={
-                            <Phone className="w-4 h-4 text-muted-foreground" />
-                          }
-                        />
-                      )}
-                      {(!readOnly || tenant.id_number) && (
-                        <Input
-                          label={t("idNumber")}
-                          readOnly={readOnly}
-                          value={tenant.id_number || ""}
-                          onChange={(e) => {
-                            const newTenants = [...formData.tenants];
-                            newTenants[idx] = {
-                              ...newTenants[idx],
-                              id_number: e.target.value,
-                            };
-                            setFormData({ ...formData, tenants: newTenants });
-                          }}
-                          leftIcon={
-                            <CreditCard className="w-4 h-4 text-muted-foreground" />
-                          }
-                        />
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            ) : (
-              <Card className="rounded-[2rem] border shadow-sm">
-                <CardContent className="p-6 text-center">
-                  <p className="text-muted-foreground">
-                    {t("noTenantsListed")}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
+        {/* 1. Property Address & Status Card */}
+        <div className="bg-primary border border-primary p-5 rounded-[1.5rem] shadow-[0_4px_24px_rgba(13,71,161,0.06)] flex flex-col items-start text-start relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+          <div className="relative z-10 w-full flex flex-col items-start text-start">
+            <h2 className="text-[22px] sm:text-[26px] leading-[1.2] font-black text-white text-start tracking-tight mb-3 mt-0">
+              {(contract.properties?.address && contract.properties?.city)
+                ? `${contract.properties.address}, ${contract.properties.city}`
+                : (contract.properties?.name || t("unnamedProperty"))}
+            </h2>
+            <div
+              className={cn(
+                "flex flex-row px-3 py-1 bg-white/10 rounded-full text-[14px] font-bold items-center gap-2 border border-white/5 shadow-sm w-fit text-white transition-all hover:bg-white/20",
+              )}
+            >
+              <div
+                className={cn(
+                  "w-2 h-2 rounded-full shadow-sm",
+                  contract.status === "active"
+                    ? "bg-[#4ade80]" // Emerald green
+                    : contract.status === "draft"
+                      ? "bg-warning"
+                      : "bg-slate-300",
+                )}
+              />
+              <span>{t(contract.status)}</span>
+            </div>
           </div>
         </div>
 
-        {/* 3. Contract Dates Section */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 pb-2 border-b border-border/50">
-            <Calendar className="w-5 h-5 text-primary" />
-            <h3 className="font-bold text-lg">{t("contractPeriod")}</h3>
-          </div>
+        {/* 2. Tenant Details Section */}
+        <Card className="rounded-[2rem] border-0 shadow-[0_4px_24px_rgba(13,71,161,0.06)] overflow-hidden">
+          <CardContent className="p-0">
+            {/* Header */}
+            <div className="p-6 pb-2 flex justify-start items-center gap-3">
+              <div className="w-10 h-10 rounded-[12px] bg-slate-100 dark:bg-neutral-800 flex items-center justify-center text-brand-600 dark:text-brand-400">
+                <User className="w-5 h-5 pointer-events-none" />
+              </div>
+              <div className="flex flex-col items-start text-start">
+                <h3 className="font-bold text-[18px] text-brand-600 dark:text-brand-400 mb-0">{t("tenantDetails")}</h3>
+              </div>
+            </div>
 
-          <Card className="rounded-[2rem] border shadow-sm">
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {t("startDate")}
-                  </label>
-                  <DatePicker
-                    value={
-                      formData.start_date
-                        ? parseISO(formData.start_date)
-                        : undefined
-                    }
-                    onChange={(date) =>
+            <div className="p-6 pt-0 space-y-6">
+              {formData.tenants.length > 0 ? (
+                formData.tenants.map((tenant: any, idx: number) => (
+                  <div key={idx} className={cn("relative", idx > 0 && "pt-6 border-t border-slate-100 dark:border-neutral-800")}>
+                    {!readOnly && formData.tenants.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                            const newTenants = [...formData.tenants];
+                            newTenants.splice(idx, 1);
+                            setFormData({ ...formData, tenants: newTenants });
+                        }}
+                        className="absolute -top-3 left-0 p-2 text-red-500 hover:bg-red-500/10 rounded-full transition-all z-10"
+                      >
+                         <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                    {!readOnly ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                        {(!readOnly || tenant.name || tenant.full_name) && (
+                          <Input
+                            label={t("fullName")}
+                            readOnly={readOnly}
+                            value={tenant.name ?? tenant.full_name ?? ""}
+                            onChange={(e) => {
+                              const newTenants = [...formData.tenants];
+                              newTenants[idx] = {
+                                ...newTenants[idx],
+                                name: e.target.value,
+                              };
+                              setFormData({ ...formData, tenants: newTenants });
+                            }}
+                            placeholder={t("name")}
+                          />
+                        )}
+                        {(!readOnly || tenant.email) && (
+                          <Input
+                            label={t("email")}
+                            readOnly={readOnly}
+                            value={tenant.email ?? ""}
+                            onChange={(e) => {
+                              const newTenants = [...formData.tenants];
+                              newTenants[idx] = {
+                                ...newTenants[idx],
+                                email: e.target.value,
+                              };
+                              setFormData({ ...formData, tenants: newTenants });
+                            }}
+                            leftIcon={
+                              <Mail className="w-4 h-4 text-muted-foreground" />
+                            }
+                          />
+                        )}
+                        {(!readOnly || tenant.phone) && (
+                          <Input
+                            label={t("phone")}
+                            readOnly={readOnly}
+                            value={tenant.phone ?? ""}
+                            onChange={(e) => {
+                              const newTenants = [...formData.tenants];
+                              newTenants[idx] = {
+                                ...newTenants[idx],
+                                phone: e.target.value,
+                              };
+                              setFormData({ ...formData, tenants: newTenants });
+                            }}
+                            leftIcon={
+                              <Phone className="w-4 h-4 text-muted-foreground" />
+                            }
+                          />
+                        )}
+                        {(!readOnly || tenant.id_number) && (
+                          <Input
+                            label={t("idNumber")}
+                            readOnly={readOnly}
+                            value={tenant.id_number ?? ""}
+                            onChange={(e) => {
+                              const newTenants = [...formData.tenants];
+                              newTenants[idx] = {
+                                ...newTenants[idx],
+                                id_number: e.target.value,
+                              };
+                              setFormData({ ...formData, tenants: newTenants });
+                            }}
+                            leftIcon={
+                              <CreditCard className="w-4 h-4 text-muted-foreground" />
+                            }
+                          />
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-2.5 text-start w-full mt-2">
+                        {(tenant.name || tenant.full_name) && (
+                          <DataFieldWidget
+                            label={t("fullName")}
+                            icon={<User className="w-full h-full" />}
+                            value={tenant.name || tenant.full_name}
+                          />
+                        )}
+                        {tenant.id_number && (
+                          <DataFieldWidget
+                            label={t("idNumber")}
+                            icon={<CreditCard className="w-full h-full" />}
+                            value={tenant.id_number}
+                          />
+                        )}
+                        {tenant.phone && (
+                          <DataFieldWidget
+                            label={t("phone")}
+                            icon={<Phone className="w-full h-full" />}
+                            value={<span dir="ltr" className="inline-block text-right w-full">{tenant.phone}</span>}
+                          />
+                        )}
+                        {tenant.email && (
+                          <DataFieldWidget
+                            label={t("email")}
+                            icon={<Mail className="w-full h-full" />}
+                            value={<span dir="ltr" className="inline-block text-right w-full font-serif font-medium">{tenant.email}</span>}
+                          />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="text-center pt-4">
+                  <p className="text-muted-foreground">{t("noTenantsListed")}</p>
+                </div>
+              )}
+              
+              {!readOnly && (
+                <div className="pt-4 flex justify-start">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
                       setFormData({
                         ...formData,
-                        start_date: date ? format(date, "yyyy-MM-dd") : "",
-                      })
-                    }
-                    readonly={readOnly}
-                    placeholder={t("startDate")}
-                  />
+                        tenants: [
+                          ...formData.tenants,
+                          { name: "", id_number: "", email: "", phone: "" }
+                        ]
+                      });
+                    }}
+                    className="gap-2 text-brand-600 border-brand-200 hover:bg-brand-50"
+                  >
+                    <Plus className="w-4 h-4" />
+                    {t("addTenant")}
+                  </Button>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {t("endDate")}
-                  </label>
-                  <DatePicker
-                    value={
-                      formData.end_date
-                        ? parseISO(formData.end_date)
-                        : undefined
-                    }
-                    onChange={(date) =>
-                      setFormData({
-                        ...formData,
-                        end_date: date ? format(date, "yyyy-MM-dd") : "",
-                      })
-                    }
-                    readonly={readOnly}
-                    placeholder={t("endDate")}
-                  />
-                </div>
-                {(!readOnly || formData.signing_date) && (
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 3. Contract Dates Section */}
+        <Card className="rounded-[2rem] border-0 shadow-[0_4px_24px_rgba(13,71,161,0.06)] overflow-hidden">
+          <CardContent className="p-0">
+            {/* Header */}
+            <div className="p-6 pb-2 flex justify-start items-center gap-3">
+              <div className="w-10 h-10 rounded-[12px] bg-slate-100 dark:bg-neutral-800 flex items-center justify-center text-brand-600 dark:text-brand-400">
+                <Calendar className="w-5 h-5 pointer-events-none" />
+              </div>
+              <div className="flex flex-col items-start text-start">
+                <h3 className="font-bold text-[18px] text-brand-600 dark:text-brand-400 mb-0">{t("contractPeriod")}</h3>
+              </div>
+            </div>
+
+            <div className="p-6 pt-2">
+              {!readOnly ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {t("signingDate")}
+                      {t("startDate")}
                     </label>
                     <DatePicker
                       value={
-                        formData.signing_date
-                          ? parseISO(formData.signing_date)
+                        formData.start_date
+                          ? parseISO(formData.start_date)
                           : undefined
                       }
                       onChange={(date) =>
                         setFormData({
                           ...formData,
-                          signing_date: date ? format(date, "yyyy-MM-dd") : "",
+                          start_date: date ? format(date, "yyyy-MM-dd") : "",
                         })
                       }
                       readonly={readOnly}
-                      placeholder={t("signingDate")}
+                      placeholder={t("startDate")}
                     />
                   </div>
-                )}
-              </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {t("endDate")}
+                    </label>
+                    <DatePicker
+                      value={
+                        formData.end_date
+                          ? parseISO(formData.end_date)
+                          : undefined
+                      }
+                      onChange={(date) =>
+                        setFormData({
+                          ...formData,
+                          end_date: date ? format(date, "yyyy-MM-dd") : "",
+                        })
+                      }
+                      readonly={readOnly}
+                      placeholder={t("endDate")}
+                    />
+                  </div>
+                  {(!readOnly || formData.signing_date) && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {t("signingDate")}
+                      </label>
+                      <DatePicker
+                        value={
+                          formData.signing_date
+                            ? parseISO(formData.signing_date)
+                            : undefined
+                        }
+                        onChange={(date) =>
+                          setFormData({
+                            ...formData,
+                            signing_date: date ? format(date, "yyyy-MM-dd") : "",
+                          })
+                        }
+                        readonly={readOnly}
+                        placeholder={t("signingDate")}
+                      />
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2.5 text-start w-full mt-2">
+                  <DataFieldWidget
+                    label={t("signingDate")}
+                    value={formData.signing_date ? format(parseISO(formData.signing_date), "dd/MM/yyyy") : "-"}
+                    icon={<Pen className="w-full h-full" />}
+                  />
+                  <DataFieldWidget
+                    label={t("startDate")}
+                    value={formData.start_date ? format(parseISO(formData.start_date), "dd/MM/yyyy") : "-"}
+                    icon={<Calendar className="w-full h-full" />}
+                  />
+                  <DataFieldWidget
+                    label={t("endDate")}
+                    value={formData.end_date ? format(parseISO(formData.end_date), "dd/MM/yyyy") : "-"}
+                    icon={<Calendar className="w-full h-full" />}
+                    valueClassName={contract.actual_end_date ? "line-through opacity-50 decoration-slate-400/70" : undefined}
+                  />
+
+                  {contract.actual_end_date && (
+                    <DataFieldWidget
+                      label={lang === 'he' ? "תאריך סיום בפועל (סיום מוקדם)" : "Actual End Date (Early)"}
+                      value={format(parseISO(contract.actual_end_date), "dd/MM/yyyy")}
+                      icon={<Archive className="w-full h-full" />}
+                      className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20"
+                      valueClassName="text-amber-900 dark:text-amber-400"
+                    />
+                  )}
+                </div>
+              )}
 
               {/* Duration Display */}
               {formData.start_date && formData.end_date && (
-                <div className="mt-4 p-3 bg-secondary/20 rounded-xl flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                <div className="mt-8 p-3 bg-secondary/10 dark:bg-neutral-800/50 rounded-xl flex items-center justify-center gap-2 text-sm text-muted-foreground">
                   <Clock className="w-4 h-4" />
                   <span>{t("duration")}: </span>
                   <span className="font-bold text-foreground">
                     {(() => {
                       const start = new Date(formData.start_date);
-                      const end = new Date(formData.end_date);
+                      const end = new Date(contract.actual_end_date || formData.end_date);
                       const diffTime = Math.abs(
                         end.getTime() - start.getTime(),
                       );
@@ -1002,220 +1300,172 @@ export function ContractHub({
                   </span>
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* 4. Options & Extensions Section */}
         {(formData.option_periods.length > 0 || !readOnly) && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-border/50">
-              <GitBranch className="w-5 h-5 text-primary" />
-              <h3 className="font-bold text-lg">{t("optionPeriods")}</h3>
-            </div>
+          <Card className="rounded-[2rem] border-0 shadow-[0_4px_24px_rgba(13,71,161,0.06)] overflow-hidden">
+            <CardContent className="p-0">
+              {/* Header */}
+              <div className="p-6 pb-2 flex justify-start items-center gap-3">
+                <div className="w-10 h-10 rounded-[12px] bg-slate-100 dark:bg-neutral-800 flex items-center justify-center text-brand-600 dark:text-brand-400">
+                  <Shield className="w-5 h-5 pointer-events-none" />
+                </div>
+                <div className="flex flex-col items-end">
+                  <h3 className="font-bold text-[18px] text-brand-600 dark:text-brand-400 mb-0">{t("optionPeriods")}</h3>
+                </div>
+              </div>
 
-            <Card className="rounded-[2rem] border shadow-sm">
-              <CardContent className="p-6 space-y-4">
-
+              <div className="p-6 pt-2 space-y-4">
                 {formData.option_periods.length > 0 ? (
                   <div className="space-y-3">
                     {formData.option_periods.map((option: any, idx: number) => (
-                      <Card
-                        key={idx}
-                        className="bg-background dark:bg-neutral-900 border-none shadow-sm"
-                      >
-                        <CardContent className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                          {!readOnly ? (
-                            <div className="flex-1 flex flex-col gap-4">
-                              <div className="flex justify-between items-center bg-brand-50/50 dark:bg-brand-900/10 -m-4 mb-0 p-3 px-4 border-b border-border/50">
-                                <span className="font-bold text-sm text-brand-700 dark:text-brand-300">
-                                  {t("optionPeriod")} {idx + 1}
-                                </span>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-destructive hover:bg-red-500/10 rounded-full"
-                                  onClick={() => {
-                                    const newPeriods =
-                                      formData.option_periods.filter(
-                                        (_: any, i: number) => i !== idx,
-                                      );
+                      !readOnly ? (
+                        <div
+                          key={idx}
+                          className="bg-secondary/5 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[1.5rem] p-4 flex flex-col gap-4"
+                        >
+                          <div className="flex-1 flex flex-col gap-4">
+                            <div className="flex justify-between items-center border-b border-border/50 pb-3">
+                              <span className="font-bold text-sm text-foreground">
+                                {t("optionPeriod")} {idx + 1}
+                              </span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-destructive hover:bg-red-500/10 rounded-full"
+                                onClick={() => {
+                                  const newPeriods =
+                                    formData.option_periods.filter(
+                                      (_: any, i: number) => i !== idx,
+                                    );
+                                  setFormData({
+                                    ...formData,
+                                    option_periods: newPeriods,
+                                  });
+                                }}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div className="space-y-1">
+                                <label className="text-[13px] font-bold text-muted-foreground uppercase block">
+                                  {t("endDate")}
+                                </label>
+                                <DatePicker
+                                  value={
+                                    option.endDate
+                                      ? parseISO(option.endDate)
+                                      : undefined
+                                  }
+                                  onChange={(date) => {
+                                    const newPeriods = formData.option_periods.map((op: any, i: number) =>
+                                      i === idx ? { ...op, endDate: date ? format(date, "yyyy-MM-dd") : "" } : op
+                                    );
                                     setFormData({
                                       ...formData,
                                       option_periods: newPeriods,
                                     });
                                   }}
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
+                                />
                               </div>
-
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                  <label className="text-xs font-bold text-muted-foreground uppercase block">
-                                    {t("endDate")}
-                                  </label>
-                                  <DatePicker
-                                    value={
-                                      option.endDate
-                                        ? parseISO(option.endDate)
-                                        : undefined
-                                    }
-                                    onChange={(date) => {
-                                      const newPeriods = [
-                                        ...formData.option_periods,
-                                      ];
-                                      newPeriods[idx].endDate = date
-                                        ? format(date, "yyyy-MM-dd")
-                                        : "";
-                                      setFormData({
-                                        ...formData,
-                                        option_periods: newPeriods,
-                                      });
-                                    }}
-                                  />
-                                </div>
-                                <div className="space-y-1">
-                                  <label className="text-xs font-bold text-muted-foreground uppercase block">
-                                    {t("optionRent")}
-                                  </label>
+                              <div className="space-y-1">
+                                <label className="text-[13px] font-bold text-muted-foreground uppercase block">
+                                  {t("optionRent")}
+                                </label>
                                   <Input
                                     type="number"
                                     value={option.rentAmount || ""}
                                     onChange={(e) => {
-                                      const newPeriods = [
-                                        ...formData.option_periods,
-                                      ];
-                                      newPeriods[idx].rentAmount = e.target.value ? Number(
-                                        e.target.value,
-                                      ) : undefined;
+                                      const newPeriods = formData.option_periods.map((op: any, i: number) =>
+                                        i === idx ? { ...op, rentAmount: e.target.value ? Number(e.target.value) : undefined } : op
+                                      );
                                       setFormData({
                                         ...formData,
                                         option_periods: newPeriods,
                                       });
                                     }}
-                                    leftIcon={
-                                      <span className="text-sm font-bold">₪</span>
-                                    }
-                                    className="bg-background"
-                                  />
-                                </div>
-                              </div>
-
-                              <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                  <label className="text-xs font-bold text-muted-foreground uppercase block">
-                                    {t("optionNoticeDays")}
-                                  </label>
-                                  <Input
-                                    type="number"
-                                    value={option.noticeDays || ""}
-                                    onChange={(e) => {
-                                      const newPeriods = [
-                                        ...formData.option_periods,
-                                      ];
-                                      newPeriods[idx].noticeDays = e.target.value ? parseInt(e.target.value) : undefined;
-                                      setFormData({
-                                        ...formData,
-                                        option_periods: newPeriods,
-                                      });
-                                    }}
-                                    placeholder="0"
-                                    className="bg-background font-mono"
-                                    dir="ltr"
-                                  />
-                                </div>
-                                <div className="space-y-1">
-                                  <label className="text-xs font-bold text-muted-foreground uppercase block">
-                                    {t("optionReminderDays")}
-                                  </label>
-                                  <Input
-                                    type="number"
-                                    value={option.reminderDays || ""}
-                                    onChange={(e) => {
-                                      const newPeriods = [
-                                        ...formData.option_periods,
-                                      ];
-                                      newPeriods[idx].reminderDays = e.target.value ? parseInt(e.target.value) : undefined;
-                                      setFormData({
-                                        ...formData,
-                                        option_periods: newPeriods,
-                                      });
-                                    }}
-                                    placeholder="0"
-                                    className="bg-background font-mono"
-                                    dir="ltr"
-                                  />
-                                </div>
+                                  leftIcon={
+                                    <span className="text-sm font-bold">₪</span>
+                                  }
+                                  className="bg-background"
+                                />
                               </div>
                             </div>
-                          ) : (
-                            <>
-                              <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
-                                  {idx + 1}
-                                </div>
-                                <div>
-                                  <p className="font-bold text-sm">
-                                    {t("optionPeriod")} {idx + 1}
-                                  </p>
-                                  {option.length && (
-                                    <p className="text-xs text-muted-foreground">
-                                      {option.length} {t("months")}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
 
-                              <div className="flex flex-wrap gap-x-6 gap-y-3">
-                                {option.endDate && (
-                                  <div className="text-right">
-                                    <span className="text-xs text-muted-foreground block">
-                                      {t("endDate")}
-                                    </span>
-                                    <span className="font-medium">
-                                      {format(
-                                        parseISO(option.endDate),
-                                        "dd/MM/yyyy",
-                                      )}
-                                    </span>
-                                  </div>
-                                )}
-                                {option.rentAmount && (
-                                  <div className="text-right">
-                                    <span className="text-xs text-muted-foreground block">
-                                      {t("monthlyRent")}
-                                    </span>
-                                    <span className="font-bold border border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded-full text-xs">
-                                      ₪{Number(option.rentAmount).toLocaleString()}
-                                    </span>
-                                  </div>
-                                )}
-                                {option.noticeDays && (
-                                  <div className="text-right">
-                                    <span className="text-xs text-muted-foreground block uppercase font-bold tracking-wider">
-                                      {t("optionNoticeDays")}
-                                    </span>
-                                    <span className="font-bold text-sm">
-                                      {option.noticeDays} {t("days")}
-                                    </span>
-                                  </div>
-                                )}
-                                {option.reminderDays && (
-                                  <div className="text-right">
-                                    <span className="text-xs text-muted-foreground block uppercase font-bold tracking-wider">
-                                      {t("optionReminderDays")}
-                                    </span>
-                                    <span className="font-bold text-sm text-brand-600 dark:text-brand-400">
-                                      {option.reminderDays} {t("days")}
-                                    </span>
-                                  </div>
-                                )}
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-1">
+                                <label className="text-[13px] font-bold text-muted-foreground uppercase block">
+                                  {t("optionNoticeDays")}
+                                </label>
+                                <Input
+                                  type="number"
+                                  value={option.noticeDays || ""}
+                                  onChange={(e) => {
+                                    const newPeriods = formData.option_periods.map((op: any, i: number) =>
+                                      i === idx ? { ...op, noticeDays: e.target.value ? parseInt(e.target.value) : undefined } : op
+                                    );
+                                    setFormData({
+                                      ...formData,
+                                      option_periods: newPeriods,
+                                    });
+                                  }}
+                                  placeholder="0"
+                                  className="bg-background font-mono"
+                                  dir="ltr"
+                                />
                               </div>
-                            </>
-                          )}
-                        </CardContent>
-                      </Card>
+                              <div className="space-y-1">
+                                <label className="text-[13px] font-bold text-muted-foreground uppercase block">
+                                  {t("optionReminderDays")}
+                                </label>
+                                <Input
+                                  type="number"
+                                  value={option.reminderDays || ""}
+                                  onChange={(e) => {
+                                    const newPeriods = formData.option_periods.map((op: any, i: number) =>
+                                      i === idx ? { ...op, reminderDays: e.target.value ? parseInt(e.target.value) : undefined } : op
+                                    );
+                                    setFormData({
+                                      ...formData,
+                                      option_periods: newPeriods,
+                                    });
+                                  }}
+                                  placeholder="0"
+                                  className="bg-background font-mono"
+                                  dir="ltr"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div key={idx} className="flex flex-col gap-2.5 w-full pb-4 border-b border-border/50 last:border-0 last:pb-0">
+                          <DataFieldWidget
+                            label={idx === 0 ? (lang === "he" ? "אופציה ראשונה" : "First Option") : idx === 1 ? (lang === "he" ? "אופציה שנייה" : "Second Option") : `${lang === "he" ? "תקופת אופציה" : "Option Period"} ${idx + 1}`}
+                            value={option.endDate ? `${t("until")} ${format(parseISO(option.endDate), "dd/MM/yyyy")}` : "-"}
+                            icon={<Calendar className="w-full h-full" />}
+                          />
+                          <DataFieldWidget
+                            label={t("optionRent")}
+                            value={
+                              <span className="flex items-center gap-2">
+                                <span>₪{Number(option.rentAmount || 0).toLocaleString()}</span>
+                                {formData.linkage_type && formData.linkage_type !== "none" && (
+                                  <span className="text-[10px] text-green-600 font-bold bg-green-50 rounded-md px-1.5 whitespace-nowrap">צמוד מדד</span>
+                                )}
+                              </span>
+                            }
+                            icon={<Coins className="w-full h-full" />}
+                            valueClassName="text-brand-600 dark:text-brand-400"
+                          />
+                        </div>
+                      )
                     ))}
                   </div>
                 ) : (
@@ -1227,6 +1477,7 @@ export function ContractHub({
                 {!readOnly && (
                   <Button
                     variant="link"
+                    type="button"
                     onClick={() => {
                       const lastEndDateStr =
                         formData.option_periods.length > 0
@@ -1257,247 +1508,437 @@ export function ContractHub({
                         ],
                       });
                     }}
-                    className="text-brand-500 font-black p-0 h-auto mt-4 inline-flex items-center"
+                    className="text-brand-500 font-black p-0 h-auto mt-2 inline-flex items-center"
                   >
                     <Plus className="w-4 h-4 mr-1" /> {t("addPeriod")}
                   </Button>
                 )}
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* 5. Payments & Linkage Section */}
         <div className="space-y-4">
-          <div className="flex items-center gap-2 pb-2 border-b border-border/50">
-            <Coins className="w-5 h-5 text-primary" />
-            <h3 className="font-bold text-lg">{t("paymentDetails")}</h3>
+          <div className="flex justify-start items-center gap-3 pb-2 border-b border-border/50 mb-2">
+            <div className="w-10 h-10 rounded-[12px] bg-slate-100 dark:bg-neutral-800 flex items-center justify-center text-brand-600 dark:text-brand-400">
+              <Coins className="w-5 h-5 pointer-events-none" />
+            </div>
+            <div className="flex flex-col items-end">
+              <h3 className="font-bold text-[18px] text-brand-600 dark:text-brand-400 mb-0">{t("paymentDetails")}</h3>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Base Payment Info */}
-            <Card className="rounded-[2rem] border shadow-sm">
-              <CardContent className="p-6 space-y-4">
-                <h4 className="text-xs font-bold text-muted-foreground uppercase">
-                  {t("rent")}
-                </h4>
-                <div className="flex gap-4">
-                  <Input
-                    label={t("amount")}
-                    type="number"
-                    readOnly={readOnly}
-                    value={formData.base_rent}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        base_rent: Number(e.target.value),
-                      })
-                    }
-                    leftIcon={<span className="text-sm font-bold">₪</span>}
-                    className="h-10 text-lg font-bold"
-                  />
-                </div>
+            <Card className="rounded-[2rem] border-0 shadow-[0_4px_24px_rgba(13,71,161,0.06)] overflow-hidden">
+              <CardContent className="p-0">
+                <div className="p-6">
+                  {!readOnly ? (
+                    <div className="space-y-4">
+                      <h4 className="text-[13px] font-bold text-muted-foreground uppercase">
+                        {t("rent")}
+                      </h4>
+                      <div className="flex gap-4">
+                        <Input
+                          label={t("amount")}
+                          type="number"
+                          readOnly={readOnly}
+                          value={formData.base_rent}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              base_rent: e.target.value === "" ? "" : Number(e.target.value),
+                            })
+                          }
+                          leftIcon={<span className="text-sm font-bold">₪</span>}
+                          className="h-10 text-lg font-bold"
+                        />
+                      </div>
 
-                <div className="grid grid-cols-2 gap-4 pt-2">
-                  <Select
-                    label={t("paymentFrequency")}
-                    disabled={readOnly}
-                    value={formData.payment_frequency}
-                    onChange={(value) =>
-                      setFormData({ ...formData, payment_frequency: value })
-                    }
-                    options={[
-                      { value: "monthly", label: t("monthly") },
-                      { value: "quarterly", label: t("quarterly") },
-                      { value: "annually", label: t("annually") },
-                    ]}
-                  />
-                  <Input
-                    label={t("paymentDay")}
-                    type="number"
-                    min="1"
-                    max="31"
-                    readOnly={readOnly}
-                    value={formData.payment_day}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        payment_day: Number(e.target.value),
-                      })
-                    }
-                  />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                        <Input
+                          label={t("paymentDay")}
+                          type="number"
+                          min="1"
+                          max="31"
+                          readOnly={readOnly}
+                          value={formData.payment_day}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              payment_day: e.target.value === "" ? "" : Number(e.target.value),
+                            })
+                          }
+                        />
+                      </div>
+                      {(!readOnly || formData.payment_method) && (
+                        <div className="pt-2 relative z-50">
+                          <Select
+                            label={t("paymentMethod")}
+                            disabled={readOnly}
+                            value={formData.payment_method || ""}
+                            onChange={(val) =>
+                              setFormData({ ...formData, payment_method: val })
+                            }
+                            placeholder={t("selectOption")}
+                            options={PAYMENT_METHODS.map(pm => ({
+                                value: pm.id,
+                                label: t(pm.labelKey as any)
+                            }))}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-2.5 w-full">
+                      <DataFieldWidget
+                        label={t("monthlyRent") || "שכר דירה חודשי"}
+                        value={`₪${Number(formData.base_rent).toLocaleString()}`}
+                        icon={<Coins className="w-full h-full" />}
+                        valueClassName="text-brand-600 dark:text-brand-400"
+                      />
+                      <DataFieldWidget
+                        label={t("paymentDay") || "יום תשלום"}
+                        value={formData.payment_day}
+                        icon={<Calendar className="w-full h-full" />}
+                      />
+                      {formData.payment_method && (() => {
+                        const pmConfig = getPaymentMethodConfig(formData.payment_method);
+                        const PmIcon = pmConfig?.icon || CreditCard;
+                        return (
+                          <DataFieldWidget
+                            label={t("paymentMethod") || "אמצעי תשלום"}
+                            value={t((pmConfig?.labelKey || formData.payment_method) as any)}
+                            icon={<PmIcon className="w-full h-full" />}
+                          />
+                        );
+                      })()}
+                    </div>
+                  )}
+
+                  {/* 5.5 Rent Steps Section (Moved inside card) */}
+                  {(formData.rent_periods.length > 0 || !readOnly) && (
+                    <div className="pt-6 mt-6 border-t border-slate-100 dark:border-neutral-800 space-y-4">
+                      <div className="flex items-center gap-2 pb-2">
+                        <TrendingUp className="w-4 h-4 text-primary" />
+                        <h4 className="font-bold text-sm tracking-wide uppercase text-muted-foreground">{t("rentSteps")}</h4>
+                      </div>
+
+                      {formData.rent_periods.length > 0 ? (
+                        <div className="space-y-3">
+                          {formData.rent_periods.map((step: any, idx: number) => (
+                            !readOnly ? (
+                              <div
+                                key={idx}
+                                className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-secondary/5 rounded-xl border border-slate-100 dark:border-neutral-800 gap-4"
+                              >
+                                <div className="flex-1 flex flex-col md:flex-row gap-4 items-end">
+                                  <div className="flex-1 w-full">
+                                    <label className="text-[13px] font-bold text-muted-foreground uppercase mb-1 block">
+                                      {t("stepDate")}
+                                    </label>
+                                    <DatePicker
+                                      value={
+                                        step.startDate
+                                          ? parseISO(step.startDate)
+                                          : undefined
+                                      }
+                                      onChange={(date) => {
+                                        const newPeriods = [...formData.rent_periods];
+                                        newPeriods[idx].startDate = date
+                                          ? format(date, "yyyy-MM-dd")
+                                          : "";
+                                        setFormData({
+                                          ...formData,
+                                          rent_periods: newPeriods,
+                                        });
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="flex-1 w-full">
+                                    <label className="text-[13px] font-bold text-muted-foreground uppercase mb-1 block">
+                                      {t("newAmount")}
+                                    </label>
+                                    <Input
+                                      type="number"
+                                      value={step.amount || ""}
+                                      onChange={(e) => {
+                                        const newPeriods = [...formData.rent_periods];
+                                        newPeriods[idx].amount = e.target.value === "" ? "" : Number(
+                                          e.target.value,
+                                        );
+                                        setFormData({
+                                          ...formData,
+                                          rent_periods: newPeriods,
+                                        });
+                                      }}
+                                      leftIcon={
+                                        <span className="text-sm font-bold">₪</span>
+                                      }
+                                      className="h-10"
+                                    />
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-10 w-10 text-destructive self-end shrink-0"
+                                    onClick={() => {
+                                      const newPeriods = formData.rent_periods.filter(
+                                        (_: any, i: number) => i !== idx,
+                                      );
+                                      setFormData({
+                                        ...formData,
+                                        rent_periods: newPeriods,
+                                      });
+                                    }}
+                                  >
+                                    <Trash2 className="w-5 h-5" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div key={idx} className="flex flex-col gap-2.5 w-full pb-4 border-b border-border/50 last:border-0 last:pb-0">
+                                <DataFieldWidget
+                                  label={`${t("step")} ${idx + 1}`}
+                                  value={step.startDate ? `${t("effectiveDate")}: ${format(parseISO(step.startDate), "dd/MM/yyyy")}` : "-"}
+                                  icon={<Calendar className="w-full h-full" />}
+                                />
+                                <DataFieldWidget
+                                  label={t("rent")}
+                                  value={`₪${Number(step.amount).toLocaleString()}`}
+                                  icon={<Coins className="w-full h-full" />}
+                                  valueClassName="text-brand-600 dark:text-brand-400"
+                                />
+                              </div>
+                            )
+                          ))}
+                        </div>
+                      ) : null}
+
+                      {!readOnly && (
+                        <Button
+                          type="button"
+                          variant="link"
+                          onClick={() => {
+                            setFormData({
+                              ...formData,
+                              rent_periods: [
+                                ...formData.rent_periods,
+                                {
+                                  startDate: "",
+                                  amount: formData.base_rent,
+                                  currency: "ILS",
+                                },
+                              ],
+                            });
+                          }}
+                          className="text-brand-500 font-black p-0 h-auto mt-2 inline-flex items-center"
+                        >
+                          <Plus className="w-4 h-4 mr-1" /> {t("addStep")}
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </div>
-                {(!readOnly || formData.payment_method) && (
-                  <div className="pt-2">
-                    <Select
-                      label={t("paymentMethod")}
-                      disabled={readOnly}
-                      value={formData.payment_method || ""}
-                      onChange={(val) =>
-                        setFormData({ ...formData, payment_method: val })
-                      }
-                      placeholder={t("selectOption")}
-                      options={[
-                        { value: "transfer", label: t("transfer") },
-                        { value: "checks", label: t("check") },
-                        { value: "cash", label: t("cash") },
-                        { value: "bit", label: t("bit") },
-                        { value: "paybox", label: t("paybox") },
-                        { value: "other", label: t("other") },
-                      ]}
-                    />
-                  </div>
-                )}
               </CardContent>
             </Card>
 
             {/* Linkage Info */}
             {(!readOnly || formData.linkage_type !== "none") && (
-              <Card className="rounded-[2rem] border shadow-sm">
-                <CardContent className="p-6 space-y-4">
-                  <h4 className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-2">
-                    <TrendingUp className="w-3 h-3 text-primary" />
-                    {t("linkage")}
-                  </h4>
+              <Card className="rounded-[2rem] border-0 shadow-[0_4px_24px_rgba(13,71,161,0.06)] overflow-hidden">
+                <CardContent className="p-0">
+                  <div className="p-6">
+                    <div className="flex justify-between items-center mb-4">
+                      <h4 className="text-[16.5px] font-bold text-brand-600 dark:text-brand-400 uppercase flex items-center gap-2">
+                        <TrendingUp className="w-5 h-5 text-brand-600 dark:text-brand-400" />
+                        {t("linkage")}
+                      </h4>
+                      {readOnly && formData.linkage_type && formData.linkage_type !== "none" && (
+                        <span className="bg-green-50 text-green-600 dark:bg-green-900/40 dark:text-green-300 text-xs font-bold px-2 py-0.5 rounded-md">
+                          פעילה
+                        </span>
+                      )}
+                    </div>
 
-                  <div className="space-y-4">
-                    <Select
-                      label={t("linkageType")}
-                      disabled={readOnly}
-                      value={formData.linkage_type}
-                      onChange={(value) =>
-                        setFormData({ ...formData, linkage_type: value })
-                      }
-                      options={[
-                        { value: "none", label: t("notLinked") },
-                        { value: "cpi", label: t("linkedToCpi") },
-                        { value: "housing", label: t("linkedToHousing") },
-                      ]}
-                    />
-
-                    {formData.linkage_type !== "none" && (
+                    {!readOnly ? (
                       <div className="space-y-4">
-                        <div className="space-y-2">
-                          <label className="text-xs font-bold text-muted-foreground uppercase block mb-1">
-                            {t("linkageMethod")}
-                          </label>
+                        <div className="space-y-1.5">
+                          <label className="text-[13px] font-bold text-muted-foreground uppercase">{t("linkageType")}</label>
                           <SegmentedControl
-                            size="sm"
-                            options={[
-                              { label: t("knownIndex"), value: "known" },
-                              { label: t("determiningIndex"), value: "base" },
-                            ]}
-                            value={
-                              formData.linkage_sub_type === "known"
-                                ? "known"
-                                : "base"
-                            }
-                            onChange={(val) =>
-                              setFormData({
-                                ...formData,
-                                linkage_sub_type: val,
-                              })
-                            }
+                            size="md"
                             disabled={readOnly}
+                            value={formData.linkage_type || "none"}
+                            onChange={(val) =>
+                              setFormData({ ...formData, linkage_type: val })
+                            }
+                            options={LINKAGE_TYPES.map(type => ({
+                              value: type.id,
+                              label: t(type.labelKey as any)
+                            }))}
                           />
                         </div>
 
-                        <div className="flex justify-between items-center p-3 bg-secondary/10 rounded-xl">
-                          <div className="flex-1">
-                            <label className="text-xs font-bold text-muted-foreground uppercase block mb-1">
-                              {t("baseDate")}
-                            </label>
-                            <DatePicker
-                              value={
-                                formData.base_index_date
-                                  ? parseISO(formData.base_index_date)
-                                  : undefined
-                              }
-                              onChange={(date) =>
-                                setFormData({
-                                  ...formData,
-                                  base_index_date: date
-                                    ? format(date, "yyyy-MM-dd")
-                                    : "",
-                                })
-                              }
-                              readonly={readOnly}
-                              className="w-full max-w-[200px]"
-                            />
-                          </div>
-                          <div className="flex-shrink-0 text-left min-w-[80px]">
-                            <label className="text-xs font-bold text-muted-foreground uppercase block mb-1">
-                              {t("baseIndex")}
-                            </label>
-                            <div className="h-10 flex items-center justify-end text-sm text-muted-foreground">
-                              {formData.base_index_value
-                                ? Number(formData.base_index_value).toFixed(2)
-                                : "0.00"}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">
-                              {t("restrictions")}
-                            </label>
-                            <div className="flex items-center gap-2">
-                              <Input
-                                type="text"
-                                value={formData.linkage_ceiling || ""}
-                                readOnly={readOnly}
-                                onChange={(e) =>
-                                  setFormData({
-                                    ...formData,
-                                    linkage_ceiling: e.target.value,
-                                  })
-                                }
-                                placeholder={t("ceilingPlaceholder")}
-                                className="h-10 text-sm font-bold bg-secondary/10"
-                                leftIcon={
-                                  <span className="text-muted-foreground">
-                                    %
-                                  </span>
-                                }
-                              />
-                            </div>
-                            <span className="text-xs font-medium text-muted-foreground block text-center mt-1">
-                              {t("ceilingLabel")}
-                            </span>
-                          </div>
-                          <div>
-                            <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block opacity-0">
-                              {t("restrictions")}
-                            </label>
-                            <div className="flex h-10 w-full items-center justify-center">
+                        {formData.linkage_type !== "none" && (
+                          <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-neutral-800">
+                            <div className="space-y-1.5">
+                              <label className="text-[13px] font-bold text-muted-foreground uppercase">{t("linkageMethod")}</label>
                               <SegmentedControl
-                                size="sm"
-                                options={[
-                                  { label: t("yes"), value: "yes" },
-                                  { label: t("no"), value: "no" },
-                                ]}
-                                value={
-                                  formData.linkage_floor !== null &&
-                                    formData.linkage_floor !== ""
-                                    ? "yes"
-                                    : "no"
-                                }
+                                size="md"
+                                disabled={readOnly}
+                                value={formData.linkage_sub_type || "known"}
                                 onChange={(val) =>
                                   setFormData({
                                     ...formData,
-                                    linkage_floor: val === "yes" ? "0" : "",
+                                    linkage_sub_type: val,
                                   })
                                 }
-                                disabled={readOnly}
+                                options={LINKAGE_SUB_TYPES.map(subType => ({
+                                  value: subType.id,
+                                  label: t(subType.labelKey as any)
+                                }))}
                               />
                             </div>
-                            <span className="text-xs font-medium text-muted-foreground block text-center mt-1">
-                              {t("floorLabel")}
-                            </span>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <DatePicker
+                                label={t("baseDate")}
+                                value={
+                                  formData.base_index_date
+                                    ? parseISO(formData.base_index_date)
+                                    : undefined
+                                }
+                                onChange={(date) =>
+                                  setFormData({
+                                    ...formData,
+                                    base_index_date: date
+                                      ? format(date, "yyyy-MM-dd")
+                                      : "",
+                                  })
+                                }
+                              />
+                              <div className="relative">
+                                <Input
+                                  label={t("baseIndex")}
+                                  type="number"
+                                  readOnly={readOnly}
+                                  value={formData.base_index_value || ""}
+                                  onChange={(e) =>
+                                    setFormData({
+                                      ...formData,
+                                      base_index_value: Number(e.target.value),
+                                    })
+                                  }
+                                />
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-100 dark:border-neutral-800 pt-4">
+                              <div className="relative">
+                                <Input
+                                  label={lang === "he" ? "אחוז מדד שנתי מקס'" : "Max Annual Index %"}
+                                  type="number"
+                                  placeholder="0.0"
+                                  readOnly={readOnly}
+                                  value={formData.linkage_ceiling || ""}
+                                  onChange={(e) =>
+                                    setFormData({
+                                      ...formData,
+                                      linkage_ceiling: e.target.value,
+                                    })
+                                  }
+                                />
+                              </div>
+
+                              <div>
+                                <label className="text-[13px] font-bold text-muted-foreground uppercase mb-1 block">
+                                  {t("floorLabel")}
+                                </label>
+                                <div className="flex w-full items-center justify-center">
+                                  <SegmentedControl
+                                    size="md"
+                                    options={[
+                                      { label: t("yes"), value: "yes" },
+                                      { label: t("no"), value: "no" },
+                                    ]}
+                                    value={
+                                      formData.linkage_floor !== null &&
+                                        formData.linkage_floor !== ""
+                                        ? "yes"
+                                        : "no"
+                                    }
+                                    onChange={(val) =>
+                                      setFormData({
+                                        ...formData,
+                                        linkage_floor: val === "yes" ? "0" : "",
+                                      })
+                                    }
+                                    disabled={readOnly}
+                                    className="w-full"
+                                  />
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
+                    ) : (
+                      <>
+                        {formData.linkage_type === "none" ? (
+                          <div className="text-center font-bold text-muted-foreground text-sm py-8 bg-slate-50 dark:bg-neutral-800/50 rounded-2xl flex items-center justify-center">
+                            {t("notLinked")}
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-2xl p-4 flex flex-col items-start text-start w-full gap-0.5">
+                              <span className="text-[14px] text-muted-foreground font-medium leading-none">{t("linkageType")}</span>
+                              <span className="font-bold text-[18px] text-brand-600 dark:text-brand-400">
+                                {LINKAGE_TYPES.find(type => type.id === formData.linkage_type)?.labelKey 
+                                  ? t(LINKAGE_TYPES.find(type => type.id === formData.linkage_type)!.labelKey as any) 
+                                  : t("notLinked")}
+                              </span>
+                            </div>
+                            
+                            <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-2xl p-4 flex flex-col items-start text-start w-full gap-0.5">
+                              <span className="text-[14px] text-muted-foreground font-medium leading-none">{t("linkageMethod")}</span>
+                              <span className="font-bold text-[18px] text-brand-600 dark:text-brand-400">
+                                {LINKAGE_SUB_TYPES.find(type => type.id === formData.linkage_sub_type)?.labelKey
+                                  ? t(LINKAGE_SUB_TYPES.find(type => type.id === formData.linkage_sub_type)!.labelKey as any)
+                                  : t("knownIndex")}
+                              </span>
+                            </div>
+
+                            <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-2xl p-4 flex flex-col items-start text-start w-full gap-0.5">
+                              <span className="text-[14px] text-muted-foreground font-medium leading-none">{t("floorLabel")}</span>
+                              <span className="font-bold text-[18px] text-brand-600 dark:text-brand-400">
+                                {formData.linkage_floor !== null && formData.linkage_floor !== "" ? t("yes") : t("no")}
+                              </span>
+                            </div>
+
+                            {(formData.base_index_date || formData.base_index_value) && (
+                              <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-2xl p-4 flex flex-row items-center w-full gap-4 relative">
+                                {formData.base_index_date && (
+                                  <div className="flex-1 flex flex-col items-end gap-0.5">
+                                    <span className="text-[14px] text-muted-foreground font-medium leading-none">{t("baseDate")}</span>
+                                    <span className="font-bold text-[18px] text-brand-600 dark:text-brand-400">
+                                      {format(parseISO(formData.base_index_date), "MM/yyyy")}
+                                    </span>
+                                  </div>
+                                )}
+                                {formData.base_index_value && (
+                                  <>
+                                    <div className="w-[1px] bg-slate-200 dark:bg-neutral-700 h-10 self-center" />
+                                    <div className="flex-1 flex flex-col items-end pl-4 gap-0.5">
+                                      <span className="text-[14px] text-muted-foreground font-medium leading-none">{t("baseIndex")}</span>
+                                      <span className="font-bold text-[18px] text-brand-600 dark:text-brand-400">{formData.base_index_value}</span>
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 </CardContent>
@@ -1506,258 +1947,129 @@ export function ContractHub({
           </div>
         </div>
 
-        {/* 5.5 Rent Steps Section (Conditional) */}
-        {(formData.rent_periods.length > 0 || !readOnly) && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-border/50">
-              <TrendingUp className="w-5 h-5 text-primary" />
-              <h3 className="font-bold text-lg">{t("rentSteps")}</h3>
-            </div>
-
-            <Card className="rounded-[2rem] border shadow-sm">
-              <CardContent className="p-6">
-                {formData.rent_periods.length > 0 ? (
-                  <div className="space-y-3">
-                    {formData.rent_periods.map((step: any, idx: number) => (
-                      <div
-                        key={idx}
-                        className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-background dark:bg-neutral-900 rounded-xl border border-slate-100 dark:border-neutral-800 gap-4"
-                      >
-                        {!readOnly ? (
-                          <div className="flex-1 flex flex-col md:flex-row gap-4 items-end">
-                            <div className="flex-1 w-full">
-                              <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">
-                                {t("stepDate")}
-                              </label>
-                              <DatePicker
-                                value={
-                                  step.startDate
-                                    ? parseISO(step.startDate)
-                                    : undefined
-                                }
-                                onChange={(date) => {
-                                  const newPeriods = [...formData.rent_periods];
-                                  newPeriods[idx].startDate = date
-                                    ? format(date, "yyyy-MM-dd")
-                                    : "";
-                                  setFormData({
-                                    ...formData,
-                                    rent_periods: newPeriods,
-                                  });
-                                }}
-                              />
-                            </div>
-                            <div className="flex-1 w-full">
-                              <label className="text-xs font-bold text-muted-foreground uppercase mb-1 block">
-                                {t("newAmount")}
-                              </label>
-                              <Input
-                                type="number"
-                                value={step.amount || 0}
-                                onChange={(e) => {
-                                  const newPeriods = [...formData.rent_periods];
-                                  newPeriods[idx].amount = Number(
-                                    e.target.value,
-                                  );
-                                  setFormData({
-                                    ...formData,
-                                    rent_periods: newPeriods,
-                                  });
-                                }}
-                                leftIcon={
-                                  <span className="text-sm font-bold">₪</span>
-                                }
-                                className="h-10"
-                              />
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-10 w-10 text-destructive self-end shrink-0"
-                              onClick={() => {
-                                const newPeriods = formData.rent_periods.filter(
-                                  (_: any, i: number) => i !== idx,
-                                );
-                                setFormData({
-                                  ...formData,
-                                  rent_periods: newPeriods,
-                                });
-                              }}
-                            >
-                              <Trash2 className="w-5 h-5" />
-                            </Button>
-                          </div>
-                        ) : (
-                          <>
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center text-secondary font-bold text-sm">
-                                {idx + 1}
-                              </div>
-                              <div>
-                                <p className="font-bold text-sm">
-                                  {t("step")} {idx + 1}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                  {t("effectiveDate")}:{" "}
-                                  {step.startDate
-                                    ? format(
-                                      parseISO(step.startDate),
-                                      "dd/MM/yyyy",
-                                    )
-                                    : "-"}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <span className="text-xs text-muted-foreground block">
-                                {t("newRentAmount")}
-                              </span>
-                              <span className="font-bold text-lg text-primary">
-                                ₪{Number(step.amount).toLocaleString()}
-                              </span>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center text-muted-foreground text-sm italic">
-                    {/* No rent step overrides */}
-                  </div>
-                )}
-
-                {!readOnly && (
-                  <Button
-                    variant="link"
-                    onClick={() => {
-                      setFormData({
-                        ...formData,
-                        rent_periods: [
-                          ...formData.rent_periods,
-                          {
-                            startDate: "",
-                            amount: formData.base_rent,
-                            currency: "ILS",
-                          },
-                        ],
-                      });
-                    }}
-                    className="text-brand-500 font-black p-0 h-auto mt-4 inline-flex items-center"
-                  >
-                    <Plus className="w-4 h-4 mr-1" /> {t("addStep")}
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
         {/* 6. Security & Extras Section */}
         <div className="space-y-4">
-          <div className="flex items-center gap-2 pb-2 border-b border-border/50">
-            <Shield className="w-5 h-5 text-primary" />
-            <h3 className="font-bold text-lg">{t("securityAndExtras")}</h3>
+          <div className="flex items-center justify-start gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-neutral-800 flex items-center justify-center shadow-sm">
+              <Shield className="w-5 h-5 text-brand-600 dark:text-brand-400" />
+            </div>
+            <h3 className="text-[18px] font-bold text-brand-600 dark:text-brand-400 tracking-tight">
+              {t("securityAndExtras")}
+            </h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Deposit & Guarantees */}
-            {(!readOnly ||
-              formData.security_deposit_amount ||
-              formData.guarantees) && (
-                <Card className="rounded-[2rem] border shadow-sm">
-                  <CardContent className="p-6 space-y-4">
-                    {(!readOnly || formData.security_deposit_amount) && (
+          {/* Deposit, Guarantees, Painting & Special Clauses */}
+          {(!readOnly ||
+            formData.security_deposit_amount ||
+            formData.guarantees ||
+            formData.needs_painting ||
+            formData.special_clauses) && (
+            <Card className="rounded-[2rem] border shadow-sm">
+              <CardContent className="p-6">
+                {!readOnly ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                    {/* Left Column: Security & Guarantees */}
+                    <div className="space-y-6">
                       <Input
                         label={t("securityDeposit")}
                         type="number"
-                        readOnly={readOnly}
                         value={formData.security_deposit_amount}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
-                            security_deposit_amount: Number(e.target.value),
+                            security_deposit_amount: e.target.value === "" ? "" : Number(e.target.value),
                           })
                         }
                         leftIcon={<span className="text-sm font-bold">₪</span>}
                       />
-                    )}
-
-                    {(!readOnly || formData.guarantees) && (
                       <Textarea
-                        label={t("guarantees")}
-                        readOnly={readOnly}
-                        value={formData.guarantees}
+                        label={t("guarantors")}
+                        value={formData.guarantees || ""}
                         onChange={(e) =>
                           setFormData({ ...formData, guarantees: e.target.value })
                         }
-                        className="h-24"
-                        placeholder={t("guaranteesPlaceholder")}
+                        className="h-[120px] resize-none"
+                        placeholder="הכנס פרטי ערבים, צ'קים או בטחונות אחרים כאן..."
                       />
-                    )}
-                  </CardContent>
-                </Card>
-              )}
+                    </div>
 
-            {/* Additional Clauses */}
-            {(!readOnly ||
-              formData.needs_painting ||
-              formData.special_clauses) && (
-                <Card className="rounded-[2rem] border shadow-sm">
-                  <CardContent className="p-6 space-y-4">
-                    {(!readOnly || formData.needs_painting) && (
-                      <div className="flex items-start justify-between border-b border-slate-100 dark:border-neutral-700 pb-4">
-                        <div className="space-y-0.5">
-                          <label className="text-sm font-bold">
-                            {t("needsPainting")}
+                    {/* Right Column: Additional Clauses */}
+                    <div className="space-y-6">
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <label className="text-[13px] font-bold text-muted-foreground uppercase">
+                            האם נדרשת צביעה בפינוי הנכס?
                           </label>
-                          <p className="text-xs text-muted-foreground">
-                            {t("needsPaintingDesc")}
-                          </p>
                         </div>
-                        <SegmentedControl
-                          size="sm"
-                          options={[
-                            { label: t("yes"), value: "yes" },
-                            { label: t("no"), value: "no" },
-                          ]}
-                          value={formData.needs_painting ? "yes" : "no"}
-                          onChange={(val) =>
-                            !readOnly &&
-                            setFormData({
-                              ...formData,
-                              needs_painting: val === "yes",
-                            })
-                          }
-                          className="shrink-0"
-                        />
+                        <div className="flex h-[42px] w-full items-center justify-center">
+                          <SegmentedControl
+                            size="md"
+                            options={[
+                              { label: t("yes"), value: "yes" },
+                              { label: t("no"), value: "no" },
+                            ]}
+                            value={formData.needs_painting ? "yes" : "no"}
+                            onChange={(val) =>
+                              setFormData({
+                                ...formData,
+                                needs_painting: val === "yes",
+                              })
+                            }
+                          />
+                        </div>
                       </div>
-                    )}
 
-                    {(!readOnly || formData.special_clauses) && (
                       <Textarea
                         label={t("specialClauses")}
-                        readOnly={readOnly}
-                        value={formData.special_clauses}
+                        value={formData.special_clauses || ""}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
                             special_clauses: e.target.value,
                           })
                         }
-                        className="h-24"
-                        placeholder={t("specialClausesPlaceholder")}
+                        className="h-[120px] resize-none"
+                        placeholder="הכנס תנאים מיוחדים, הערות נוספות או סעיפים חריגים..."
                       />
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-          </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {formData.security_deposit_amount ? (
+                      <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-2xl p-4 flex flex-col items-start text-start w-full gap-0.5">
+                        <span className="text-[14px] text-muted-foreground font-medium leading-none">{t("securityDeposit")}</span>
+                        <span className="text-lg font-black text-brand-600 dark:text-brand-400 tracking-tight">₪{Number(formData.security_deposit_amount).toLocaleString()}</span>
+                      </div>
+                    ) : null}
+                    
+                    <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-2xl p-4 flex flex-col items-start text-start w-full gap-0.5">
+                      <span className="text-[14px] text-muted-foreground font-medium leading-none">האם נדרשת צביעה בפינוי הנכס?</span>
+                      <span className="font-bold text-[18px] text-brand-600 dark:text-brand-400">{formData.needs_painting ? t("yes") : t("no")}</span>
+                    </div>
+
+                    {formData.guarantees ? (
+                      <div className="col-span-1 md:col-span-2 bg-slate-50 dark:bg-neutral-800/50 rounded-2xl p-4 flex flex-col items-start text-start w-full gap-0.5">
+                        <span className="text-[14px] text-muted-foreground font-medium leading-none">{t("guarantors")}</span>
+                        <span className="text-[16.5px] font-medium text-brand-600 dark:text-brand-400 whitespace-pre-wrap leading-tight text-start mt-1">{formData.guarantees}</span>
+                      </div>
+                    ) : null}
+
+                    {formData.special_clauses ? (
+                      <div className="col-span-1 md:col-span-2 bg-slate-50 dark:bg-neutral-800/50 rounded-2xl p-4 flex flex-col items-end w-full border border-brand-100 dark:border-brand-900/30 gap-0.5">
+                        <span className="text-xs text-brand-600 dark:text-brand-400 font-bold">{t("specialClauses")}</span>
+                        <span className="text-[16.5px] font-medium text-brand-600 dark:text-brand-400 whitespace-pre-wrap leading-tight text-start mt-1">{formData.special_clauses}</span>
+                      </div>
+                    ) : null}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {!readOnly && (
-          <div className="fixed bottom-0 left-0 right-0 p-6 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-t border-slate-100 dark:border-neutral-800 z-50">
-            <div className="max-w-7xl mx-auto flex gap-4">
+          <div className="fixed bottom-[100px] lg:bottom-8 left-0 right-0 px-4 z-50 pointer-events-none flex justify-center">
+            <div className="flex gap-4 w-full max-w-2xl mx-auto pointer-events-auto">
               <Button
                 type="button"
                 onClick={handleCancelEdit}
@@ -1782,6 +2094,17 @@ export function ContractHub({
           </div>
         )}
       </form>
+      
+      {/* Early Termination Modal */}
+      {isTerminationModalOpen && contract && (
+        <EarlyTerminationModal
+          isOpen={isTerminationModalOpen}
+          onClose={() => setIsTerminationModalOpen(false)}
+          onConfirm={handleTerminateEarly}
+          contract={contract}
+          isLoading={saving}
+        />
+      )}
     </div>
   );
 }

@@ -90,17 +90,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log(`[AuthProvider] [${mountId}] Mounted`);
 
         async function initAuth() {
-            // Safety: Force loading to false after 6 seconds if init hangs
+            // Safety: Force loading to false after 3 seconds if init hangs
             const safetyTimeout = setTimeout(() => {
                 if (mounted && isLoading) {
                     console.warn(`[AuthProvider] [${mountId}] Safety timeout triggered - forcing loading to false`);
                     setIsLoading(false);
                 }
-            }, 6000);
+            }, 3000);
 
             try {
                 console.log(`[AuthProvider] [${mountId}] initAuth starting...`);
-                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+                // Enforce a strict 3-second timeout on getSession to prevent complete app freezes when Supabase is unreachable
+                const sessionPromise = supabase.auth.getSession();
+                const getSessionTimeout = new Promise<any>((_, reject) => 
+                    setTimeout(() => reject(new Error('Session fetch timeout after 3s')), 3000)
+                );
+                
+                const { data: { session }, error: sessionError } = await Promise.race([sessionPromise, getSessionTimeout]);
 
                 if (sessionError) {
                     console.error(`[AuthProvider] [${mountId}] getSession error:`, sessionError);
@@ -108,7 +115,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
                 if (mounted && session) {
                     setUser(session.user);
-                    await fetchProfile(session.user.id);
+                    setIsLoading(false); // Unblock UI immediately so App can render using cached profile
+                    fetchProfile(session.user.id); // Run in background without awaiting
                 } else if (mounted) {
                     setUser(null);
                     setProfile(null);
@@ -133,7 +141,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 if (mounted) {
                     if (session) {
                         setUser(session.user);
-                        await fetchProfile(session.user.id);
+                        setIsLoading(false); // Unblock UI early during auth state changes
+                        fetchProfile(session.user.id); // Run in background
                     } else {
                         setUser(null);
                         setProfile(null);

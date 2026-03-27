@@ -11,18 +11,35 @@ import {
   XCircle,
   Loader2,
   ReceiptIcon,
+  ArrowRight,
+  User,
+  Download,
+  AlertCircle,
+  Upload,
+  Image as ImageIcon,
+  Zap,
+  CreditCard,
+  FileText,
+  Building,
+  MapPin,
+  Hash,
+  Phone
 } from "lucide-react";
 import { CloseIcon as X } from "../icons/MessageIcons";
 import { formatDate } from "../../lib/utils";
 import type { Payment } from "../../types/database";
 import { DatePicker } from "../ui/DatePicker";
+import { DataFieldWidget } from "../ui/DataFieldWidget";
+import { Button } from "../ui/Button";
+import { ConfirmActionModal } from "./ConfirmActionModal";
 import { format, parseISO } from "date-fns";
+import { PAYMENT_METHODS, getPaymentMethodConfig } from "../../constants/paymentMethods";
 
 interface PaymentDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   payment: Payment | null;
-  onSuccess: () => void;
+  onSuccess: () => Promise<void> | void;
   initialEditMode?: boolean;
   initialStatus?: Payment["status"];
   indexedAmount?: number | null;
@@ -48,7 +65,54 @@ export function PaymentDetailsModal({
     payment_method: "",
     paid_date: "",
     reference: "",
+    receipt_url: "",
+    details: {} as Record<string, any>,
   });
+
+  const [confirmModalConfig, setConfirmModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    variant: 'primary' | 'danger' | 'warning' | 'info';
+    icon: 'logout' | 'delete' | 'warning' | 'info';
+    confirmText?: string;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    variant: 'primary',
+    icon: 'warning',
+    confirmText: '',
+  });
+
+  const [signedReceiptUrl, setSignedReceiptUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchSignedUrl = async () => {
+      if (!formData.receipt_url) {
+        if (isMounted) setSignedReceiptUrl(null);
+        return;
+      }
+      if (formData.receipt_url.startsWith('http')) {
+        if (isMounted) setSignedReceiptUrl(formData.receipt_url);
+        return;
+      }
+      try {
+        const { data, error } = await supabase.storage
+          .from('property-images')
+          .createSignedUrl(formData.receipt_url, 3600);
+        if (error) throw error;
+        if (isMounted && data) {
+          setSignedReceiptUrl(data.signedUrl);
+        }
+      } catch (err) {
+        console.error('Error fetching signed receipt url:', err);
+      }
+    };
+    fetchSignedUrl();
+    return () => { isMounted = false; };
+  }, [formData.receipt_url]);
 
   useEffect(() => {
     if (payment) {
@@ -58,10 +122,64 @@ export function PaymentDetailsModal({
         payment_method: payment.payment_method || "transfer",
         paid_date: payment.paid_date || new Date().toISOString().split("T")[0],
         reference: payment.reference || "",
+        receipt_url: payment.receipt_url || "",
+        details: payment.details || {},
       });
       setEditMode(initialEditMode && isOpen);
     }
   }, [payment, isOpen, initialEditMode, initialStatus]);
+
+  const createReceiptDocument = async (method: string, amount: number, date: string, url: string) => {
+    if (!url) return;
+    try {
+        const propertyId = (payment as any).contracts?.properties?.id || (payment as any).contracts?.property_id;
+        if (!propertyId) {
+            console.error("Missing propertyId. Cannot create receipt document.");
+            return;
+        }
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        let tenantName = t("unknown");
+        if (Array.isArray((payment as any).contracts?.tenants)) {
+            tenantName = (payment as any).contracts.tenants[0]?.name || t("unknown");
+        } else if ((payment as any).contracts?.tenants?.name) {
+            tenantName = (payment as any).contracts.tenants.name;
+        }
+
+        const fileName = url.split('/').pop() || 'receipt.jpg';
+
+        const { data: existing } = await supabase
+            .from('property_documents')
+            .select('id')
+            .eq('storage_path', url)
+            .maybeSingle();
+
+        if (existing) return;
+
+        const { error: insertError } = await supabase.from('property_documents').insert({
+            user_id: user.id,
+            property_id: propertyId,
+            category: 'receipt',
+            storage_bucket: 'property-images',
+            storage_path: url,
+            file_name: fileName,
+            title: `קבלה - ${(payment as any).contracts?.properties?.address || ''}`,
+            amount: amount,
+            document_date: date,
+            vendor_name: tenantName,
+            issue_type: method,
+        });
+
+        if (insertError) {
+            console.error("Supabase insert error:", insertError);
+            throw insertError;
+        }
+    } catch (e) {
+        console.error("Failed to create receipt document", e);
+    }
+  };
 
   const handleUpdate = async () => {
     if (!payment) return;
@@ -71,15 +189,20 @@ export function PaymentDetailsModal({
         .from("payments")
         .update({
           status: formData.status,
-          paid_amount: formData.status === "paid" ? formData.paid_amount : null,
+          paid_amount: formData.paid_amount,
           payment_method: formData.payment_method,
-          paid_date: formData.status === "paid" ? formData.paid_date : null,
+          paid_date: formData.paid_date,
           reference: formData.reference,
+          receipt_url: formData.receipt_url,
+          details: formData.details,
         })
         .eq("id", payment.id);
 
       if (error) throw error;
-      onSuccess();
+      if (formData.status === 'paid' && formData.receipt_url) {
+        await createReceiptDocument(formData.payment_method || (payment as any).contracts?.payment_method || 'transfer', formData.paid_amount || payment.amount, formData.paid_date || payment.due_date, formData.receipt_url);
+      }
+      await onSuccess();
       onClose();
     } catch (error) {
       console.error("Error updating payment:", error);
@@ -89,36 +212,140 @@ export function PaymentDetailsModal({
     }
   };
 
-  const handleDelete = async () => {
-    if (!payment || !window.confirm(t("deletePaymentConfirmation"))) return;
-    setIsDeleting(true);
+  const handleQuickApprove = async () => {
+    if (!payment) return;
+    setLoading(true);
     try {
+      const expectedAmount = indexedAmount ?? payment.amount;
+      const defaultMethod = payment.payment_method || (payment as any).contracts?.payment_method || null;
+
       const { error } = await supabase
         .from("payments")
-        .delete()
+        .update({
+          status: "paid",
+          paid_amount: expectedAmount,
+          payment_method: defaultMethod,
+          paid_date: payment.due_date,
+        })
         .eq("id", payment.id);
 
       if (error) throw error;
-      onSuccess();
+      if (formData.status === 'paid' && formData.receipt_url) {
+        await createReceiptDocument(formData.payment_method || (payment as any).contracts?.payment_method || 'transfer', formData.paid_amount || payment.amount, formData.paid_date || payment.due_date, formData.receipt_url);
+      }
+      await onSuccess();
       onClose();
     } catch (error) {
-      console.error("Error deleting payment:", error);
+      console.error("Error quick approving payment:", error);
+      alert(t("error"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteClick = () => {
+    if (!payment) return;
+    
+    if (payment.status === 'paid') {
+      setConfirmModalConfig({
+        isOpen: true,
+        title: t("undo") || "ביטול פעולה",
+        message: "האם ברצונך לבטל פרטי תשלום זה ולהחזירו לסטטוס ממתין לתשלום?",
+        variant: 'primary',
+        icon: 'warning',
+        confirmText: "אישור",
+      });
+    } else {
+      setConfirmModalConfig({
+        isOpen: true,
+        title: t("delete") || "מחיקה",
+        message: "האם למחוק תשלום מצופה זה?",
+        variant: 'primary',
+        icon: 'delete',
+        confirmText: "אישור",
+      });
+    }
+  };
+
+  const executeDelete = async () => {
+    if (!payment) return;
+    
+    setConfirmModalConfig(prev => ({ ...prev, isOpen: false }));
+    setIsDeleting(true);
+    try {
+      if (payment.status === 'paid') {
+        // ... Revert to expected/pending payment and clear details
+        const { error } = await supabase
+          .from("payments")
+          .update({
+            status: "pending",
+            paid_amount: null,
+            paid_date: null,
+            payment_method: null,
+            reference: null,
+            receipt_url: null,
+            details: null
+          })
+          .eq("id", payment.id);
+        if (error) throw error;
+      } else {
+        // Totally delete it
+        const { error } = await supabase
+          .from("payments")
+          .delete()
+          .eq("id", payment.id);
+        if (error) throw error;
+      }
+
+      await onSuccess();
+      onClose();
+    } catch (error) {
+      console.error("Error deleting/reverting payment:", error);
       alert(t("error"));
     } finally {
       setIsDeleting(false);
     }
   };
 
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      if (!e.target.files || e.target.files.length === 0) return;
+      
+      const file = e.target.files[0];
+      setUploading(true);
+      
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `receipts/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('property-images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      setFormData(prev => ({ ...prev, receipt_url: filePath }));
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      alert(t('error') || 'Error uploading file');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   if (!payment) return null;
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+    <>
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
             onClick={onClose}
             className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[70]"
           />
@@ -127,173 +354,137 @@ export function PaymentDetailsModal({
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-window rounded-[2.5rem] shadow-2xl w-full max-w-lg pointer-events-auto overflow-hidden flex flex-col max-h-[90vh] border border-border dark:border-neutral-800"
+              className="bg-background rounded-[2rem] sm:rounded-[2.5rem] shadow-[0_8px_32px_rgba(13,71,161,0.15)] w-full max-w-lg pointer-events-auto overflow-hidden flex flex-col max-h-[80vh] sm:h-auto border border-border/50 mt-auto sm:mt-0 mb-24 sm:mb-0"
             >
               {/* Header */}
-              <div className="p-6 border-b border-gray-50 dark:border-neutral-800 flex items-center justify-between bg-gray-50/50 dark:bg-neutral-800/10">
-                <div>
-                  <h2 className="text-xl font-black text-black dark:text-white uppercase tracking-tight">
-                    {t("paymentDetails")}
-                  </h2>
+              <div className="p-3 md:p-4 pb-1 flex items-center justify-between bg-background z-10 shrink-0">
+                <div className="flex items-center gap-1 -mr-2 relative z-20">
+                  <button
+                    onClick={handleDeleteClick}
+                    disabled={isDeleting}
+                    className="p-2 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-full transition-all text-rose-500"
+                    title={t("delete")}
+                  >
+                    {isDeleting ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <Trash className="w-5 h-5" />
+                    )}
+                  </button>
+                  {!editMode && (
+                    <button
+                      onClick={() => {
+                        setEditMode(true);
+                        if (formData.status === 'pending' || formData.status === 'overdue') {
+                          setFormData(prev => ({ 
+                            ...prev, 
+                            status: 'paid',
+                            paid_amount: prev.paid_amount || indexedAmount || payment.amount,
+                            paid_date: prev.paid_date || payment.due_date || new Date().toISOString().split("T")[0]
+                          }));
+                        }
+                      }}
+                      className="p-2 hover:bg-primary/10 rounded-full transition-all text-primary"
+                      title={t("edit")}
+                    >
+                      <Edit className="w-5 h-5" />
+                    </button>
+                  )}
                 </div>
+                <h2 className="text-base md:text-xl font-black text-primary tracking-tight absolute left-1/2 -translate-x-1/2">
+                  {t("paymentDetails")}
+                </h2>
                 <button
                   onClick={onClose}
-                  className="p-3 hover:bg-white dark:hover:bg-neutral-800 rounded-2xl transition-all text-muted-foreground hover:text-black dark:hover:text-white shadow-sm border border-transparent hover:border-border dark:hover:border-neutral-700"
+                  className="p-2 -ml-2 sm:-mr-2 hover:bg-muted rounded-full transition-all text-primary relative z-20"
                 >
-                  <X className="w-5 h-5" />
+                  <ArrowRight className="w-6 h-6" />
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-8 space-y-8">
-                {/* Property and Tenant Info */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-secondary dark:bg-neutral-800 rounded-2xl border border-border dark:border-neutral-800">
-                    <span className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-1 block">
-                      {t("asset")}
-                    </span>
-                    <span className="text-base font-bold text-black dark:text-white line-clamp-1">
-                      {(payment as any).contracts?.properties?.address ||
-                        t("unknown")}
-                    </span>
-                  </div>
-                  <div className="p-4 bg-secondary dark:bg-neutral-800 rounded-2xl border border-border dark:border-neutral-800">
-                    <span className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-1 block">
-                      {t("tenant")}
-                    </span>
-                    <span className="text-base font-bold text-black dark:text-white line-clamp-1">
-                      {Array.isArray((payment as any).contracts?.tenants)
-                        ? (payment as any).contracts.tenants[0]?.name ||
-                        t("unknown")
-                        : (payment as any).contracts?.tenants?.name ||
-                        t("unknown")}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Status Badge and Simple Info */}
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-col">
-                    <span className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-1">
-                      {t("status")}
-                    </span>
-                    {editMode ? (
-                      <div className="flex gap-2">
-                        {(["pending", "paid", "overdue"] as const).map((s) => (
-                          <button
-                            key={s}
-                            onClick={() =>
-                              setFormData((f) => ({ ...f, status: s }))
-                            }
-                            className={`px-4 py-2 rounded-xl text-sm font-black uppercase tracking-widest border transition-all ${formData.status === s
-                                ? "bg-black dark:bg-white text-white dark:text-black border-black dark:border-white shadow-lg"
-                                : "bg-window text-muted-foreground border-border dark:border-neutral-800"
-                              }`}
-                          >
-                            {t(s)}
-                          </button>
-                        ))}
-                      </div>
-                    ) : (
-                      <span
-                        className={`text-sm font-black uppercase tracking-widest px-3 py-1 rounded-full border ${payment.status === "paid"
-                            ? "bg-green-50 border-green-100 text-green-600"
-                            : payment.status === "overdue"
-                              ? "bg-red-50 border-red-100 text-red-600"
-                              : "bg-orange-50 border-orange-100 text-orange-600"
-                          }`}
-                      >
-                        {t(payment.status)}
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    <span className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-1 block">
-                      {t("dueDate")}
-                    </span>
-                    <span className="font-bold text-black dark:text-white">
-                      {formatDate(payment.due_date)}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Amount Section */}
-                <div className="p-6 bg-secondary dark:bg-neutral-800/50 rounded-[2rem] border border-border dark:border-neutral-800">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex-1">
-                      <span className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-2 block">
-                        {t("amount")}
-                      </span>
-                      <div className="text-4xl font-black text-black dark:text-white tracking-tighter">
-                        {payment.amount.toLocaleString()} ש"ח
-                      </div>
+              <div className="flex-1 overflow-y-auto px-4 md:px-5 pb-4 md:pb-5 flex flex-col gap-2.5">
+                
+                {/* ---------- DEEP BLUE BANNER ---------- */}
+                <div className="bg-primary rounded-[1.5rem] md:rounded-[2rem] p-4 relative overflow-hidden shadow-lg shadow-primary/20 shrink-0 mx-1 md:mx-0">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+                    <div className="absolute bottom-0 left-0 w-40 h-40 bg-black/10 rounded-full blur-2xl -ml-10 -mb-10 pointer-events-none" />
+                    
+                    {/* Status Badge */}
+                    <div className={`absolute top-4 left-4 flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold shadow-sm backdrop-blur-md ${
+                      payment.status === 'paid' ? 'bg-emerald-400 text-emerald-950 border-emerald-300/50' : 
+                      payment.status === 'overdue' ? 'bg-rose-400 text-rose-950 border-rose-300/50' : 
+                      'bg-[#FFC107] text-amber-950'
+                    }`}>
+                       <span>{t(payment.status)}</span>
+                       {payment.status === 'pending' && <Clock className="w-3.5 h-3.5 ml-0.5" />}
+                       {payment.status === 'paid' && <CheckCircle2 className="w-3.5 h-3.5 ml-0.5" />}
+                       {payment.status === 'overdue' && <AlertCircle className="w-3.5 h-3.5 ml-0.5" />}
                     </div>
-                    {payment.status === "paid" && !editMode && (
-                      <div className="text-right flex-1 border-l border-border dark:border-neutral-700 pl-6">
-                        <span className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-2 block">
-                          {t("paidAmount")}
-                        </span>
-                        <div className="text-4xl font-black text-secondary tracking-tighter">
-                          {formData.paid_amount.toLocaleString()} ש"ח
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  {/* Difference Display */}
-                  {payment && (
-                    <div className="mt-4 border-t border-border dark:border-neutral-700 pt-4">
-                      {(() => {
-                        const expectedAmount = indexedAmount ?? payment.amount;
-                        const currentPaidAmount = editMode ? formData.paid_amount : (payment.paid_amount || payment.amount);
-                        const isPaid = editMode ? formData.status === 'paid' : payment.status === 'paid';
-                        const diff = currentPaidAmount - expectedAmount;
 
-                        if (isPaid && Math.abs(diff) > 1) {
-                          const isOverpaid = diff > 0;
-                          return (
-                            <div className={`p-4 rounded-xl flex items-center justify-between border ${isOverpaid ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20' : 'bg-rose-50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20'}`}>
-                              <span className={`text-sm font-bold uppercase tracking-widest ${isOverpaid ? 'text-secondary' : 'text-rose-600 dark:text-rose-400'}`}>
-                                {t('diff')} {isOverpaid ? '(עודף)' : '(חסר)'}
-                              </span>
-                              <span className={`text-lg font-black tracking-tight ${isOverpaid ? 'text-secondary' : 'text-rose-600 dark:text-rose-400'}`}>
-                                {isOverpaid ? '+' : ''}{diff.toLocaleString()} ש"ח
-                              </span>
-                            </div>
-                          );
-                        }
-                        return null;
-                      })()}
+                    <div className="text-right pt-2 pl-24 mb-3 relative z-10">
+                       <div className="text-primary-foreground/70 text-xs tracking-wider font-medium mb-0.5">
+                          כתובת הנכס
+                       </div>
+                       <div className="text-primary-foreground text-xl md:text-2xl font-black tracking-tight leading-tight">
+                         {(payment as any).contracts?.properties?.address || "-"}
+                       </div>
                     </div>
-                  )}
-                </div>
 
-                {editMode && (
-                  <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-                    {formData.status === "paid" && (
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <label className="text-sm font-black uppercase tracking-widest text-muted-foreground ml-1">
-                            {t("paidAmount")}
-                          </label>
-                          <div className="relative">
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-black text-sm">
-                              ש"ח
-                            </span>
-                            <input
-                              type="number"
-                              value={formData.paid_amount}
-                              onChange={(e) =>
-                                setFormData((f) => ({
-                                  ...f,
-                                  paid_amount: Number(e.target.value),
-                                }))
-                              }
-                              className="w-full pl-12 pr-4 py-4 bg-window border border-border dark:border-neutral-800 rounded-2xl text-base font-bold focus:ring-2 focus:ring-black dark:focus:ring-white outline-none"
-                            />
+                    {/* Tenant Box */}
+                    <div className="bg-white/10 dark:bg-black/20 rounded-xl p-3 flex items-center justify-between backdrop-blur-sm border border-white/10 relative z-10">
+                       <div className="text-right flex-1 mr-2">
+                          <div className="text-primary-foreground/70 text-xs font-medium mb-0.5">שם הדייר</div>
+                          <div className="text-primary-foreground font-bold text-base leading-tight truncate px-1">
+                            {Array.isArray((payment as any).contracts?.tenants)
+                              ? (payment as any).contracts.tenants[0]?.name || t("unknown")
+                              : (payment as any).contracts?.tenants?.name || t("unknown")}
                           </div>
+                       </div>
+                       <div className="text-left ml-2 flex flex-col items-end shrink-0">
+                          <div className="text-primary-foreground/70 text-xs font-medium mb-0.5">סכום צפוי</div>
+                          <div className="text-primary-foreground font-black text-lg leading-tight" dir="ltr">
+                            {indexedAmount && indexedAmount !== payment.amount ? (
+                                <div className="flex items-baseline gap-1.5">
+                                    <span className="text-sm font-bold text-primary-foreground/50 line-through">₪{payment.amount.toLocaleString()}</span>
+                                    <span>₪{indexedAmount.toLocaleString()}</span>
+                                </div>
+                            ) : (
+                                <span>₪{(indexedAmount ?? payment.amount).toLocaleString()}</span>
+                            )}
+                          </div>
+                       </div>
+                    </div>
+                </div>
+
+                {editMode ? (
+                  <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300 px-1">
+                    
+                    <div className="space-y-4">                      <div className="space-y-2">
+                        <label className="text-sm font-black uppercase tracking-widest text-muted-foreground ml-1">
+                          {t("paymentPaidAmount")}
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-black text-sm">
+                            ש"ח
+                          </span>
+                          <input
+                            type="number"
+                            value={formData.paid_amount || ""}
+                            onChange={(e) =>
+                              setFormData((f) => ({
+                                ...f,
+                                paid_amount: e.target.value ? Number(e.target.value) : 0,
+                              }))
+                            }
+                            className="w-full pl-14 pr-4 py-4 bg-background border border-border rounded-2xl text-lg font-bold focus:ring-2 focus:ring-primary outline-none transition-all"
+                          />
                         </div>
+                      </div>
+
+                      {formData.status === "paid" && (
                         <div className="space-y-2">
                           <label className="text-sm font-black uppercase tracking-widest text-muted-foreground ml-1">
-                            {t("paidDate")}
+                            {t("paymentPaidDate")}
                           </label>
                           <DatePicker
                             value={
@@ -312,12 +503,12 @@ export function PaymentDetailsModal({
                             className="w-full"
                           />
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
 
                     <div className="space-y-2">
                       <label className="text-sm font-black uppercase tracking-widest text-muted-foreground ml-1">
-                        {t("method")}
+                        {t("paymentMethod")}
                       </label>
                       <select
                         value={formData.payment_method}
@@ -327,24 +518,86 @@ export function PaymentDetailsModal({
                             payment_method: e.target.value,
                           }))
                         }
-                        className="w-full p-4 bg-white dark:bg-neutral-900 border border-border dark:border-neutral-800 rounded-2xl text-base font-bold outline-none"
+                        className="w-full px-4 py-4 bg-background border border-border rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-primary transition-all"
                       >
-                        <option value="transfer">{t("transfer")}</option>
-                        <option value="checks">{t("check")}</option>
-                        <option value="cash">{t("cash")}</option>
-                        <option value="bit">{t("bit")}</option>
-                        <option value="paybox">{t("paybox")}</option>
-                        <option value="other">{t("other")}</option>
+                        {PAYMENT_METHODS.map(pm => (
+                          <option key={pm.id} value={pm.id}>{t(pm.labelKey as any)}</option>
+                        ))}
                       </select>
                     </div>
 
-                    <div className="space-y-2">
+                    {/* Dynamic Payment Details */}
+                    {formData.payment_method && formData.payment_method !== "other" && formData.payment_method !== "cash" && formData.payment_method !== "paybox" && (
+                      <div className="space-y-4 pt-4 border-t border-border/50">
+                        <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground ml-1">
+                          {t("paymentDetailsTitle") || "פרטי אמצעי תשלום"}
+                        </h3>
+                        
+                        {(formData.payment_method === 'transfer' || formData.payment_method === 'checks') && (
+                          <div className="grid grid-cols-3 gap-3">
+                            <div className="space-y-2">
+                              <label className="text-xs font-bold text-muted-foreground ml-1">{t("paymentBank") || "בנק"}</label>
+                              <input
+                                type="text"
+                                value={formData.details?.bank || ""}
+                                onChange={(e) => setFormData(f => ({ ...f, details: { ...f.details, bank: e.target.value } }))}
+                                className="w-full px-4 py-3 bg-background border border-border rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-primary transition-all"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-xs font-bold text-muted-foreground ml-1">{t("paymentBranch") || "סניף"}</label>
+                              <input
+                                type="text"
+                                value={formData.details?.branch || ""}
+                                onChange={(e) => setFormData(f => ({ ...f, details: { ...f.details, branch: e.target.value } }))}
+                                className="w-full px-4 py-3 bg-background border border-border rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-primary transition-all"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-xs font-bold text-muted-foreground ml-1">{t("paymentAccount") || "חשבון"}</label>
+                              <input
+                                type="text"
+                                value={formData.details?.account || ""}
+                                onChange={(e) => setFormData(f => ({ ...f, details: { ...f.details, account: e.target.value } }))}
+                                className="w-full px-4 py-3 bg-background border border-border rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-primary transition-all"
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {formData.payment_method === 'checks' && (
+                          <div className="space-y-2">
+                            <label className="text-xs font-bold text-muted-foreground ml-1">{t("paymentCheckNum") || "מספר צ'ק"}</label>
+                            <input
+                              type="text"
+                              value={formData.details?.checkNumber || ""}
+                              onChange={(e) => setFormData(f => ({ ...f, details: { ...f.details, checkNumber: e.target.value } }))}
+                              className="w-full px-4 py-3 bg-background border border-border rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-primary transition-all"
+                            />
+                          </div>
+                        )}
+
+                        {(formData.payment_method === 'bit') && (
+                          <div className="space-y-2">
+                            <label className="text-xs font-bold text-muted-foreground ml-1">{t("paymentPhoneNumber") || "מספר טלפון"}</label>
+                            <input
+                              type="tel"
+                              value={formData.details?.phoneNumber || ""}
+                              onChange={(e) => setFormData(f => ({ ...f, details: { ...f.details, phoneNumber: e.target.value } }))}
+                              className="w-full px-4 py-3 bg-background border border-border rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-primary transition-all"
+                              dir="ltr"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="space-y-2 pt-4 border-t border-border/50">
                       <label className="text-sm font-black uppercase tracking-widest text-muted-foreground ml-1">
-                        {t("reference")}
+                        פרטים נוספים
                       </label>
                       <input
                         type="text"
-                        placeholder={t("referencePlaceholder")}
                         value={formData.reference}
                         onChange={(e) =>
                           setFormData((f) => ({
@@ -352,96 +605,268 @@ export function PaymentDetailsModal({
                             reference: e.target.value,
                           }))
                         }
-                        className="w-full p-4 bg-white dark:bg-neutral-900 border border-border dark:border-neutral-800 rounded-2xl text-base font-bold outline-none"
+                        className="w-full px-4 py-4 bg-background border border-border rounded-2xl text-lg font-bold outline-none focus:ring-2 focus:ring-primary transition-all"
                       />
                     </div>
-                  </div>
-                )}
 
-                {!editMode && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 bg-white dark:bg-neutral-900 border border-border dark:border-neutral-800 rounded-2xl">
-                      <span className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-1 block">
-                        {t("method")}
-                      </span>
-                      <span className="text-base font-bold text-black dark:text-white capitalize">
-                        {payment.payment_method?.replace("_", " ") || ""}
-                      </span>
+                    {/* Receipt Upload */}
+                    <div className="space-y-2 pt-4 border-t border-border/50">
+                        <label className="text-sm font-black uppercase tracking-widest text-muted-foreground ml-1">
+                          קובץ אסמכתא
+                        </label>
+                        
+                        {formData.receipt_url ? (
+                          <div className="relative rounded-2xl border border-border overflow-hidden group">
+                            <div className="aspect-video w-full bg-muted/30 flex items-center justify-center">
+                              {signedReceiptUrl && formData.receipt_url && formData.receipt_url.split('?')[0].match(/\.(jpeg|jpg|gif|png|webp|avif)$/i) ? (
+                                <img src={signedReceiptUrl} alt="Receipt" className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="flex flex-col items-center justify-center text-muted-foreground">
+                                  <ReceiptIcon className="w-10 h-10 mb-2" />
+                                  <span className="text-sm font-bold">מסמך מצורף</span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                              {signedReceiptUrl && (
+                                <a href={signedReceiptUrl} target="_blank" rel="noopener noreferrer" className="p-3 bg-white/20 hover:bg-white/30 rounded-full text-white backdrop-blur-md transition-colors">
+                                  <Download className="w-5 h-5" />
+                                </a>
+                              )}
+                              <button 
+                                type="button"
+                                onClick={() => setFormData(f => ({ ...f, receipt_url: "" }))} 
+                                className="p-3 bg-rose-500/80 hover:bg-rose-500 rounded-full text-white backdrop-blur-md transition-colors"
+                              >
+                                <Trash className="w-5 h-5" />
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="relative">
+                            <input
+                              type="file"
+                              accept="image/*,.pdf"
+                              onChange={handleFileUpload}
+                              disabled={uploading}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                            />
+                            <div className="w-full p-8 border-2 border-dashed border-border rounded-2xl flex flex-col items-center justify-center text-muted-foreground hover:bg-secondary/20 hover:border-primary/50 transition-colors">
+                              {uploading ? (
+                                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                              ) : (
+                                <>
+                                  <Upload className="w-8 h-8 mb-3 opacity-50" />
+                                  <span className="text-sm font-bold">{t("paymentUploadReceipt")}</span>
+                                  <span className="text-xs opacity-70 mt-1">לחץ לבחירת קובץ</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    {payment.paid_date && (
-                      <div className="p-4 bg-white dark:bg-neutral-900 border border-border dark:border-neutral-800 rounded-2xl">
-                        <span className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-1 block">
-                          {t("paidDate")}
-                        </span>
-                        <span className="text-base font-bold text-black dark:text-white">
-                          {formatDate(payment.paid_date)}
-                        </span>
-                      </div>
-                    )}
-                    {payment.reference && (
-                      <div className="p-4 bg-white dark:bg-neutral-900 border border-border dark:border-neutral-800 rounded-2xl col-span-2">
-                        <span className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-1 block">
-                          {t("reference")}
-                        </span>
-                        <span className="text-base font-bold text-black dark:text-white">
-                          {payment.reference}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Footer */}
-              <div className="p-8 border-t border-gray-50 dark:border-neutral-800 bg-gray-50/30 dark:bg-neutral-800/20 flex gap-4">
-                {editMode ? (
-                  <>
-                    <button
-                      onClick={() => setEditMode(false)}
-                      className="flex-1 py-4 px-6 bg-white dark:bg-neutral-900 border border-border dark:border-neutral-800 text-muted-foreground font-black uppercase text-sm tracking-widest rounded-2xl hover:bg-secondary transition-all active:scale-95"
-                    >
-                      {t("cancel")}
-                    </button>
-                    <button
-                      onClick={handleUpdate}
-                      disabled={loading}
-                      className="flex-3 py-4 px-6 bg-black dark:bg-white text-white dark:text-black font-black uppercase text-sm tracking-widest rounded-2xl shadow-xl hover:opacity-90 transition-all active:scale-95 disabled:opacity-80 flex items-center justify-center gap-2"
-                    >
-                      {loading ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <CheckCircle2 className="w-4 h-4" />
-                      )}
-                      {t("saveChanges")}
-                    </button>
-                  </>
                 ) : (
                   <>
-                    <button
-                      onClick={handleDelete}
-                      disabled={isDeleting}
-                      className="p-4 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-2xl hover:bg-red-100 transition-all active:scale-95 border border-red-100 dark:border-red-900/50"
-                    >
-                      {isDeleting ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                      ) : (
-                        <Trash className="w-5 h-5" />
+                    {/* Details Grid */}
+                    <div className="grid grid-cols-2 gap-2.5 w-full mx-1 md:mx-0 pt-2">
+                      <DataFieldWidget
+                        label="תאריך תשלום"
+                        value={payment.paid_date ? formatDate(payment.paid_date) : formatDate(payment.due_date)}
+                        icon={<Calendar className="w-full h-full" />}
+                      />
+                      {(payment.payment_method || (payment as any).contracts?.payment_method) && (() => {
+                        const m = payment.payment_method || (payment as any).contracts?.payment_method;
+                        const pmConfig = getPaymentMethodConfig(m);
+                        const PmIcon = pmConfig?.icon || CreditCard;
+                        return (
+                          <DataFieldWidget
+                            label={t("method")}
+                            value={t((pmConfig?.labelKey || m) as any)}
+                            icon={<PmIcon className="w-full h-full" />}
+                          />
+                        );
+                      })()}
+
+                      {payment.status === "paid" && payment.reference && payment.reference.trim() !== "" && (
+                        <DataFieldWidget
+                          label="פרטים נוספים"
+                          value={payment.reference}
+                          icon={<FileText className="w-full h-full" />}
+                        />
                       )}
-                    </button>
-                    <button
-                      onClick={() => setEditMode(true)}
-                      className="flex-1 py-4 px-6 bg-black dark:bg-white text-white dark:text-black font-black uppercase text-sm tracking-widest rounded-2xl shadow-xl hover:opacity-90 transition-all active:scale-95 flex items-center justify-center gap-2"
-                    >
-                      <Edit className="w-4 h-4" />
-                      {t("edit")}
-                    </button>
+
+                      {payment.status === "paid" && payment.details && Object.keys(payment.details).length > 0 && (
+                        <>
+                          {payment.payment_method === 'transfer' || payment.payment_method === 'checks' ? (
+                            <>
+                              {payment.details.bank && payment.details.bank.trim() !== "" && (
+                                <DataFieldWidget
+                                  label="בנק"
+                                  value={payment.details.bank}
+                                  icon={<Building className="w-full h-full" />}
+                                />
+                              )}
+                              {payment.details.branch && payment.details.branch.trim() !== "" && (
+                                <DataFieldWidget
+                                  label="סניף"
+                                  value={payment.details.branch}
+                                  icon={<MapPin className="w-full h-full" />}
+                                />
+                              )}
+                              {payment.details.account && payment.details.account.trim() !== "" && (
+                                <DataFieldWidget
+                                  label="חשבון"
+                                  value={payment.details.account}
+                                  icon={<Hash className="w-full h-full" />}
+                                />
+                              )}
+                              {payment.details.checkNumber && payment.details.checkNumber.trim() !== "" && (
+                                <DataFieldWidget
+                                  label="מספר צ'ק"
+                                  value={payment.details.checkNumber}
+                                  icon={<FileText className="w-full h-full" />}
+                                />
+                              )}
+                            </>
+                          ) : (payment.payment_method === 'bit') ? (
+                            payment.details.phoneNumber && payment.details.phoneNumber.trim() !== "" && (
+                              <DataFieldWidget
+                                label="מספר טלפון"
+                                value={payment.details.phoneNumber}
+                                icon={<Phone className="w-full h-full" />}
+                              />
+                            )
+                          ) : null}
+                        </>
+                      )}
+                    </div>
+
+                    {/* Receipt Line */}
+                    {payment.status === "paid" && payment.receipt_url && signedReceiptUrl && (
+                      <div className="py-2 space-y-2.5 px-3 mx-1 md:mx-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-muted-foreground font-medium text-sm md:text-base">אסמכתא שצורפה</span>
+                          <a 
+                            href={signedReceiptUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 text-sm font-bold text-primary bg-primary/10 hover:bg-primary/20 px-4 py-2 rounded-xl transition-colors"
+                          >
+                            <ReceiptIcon className="w-4 h-4" /> צפייה באסמכתא
+                          </a>
+                        </div>
+                      </div>
+                    )}
+
+
+                    {/* Difference Section */}
+                    {!editMode && payment.status === "paid" && (
+                       <div className="px-1 md:px-0">
+                        {(() => {
+                          const expectedAmount = indexedAmount ?? payment.amount;
+                          const currentPaidAmount = payment.paid_amount || payment.amount;
+                          const diff = currentPaidAmount - expectedAmount;
+
+                          if (Math.abs(diff) > 1) {
+                            const isOverpaid = diff > 0;
+                            return (
+                              <div className={`p-4 rounded-2xl flex flex-col items-center justify-center text-center ${isOverpaid ? 'bg-emerald-50 dark:bg-emerald-500/10' : 'bg-rose-50 dark:bg-rose-500/10'}`}>
+                                <span className={`text-xs md:text-sm font-black uppercase tracking-widest mb-1 ${isOverpaid ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'}`}>
+                                  {t('diff')} {isOverpaid ? '(עודף)' : '(חסר)'}
+                                </span>
+                                <span className={`text-xl font-black tracking-tight ${isOverpaid ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'}`}>
+                                  {isOverpaid ? '+' : ''}{diff.toLocaleString()} ש"ח
+                                </span>
+                              </div>
+                            );
+                          }
+                          return null;
+                        })()}
+                       </div>
+                    )}
                   </>
                 )}
-              </div>
+
+              {/* Actions Footer */}
+              {(editMode || payment.status !== "paid") && (
+                <div className="pt-2 md:pt-4 flex flex-col gap-3 shrink-0 mx-1 md:mx-0">
+                  {editMode ? (
+                    <div className="flex gap-3">
+                      <Button
+                        variant="secondary"
+                        onClick={() => setEditMode(false)}
+                        className="flex-1 h-14 rounded-xl"
+                      >
+                        {t("cancel")}
+                      </Button>
+                      <Button
+                        variant="primary"
+                        onClick={handleUpdate}
+                        disabled={loading}
+                        className="flex-[2] h-14 rounded-xl shadow-primary/20"
+                      >
+                        {loading ? (
+                          <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                        ) : (
+                          <CheckCircle2 className="w-5 h-5 mr-2" />
+                        )}
+                        {t("saveChanges")}
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <Button 
+                        className="w-full h-14 bg-primary hover:bg-[#0E3579] text-primary-foreground rounded-xl shadow-lg shadow-primary/25 text-base md:text-lg font-bold"
+                        onClick={handleQuickApprove}
+                        disabled={loading || isDeleting}
+                      >
+                        <span className="flex flex-row items-center justify-center gap-2">
+                          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5 fill-current text-white/90 shrink-0" />}
+                          <span>אישור תשלום מהיר</span>
+                        </span>
+                      </Button>
+                      
+                      <Button 
+                        variant="secondary"
+                        className="w-full h-14 mt-3 rounded-xl text-base md:text-lg font-bold transition-colors shadow-sm"
+                        onClick={() => {
+                          setEditMode(true);
+                          if (formData.status === 'pending' || formData.status === 'overdue') {
+                            setFormData(prev => ({ 
+                              ...prev, 
+                              status: 'paid',
+                              paid_amount: prev.paid_amount || indexedAmount || payment.amount,
+                              paid_date: prev.paid_date || payment.due_date || new Date().toISOString().split("T")[0]
+                            }));
+                          }
+                        }}
+                        disabled={loading || isDeleting}
+                      >
+                        עדכון פרטים ידני
+                      </Button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
             </motion.div>
           </div>
         </>
       )}
     </AnimatePresence>
+    
+    <ConfirmActionModal
+      isOpen={confirmModalConfig.isOpen}
+      onClose={() => setConfirmModalConfig(prev => ({ ...prev, isOpen: false }))}
+      onConfirm={executeDelete}
+      title={confirmModalConfig.title}
+      message={confirmModalConfig.message}
+      variant={confirmModalConfig.variant}
+      icon={confirmModalConfig.icon}
+      confirmText={confirmModalConfig.confirmText}
+      isLoading={isDeleting}
+    />
+    </>
   );
 }

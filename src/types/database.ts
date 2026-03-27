@@ -41,9 +41,13 @@ export interface Protocol {
     updated_at: string;
 }
 
-export type DocumentCategory =
+export type DocumentCategory = 
     | 'photo'
     | 'video'
+    | 'media'
+    | 'utilities'
+    | 'documents'
+    | 'checks'
     | 'utility_water'
     | 'utility_electric'
     | 'utility_gas'
@@ -51,12 +55,14 @@ export type DocumentCategory =
     | 'utility_management'
     | 'utility_internet'
     | 'utility_cable'
+    | 'utility_other'
     | 'maintenance'
     | 'invoice'
     | 'receipt'
     | 'insurance'
     | 'warranty'
     | 'legal'
+    | 'protocols'
     | 'other';
 
 export interface DocumentFolder {
@@ -156,6 +162,7 @@ export interface Contract {
     signing_date: string;
     start_date: string;
     end_date: string;
+    actual_end_date?: string | null;
 
     // Financials
     base_rent: number;
@@ -217,6 +224,7 @@ export interface IndexData {
     value: number;
     source: 'cbs' | 'exchange-api' | 'manual';
     created_at?: string;
+    actual_published_at?: string | null;
 }
 
 export interface RentalMarketData {
@@ -441,6 +449,8 @@ export interface Payment {
     paid_date: string | null;
     payment_method: string | null;
     reference: string | null;
+    details?: Record<string, any> | null;
+    receipt_url?: string | null;
     created_at: string;
     collection_status?: string; // e.g. "sent_to_bank"
     original_amount?: number;

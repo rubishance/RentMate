@@ -105,7 +105,9 @@ export type TranslationKeys =
     | 'availableCities'
     | 'done'
     | 'noResultsFound'
-    | 'performanceTracking';
+    | 'performanceTracking'
+    | 'propertyNotFound'
+    | 'processing';
 
 export const translations: Record<string, Record<TranslationKeys, string>> = {
     he: {
@@ -207,7 +209,9 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         availableCities: 'ערים זמינות',
         done: 'סיום',
         noResultsFound: 'לא נמצאו תוצאות',
-        performanceTracking: 'מעקב ביצועים'
+        performanceTracking: 'מעקב ביצועים',
+        propertyNotFound: 'הנכס לא נמצא',
+        processing: 'מעבד...'
     },
     en: {
         appName: 'RentMate',
@@ -308,6 +312,8 @@ export const translations: Record<string, Record<TranslationKeys, string>> = {
         availableCities: 'Available Cities',
         done: 'Done',
         noResultsFound: 'No results found',
-        performanceTracking: 'Performance Tracking'
+        performanceTracking: 'Performance Tracking',
+        propertyNotFound: 'Property not found',
+        processing: 'Processing...'
     }
 };

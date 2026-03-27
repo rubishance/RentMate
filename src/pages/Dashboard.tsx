@@ -13,8 +13,6 @@ import { DashboardEditModal } from '../components/modals/DashboardEditModal';
 import { cn } from '../lib/utils';
 import { useSubscription } from '../hooks/useSubscription';
 import { BriefingService, FeedItem } from '../services/briefing.service';
-import { BionicWelcomeOverlay } from '../components/onboarding/BionicWelcomeOverlay';
-import { BionicSpotlight } from '../components/onboarding/BionicSpotlight';
 import { useAuth } from '../contexts/AuthContext';
 import { SmartActionsRow } from '../components/dashboard/SmartActionsRow';
 import { Button } from '../components/ui/Button';
@@ -249,9 +247,6 @@ export function Dashboard() {
         <div className="bg-canvas text-foreground relative overflow-x-hidden transition-colors duration-500">
             {/* Mobile: Top Bar Background Extension */}
             <div className="fixed top-0 left-0 right-0 h-32 bg-gradient-to-b from-canvas to-transparent z-0 pointer-events-none md:hidden" />
-
-            {/* Bionic Elements */}
-            <BionicWelcomeOverlay firstName={firstName} />
 
             <div className="pb-4 pt-2 md:pt-8 px-5 relative z-10">
 

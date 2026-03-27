@@ -471,6 +471,7 @@ export function MaintenanceRecords({ property, readOnly }: MaintenanceRecordsPro
             <DocumentTimeline
                 documents={documents}
                 loading={loading}
+                property={property}
                 onDocumentClick={(doc) => {
                     setSelectedDocument(doc);
                     setIsDetailsModalOpen(true);
@@ -485,6 +486,10 @@ export function MaintenanceRecords({ property, readOnly }: MaintenanceRecordsPro
                 }}
                 document={selectedDocument}
                 onDelete={() => loadData()}
+                onUpdate={(updatedDoc) => {
+                    setSelectedDocument(updatedDoc as any);
+                    loadData();
+                }}
             />
 
             <UpgradeRequestModal

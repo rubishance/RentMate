@@ -81,7 +81,8 @@ serve(async (req) => {
         const payments: PaymentScheduleItem[] = [];
         const start = new Date(startDate);
         const end = new Date(endDate);
-        let current = new Date(start);
+        let current = new Date(start.getFullYear(), start.getMonth(), 1);
+        let count = 0;
 
         // 4. Fetch Index Data (if needed)
         const indexMap: Record<string, number> = {};
@@ -112,15 +113,39 @@ serve(async (req) => {
         }
 
         // 5. Generate Payments Loop
-        while (current <= end) {
-            // Determine Due Date
+        while (current <= end && count < 120) {
             const year = current.getFullYear();
             const month = current.getMonth();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const actualDay = Math.min(paymentDay, daysInMonth);
-            const dueDate = new Date(year, month, actualDay);
-            const dueStr = format(dueDate, 'yyyy-MM-dd');
-            const monthKey = dueStr.substring(0, 7);
+            
+            const freq = paymentFrequency.toLowerCase();
+            const monthStep = freq === 'quarterly' ? 3 : freq === 'annually' ? 12 : 1;
+
+            const periodStart = new Date(year, month, 1);
+            const periodEnd = new Date(year, month + monthStep, 0);
+
+            const activeStart = periodStart < start ? start : periodStart;
+            const activeEnd = periodEnd > end ? end : periodEnd;
+
+            if (activeStart <= activeEnd) {
+                const getDaysBetween = (d1: Date, d2: Date) => {
+                    const u1 = Date.UTC(d1.getFullYear(), d1.getMonth(), d1.getDate());
+                    const u2 = Date.UTC(d2.getFullYear(), d2.getMonth(), d2.getDate());
+                    return Math.floor((u2 - u1) / (1000 * 60 * 60 * 24)) + 1;
+                };
+
+                const periodTotalDays = getDaysBetween(periodStart, periodEnd);
+                const activeDays = getDaysBetween(activeStart, activeEnd);
+                const prorationFactor = activeDays < periodTotalDays ? (activeDays / periodTotalDays) : 1;
+
+                // Determine Due Date
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const actualDay = Math.min(paymentDay, daysInMonth);
+                let dueDate = new Date(year, month, actualDay);
+                if (count === 0 && dueDate < start) {
+                    dueDate = new Date(start);
+                }
+                const dueStr = format(dueDate, 'yyyy-MM-dd');
+                const monthKey = dueStr.substring(0, 7);
 
             // Determine Base Rent (Rent Steps)
             let currentBaseRent = baseRent;
@@ -137,7 +162,7 @@ serve(async (req) => {
                 }
             }
 
-            let amount = currentBaseRent;
+            let amount = currentBaseRent * prorationFactor;
             let linkageRate = 0;
 
             // Calculate Linkage
@@ -164,15 +189,15 @@ serve(async (req) => {
                 if (targetIndexValue) {
                     const ratio = targetIndexValue / baseIndexValue;
                     linkageRate = (ratio - 1) * 100;
-                    amount = currentBaseRent * ratio;
+                    amount = (currentBaseRent * prorationFactor) * ratio;
 
                     // Floor
-                    const effectiveFloor = linkageFloor ?? currentBaseRent;
+                    const effectiveFloor = (linkageFloor ?? currentBaseRent) * prorationFactor;
                     if (amount < effectiveFloor) amount = effectiveFloor;
 
                     // Ceiling
                     if (linkageCeiling !== null && linkageCeiling !== undefined) {
-                        const maxAmount = currentBaseRent * (1 + linkageCeiling / 100);
+                        const maxAmount = (currentBaseRent * prorationFactor) * (1 + linkageCeiling / 100);
                         if (amount > maxAmount) amount = maxAmount;
                     }
                 }
@@ -183,12 +208,12 @@ serve(async (req) => {
                 currency: currentCurrency,
                 due_date: dueStr,
                 status: 'pending',
-                original_amount: currentBaseRent,
+                original_amount: currentBaseRent * prorationFactor,
                 index_linkage_rate: Number(linkageRate.toFixed(2))
             });
+            } // end of active days block
 
             // Advance
-            const freq = paymentFrequency.toLowerCase();
             if (freq === 'monthly') current = addMonths(current, 1);
             else if (freq === 'quarterly') current = addMonths(current, 3);
             else if (freq === 'annually') current = addMonths(current, 12); // addYears not in imports? Wait I imported addYears.
@@ -196,6 +221,7 @@ serve(async (req) => {
                 // fallback to monthly to avoid infinite loop
                 current = addMonths(current, 1);
             }
+            count++;
         }
 
         return new Response(JSON.stringify({ payments }), {

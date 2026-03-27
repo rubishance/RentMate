@@ -7,6 +7,7 @@ export type TranslationKeys =
     | 'commandCenterAllClear'
     | 'rentySuggestsAction'
     | 'loading' | 'loading_female'
+    | 'processing'
     | 'error'
     | 'save' | 'save_female'
     | 'cancel'
@@ -124,6 +125,7 @@ export type TranslationKeys =
     | 'tenants' | 'tenants_female'
     | 'contracts' | 'contracts_female'
     | 'payments'
+    | 'totalPendingWithIndex'
     | 'candidates'
     | 'calculator'
     | 'settings'
@@ -249,6 +251,8 @@ export type TranslationKeys =
     | 'payment'
     | 'contract'
     | 'asset'
+    | 'paymentPaidAmount'
+    | 'paymentPaidDate'
     | 'guaranteesLabel'
     | 'baseDateRequired'
     | 'summaryDetails'
@@ -263,6 +267,7 @@ export type TranslationKeys =
     | 'hasSafeRoom'
     | 'upcoming_payment'
     | 'contract_expiry'
+    | 'contract_status_updated'
     | 'overdue_payment'
     | 'archived_contract'
     | 'active_contract'
@@ -369,6 +374,12 @@ export type TranslationKeys =
     | 'addPayment' | 'addPayment_female'
     | 'financialOverview'
     | 'monthlyExpected'
+    | 'baseMonthlyExpected'
+    | 'monthlyExpectedTitle'
+    | 'totalPendingToPay'
+    | 'withoutLinkage'
+    | 'includingLinkage'
+    | 'totalWithIndex'
     | 'pendingCollection'
     | 'upcomingPayments'
     | 'noPaymentsFound'
@@ -717,6 +728,7 @@ export type TranslationKeys =
     | 'leaseTimeline'
 
     // Misc
+    | 'noActiveContract'
     | 'noActiveContracts'
     | 'noActiveContractsDesc'
     | 'sendMessage' | 'sendMessage_female'
@@ -805,6 +817,7 @@ export type TranslationKeys =
     | 'maintenanceStorage'
     | 'documentsStorage'
     | 'documents'
+    | 'receipts'
     | 'storageLimitReached'
     | 'storageLimitReachedDesc'
     | 'storageNearLimit'
@@ -1166,6 +1179,7 @@ export const translations: Record<string, any> = {
         conciergeLinkageMonitoring: 'מעקב הצמדות אוטומטי',
         loading: 'טוען...',
         loading_female: 'טוענת...',
+        processing: 'מעבד...',
         error: 'שגיאה',
         save: 'שמור',
         save_female: 'שמרי',
@@ -1284,7 +1298,7 @@ export const translations: Record<string, any> = {
         bank_transfer: 'העברה בנקאית',
         daysLeft: 'ימים נותרו',
         allContracts: 'כל החוזים',
-        financeActual: 'בפועל',
+        financeActual: 'שולם',
         financeExpected: 'צפוי',
         financeAll: 'הכל',
         financeRent: 'שכירות',
@@ -1355,6 +1369,7 @@ export const translations: Record<string, any> = {
         monthlyIncome: 'סה״כ הכנסה חודשית',
         collected: 'שולם',
         pending: 'ממתין',
+        totalPendingWithIndex: 'סה״כ ממתין עם מדד',
         contractEnded: 'חוזה הסתיים',
         contractEndedDesc: 'החוזה עבור {address} הסתיים ב-{date}.',
         archiveAndCalculate: 'ארכב וחשב',
@@ -1445,9 +1460,10 @@ export const translations: Record<string, any> = {
         billDetected: 'חשבון זוהה',
         associateWithProperty: 'שייך לנכס',
         saveAndRecord: 'שמור ותעד',
-
-
+        noActiveContract: 'אין חוזה פעיל',
+        noOptionsDefined: 'לא הוגדרו אופציות',
         // Missing Payment UI Keys
+        receipts: 'אסמכתאות',
         cardsView: 'תצוגת כרטיסיות',
         tableView: 'תצוגת טבלה',
         actionNeeded: 'לטיפולך',
@@ -1464,11 +1480,17 @@ export const translations: Record<string, any> = {
         addPayment_female: 'הוסיפי תשלום',
         financialOverview: 'סקירה פיננסית',
         monthlyExpected: 'צפי חודשי',
+        baseMonthlyExpected: 'צפי חודשי בסיס',
+        monthlyExpectedTitle: 'צפי חודשי',
+        totalPendingToPay: 'סה״כ ממתין לתשלום',
+        withoutLinkage: 'ללא הצמדה',
+        includingLinkage: 'כולל הצמדה',
+        totalWithIndex: 'סה״כ עם מדד',
         pendingCollection: 'ממתין לגבייה',
         upcomingPayments: 'תשלומים קרובים',
         noPaymentsFound: 'לא נמצאו תשלומים.',
         totalExpected: 'סה"כ צפוי',
-        totalActual: 'סה"כ בפועל',
+        totalActual: 'סה"כ שולם',
         collectionRate: 'שיעור גבייה',
         exp: 'צפוי',
         base: 'בסיס',
@@ -1481,9 +1503,23 @@ export const translations: Record<string, any> = {
         filters: 'סינונים',
         allTenants: 'כל הדיירים',
         allAssets: 'כל הנכסים',
-        method: 'שיטה',
-        allMethods: 'כל השיטות',
+        method: 'אמצעי תשלום',
+        allMethods: 'כל אמצעי התשלום',
         transfer: 'העברה בנקאית',
+        checks: 'צ\'קים',
+        paymentBank: 'בנק',
+        paymentBranch: 'סניף',
+        paymentAccount: 'חשבון',
+        paymentCheckNum: 'מספר צ\'ק',
+        paymentNote: 'הערה',
+        paymentReceipt: 'אסמכתא',
+        paymentUploadReceipt: 'העלאת אסמכתא (תמונה/PDF)',
+        paymentReceiptAttached: 'אסמכתא מצורפת',
+        paymentMethodDetails: 'פרטי אמצעי תשלום',
+        paymentDetailsTitle: 'פרטי אמצעי תשלום',
+        paymentPhoneNumber: 'מספר טלפון',
+        paymentPaidAmount: 'סכום התשלום',
+        paymentPaidDate: 'תאריך תשלום בפועל',
         indexSum: 'הפרשי הצמדה',
         bulkCheckEntryTitle: 'הזנת פנקס צ\'קים',
         pleaseFillAllFields: 'נא למלא את כל שדות החובה',
@@ -1733,6 +1769,8 @@ export const translations: Record<string, any> = {
         parties: 'צדדים בחוזה',
         timeline: 'לוח זמנים',
         additionalDetails: 'פרטים נוספים',
+        addTenant: 'הוסף שוכר',
+        addTenant_female: 'הוסיפי שוכר',
 
         // Subscription & Plan
         unlockPotential: 'פתח את הפוטנציאל של הפורטפוליו שלך',
@@ -2307,10 +2345,10 @@ export const translations: Record<string, any> = {
         linkedToDollar: 'צמוד לדולר',
         knownIndexLabel: 'לפי מדד ידוע',
         respectOfLabel: 'מדד קובע',
-        restrictions: 'מגבלות',
+        restrictions: 'אחוז עליה מקס\'',
         ceilingLabel: 'תקרה',
         ceilingPlaceholder: 'תקרה %',
-        floorLabel: 'רצפה',
+        floorLabel: 'מדד בסיס הוא מדד מינ\'',
         floorPlaceholder: 'רצפה %',
         payment: 'תשלום',
         contract: 'חוזה',
@@ -2326,9 +2364,9 @@ export const translations: Record<string, any> = {
         addGuarantor_female: 'הוסיפי ערב',
         noGuarantors: 'אין ערבים',
         all: 'הכל',
-        active: 'פעילים',
+        active: 'פעיל',
         archived: 'בארכיון',
-        ACTIVE: 'פעילים',
+        ACTIVE: 'פעיל',
         ARCHIVED: 'בארכיון',
         searchPlaceholderContracts: 'חיפוש לפי דייר, כתובת או עיר...',
         upgradeRequired: 'שדרוג נדרש',
@@ -2340,15 +2378,16 @@ export const translations: Record<string, any> = {
         noContractsFound: 'לא נמצאו חוזים',
         noPropertiesFound: 'לא נמצאו נכסים',
         noTenantsFound: 'לא נמצאו דיירים',
-        needsPainting: 'נדרשת צביעה',
+        needsPainting: 'האם נדרשת צביעה בעת פינוי הנכס?',
 
         // Coming Soon Waitlist
 
         language_toggle: 'English',
 
-        needsPaintingDesc: 'האם נדרשת צביעה בעת פינוי הנכס?',
+        needsPaintingDesc: '',
         specialClausesPlaceholder: 'הכנס תנאים מיוחדים כאן...',
         guarantees: 'ביטחונות',
+        guaranteesPlaceholder: 'פרטי צקים, צק ביטחון, ערבות בנקאית וכו׳',
         indexWatcherDesc: 'עקוב אחרי מדדי מחירים לצרכן ושירותי דיור להצמדת חוזים מושכלת.',
         baseRentWarning: 'יש להזין סכום להצמיד',
         linkageCalculated: 'עדכון ההצמדה חושב',
@@ -2376,9 +2415,11 @@ export const translations: Record<string, any> = {
         eur: 'אירו',
         unnamed: 'ללא שם',
         upcoming_payment: 'תשלום קרוב',
+        contract_status_updated: 'סטטוס חוזה עודכן',
         contract_expiry: 'סיום חוזה',
     },
     en: {
+        noActiveContract: 'No active contract',
         appName: 'RentMate',
         addNew: 'Renty, what would you like to do?',
         select_action_to_continue: 'Select a quick action to continue',
@@ -2403,6 +2444,7 @@ export const translations: Record<string, any> = {
         goodNight: 'good night',
         conciergeAiExtraction: 'Smart AI Extraction',
         conciergeLinkageMonitoring: 'Automatic Linkage Alerts',
+        receipts: 'Receipts',
         all: 'All',
         active: 'Active',
         archived: 'Archived',
@@ -2529,6 +2571,7 @@ export const translations: Record<string, any> = {
         needsPaintingQuery: 'Repainting required upon evacuation?',
         transfer: 'Bank Transfer',
         check: 'Checks',
+        checks: 'Checks',
         cash: 'Cash',
         bit: 'Bit',
         paybox: 'PayBox',
@@ -2643,6 +2686,17 @@ export const translations: Record<string, any> = {
         portfolio_visualizer: 'Portfolio Visualizer',
         whatsapp_bot: 'WhatsApp Bot',
         ai_assistant: 'AI Assistant',
+        paymentBank: 'Bank',
+        paymentBranch: 'Branch',
+        paymentAccount: 'Account',
+        paymentCheckNum: 'Check Number',
+        paymentNote: 'Note',
+        paymentReceipt: 'Reference / Receipt',
+        paymentUploadReceipt: 'Upload Reference (Image/PDF)',
+        paymentReceiptAttached: 'Reference Attached',
+        paymentMethodDetails: 'Method Details',
+        paymentDetailsTitle: 'Payment Method Details',
+        paymentPhoneNumber: 'Phone Number',
         can_export: 'Full Data Export',
         bulkCheckEntryTitle: 'Bulk Check Entry',
         pleaseFillAllFields: 'Please fill all required fields',
@@ -2771,6 +2825,7 @@ export const translations: Record<string, any> = {
         agreeToTerms: 'I agree to the {terms} and {privacy}, including explicit consent for data processing by Artificial Intelligence (AI).',
         noTenantsFound: 'No tenants found',
         upcoming_payment: 'Upcoming Payment',
+        contract_status_updated: 'Contract Status Updated',
 
         // Coming Soon Waitlist
         coming_soon_title: 'The New Era of Property Management',
@@ -2799,6 +2854,8 @@ export const translations: Record<string, any> = {
         overdue_payment: 'Overdue Payment',
         fiveYears: '5Y',
         mom: 'MoM',
+        addTenant: 'Add Tenant',
+        addTenant_female: 'Add Tenant',
     }
 };
 

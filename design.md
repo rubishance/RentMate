@@ -34,6 +34,7 @@ Note: All text colors must maintain a contrast ratio of at least 4.5:1 (7:1 pref
 ## 4. Spacing & Layout (Gaps & Margins)
 - **Grid**: 8px Baseline Grid. All spacing should be multiples of 4 or 8.
 - **Page Side Gaps**: 20px (horizontal) on mobile devices to prevent content from touching screen edges.
+- **No Side Scrolling**: Absolutely no horizontal scrolling elements on mobile (no `overflow-x-auto` rows). Elements must wrap or stack using CSS Grid/Flex wrap to stay within the viewport.
 - **Card Padding**: 24px internal padding for comfortable data breathing room.
 - **Vertical Element Gap**: 16px to 24px vertical spacing between cards/sections.
 - **Inline Gaps**: 12px to 16px between elements within a component (e.g., icon and text).

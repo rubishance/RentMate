@@ -5,7 +5,8 @@ import type {
     ReconciliationResult,
     MonthlyPayment,
 } from '../types/database';
-import { getIndexValue, getIndexRange, getMonthsBetween } from './index-data.service';
+import { getIndexValue, getIndexRange, getMonthsBetween, getKnownIndexForDate } from './index-data.service';
+import type { IndexData } from '../types/database';
 import { ChainingFactorService } from './chaining-factor.service';
 import { subMonths, format, parseISO, differenceInDays } from 'date-fns';
 import { z } from 'zod';
@@ -16,13 +17,13 @@ import { z } from 'zod';
 export const standardCalculationSchema = z.object({
     baseRent: z.number().positive(),
     linkageType: z.enum(['cpi', 'housing', 'construction', 'usd', 'eur']),
-    baseDate: z.string().regex(/^\d{4}-\d{2}$/),
-    targetDate: z.string().regex(/^\d{4}-\d{2}$/),
+    baseDate: z.string().regex(/^\d{4}-\d{2}(-\d{2})?$/),
+    targetDate: z.string().regex(/^\d{4}-\d{2}(-\d{2})?$/),
     partialLinkage: z.number().min(0).max(100).optional().default(100),
-    manualBaseIndex: z.number().optional(),
-    manualTargetIndex: z.number().optional(),
+    manualBaseIndex: z.number().nullable().optional(),
+    manualTargetIndex: z.number().nullable().optional(),
     isIndexBaseMinimum: z.boolean().optional().default(false),
-    linkageCeiling: z.number().min(0).optional(),
+    linkageCeiling: z.number().min(0).nullable().optional(),
     linkageSubType: z.enum(['known', 'respect_of']).optional().default('known'),
 });
 
@@ -60,6 +61,39 @@ export function calculateEffectiveChange(params: {
 }
 
 /**
+ * Pure Logic: Find precise index in-memory (For Reconciliation engine looping)
+ */
+export function findKnownIndexStrict(
+    indices: IndexData[], 
+    targetPaymentDate: string, // YYYY-MM-DD
+    linkageSubType: 'known' | 'respect_of'
+): IndexData | null {
+    if (linkageSubType === 'respect_of') {
+        const monthOnly = targetPaymentDate.slice(0, 7);
+        return indices.find(idx => idx.date === monthOnly) || null;
+    }
+
+    // linkageSubType === 'known'
+    const sortedDesc = [...indices].sort((a, b) => b.date.localeCompare(a.date));
+
+    // 1. Try finding by actual_published_at
+    const exactLimit = `${targetPaymentDate}T23:59:59.999Z`;
+    const exactMatch = sortedDesc.find(idx => 
+        idx.actual_published_at && idx.actual_published_at <= exactLimit
+    );
+    if (exactMatch) return exactMatch;
+
+    // 2. Fallback to Israeli Law approximation (Day 15 rule)
+    const dateObj = parseISO(targetPaymentDate.length === 7 ? `${targetPaymentDate}-01` : targetPaymentDate);
+    const day = dateObj.getDate();
+    const fallbackMonth = day < 15 
+        ? format(subMonths(dateObj, 2), 'yyyy-MM')
+        : format(subMonths(dateObj, 1), 'yyyy-MM');
+
+    return sortedDesc.find(idx => idx.date <= fallbackMonth) || null;
+}
+
+/**
  * Mode 1: Standard Calculation
  * Calculate new rent based on index change between two dates
  */
@@ -69,21 +103,40 @@ export async function calculateStandard(
     try {
         const input = standardCalculationSchema.parse(rawInput);
 
-        // Apply "Known Index" date logic
+        // Fetch index values precisely utilizing exact publication timestamps from DB
+        let baseIndexValue = input.manualBaseIndex ?? null;
+        let targetIndexValue = input.manualTargetIndex ?? null;
         let adjustedBaseDate = input.baseDate;
         let adjustedTargetDate = input.targetDate;
 
-        if (input.linkageSubType === 'known') {
-            const baseDateObj = parseISO(input.baseDate + '-01');
-            const targetDateObj = parseISO(input.targetDate + '-01');
-
-            adjustedBaseDate = format(subMonths(baseDateObj, 1), 'yyyy-MM');
-            adjustedTargetDate = format(subMonths(targetDateObj, 1), 'yyyy-MM');
+        if (baseIndexValue === null) {
+            const baseIndexData = await getKnownIndexForDate(input.linkageType, input.baseDate, input.linkageSubType || 'known');
+            baseIndexValue = baseIndexData?.value ?? null;
+            if (baseIndexData) adjustedBaseDate = baseIndexData.date;
         }
 
-        // Fetch index values
-        const baseIndexValue = input.manualBaseIndex ?? await getIndexValue(input.linkageType, adjustedBaseDate);
-        const targetIndexValue = input.manualTargetIndex ?? await getIndexValue(input.linkageType, adjustedTargetDate);
+        let actualTargetDate = input.targetDate;
+        if (targetIndexValue === null) {
+            const targetIndexData = await getKnownIndexForDate(input.linkageType, input.targetDate, input.linkageSubType || 'known');
+            targetIndexValue = targetIndexData?.value ?? null;
+            if (targetIndexData) {
+                adjustedTargetDate = targetIndexData.date;
+                actualTargetDate = targetIndexData.date;
+            }
+        }
+
+        // Fallback logic for target index: if not published yet, try up to 2 months prior
+        if (targetIndexValue === null && !input.manualTargetIndex) {
+            for (let i = 1; i <= 2; i++) {
+                const fallbackDate = format(subMonths(parseISO(adjustedTargetDate + '-01'), i), 'yyyy-MM');
+                const fallbackValue = await getIndexValue(input.linkageType, fallbackDate);
+                if (fallbackValue !== null) {
+                    targetIndexValue = fallbackValue;
+                    actualTargetDate = fallbackDate;
+                    break;
+                }
+            }
+        }
 
         if (baseIndexValue === null || targetIndexValue === null) {
             throw new Error(`Missing index data for ${input.linkageType} at ${adjustedBaseDate} or ${adjustedTargetDate}`);
@@ -98,7 +151,7 @@ export async function calculateStandard(
             const chainingResult = await ChainingFactorService.getChainingFactor(
                 linkageType,
                 adjustedBaseDate,
-                adjustedTargetDate
+                actualTargetDate
             );
             adjustedTargetValue = ChainingFactorService.applyChaining(targetIndexValue, chainingResult);
         }
@@ -157,7 +210,7 @@ export async function calculateReconciliation(
     input: ReconciliationInput
 ): Promise<ReconciliationResult | null> {
     try {
-        const allMonths = getMonthsBetween(input.periodStart, input.periodEnd);
+        const allMonths = getMonthsBetween(input.periodStart.slice(0, 7), input.periodEnd.slice(0, 7));
         const currentMonthStr = format(new Date(), 'yyyy-MM');
 
         // Filter out future months to avoid calculating for periods that haven't happened
@@ -174,26 +227,19 @@ export async function calculateReconciliation(
         // Update periodEnd based on the filtered months to avoid fetching future indices
         const effectivePeriodEnd = months[months.length - 1];
 
-        let adjustedContractStartDate = input.contractStartDate;
-        let fetchStartDate = input.contractStartDate;
-
-        if (input.periodStart < fetchStartDate) {
-            fetchStartDate = input.periodStart;
-        }
-
-        if (input.linkageSubType !== 'respect_of') {
-            adjustedContractStartDate = format(subMonths(parseISO(input.contractStartDate + '-01'), 1), 'yyyy-MM');
-            fetchStartDate = format(subMonths(parseISO(fetchStartDate + '-01'), 1), 'yyyy-MM');
-        }
-
-        const indices = await getIndexRange(input.linkageType, fetchStartDate, effectivePeriodEnd);
+        // 1. Fetch indices with a generous buffer to account for Day 15 historical fallbacks
+        let rawFetchStart = input.periodStart.slice(0, 7) < input.contractStartDate.slice(0, 7) 
+            ? input.periodStart.slice(0, 7) 
+            : input.contractStartDate.slice(0, 7);
+            
+        const safeFetchStart = format(subMonths(parseISO(rawFetchStart + '-01'), 2), 'yyyy-MM');
+        const indices = await getIndexRange(input.linkageType, safeFetchStart, effectivePeriodEnd);
 
         if (indices.length === 0) throw new Error('No index data found');
 
-        const baseIndex = indices.find(idx => idx.date === adjustedContractStartDate) ||
-            indices.filter(idx => idx.date <= adjustedContractStartDate).pop();
-
-        if (!baseIndex) throw new Error(`Base index not found for ${adjustedContractStartDate}`);
+        // 2. Safely pinpoint the theoretical Base Index with precise date math
+        const baseIndex = findKnownIndexStrict(indices, input.contractStartDate, input.linkageSubType || 'known');
+        if (!baseIndex) throw new Error(`Base index not found strictly before ${input.contractStartDate}`);
 
         const monthlyBreakdown: MonthlyPayment[] = [];
         let runningBalance = 0;
@@ -204,17 +250,12 @@ export async function calculateReconciliation(
             : input.updateFrequency === 'semiannually' ? 6
                 : input.updateFrequency === 'annually' ? 12 : 1;
 
+        const inputDay = input.periodStart.length === 10 ? input.periodStart.slice(8, 10) : '01';
+
         for (let i = 0; i < months.length; i++) {
             const month = months[i];
-            let indexDateStr = month;
-
-            if (input.linkageSubType !== 'respect_of') {
-                indexDateStr = format(subMonths(parseISO(month + '-01'), 1), 'yyyy-MM');
-            }
-
-            const indexForMonth = indices.find(idx => idx.date === indexDateStr) ||
-                indices.filter(idx => idx.date < indexDateStr).pop() ||
-                baseIndex;
+            const fullDateStr = `${month}-${inputDay}`;
+            const indexForMonth = findKnownIndexStrict(indices, fullDateStr, input.linkageSubType || 'known') || baseIndex;
 
             const currentIndexValue = indexForMonth.value;
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { X, TrendingUp, Calculator, Calendar, Loader2 } from 'lucide-react';
 import { calculatorService } from '../../services/CalculatorService';
 import { useTranslation } from '../../hooks/useTranslation';
+import { LINKAGE_TYPES } from '../../constants/linkageTypes';
 
 interface IndexedRentModalProps {
     isOpen: boolean;
@@ -136,7 +137,7 @@ export function IndexedRentModal({ isOpen, onClose, contract }: IndexedRentModal
                                     <span className="font-mono font-medium">{calculation.currentIndex.toFixed(2)}</span>
                                 </div>
                                 <div className="text-xs text-muted-foreground text-center pt-2">
-                                    Calculated based on {contract?.linkage_type?.toUpperCase()} linkage
+                                    מחושב לפי הצמדה ל-{t(LINKAGE_TYPES.find(l => l.id === contract?.linkage_type)?.labelKey as any || contract?.linkage_type as any)}
                                 </div>
                             </div>
                         </div>

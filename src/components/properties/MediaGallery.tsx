@@ -510,6 +510,10 @@ export function MediaGallery({ property, readOnly }: MediaGalleryProps) {
                 }}
                 document={selectedDocument}
                 onDelete={() => loadData()}
+                onUpdate={(updatedDoc) => {
+                    setSelectedDocument(updatedDoc as any);
+                    loadData();
+                }}
             />
         </div>
     );

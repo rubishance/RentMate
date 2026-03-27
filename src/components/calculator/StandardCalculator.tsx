@@ -56,26 +56,12 @@ export function StandardCalculator({ initialValues, shouldAutoCalculate }: Stand
 
         setLoading(true);
         try {
-            let processedBaseDate = baseDate.slice(0, 7);
-            let processedTargetDate = targetDate.slice(0, 7);
-
-            // Logic for "Known" index (subtract 1 month)
-            if (linkageSubType === 'known') {
-                const bDate = parseISO(baseDate);
-                const tDate = parseISO(targetDate);
-
-                const bPrev = new Date(bDate.getFullYear(), bDate.getMonth() - 1, 1);
-                const tPrev = new Date(tDate.getFullYear(), tDate.getMonth() - 1, 1);
-
-                processedBaseDate = format(bPrev, 'yyyy-MM');
-                processedTargetDate = format(tPrev, 'yyyy-MM');
-            }
-
             const res = await calculateStandard({
                 baseRent: parseFloat(baseRent),
                 linkageType: linkageType as any,
-                baseDate: processedBaseDate,
-                targetDate: processedTargetDate,
+                baseDate: baseDate,
+                targetDate: targetDate,
+                linkageSubType: linkageSubType,
                 partialLinkage: parseFloat(partialLinkage) || 100,
                 isIndexBaseMinimum: indexBaseMinimum,
                 linkageCeiling: linkageCeiling ? parseFloat(linkageCeiling) : undefined
@@ -92,7 +78,7 @@ export function StandardCalculator({ initialValues, shouldAutoCalculate }: Stand
     return (
         <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <section className="bg-white dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 rounded-[2.5rem] p-4 md:p-6 shadow-premium space-y-12">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
                     <Input
                         label={t('baseRent')}
                         type="number"
@@ -241,7 +227,7 @@ export function StandardCalculator({ initialValues, shouldAutoCalculate }: Stand
                     
                     <h3 className="relative font-black text-xs uppercase tracking-[0.4em] text-primary text-center">{t('results')}</h3>
 
-                    <div className="relative grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="relative grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
                         <div className="bg-primary p-6 md:p-10 rounded-[2.5rem] text-center space-y-2 border border-primary/20 text-primary-foreground shadow-xl shadow-primary/20">
                             <span className="text-xs font-black uppercase tracking-[0.2em] opacity-80 block">{t('newRent')}</span>
                             <span className="text-5xl font-black">₪{result.newRent.toLocaleString()}</span>

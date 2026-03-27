@@ -5,7 +5,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import * as Sentry from "@sentry/react";
 import './index.css'
 import App from './App.tsx'
-import { ErrorBoundary } from './components/formatted_error_boundary'
+import { ErrorBoundary } from './components/ErrorBoundary'
 
 
 

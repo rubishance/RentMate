@@ -78,7 +78,7 @@ export const Select: React.FC<SelectProps> = ({
                         leaveFrom="opacity-100"
                         leaveTo="opacity-0"
                     >
-                        <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white dark:bg-neutral-900 border border-slate-100 dark:border-white/10 py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm z-50 glass-premium">
+                        <Listbox.Options className="absolute mt-1 max-h-80 w-full overflow-auto rounded-xl bg-white dark:bg-neutral-900 border border-slate-100 dark:border-white/10 py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm z-50 glass-premium">
                             {options.map((option, optionIdx) => (
                                 <Listbox.Option
                                     key={optionIdx}

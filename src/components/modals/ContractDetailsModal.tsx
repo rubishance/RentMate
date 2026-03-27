@@ -435,26 +435,7 @@ export function ContractDetailsModal({ isOpen, onClose, onSuccess, contract, ini
                                         )}
                                     />
                                 </div>
-                                <div className="space-y-1.5">
-                                    <Controller
-                                        control={control}
-                                        name="paymentFrequency"
-                                        render={({ field }) => (
-                                            <Select
-                                                label={t('paymentFreq')}
-                                                disabled={readOnly}
-                                                value={field.value}
-                                                onChange={field.onChange}
-                                                options={[
-                                                    { value: 'Monthly', label: t('monthly') },
-                                                    { value: 'Quarterly', label: t('quarterly') },
-                                                    { value: 'Annually', label: t('annually') }
-                                                ]}
-                                                className="w-full"
-                                            />
-                                        )}
-                                    />
-                                </div>
+
                                 <div className="space-y-1.5">
                                     <Input
                                         label={t('paymentDay')}

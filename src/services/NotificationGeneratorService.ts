@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import { differenceInDays, isPast, isToday, addDays, parseISO } from 'date-fns';
+import { differenceInDays, isPast, isToday, parseISO } from 'date-fns';
 
 export class NotificationGeneratorService {
     /**
@@ -9,6 +9,18 @@ export class NotificationGeneratorService {
      */
     static async runChecks() {
         try {
+            // Check if we already ran this recently (within 1 hour)
+            const lastCheckStr = sessionStorage.getItem('last_notification_check');
+            if (lastCheckStr) {
+                const lastCheck = parseISO(lastCheckStr);
+                const hoursSinceLastCheck = Math.abs(new Date().getTime() - lastCheck.getTime()) / 36e5;
+                if (hoursSinceLastCheck < 1) { 
+                    return;
+                }
+            }
+            // Lock it immediately to prevent race conditions during React StrictMode double mounts
+            sessionStorage.setItem('last_notification_check', new Date().toISOString());
+
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
@@ -20,7 +32,7 @@ export class NotificationGeneratorService {
                 .single();
 
             const prefs = (profile?.notification_preferences as any) || {};
-            const lang = profile?.lang || 'en';
+            const lang = profile?.lang || 'he';
 
             const contractExpiryDays = prefs.contract_expiry_days ?? 60;
             const unpaidRentEnabled = prefs.unpaid_rent_enabled ?? true;
@@ -30,11 +42,9 @@ export class NotificationGeneratorService {
             await this.checkExpiringContracts(user.id, contractExpiryDays, lang);
             await this.checkRentDue(user.id, unpaidRentEnabled, lang);
 
-            // Mark last checked in session/local storage to prevent spamming the DB
-            // (Only runs once every few hours per session)
-            sessionStorage.setItem('last_notification_check', new Date().toISOString());
-
         } catch (error) {
+            sessionStorage.removeItem('last_notification_check'); // Remove lock if crash happens
+            console.error('Error running notification checks:', error);
             console.error('Error running notification checks:', error);
         }
     }
@@ -63,10 +73,10 @@ export class NotificationGeneratorService {
                 const city = property?.city ? `, ${property.city}` : '';
                 const fullAddress = `${address}${city}`;
 
-                const title = lang === 'he' ? 'חוזה עומד להסתיים' : 'Contract Expiring Soon';
-                const message = lang === 'he'
-                    ? `החוזה בכתובת ${fullAddress} יסתיים בעוד ${daysUntilExpiry} ימים.`
-                    : `The contract at ${fullAddress} expires in ${daysUntilExpiry} days.`;
+                const title = lang === 'en' ? 'Contract Expiring Soon' : 'חוזה עומד להסתיים';
+                const message = lang === 'en'
+                    ? `The contract at ${fullAddress} expires in ${daysUntilExpiry} days.`
+                    : `החוזה בכתובת ${fullAddress} יסתיים בעוד ${daysUntilExpiry} ימים.`;
 
                 await this.createNotificationIfNotExists(userId, 'contract_expiry_alert', contract.id, {
                     type: 'warning',
@@ -107,10 +117,10 @@ export class NotificationGeneratorService {
 
             if (isOverdue && unpaidRentEnabled) {
                 const daysOverdue = Math.abs(daysUntilDue);
-                const title = lang === 'he' ? 'שכר דירה שלא שולם' : 'Unpaid Rent Notification';
-                const message = lang === 'he'
-                    ? `התשלום על סך ${formattedAmount} עבור ${propertyAddress} נמצא בפיגור של ${daysOverdue} ימים.`
-                    : `The payment of ${formattedAmount} for ${propertyAddress} is ${daysOverdue} days unpaid.`;
+                const title = lang === 'en' ? 'Unpaid Rent Notification' : 'שכר דירה שלא שולם';
+                const message = lang === 'en'
+                    ? `The payment of ${formattedAmount} for ${propertyAddress} is ${daysOverdue} days unpaid.`
+                    : `התשלום על סך ${formattedAmount} עבור ${propertyAddress} נמצא בפיגור של ${daysOverdue} ימים.`;
 
                 // Distinct key for overdue so it generates newly compared to just "upcoming"
                 await this.createNotificationIfNotExists(userId, 'payment_overdue_alert', payment.id, {
@@ -132,36 +142,17 @@ export class NotificationGeneratorService {
         entityId: string,
         payload: { type: string, title: string, message: string, metadata: any }
     ) {
-        // Query recent notifications to check for duplicates (last 7 days based on metadata event and entity)
-        const sevenDaysAgo = addDays(new Date(), -7).toISOString();
-
-        const { data: existing } = await supabase
-            .from('notifications')
-            .select('id')
-            .eq('user_id', userId)
-            .gte('created_at', sevenDaysAgo)
-            // We can't query JSONB metadata directly easily with standard eq, so we filter in JS
-            // if the list is long, but realistically this user won't have 1000s in 7 days
-            .limit(100);
-
-        const hasDuplicate = existing?.some(n => {
-            // Re-fetch full object to properly check metadata if necessary, or just rely on the API returning it 
-            // Better yet, just use a known uniqueness key pattern in metadata
-            return false; // Fast path: Let's do a more precise DB query if needed.
-        });
-
-        // Better precise query using contains for JSONB
+        // Query previous notifications to check for duplicates (ever) based on metadata event and entity
         const { count } = await supabase
             .from('notifications')
             .select('*', { count: 'exact', head: true })
             .eq('user_id', userId)
             .contains('metadata', { event: eventType })
             // For contract/payment ID linkage:
-            .contains('metadata', payload.metadata.payment_id ? { payment_id: entityId } : { contract_id: entityId })
-            .gte('created_at', sevenDaysAgo);
+            .contains('metadata', payload.metadata.payment_id ? { payment_id: entityId } : { contract_id: entityId });
 
         if (count && count > 0) {
-            // Already notified recently
+            // Already notified
             return;
         }
 

@@ -216,12 +216,18 @@ export function ChecksManager({ property, readOnly }: ChecksManagerProps) {
                         </div>
                     )}
 
-                    <div className="flex justify-end gap-3">
-                        <button onClick={() => setShowUploadForm(false)} className="px-4 py-2 text-sm">{t('cancel')}</button>
+                    <div className="sticky bottom-0 -mx-6 -mb-6 mt-6 p-4 sm:p-5 bg-gradient-to-t from-background via-background/95 to-transparent pt-8 flex gap-3 justify-end border-t border-transparent z-20">
+                        <button onClick={() => setShowUploadForm(false)} className="px-5 py-2.5 text-sm font-semibold text-muted-foreground bg-muted/80 hover:bg-muted dark:bg-neutral-800/80 dark:hover:bg-neutral-700/80 rounded-xl transition-all shadow-sm border border-border/50">{t('cancel')}</button>
                         <button
                             onClick={handleUpload}
                             disabled={uploading || stagedFiles.length === 0}
-                            className="px-6 py-2 bg-primary text-white rounded-xl text-sm font-bold disabled:opacity-50"
+                            className={`
+                                px-6 py-2.5 rounded-xl text-sm font-bold shadow-xl flex items-center gap-2 transition-all
+                                ${uploading || stagedFiles.length === 0
+                                    ? 'bg-primary/50 text-white cursor-not-allowed shadow-none'
+                                    : 'bg-primary text-primary-foreground hover:bg-primary/95 hover:scale-[1.02] active:scale-95'
+                                }
+                            `}
                         >
                             {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : t('upload')}
                         </button>
@@ -233,6 +239,7 @@ export function ChecksManager({ property, readOnly }: ChecksManagerProps) {
             <DocumentTimeline
                 documents={documents}
                 loading={loading}
+                property={property}
                 onDocumentClick={(doc) => {
                     setSelectedDocument(doc);
                     setIsDetailsModalOpen(true);
@@ -247,6 +254,10 @@ export function ChecksManager({ property, readOnly }: ChecksManagerProps) {
                 }}
                 document={selectedDocument}
                 onDelete={() => loadData()}
+                onUpdate={(updatedDoc) => {
+                    setSelectedDocument(updatedDoc as any);
+                    loadData();
+                }}
             />
         </div>
     );

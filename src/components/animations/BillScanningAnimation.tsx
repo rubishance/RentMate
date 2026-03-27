@@ -166,7 +166,7 @@ export const BillScanningAnimation = ({ isRtl = false }: BillScanningAnimationPr
 
                             {/* NEW: Renty App Icon Widget */}
                             <motion.div
-                                className="bg-gradient-to-br from-indigo-600 to-primary-700 p-4 rounded-3xl shadow-lg border border-white/20 flex items-center gap-4 relative overflow-hidden"
+                                className="bg-gradient-to-br from-indigo-600 to-primary-700 p-4 rounded-2xl shadow-lg border border-white/20 flex items-center gap-4 relative overflow-hidden"
                                 whileHover={{ scale: 1.02 }}
                             >
                                 <div className="w-10 h-10 bg-white/20 rounded-xl backdrop-blur-md flex items-center justify-center shrink-0 border border-white/30">

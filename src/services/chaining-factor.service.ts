@@ -33,11 +33,12 @@ export class ChainingFactorService {
     private static getBaseYear(date: string): string {
         const year = new Date(date).getFullYear();
 
-        // Known CBS base transitions
-        if (year >= 2024) return '2024';
-        if (year >= 2020) return '2020';
-        if (year >= 2018) return '2018';
-        if (year >= 2012) return '2012';
+        // Known CBS base transitions.
+        // A base year (e.g., Average 2024 = 100) starts applying for indices published starting January of the following year.
+        if (year >= 2025) return '2024';
+        if (year >= 2021) return '2020';
+        if (year >= 2019) return '2018';
+        if (year >= 2013) return '2012';
 
         return '2012'; // Fallback to oldest tracked base
     }

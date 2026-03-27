@@ -92,7 +92,7 @@ export function ActivityWidget() {
         }
     };
 
-    if (loading) return <div className="h-64 animate-pulse bg-white/5 rounded-3xl" />;
+    if (loading) return <div className="h-64 animate-pulse bg-white/5 rounded-2xl" />;
 
     return (
         <div className="space-y-8">

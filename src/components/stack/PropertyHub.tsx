@@ -36,6 +36,7 @@ import {
   Transition,
   Portal,
 } from "@headlessui/react";
+import { format, parseISO } from "date-fns";
 import { PropertyDocumentsHub } from "../properties/PropertyDocumentsHub";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
@@ -439,26 +440,26 @@ export function PropertyHub({
 
   return (
     <div className="flex flex-col h-full bg-background dark:bg-black">
-      {/* 1. Compact Header (No Image) */}
-      <div className="relative shrink-0 pt-4 md:pt-6 px-5 md:px-6 z-10 pb-4">
+      {/* 1. Header Details */}
+      <div className="relative shrink-0 px-5 md:px-6 z-10 pt-6 pb-6 bg-primary text-primary-foreground shadow-2xl rounded-b-[2rem] border-b border-white/10">
         <div className="flex justify-between items-start gap-3 md:gap-4">
-          {/* Back Button */}
-          <Button
-            onClick={handleBack}
-            variant="ghost"
-            className="w-10 h-10 md:w-12 md:h-12 bg-white/50 dark:bg-neutral-800/40 rounded-[1rem] md:rounded-[1.2rem] border border-slate-200 dark:border-white/5 text-foreground hover:bg-white dark:hover:bg-neutral-800 shadow-sm transition-all flex items-center justify-center shrink-0 p-0 group mt-1"
-          >
-            <ArrowLeft
-              className={cn(
-                "w-4 h-4 md:w-5 md:h-5 group-hover:-translate-x-1 transition-transform",
-                lang === "he" ? "rotate-180 group-hover:translate-x-1" : "",
-              )}
-            />
-          </Button>
-
-          <div className="flex-1 min-w-0">
-            {/* Status Badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 backdrop-blur-3xl rounded-full border border-white/10 text-sm font-black uppercase tracking-widest mb-2 shadow-xl">
+          <div className="flex items-start gap-4 flex-1 min-w-0">
+            <Button
+              onClick={handleBack}
+              variant="outline"
+              size="icon"
+              className="w-10 h-10 md:w-12 md:h-12 bg-white/5 border-white/10 hover:bg-white/20 text-white shrink-0"
+            >
+              <ArrowLeft
+                className={cn(
+                  "w-4 h-4",
+                  lang === "he" ? "rotate-180" : "",
+                )}
+              />
+            </Button>
+            <div className="flex-1 min-w-0">
+              {/* Status Badge */}
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-3xl rounded-full border border-white/20 text-sm font-black uppercase tracking-widest mb-2 shadow-lg">
               {(() => {
                 const today = new Date().toISOString().split("T")[0];
                 const hasActiveContract = (property as any).contracts?.some(
@@ -477,10 +478,12 @@ export function PropertyHub({
                     <div
                       className={cn(
                         "w-1.5 h-1.5 rounded-full shadow-[0_0_5px_rgba(var(--status-color),0.5)]",
-                        isOccupied ? "bg-emerald-500" : "bg-amber-500",
+                        isOccupied ? "bg-emerald-400" : "bg-amber-400",
                       )}
                     />
-                    {t((currentStatus?.toLowerCase() || "vacant") as any)}
+                    <span className="text-white">
+                      {t((currentStatus?.toLowerCase() || "vacant") as any)}
+                    </span>
                   </>
                 );
               })()}
@@ -490,10 +493,10 @@ export function PropertyHub({
             {marketTrend && (
               <div
                 className={cn(
-                  "inline-flex items-center gap-1.5 px-3 py-1 ml-2 backdrop-blur-md rounded-full border text-sm font-black uppercase tracking-widest mb-2 transition-all",
+                  "inline-flex items-center gap-1.5 px-3 py-1 ml-2 backdrop-blur-md rounded-full border text-sm font-black uppercase tracking-widest mb-2 transition-all shadow-lg",
                   marketTrend.annualGrowth > 0
-                    ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600"
-                    : "bg-red-500/10 border-red-500/20 text-red-600",
+                    ? "bg-emerald-500/20 border-emerald-400/30 text-emerald-300"
+                    : "bg-red-500/20 border-red-400/30 text-red-300",
                 )}
               >
                 {marketTrend.annualGrowth > 0 ? (
@@ -508,9 +511,9 @@ export function PropertyHub({
             )}
 
             {isEditing ? (
-              <div className="space-y-6 bg-white/5 dark:bg-neutral-900/60 p-4 md:p-6 rounded-[2rem] border border-white/10 backdrop-blur-3xl shadow-xl">
-                <div className="p-4 rounded-[1.5rem] bg-background dark:bg-neutral-800/30 border border-slate-100 dark:border-neutral-700">
-                  <label className="text-sm font-black uppercase tracking-[0.2em] text-muted-foreground block mb-3 text-center">
+              <div className="space-y-6 bg-black/20 p-4 md:p-6 rounded-[2rem] border border-white/10 backdrop-blur-3xl shadow-xl mt-4">
+                <div className="p-4 rounded-[1.5rem] bg-white/5 border border-white/10">
+                  <label className="text-sm font-black uppercase tracking-[0.2em] text-white/70 block mb-3 text-center">
                     {t("selectCategory") || t("propertyType")}
                   </label>
                   <PropertyTypeSelect
@@ -792,71 +795,47 @@ export function PropertyHub({
             ) : (
               <div className="flex flex-col gap-3 max-w-full">
                 <div className="flex flex-col gap-1 min-w-0">
-                  <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-foreground leading-tight md:leading-none break-words line-clamp-2">
+                  <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-white leading-tight md:leading-none break-words line-clamp-2">
                     {property.address}
                   </h1>
-                  <div className="flex flex-wrap items-center gap-2 text-sm">
-                    <p className="text-muted-foreground font-medium truncate">
+                  <div className="flex flex-col items-start gap-1 mt-1 text-sm bg-transparent">
+                    <p className="text-white/80 font-medium truncate">
                       {property.city}
                     </p>
+                    
+                    {activeContract && activeContract.start_date && (
+                      <div className="flex items-center gap-1.5 text-white/80 font-medium pt-1">
+                        <Calendar className="w-4 h-4" />
+                        <span>
+                          {format(parseISO(activeContract.start_date), "dd/MM/yyyy")}
+                          {activeContract.end_date ? ` - ${format(parseISO(activeContract.end_date), "dd/MM/yyyy")}` : ""}
+                        </span>
+                      </div>
+                    )}
+
                     {activeContract?.option_periods &&
                       activeContract.option_periods.length > 0 && (
-                        <>
-                          <div className="w-1 h-1 rounded-full bg-slate-300 mx-1 shrink-0" />
-                          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full shrink-0">
-                            <Calendar className="w-3 h-3 text-emerald-500" />
-                            <span className="text-sm font-bold text-emerald-600 uppercase tracking-tight">
-                              {lang === "he" ? "כולל אופציה" : "Incl. Option"}:{" "}
-                              {activeContract.option_periods[0].length}{" "}
-                              {activeContract.option_periods[0].unit === "years"
-                                ? lang === "he"
-                                  ? "שנים"
-                                  : "yrs"
-                                : lang === "he"
-                                  ? "חודשים"
-                                  : "mos"}
-                            </span>
-                          </div>
-                        </>
+                        <div className="flex flex-col items-start gap-1 mt-0.5">
+                          {activeContract.option_periods.map((opt: any, index: number) => {
+                            if (!opt.endDate) return null;
+                            return (
+                              <div key={index} className="flex items-center gap-1.5 text-white/70 text-xs font-medium">
+                                <span className="w-4 text-center">•</span>
+                                <span>
+                                  {lang === "he" ? `אופציה ${index + 1}` : `Option ${index + 1}`}:{" "}
+                                  {format(parseISO(opt.endDate), "dd/MM/yyyy")}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
                       )}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2.5 w-full">
-                  {property.size_sqm ? (
-                    <div className="flex items-center justify-center flex-1 gap-2 bg-white/60 dark:bg-neutral-900/60 py-2 sm:py-1.5 rounded-2xl border border-white/20 dark:border-neutral-800 shadow-sm backdrop-blur-md h-16 sm:h-14">
-                      <span className="text-xl font-black text-foreground leading-none tracking-tight">
-                        {property.size_sqm}
-                      </span>
-                      <RulerIcon className="w-7 h-7 text-muted-foreground shrink-0" />
-                    </div>
-                  ) : null}
-                  {property.rooms ? (
-                    <div className="flex items-center justify-center flex-1 gap-2 bg-white/60 dark:bg-neutral-900/60 py-2 sm:py-1.5 rounded-2xl border border-white/20 dark:border-neutral-800 shadow-sm backdrop-blur-md h-16 sm:h-14">
-                      <span className="text-xl font-black text-foreground leading-none tracking-tight">
-                        {property.rooms}
-                      </span>
-                      <BedIcon className="w-7 h-7 text-muted-foreground shrink-0" />
-                    </div>
-                  ) : null}
-                  <div className="flex items-center justify-center flex-1 bg-white/60 dark:bg-neutral-900/60 py-2 sm:py-1.5 rounded-2xl border border-white/20 dark:border-neutral-800 shadow-sm backdrop-blur-md text-muted-foreground h-16 sm:h-14">
-                    <StorageIcon className={cn("w-7 h-7", !property.has_storage && "opacity-20")} />
-                  </div>
-                  <div className="flex items-center justify-center flex-1 bg-white/60 dark:bg-neutral-900/60 py-2 sm:py-1.5 rounded-2xl border border-white/20 dark:border-neutral-800 shadow-sm backdrop-blur-md text-muted-foreground h-16 sm:h-14">
-                    <SafeRoomIcon className={cn("w-7 h-7", !property.has_safe_room && "opacity-20")} />
-                  </div>
-                  <div className="flex items-center justify-center flex-1 bg-white/60 dark:bg-neutral-900/60 py-2 sm:py-1.5 rounded-2xl border border-white/20 dark:border-neutral-800 shadow-sm backdrop-blur-md text-muted-foreground h-16 sm:h-14">
-                    <CarIcon className={cn("w-7 h-7", !property.has_parking && "opacity-20")} />
-                  </div>
-                  <div className="flex items-center justify-center flex-1 bg-white/60 dark:bg-neutral-900/60 py-2 sm:py-1.5 rounded-2xl border border-white/20 dark:border-neutral-800 shadow-sm backdrop-blur-md text-muted-foreground h-16 sm:h-14">
-                    <BalconyIcon className={cn("w-7 h-7", !property.has_balcony && "opacity-20")} />
                   </div>
                 </div>
               </div>
             )}
           </div>
-
-          {/* More Menu */}
+        </div>
           <div className="relative">
             {isEditing ? (
               <div className="flex flex-col gap-2">
@@ -870,14 +849,14 @@ export function PropertyHub({
                 <Button
                   onClick={handleCancel}
                   variant="ghost"
-                  className="w-12 h-12 glass-premium dark:bg-neutral-800/40 rounded-[1.2rem] border border-white/5 text-foreground hover:bg-white/10 transition-all flex items-center justify-center shrink-0 p-0"
+                  className="w-12 h-12 bg-white/5 backdrop-blur-md rounded-[1.2rem] border border-white/10 text-white hover:bg-white/20 transition-all flex items-center justify-center shrink-0 p-0"
                 >
                   <PlusIcon className="w-5 h-5 rotate-45" />
                 </Button>
               </div>
             ) : (
               <Menu as="div" className="relative inline-block text-left">
-                <MenuButton className="w-12 h-12 glass-premium dark:bg-neutral-800/40 rounded-[1.2rem] border border-white/5 text-foreground hover:bg-white/10 transition-all focus:outline-none flex items-center justify-center">
+                <MenuButton className="w-12 h-12 bg-white/5 backdrop-blur-md rounded-[1.2rem] border border-white/10 text-white hover:bg-white/20 transition-all focus:outline-none flex items-center justify-center">
                   <MoreVertical className="w-5 h-5" />
                 </MenuButton>
                 <Portal>
@@ -1017,39 +996,9 @@ export function PropertyHub({
       </div>
 
       {/* 2. Tabs Navigation */}
-      <div className="px-5 md:px-6 relative z-20 w-full">
-        {/* Mobile Dropdown / Select for Tabs */}
-        <div className="block md:hidden relative w-full mb-1">
-          <select
-            value={activeTab}
-            onChange={(e) => setActiveTab(e.target.value as any)}
-            className={cn(
-              "w-full h-14 pl-5 pr-12 bg-white/70 dark:bg-neutral-900/70 backdrop-blur-3xl rounded-[1.3rem] border border-white/20 dark:border-neutral-800 shadow-sm text-sm font-black uppercase tracking-[0.1em] text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all",
-              lang === "he" ? "pr-5 pl-12" : "",
-            )}
-          >
-            {tabs.map((tab) => (
-              <option
-                key={tab.id}
-                value={tab.id}
-                className="text-foreground bg-background font-sans font-bold"
-              >
-                {tab.label}
-              </option>
-            ))}
-          </select>
-          <div
-            className={cn(
-              "absolute top-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center w-8 h-8 rounded-xl bg-black/5 dark:bg-white/5",
-              lang === "he" ? "left-3" : "right-3",
-            )}
-          >
-            <ChevronDown className="w-4 h-4 text-muted-foreground" />
-          </div>
-        </div>
-
-        {/* Desktop Sliding Tabs */}
-        <div className="hidden md:flex gap-1.5 bg-white/5 backdrop-blur-3xl p-1.5 rounded-[1.8rem] border border-white/10 shadow-xl overflow-x-auto no-scrollbar max-w-full">
+      <div className="px-5 md:px-6 relative z-20 w-full mb-2">
+        {/* Unified Sliding Tabs (Toggle) */}
+        <div className="flex gap-1 bg-white/5 backdrop-blur-3xl p-1.5 rounded-[1.8rem] border border-white/10 shadow-xl w-full items-center justify-between">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -1058,19 +1007,19 @@ export function PropertyHub({
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  "flex items-center gap-2.5 px-6 py-2.5 rounded-[1.3rem] transition-all duration-700 whitespace-nowrap group relative",
+                  "flex-1 flex justify-center items-center gap-2 px-2 md:px-6 py-2.5 md:py-3 rounded-[1.3rem] transition-all duration-700 whitespace-nowrap group relative min-w-0",
                   isActive
-                    ? "bg-slate-900 dark:bg-white text-white dark:text-black shadow-lg shadow-black/10 scale-[1.02]"
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-[1.02] z-10"
                     : "text-muted-foreground hover:text-foreground hover:bg-white/5 dark:hover:bg-white/5",
                 )}
               >
                 <Icon
                   className={cn(
-                    "w-3.5 h-3.5 transition-transform duration-700",
+                    "w-3.5 h-3.5 md:w-4 md:h-4 transition-transform duration-700 shrink-0",
                     isActive ? "scale-110" : "group-hover:scale-110",
                   )}
                 />
-                <span className="text-sm font-black uppercase tracking-[0.2em]">
+                <span className="text-xs md:text-sm font-black uppercase tracking-[0.05em] md:tracking-[0.2em] truncate">
                   {tab.label}
                 </span>
                 {isActive && (

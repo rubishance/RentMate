@@ -50,7 +50,7 @@ export function SelectPropertyModal({ isOpen, onClose, properties, onSelect }: S
                                     <button
                                         key={property.id}
                                         onClick={() => onSelect(property.id)}
-                                        className="w-full flex items-center gap-4 p-4 bg-background dark:bg-neutral-800/50 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-3xl border border-slate-100 dark:border-neutral-800/50 hover:border-indigo-500/30 transition-all group text-start"
+                                        className="w-full flex items-center gap-4 p-4 bg-background dark:bg-neutral-800/50 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-2xl border border-slate-100 dark:border-neutral-800/50 hover:border-indigo-500/30 transition-all group text-start"
                                     >
                                         <div className="w-12 h-12 rounded-2xl bg-white dark:bg-neutral-800 flex items-center justify-center text-slate-400 group-hover:text-indigo-500 transition-colors shadow-sm overflow-hidden">
                                             {property.image_url ? (

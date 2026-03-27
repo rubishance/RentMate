@@ -12,6 +12,8 @@ import { useTranslation } from "../hooks/useTranslation";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
 import { Button } from "../components/ui/Button";
+import { isNativePlatform } from "../utils/platform";
+import { toast } from "sonner";
 
 interface Plan {
   id: string;
@@ -439,6 +441,11 @@ export function SubscriptionSelection() {
   ];
 
   const handleSelectPlan = async (planId: string) => {
+    if (isNativePlatform() && planId !== 'free') {
+      toast.info(isRtl ? "רכישות באפליקציה (IAP) לפרימיום יתווספו בקרוב!" : "Premium In-App Purchases are coming soon! (Capacitor IAP Stub)");
+      return;
+    }
+
     setSelectedPlanId(planId);
     setLoading(true);
 

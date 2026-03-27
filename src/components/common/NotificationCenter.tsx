@@ -1,10 +1,12 @@
 import { Fragment } from 'react';
 import { Popover, Transition } from '@headlessui/react';
-import { Bell, CheckIcon } from 'lucide-react';
+import { Bell, CheckIcon, Trash2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { CheckIcon as MsgCheckIcon } from '../icons/MessageIcons';
 import { NotificationSuccessIcon, NotificationWarningIcon, NotificationErrorIcon, NotificationInfoIcon } from '../icons/NotificationIcons';
 import { useNotifications } from '../../contexts/NotificationsContext';
 import { formatDistanceToNow } from 'date-fns';
+import { he, enUS } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation, type TranslationKeys } from '../../hooks/useTranslation';
 import { WhatsAppService } from '../../services/whatsapp.service';
@@ -12,7 +14,7 @@ import { cn } from '../../lib/utils';
 import { useEffect, useRef } from 'react';
 
 export function NotificationCenter() {
-    const { notifications, unreadCount, markAsRead, markAllAsRead, requestPermission, permission } = useNotifications();
+    const { notifications, unreadCount, markAsRead, clearAllNotifications, deleteNotification, requestPermission, permission } = useNotifications();
     const { t, lang } = useTranslation();
     const navigate = useNavigate();
     const buttonRef = useRef<HTMLButtonElement>(null);
@@ -111,12 +113,12 @@ export function NotificationCenter() {
                                             {t('enablePush')}
                                         </button>
                                     )}
-                                    {unreadCount > 0 && (
+                                    {notifications.length > 0 && (
                                         <button
-                                            onClick={markAllAsRead}
-                                            className="text-xs text-muted-foreground hover:text-gray-700 dark:text-muted-foreground flex items-center gap-1"
+                                            onClick={clearAllNotifications}
+                                            className="text-xs text-muted-foreground hover:text-red-500 dark:text-muted-foreground flex items-center gap-1 transition-colors"
                                         >
-                                            <MsgCheckIcon className="w-3 h-3" /> {t('markAllRead')}
+                                            <Trash2 className="w-3.5 h-3.5" /> {lang === 'he' ? 'נקה הכל' : 'Clear all'}
                                         </button>
                                     )}
                                 </div>
@@ -131,11 +133,24 @@ export function NotificationCenter() {
                                         <p className="text-sm">{t('noNotifications')}</p>
                                     </div>
                                 ) : (
-                                    <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                                    <div className="divide-y divide-gray-100 dark:divide-gray-800 overflow-hidden overflow-x-hidden">
+                                        <AnimatePresence initial={false}>
                                         {notifications.map((notification) => (
-                                            <div
+                                            <motion.div
                                                 key={notification.id}
-                                                className={`p-4 hover:bg-secondary dark:hover:bg-gray-800/50 transition-colors cursor-pointer ${!notification.read_at ? 'bg-primary/5 dark:bg-primary/10' : ''
+                                                initial={{ opacity: 0, height: 0 }}
+                                                animate={{ opacity: 1, height: 'auto' }}
+                                                exit={{ opacity: 0, height: 0, scale: 0.8 }}
+                                                transition={{ duration: 0.2 }}
+                                                drag="x"
+                                                dragConstraints={{ left: 0, right: 0 }}
+                                                dragElastic={0.8}
+                                                onDragEnd={(e, info) => {
+                                                    if (Math.abs(info.offset.x) > 100) {
+                                                        deleteNotification(notification.id);
+                                                    }
+                                                }}
+                                                className={`p-4 hover:bg-secondary dark:hover:bg-gray-800/50 transition-colors cursor-pointer bg-white dark:bg-foreground relative z-10 ${!notification.read_at ? 'bg-primary/5 dark:bg-primary/10' : ''
                                                     }`}
                                                 onClick={() => handleNotificationClick(notification)}
                                             >
@@ -153,7 +168,8 @@ export function NotificationCenter() {
                                                                 const titleMap: Record<string, TranslationKeys> = {
                                                                     'Upcoming Payment': 'upcoming_payment',
                                                                     'Contract Expiring Soon': 'contract_expiry',
-                                                                    'Unpaid Rent Notification': 'overdue_payment'
+                                                                    'Unpaid Rent Notification': 'overdue_payment',
+                                                                    'Contract Status Updated': 'contract_status_updated'
                                                                 };
                                                                 const key = titleMap[notification.title];
                                                                 return key ? t(key) : notification.title;
@@ -162,9 +178,9 @@ export function NotificationCenter() {
                                                         <p className="text-sm text-muted-foreground dark:text-muted-foreground mt-1 line-clamp-2">
                                                             {notification.message}
                                                         </p>
-                                                        <p className="text-xs text-muted-foreground mt-2">
-                                                            {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
-                                                        </p>
+                                                            <p className="text-xs text-muted-foreground mt-2">
+                                                                {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true, locale: lang === 'he' ? he : enUS })}
+                                                            </p>
                                                     </div>
                                                     {!notification.read_at && (
                                                         <div className="shrink-0 self-center">
@@ -172,8 +188,9 @@ export function NotificationCenter() {
                                                         </div>
                                                     )}
                                                 </div>
-                                            </div>
+                                            </motion.div>
                                         ))}
+                                        </AnimatePresence>
                                     </div>
                                 )}
                             </div>

@@ -89,8 +89,13 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
         verifyAndSet();
     }, [location.state]);
 
+    // Manage wrapper class depending on embedMode
+    const wrapperClass = embedMode 
+        ? "w-full space-y-6" 
+        : "pt-2 pb-24 md:pb-8 md:pt-8 px-5 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300 w-full overflow-x-hidden";
+
     return (
-        <div className="max-w-3xl mx-auto space-y-6 px-4 md:px-5 w-full">
+        <div className={wrapperClass}>
             {/* Shared Calculation Banner */}
             {isSharedCalculation && (
                 <motion.div
@@ -114,20 +119,20 @@ export function Calculator({ embedMode = false }: { embedMode?: boolean }) {
 
             {/* Header */}
             {!embedMode && (
-                <div className="flex items-center justify-between gap-4 mb-4">
+                <div className="flex flex-row items-end justify-between gap-4 px-0 pb-4">
                     <div className="space-y-1 overflow-hidden">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 dark:bg-primary/10 backdrop-blur-md rounded-full border border-primary/10 shadow-sm mb-2">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 dark:bg-primary/10 backdrop-blur-md rounded-full border border-primary/10 shadow-sm mb-1">
                             <CalcIcon className="w-3 h-3 text-primary" />
-                            <span className="text-xs font-black uppercase tracking-widest text-primary">
+                            <span className="text-xs font-black uppercase tracking-widest text-primary dark:text-primary">
                                 {t('smartCalculator')}
                             </span>
                         </div>
-                        <h1 className="h1-bionic truncate">
+                        <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground leading-tight truncate lowercase">
                             {t('calculator')}
                         </h1>
                     </div>
-                    <div className="w-14 h-14 rounded-2xl bg-white/50 dark:bg-neutral-800/50 backdrop-blur-sm border border-slate-200/50 dark:border-neutral-700/50 flex items-center justify-center shadow-sm shrink-0">
-                        <CalcIcon className="w-7 h-7 text-primary/40 dark:text-primary/60" />
+                    <div className="w-14 h-14 rounded-2xl bg-primary/5 dark:bg-neutral-800/50 backdrop-blur-sm border border-primary/10 dark:border-neutral-700/50 flex items-center justify-center shadow-sm shrink-0">
+                        <CalcIcon className="w-7 h-7 text-primary dark:text-primary/80" />
                     </div>
                 </div>
             )}

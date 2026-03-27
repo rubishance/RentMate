@@ -18,6 +18,8 @@ interface NotificationsContextType {
     loading: boolean;
     markAsRead: (id: string) => Promise<void>;
     markAllAsRead: () => Promise<void>;
+    clearAllNotifications: () => Promise<void>;
+    deleteNotification: (id: string) => Promise<void>;
     requestPermission: () => Promise<void>;
     permission: NotificationPermission;
 }
@@ -131,6 +133,32 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
             .in('id', unreadIds);
     };
 
+    const clearAllNotifications = async () => {
+        const allIds = notifications.map(n => n.id);
+        if (allIds.length === 0) return;
+        
+        // Optimistic
+        setNotifications([]);
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        await supabase
+            .from('notifications')
+            .delete()
+            .eq('user_id', user.id);
+    };
+
+    const deleteNotification = async (id: string) => {
+        // Optimistic update
+        setNotifications(prev => prev.filter(n => n.id !== id));
+
+        await supabase
+            .from('notifications')
+            .delete()
+            .eq('id', id);
+    };
+
     const requestPermission = async () => {
         if (!('Notification' in window)) {
             alert("This browser does not support desktop notifications");
@@ -149,6 +177,8 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
             loading,
             markAsRead,
             markAllAsRead,
+            clearAllNotifications,
+            deleteNotification,
             requestPermission,
             permission
         }}>

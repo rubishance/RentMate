@@ -36,13 +36,13 @@ export function useIndexedPayments(payments: any[]) {
             for (const p of indexablePayments) {
                 try {
                     const result = await calculateStandard({
-                        baseRent: p.contracts.base_rent || p.amount,
+                        baseRent: p.original_amount || p.amount,
                         linkageType: p.contracts.linkage_type,
-                        baseDate: p.contracts.base_index_date?.substring(0, 7),
-                        targetDate: p.due_date.substring(0, 7),
+                        baseDate: p.contracts.base_index_date, // Full date string required for exact day indexing
+                        targetDate: p.due_date, // Full date string required for exact day indexing
                         linkageSubType: p.contracts.linkage_sub_type || 'respect_of',
                         linkageCeiling: p.contracts.linkage_ceiling,
-                        isIndexBaseMinimum: p.contracts.linkage_floor === 0,
+                        isIndexBaseMinimum: p.contracts.linkage_floor === 0 || p.contracts.linkage_floor === null,
                         partialLinkage: 100 // Default to full linkage as per user request context
                     });
 
@@ -51,7 +51,8 @@ export function useIndexedPayments(payments: any[]) {
                     } else {
                         newIndexedAmounts[p.id] = null;
                     }
-                } catch (_err) {
+                } catch (err) {
+                    console.error("useIndexedPayments Error for payment", p.id, ":", err);
                     newIndexedAmounts[p.id] = null;
                 }
             }

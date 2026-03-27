@@ -60,10 +60,15 @@ When user's prompt is NOT in English:
 2. **Respond in user's language** - match their communication
 3. **Code comments/variables** remain in English
 
+### 🇮🇱 Hebrew-First Verification Mandate (Global Mandatory)
+
+**MANDATORY:** Unless explicitly requested otherwise, RentMate is a Hebrew-first application. Before finalizing any feature, UI change, endpoint, or backend notification, the agent MUST explicitly verify that ALL user-facing text, strings, translation keys, and database generation functions are translated into Hebrew. Never leave fallback text in English.
+
 ### 🎨 UI Component Design Mandate (Global Mandatory)
 
-**MANDATORY: When adding or editing ANY UI component (window, widget, page, modal, etc.), you MUST strictly follow the `@[skills/rentmate-brand-design]` skill.**
+**MANDATORY: When adding or editing ANY UI component (colors, design, adding/removing/relocating elements, window, widget, page, modal, etc.), you MUST strictly follow the `@[skills/rentmate-brand-design]` and `@[skills/google-stitch]` skills.**
 
+- **Stitch & Design.md Mandate:** Whenever doing any kind of UI edit, you MUST use Stitch and refer to the `design.md` file to guide your layout and aesthetic decisions. Do not perform UI edits without utilizing these tools.
 - **No Exceptions:** This rule overrides generic design suggestions and must be followed for all visual changes in the project.
 - Always apply RentMate's custom aesthetics, color palettes, spacing rules, and premium component animations.
 - **Icon Placement Consistency:** All widgets and windows MUST have their header/title icons on the SAME side for visual consistency across the entire application (e.g., adhering to the established RTL/LTR alignment).

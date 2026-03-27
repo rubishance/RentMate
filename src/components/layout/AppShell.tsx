@@ -92,7 +92,12 @@ export function AppShell() {
 
                     <main
                         id="main-content"
-                        className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-0 pb-24 pb-safe md:pb-8 md:py-8 scroll-smooth relative z-10"
+                        className={cn(
+                            "flex-1 overflow-y-auto overflow-x-hidden px-0 pb-24 pb-safe md:pb-8 scroll-smooth relative z-10",
+                            location.pathname.startsWith('/properties/') && location.pathname.length > '/properties/'.length
+                                ? "pt-0" 
+                                : "pt-4 md:pt-8"
+                        )}
                     >
                         <div className="w-full">
                             <Outlet key={location.pathname} />

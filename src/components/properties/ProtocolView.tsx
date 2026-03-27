@@ -47,7 +47,7 @@ export function ProtocolView({ protocol, onClose }: ProtocolViewProps) {
         </div>
 
         {/* Section: Details */}
-        <div className="mb-8 p-6 bg-slate-50 border border-slate-200 rounded-3xl print:border-none print:p-0 print:bg-transparent">
+        <div className="mb-8 p-6 bg-slate-50 border border-slate-200 rounded-2xl print:border-none print:p-0 print:bg-transparent">
           <h2 className="text-lg font-bold mb-4 border-b pb-2">{(lang === 'he' ? '1. פרטי המסירה' : '1. Delivery Details')}</h2>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>

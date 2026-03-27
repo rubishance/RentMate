@@ -17,6 +17,7 @@ interface WizardFooterProps {
     nextLabel?: string;
     backLabel?: string;
     savingLabel?: string;
+    supportAction?: React.ReactNode;
 }
 
 export function WizardFooter({
@@ -31,7 +32,8 @@ export function WizardFooter({
     style,
     nextLabel,
     backLabel,
-    savingLabel
+    savingLabel,
+    supportAction
 }: WizardFooterProps) {
     const { t, lang } = useTranslation();
     const isRtl = lang === 'he';
@@ -39,34 +41,36 @@ export function WizardFooter({
     return (
         <div
             className={cn(
-                "p-8 pb-12 glass-premium dark:bg-neutral-900/80 border-t border-white/5 z-[70] backdrop-blur-3xl transition-all duration-500",
+                "p-6 bg-white border-t border-[#CFD8DC] z-[70] transition-all duration-500 shadow-[0_-4px_20px_rgba(0,0,0,0.02)]",
                 "flex justify-between items-center px-8 md:px-12",
-                isSplitView && "md:justify-end",
+                isSplitView ? "md:justify-end" : "",
                 className
             )}
             style={style}
         >
-            {showBack && (
-                <Button
-                    variant="ghost"
-                    onClick={onBack}
-                    className="h-14 px-8 rounded-2xl font-black uppercase tracking-widest text-muted-foreground hover:text-foreground hover:bg-white/5 shrink-0"
-                >
-                    {backLabel || t('back')}
-                </Button>
-            )}
+            <div className="flex items-center gap-4">
+                {supportAction}
+                
+                {showBack && (
+                    <Button
+                        variant="ghost"
+                        onClick={onBack}
+                        className="h-14 px-8 rounded-2xl font-bold text-[#37474F] hover:text-[#0D47A1] hover:bg-[#E3F2FD] shrink-0"
+                    >
+                        {backLabel || t('back')}
+                    </Button>
+                )}
+            </div>
 
             {!showBack && isSplitView && <div className="hidden md:block" />}
 
-            <div className="flex gap-4 flex-1 md:flex-none">
+            <div className="flex gap-4 flex-1 md:flex-none justify-end">
                 <Button
                     onClick={onNext}
                     disabled={!isValid || isSaving}
                     className={cn(
                         "flex-1 md:w-44 h-14 rounded-2xl text-xs font-black uppercase tracking-widest shadow-minimal group",
-                        isLastStep
-                            ? "bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20"
-                            : "button-jewel text-white"
+                        "button-jewel text-white"
                     )}
                 >
                     {isSaving ? (

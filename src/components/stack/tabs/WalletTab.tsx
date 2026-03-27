@@ -14,8 +14,10 @@ import {
     AlertCircleIcon,
     DollarSignIcon,
     ClockIcon,
-    CheckCircle2Icon
+    CheckCircle2Icon,
+    ReceiptIcon
 } from 'lucide-react';
+import { PaymentDetailsModal } from '../../modals/PaymentDetailsModal';
 import { DatePicker } from '../../ui/DatePicker';
 import { Button } from '../../ui/Button';
 import { Card, CardContent } from '../../ui/Card';
@@ -38,10 +40,13 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
     // Filters
     const [selectedContractId, setSelectedContractId] = useState<string>('all');
     const [typeFilter, setTypeFilter] = useState<TypeFilter>('both');
-    const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('both');
     const [startDate, setStartDate] = useState<string>('');
     const [endDate, setEndDate] = useState<string>(format(addDays(new Date(), 30), 'yyyy-MM-dd'));
     const [showFilters, setShowFilters] = useState(false);
+
+    const [selectedPayment, setSelectedPayment] = useState<any>(null);
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+    const [detailsModalProps, setDetailsModalProps] = useState<{ editMode: boolean, status?: any }>({ editMode: false });
 
     useEffect(() => {
         fetchData();
@@ -87,11 +92,29 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
                 .ilike('category', 'utility_%');
 
             // 4. Combine and Sort
-            const rentItems = (paymentsData || []).map(p => ({
-                ...p,
-                displayType: 'rent',
-                date: p.due_date
-            }));
+            const rentItems = (paymentsData || []).map(p => {
+                const contract = contractsData?.find(c => c.id === p.contract_id);
+                return {
+                    ...p,
+                    displayType: 'rent',
+                    date: p.due_date,
+                    contracts: contract ? {
+                        ...contract,
+                        properties: {
+                            id: propertyId,
+                            address: property.address,
+                            city: property.city
+                        }
+                    } : {
+                        property_id: propertyId,
+                        properties: {
+                            id: propertyId,
+                            address: property.address,
+                            city: property.city
+                        }
+                    }
+                };
+            });
 
             const billItems = (billsData || []).map(b => ({
                 ...b,
@@ -137,12 +160,6 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
             if (typeFilter === 'expected' && isPaid) return false;
         }
 
-        // Category Filter
-        if (categoryFilter !== 'both') {
-            if (categoryFilter === 'rent' && item.displayType !== 'rent') return false;
-            if (categoryFilter === 'bills' && item.displayType !== 'bill') return false;
-        }
-
         // Date Range
         if (startDate && item.date < startDate) return false;
         if (endDate && item.date > endDate) return false;
@@ -159,7 +176,7 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 pb-16">
             {/* Filter Bar */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                 <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -176,18 +193,18 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
                 </div>
 
                 {/* Contract Select */}
-                <div className="relative flex-1 min-w-[200px]">
+                <div className="relative flex-1 min-w-0 w-full sm:min-w-[200px]">
                     <select
                         value={selectedContractId}
                         onChange={(e) => setSelectedContractId(e.target.value)}
-                        className="w-full h-12 pl-10 pr-4 bg-background0/5 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-slate-500/10 text-xs font-bold appearance-none focus:ring-2 focus:ring-primary/20 outline-none transition-all hover:bg-white/50 dark:hover:bg-neutral-800/50"
+                        className="w-full h-12 pl-10 pr-4 bg-background0/5 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-slate-500/10 text-xs font-bold appearance-none focus:ring-2 focus:ring-primary/20 outline-none transition-all hover:bg-white/50 dark:hover:bg-neutral-800/50 truncate"
                     >
                         <option value="all">{t('allContracts')}</option>
                         {contracts.map(c => {
                             const tenant = Array.isArray(c.tenants) ? c.tenants[0] : (c as any).tenants;
                             return (
                                 <option key={c.id} value={c.id}>
-                                    {formatDate(c.start_date)} - {tenant?.name || t('unnamed')}
+                                    {tenant?.name || t('unnamed')}
                                 </option>
                             );
                         })}
@@ -235,49 +252,32 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
                                         </div>
                                     </div>
 
-                                    {/* Category Toggle */}
-                                    <div className="space-y-2 min-w-0">
-                                        <label className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70 block px-2">
-                                            {t('category')}
-                                        </label>
-                                        <div className="flex p-1 bg-background0/5 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-slate-500/10 w-full overflow-x-auto no-scrollbar snap-x">
-                                            {(['rent', 'bills', 'both'] as const).map(cat => (
-                                                <button
-                                                    key={cat}
-                                                    onClick={() => setCategoryFilter(cat)}
-                                                    className={cn(
-                                                        "flex-1 px-2 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 snap-center whitespace-nowrap",
-                                                        categoryFilter === cat
-                                                            ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
-                                                            : "text-muted-foreground hover:text-foreground"
-                                                    )}
-                                                >
-                                                    {cat === 'rent' ? t('financeRent') :
-                                                        cat === 'bills' ? t('financeBills') :
-                                                            t('financeAll')}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-
                                     {/* Dates */}
                                     <div className="space-y-2 min-w-0">
                                         <label className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70 block px-2">
                                             {t('dateRange')}
                                         </label>
-                                        <div className="flex gap-2">
-                                            <DatePicker
-                                                value={startDate ? parseISO(startDate) : undefined}
-                                                onChange={(date) => setStartDate(date ? format(date, 'yyyy-MM-dd') : '')}
-                                                placeholder={t('startDate')}
-                                                className="flex-1"
-                                            />
-                                            <DatePicker
-                                                value={endDate ? parseISO(endDate) : undefined}
-                                                onChange={(date) => setEndDate(date ? format(date, 'yyyy-MM-dd') : '')}
-                                                placeholder={t('endDate')}
-                                                className="flex-1"
-                                            />
+                                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                                            <div className="flex-1 min-w-0 flex flex-col gap-1">
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-70 px-1">
+                                                    {lang === 'he' ? 'מתאריך:' : 'From:'}
+                                                </span>
+                                                <DatePicker
+                                                    value={startDate ? parseISO(startDate) : undefined}
+                                                    onChange={(date) => setStartDate(date ? format(date, 'yyyy-MM-dd') : '')}
+                                                    placeholder={t('startDate')}
+                                                />
+                                            </div>
+                                            <div className="flex-1 min-w-0 flex flex-col gap-1">
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-70 px-1">
+                                                    {lang === 'he' ? 'עד תאריך:' : 'Until:'}
+                                                </span>
+                                                <DatePicker
+                                                    value={endDate ? parseISO(endDate) : undefined}
+                                                    onChange={(date) => setEndDate(date ? format(date, 'yyyy-MM-dd') : '')}
+                                                    placeholder={t('endDate')}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -291,7 +291,7 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
             <div className="bg-white dark:bg-neutral-900 rounded-[2.5rem] border border-slate-100 dark:border-neutral-800 shadow-premium overflow-hidden">
                 {filteredPayments.length === 0 ? (
                     <div className="py-24 text-center space-y-4">
-                        <div className="w-20 h-20 bg-background dark:bg-neutral-800 rounded-3xl flex items-center justify-center mx-auto shadow-minimal">
+                        <div className="w-20 h-20 bg-background dark:bg-neutral-800 rounded-2xl flex items-center justify-center mx-auto shadow-minimal">
                             <AlertCircleIcon className="w-8 h-8 text-slate-200" />
                         </div>
                         <h3 className="text-xl font-black tracking-tight text-foreground opacity-40">
@@ -299,69 +299,96 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
                         </h3>
                     </div>
                 ) : (
-                    <div className="divide-y divide-slate-50 dark:divide-neutral-800/50">
+                    <div className="flex flex-col gap-3 pb-2">
                         {filteredPayments.map((item, idx) => {
                             const isPaid = item.status === 'paid';
                             const isRent = item.displayType === 'rent';
+                            const itemContract = contracts.find(c => c.id === item.contract_id);
+                            const tenant = itemContract ? (Array.isArray(itemContract.tenants) ? itemContract.tenants[0] : (itemContract as any).tenants) : null;
 
                             return (
                                 <div
                                     key={item.id}
-                                    className="p-4 md:p-6 flex items-center justify-between gap-4 hover:bg-background/50 dark:hover:bg-neutral-800/10 transition-all group"
+                                    onClick={() => {
+                                        if (isRent) {
+                                            const contract = itemContract || {};
+                                            setSelectedPayment({
+                                                ...item,
+                                                contracts: {
+                                                    ...contract,
+                                                    properties: property
+                                                },
+                                            });
+                                            setDetailsModalProps({ editMode: false });
+                                            setIsDetailsModalOpen(true);
+                                        }
+                                    }}
+                                    className={cn(
+                                        "p-3 sm:p-4 md:p-5 flex items-start justify-between w-full transition-all group overflow-hidden",
+                                        "bg-white/80 dark:bg-neutral-900/60 rounded-2xl border border-black/[0.04] dark:border-white/[0.04] shadow-sm",
+                                        isRent ? "cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/80 hover:shadow-md" : ""
+                                    )}
                                 >
-                                    <div className="flex items-center gap-4 md:gap-6 flex-1 min-w-0">
-                                        <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl glass-premium flex flex-col items-center justify-center shrink-0 border border-white/10 group-hover:scale-105 transition-all duration-300">
-                                            <span className="text-lg md:text-xl font-black leading-none">{format(parseISO(item.date), 'dd')}</span>
-                                            <span className="text-xs font-black uppercase tracking-widest opacity-90 mt-0.5">{format(parseISO(item.date), 'MMM')}</span>
-                                        </div>
-
-                                        <div className="flex-1 min-w-0 space-y-1">
-                                            <div className="flex items-center gap-2">
-                                                <h3 className="text-base md:text-lg font-black tracking-tight text-foreground truncate">
-                                                    {isRent ? t('financeRent') : (item.title || item.file_name || t('financeBills'))}
-                                                </h3>
-                                                <span className={cn(
-                                                    "text-xs px-2 py-0.5 rounded-full uppercase font-black tracking-widest border shrink-0",
-                                                    item.displayType === 'bill' ? 'bg-primary/10 text-primary border-primary/20' :
-                                                        isPaid ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
-                                                            item.status === 'overdue' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' :
-                                                                'bg-amber-500/10 text-amber-500 border-amber-500/20'
-                                                )}>
-                                                    {item.displayType === 'bill' ? t('bills') :
-                                                        isPaid ? t('financeActual') : t('financeExpected')}
+                                    {/* Date & Tenant Column (Right - RTL first) */}
+                                    <div className="flex flex-col items-start shrink-0 w-[7rem] sm:w-[9rem]">
+                                        <div className="h-10 md:h-12 w-full flex items-center px-0">
+                                            <div className="w-full h-full rounded-[14px] glass-premium flex items-center justify-center border border-white/10 group-hover:scale-105 transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
+                                                <span className="text-base sm:text-lg md:text-xl font-black tracking-tight text-foreground leading-none">
+                                                    {format(parseISO(item.date), 'dd/MM/yy')}
                                                 </span>
                                             </div>
-                                            {!isRent && (
-                                                <p className="flex items-center gap-2 text-xs font-bold text-muted-foreground opacity-90">
-                                                    <FileTextIcon className="w-3 h-3" />
-                                                    <span>{lang === 'he' ? 'חשבונות ותחזוקה' : 'Bills & Maintenance'}</span>
-                                                </p>
+                                        </div>
+                                        <div className="h-6 flex items-end justify-center w-full px-1">
+                                            {isRent && (
+                                                <span className="text-xs sm:text-sm font-bold text-muted-foreground/80 tracking-wide text-center truncate w-full">
+                                                    {tenant?.name || t('unnamed')}
+                                                </span>
                                             )}
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-4 md:gap-8">
-                                        <div className="text-right">
-                                            <div className="flex items-baseline gap-1 justify-end">
-                                                <span className="text-xs font-black opacity-40 text-foreground">₪</span>
-                                                <div className="flex flex-col items-end">
-                                                    <span className="text-lg md:text-2xl font-black tracking-tight text-foreground">
-                                                        {item.amount?.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <p className="text-xs font-bold text-muted-foreground opacity-70 uppercase tracking-widest mt-1">
-                                                {formatDate(item.date)}
-                                            </p>
-                                        </div>
-
-                                        <div className="flex items-center gap-3">
-                                            <div className={cn(
-                                                "w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center transition-all",
-                                                isPaid ? "bg-emerald-500/10 text-emerald-500" : "bg-muted/50 dark:bg-neutral-800 text-slate-300"
+                                    {/* Status Badge Column (Center) */}
+                                    <div className="flex flex-1 flex-col items-center justify-start min-w-0 px-2 text-center mt-1 sm:mt-1.5">
+                                        <div className="h-8 sm:h-9 flex items-center justify-center min-w-0">
+                                            {!isRent && (
+                                                <h3 className="text-[13px] sm:text-sm font-black tracking-tight text-foreground truncate min-w-0 mr-2">
+                                                    {item.title || item.file_name || t('financeBills')}
+                                                </h3>
+                                            )}
+                                            <span className={cn(
+                                                "text-[10px] sm:text-xs px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full uppercase font-black tracking-widest border shrink-0 text-center leading-none",
+                                                item.displayType === 'bill' ? 'bg-primary/10 text-primary border-primary/20' :
+                                                    isPaid ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
+                                                        item.status === 'overdue' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' :
+                                                            'bg-amber-500/10 text-amber-500 border-amber-500/20'
                                             )}>
-                                                {isPaid ? <CheckCircle2Icon className="w-5 h-5" /> : <ClockIcon className="w-5 h-5" />}
+                                                {item.displayType === 'bill' ? t('bills') :
+                                                    isPaid ? t('financeActual') : t('financeExpected')}
+                                            </span>
+                                        </div>
+                                        {!isRent && (
+                                            <div className="h-6 flex items-end justify-center min-w-0">
+                                                <p className="flex items-center gap-1.5 text-xs sm:text-sm font-bold text-muted-foreground opacity-90 truncate justify-center">
+                                                    <FileTextIcon className="w-3 h-3 shrink-0" />
+                                                    <span className="truncate">{lang === 'he' ? 'חשבונות ותחזוקה' : 'Bills & Maintenance'}</span>
+                                                </p>
                                             </div>
+                                        )}
+                                    </div>
+
+                                    {/* Amount & Street Column (Left - RTL last) */}
+                                    <div className="flex flex-col items-end text-left shrink-0 w-[7rem] sm:w-[9rem]">
+                                        <div className="h-10 md:h-12 flex items-center justify-end w-full truncate">
+                                            <div className="flex items-center justify-end w-full truncate">
+                                                <span className="text-lg sm:text-xl md:text-2xl font-black tracking-tight text-foreground truncate leading-none">
+                                                    {item.amount?.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="h-6 flex items-end justify-end w-full">
+                                            <p className="text-xs sm:text-sm font-bold text-muted-foreground/80 tracking-wide truncate w-full text-left">
+                                                {property.address || property.city || t('unnamed')}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -370,6 +397,20 @@ export function WalletTab({ propertyId, property }: WalletTabProps) {
                     </div>
                 )}
             </div>
+            {/* Payment Details Modal */}
+            {selectedPayment && (
+                <PaymentDetailsModal
+                    isOpen={isDetailsModalOpen}
+                    onClose={() => {
+                        setIsDetailsModalOpen(false);
+                        setTimeout(() => setSelectedPayment(null), 300);
+                    }}
+                    payment={selectedPayment}
+                    onSuccess={fetchData}
+                    initialEditMode={detailsModalProps.editMode}
+                    initialStatus={detailsModalProps.status}
+                />
+            )}
         </div>
     );
 }

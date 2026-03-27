@@ -37,6 +37,7 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
                 return (
                     <button
                         key={option.value}
+                        type="button"
                         onClick={() => onChange(option.value)}
                         disabled={disabled}
                         className={cn(

@@ -29,8 +29,6 @@ export async function getIndexValue(
             .maybeSingle();
 
         if (error) {
-            // If full date check fails for currencies, try the month? 
-            // Better to just log and return null for now as currencies should have precise dates.
             console.error(`Error fetching index value for ${type} at ${lookupDate}:`, error);
             return null;
         }
@@ -38,6 +36,64 @@ export async function getIndexValue(
         return data?.value || null;
     } catch (error) {
         console.error('Error in getIndexValue:', error);
+        return null;
+    }
+}
+
+import { subMonths, parseISO } from 'date-fns';
+
+/**
+ * Get the exact Known Index safely resolving actual_published_at if available in the database.
+ */
+export async function getKnownIndexForDate(
+    type: 'cpi' | 'housing' | 'construction' | 'usd' | 'eur',
+    targetDate: string, // YYYY-MM-DD
+    linkageSubType: 'known' | 'respect_of' | 'base'
+): Promise<IndexData | null> {
+    if (linkageSubType === 'respect_of') {
+        const { data } = await supabase
+            .from('index_data')
+            .select('*')
+            .eq('index_type', type)
+            .eq('date', targetDate.slice(0, 7))
+            .maybeSingle();
+        return data as IndexData | null;
+    }
+
+    try {
+        // 1. Try finding dynamically published index 
+        const exactLimit = `${targetDate}T23:59:59.999Z`;
+        const { data: exactMatch } = await supabase
+            .from('index_data')
+            .select('*')
+            .eq('index_type', type)
+            .not('actual_published_at', 'is', null)
+            .lte('actual_published_at', exactLimit)
+            .order('date', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+            
+        if (exactMatch) return exactMatch as IndexData;
+
+        // 2. Fallback to Israeli Law approximation (Day 15 rule)
+        const dateObj = parseISO(targetDate.length === 7 ? `${targetDate}-01` : targetDate);
+        const day = dateObj.getDate();
+        const fallbackMonth = day < 15 
+            ? format(subMonths(dateObj, 2), 'yyyy-MM')
+            : format(subMonths(dateObj, 1), 'yyyy-MM');
+
+        const { data: fallbackMatch } = await supabase
+            .from('index_data')
+            .select('*')
+            .eq('index_type', type)
+            .lte('date', fallbackMonth)
+            .order('date', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+            
+        return fallbackMatch as IndexData | null;
+    } catch(e) {
+        console.error(e);
         return null;
     }
 }

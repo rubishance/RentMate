@@ -10,13 +10,14 @@ import {
 } from '../components/icons/NavIcons';
 import { supabase } from '../lib/supabase';
 import { formatDate } from '../lib/utils';
-import { format } from 'date-fns';
-import { ConfirmDeleteModal } from '../components/modals/ConfirmDeleteModal';
+import { format, addMonths, addYears } from 'date-fns';
+
 import { IndexedRentModal } from '../components/modals/IndexedRentModal';
 import type { Property } from '../types/database';
 import { useTranslation } from '../hooks/useTranslation';
 import { PropertyIcon } from '../components/common/PropertyIcon';
 import { getPropertyPlaceholder } from '../lib/property-placeholders';
+import { getPropertyStateConfig } from '../constants/statusConfig';
 
 import UpgradeRequestModal from '../components/modals/UpgradeRequestModal';
 import { SelectPropertyModal } from '../components/modals/SelectPropertyModal';
@@ -24,7 +25,7 @@ import { useDataCache } from '../contexts/DataCacheContext';
 import { useSubscription } from '../hooks/useSubscription';
 import { SecureImage } from '../components/common/SecureImage';
 
-import { Trash2, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 import { cn } from '../lib/utils';
 import { useStack } from '../contexts/StackContext';
@@ -50,6 +51,18 @@ type ExtendedProperty = Property & {
     }[];
 };
 
+const calculateLatestDate = (endDate: string | null, options: {length: number, unit: 'months' | 'years'}[] | null) => {
+    if (!endDate) return null;
+    let latest = new Date(endDate);
+    if (options && options.length > 0) {
+        options.forEach(opt => {
+            if (opt.unit === 'years') latest = addYears(latest, opt.length);
+            else if (opt.unit === 'months') latest = addMonths(latest, opt.length);
+        });
+    }
+    return format(latest, 'yyyy-MM-dd');
+};
+
 export function Properties() {
     const { t, lang } = useTranslation();
     const { canAddProperty, refreshSubscription } = useSubscription();
@@ -60,13 +73,7 @@ export function Properties() {
 
     const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
 
-    const [deleteTarget, setDeleteTarget] = useState<Property | null>(null);
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
-
-
     const [indexedRentContract, setIndexedRentContract] = useState<ExtendedProperty['contracts'][0] | null>(null); // Contract to show calculation for
-    const [affectedItems, setAffectedItems] = useState<{ label: string; count: number; items: any[]; type: 'critical' | 'warning' | 'info' }[]>([]);
     const [isSelectPropertyModalOpen, setIsSelectPropertyModalOpen] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
@@ -139,87 +146,7 @@ export function Properties() {
         navigate(`/properties/${property.id}`);
     };
 
-    const handleDelete = async (property: Property) => {
-        setDeleteTarget(property);
-        setAffectedItems([]);
 
-        try {
-            // Get Contracts with details
-            const { data: contracts, error: contractsError } = await supabase
-                .from('contracts')
-                .select('*')
-                .eq('property_id', property.id);
-
-            if (contractsError) console.error('Error fetching contracts:', contractsError);
-
-            const items: { label: string; count: number; items: any[]; type: 'critical' | 'warning' | 'info' }[] = [];
-
-            if (contracts && contracts.length > 0) {
-                const contractItems = (contracts as any[]).map((c: any) => {
-                    const tenantNames = Array.isArray(c.tenants) ? c.tenants.map((t: any) => t.name).join(', ') : t('unknown');
-                    const startDate = formatDate(c.start_date);
-                    const endDate = formatDate(c.end_date);
-                    return `${tenantNames} (${startDate} - ${endDate})`;
-                });
-
-                items.push({
-                    label: lang === 'he' ? 'חוזים ימחקו (כולל היסטוריית תשלומים)' : 'Contracts to be deleted (including payment history)',
-                    count: contracts.length,
-                    items: contractItems,
-                    type: 'critical'
-                });
-            }
-
-            setAffectedItems(items);
-            setIsDeleteModalOpen(true);
-        } catch (err) {
-            console.error('Error checking property relations:', err);
-            setIsDeleteModalOpen(true);
-        }
-    };
-
-    const confirmDelete = async () => {
-        if (!deleteTarget) return;
-        setIsDeleting(true);
-
-        try {
-            const targetId = deleteTarget.id;
-
-            // 1. Get all contract IDs to delete their payments
-            const { data: contracts } = await supabase
-                .from('contracts')
-                .select('id')
-                .eq('property_id', targetId);
-
-            if (contracts && contracts.length > 0) {
-                const contractIds = contracts.map((c: { id: string }) => c.id);
-                // Delete payments
-                await supabase.from('payments').delete().in('contract_id', contractIds);
-                // Delete contracts
-                await supabase.from('contracts').delete().eq('property_id', targetId);
-            }
-
-            // 3. Delete property
-            const { error } = await supabase
-                .from('properties')
-                .delete()
-                .eq('id', targetId);
-
-            if (error) throw error;
-
-            // Invalidate all cache (affects dashboard, lists, etc)
-            clear();
-
-            setProperties(prev => prev.filter(p => p.id !== deleteTarget.id));
-            setIsDeleteModalOpen(false);
-        } catch (error: any) {
-            console.error('Error deleting property:', error);
-            alert(`${t('error')}: ${error.message || 'Unknown error'}`);
-        } finally {
-            setIsDeleting(false);
-            setDeleteTarget(null);
-        }
-    };
 
     // Handle Global Actions
     useEffect(() => {
@@ -270,7 +197,7 @@ export function Properties() {
     return (
         <div className="pb-4 pt-2 md:pt-8 px-5 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300 w-full max-w-[100vw] overflow-x-hidden">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 px-0">
+            <div className="flex flex-row items-end justify-between gap-4 px-0">
                 <div className="space-y-1 overflow-hidden">
                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 dark:bg-primary/10 backdrop-blur-md rounded-full border border-primary/10 shadow-sm mb-1">
                         <Home className="w-3 h-3 text-primary" />
@@ -319,11 +246,7 @@ export function Properties() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-0">
                         {properties.map((property) => {
                             const today = format(new Date(), 'yyyy-MM-dd');
-                            const activeContract = property.contracts?.find(c =>
-                                c.status === 'active' &&
-                                c.start_date <= today &&
-                                (!c.end_date || c.end_date >= today)
-                            );
+                            const activeContract = property.contracts?.find(c => c.status === 'active');
                             return (
                                 <Card
                                     key={property.id}
@@ -343,67 +266,44 @@ export function Properties() {
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
 
                                         {/* Status Badge */}
-                                        <div className={`absolute top-5 ${lang === 'he' ? 'left-5' : 'right-5'} flex gap-3`}>
-                                            <span className={cn(
-                                                "px-4 py-2 rounded-full text-sm font-bold uppercase tracking-widest backdrop-blur-md shadow-sm border transition-all duration-500",
-                                                activeContract
-                                                    ? 'bg-emerald-500/90 text-white border-transparent'
-                                                    : 'bg-white/90 text-slate-700 border-white/20'
-                                            )}>
-                                                {activeContract ? t('occupied') : t('vacant')}
-                                            </span>
+                                        <div className={`absolute top-4 ${lang === 'he' ? 'left-4' : 'right-4'} flex gap-3`}>
+                                            {(() => {
+                                                const config = getPropertyStateConfig(activeContract ? 'occupied' : 'vacant');
+                                                // Create a slightly more prominent white background overlay version of the config 
+                                                // to ensure it pops over the image
+                                                return (
+                                                    <span className={cn(
+                                                        "px-4 py-1.5 rounded-lg text-sm font-bold shadow-md transition-all duration-300",
+                                                        "bg-white/95 backdrop-blur-sm", 
+                                                        config.color
+                                                    )}>
+                                                        {t(config.labelKey as any)}
+                                                    </span>
+                                                );
+                                            })()}
                                         </div>
 
 
                                     </div>
 
                                     {/* Content */}
-                                    <CardContent className="p-8 flex-1 flex flex-col space-y-6">
-                                        <div className="min-h-[4rem]">
-                                            <h3 className="text-3xl font-black tracking-tight text-foreground line-clamp-2 leading-tight group-hover:text-primary transition-colors max-w-full break-words">
-                                                {[property.address, property.city].filter(Boolean).join(', ')}
-                                            </h3>
-                                        </div>
-
-                                        {/* Detailed Specs Row */}
-                                        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 py-4 border-t border-border/50">
-                                            {/* Rooms */}
-                                            <div className="flex flex-col items-center gap-2">
-                                                <BedDouble className="w-6 h-6 text-muted-foreground" />
-                                                <span className="text-base font-bold">{property.rooms}</span>
+                                    <CardContent className="p-6 flex-1 flex flex-col pt-6">
+                                        {/* Top Row: Address and Price */}
+                                        <div className="flex justify-between items-start border-b border-slate-100 dark:border-white/10 pb-6 mb-6">
+                                            {/* Right side (Address) */}
+                                            <div className="flex flex-col flex-1 pr-1 pl-4">
+                                                <h3 className="text-2xl font-black text-primary dark:text-blue-400 truncate leading-tight">
+                                                    {property.address}
+                                                </h3>
+                                                {property.city && (
+                                                    <span className="text-[1.05rem] font-medium text-muted-foreground mt-1 tracking-tight">
+                                                        {property.city}
+                                                    </span>
+                                                )}
                                             </div>
-                                            {/* SQM */}
-                                            <div className="flex flex-col items-center gap-2">
-                                                <Ruler className="w-6 h-6 text-muted-foreground" />
-                                                <span className="text-base font-bold">{property.size_sqm}</span>
-                                            </div>
-                                            {/* Parking */}
-                                            <div className="flex flex-col items-center gap-2">
-                                                <Car className={cn("w-6 h-6", property.has_parking ? "text-primary" : "text-muted-foreground/30")} />
-                                                <span className="text-base font-bold">{property.has_parking ? '✓' : '-'}</span>
-                                            </div>
-                                            {/* Balcony */}
-                                            <div className="flex flex-col items-center gap-2">
-                                                <BalconyIcon className={cn("w-6 h-6", property.has_balcony ? "text-primary" : "text-muted-foreground/30")} />
-                                                <span className="text-base font-bold">{property.has_balcony ? '✓' : '-'}</span>
-                                            </div>
-                                            {/* Safe Room */}
-                                            <div className="flex flex-col items-center gap-2">
-                                                <SafeRoomIcon className={cn("w-6 h-6", property.has_safe_room ? "text-primary" : "text-muted-foreground/30")} />
-                                                <span className="text-base font-bold">{property.has_safe_room ? '✓' : '-'}</span>
-                                            </div>
-                                            {/* Storage */}
-                                            <div className="flex flex-col items-center gap-2">
-                                                <StorageIcon className={cn("w-6 h-6", property.has_storage ? "text-primary" : "text-muted-foreground/30")} />
-                                                <span className="text-base font-bold">{property.has_storage ? '✓' : '-'}</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-end justify-between pt-2 mt-auto">
-                                            <div onClick={(e) => e.stopPropagation()} className="space-y-1">
-                                                <span className="text-base font-bold uppercase tracking-widest text-muted-foreground opacity-90">
-                                                    {t('monthlyRentLabel')}
-                                                </span>
+                                            
+                                            {/* Left side (Price) */}
+                                            <div className="flex flex-col items-start whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                                                 <div
                                                     onClick={() => {
                                                         const active = property.contracts?.find(c => c.status === 'active');
@@ -412,40 +312,46 @@ export function Properties() {
                                                         }
                                                     }}
                                                     className={cn(
-                                                        "text-4xl font-black text-foreground tracking-tight",
-                                                        property.contracts?.some(c => c.status === 'active' && c.linkage_type && c.linkage_type !== 'none') && "cursor-pointer text-primary hover:underline decoration-2 underline-offset-4"
+                                                        "text-2xl font-black text-primary dark:text-blue-400 tracking-tight",
+                                                        property.contracts?.some(c => c.status === 'active' && c.linkage_type && c.linkage_type !== 'none') && "cursor-pointer hover:underline decoration-2 underline-offset-4"
                                                     )}
                                                 >
                                                     ₪{(activeContract?.base_rent || 0).toLocaleString()}
                                                 </div>
+                                                <span className="text-sm font-medium text-muted-foreground mr-auto ml-1">
+                                                    {t('monthlyRentLabel')}
+                                                </span>
                                             </div>
+                                        </div>
 
-                                            {/* Contract Badge */}
-                                            <div className="flex flex-col items-end gap-1 mb-1">
-                                                {activeContract && (
-                                                    <>
-                                                        <span className="text-base font-bold uppercase tracking-widest text-muted-foreground opacity-90">
-                                                            {t('leaseEnds')}
-                                                        </span>
-                                                        <span className="px-4 py-2 rounded-xl bg-secondary/10 text-base font-black text-foreground">
-                                                            {formatDate(activeContract.end_date)}
-                                                        </span>
-                                                    </>
-                                                )}
-                                            </div>
-                                            <div className="flex items-center">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-12 w-12 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition-all"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleDelete(property);
-                                                    }}
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </Button>
-                                            </div>
+                                        {/* Active Contract Details */}
+                                        <div className="flex w-full items-center content-center flex-1 mt-auto pb-2 divide-x divide-slate-200 dark:divide-neutral-800 rtl:divide-x-reverse pt-2">
+                                            {activeContract ? (
+                                                <>
+                                                    <div className="flex-1 flex flex-col items-center text-center px-1">
+                                                        <span className="text-[0.65rem] md:text-[0.7rem] tracking-tight text-muted-foreground mb-1.5">{t('startDate')}</span>
+                                                        <div className="flex items-center font-bold text-primary dark:text-blue-400">
+                                                            <span className="text-[0.95rem] md:text-[1.05rem] leading-none tracking-tight">{formatDate(activeContract.start_date)}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex-1 flex flex-col items-center text-center px-1">
+                                                        <span className="text-[0.65rem] md:text-[0.7rem] tracking-tight text-muted-foreground mb-1.5">{t('endDate')}</span>
+                                                        <div className="flex items-center font-bold text-primary dark:text-blue-400">
+                                                            <span className="text-[0.95rem] md:text-[1.05rem] leading-none tracking-tight">{activeContract.end_date ? formatDate(activeContract.end_date) : '-'}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex-1 flex flex-col items-center text-center px-1">
+                                                        <span className="text-[0.65rem] md:text-[0.7rem] tracking-tight text-muted-foreground mb-1.5 text-balance">{lang === 'he' ? 'תאריך סיום האופציה' : 'Option End Date'}</span>
+                                                        <div className="flex items-center font-bold text-primary dark:text-blue-400">
+                                                            <span className="text-[0.95rem] md:text-[1.05rem] leading-none tracking-tight">{activeContract.end_date ? formatDate(calculateLatestDate(activeContract.end_date, activeContract.option_periods)) : '-'}</span>
+                                                        </div>
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <div className="w-full flex justify-center items-center opacity-70">
+                                                    <span className="text-sm font-medium">{t('noActiveContract') || (lang === 'he' ? 'אין חוזה פעיל' : 'No active contract')}</span>
+                                                </div>
+                                            )}
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -462,16 +368,7 @@ export function Properties() {
                 contract={indexedRentContract}
             />
 
-            <ConfirmDeleteModal
-                isOpen={isDeleteModalOpen}
-                onClose={() => setIsDeleteModalOpen(false)}
-                onConfirm={confirmDelete}
-                title={t('deleteAsset')}
-                message={t('deleteAssetConfirm', { address: deleteTarget?.address || '', city: deleteTarget?.city || '' })}
-                isDeleting={isDeleting}
-                affectedItems={affectedItems}
-                requireDoubleConfirm={true}
-            />
+
 
             <UpgradeRequestModal
                 isOpen={isUpgradeModalOpen}

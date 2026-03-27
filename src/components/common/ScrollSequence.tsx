@@ -9,29 +9,54 @@ interface ScrollSequenceProps {
 export function ScrollSequence({ frameCount, imagePathTemplate }: ScrollSequenceProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { scrollYProgress } = useScroll();
-  const [images, setImages] = useState<HTMLImageElement[]>([]);
-  const [loadedFrames, setLoadedFrames] = useState(0);
+  const imagesRef = useRef<HTMLImageElement[]>(new Array(frameCount).fill(null));
   const currentFrameRef = useRef(1);
 
-  // Preload images
+  // Preload images asynchronously in batches
   useEffect(() => {
-    const loadedImages: HTMLImageElement[] = [];
-    let loadedCount = 0;
+    let isCancelled = false;
+    const loadedImages: HTMLImageElement[] = new Array(frameCount).fill(null);
 
-    for (let i = 1; i <= frameCount; i++) {
-      const img = new Image();
-      img.src = imagePathTemplate(i);
-      img.onload = () => {
-        loadedCount++;
-        setLoadedFrames(loadedCount);
-        // Draw the first frame as soon as it's ready
-        if (i === 1 && canvasRef.current) {
-          drawFrame(img, canvasRef.current);
-        }
-      };
-      loadedImages.push(img);
-    }
-    setImages(loadedImages);
+    const loadBatch = async (startIdx: number, batchSize: number) => {
+      const promises: Promise<void>[] = [];
+      const endIdx = Math.min(startIdx + batchSize, frameCount);
+
+      for (let i = startIdx; i <= endIdx; i++) {
+        if (isCancelled) break;
+        promises.push(new Promise((resolve) => {
+          const img = new Image();
+          img.src = imagePathTemplate(i);
+          img.onload = () => {
+            if (isCancelled) return;
+            loadedImages[i - 1] = img;
+            imagesRef.current[i - 1] = img;
+            
+            // Draw immediately if this is the exact frame the user is currently looking at
+            if (i === currentFrameRef.current && canvasRef.current) {
+               drawFrame(img, canvasRef.current);
+            }
+            resolve();
+          };
+          img.onerror = () => resolve(); // continue even if one fails
+        }));
+      }
+      
+      await Promise.all(promises);
+      
+      // Load next batch on next idle frame
+      if (!isCancelled && endIdx < frameCount) {
+         requestAnimationFrame(() => {
+             setTimeout(() => loadBatch(endIdx + 1, batchSize), 10);
+         });
+      }
+    };
+
+    // Start loading batches of 30
+    loadBatch(1, 30);
+
+    return () => {
+      isCancelled = true;
+    };
   }, [frameCount, imagePathTemplate]);
 
   // Function to draw a specific frame to canvas with "object-cover" behavior
@@ -68,8 +93,9 @@ export function ScrollSequence({ frameCount, imagePathTemplate }: ScrollSequence
         canvasRef.current.width = window.innerWidth;
         canvasRef.current.height = window.innerHeight;
         // Redraw current frame
-        if (images[currentFrameRef.current - 1]) {
-          drawFrame(images[currentFrameRef.current - 1], canvasRef.current);
+        const currentImg = imagesRef.current[currentFrameRef.current - 1];
+        if (currentImg && currentImg.complete) {
+          drawFrame(currentImg, canvasRef.current);
         }
       }
     };
@@ -79,12 +105,10 @@ export function ScrollSequence({ frameCount, imagePathTemplate }: ScrollSequence
     
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [images]);
+  }, []);
 
   // Listen to scroll progress and draw mapped frame
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
-    if (images.length === 0) return;
-
     // Calculate frame index from 1 to frameCount
     const frameIndex = Math.min(
       frameCount,
@@ -93,7 +117,7 @@ export function ScrollSequence({ frameCount, imagePathTemplate }: ScrollSequence
 
     if (frameIndex !== currentFrameRef.current) {
       currentFrameRef.current = frameIndex;
-      const img = images[frameIndex - 1];
+      const img = imagesRef.current[frameIndex - 1];
       if (img && img.complete && canvasRef.current) {
         drawFrame(img, canvasRef.current);
       }

@@ -1,16 +1,43 @@
 import { format, parseISO } from 'date-fns';
-import { FileText, Calendar, DollarSign, ChevronRight } from 'lucide-react';
+import { FileText, Calendar, DollarSign, ChevronRight, Building2, Tag } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
-import type { PropertyDocument } from '../../types/database';
+import type { PropertyDocument, Property } from '../../types/database';
+import { getUtilityTypeConfig } from '../../constants/utilityTypes';
 
 interface DocumentTimelineProps {
     documents: PropertyDocument[];
     onDocumentClick: (doc: PropertyDocument) => void;
     loading?: boolean;
+    property?: Property;
+    sortOrder?: 'asc' | 'desc';
 }
 
-export function DocumentTimeline({ documents, onDocumentClick, loading }: DocumentTimelineProps) {
+export function DocumentTimeline({ documents, onDocumentClick, loading, property, sortOrder = 'desc' }: DocumentTimelineProps) {
     const { t, lang } = useTranslation();
+
+    const getCategoryLabel = (category: string) => {
+        if (!category) return '';
+        const lowerCat = category.toLowerCase();
+        
+        if (lowerCat.startsWith('utility_') || ['utility', 'utility_bill', 'utilities'].includes(lowerCat)) {
+            return t('utilitiesStorage') || (lang === 'he' ? 'חשבונות' : 'Utilities');
+        }
+
+        switch (lowerCat) {
+            case 'receipt':
+            case 'receipts': return lang === 'he' ? 'אסמכתאות' : 'Receipts';
+            case 'media':
+            case 'photo':
+            case 'video': return t('mediaStorage') || (lang === 'he' ? 'מדיה' : 'Media');
+            case 'other':
+            case 'documents':
+            case 'document': return t('documentsStorage') || (lang === 'he' ? 'מסמכים' : 'Documents');
+            case 'checks':
+            case 'check': return t('checksStorage') || (lang === 'he' ? 'צ\'קים' : 'Checks');
+            case 'maintenance': return t('maintenance') || (lang === 'he' ? 'תחזוקה' : 'Maintenance');
+            default: return t(category) || category;
+        }
+    };
 
     if (loading) {
         return (
@@ -43,78 +70,162 @@ export function DocumentTimeline({ documents, onDocumentClick, loading }: Docume
         return acc;
     }, {} as Record<string, PropertyDocument[]>);
 
-    // Sort group keys descending
+    // Sort group keys
     const sortedGroupKeys = Object.keys(groups).sort((a, b) => {
         const dateA = new Date(a);
         const dateB = new Date(b);
-        return dateB.getTime() - dateA.getTime();
+        return sortOrder === 'desc' ? dateB.getTime() - dateA.getTime() : dateA.getTime() - dateB.getTime();
     });
 
     return (
-        <div className="p-4 space-y-8 relative">
-            {/* Timeline Line */}
-            <div className="absolute top-0 bottom-0 left-[27px] rtl:right-[27px] w-[2px] bg-muted/50 dark:bg-neutral-800" />
+        <div className="space-y-4 sm:space-y-6 w-full relative pb-4">
 
             {sortedGroupKeys.map((monthKey) => (
-                <div key={monthKey} className="space-y-4 relative">
-                    {/* Month Header */}
-                    <div className="flex items-center gap-4">
-                        <div className="w-4 h-4 rounded-full border-4 border-white dark:border-neutral-900 bg-primary shadow-sm z-10" />
-                        <h3 className="text-sm font-bold text-slate-500 dark:text-neutral-400 tracking-wider uppercase">
-                            {monthKey}
-                        </h3>
-                    </div>
-
+                <div key={monthKey} className="space-y-3 sm:space-y-4 relative">
                     {/* Group Documents */}
-                    <div className="space-y-3 ltr:ml-7 rtl:mr-7">
-                        {groups[monthKey]
-                            .sort((a, b) => {
+                    <div className="space-y-3">
+                        {(() => {
+                            const sortedDocs = groups[monthKey].sort((a, b) => {
                                 const dateA = a.document_date ? parseISO(a.document_date) : new Date(a.created_at);
                                 const dateB = b.document_date ? parseISO(b.document_date) : new Date(b.created_at);
-                                return dateB.getTime() - dateA.getTime();
-                            })
-                            .map((doc) => (
-                                <button
-                                    key={doc.id}
-                                    onClick={() => onDocumentClick(doc)}
-                                    className="w-full flex items-center gap-4 bg-white dark:bg-neutral-900 p-4 rounded-2xl border border-slate-100 dark:border-neutral-800 hover:border-primary/30 transition-all hover:shadow-md group text-start outline-none focus:ring-2 focus:ring-primary/20"
-                                >
-                                    {/* Icon / Date Sticker */}
-                                    <div className="shrink-0 flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-background dark:bg-neutral-800 text-slate-400 group-hover:text-primary transition-colors">
-                                        <span className="text-xs font-bold uppercase leading-none mb-1">
-                                            {doc.document_date ? format(parseISO(doc.document_date), 'MMM') : format(new Date(doc.created_at), 'MMM')}
-                                        </span>
-                                        <span className="text-base font-black leading-none italic">
-                                            {doc.document_date ? format(parseISO(doc.document_date), 'dd') : format(new Date(doc.created_at), 'dd')}
-                                        </span>
-                                    </div>
+                                return sortOrder === 'desc' ? dateB.getTime() - dateA.getTime() : dateA.getTime() - dateB.getTime();
+                            });
 
-                                    {/* Info */}
-                                    <div className="flex-1 min-w-0">
-                                        <h4 className="text-sm font-bold text-foreground truncate">
-                                            {doc.title || doc.file_name}
-                                        </h4>
-                                        <p className="text-xs text-slate-500 dark:text-neutral-400 truncate mt-0.5">
-                                            {doc.vendor_name || t('noVendor')}
-                                        </p>
-                                    </div>
+                            const displayDocs: any[] = [];
+                            const mediaGroups = new Map<string, any>();
 
-                                    {/* Amount / Action */}
-                                    <div className="shrink-0 text-right flex flex-col items-end gap-1">
-                                        {doc.amount ? (
-                                            <div className="flex items-center gap-1 text-sm font-black text-foreground">
-                                                <span className="text-xs opacity-50">₪</span>
-                                                {doc.amount.toLocaleString()}
+                            // Group media by folder_id or date to count photos/videos
+                            sortedDocs.forEach((doc) => {
+                                const lowerCat = doc.category?.toLowerCase() || '';
+                                const isMedia = lowerCat === 'photo' || lowerCat === 'video' || lowerCat === 'media';
+                                const hasBatchFolder = !!doc.folder_id && !isMedia;
+                                
+                                if (isMedia || hasBatchFolder) {
+                                    const key = hasBatchFolder ? (doc.folder_id as string) : (doc.folder_id || (doc.document_date ? doc.document_date : doc.created_at.split('T')[0]));
+                                    if (!mediaGroups.has(key)) {
+                                        const group = { ...doc, isMediaGroup: true, photoCount: 0, videoCount: 0, groupedDocs: [] };
+                                        mediaGroups.set(key, group);
+                                        displayDocs.push(group);
+                                    }
+                                    const groupText = mediaGroups.get(key);
+                                    if (lowerCat === 'video') groupText.videoCount++;
+                                    else if (isMedia) groupText.photoCount++;
+                                    groupText.groupedDocs.push(doc);
+                                } else {
+                                    displayDocs.push(doc);
+                                }
+                            });
+
+                            return displayDocs.map((doc) => {
+                                const address = (doc as any).properties?.address || property?.address || '';
+                                const mainCategoryLabel = getCategoryLabel(doc.category) || '';
+                                const isReceipt = doc.category === 'receipt' || doc.category === 'receipts';
+                                const isUtility = doc.category?.startsWith('utility_') || doc.category === 'utilities';
+                                const isDocument = mainCategoryLabel === 'מסמכים' || mainCategoryLabel === 'Documents';
+
+                                return (
+                                    <div
+                                        key={doc.id}
+                                        role="button"
+                                        tabIndex={0}
+                                        onClick={() => onDocumentClick(doc)}
+                                        className="bg-white dark:bg-neutral-900 rounded-2xl sm:rounded-[20px] shadow-sm border border-slate-100 dark:border-white/5 p-3 flex sm:p-4 items-center justify-between w-full transition-all group overflow-hidden relative hover:bg-neutral-50 dark:hover:bg-neutral-800/80 hover:shadow-md cursor-pointer outline-none focus:ring-2 focus:ring-primary/20 grid grid-cols-[80px_1fr_80px] sm:grid-cols-[110px_1fr_110px] gap-1.5 sm:gap-4"
+                                    >
+                                        {/* Right Column: Date & Asset */}
+                                        <div className="flex flex-col items-start min-w-0 overflow-hidden text-start pr-0.5 sm:pr-0">
+                                            <span className="text-[13px] sm:text-lg tracking-tight font-bold text-indigo-950 dark:text-indigo-100 leading-tight w-full truncate block" title={doc.document_date ? format(parseISO(doc.document_date), 'dd/MM/yy') : format(new Date(doc.created_at), 'dd/MM/yy')}>
+                                                {doc.document_date ? format(parseISO(doc.document_date), 'dd/MM/yy') : format(new Date(doc.created_at), 'dd/MM/yy')}
+                                            </span>
+                                            {address && (
+                                                <div className="w-full flex items-center justify-start gap-1 sm:gap-1.5 mt-0.5 sm:mt-1 text-[13px] sm:text-lg font-bold text-slate-500 dark:text-slate-400 tracking-tight overflow-hidden leading-tight">
+                                                    <Building2 className="w-[13px] h-[13px] sm:w-[18px] sm:h-[18px] shrink-0" />
+                                                    <span className="truncate flex-1 block pt-[1px]" title={address}>{address}</span>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Center Column: Title & Type Details */}
+                                        <div className="flex flex-col items-center justify-center min-w-0 overflow-hidden px-1">
+                                            <h4 className="text-[15px] sm:text-lg font-extrabold text-foreground truncate w-full text-center tracking-tight block" title={mainCategoryLabel}>
+                                                {mainCategoryLabel}
+                                            </h4>
+                                            
+                                            <div className="flex flex-col items-center w-full min-w-0 mt-0.5 gap-0.5">
+                                                {doc.isMediaGroup ? (
+                                                    <span className="text-[9.5px] sm:text-[11px] font-semibold text-muted-foreground truncate w-full text-center opacity-80 block">
+                                                        {(doc.category === 'photo' || doc.category === 'video' || doc.category === 'media') 
+                                                            ? `${doc.photoCount} ${lang === 'he' ? 'תמונות' : 'Photos'}, ${doc.videoCount} ${lang === 'he' ? 'וידאו' : 'Videos'}`
+                                                            : `${doc.groupedDocs?.length || 0} ${lang === 'he' ? 'קבצים' : 'Files'}`}
+                                                    </span>
+                                                ) : isReceipt ? (
+                                                    // For Receipts: payment method
+                                                    <span className="bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-neutral-700 px-1.5 py-0.5 rounded-full text-[8.5px] sm:text-[10px] font-bold tracking-wide border truncate max-w-[95%] opacity-90 block text-center mt-0.5" title={(() => {
+                                                        if (doc.issue_type) {
+                                                            const translated = t(doc.issue_type as any);
+                                                            return translated !== doc.issue_type && translated ? translated : doc.issue_type;
+                                                        }
+                                                        if (doc.description) {
+                                                            const match = doc.description.match(/אמצעי תשלום:\s*([^\s|]+(?:\s+[^\s|]+)*)/);
+                                                            if (match && match[1]) return match[1].trim();
+                                                        }
+                                                        return doc.title || doc.file_name;
+                                                    })()}>
+                                                        {(() => {
+                                                            if (doc.issue_type) {
+                                                                const translated = t(doc.issue_type as any);
+                                                                return translated !== doc.issue_type && translated ? translated : doc.issue_type;
+                                                            }
+                                                            if (doc.description) {
+                                                                const match = doc.description.match(/אמצעי תשלום:\s*([^\s|]+(?:\s+[^\s|]+)*)/);
+                                                                if (match && match[1]) return match[1].trim();
+                                                            }
+                                                            return doc.title || doc.file_name;
+                                                        })()}
+                                                    </span>
+                                                ) : isUtility ? (
+                                                    // For Utilities: type of bill
+                                                    <span className="text-[9.5px] sm:text-[11px] font-semibold text-muted-foreground truncate w-full text-center opacity-80 block">
+                                                        {(() => {
+                                                            const rawType = doc.category?.replace('utility_', '');
+                                                            const config = rawType ? getUtilityTypeConfig(rawType) : undefined;
+                                                            if (config) {
+                                                                return lang === 'he' ? config.fallbackHe : config.fallbackEn;
+                                                            }
+                                                            return t(doc.category as any) || doc.category;
+                                                        })()}
+                                                    </span>
+                                                ) : isDocument ? (
+                                                    // For Documents: explicit title user inputted
+                                                    <span className="text-[9.5px] sm:text-[11px] font-semibold text-muted-foreground truncate w-full text-center opacity-80 block" title={doc.title || doc.file_name}>
+                                                        {doc.title || doc.file_name}
+                                                    </span>
+                                                ) : (
+                                                    // Default Subtitle
+                                                    <span className="text-[9.5px] sm:text-[11px] font-semibold text-muted-foreground truncate w-full text-center opacity-80 block" title={doc.title || doc.file_name}>
+                                                        {doc.title || doc.file_name}
+                                                    </span>
+                                                )}
                                             </div>
-                                        ) : (
-                                            <div className="text-xs font-bold text-slate-400 uppercase tracking-tighter">
-                                                {t('noAmount')}
-                                            </div>
-                                        )}
-                                        <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
+                                        </div>
+
+                                        {/* Left Column: Vendor & Amount */}
+                                        <div className="flex flex-col items-end min-w-0 overflow-hidden text-end pl-0.5 sm:pl-0">
+                                            <span className="text-xs sm:text-sm font-bold text-indigo-950 dark:text-indigo-100 leading-tight w-full text-end truncate block min-h-[16px]" title={doc.vendor_name || ''}>
+                                                {doc.vendor_name || (!doc.isMediaGroup && !isReceipt && !isUtility ? '-' : ' ')}
+                                            </span>
+                                            {doc.amount != null ? (
+                                                <div className="flex items-center gap-0.5 text-[11px] sm:text-sm font-black text-emerald-600 dark:text-emerald-400 mt-0.5 sm:mt-1 truncate w-full justify-end">
+                                                    <span className="text-[9px] sm:text-xs opacity-70">₪</span>
+                                                    <span className="truncate block max-w-full" title={doc.amount.toLocaleString()}>{doc.amount.toLocaleString()}</span>
+                                                </div>
+                                            ) : (
+                                                <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-300 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform mt-1 sm:mt-2 shrink-0 block" />
+                                            )}
+                                        </div>
                                     </div>
-                                </button>
-                            ))}
+                                );
+                            });
+                        })()}
                     </div>
                 </div>
             ))}

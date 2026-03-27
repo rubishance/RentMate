@@ -22,12 +22,15 @@ import { FilterDrawer } from '../components/common/FilterDrawer';
 import {
     RotateCcw, X, ArrowUpRight, Plus, CalendarCheck, Search, Filter,
     Layout, Calendar, ChevronRight, CheckCircle2, AlertCircle, RefreshCw, Wallet,
-    Clock, ArrowRight
+    Clock, ArrowRight, Receipt as ReceiptIcon
 } from 'lucide-react';
 import { Card, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
+import { LINKAGE_TYPES, LINKAGE_SUB_TYPES } from "../constants/linkageTypes";
+import { getPaymentStatusConfig } from "../constants/statusConfig";
+import { PAYMENT_METHODS } from '../constants/paymentMethods';
 
 export function Payments() {
     const { t, lang } = useTranslation();
@@ -36,7 +39,7 @@ export function Payments() {
     const [viewStyle, setViewStyle] = useState<'cards' | 'table'>('cards');
     const { get, set, clear } = useDataCache();
     const [payments, setPayments] = useState<any[]>([]);
-    const { indexedAmounts } = useIndexedPayments(payments);
+    const { indexedAmounts, loading: indexingLoading } = useIndexedPayments(payments);
 
     // Auto-repair on mount
     useEffect(() => {
@@ -55,8 +58,10 @@ export function Payments() {
     const [displayMode, setDisplayMode] = useState<'expected' | 'actual' | 'all'>('all');
     const [stats, setStats] = useState({
         monthlyExpected: 0,
+        monthlyIndexedTotal: 0,
         monthlyIndexSum: 0,
         pending: 0,
+        basePending: 0,
         overdue: 0,
         partialDebt: 0,
         contractBreakdown: {} as Record<string, { id: string, name: string, properties: any, monthlyExpected: number, pending: number, isRent: boolean }>
@@ -98,7 +103,6 @@ export function Payments() {
         if (cached) {
             setPayments(cached);
             setLoading(false);
-            calculateStats(cached);
         }
 
         try {
@@ -138,7 +142,6 @@ export function Payments() {
 
                 setPayments(allItems);
                 set(CACHE_KEY, allItems, { persist: true });
-                calculateStats(rentPayments);
             }
         } catch (error) {
             console.error('Error fetching payments:', error);
@@ -156,14 +159,51 @@ export function Payments() {
         setIsDetailsModalOpen(true);
     }
 
+    async function handleQuickApproveFromList(payment: any) {
+        setLoading(true);
+        try {
+            const expectedAmount = payment.displayType === 'rent' && indexedAmounts[payment.id] ? indexedAmounts[payment.id] : payment.amount;
+            const defaultMethod = payment.payment_method || payment.contracts?.payment_method || null;
+
+            const { error } = await supabase
+                .from("payments")
+                .update({
+                    status: "paid",
+                    paid_amount: expectedAmount,
+                    payment_method: defaultMethod,
+                    paid_date: payment.due_date,
+                })
+                .eq("id", payment.id);
+
+            if (error) throw error;
+            
+            // Refresh data
+            fetchPayments();
+            toast.success(t("paymentSaved") || "התשלום עודכן בהצלחה");
+        } catch (error) {
+            console.error("Error quick approving payment:", error);
+            toast.error(t("error") || "שגיאה בעדכון התשלום");
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        if (payments.length > 0) {
+            calculateStats(payments);
+        }
+    }, [payments, indexedAmounts]);
+
     function calculateStats(data: any[]) {
         const now = new Date();
         const yearMonth = format(now, 'yyyy-MM');
         const today = startOfDay(now);
 
-        let monthly = 0;
+        let monthlyBase = 0;
+        let monthlyIndexedTotal = 0;
         let indexSum = 0;
         let pending = 0;
+        let basePending = 0;
         let overdue = 0;
         let partialDebt = 0;
         let contractBreakdown: Record<string, { id: string, name: string, properties: any, monthlyExpected: number, pending: number, isRent: boolean }> = {};
@@ -187,30 +227,35 @@ export function Payments() {
                 };
             }
 
+            const dynamicIndexedAmount = isRent && indexedAmounts[p.id] ? indexedAmounts[p.id] : p.amount;
+            const baseAmount = p.original_amount || p.amount;
+
             // Monthly Expected (Total for this month)
             if (pYearMonth === yearMonth) {
-                monthly += p.amount;
-                if (isRent) contractBreakdown[contractId].monthlyExpected += p.amount;
-                if (p.original_amount && p.amount > p.original_amount) {
-                    indexSum += (p.amount - p.original_amount);
-                }
+                const currentDiff = Math.max(0, dynamicIndexedAmount - baseAmount);
+
+                monthlyBase += baseAmount;
+                monthlyIndexedTotal += dynamicIndexedAmount;
+                indexSum += currentDiff;
+
+                if (isRent) contractBreakdown[contractId].monthlyExpected += dynamicIndexedAmount;
             }
 
             // Pending (Future or Today, not paid)
             if (p.status === 'pending') {
-                pending += p.amount;
-                if (isRent) contractBreakdown[contractId].pending += p.amount;
+                pending += dynamicIndexedAmount;
+                basePending += baseAmount;
+                if (isRent) contractBreakdown[contractId].pending += dynamicIndexedAmount;
             }
 
             // Overdue (Past, not paid/cancelled)
             if (p.status === 'overdue' || (p.status === 'pending' && dueDate < today)) {
-                overdue += p.amount;
+                overdue += dynamicIndexedAmount;
             }
 
             // Partial Debt
             if (p.status === 'paid' && p.paid_amount != null) {
-                const expectedAmount = p.displayType === 'rent' && indexedAmounts[p.id] ? indexedAmounts[p.id] : p.amount;
-                const diff = expectedAmount! - p.paid_amount;
+                const diff = dynamicIndexedAmount! - p.paid_amount;
                 if (diff > 1) {
                     partialDebt += diff;
                 }
@@ -218,9 +263,11 @@ export function Payments() {
         });
 
         setStats({
-            monthlyExpected: monthly,
+            monthlyExpected: monthlyBase, // Legacy prop name, but now stores base
+            monthlyIndexedTotal: monthlyIndexedTotal,
             monthlyIndexSum: indexSum,
             pending: pending,
+            basePending: basePending,
             overdue: overdue,
             partialDebt: partialDebt,
             contractBreakdown: contractBreakdown
@@ -332,88 +379,79 @@ export function Payments() {
         return amount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     };
 
-    const renderPaymentCard = (payment: any, isActionNeeded: boolean) => (
-        <Card
-            key={payment.id}
-            onClick={() => {
-                if (payment.displayType === 'rent') {
-                    setSelectedPayment(payment);
-                    setDetailsModalProps({ editMode: false });
-                    setIsDetailsModalOpen(true);
-                }
-            }}
-            hoverEffect
-            glass
-            className={cn("group p-0 rounded-2xl border-white/5 cursor-pointer", isActionNeeded ? "bg-destructive/5 dark:bg-destructive/10 border-destructive/20" : "")}
-        >
-            <CardContent className="p-4 md:p-6 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-4 md:gap-6 flex-1 min-w-0">
-                    <div className={cn("w-14 h-14 md:w-16 md:h-16 rounded-2xl glass-premium flex flex-col items-center justify-center shrink-0 border border-white/10 group-hover:scale-105 transition-all duration-300", isActionNeeded ? "bg-destructive/10 text-destructive" : "")}>
-                        <span className="text-2xl md:text-3xl font-black leading-none">{format(new Date(payment.due_date), 'dd')}</span>
-                        <span className="text-sm md:text-base font-black uppercase tracking-widest opacity-90 mt-0.5">{format(new Date(payment.due_date), 'MMM', { locale: lang === 'he' ? he : undefined })}</span>
-                    </div>
+    const renderPaymentCard = (payment: any, isActionNeeded: boolean) => {
+        const canApprove = payment.status === 'pending';
+        const isPaid = payment.status === 'paid';
+        const isRent = payment.displayType === 'rent';
 
-                    <div className="flex-1 min-w-0 space-y-1">
-                        <div className="flex items-center gap-3">
-                            <h3 className="text-xl md:text-2xl font-black tracking-tight text-foreground truncate">
-                                {Array.isArray(payment.contracts?.tenants)
-                                    ? (payment.contracts.tenants[0]?.name || t('unnamedTenant'))
-                                    : (payment.contracts?.tenants?.name || t('unnamedTenant'))}
-                            </h3>
-                            <span className={cn(
-                                "text-sm px-3 py-1 rounded-full uppercase font-black tracking-widest border shrink-0",
-                                payment.displayType === 'bill' ? 'bg-primary/10 text-primary border-primary/20' :
-                                    payment.status === 'paid' ? 'bg-success/10 text-success border-success/20' :
-                                        payment.status === 'overdue' ? 'bg-destructive/10 text-destructive border-destructive/20' :
-                                            'bg-warning/10 text-warning border-warning/20'
-                            )}>
-                                {payment.displayType === 'bill' ? t('bills') : t(payment.status)}
-                            </span>
-                        </div>
-                        <p className="text-muted-foreground text-base font-medium opacity-90 truncate">
-                            {payment.contracts?.properties?.address}, {payment.contracts?.properties?.city}
-                        </p>
-                    </div>
+        const tenant = Array.isArray(payment.contracts?.tenants)
+            ? payment.contracts.tenants[0]
+            : payment.contracts?.tenants;
+
+        const property = payment.contracts?.properties || {
+            address: payment.property_address || payment.file_name || payment.title || '',
+            city: payment.property_city || ''
+        };
+
+        return (
+            <div
+                key={payment.id}
+                onClick={() => {
+                    if (isRent) {
+                        setSelectedPayment(payment);
+                        setDetailsModalProps({ editMode: false });
+                        setIsDetailsModalOpen(true);
+                    }
+                }}
+                className={cn(
+                    "bg-white dark:bg-neutral-900 rounded-2xl sm:rounded-[20px] shadow-sm border border-slate-100 dark:border-white/5 p-4 flex items-center justify-between w-full transition-all group overflow-hidden relative",
+                    isRent ? "cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/80 hover:shadow-md" : ""
+                )}
+            >
+                {/* Right Column: Date & Tenant */}
+                <div className="flex flex-col items-start w-[90px] sm:w-[120px] shrink-0">
+                    <span className="text-xl sm:text-2xl font-bold text-indigo-950 dark:text-indigo-100 leading-tight">
+                        {format(new Date(payment.due_date), 'dd/MM/yy')}
+                    </span>
+                    <span className="text-sm font-semibold text-slate-500 dark:text-slate-400 truncate w-full text-right">
+                        {tenant?.name || t('unnamedTenant')}
+                    </span>
                 </div>
 
-                <div className="flex items-center gap-4 md:gap-8">
-                    <div className="text-right hidden sm:block">
-                        <span className="text-base font-black uppercase tracking-widest text-muted-foreground opacity-90 block">{payment.payment_method || '-'}</span>
-                    </div>
-                    <div className="text-right">
-                        <div className="flex flex-col items-end">
-                            <div className="flex items-baseline gap-1 justify-end">
-                                <span className={cn("text-sm md:text-base font-black opacity-40", isActionNeeded ? "text-destructive" : "text-foreground")}>₪</span>
-                                <span className={cn("text-2xl md:text-3xl font-black tracking-tight", isActionNeeded ? "text-destructive" : "text-foreground")}>
-                                    {formatCurrency(payment.paid_amount || payment.amount)}
-                                </span>
-                            </div>
-                            {(() => {
-                                const expectedAmount = payment.displayType === 'rent' && indexedAmounts[payment.id] ? indexedAmounts[payment.id] : payment.amount;
-                                const currentPaidAmount = payment.paid_amount || payment.amount;
-                                const isPaid = payment.status === 'paid';
-                                const diff = currentPaidAmount - expectedAmount!;
+                {/* Center Column: Status Badge */}
+                <div className="flex flex-1 justify-center px-1 sm:px-2 min-w-0">
+                    {!isRent && (
+                        <h3 className="text-xs sm:text-sm font-bold tracking-tight text-foreground truncate min-w-0 mr-2 hidden sm:block">
+                            {payment.title || payment.file_name || t('financeBills')}
+                        </h3>
+                    )}
+                    {(() => {
+                        const config = getPaymentStatusConfig(payment.status);
+                        return (
+                            <span className={cn(
+                                "px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold tracking-wide border whitespace-nowrap",
+                                payment.displayType === 'bill' ? 'bg-primary/10 text-primary border-primary/20' : 
+                                cn(config.bg, config.color, config.border)
+                            )}>
+                                {payment.displayType === 'bill' ? t('bills') :
+                                    isPaid ? t('financeActual') : t('financeExpected')}
+                            </span>
+                        );
+                    })()}
+                </div>
 
-                                return (
-                                    <>
-                                        {payment.displayType === 'rent' && indexedAmounts[payment.id] && (
-                                            <span className="text-sm text-muted-foreground font-medium leading-none mt-1">
-                                                {t('indexed')}: ₪{formatCurrency(indexedAmounts[payment.id]!)}
-                                            </span>
-                                        )}
-                                        {isPaid && Math.abs(diff) > 1 && (
-                                            <span className={cn("text-sm font-black leading-none mt-1", diff > 0 ? "text-success" : "text-destructive")}>
-                                                {t('diff')} {diff > 0 ? '(עודף)' : '(חסר)'}: {diff > 0 ? '+' : ''}{formatCurrency(diff)}
-                                            </span>
-                                        )}
-                                    </>
-                                );
-                            })()}
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                        {payment.status === 'pending' && (
+                {/* Left Column: Amount & Property */}
+                <div className="flex flex-col items-end w-[90px] sm:w-[120px] shrink-0 relative">
+                    <span className="text-xl sm:text-2xl font-bold text-indigo-950 dark:text-indigo-100 leading-tight">
+                        {formatCurrency(payment.paid_amount || payment.amount)}
+                    </span>
+                    <span className="text-sm font-semibold text-slate-500 dark:text-slate-400 truncate w-full text-left rtl:text-right">
+                        {property.address}
+                    </span>
+                    
+                    {/* Quick Approve Button (Replaces Swipe) */}
+                    {canApprove && (
+                        <div className="absolute -top-1 -left-1 sm:-left-3 opacity-0 group-hover:opacity-100 transition-opacity">
                             <Button
                                 size="icon"
                                 variant="ghost"
@@ -421,21 +459,17 @@ export function Payments() {
                                     e.stopPropagation();
                                     handleInstaPay(payment);
                                 }}
-                                className="bg-success/10 hover:bg-success text-success hover:text-white rounded-xl w-10 h-10 md:w-11 md:h-11 shadow-sm"
+                                className="bg-success/10 hover:bg-success text-success hover:text-white rounded-full w-8 h-8 shrink-0 flex items-center justify-center shadow-sm"
                                 title={t('markAsPaid')}
                             >
                                 <CheckCircle2 className="w-5 h-5" />
                             </Button>
-                        )}
-
-                        <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl bg-muted/50 dark:bg-neutral-800 flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
-                            <ArrowRight className={cn("w-4 h-4 transition-transform group-hover:translate-x-0.5", lang === 'he' ? 'rotate-180' : '')} />
                         </div>
-                    </div>
+                    )}
                 </div>
-            </CardContent>
-        </Card>
-    );
+            </div>
+        );
+    };
 
     const renderTable = (paymentsList: any[]) => (
         <div className="overflow-x-auto glass-premium rounded-2xl border border-white/5 shadow-low bg-white/30 dark:bg-neutral-900/30">
@@ -477,18 +511,28 @@ export function Payments() {
                                 {payment.contracts?.properties?.address}
                             </td>
                             <td className="p-6">
-                                <span className={cn(
-                                    "text-xs px-2.5 py-1 rounded-full uppercase font-black tracking-widest border shrink-0 inline-block",
-                                    payment.displayType === 'bill' ? 'bg-primary/10 text-primary border-primary/20' :
-                                        payment.status === 'paid' ? 'bg-success/10 text-success border-success/20' :
-                                            payment.status === 'overdue' ? 'bg-destructive/10 text-destructive border-destructive/20' :
-                                                'bg-warning/10 text-warning border-warning/20'
-                                )}>
-                                    {payment.displayType === 'bill' ? t('bills') : t(payment.status)}
-                                </span>
+                                {(() => {
+                                    const config = getPaymentStatusConfig(payment.status);
+                                    return (
+                                        <span className={cn(
+                                            "text-xs px-2.5 py-1 rounded-full uppercase font-black tracking-widest border shrink-0 inline-block",
+                                            payment.displayType === 'bill' ? 'bg-primary/10 text-primary border-primary/20' : 
+                                            cn(config.bg, config.color, config.border)
+                                        )}>
+                                            {payment.displayType === 'bill' ? t('bills') : t(config.labelKey as any)}
+                                        </span>
+                                    );
+                                })()}
                             </td>
                             <td className="p-6 text-xs font-black uppercase tracking-widest opacity-90">
-                                {payment.payment_method || '-'}
+                                <div className="flex items-center gap-2">
+                                    <span>{payment.payment_method ? t(payment.payment_method) : '-'}</span>
+                                    {payment.receipt_url && (
+                                        <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center shrink-0" title={t('receiptAttached') || 'קבלה מצורפת'}>
+                                            <ReceiptIcon className="w-3.5 h-3.5 text-primary" />
+                                        </div>
+                                    )}
+                                </div>
                             </td>
                             <td className={cn("p-6 font-black text-base flex items-center gap-4", lang === 'he' ? "flex-row-reverse" : "justify-end")}>
                                 {payment.status === 'pending' && (
@@ -583,7 +627,7 @@ export function Payments() {
     }
 
     return (
-        <div className="pt-2 md:pt-8 px-5 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300 w-full max-w-[100vw] overflow-x-hidden">
+        <div className="pt-2 pb-24 md:pb-8 md:pt-8 px-5 space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-300 w-full max-w-[100vw] overflow-x-hidden">
             {/* Header */}
             <div className="flex flex-col gap-6">
                 <div className="flex items-center justify-between gap-4">
@@ -766,14 +810,10 @@ export function Payments() {
                                             <label className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70 block px-2">{t('method')}</label>
                                             <MultiSelect
                                                 placeholder={t('allMethods')}
-                                                options={[
-                                                    { value: 'transfer', label: t('transfer') },
-                                                    { value: 'checks', label: t('check') },
-                                                    { value: 'cash', label: t('cash') },
-                                                    { value: 'bit', label: t('bit') || 'Bit' },
-                                                    { value: 'paybox', label: t('paybox') || 'Paybox' },
-                                                    { value: 'other', label: t('other') || 'Other' }
-                                                ]}
+                                                options={PAYMENT_METHODS.map(pm => ({
+                                                    value: pm.id,
+                                                    label: t(pm.labelKey as any) || pm.labelKey
+                                                }))}
                                                 selected={filters.paymentMethods}
                                                 onChange={(vals) => setFilters(prev => ({ ...prev, paymentMethods: vals }))}
                                             />
@@ -846,32 +886,56 @@ export function Payments() {
                 </div>
             )}
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
-                <Card glass className="rounded-2xl border shadow-low bg-primary/5 border-primary/10">
-                    <CardContent className="p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-8 h-full">
-                        <div className="flex items-center gap-8">
-                            <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center border border-white/10 shrink-0">
-                                <CalendarCheck className="w-8 h-8 text-primary" />
-                            </div>
-                            <div>
-                                <span className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground opacity-90 mb-1 block">{t('monthlyExpected')}</span>
-                                <div className="flex items-baseline gap-1">
-                                    <span className="text-sm font-black text-foreground opacity-40">₪</span>
-                                    <span className="text-4xl font-black text-foreground tracking-tighter">{stats.monthlyExpected.toLocaleString()}</span>
-                                </div>
-                                {stats.monthlyIndexSum > 0 && (
-                                    <div className="mt-2 inline-flex items-center gap-2 px-2 py-1 bg-success/10 text-success rounded-full border border-success/20 text-xs font-bold uppercase tracking-wide">
-                                        <ArrowUpRight className="w-3 h-3" />
-                                        + ₪{stats.monthlyIndexSum.toLocaleString()} {t('indexSum')}
+            {/* Stats Unified Card */}
+            <Card glass className="rounded-2xl border shadow-low bg-primary/5 border-primary/10 overflow-hidden">
+                <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x md:divide-x-reverse divide-primary/10">
+                    {/* Expected Income Section */}
+                    <div className="flex-[1.2] py-4 px-5 lg:px-6 lg:py-5 flex flex-col justify-center relative">
+                        {/* Decorative glow */}
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+                        
+                        <div className="flex flex-col w-full relative z-10 gap-1.5 sm:gap-2">
+                            <h3 className="text-sm font-black text-center uppercase tracking-[0.2em] text-foreground w-full">
+                                {t('monthlyExpectedTitle') || 'צפי חודשי'}
+                            </h3>
+                            <div className="flex w-full items-start justify-between gap-2">
+                                <div className="flex flex-col gap-0.5">
+                                    <span className="text-xs sm:text-sm font-black uppercase tracking-[0.2em] text-muted-foreground opacity-90 block">
+                                        {t('withoutLinkage') || 'ללא הצמדה'}
+                                    </span>
+                                    <div className="flex items-baseline">
+                                        {indexingLoading ? (
+                                            <Skeleton className="h-8 w-24 rounded-lg bg-black/10 dark:bg-white/10" />
+                                        ) : (
+                                            <span className="text-2xl sm:text-3xl lg:text-4xl font-black text-foreground tracking-tighter">{(stats.monthlyExpected || 0).toLocaleString()}</span>
+                                        )}
                                     </div>
-                                )}
+                                </div>
+                                
+                                <div className="flex flex-col text-left rtl:text-right items-end sm:items-start gap-0.5">
+                                    <span className="text-xs sm:text-sm font-black uppercase tracking-[0.2em] text-muted-foreground opacity-90 block">
+                                        {t('includingLinkage') || 'כולל הצמדה'}
+                                    </span>
+                                    <div className="flex items-baseline">
+                                        {indexingLoading ? (
+                                            <Skeleton className="h-8 w-24 rounded-lg bg-primary/20 dark:bg-primary/20" />
+                                        ) : (
+                                            <span className="text-2xl sm:text-3xl lg:text-4xl font-black text-primary tracking-tighter">{(stats.monthlyIndexedTotal || 0).toLocaleString()}</span>
+                                        )}
+                                    </div>
+                                    {!indexingLoading && stats.monthlyIndexSum > 0 && (
+                                        <div className="mt-1 inline-flex items-center gap-1 text-success text-[10px] sm:text-xs font-bold uppercase tracking-wide">
+                                            <ArrowUpRight className="w-2.5 h-2.5" />
+                                            + {(stats.monthlyIndexSum || 0).toLocaleString()} {t('indexSum')}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
 
                         {/* Per-contract Breakdown */}
                         {Object.values(stats.contractBreakdown).filter(c => c.isRent && c.monthlyExpected > 0).length > 1 && (
-                            <div className="w-full md:w-auto md:min-w-[40%] bg-primary/5 rounded-2xl p-4 border border-primary/10">
+                            <div className="w-full mt-4 bg-primary/5 rounded-2xl p-4 border border-primary/10 relative z-10">
                                 <div className="text-xs font-black uppercase tracking-widest text-primary/60 mb-3">{t('contractBreakdown') || 'Breakdown'}</div>
                                 <div className="space-y-2">
                                     {Object.values(stats.contractBreakdown)
@@ -883,40 +947,62 @@ export function Payments() {
                                                     <span className="text-xs text-muted-foreground truncate">{contract.properties?.address}</span>
                                                 </div>
                                                 <div className="text-xs font-black text-primary dark:text-primary shrink-0">
-                                                    ₪{contract.monthlyExpected.toLocaleString()}
+                                                    {indexingLoading ? <Skeleton className="h-4 w-12 bg-primary/20" /> : `₪${contract.monthlyExpected.toLocaleString()}`}
                                                 </div>
                                             </div>
                                         ))}
                                 </div>
                             </div>
                         )}
-                    </CardContent>
-                </Card>
+                    </div>
 
-                <Card glass className="rounded-2xl border shadow-low bg-warning/5 border-warning/10">
-                    <CardContent className="p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-8 h-full">
-                        <div className="flex items-center gap-8">
-                            <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center border border-white/10 shrink-0">
-                                <Clock className="w-8 h-8 text-orange-500" />
-                            </div>
-                            <div>
-                                <span className="text-xs font-black uppercase tracking-[0.2em] text-warning/60 mb-1 block">{t('pending')}</span>
-                                <div className="flex items-baseline gap-1">
-                                    <span className="text-sm font-black text-warning opacity-40">₪</span>
-                                    <span className="text-4xl font-black text-warning tracking-tighter">{stats.pending.toLocaleString()}</span>
-                                </div>
-                                {stats.partialDebt > 1 && (
-                                    <div className="mt-2 inline-flex items-center gap-2 px-2 py-1 bg-destructive/10 text-destructive rounded-full border border-destructive/20 text-xs font-bold uppercase tracking-wide">
-                                        <ArrowUpRight className="w-3 h-3" />
-                                        + ₪{Math.round(stats.partialDebt).toLocaleString()} {t('remainingDebt')} = ₪{Math.round(stats.pending + stats.partialDebt).toLocaleString()}
+                    {/* Pending Section */}
+                    <div className="flex-1 py-4 px-5 lg:px-6 lg:py-5 flex flex-col justify-center relative bg-white/40 dark:bg-black/20">
+                        {/* Decorative glow */}
+                        <div className="absolute bottom-0 left-0 w-32 h-32 bg-orange-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none" />
+
+                        <div className="flex flex-col w-full relative z-10 gap-1.5 sm:gap-2">
+                            <h3 className="text-sm font-black text-center uppercase tracking-[0.2em] text-foreground w-full">
+                                {t('totalPendingToPay') || 'סה״כ ממתין לתשלום'}
+                            </h3>
+                            <div className="flex items-start justify-between w-full gap-2">
+                                <div className="flex flex-col gap-0.5">
+                                    <span className="text-xs sm:text-sm font-black uppercase tracking-[0.2em] text-muted-foreground opacity-90 block">
+                                        {t('withoutLinkage') || 'ללא הצמדה'}
+                                    </span>
+                                    <div className="flex items-baseline">
+                                        {indexingLoading ? (
+                                            <Skeleton className="h-8 w-24 rounded-lg bg-black/10 dark:bg-white/10" />
+                                        ) : (
+                                            <span className="text-2xl sm:text-3xl lg:text-4xl font-black text-foreground tracking-tighter">{(stats.basePending || 0).toLocaleString()}</span>
+                                        )}
                                     </div>
-                                )}
+                                </div>
+                                
+                                <div className="flex flex-col text-left rtl:text-right items-end sm:items-start gap-0.5">
+                                    <span className="text-xs sm:text-sm font-black uppercase tracking-[0.2em] text-muted-foreground opacity-90 block">
+                                        {t('includingLinkage') || 'כולל הצמדה'}
+                                    </span>
+                                    <div className="flex items-baseline">
+                                        {indexingLoading ? (
+                                            <Skeleton className="h-8 w-24 rounded-lg bg-warning/20 dark:bg-warning/20" />
+                                        ) : (
+                                            <span className="text-2xl sm:text-3xl lg:text-4xl font-black text-warning tracking-tighter">{stats.pending.toLocaleString()}</span>
+                                        )}
+                                    </div>
+                                    {!indexingLoading && stats.partialDebt > 1 && (
+                                        <div className="mt-1 inline-flex items-center gap-1 text-destructive text-[10px] sm:text-xs font-bold uppercase tracking-wide">
+                                            <ArrowUpRight className="w-2.5 h-2.5" />
+                                            + {Math.round(stats.partialDebt).toLocaleString()} {t('remainingDebt')}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
 
-                        {/* Per-contract Breakdown */}
+                        {/* Per-contract Breakdown (Pending) */}
                         {Object.values(stats.contractBreakdown).filter(c => c.isRent && c.pending > 0).length > 1 && (
-                            <div className="w-full md:w-auto md:min-w-[40%] bg-warning/5 rounded-2xl p-4 border border-warning/10">
+                            <div className="w-full mt-6 bg-warning/5 rounded-2xl p-4 border border-warning/10 relative z-10">
                                 <div className="text-xs font-black uppercase tracking-widest text-warning/60 mb-3">{t('contractBreakdown') || 'Breakdown'}</div>
                                 <div className="space-y-2">
                                     {Object.values(stats.contractBreakdown)
@@ -928,21 +1014,21 @@ export function Payments() {
                                                     <span className="text-xs text-muted-foreground truncate">{contract.properties?.address}</span>
                                                 </div>
                                                 <div className="text-xs font-black text-warning shrink-0">
-                                                    ₪{contract.pending.toLocaleString()}
+                                                    {indexingLoading ? <Skeleton className="h-4 w-12 bg-warning/20" /> : `₪${contract.pending.toLocaleString()}`}
                                                 </div>
                                             </div>
                                         ))}
                                 </div>
                             </div>
                         )}
-                    </CardContent>
-                </Card>
-            </div>
+                    </div>
+                </div>
+            </Card>
 
 
 
             {/* Payments List */}
-            <div className="space-y-4 pt-4">
+            <div className="space-y-4 -mt-2">
                 {sortedFilteredPayments.length === 0 ? (
                     <div className="py-40 text-center space-y-8">
                         <div className="w-24 h-24 glass-premium rounded-[2.5rem] flex items-center justify-center mx-auto shadow-minimal">
@@ -958,7 +1044,7 @@ export function Payments() {
                             {t('addFirstPayment')}
                         </Button>
                     </div>
-                ) : (
+                ) : viewStyle === 'table' ? (
                     <div className="space-y-12">
                         {actionNeededPayments.length > 0 && (
                             <div className="space-y-4 relative">
@@ -968,7 +1054,7 @@ export function Payments() {
                                     </div>
                                     <h2 className="text-xl font-black text-destructive tracking-tight">{t('actionNeeded') || 'Action Needed'}</h2>
                                 </div>
-                                {viewStyle === 'table' ? renderTable(actionNeededPayments) : actionNeededPayments.map(p => renderPaymentCard(p, true))}
+                                {renderTable(actionNeededPayments)}
                             </div>
                         )}
 
@@ -982,9 +1068,16 @@ export function Payments() {
                                         <h2 className="text-xl font-black text-foreground tracking-tight">{t('upcomingAndPaid') || 'Upcoming & Paid'}</h2>
                                     </div>
                                 )}
-                                {viewStyle === 'table' ? renderTable(regularPayments) : renderCardsWithDividers(regularPayments)}
+                                {renderTable(regularPayments)}
                             </div>
                         )}
+                    </div>
+                ) : (
+                    <div className="space-y-3 sm:space-y-4 pt-2">
+                        {sortedFilteredPayments.map(p => {
+                            const isActionNeeded = p.status === 'overdue' || (p.status === 'pending' && new Date(p.due_date) < nowForRender);
+                            return renderPaymentCard(p, isActionNeeded);
+                        })}
                     </div>
                 )}
             </div>
@@ -1009,9 +1102,9 @@ export function Payments() {
                     setSelectedPayment(null);
                     setDetailsModalProps({ editMode: false });
                 }}
-                onSuccess={() => {
+                onSuccess={async () => {
                     clear();
-                    fetchPayments();
+                    await fetchPayments();
                 }}
             />
             <BulkCheckModal

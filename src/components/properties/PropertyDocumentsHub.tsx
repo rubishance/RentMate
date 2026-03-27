@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { FileText, Image as ImageIcon, Wrench, FileStack, Banknote, ChevronRight, Folder as FolderIcon, ChevronLeft } from 'lucide-react';
+import { ChevronRight, ChevronLeft } from 'lucide-react';
+import { DOCUMENT_CATEGORIES } from '../../constants/documentCategories';
 import type { Property } from '../../types/database';
 import { MediaGallery } from './MediaGallery';
 import { UtilityBillsManager } from './UtilityBillsManager';
@@ -7,6 +8,7 @@ import { MaintenanceRecords } from './MaintenanceRecords';
 import { MiscDocuments } from './MiscDocuments';
 import { ChecksManager } from './ChecksManager';
 import { ProtocolsManager } from './ProtocolsManager';
+import { ReceiptsManager } from './ReceiptsManager';
 import { useTranslation } from '../../hooks/useTranslation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../../lib/utils';
@@ -20,7 +22,7 @@ interface PropertyDocumentsHubProps {
     autoOpenUpload?: boolean;
 }
 
-type TabType = 'menu' | 'media' | 'utilities' | 'maintenance' | 'documents' | 'checks' | 'protocols';
+type TabType = 'menu' | 'media' | 'utilities' | 'maintenance' | 'documents' | 'checks' | 'protocols' | 'receipts';
 
 export function PropertyDocumentsHub({ property, readOnly, requestedTab, autoOpenUpload }: PropertyDocumentsHubProps) {
     const { t, lang } = useTranslation();
@@ -32,48 +34,14 @@ export function PropertyDocumentsHub({ property, readOnly, requestedTab, autoOpe
         }
     }, [requestedTab]);
 
-    const categories = [
-        {
-            id: 'media' as TabType,
-            label: t('mediaStorage'),
-            icon: ImageIcon,
-            color: 'text-indigo-600 dark:text-indigo-400',
-            bg: 'bg-indigo-50 dark:bg-indigo-900/20',
-            description: lang === 'he' ? 'מדיה' : 'Photos and videos'
-        },
-        {
-            id: 'utilities' as TabType,
-            label: t('utilitiesStorage'),
-            icon: FileText,
-            color: 'text-amber-600 dark:text-amber-400',
-            bg: 'bg-amber-50 dark:bg-amber-900/20',
-            description: lang === 'he' ? 'חשבונות חשמל, מים, ארנונה' : 'Electricity, water, tax bills'
-        },
-        {
-            id: 'documents' as TabType,
-            label: t('documentsStorage'),
-            icon: FileStack,
-            color: 'text-emerald-600 dark:text-emerald-400',
-            bg: 'bg-emerald-50 dark:bg-emerald-900/20',
-            description: lang === 'he' ? 'ביטוחים, נסח טאבו, שונות' : 'Insurance, deeds, misc'
-        },
-        {
-            id: 'checks' as TabType,
-            label: t('checksStorage'),
-            icon: Banknote,
-            color: 'text-pink-600 dark:text-pink-400',
-            bg: 'bg-pink-50 dark:bg-pink-900/20',
-            description: lang === 'he' ? 'צילומי צ\'קים לשכירות וביטחון' : 'Rent & security checks'
-        },
-        {
-            id: 'protocols' as TabType,
-            label: (lang === 'he' ? 'פרוטוקולי מסירה' : 'Protocols & Handovers'),
-            icon: FolderIcon,
-            color: 'text-violet-600 dark:text-violet-400',
-            bg: 'bg-violet-50 dark:bg-violet-900/20',
-            description: lang === 'he' ? 'פרוטוקולים חתומים ומאושרים' : 'Signed delivery protocols'
-        },
-    ];
+    const categories = DOCUMENT_CATEGORIES.map(cat => ({
+        id: cat.id as TabType,
+        label: t(cat.labelKey) || (lang === 'he' ? cat.fallbackHe : cat.fallbackEn),
+        icon: cat.icon,
+        color: cat.color,
+        bg: cat.bg,
+        description: t(cat.labelKey + 'Desc') || (lang === 'he' ? cat.descFallbackHe : cat.descFallbackEn)
+    }));
 
     const renderContent = () => {
         switch (activeTab) {
@@ -82,6 +50,7 @@ export function PropertyDocumentsHub({ property, readOnly, requestedTab, autoOpe
             case 'documents': return <MiscDocuments property={property} readOnly={readOnly} autoOpenUpload={autoOpenUpload} />;
             case 'checks': return <ChecksManager property={property} readOnly={readOnly} />;
             case 'protocols': return <ProtocolsManager property={property} readOnly={readOnly} />;
+            case 'receipts': return <ReceiptsManager property={property} readOnly={readOnly} />;
             default: return null;
         }
     };
@@ -187,7 +156,7 @@ export function PropertyDocumentsHub({ property, readOnly, requestedTab, autoOpe
                         </div>
 
                         {/* Content Area */}
-                        <div className="flex-1 overflow-y-auto min-h-0 bg-background/50 dark:bg-neutral-900/30 rounded-3xl border border-slate-200/40 dark:border-neutral-800/40 p-1 mb-4 pb-24">
+                        <div className="flex-1 overflow-y-auto min-h-0 bg-background/50 dark:bg-neutral-900/30 rounded-2xl border border-slate-200/40 dark:border-neutral-800/40 p-1 mb-4 pb-24">
                             {renderContent()}
                         </div>
                     </motion.div>

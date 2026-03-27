@@ -71,7 +71,7 @@ export const Modal: React.FC<ModalProps> = ({
                         className={cn(
                             "relative w-full bg-window flex flex-col overflow-hidden",
                             "h-[100dvh] max-h-[100dvh] rounded-none border-0", // Mobile: Full screen
-                            "sm:h-auto sm:max-h-[85vh] sm:rounded-3xl sm:border sm:border-border/50 sm:shadow-premium", // Desktop: Standard modal
+                            "sm:h-auto sm:max-h-[85vh] sm:rounded-2xl sm:border sm:border-border/50 sm:shadow-premium", // Desktop: Standard modal
                             sizes[size],
                             modeless && "pointer-events-auto",
                             className

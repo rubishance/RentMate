@@ -90,6 +90,12 @@ const AdminDashboard = () => {
         lastAutomationRun: null,
         topCities: []
     });
+    
+    // Real OpenAI Stats
+    const [dailyAiCost, setDailyAiCost] = useState<number | null>(null);
+    const [monthlyAiCost, setMonthlyAiCost] = useState<number | null>(null);
+    const [availableAiCredits, setAvailableAiCredits] = useState<number | null>(null);
+
     const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
     const [newUsers, setNewUsers] = useState<NewUser[]>([]);
     const [recentAiConvs, setRecentAiConvs] = useState<AiConversation[]>([]);
@@ -102,6 +108,17 @@ const AdminDashboard = () => {
     const fetchDashboardData = async () => {
         try {
             setLoading(true);
+
+            // Fetch Real AI usage simultaneously
+            supabase.functions.invoke('admin-openai-usage').then(({ data, error }) => {
+                if (!error && data) {
+                    setDailyAiCost(data.dailyCost || 0);
+                    setMonthlyAiCost(data.monthlyCost || 0);
+                    setAvailableAiCredits(data.availableCredits ?? null);
+                } else {
+                    console.error("Error fetching OpenAI usage:", error);
+                }
+            });
 
             // Use the admin stats function to bypass RLS
             const { data: statsData, error: statsError } = await supabase.rpc('get_admin_stats');
@@ -151,7 +168,9 @@ const AdminDashboard = () => {
         { name: 'Total Contracts', value: stats.totalContracts, icon: FileText, color: 'text-primary', bg: 'bg-primary-50' },
         { name: 'Total Revenue', value: stats.totalRevenue ? `₪${stats.totalRevenue.toLocaleString()}` : '₪0', icon: Wallet, color: 'text-blue-600', bg: 'bg-blue-50' },
         { name: 'Active Users', value: stats.activeUsers, icon: Activity, color: 'text-orange-600', bg: 'bg-orange-50' },
-        { name: 'AI Usage Cost', value: stats.totalAiCost ? `$${stats.totalAiCost.toFixed(2)}` : '$0.00', icon: Cpu, color: 'text-primary', bg: 'bg-primary/10' },
+        { name: 'Today\'s AI Cost', value: dailyAiCost !== null ? `$${dailyAiCost.toFixed(2)}` : 'Loading...', icon: Cpu, color: 'text-primary', bg: 'bg-primary/10' },
+        { name: 'Monthly AI Cost', value: monthlyAiCost !== null ? `$${monthlyAiCost.toFixed(2)}` : 'Loading...', icon: Activity, color: 'text-purple-600', bg: 'bg-purple-50' },
+        { name: 'AI Credits Left', value: availableAiCredits !== null ? `$${availableAiCredits.toFixed(2)}` : 'Tracking Only', icon: Wallet, color: 'text-green-600', bg: 'bg-green-50' },
         { name: 'Autopilot Decisions', value: stats.totalAutomatedActions, icon: Sparkles, color: 'text-amber-600', bg: 'bg-amber-50' },
     ];
 

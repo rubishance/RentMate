@@ -60,7 +60,7 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
                 <div className="absolute inset-0 blur-3xl opacity-20 bg-brand-500 rounded-full scale-150" />
 
                 {/* Icon Container */}
-                <div className="relative glass-premium rounded-3xl p-6 shadow-premium hover:scale-105 transition-transform duration-300 border border-white/20 dark:border-white/10">
+                <div className="relative glass-premium rounded-2xl p-6 shadow-premium hover:scale-105 transition-transform duration-300 border border-white/20 dark:border-white/10">
                     <AlertTriangle className={`h-16 w-16 ${is404 ? 'text-amber-500' : 'text-destructive'}`} />
                 </div>
             </div>

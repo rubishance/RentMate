@@ -97,6 +97,8 @@ export const payments = pgTable('payments', {
     paid_date: timestamp('paid_date'),
     payment_method: paymentMethodEnum('payment_method'),
     reference: text('reference'),
+    details: jsonb('details'),
+    receipt_url: text('receipt_url'),
     created_at: timestamp('created_at').defaultNow(),
 });
 
