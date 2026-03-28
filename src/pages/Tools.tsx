@@ -15,18 +15,6 @@ export function Tools() {
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-primary/10 dark:bg-primary/5 blur-[100px] rounded-full pointer-events-none -z-10" />
             
             <div className="flex flex-col gap-6">
-                {/* Header */}
-                <div className="space-y-1">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 dark:bg-primary/10 backdrop-blur-md rounded-full border border-primary/10 shadow-sm mb-1">
-                        <TrendingUp className="w-3 h-3 text-primary" />
-                        <span className="text-xs font-black uppercase tracking-widest text-primary dark:text-primary">
-                            {isRtl ? 'מרכז המחשבונים' : 'Calculators Hub'}
-                        </span>
-                    </div>
-                    <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground leading-tight truncate lowercase">
-                        {t('calculator')}
-                    </h1>
-                </div>
 
                 {/* Content Area */}
                 <AnimatePresence mode="wait">

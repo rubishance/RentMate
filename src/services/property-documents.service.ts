@@ -171,8 +171,9 @@ class PropertyDocumentsService {
         breakdown: {
             media: number;
             utilities: number;
-            maintenance: number;
+            checks: number;
             documents: number;
+            receipts: number;
         };
     }> {
         const { data: { user } } = await supabase.auth.getUser();
@@ -193,6 +194,24 @@ class PropertyDocumentsService {
         const quotaMB = (profile as any)?.subscription_plans?.max_storage_mb || 100;
         const quotaBytes = (quotaMB === -1 || quotaMB === null) ? Infinity : quotaMB * 1024 * 1024;
 
+        const { data: checksAndReceiptsDocs } = await supabase
+            .from('property_documents')
+            .select('category, file_size')
+            .eq('user_id', user.id)
+            .in('category', ['receipt', 'checks', 'check']);
+
+        let receipts = 0;
+        let checks = 0;
+
+        checksAndReceiptsDocs?.forEach(doc => {
+            if (doc.category === 'receipt') receipts += (doc.file_size || 0);
+            if (doc.category === 'checks' || doc.category === 'check') checks += (doc.file_size || 0);
+        });
+
+        const rawDocs = usage?.documents_bytes || 0;
+        const maintenanceBytes = usage?.maintenance_bytes || 0;
+        const documents = Math.max(0, rawDocs + maintenanceBytes - receipts - checks);
+
         return {
             totalBytes: usage?.total_bytes || 0,
             fileCount: usage?.file_count || 0,
@@ -203,8 +222,9 @@ class PropertyDocumentsService {
             breakdown: {
                 media: usage?.media_bytes || 0,
                 utilities: usage?.utilities_bytes || 0,
-                maintenance: usage?.maintenance_bytes || 0,
-                documents: usage?.documents_bytes || 0
+                checks,
+                documents,
+                receipts
             }
         };
     }
@@ -215,8 +235,9 @@ class PropertyDocumentsService {
     async getCategoryCounts(): Promise<{
         media: number;
         utilities: number;
-        maintenance: number;
+        checks: number;
         documents: number;
+        receipts: number;
     }> {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('Not authenticated');
@@ -227,7 +248,28 @@ class PropertyDocumentsService {
             });
 
             if (error) throw error;
-            return data;
+            const { data: checksAndReceiptsDocs } = await supabase
+                .from('property_documents')
+                .select('category')
+                .eq('user_id', user.id)
+                .in('category', ['receipt', 'checks', 'check']);
+            
+            let receipts = 0;
+            let checks = 0;
+
+            checksAndReceiptsDocs?.forEach(doc => {
+                if (doc.category === 'receipt') receipts++;
+                if (doc.category === 'checks' || doc.category === 'check') checks++;
+            });
+
+            const documents = Math.max(0, (data.documents || 0) + (data.maintenance || 0) - receipts - checks);
+            
+            return {
+                ...data,
+                checks,
+                documents,
+                receipts
+            };
         } catch (err) {
             console.warn('RPC get_property_document_counts failed, using fallback', err);
 
@@ -239,12 +281,13 @@ class PropertyDocumentsService {
 
             if (error) throw error;
 
-            const counts = { media: 0, utilities: 0, maintenance: 0, documents: 0 };
+            const counts = { media: 0, utilities: 0, checks: 0, documents: 0, receipts: 0 };
             data?.forEach((doc: any) => {
                 if (doc.category === 'photo' || doc.category === 'video') counts.media++;
                 else if (doc.category.startsWith('utility_')) counts.utilities++;
-                else if (doc.category === 'maintenance') counts.maintenance++;
-                else counts.documents++;
+                else if (doc.category === 'checks' || doc.category === 'check') counts.checks++;
+                else if (doc.category === 'receipt') counts.receipts++;
+                else counts.documents++; // maintenance defaults to documents here
             });
 
             return counts;

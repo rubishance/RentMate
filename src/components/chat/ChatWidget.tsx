@@ -133,55 +133,13 @@ export function ChatWidget() {
 
             if (uploadError) throw uploadError;
 
-            // Trigger AI Bill Analysis (Background task)
-            setAnalyzingBill(true);
+            // Trigger AI General Document Analysis (Backend task)
             setIsUploading(false); // File uploaded, allow new inputs while AI thinks
             if (fileInputRef.current) fileInputRef.current.value = '';
 
-            const runAnalysis = async () => {
-                let analysisResults: ExtractedBillData | null = null;
-                try {
-                    // Pass properties list to AI for context matching
-                    analysisResults = await BillAnalysisService.analyzeBill(file, properties);
-
-                    if (analysisResults && (analysisResults.confidence ?? 1) > 0.6) {
-                        setScannedBill({
-                            ...analysisResults,
-                            fileName: file.name,
-                            file: file
-                        });
-
-                        // Auto-select property if confidence is high and we have a match
-                        if (analysisResults?.propertyId && (analysisResults.confidence ?? 1) > 0.8) {
-                            const matchedProp = properties.find(p => p.id === analysisResults?.propertyId);
-                            if (matchedProp) {
-                                setSelectedPropertyId(matchedProp.id);
-                            }
-                        }
-
-                        // Notify user if chat is closed
-                        if (!isOpenRef.current) {
-                            success(isRtl ? 'ניתוח החשבונית הסתיים. פתח את הצ׳אט לצפייה בתוצאות.' : 'Bill analysis complete. Open chat to view results.');
-                        }
-                    } else if (!isOpenRef.current) {
-                        showError(isRtl ? 'ניסיון ניתוח החשבונית נכשל. פתח את הצ׳אט וננסה שוב.' : 'Bill analysis failed. Open chat to try again.');
-                    }
-                } catch (err) {
-                    console.error('Bill analysis failed:', err);
-                    if (!isOpenRef.current) {
-                        showError(isRtl ? 'שגיאה בניתוח החשבונית.' : 'Error analyzing bill.');
-                    }
-                } finally {
-                    setAnalyzingBill(false);
-                }
-
-                // Send message with file info AND analysis results
-                // This allows Renty to see the results before responding
-                await sendBotMessage(`Uploaded file: ${file.name}`, { name: file.name, path }, analysisResults);
-            };
-
-            // Fire and forget: do not await it here so the UI unblocks
-            runAnalysis();
+            // Send message with file info to the AI
+            // The AI will natively read the document from the Storage URL using gpt-4o OCR
+            await sendBotMessage(`צורף מסמך/תמונה: ${file.name}`, { name: file.name, path });
 
         } catch (err: unknown) {
             console.error('Upload error:', err);

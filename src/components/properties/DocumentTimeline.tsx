@@ -152,14 +152,15 @@ export function DocumentTimeline({ documents, onDocumentClick, loading, property
                                             
                                             <div className="flex flex-col items-center w-full min-w-0 mt-0.5 gap-0.5">
                                                 {doc.isMediaGroup ? (
-                                                    <span className="text-[9.5px] sm:text-[11px] font-semibold text-muted-foreground truncate w-full text-center opacity-80 block">
-                                                        {(doc.category === 'photo' || doc.category === 'video' || doc.category === 'media') 
-                                                            ? `${doc.photoCount} ${lang === 'he' ? 'תמונות' : 'Photos'}, ${doc.videoCount} ${lang === 'he' ? 'וידאו' : 'Videos'}`
-                                                            : `${doc.groupedDocs?.length || 0} ${lang === 'he' ? 'קבצים' : 'Files'}`}
+                                                    <span className="text-[15px] sm:text-lg font-medium text-muted-foreground truncate w-full text-center tracking-tight block" title={doc.title && !/\.(jpe?g|png|mp4|mov|webp|heic)$/i.test(doc.title) ? doc.title : undefined}>
+                                                        {(doc.title && !/\.(jpe?g|png|mp4|mov|webp|heic)$/i.test(doc.title)) ? doc.title : 
+                                                            (doc.category === 'photo' || doc.category === 'video' || doc.category === 'media') 
+                                                                ? `${doc.photoCount} ${lang === 'he' ? 'תמונות' : 'Photos'}, ${doc.videoCount} ${lang === 'he' ? 'וידאו' : 'Videos'}`
+                                                                : `${doc.groupedDocs?.length || 0} ${lang === 'he' ? 'קבצים' : 'Files'}`}
                                                     </span>
                                                 ) : isReceipt ? (
-                                                    // For Receipts: payment method
-                                                    <span className="bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-neutral-700 px-1.5 py-0.5 rounded-full text-[8.5px] sm:text-[10px] font-bold tracking-wide border truncate max-w-[95%] opacity-90 block text-center mt-0.5" title={(() => {
+                                                    // For Receipts: payment method without a pill, enlarged to match main title
+                                                    <span className="text-[15px] sm:text-lg font-medium text-muted-foreground truncate w-full text-center tracking-tight block" title={(() => {
                                                         if (doc.issue_type) {
                                                             const translated = t(doc.issue_type as any);
                                                             return translated !== doc.issue_type && translated ? translated : doc.issue_type;
@@ -184,7 +185,7 @@ export function DocumentTimeline({ documents, onDocumentClick, loading, property
                                                     </span>
                                                 ) : isUtility ? (
                                                     // For Utilities: type of bill
-                                                    <span className="text-[9.5px] sm:text-[11px] font-semibold text-muted-foreground truncate w-full text-center opacity-80 block">
+                                                    <span className="text-[15px] sm:text-lg font-medium text-muted-foreground truncate w-full text-center tracking-tight block">
                                                         {(() => {
                                                             const rawType = doc.category?.replace('utility_', '');
                                                             const config = rawType ? getUtilityTypeConfig(rawType) : undefined;
@@ -196,12 +197,12 @@ export function DocumentTimeline({ documents, onDocumentClick, loading, property
                                                     </span>
                                                 ) : isDocument ? (
                                                     // For Documents: explicit title user inputted
-                                                    <span className="text-[9.5px] sm:text-[11px] font-semibold text-muted-foreground truncate w-full text-center opacity-80 block" title={doc.title || doc.file_name}>
+                                                    <span className="text-[15px] sm:text-lg font-medium text-muted-foreground truncate w-full text-center tracking-tight block" title={doc.title || doc.file_name}>
                                                         {doc.title || doc.file_name}
                                                     </span>
                                                 ) : (
                                                     // Default Subtitle
-                                                    <span className="text-[9.5px] sm:text-[11px] font-semibold text-muted-foreground truncate w-full text-center opacity-80 block" title={doc.title || doc.file_name}>
+                                                    <span className="text-[15px] sm:text-lg font-medium text-muted-foreground truncate w-full text-center tracking-tight block" title={doc.title || doc.file_name}>
                                                         {doc.title || doc.file_name}
                                                     </span>
                                                 )}

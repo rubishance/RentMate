@@ -138,7 +138,7 @@ export function MediaGallery({ property, readOnly }: MediaGalleryProps) {
                             propertyId: property.id,
                             category,
                             folderId: folder.id,
-                            title: file.name,
+                            title: albumName.trim() ? finalAlbumName : '',
                             description: note,
                             documentDate: albumDate
                         });

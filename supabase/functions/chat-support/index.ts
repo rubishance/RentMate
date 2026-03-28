@@ -1043,18 +1043,13 @@ ROLE & TONE:
   - If a tool returns an error saying "AI access to personal data is disabled", inform the user that they must enable "AI Data Access" in **Settings > Privacy** to proceed.
   - NEVER assume access to data outside what the tools provide.
 
-CAPABILITIES:
-1. **Knowledge Base**: Answer app-related questions using context.
-2. **Data Management**: Search for contracts, summarize financials, and find tenant details using tools.
-3. **UI Automation**: Prepare forms for adding properties, tenants, contracts, or payments.
-4. **Linkage Calculations**: Calculate rent updates based on Israeli indices.
+CAPABILITIES & SOCRATIC LOGIC (CRITICAL):
+1. **Adding Contracts / Properties / Payments**: When a user wants to add an entity (e.g. "I signed a new tenant Bob for 5000 NIS" or uploads a contract document), you MUST extract the details.
+2. **Socratic Questioning**: If CRITICAL information is missing (like Rent Amount, Property, or Dates for a contract), YOU MUST NOT CALL THE \`prepare_\` TOOL YET. Instead, politely ask the user for the missing details in the chat.
+3. **Execution**: ONLY once you have sufficient details, you call the corresponding \`prepare_...\` tool (e.g., \`prepare_add_contract\`). This will instantly open a perfectly pre-filled form for the user to review and save. This provides a magical "Minimum Friction" experience.
 4. **Extraction Accuracy**: 
    - When adding a property, ALWAYS split Hebrew addresses into \`city\` (e.g., תל אביב) and \`address\` (street and number, e.g., הרצל 10).
-   - Extract extra details like rooms (חדרים), size (מ"ר), and features (parking, balcony, etc.) if mentioned.
-5. **Clarification Logic**:
-   - If the user wants to add a property/contract but CRITICAL information (like city/address or tenant name) is missing, ASK for it before calling the "prepare_" tool.
-   - If you have enough to start but some secondary details are missing, call the tool with what you have and tell the user they can finish the rest in the wizard.
-6. **Document Organization**: Move uploaded files to property-specific folders using \`organize_document\`.
+5. **Document Organization**: Move uploaded files to property-specific folders using \`organize_document\` IF requested.
 
 DIRECTIONS:
 - **USE THE APP FOR CALCULATIONS:** If the user asks to calculate the CPI index or performs other tasks that have dedicated features in the app, DO NOT perform the calculation or task directly. Instead, refer them to use the app's feature (e.g., "You can easily calculate the CPI index using our built-in Calculator located in the main menu."). Explain briefly where to find it.
@@ -1094,21 +1089,52 @@ ${knowledgeBase}`;
 
         // Build messages for OpenAI
         const recentMessages = messages.slice(-10); // Keep last 5 turns to reduce context bloat
+        
+        // Process messages to inject image URLs for native OCR
+        const processedMessages = [];
+        for (const msg of recentMessages) {
+            let fullText = msg.hiddenContext ? `${msg.content}\n\n${msg.hiddenContext}` : msg.content;
+            
+            // Check for file storage paths injected by the frontend widget
+            const pathRegex = /Storage Path:\s*([^ ]+)/;
+            const match = fullText.match(pathRegex);
+            
+            if (match && match[1]) {
+                const storagePath = match[1].replace(/\.$/, ''); // clean trailing dot
+                // Generate short-lived signed URL for GPT-4o OCR
+                const { data } = await supabase.storage.from('secure_documents').createSignedUrl(storagePath, 3600);
+                
+                if (data?.signedUrl) {
+                    processedMessages.push({
+                        role: msg.role,
+                        content: [
+                            { type: "text", text: fullText },
+                            { type: "image_url", image_url: { url: data.signedUrl } }
+                        ]
+                    });
+                    continue; // Skip the standard text push
+                }
+            }
+            
+            // Default text-only message
+            processedMessages.push({
+                role: msg.role,
+                content: fullText
+            });
+        }
+
         const openaiMessages = [
             {
                 role: "system",
                 content: systemPrompt
             },
-            ...recentMessages.map((msg: any) => ({
-                role: msg.role,
-                content: msg.hiddenContext ? `${msg.content}\n\n${msg.hiddenContext}` : msg.content
-            }))
+            ...processedMessages
         ];
 
         // Initial API call with function tools
         let apiUrl = "https://api.openai.com/v1/chat/completions";
         let apiKey = OPENAI_API_KEY;
-        let model = "gpt-4o-mini";
+        let model = "gpt-4o"; // Upgraded to gpt-4o for high-accuracy OCR validation
 
         if (!OPENAI_API_KEY && GEMINI_API_KEY) {
             apiUrl = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";

@@ -43,7 +43,7 @@ export function ChecksManager({ property, readOnly }: ChecksManagerProps) {
         setLoading(true);
         try {
             // Find "Checks" folder
-            const folders = await propertyDocumentsService.getFolders(property.id, 'other');
+            const folders = await propertyDocumentsService.getFolders(property.id, 'checks');
             const folder = folders.find(f => f.name === FOLDER_NAME);
             setChecksFolder(folder || null);
 
@@ -89,7 +89,7 @@ export function ChecksManager({ property, readOnly }: ChecksManagerProps) {
             if (!folderId) {
                 const folder = await propertyDocumentsService.createFolder({
                     property_id: property.id,
-                    category: 'other',
+                    category: 'checks',
                     name: FOLDER_NAME,
                     folder_date: format(new Date(), 'yyyy-MM-dd'),
                     description: 'Checks and Payment Proofs'
@@ -112,7 +112,7 @@ export function ChecksManager({ property, readOnly }: ChecksManagerProps) {
 
                     return propertyDocumentsService.uploadDocument(fileToUpload, {
                         propertyId: property.id,
-                        category: 'other',
+                        category: 'checks',
                         folderId,
                         title: stagedFile.file.name,
                         description: stagedFile.description,

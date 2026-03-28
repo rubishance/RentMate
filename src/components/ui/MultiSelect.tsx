@@ -53,7 +53,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
             <Listbox value={selected} onChange={onChange} multiple>
                 <div className="relative mt-1">
                     <Listbox.Button className={cn(
-                        "relative w-full cursor-pointer rounded-xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-white/10 py-3 pl-3 pr-10 text-left shadow-sm focus:outline-none focus-visible:border-primary sm:text-sm transition-all duration-300 min-h-[48px]",
+                        "relative w-full cursor-pointer rounded-xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-white/10 py-3 rtl:pr-3 rtl:pl-10 pl-3 pr-10 rtl:text-right text-left shadow-sm focus:outline-none focus-visible:border-primary sm:text-sm transition-all duration-300 min-h-[48px]",
                         error ? "border-destructive" : "hover:border-primary/50"
                     )}>
                         <div className="flex flex-wrap gap-2">
@@ -77,7 +77,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                                 ))
                             )}
                         </div>
-                        <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                        <span className="pointer-events-none absolute inset-y-0 rtl:left-0 rtl:right-auto right-0 flex items-center rtl:pl-2 pr-2">
                             <ChevronsUpDown
                                 className="h-5 w-5 text-muted-foreground"
                                 aria-hidden="true"
@@ -95,7 +95,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                                 <Listbox.Option
                                     key={optionIdx}
                                     className={({ active }) =>
-                                        `relative cursor-default select-none py-2.5 pl-10 pr-4 transition-colors ${active ? 'bg-primary/10 text-primary-900 dark:text-primary-foreground' : 'text-foreground'
+                                        `relative cursor-default select-none py-2.5 rtl:pr-10 rtl:pl-4 rtl:text-right pl-10 pr-4 text-left transition-colors ${active ? 'bg-primary/10 text-primary-900 dark:text-primary-foreground' : 'text-foreground'
                                         }`
                                     }
                                     value={option.value}
@@ -106,7 +106,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
                                                 {option.label}
                                             </span>
                                             {selected ? (
-                                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
+                                                <span className="absolute inset-y-0 rtl:right-0 rtl:left-auto left-0 flex items-center rtl:pr-3 pl-3 text-primary">
                                                     <Check className="h-4 w-4" aria-hidden="true" />
                                                 </span>
                                             ) : null}

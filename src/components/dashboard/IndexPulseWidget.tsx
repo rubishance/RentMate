@@ -268,7 +268,7 @@ export function IndexPulseWidget({ settings, onUpdateSettings, isExpanded: exter
                                             </span>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-3xl font-black text-foreground leading-none">
+                                            <p className="text-lg font-black text-foreground leading-tight">
                                                 {group.latestValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
                                             </p>
                                         </div>

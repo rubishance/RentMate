@@ -21,6 +21,7 @@ export interface DatePickerProps {
     error?: string | boolean;
     readonly?: boolean;
     variant?: 'default' | 'inline' | 'compact' | 'bento';
+    hideIcon?: boolean;
 }
 
 export function DatePicker({
@@ -34,7 +35,8 @@ export function DatePicker({
     className,
     error,
     readonly,
-    variant = 'default'
+    variant = 'default',
+    hideIcon = false
 }: DatePickerProps) {
     const [isOpen, setIsOpen] = React.useState(false);
     const [month, setMonth] = React.useState<Date | undefined>(value || new Date());
@@ -81,14 +83,16 @@ export function DatePicker({
                         readonly && "cursor-default opacity-60 bg-muted/20 hover:border-border hover:bg-muted/20"
                     )}
                 >
-                    <div className={cn("flex items-center", variant === 'default' ? "gap-3" : "gap-2")}>
-                        <div className={cn(
-                            "transition-colors flex items-center justify-center shrink-0",
-                            variant === 'bento' ? "w-12 h-12 rounded-2xl bg-primary/10 text-primary group-hover:bg-primary/20" :
-                            (variant === 'default' ? "w-10 h-10 rounded-xl bg-primary/10 text-primary group-hover:bg-primary/20" : "w-8 h-8 rounded-xl bg-primary/10 text-primary group-hover:bg-primary/20")
-                        )}>
-                            <CalendarIcon className={variant === 'bento' ? "w-5 h-5 ml-0.5" : variant === 'default' ? "w-5 h-5" : "w-4 h-4"} />
-                        </div>
+                    <div className={cn("flex items-center", variant === 'default' && !hideIcon ? "gap-3" : "gap-2")}>
+                        {!hideIcon && (
+                            <div className={cn(
+                                "transition-colors flex items-center justify-center shrink-0",
+                                variant === 'bento' ? "w-12 h-12 rounded-2xl bg-primary/10 text-primary group-hover:bg-primary/20" :
+                                (variant === 'default' ? "w-10 h-10 rounded-xl bg-primary/10 text-primary group-hover:bg-primary/20" : "w-8 h-8 rounded-xl bg-primary/10 text-primary group-hover:bg-primary/20")
+                            )}>
+                                <CalendarIcon className={variant === 'bento' ? "w-5 h-5 ml-0.5" : variant === 'default' ? "w-5 h-5" : "w-4 h-4"} />
+                            </div>
+                        )}
                         <span className={cn(
                             variant === 'bento' ? "text-xl translate-y-[1px]" :
                             (variant === 'default' ? "text-sm font-medium" : (variant === 'compact' ? "text-xs font-semibold" : "text-xs font-bold")),

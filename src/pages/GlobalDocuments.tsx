@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from '../hooks/useTranslation';
 import { propertyDocumentsService } from '../services/property-documents.service';
 import { PropertyDocument } from '../types/database';
@@ -33,11 +34,23 @@ export default function GlobalDocuments() {
     const [loading, setLoading] = useState(true);
     const [selectedPropertyId, setSelectedPropertyId] = useState<string>('all');
     const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
+    const [showFilters, setShowFilters] = useState(false);
     
     // Using simple states for modals
     const [selectedDocument, setSelectedDocument] = useState<GlobalDocument | null>(null);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (location.state?.action === 'upload') {
+            setIsUploadModalOpen(true);
+            // Clear state so it doesn't reopen on subsequent re-renders
+            navigate(location.pathname, { replace: true, state: {} });
+        }
+    }, [location.state?.action, navigate, location.pathname]);
 
     const { get } = useDataCache();
     const [allProperties, setAllProperties] = useState<Property[]>(get<Property[]>('properties_list') || []);
@@ -97,33 +110,51 @@ export default function GlobalDocuments() {
     ];
 
     return (
-        <div className="pt-2 pb-24 md:pb-8 md:pt-4 px-5 space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-300 w-full max-w-full overflow-x-hidden min-h-[calc(100vh-100px)] flex flex-col">
-            {/* Header */}
-            <div className="flex flex-col gap-6">
-                <div className="flex items-center justify-between gap-4">
-                    <div className="space-y-1 overflow-hidden">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 dark:bg-primary/10 backdrop-blur-md rounded-full border border-primary/10 shadow-sm mb-1">
-                            <FileText className="w-3 h-3 text-primary" />
-                            <span className="text-sm font-black uppercase tracking-widest text-primary dark:text-primary">
-                                {lang === 'he' ? 'סקירת מסמכים' : 'Documents Overview'}
-                            </span>
-                        </div>
-                        <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground leading-tight truncate lowercase">
-                            {lang === 'he' ? 'ניהול מסמכים' : 'Document Hub'}
-                        </h1>
-                    </div>
-                    
-                    <Button
-                        onClick={() => setIsUploadModalOpen(true)}
-                        className="h-14 w-14 rounded-2xl p-0 shrink-0 bg-primary text-primary-foreground shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center"
-                        title={lang === 'he' ? 'העלאת מסמך' : 'Upload Document'}
+        <div className="pt-2 pb-24 md:pb-8 md:pt-4 px-5 gap-2 md:gap-4 animate-in fade-in slide-in-from-bottom-6 duration-300 w-full max-w-full overflow-x-hidden min-h-[calc(100vh-100px)] flex flex-col">
+            {/* Floating Action Button - FIXED so it never moves */}
+            <div className={cn(
+                "fixed z-[60]",
+                lang === 'he' ? 'left-5' : 'right-5',
+                "top-[88px] md:top-[144px]"
+            )}>
+                <Button
+                    onClick={() => setIsUploadModalOpen(true)}
+                    className="h-14 w-14 rounded-2xl p-0 shrink-0 bg-primary text-primary-foreground shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center"
+                    title={lang === 'he' ? 'העלאת מסמך' : 'Upload Document'}
+                >
+                    <Plus className="w-7 h-7" />
+                </Button>
+            </div>
+            
+            {/* Header placeholder */}
+            <div className="flex flex-col gap-3 md:gap-4 w-full">
+                <div className="flex items-center justify-end gap-4">
+                    <div className="h-14 w-14 shrink-0 opacity-0 pointer-events-none" />
+                </div>
+
+                {/* Storage Usage Widget */}
+                <div className="animate-in fade-in duration-500 delay-100 w-full">
+                    <StorageUsageWidget />
+                </div>
+                
+                {/* Toggle Filters Button */}
+                <div className="flex justify-center w-full">
+                    <button
+                        onClick={() => setShowFilters(!showFilters)}
+                        className={`text-sm font-bold flex items-center gap-2 px-4 py-1.5 rounded-xl transition-all ${
+                            showFilters 
+                                ? 'bg-primary text-primary-foreground shadow-md' 
+                                : 'text-muted-foreground hover:text-primary bg-background0/5 dark:bg-white/5 border border-border/10 hover:border-primary/20'
+                        }`}
                     >
-                        <Plus className="w-7 h-7" />
-                    </Button>
+                        <Filter className="w-4 h-4" />
+                        {lang === 'he' ? 'מסננים' : 'Filters'}
+                    </button>
                 </div>
 
                 {/* Filters Area */}
-                <div className={`grid gap-3 sm:gap-4 w-full ${allProperties.length > 0 ? 'grid-cols-2 md:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2'}`}>
+                {showFilters && (
+                    <div className={`grid gap-3 sm:gap-4 w-full animate-in fade-in slide-in-from-top-2 duration-300 ${allProperties.length > 0 ? 'grid-cols-2 md:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2'}`}>
                     {allProperties.length > 0 && (
                         <div className="space-y-1.5">
                             <label className="text-xs font-bold text-muted-foreground ml-1">
@@ -185,6 +216,7 @@ export default function GlobalDocuments() {
                         </button>
                     </div>
                 </div>
+                )}
             </div>
 
 
@@ -219,10 +251,6 @@ export default function GlobalDocuments() {
                 </div>
             )}
 
-            {/* Storage Usage Widget */}
-            <div className="mt-4 animate-in fade-in duration-500 delay-100 mb-8 md:mb-0">
-                <StorageUsageWidget isExpanded={true} />
-            </div>
 
             <DocumentDetailsModal
                 isOpen={isDetailsModalOpen}

@@ -54,7 +54,6 @@ export function Payments() {
 
     const [loading, setLoading] = useState(true);
     const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('asc');
-    const [periodFilter, setPeriodFilter] = useState<'all' | '3m' | '6m' | '1y' | 'next3m' | 'next6m' | 'next1y' | 'currentWindow'>('all');
     const [displayMode, setDisplayMode] = useState<'expected' | 'actual' | 'all'>('all');
     const [stats, setStats] = useState({
         monthlyExpected: 0,
@@ -75,11 +74,11 @@ export function Payments() {
     const [showFilters, setShowFilters] = useState(false);
     const [filters, setFilters] = useState({
         tenantIds: [] as string[],
-        propertyIds: [] as string[],
+        propertyId: 'all',
         startDate: '',
         endDate: '',
         paymentMethods: [] as string[],
-        contractStatus: ['active'] as string[]
+        contractStatus: 'active'
     });
 
     useEffect(() => {
@@ -281,8 +280,8 @@ export function Payments() {
         if (displayMode === 'expected' && p.status !== 'pending' && p.status !== 'overdue') return false;
         if (displayMode === 'actual' && p.status !== 'paid') return false;
 
-        if (filters.contractStatus && filters.contractStatus.length > 0) {
-            if (p.contracts && !filters.contractStatus.includes(p.contracts.status)) return false;
+        if (filters.contractStatus && filters.contractStatus !== 'all') {
+            if (p.contracts && p.contracts.status !== filters.contractStatus) return false;
         }
 
         if (filters.tenantIds.length > 0) {
@@ -295,9 +294,9 @@ export function Payments() {
             if (!matches) return false;
         }
 
-        if (filters.propertyIds.length > 0) {
+        if (filters.propertyId && filters.propertyId !== 'all') {
             const propertyId = p.contracts?.properties?.id || p.property_id;
-            if (!filters.propertyIds.includes(propertyId)) return false;
+            if (propertyId !== filters.propertyId) return false;
         }
 
         if (filters.paymentMethods.length > 0 && !filters.paymentMethods.includes(p.payment_method)) return false;
@@ -305,24 +304,7 @@ export function Payments() {
         if (filters.startDate && p.due_date < filters.startDate) return false;
         if (filters.endDate && p.due_date > filters.endDate) return false;
 
-        if (periodFilter !== 'all') {
-            const dueDate = new Date(p.due_date);
-            const now = startOfDay(new Date());
 
-            if (periodFilter === '3m' || periodFilter === '6m' || periodFilter === '1y') {
-                const months = periodFilter === '3m' ? 3 : periodFilter === '6m' ? 6 : 12;
-                const threshold = subMonths(now, months);
-                if (isBefore(dueDate, threshold) || isAfter(dueDate, now)) return false;
-            } else if (periodFilter === 'next3m' || periodFilter === 'next6m' || periodFilter === 'next1y') {
-                const months = periodFilter === 'next3m' ? 3 : periodFilter === 'next6m' ? 6 : 12;
-                const threshold = addMonths(now, months);
-                if (isAfter(dueDate, threshold) || isBefore(dueDate, now)) return false;
-            } else if (periodFilter === 'currentWindow') {
-                const start = subMonths(now, 1);
-                const end = addMonths(now, 3);
-                if (isBefore(dueDate, start) || isAfter(dueDate, end)) return false;
-            }
-        }
 
         return true;
     });
@@ -353,13 +335,12 @@ export function Payments() {
     const resetFilters = () => {
         setFilters({
             tenantIds: [],
-            propertyIds: [],
+            propertyId: 'all',
             startDate: '',
             endDate: '',
             paymentMethods: [],
-            contractStatus: ['active']
+            contractStatus: 'active'
         });
-        setPeriodFilter('all');
         setDisplayMode('all');
     };
 
@@ -629,20 +610,19 @@ export function Payments() {
     return (
         <div className="pt-2 pb-24 md:pb-8 md:pt-8 px-5 space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-300 w-full max-w-[100vw] overflow-x-hidden">
             {/* Header */}
+            {/* Header */}
             <div className="flex flex-col gap-6">
-                <div className="flex items-center justify-between gap-4">
-                    <div className="space-y-1 overflow-hidden">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 dark:bg-primary/10 backdrop-blur-md rounded-full border border-primary/10 shadow-sm mb-1">
-                            <CalendarCheck className="w-3 h-3 text-primary" />
-                            <span className="text-xs font-black uppercase tracking-widest text-primary dark:text-primary">
-                                {t('financialOverview')}
-                            </span>
-                        </div>
-                        <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground leading-tight truncate lowercase">
-                            {t('payments')}
-                        </h1>
-                    </div>
-
+                <div className="flex items-center justify-end gap-4 w-full">
+                    {/* Placeholder for layout */}
+                    <div className="h-14 w-14 shrink-0 opacity-0 pointer-events-none" />
+                </div>
+                
+                {/* Floating Action Button - FIXED so it never moves */}
+                <div className={cn(
+                    "fixed z-[60]",
+                    lang === 'he' ? 'left-5' : 'right-5',
+                    "top-[88px] md:top-[144px]"
+                )}>
                     <Button
                         onClick={() => setIsAddModalOpen(true)}
                         className="h-14 w-14 rounded-2xl p-0 shrink-0 bg-primary text-primary-foreground shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center"
@@ -653,26 +633,7 @@ export function Payments() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <div className="flex p-1 bg-background0/5 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-slate-500/10 w-full sm:w-fit overflow-x-auto no-scrollbar snap-x">
-                        {[
-                            { id: 'expected', label: t('financeExpected') || 'Expected' },
-                            { id: 'actual', label: t('financeActual') || 'Actual' },
-                            { id: 'all', label: t('all') || 'Both' }
-                        ].map((tab) => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setDisplayMode(tab.id as any)}
-                                className={cn(
-                                    "flex-1 sm:flex-none px-4 sm:px-6 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 snap-center whitespace-nowrap",
-                                    displayMode === tab.id
-                                        ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
-                                        : "text-muted-foreground hover:text-foreground"
-                                )}
-                            >
-                                {tab.label}
-                            </button>
-                        ))}
-                    </div>
+                        {/* displayMode toggle removed - relocated to hidden filters */}
 
                     <div className="flex items-center gap-3 w-full sm:w-auto">
                         <div className="hidden sm:flex p-1 bg-background0/5 dark:bg-white/5 backdrop-blur-md rounded-2xl border border-slate-500/10 h-12">
@@ -717,26 +678,17 @@ export function Payments() {
                         </div>
 
                         <div className="relative flex-1 sm:flex-none">
-                            <Button
-                                variant="primary"
-                                noEffects
+                            <button
                                 onClick={() => setShowFilters(!showFilters)}
-                                className="h-12 px-6 rounded-2xl flex items-center justify-center gap-2 w-full font-bold shadow-none"
+                                className={`text-sm font-bold flex items-center justify-center gap-2 px-6 h-12 rounded-2xl transition-all w-full ${
+                                    showFilters 
+                                        ? 'bg-primary text-primary-foreground shadow-md' 
+                                        : 'text-muted-foreground hover:text-primary bg-background0/5 dark:bg-white/5 border border-border/10 hover:border-primary/20'
+                                }`}
                             >
-                                <Filter className="w-5 h-5" />
-                                <span>{t('filters') || 'Filters'}</span>
-                            </Button>
-                            {(periodFilter !== 'all' || filters.tenantIds.length > 0 || filters.propertyIds.length > 0 || filters.paymentMethods.length > 0 || filters.startDate || filters.endDate || !filters.contractStatus.includes('active') || filters.contractStatus.length !== 1) && (
-                                <div className="absolute top-[calc(100%+0.5rem)] left-0 w-full flex justify-center z-10">
-                                    <button
-                                        onClick={resetFilters}
-                                        className="text-xs font-black uppercase tracking-widest text-primary hover:opacity-80 flex items-center gap-1.5 transition-opacity whitespace-nowrap bg-background0/80 backdrop-blur-md px-2 py-1 rounded-xl border border-primary/10 shadow-sm"
-                                    >
-                                        <RotateCcw className="w-3 h-3" />
-                                        {t('resetFilters') || 'Reset'}
-                                    </button>
-                                </div>
-                            )}
+                                <Filter className="w-4 h-4" />
+                                {lang === 'he' ? 'מסננים' : 'Filters'}
+                            </button>
                         </div>
 
                         <Button
@@ -756,7 +708,7 @@ export function Payments() {
                 {showFilters && (
                     <motion.div
                         initial={{ height: 0, opacity: 0, marginBottom: 0 }}
-                        animate={{ height: 'auto', opacity: 1, marginBottom: 48 }}
+                        animate={{ height: 'auto', opacity: 1, marginBottom: 0 }}
                         exit={{ height: 0, opacity: 0, marginBottom: 0 }}
                         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                         className="overflow-visible"
@@ -766,22 +718,26 @@ export function Payments() {
                                 <div className="flex flex-col gap-6">
                                     <div className="flex justify-between items-center -mb-2">
                                         <h3 className="text-sm font-black uppercase tracking-widest text-foreground">{t('filters') || 'Filters'}</h3>
+                                        {(displayMode !== 'all' || filters.tenantIds.length > 0 || filters.propertyId !== 'all' || filters.paymentMethods.length > 0 || filters.startDate || filters.endDate || filters.contractStatus !== 'active') && (
+                                            <button
+                                                onClick={resetFilters}
+                                                className="text-xs font-black uppercase tracking-widest text-primary hover:opacity-80 flex items-center gap-1.5 transition-opacity whitespace-nowrap bg-background0/80 backdrop-blur-md px-2 py-1 rounded-xl border border-primary/10 shadow-sm"
+                                            >
+                                                <RotateCcw className="w-3 h-3" />
+                                                {t('resetFilters') || 'Reset'}
+                                            </button>
+                                        )}
                                     </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                                    <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
                                         <div className="space-y-2 min-w-0">
-                                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70 block px-2">{t('timePeriod')}</label>
+                                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70 block px-2">{t('status')} {t('payments') || 'Payment'}</label>
                                             <Select
-                                                value={periodFilter}
-                                                onChange={(v: any) => setPeriodFilter(v)}
+                                                value={displayMode}
+                                                onChange={(v: any) => setDisplayMode(v)}
                                                 options={[
-                                                    { value: 'all', label: t('allTime') },
-                                                    { value: '3m', label: t('last3Months') },
-                                                    { value: '6m', label: t('last6Months') },
-                                                    { value: '1y', label: t('lastYear') },
-                                                    { value: 'next3m', label: t('next3Months') || 'Next 3 Months' },
-                                                    { value: 'next6m', label: t('next6Months') || 'Next 6 Months' },
-                                                    { value: 'next1y', label: t('nextYear') || 'Next Year' },
-                                                    { value: 'currentWindow', label: t('currentWindow') || 'Current Window' }
+                                                    { value: 'all', label: t('all') || 'Both' },
+                                                    { value: 'expected', label: t('financeExpected') || 'Expected' },
+                                                    { value: 'actual', label: t('financeActual') || 'Actual' }
                                                 ]}
                                             />
                                         </div>
@@ -798,11 +754,13 @@ export function Payments() {
 
                                         <div className="space-y-2 min-w-0">
                                             <label className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70 block px-2">{t('asset')}</label>
-                                            <MultiSelect
-                                                placeholder={t('allAssets')}
-                                                options={uniqueProperties.map((p: any) => ({ value: p.id, label: p.address }))}
-                                                selected={filters.propertyIds}
-                                                onChange={(vals) => setFilters(prev => ({ ...prev, propertyIds: vals }))}
+                                            <Select
+                                                value={filters.propertyId}
+                                                onChange={(val: any) => setFilters(prev => ({ ...prev, propertyId: val }))}
+                                                options={[
+                                                    { value: 'all', label: t('allAssets') || 'All Assets' },
+                                                    ...uniqueProperties.map((p: any) => ({ value: p.id, label: p.address }))
+                                                ]}
                                             />
                                         </div>
 
@@ -821,42 +779,47 @@ export function Payments() {
 
                                         <div className="space-y-2 min-w-0">
                                             <label className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70 block px-2">{t('status')} {t('contract')}</label>
-                                            <MultiSelect
-                                                placeholder={t('all')}
+                                            <Select
+                                                value={filters.contractStatus}
+                                                onChange={(val: any) => setFilters(prev => ({ ...prev, contractStatus: val }))}
                                                 options={[
-                                                    { value: 'active', label: t('active') },
-                                                    { value: 'archived', label: t('archived') || 'Archived' },
-                                                    { value: 'completed', label: t('completed') || 'Completed' },
-                                                    { value: 'draft', label: t('draft') || 'Draft' }
+                                                    { value: 'all', label: t('all') || 'All' },
+                                                    { value: 'active', label: t('active') || 'Active' },
+                                                    { value: 'archived', label: t('archived') || 'Archived' }
                                                 ]}
-                                                selected={filters.contractStatus}
-                                                onChange={(vals) => setFilters(prev => ({ ...prev, contractStatus: vals }))}
                                             />
                                         </div>
                                     </div>
 
                                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t border-slate-500/10 w-full">
                                         <div className="flex-1 w-full min-w-0">
-                                            <div className="flex items-center gap-2 bg-background0/5 px-4 py-2 rounded-xl border border-slate-500/10 w-full">
-                                                <DatePicker
-                                                    placeholder={t('from')}
-                                                    value={filters.startDate ? new Date(filters.startDate) : undefined}
-                                                    onChange={(date) => setFilters(prev => ({
-                                                        ...prev,
-                                                        startDate: date ? format(date, 'yyyy-MM-dd') : ''
-                                                    }))}
-                                                    className="bg-transparent border-0 h-auto p-0 flex-1 w-full min-w-0 text-xs font-bold"
-                                                />
-                                                <span className="text-muted-foreground text-xs shrink-0">—</span>
-                                                <DatePicker
-                                                    placeholder={t('to')}
-                                                    value={filters.endDate ? new Date(filters.endDate) : undefined}
-                                                    onChange={(date) => setFilters(prev => ({
-                                                        ...prev,
-                                                        endDate: date ? format(date, 'yyyy-MM-dd') : ''
-                                                    }))}
-                                                    className="bg-transparent border-0 h-auto p-0 flex-1 w-full min-w-0 text-xs font-bold"
-                                                />
+                                            <div className="flex items-start gap-4 w-full">
+                                                <div className="flex-1 space-y-2 min-w-0">
+                                                    <label className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70 block px-2">החל מתאריך</label>
+                                                    <DatePicker
+                                                        placeholder={t('from')}
+                                                        value={filters.startDate ? new Date(filters.startDate) : undefined}
+                                                        onChange={(date) => setFilters(prev => ({
+                                                            ...prev,
+                                                            startDate: date ? format(date, 'yyyy-MM-dd') : ''
+                                                        }))}
+                                                        className="w-full text-xs font-bold"
+                                                        hideIcon
+                                                    />
+                                                </div>
+                                                <div className="flex-1 space-y-2 min-w-0">
+                                                    <label className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-70 block px-2">עד תאריך</label>
+                                                    <DatePicker
+                                                        placeholder={t('to')}
+                                                        value={filters.endDate ? new Date(filters.endDate) : undefined}
+                                                        onChange={(date) => setFilters(prev => ({
+                                                            ...prev,
+                                                            endDate: date ? format(date, 'yyyy-MM-dd') : ''
+                                                        }))}
+                                                        className="w-full text-xs font-bold"
+                                                        hideIcon
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -868,21 +831,9 @@ export function Payments() {
             </AnimatePresence>
 
             {/* Active Filters Summary (Quick remove) */}
-            {(periodFilter !== 'all' || filters.tenantIds.length > 0 || filters.propertyIds.length > 0) && (
+            {(filters.tenantIds.length > 0 || filters.propertyId !== 'all') && (
                 <div className="flex flex-wrap gap-2">
-                    {periodFilter !== 'all' && (
-                        <div className="px-4 py-2 bg-brand-50 dark:bg-brand-900/20 text-brand-600 rounded-full text-xs font-black uppercase flex items-center gap-2 border border-brand-100 dark:border-brand-900/30">
-                            {periodFilter === '3m' ? t('last3Months') :
-                                periodFilter === '6m' ? t('last6Months') :
-                                    periodFilter === '1y' ? t('lastYear') :
-                                        periodFilter === 'next3m' ? (t('next3Months') || 'Next 3 Months') :
-                                            periodFilter === 'next6m' ? (t('next6Months') || 'Next 6 Months') :
-                                                periodFilter === 'next1y' ? (t('nextYear') || 'Next Year') :
-                                                    periodFilter === 'currentWindow' ? (t('currentWindow') || 'Current Window') :
-                                                        t('allTime')}
-                            <X className="w-3 h-3 cursor-pointer" onClick={() => setPeriodFilter('all')} />
-                        </div>
-                    )}
+
                 </div>
             )}
 

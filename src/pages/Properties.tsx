@@ -195,30 +195,24 @@ export function Properties() {
     }
 
     return (
-        <div className="pb-4 pt-2 md:pt-8 px-5 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300 w-full max-w-[100vw] overflow-x-hidden">
-            {/* Header */}
-            <div className="flex flex-row items-end justify-between gap-4 px-0">
-                <div className="space-y-1 overflow-hidden">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 dark:bg-primary/10 backdrop-blur-md rounded-full border border-primary/10 shadow-sm mb-1">
-                        <Home className="w-3 h-3 text-primary" />
-                        <span className="text-xs font-black uppercase tracking-widest text-primary dark:text-primary">
-                            {t('myPortfolio')}
-                        </span>
-                    </div>
-                    <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground leading-tight truncate lowercase">
-                        {t('properties')}
-                    </h1>
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <Button
-                        onClick={handleAdd}
-                        className="h-14 w-14 rounded-2xl p-0 shrink-0 bg-primary text-primary-foreground shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all duration-300"
-                        title={t('addProperty')}
-                    >
-                        <Plus className="w-6 h-6" />
-                    </Button>
-                </div>
+        <div className="pb-4 pt-2 md:pt-8 px-5 space-y-6 animate-in fade-in slide-in-from-bottom-6 duration-300 w-full max-w-[100vw] overflow-x-hidden">
+            {/* Header Action Button - FIXED so it never moves */}
+            <div className={cn(
+                "fixed z-[60]",
+                lang === 'he' ? 'left-5' : 'right-5',
+                "top-[88px] md:top-[144px]"
+            )}>
+                <Button
+                    onClick={handleAdd}
+                    className="h-14 w-14 rounded-2xl p-0 shrink-0 bg-primary text-primary-foreground shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center"
+                    title={t('addProperty')}
+                >
+                    <Plus className="w-6 h-6" />
+                </Button>
+            </div>
+            {/* Layout placeholder */}
+            <div className="flex flex-row items-end justify-end gap-4 px-0 w-full">
+                <div className="h-14 w-14 shrink-0 opacity-0 pointer-events-none" />
             </div>
 
             {/* Empty State */}

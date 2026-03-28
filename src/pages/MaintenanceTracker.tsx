@@ -7,9 +7,10 @@ import { AddMaintenanceModal } from '../components/modals/AddMaintenanceModal';
 import { GlassCard } from '../components/common/GlassCard';
 import { format } from 'date-fns';
 import { Button } from '../components/ui/Button';
+import { cn } from '../lib/utils';
 
 export function MaintenanceTracker() {
-    const { t } = useTranslation();
+    const { t, lang } = useTranslation();
     const [documents, setDocuments] = useState<PropertyDocument[]>([]);
     const [loading, setLoading] = useState(true);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -36,29 +37,24 @@ export function MaintenanceTracker() {
 
     return (
         <div className="pt-2 md:pt-8 px-5 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-300">
-            {/* Header Area */}
-            <div className="flex items-center justify-between gap-4">
-                <div className="space-y-1 overflow-hidden">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-orange-500/5 dark:bg-orange-500/10 backdrop-blur-md rounded-full border border-orange-500/10 shadow-sm mb-1">
-                        <Wrench className="w-3 h-3 text-orange-500" />
-                        <span className="text-xs font-black uppercase tracking-widest text-warning">
-                            {t('maintenanceHub') || 'Maintenance Hub'}
-                        </span>
-                    </div>
-                    <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground leading-tight truncate lowercase">
-                        {t('maintenanceOverview') || 'Portfolio Health'}
-                    </h1>
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <Button
-                        onClick={() => setIsAddModalOpen(true)}
-                        className="h-14 w-14 rounded-2xl p-0 flex items-center justify-center shadow-jewel shrink-0"
-                        title={t('logExpense')}
-                    >
-                        <Plus className="w-7 h-7" />
-                    </Button>
-                </div>
+            {/* Floating Action Button - FIXED so it never moves */}
+            <div className={cn(
+                "fixed z-[60]",
+                lang === 'he' ? 'left-5' : 'right-5',
+                "top-[88px] md:top-[144px]"
+            )}>
+                <Button
+                    onClick={() => setIsAddModalOpen(true)}
+                    className="h-14 w-14 rounded-2xl p-0 flex items-center justify-center shadow-jewel shrink-0"
+                    title={t('logExpense')}
+                >
+                    <Plus className="w-7 h-7" />
+                </Button>
+            </div>
+            
+            {/* Header Area placeholder */}
+            <div className="flex items-center justify-end gap-4 w-full">
+                <div className="h-14 w-14 shrink-0 opacity-0 pointer-events-none" />
             </div>
 
             {/* KPI Cards */}

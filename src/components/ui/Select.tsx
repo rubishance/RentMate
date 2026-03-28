@@ -51,21 +51,21 @@ export const Select: React.FC<SelectProps> = ({
                 <div className="relative mt-1">
                     <Listbox.Button
                         className={cn(
-                            "relative w-full cursor-pointer rounded-xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-white/10 py-3 pl-3 pr-10 text-left shadow-sm focus:outline-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary sm:text-sm transition-all duration-300 min-h-[44px]",
+                            "relative w-full cursor-pointer rounded-xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-white/10 py-3 rtl:pr-3 rtl:pl-10 pl-3 pr-10 rtl:text-right text-left shadow-sm focus:outline-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary sm:text-sm transition-all duration-300 min-h-[44px]",
                             error ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive" : "hover:border-primary/50",
-                            leftIcon ? "pl-10" : "pl-3",
+                            leftIcon ? "rtl:pr-10 pl-10" : "rtl:pr-3 pl-3",
                             disabled && "opacity-50 cursor-not-allowed bg-background dark:bg-neutral-800"
                         )}
                     >
                         {leftIcon && (
-                            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground group-focus-within:text-primary transition-colors">
+                            <span className="pointer-events-none absolute inset-y-0 rtl:left-0 rtl:right-auto left-0 flex items-center rtl:pr-3 pl-3 text-muted-foreground group-focus-within:text-primary transition-colors">
                                 {leftIcon}
                             </span>
                         )}
                         <span className={cn("block truncate", !selectedOption && "text-muted-foreground")}>
                             {selectedOption ? selectedOption.label : placeholder}
                         </span>
-                        <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                        <span className="pointer-events-none absolute inset-y-0 rtl:left-0 rtl:right-auto right-0 flex items-center rtl:pl-2 pr-2">
                             <ChevronDown
                                 className="h-4 w-4 text-muted-foreground"
                                 aria-hidden="true"
@@ -83,7 +83,7 @@ export const Select: React.FC<SelectProps> = ({
                                 <Listbox.Option
                                     key={optionIdx}
                                     className={({ active }) =>
-                                        `relative cursor-pointer select-none py-2.5 pl-10 pr-4 transition-colors ${active ? 'bg-primary/10 text-primary-900 dark:text-primary-foreground' : 'text-foreground'
+                                        `relative cursor-pointer select-none py-2.5 rtl:pr-10 rtl:pl-4 rtl:text-right pl-10 pr-4 text-left transition-colors ${active ? 'bg-primary/10 text-primary-900 dark:text-primary-foreground' : 'text-foreground'
                                         }`
                                     }
                                     value={option.value}
@@ -94,7 +94,7 @@ export const Select: React.FC<SelectProps> = ({
                                                 {option.label}
                                             </span>
                                             {selected ? (
-                                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
+                                                <span className="absolute inset-y-0 rtl:right-0 rtl:left-auto left-0 flex items-center rtl:pr-3 pl-3 text-primary">
                                                     <Check className="h-4 w-4" aria-hidden="true" />
                                                 </span>
                                             ) : null}

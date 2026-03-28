@@ -247,18 +247,19 @@ export function GlobalDocumentUploadModal({ isOpen, onClose, properties, initial
                 } catch (err) {
                     console.warn('Failed to create media folder, proceeding without folderId', err);
                 }
-            } else if (['utilities', 'documents', 'receipt'].includes(selectedCategory) && stagedFiles.length > 1) {
+            } else if (['utilities', 'documents', 'receipt', 'checks'].includes(selectedCategory) && stagedFiles.length > 1) {
                 batchFolderId = `batch_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
             }
             
             const uploadPromises = stagedFiles.map(async (stagedFile) => {
-                const isShared = ['utilities', 'documents', 'receipt'].includes(selectedCategory);
+                const isShared = ['utilities', 'documents', 'receipt', 'media'].includes(selectedCategory);
                 
                 // For shared categories, use shared fields. Otherwise use per-file fields.
                 const finalAmount = isShared ? sharedFields.globalAmount : stagedFile.amount;
-                const finalDate = isShared ? sharedFields.globalDate : stagedFile.documentDate;
+                const finalDate = (isShared && selectedCategory !== 'media') ? sharedFields.globalDate : stagedFile.documentDate;
                 const baseDesc = stagedFile.description;
-                const finalTitle = isShared && sharedFields.title ? sharedFields.title : stagedFile.file.name;
+                // If media, use shared title if exists, otherwise empty (so we don't spam individual file names to DB for media).
+                const finalTitle = (isShared && sharedFields.title) ? sharedFields.title : (selectedCategory === 'media' ? '' : stagedFile.file.name);
 
                 // Format metadata into description for robust saving of non-native DB fields
                 let metaDataString = '';
@@ -413,12 +414,15 @@ export function GlobalDocumentUploadModal({ isOpen, onClose, properties, initial
                             </div>
                         </div>
 
-                        {/* Shared Fields (For Utilities, Documents, Receipts) */}
-                        {['utilities', 'documents', 'receipt'].includes(selectedCategory) && (
+                        {/* Shared Fields (For Utilities, Documents, Receipts, Media) */}
+                        {/* Shared Fields (For Utilities, Documents, Receipts, Media, Checks) */}
+                        {['utilities', 'documents', 'receipt', 'media', 'checks'].includes(selectedCategory) && (
                             <div className="space-y-3 bg-white/5 dark:bg-neutral-900 p-4 rounded-xl border border-border/50 shadow-sm mt-4">
                                 <h4 className="text-sm font-bold text-foreground">
                                     {selectedCategory === 'utilities' ? (lang === 'he' ? 'פרטי החשבון (יחול על כל הקבצים)' : 'Utility Details') :
                                      selectedCategory === 'receipt' ? (lang === 'he' ? 'פרטי אסמכתא' : 'Receipt Details') :
+                                     selectedCategory === 'media' ? (lang === 'he' ? 'פרטי המדיה (יחול על כל הקבצים)' : 'Media Details') :
+                                     selectedCategory === 'checks' ? (lang === 'he' ? 'פרטי הצ\'קים (יחול על כל הקבצים)' : 'Check Details') :
                                      (lang === 'he' ? 'פרטי המסמכים (יחול על הכל)' : 'Document Details')}
                                 </h4>
                                 
@@ -475,10 +479,10 @@ export function GlobalDocumentUploadModal({ isOpen, onClose, properties, initial
                                         </>
                                     )}
 
-                                    {selectedCategory === 'documents' && (
+                                    {(selectedCategory === 'documents' || selectedCategory === 'media') && (
                                         <div className="col-span-2">
-                                            <label className="text-xs font-semibold text-muted-foreground mb-1 block">{lang === 'he' ? 'כותרת (אופציונלי)' : 'Title'}</label>
-                                            <input type="text" placeholder={lang === 'he' ? 'ברירת מחדל: שם הקובץ' : 'Default: File name'} value={sharedFields.title} onChange={e => setSharedFields(s => ({ ...s, title: e.target.value }))} className="w-full px-3 py-2 bg-background border border-border/50 rounded-xl" />
+                                            <label className="text-xs font-semibold text-muted-foreground mb-1 block">{lang === 'he' ? 'כותרת כללית (אופציונלי)' : 'General Title (Optional)'}</label>
+                                            <input type="text" placeholder={selectedCategory === 'media' ? (lang === 'he' ? 'לדוגמה: דירה לפני שיפוץ' : 'e.g., Apartment before renovation') : (lang === 'he' ? 'ברירת מחדל: שם הקובץ' : 'Default: File name')} value={sharedFields.title} onChange={e => setSharedFields(s => ({ ...s, title: e.target.value }))} className="w-full px-3 py-2 bg-background border border-border/50 rounded-xl" />
                                         </div>
                                     )}
 
@@ -568,7 +572,7 @@ export function GlobalDocumentUploadModal({ isOpen, onClose, properties, initial
                                     )}
 
                                     {/* Universal Shared Fields */}
-                                    {selectedCategory !== 'utilities' && (
+                                    {(selectedCategory !== 'utilities' && selectedCategory !== 'media') && (
                                         <div className="col-span-2">
                                             <label className="text-xs font-semibold text-muted-foreground mb-1 block">{t('date') !== 'date' ? t('date') : (lang === 'he' ? 'תאריך' : 'Date')}</label>
                                             <DatePicker

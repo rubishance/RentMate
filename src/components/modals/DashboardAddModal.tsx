@@ -1,9 +1,10 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStack } from '../../contexts/StackContext';
-import { Home, FileText, CreditCard, X } from 'lucide-react';
+import { Home, FileText, CreditCard, X, FileStack } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AddPaymentModal } from './AddPaymentModal';
 
 interface DashboardAddModalProps {
@@ -14,6 +15,7 @@ interface DashboardAddModalProps {
 export function DashboardAddModal({ isOpen, onClose }: DashboardAddModalProps) {
     const { t, lang } = useTranslation();
     const { push } = useStack();
+    const navigate = useNavigate();
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const isRtl = lang === 'he';
 
@@ -26,6 +28,8 @@ export function DashboardAddModal({ isOpen, onClose }: DashboardAddModalProps) {
                 push('contract_wizard', {}, { isExpanded: true, title: t('newContract') });
             } else if (action === 'payment') {
                 setIsPaymentModalOpen(true);
+            } else if (action === 'document') {
+                navigate('/documents', { state: { action: 'upload' } });
             }
         }, 300); // Wait for modal exit animation
     }, [push, t, onClose]);
@@ -60,16 +64,7 @@ export function DashboardAddModal({ isOpen, onClose }: DashboardAddModalProps) {
                                 </button>
                             </div>
 
-                            <div className="p-8 pb-6">
-                                <h2 className="text-2xl md:text-3xl font-black tracking-tighter text-foreground text-center">
-                                    {t('addNew')}
-                                </h2>
-                                <p className="text-center text-muted-foreground mt-2 text-sm">
-                                    {t('select_action_to_continue') || 'Select an action to continue'}
-                                </p>
-                            </div>
-
-                            <div className="p-8 pt-0 grid gap-4">
+                            <div className="p-8 pt-12 grid gap-4">
                                 <button
                                     onClick={() => handleAction('property')}
                                     className="group relative overflow-hidden flex items-center gap-4 p-5 rounded-2xl border border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 hover:shadow-xl transition-all duration-300 text-left"
@@ -103,6 +98,18 @@ export function DashboardAddModal({ isOpen, onClose }: DashboardAddModalProps) {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <h3 className="font-bold text-foreground truncate">{t('logPayment') || 'Add Payment'}</h3>
+                                    </div>
+                                </button>
+
+                                <button
+                                    onClick={() => handleAction('document')}
+                                    className="group relative overflow-hidden flex items-center gap-4 p-5 rounded-2xl border border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 hover:shadow-xl transition-all duration-300 text-left"
+                                >
+                                    <div className="w-12 h-12 rounded-xl bg-sky-500/10 text-sky-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                                        <FileStack className="w-6 h-6" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="font-bold text-foreground truncate">{lang === 'he' ? 'העלאת מסמך' : 'Add Document'}</h3>
                                     </div>
                                 </button>
                             </div>

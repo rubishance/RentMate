@@ -269,6 +269,7 @@ export type TranslationKeys =
     | 'contract_expiry'
     | 'contract_status_updated'
     | 'overdue_payment'
+    | 'cancelled'
     | 'archived_contract'
     | 'active_contract'
     | 'guarantorsInfo'
@@ -1491,6 +1492,7 @@ export const translations: Record<string, any> = {
         noPaymentsFound: 'לא נמצאו תשלומים.',
         totalExpected: 'סה"כ צפוי',
         totalActual: 'סה"כ שולם',
+        cancelled: 'מבוטל',
         collectionRate: 'שיעור גבייה',
         exp: 'צפוי',
         base: 'בסיס',
@@ -2454,6 +2456,7 @@ export const translations: Record<string, any> = {
         legal_management: 'Legal Management',
         active_contract: 'Active Contract',
         archived_contract: 'Archived Contract',
+        cancelled: 'Cancelled',
         view_details: 'View Details',
         actions: 'Actions',
         logPayment: 'Log Payment',

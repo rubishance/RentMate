@@ -248,47 +248,49 @@ export function Dashboard() {
             {/* Mobile: Top Bar Background Extension */}
             <div className="fixed top-0 left-0 right-0 h-32 bg-gradient-to-b from-canvas to-transparent z-0 pointer-events-none md:hidden" />
 
-            <div className="pb-4 pt-2 md:pt-8 px-5 relative z-10">
+            <div className="pb-4 pt-2 md:pt-8 px-5 relative z-10 w-full overflow-x-hidden">
 
                 {/* Header Area: Hero + Actions aligned with other pages */}
                 <div className="flex flex-col gap-6 mb-6">
-                    <div className="flex items-center justify-between gap-4">
-                        <div className="flex-1 overflow-hidden">
-                            <DashboardHero
-                                firstName={firstName}
-                                feedItems={feedItemsWithActions}
-                                showOnly="welcome"
-                            />
+                    <div className="flex items-center justify-between w-full gap-3 sm:gap-4">
+                        <div className="flex items-center gap-3">
+                            {/* Edit Mode Toggle & Status */}
+                            <div className="hidden md:inline-flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-full border border-primary/10">
+                                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                                <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                                    {t('online')}
+                                </span>
+                            </div>
+
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setIsEditModalOpen(true)}
+                                className="text-xs uppercase tracking-widest font-bold bg-white/50 dark:bg-black/20 backdrop-blur-md border border-white/20 hover:bg-white/80 transition-all sm:flex-none p-2 h-9 w-9 rounded-full"
+                                title={t('customize') || 'Customize'}
+                            >
+                                <Settings2 className="w-4 h-4" />
+                            </Button>
                         </div>
-
-                        <Button
-                            onClick={() => setIsAddModalOpen(true)}
-                            className="h-14 w-14 rounded-2xl p-0 shrink-0 bg-primary text-primary-foreground shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all duration-300"
-                            title={t('addNew')}
-                        >
-                            <Plus className="w-6 h-6" />
-                        </Button>
+                        
+                        {/* Placeholder for floating button */}
+                        <div className="h-14 w-14 shrink-0 opacity-0 pointer-events-none" />
                     </div>
+                </div>
 
-                    <div className="flex items-center gap-3">
-                        {/* Edit Mode Toggle & Status */}
-                        <div className="hidden md:inline-flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-full border border-primary/10">
-                            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                            <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                                {t('online')}
-                            </span>
-                        </div>
-
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setIsEditModalOpen(true)}
-                            className="text-xs uppercase tracking-widest font-bold bg-white/50 dark:bg-black/20 backdrop-blur-md border border-white/20 hover:bg-white/80 transition-all sm:flex-none p-2 h-9 w-9 rounded-full"
-                            title={t('customize') || 'Customize'}
-                        >
-                            <Settings2 className="w-4 h-4" />
-                        </Button>
-                    </div>
+                {/* Floating Action Button - FIXED so it never moves */}
+                <div className={cn(
+                    "fixed z-[60]",
+                    lang === 'he' ? 'left-5' : 'right-5',
+                    "top-[88px] md:top-[144px]"
+                )}>
+                    <Button
+                        onClick={() => setIsAddModalOpen(true)}
+                        className="h-14 w-14 rounded-2xl p-0 shrink-0 bg-primary text-primary-foreground shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center"
+                        title={t('addNew')}
+                    >
+                        <Plus className="w-6 h-6" />
+                    </Button>
                 </div>
 
                 {/* Always display Usage Overview at the very top if relevant */}

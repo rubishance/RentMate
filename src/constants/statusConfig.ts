@@ -15,7 +15,7 @@ export interface StatusConfig {
 export const CONTRACT_STATUSES: Record<ContractStatus, StatusConfig> = {
     active: {
         id: 'active',
-        labelKey: 'statusActive',
+        labelKey: 'active',
         fallbackHe: 'פעיל',
         fallbackEn: 'Active',
         color: 'text-emerald-700 dark:text-emerald-400',
@@ -24,7 +24,7 @@ export const CONTRACT_STATUSES: Record<ContractStatus, StatusConfig> = {
     },
     archived: {
         id: 'archived',
-        labelKey: 'statusArchived',
+        labelKey: 'archived',
         fallbackHe: 'ארכיון',
         fallbackEn: 'Archived',
         color: 'text-slate-700 dark:text-slate-400',
@@ -36,7 +36,7 @@ export const CONTRACT_STATUSES: Record<ContractStatus, StatusConfig> = {
 export const PROPERTY_STATES: Record<PropertyState, StatusConfig> = {
     occupied: {
         id: 'occupied',
-        labelKey: 'statusOccupied',
+        labelKey: 'occupied',
         fallbackHe: 'מושכר',
         fallbackEn: 'Occupied',
         color: 'text-emerald-700 dark:text-emerald-400',
@@ -45,7 +45,7 @@ export const PROPERTY_STATES: Record<PropertyState, StatusConfig> = {
     },
     vacant: {
         id: 'vacant',
-        labelKey: 'statusVacant',
+        labelKey: 'vacant',
         fallbackHe: 'פנוי',
         fallbackEn: 'Vacant',
         color: 'text-orange-700 dark:text-orange-400',
@@ -57,7 +57,7 @@ export const PROPERTY_STATES: Record<PropertyState, StatusConfig> = {
 export const PAYMENT_STATUSES: Record<PaymentStatus, StatusConfig> = {
     pending: {
         id: 'pending',
-        labelKey: 'statusPending',
+        labelKey: 'pending',
         fallbackHe: 'ממתין',
         fallbackEn: 'Pending',
         color: 'text-amber-700 dark:text-amber-400',
@@ -66,7 +66,7 @@ export const PAYMENT_STATUSES: Record<PaymentStatus, StatusConfig> = {
     },
     paid: {
         id: 'paid',
-        labelKey: 'statusPaid',
+        labelKey: 'paid',
         fallbackHe: 'שולם',
         fallbackEn: 'Paid',
         color: 'text-emerald-700 dark:text-emerald-400',
@@ -75,7 +75,7 @@ export const PAYMENT_STATUSES: Record<PaymentStatus, StatusConfig> = {
     },
     overdue: {
         id: 'overdue',
-        labelKey: 'statusOverdue',
+        labelKey: 'overdue',
         fallbackHe: 'באיחור',
         fallbackEn: 'Overdue',
         color: 'text-rose-700 dark:text-rose-400',
@@ -84,7 +84,7 @@ export const PAYMENT_STATUSES: Record<PaymentStatus, StatusConfig> = {
     },
     cancelled: {
         id: 'cancelled',
-        labelKey: 'statusCancelled',
+        labelKey: 'cancelled',
         fallbackHe: 'מבוטל',
         fallbackEn: 'Cancelled',
         color: 'text-slate-500 dark:text-slate-400',

@@ -1,6 +1,8 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { processWhatsappAI } from './ai-router.ts'
+import { executeConfirmedAction } from './execution.ts'
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -138,53 +140,22 @@ serve(async (req) => {
                     // Trigger AI Bot if the conversation is in 'bot_handling' mode
                     if (conversation.status === 'bot_handling') {
                         try {
-                            // 1. Fetch recent messages for context
-                            const { data: recentMsgs } = await supabase
-                                .from('whatsapp_messages')
-                                .select('content, direction')
-                                .eq('conversation_id', conversation.id)
-                                .order('created_at', { ascending: false })
-                                .limit(10);
-                                
-                            const formattedMessages = (recentMsgs || [])
-                                .reverse()
-                                .map(m => ({
-                                    role: m.direction === 'inbound' ? 'user' : 'assistant',
-                                    content: m.content?.text || ''
-                                }));
-                                
-                            // 2. Add system prompt for WhatsApp tone
-                            const systemMessage = {
-                                role: 'system',
-                                content: "You are chatting with the user over WhatsApp. Keep your responses short, use simple formatting (ONLY bold asterisks '*', no other markdown), and use emojis. Be extremely helpful. Do not mention that you cannot use markdown."
-                            };
-                            
-                            const aiMessagesPayload = [systemMessage, ...formattedMessages];
-                            
-                            // 3. Call Chat-Support Edge Function
-                            const projectUrl = Deno.env.get('SUPABASE_URL');
-                            const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-                            const chatSupportUrl = `${projectUrl}/functions/v1/chat-support`;
-                            
                             console.log(`Triggering AI for conversation ${conversation.id}`);
                             
-                            const aiResponse = await fetch(chatSupportUrl, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'x-internal-webhook-key': serviceKey!
-                                },
-                                body: JSON.stringify({
-                                    messages: aiMessagesPayload,
-                                    conversationId: `whatsapp-${conversation.id}`, 
-                                    hasAiConsent: true, 
-                                    userId: matchedUserId // Can be null if unknown user, chat-support handles it
-                                })
-                            });
-                            
-                            if (aiResponse.ok) {
-                                const result = await aiResponse.json();
-                                const aiReplyText = result.choices?.[0]?.message?.content;
+                            // Check for Confirmation State
+                            const { data: sessionState } = await supabase
+                                .from('whatsapp_session_states')
+                                .select('status')
+                                .eq('phone_number', fromMobile)
+                                .single();
+
+                            let aiReplyText = "";
+
+                            if (sessionState?.status === 'awaiting_confirmation') {
+                                aiReplyText = await executeConfirmedAction(supabase, fromMobile, message.text.body) || "Error executing action.";
+                            } else {
+                                aiReplyText = await processWhatsappAI(supabase, fromMobile, message.text.body, matchedUserId, conversation.id) || "";
+                            }
                                 
                                 if (aiReplyText) {
                                     // 4. Save AI Reply softly
@@ -216,12 +187,8 @@ serve(async (req) => {
                                                 text: { body: aiReplyText }
                                             })
                                         });
-                                        console.log("Successfully replied to WhatsApp user");
                                     }
                                 }
-                            } else {
-                                console.error('AI Edge Function failed:', await aiResponse.text());
-                            }
                         } catch (aiErr) {
                             console.error('Error in AI Trigger bridge:', aiErr);
                         }
